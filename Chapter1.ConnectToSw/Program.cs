@@ -13,6 +13,24 @@ namespace Chapter1.ConnectToSw
 {
     internal class Program
     {
+
+
+        // 这里写一个获取基准面函数
+        public static IEnumerable<IFeature> GetRefPlane(IModelDoc2 doc)
+        {
+            var feat = doc.FirstFeature() as IFeature;
+            while (feat != null)
+            {
+                var name = feat.GetTypeName2();
+                // 如果名字是 "RefPlane"，就是基准面特征
+                if (name == "RefPlane")
+                {
+                    yield return feat;
+                }
+                feat = feat.GetNextFeature() as IFeature;
+            }
+        }
+
         static void Main(string[] args)
         {
             //Console.WriteLine("Hello World!");
@@ -85,20 +103,7 @@ namespace Chapter1.ConnectToSw
                 }
 
                 // 先选择一个基准面
-                var feat = doc.FirstFeature() as IFeature;
-                IFeature refFeat = default;
-
-                while (feat != null)
-                {
-                    var name = feat.GetTypeName2();
-                    // 如果名字是 "RefPlane"，就是基准面特征
-
-                    if (name == "RefPlane")
-                    {
-                        refFeat = feat;
-                    }
-                    feat = feat.GetNextFeature() as IFeature;
-                }
+                IFeature refFeat = GetRefPlane(doc).FirstOrDefault();
 
                 // 选中这个基准面
                 // 第一个参数 false: 是否加入之前的选择列表，加入就是多选
