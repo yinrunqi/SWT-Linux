@@ -16,6 +16,7 @@ namespace Chapter1.ConnectToSw
 
 
         // 这里写一个获取基准面函数
+        // 可以写到外面的扩展方法里面
         public static IEnumerable<IFeature> GetRefPlane(IModelDoc2 doc)
         {
             var feat = doc.FirstFeature() as IFeature;
@@ -121,6 +122,15 @@ namespace Chapter1.ConnectToSw
                 // 绘制一条直线
                 // 这里 1 1 就是 x y 坐标，单位是米
                 skeMgr.CreateLine(0, 0, 0, 1, 1, 0);
+
+                // 可以创建其他的草图元素，比如圆，矩形等，都是通过 SketchManager 来创建的
+
+                // 缩放选择内容到合适大小
+                doc.ViewZoomToSelection();
+
+                // 退出草图
+                skeMgr.InsertSketch(true);
+
 
             }
         }
