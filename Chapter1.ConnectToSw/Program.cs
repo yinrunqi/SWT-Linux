@@ -252,6 +252,20 @@ namespace Chapter1.ConnectToSw
                     Console.WriteLine($"删除自定义属性失败，失败原因：{result3}");
                 }
 
+
+                // api7: 方程式管理
+                
+                // 获取方程式管理器
+                var equMgr = doc.GetEquationMgr();
+                var equCount = equMgr.GetCount();
+
+                // 默认没有方程式，需要自己添加
+                for (int i = 0; i < equCount; i++)
+                {
+                    var equ = equMgr.Equation[i];
+                    Console.WriteLine($"方程式 {i}: {equ}");
+                }
+
                 // 缩放选择内容到合适大小
                 doc.ViewZoomToSelection();
 
