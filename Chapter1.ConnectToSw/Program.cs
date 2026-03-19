@@ -121,16 +121,45 @@ namespace Chapter1.ConnectToSw
 
                 // 绘制一条直线
                 // 这里 1 1 就是 x y 坐标，单位是米
-                skeMgr.CreateLine(0, 0, 0, 1, 1, 0);
+                // skeMgr.CreateLine(0, 0, 0, 1, 1, 0);
 
                 // 可以创建其他的草图元素，比如圆，矩形等，都是通过 SketchManager 来创建的
+                // api4: 绘制一个中心矩形，并拉伸
+                skeMgr.CreateCenterRectangle(0, 0, 0, 0.01, 0.01, 0);
+
+                // 拉伸
+                var featMgr = doc.FeatureManager;
+                featMgr.FeatureExtrusion3(
+                    Sd: true, // 是否是单向拉伸
+                    Flip: false, // 是否翻转拉伸方向
+                    Dir: false,
+                    T1: (int)swEndConditions_e.swEndCondBlind, // 结束条件，盲孔
+                    T2: (int)swEndConditions_e.swEndCondBlind, // 第二个方向的结束条件，盲孔
+                    D1: 0.01, // 拉伸深度
+                    D2: 0,
+                    Dchk1: false, // True to allow drafting in the first direction
+                    Dchk2: false,
+                    Ddir1: false,
+                    Ddir2: false,
+                    Dang1: 0,      // Draft angle in the first direction
+                    Dang2: 0,
+                    OffsetReverse1: false, // True to reverse the offset direction in the first direction
+                    OffsetReverse2: false,
+                    TranslateSurface1: false, // True to translate the surface in the first direction
+                    TranslateSurface2: false,
+                    Merge: true, // True to merge the result with the existing body
+                    UseFeatScope: true, // 影响选择的实体还是影响所有实体
+                    UseAutoSelect: true,
+                    T0: (int)swStartConditions_e.swStartSketchPlane, // 起始条件，草图平面
+                    StartOffset: 0,  // 起始偏移距离
+                    FlipStartOffset: false
+                );
 
                 // 缩放选择内容到合适大小
                 doc.ViewZoomToSelection();
 
                 // 退出草图
                 skeMgr.InsertSketch(true);
-
 
             }
         }
