@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Xarial.XCad.SolidWorks;
 using SolidWorks.Interop.swconst;
 using System.IO;
+using System.Windows;
 
 namespace Chapter1.ConnectToSw
 {
@@ -93,6 +94,15 @@ namespace Chapter1.ConnectToSw
 
                 //swApp.ShowMessageBox("Finish Creating New Document");
 
+                // 如何不显示操作过程
+                // 先关闭图形界面更新
+                //var activeView = doc.ActiveView as IModelView;
+                //activeView.EnableGraphicsUpdate = false;
+                // 做好操作后再打开图形界面更新
+                //activeView.EnableGraphicsUpdate = true;
+
+
+
 
                 // api3: 新建草图特征，绘制直线
                 // 获取当前文档
@@ -125,8 +135,10 @@ namespace Chapter1.ConnectToSw
 
                 // 可以创建其他的草图元素，比如圆，矩形等，都是通过 SketchManager 来创建的
                 // api4: 绘制一个中心矩形，并拉伸
-                skeMgr.CreateCenterRectangle(0, 0, 0, 0.01, 0.01, 0);
+                double width = 0.01;
+                skeMgr.CreateCenterRectangle(0, 0, 0, width, width, 0);
 
+                double height = 0.01;
                 // 拉伸
                 var featMgr = doc.FeatureManager;
                 featMgr.FeatureExtrusion3(
@@ -135,7 +147,7 @@ namespace Chapter1.ConnectToSw
                     Dir: false,
                     T1: (int)swEndConditions_e.swEndCondBlind, // 结束条件，盲孔
                     T2: (int)swEndConditions_e.swEndCondBlind, // 第二个方向的结束条件，盲孔
-                    D1: 0.01, // 拉伸深度
+                    D1: height, // 拉伸深度
                     D2: 0,
                     Dchk1: false, // True to allow drafting in the first direction
                     Dchk2: false,
@@ -154,6 +166,45 @@ namespace Chapter1.ConnectToSw
                     StartOffset: 0,  // 起始偏移距离
                     FlipStartOffset: false
                 );
+
+
+                // api5: 获取选择的实体信息
+                // var seleMgr = swApp.Sw.IActiveDoc2.ISelectionManager;
+                var seleMgr = doc.ISelectionManager;
+                var count = seleMgr.GetSelectedObjectCount2(-1); // -1 代表所有类型的选择
+                if (count < 1)
+                {
+                    MessageBox.Show("没有选择任何实体");
+                }
+
+                //var data = new List<string>(count);
+
+                for (int i = 1; i < count + 1; i++)
+                {
+                    var mark = seleMgr.GetSelectedObjectMark(i);
+                    var type = seleMgr.GetSelectedObjectType3(i, mark);
+                    var obj = seleMgr.GetSelectedObject6(i, mark);
+
+                    // 选择的位置点
+                    var selePosition = seleMgr.GetSelectionPoint2(i, mark) as double[];
+                    string info;
+                    if (selePosition != null && selePosition.Length >= 3)
+                    {
+                        info = $"Index {i}: 一个 {type} 类型的实体，标记是 {mark}，位置是 ({selePosition[0]}, {selePosition[1]}, {selePosition[2]})";
+                    }
+                    else
+                    {
+                        info = $"Index {i}: 一个 {type} 类型的实体，标记是 {mark}，没有可用的选择点";
+                    }
+
+                    Console.WriteLine(info);
+                    //data.Add(info);
+
+                    if (obj is IFeature feature)
+                    {
+                        Console.WriteLine($"这个实体的名称是 {feature.Name}，特征类型是 {feature.GetTypeName2()}");
+                    }
+                }
 
                 // 缩放选择内容到合适大小
                 doc.ViewZoomToSelection();
