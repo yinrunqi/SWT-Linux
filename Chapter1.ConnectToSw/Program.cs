@@ -206,6 +206,52 @@ namespace Chapter1.ConnectToSw
                     }
                 }
 
+
+                // api6: 获取自定义属性
+                var cusMgr = doc.Extension.CustomPropertyManager[""];
+
+                object names = new object(),
+                    values = new object(), 
+                    types = new object(), 
+                    resolved = new object(), 
+                    links = new object();
+
+                cusMgr.GetAll3(ref names, ref types, ref values, ref resolved, ref links);
+
+                var cusNames = names as string[];
+                var cusValues = values as string[];
+                var cusTypes = (types as int[]).Select(t => (swCustomInfoType_e)t).ToArray();
+
+                // Console.WriteLine($"第一个自定义属性：{cusNames[0]}");
+                // 还可以打印出许多其他自定义属性
+
+                for (int i = 0; i < cusNames.Length; i++)
+                {
+                    Console.WriteLine($"属性名称: {cusNames[i]}, 类型: {cusTypes[i]}, 值: {cusValues[i]}");
+                }
+
+                // 增添一些自定义属性
+                var result = cusMgr.Add3("Author", (int)swCustomInfoType_e.swCustomInfoText, "John Doe", (int)swCustomPropertyAddOption_e.swCustomPropertyDeleteAndAdd);
+                var addResult = (swCustomInfoAddResult_e)result;
+
+                if (addResult != swCustomInfoAddResult_e.swCustomInfoAddResult_AddedOrChanged) {
+                    Console.WriteLine($"添加自定义属性失败，失败原因：{addResult}");
+                }
+
+                var result2 = cusMgr.Add3("Author2", (int)swCustomInfoType_e.swCustomInfoText, "John Doe", (int)swCustomPropertyAddOption_e.swCustomPropertyDeleteAndAdd);
+                var addResult2 = (swCustomInfoAddResult_e)result;
+
+                if (addResult2 != swCustomInfoAddResult_e.swCustomInfoAddResult_AddedOrChanged)
+                {
+                    Console.WriteLine($"添加自定义属性失败，失败原因：{addResult2}");
+                }
+
+                // 删除一个自定义属性
+                var result3 = (swCustomInfoDeleteResult_e)cusMgr.Delete("Author");
+                if (result3 != swCustomInfoDeleteResult_e.swCustomInfoDeleteResult_OK){
+                    Console.WriteLine($"删除自定义属性失败，失败原因：{result3}");
+                }
+
                 // 缩放选择内容到合适大小
                 doc.ViewZoomToSelection();
 
