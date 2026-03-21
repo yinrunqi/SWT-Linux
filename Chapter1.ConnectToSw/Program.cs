@@ -1,278 +1,474 @@
-﻿using SolidWorks.Interop.sldworks; // 使用 solidworks 的命名空间
+﻿using SolidWorks.Interop.sldworks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xarial.XCad.SolidWorks;
-using SolidWorks.Interop.swconst;
 using System.IO;
-using System.Windows;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Web.Script.Serialization;
+using Xarial.XCad.SolidWorks;
 
 namespace Chapter1.ConnectToSw
 {
     internal class Program
     {
+        private static SwCommands _commands;
+        private static readonly JavaScriptSerializer _json = new JavaScriptSerializer();
+        private static bool _running = true;
 
+        private const string ListenUrl = "http://localhost:5100/";
 
-        // 这里写一个获取基准面函数
-        // 可以写到外面的扩展方法里面
-        public static IEnumerable<IFeature> GetRefPlane(IModelDoc2 doc)
-        {
-            var feat = doc.FirstFeature() as IFeature;
-            while (feat != null)
-            {
-                var name = feat.GetTypeName2();
-                // 如果名字是 "RefPlane"，就是基准面特征
-                if (name == "RefPlane")
-                {
-                    yield return feat;
-                }
-                feat = feat.GetNextFeature() as IFeature;
-            }
-        }
-
+        [STAThread]
         static void Main(string[] args)
         {
-            //Console.WriteLine("Hello World!");
-            //Console.ReadKey();
+            Console.WriteLine("=== SolidWorks HTTP API 服务 ===");
+            Console.WriteLine();
 
+            // 1. 连接 SolidWorks
             var swProcess = Process.GetProcessesByName("SLDWORKS");
-
             if (!swProcess.Any())
             {
-                Console.WriteLine("SolidWorks unopen");
+                Console.WriteLine("[错误] SolidWorks 未启动，请先打开 SolidWorks 后再运行本程序。");
+                Console.WriteLine("按任意键退出...");
                 Console.ReadKey();
-
-                //这里还可以让 sw 启动
+                return;
             }
-            else { 
-                var swApp = SwApplicationFactory.FromProcess(swProcess.First());
 
-                // 弹出一个消息框，上面写着 "Hello SolidWorks"
-                // swApp.ShowMessageBox("Hello SolidWorks");
+            var swApp = SwApplicationFactory.FromProcess(swProcess.First());
+            Console.WriteLine("[OK] 已连接到 SolidWorks");
 
-                // api1: 创建一个新的零件文档
-                // swApp.Sw.NewPart();
+            // 2. 初始化 SwCommands
+            try
+            {
+                _commands = new SwCommands(swApp.Sw);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] 初始化 SwCommands 失败: {ex.Message}");
+                Console.WriteLine("按任意键退出...");
+                Console.ReadKey();
+                return;
+            }
 
-                // 前面带不带 I 的区别
-                // var part = swApp.Sw.INewPart();
-                // 或者也可以
-                //var part = swApp.Sw.NewPart() as IPartDoc;
+            // 3. 启动 HTTP 服务
+            var listener = new HttpListener();
+            listener.Prefixes.Add(ListenUrl);
 
-                // api2: 新建打开文档
+            try
+            {
+                listener.Start();
+            }
+            catch (HttpListenerException ex)
+            {
+                Console.WriteLine($"[错误] 无法启动 HTTP 监听: {ex.Message}");
+                Console.WriteLine($"提示: 可能需要以管理员身份运行，或执行: netsh http add urlacl url={ListenUrl} user=Everyone");
+                Console.WriteLine("按任意键退出...");
+                Console.ReadKey();
+                return;
+            }
 
-               // 获取默认模板路径
-               var templatePart = swApp.Sw.GetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplatePart);
-                if (string.IsNullOrWhiteSpace(templatePart))
+            Console.WriteLine($"[OK] HTTP API 服务已启动，监听: {ListenUrl}");
+            Console.WriteLine();
+            Console.WriteLine("可用端点:");
+            Console.WriteLine("  GET  /api/ping                 - 健康检查");
+            Console.WriteLine("  POST /api/new-part             - 新建零件文档");
+            Console.WriteLine("  POST /api/select-plane         - 选择基准面并进入草图");
+            Console.WriteLine("  POST /api/sketch/line          - 画直线");
+            Console.WriteLine("  POST /api/sketch/rectangle     - 画矩形");
+            Console.WriteLine("  POST /api/sketch/circle        - 画圆");
+            Console.WriteLine("  POST /api/feature/extrusion    - 拉伸");
+            Console.WriteLine("  POST /api/close-sketch         - 退出草图");
+            Console.WriteLine("  POST /api/create-box           - 组合: 创建长方体");
+            Console.WriteLine();
+            Console.WriteLine("按 Ctrl+C 停止服务...");
+            Console.WriteLine();
+
+            // Ctrl+C 优雅退出
+            Console.CancelKeyPress += (s, e) =>
+            {
+                e.Cancel = true;
+                _running = false;
+                listener.Stop();
+                Console.WriteLine("\n[停止] 正在关闭服务...");
+            };
+
+            // 4. 主循环：同步处理请求（保证 STA 线程）
+            while (_running)
+            {
+                HttpListenerContext context;
+                try
                 {
-                    Console.WriteLine("默认模板为空，尝试从模板目录查找...");
+                    context = listener.GetContext();
+                }
+                catch (HttpListenerException)
+                {
+                    // listener 被停止时会抛出异常
+                    break;
+                }
 
-                    var dirs = swApp.Sw.GetUserPreferenceStringValue(
-                        (int)swUserPreferenceStringValue_e.swFileLocationsDocumentTemplates);
-
-                    var dirList = dirs.Split(';');
-
-                    foreach (var dir in dirList)
+                try
+                {
+                    HandleRequest(context);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[异常] 处理请求时发生未捕获的错误: {ex.Message}");
+                    try
                     {
-                        if (!Directory.Exists(dir)) continue;
-
-                        var files = Directory.GetFiles(dir, "*.prtdot");
-
-                        if (files.Length > 0)
-                        {
-                            templatePart = files[0];
-                            Console.WriteLine($"找到模板: {templatePart}");
-                            break;
-                        }
+                        SendJson(context.Response, 500, new { success = false, message = $"服务器内部错误: {ex.Message}" });
                     }
+                    catch { /* 忽略响应写入失败 */ }
                 }
+            }
 
-               //  使用默认模板创建一个新的零件文档
-               var doc = swApp.Sw.INewDocument2(templatePart, 0, 300d, 300d);
+            Console.WriteLine("[已停止] 服务已关闭。");
+        }
 
-                //swApp.ShowMessageBox("Finish Creating New Document");
+        #region 请求路由
 
-                // 如何不显示操作过程
-                // 先关闭图形界面更新
-                //var activeView = doc.ActiveView as IModelView;
-                //activeView.EnableGraphicsUpdate = false;
-                // 做好操作后再打开图形界面更新
-                //activeView.EnableGraphicsUpdate = true;
+        private static void HandleRequest(HttpListenerContext context)
+        {
+            var req = context.Request;
+            var resp = context.Response;
 
+            // CORS 头
+            resp.Headers.Add("Access-Control-Allow-Origin", "*");
+            resp.Headers.Add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+            resp.Headers.Add("Access-Control-Allow-Headers", "Content-Type");
 
+            // 处理 OPTIONS 预检请求
+            if (req.HttpMethod == "OPTIONS")
+            {
+                resp.StatusCode = 204;
+                resp.Close();
+                return;
+            }
 
+            var path = req.Url.AbsolutePath.TrimEnd('/').ToLower();
+            var method = req.HttpMethod.ToUpper();
 
-                // api3: 新建草图特征，绘制直线
-                // 获取当前文档
-                // var doc = swApp.Sw.IActiveDoc2;
+            Console.WriteLine($"[请求] {method} {path}");
 
-                if (doc.GetType() != (int)swDocumentTypes_e.swDocPART) { 
-                    Console.WriteLine("当前文档不是零件");
-                    return;
-                }
+            switch (path)
+            {
+                case "/api/ping":
+                    HandlePing(resp);
+                    break;
 
-                // 先选择一个基准面
-                IFeature refFeat = GetRefPlane(doc).FirstOrDefault();
+                case "/api/new-part":
+                    RequirePost(method, resp, () => HandleNewPart(resp));
+                    break;
 
-                // 选中这个基准面
-                // 第一个参数 false: 是否加入之前的选择列表，加入就是多选
-                // 第二个参数 int Mark
-                refFeat.Select2(false, 0);
+                case "/api/select-plane":
+                    RequirePost(method, resp, () => HandleSelectPlane(req, resp));
+                    break;
 
-                // 在基准面上新建一个草图
-                var skeMgr = doc.SketchManager;
-                skeMgr.InsertSketch(true);
-                // 或者直接 
-                // doc.SketchManager.InsertSketch(true);
+                case "/api/sketch/line":
+                    RequirePost(method, resp, () => HandleSketchLine(req, resp));
+                    break;
 
-                // 这里可能有激活捕捉设置
+                case "/api/sketch/rectangle":
+                    RequirePost(method, resp, () => HandleSketchRectangle(req, resp));
+                    break;
 
-                // 绘制一条直线
-                // 这里 1 1 就是 x y 坐标，单位是米
-                // skeMgr.CreateLine(0, 0, 0, 1, 1, 0);
+                case "/api/sketch/circle":
+                    RequirePost(method, resp, () => HandleSketchCircle(req, resp));
+                    break;
 
-                // 可以创建其他的草图元素，比如圆，矩形等，都是通过 SketchManager 来创建的
-                // api4: 绘制一个中心矩形，并拉伸
-                double width = 0.01;
-                skeMgr.CreateCenterRectangle(0, 0, 0, width, width, 0);
+                case "/api/feature/extrusion":
+                    RequirePost(method, resp, () => HandleExtrusion(req, resp));
+                    break;
 
-                double height = 0.01;
-                // 拉伸
-                var featMgr = doc.FeatureManager;
-                featMgr.FeatureExtrusion3(
-                    Sd: true, // 是否是单向拉伸
-                    Flip: false, // 是否翻转拉伸方向
-                    Dir: false,
-                    T1: (int)swEndConditions_e.swEndCondBlind, // 结束条件，盲孔
-                    T2: (int)swEndConditions_e.swEndCondBlind, // 第二个方向的结束条件，盲孔
-                    D1: height, // 拉伸深度
-                    D2: 0,
-                    Dchk1: false, // True to allow drafting in the first direction
-                    Dchk2: false,
-                    Ddir1: false,
-                    Ddir2: false,
-                    Dang1: 0,      // Draft angle in the first direction
-                    Dang2: 0,
-                    OffsetReverse1: false, // True to reverse the offset direction in the first direction
-                    OffsetReverse2: false,
-                    TranslateSurface1: false, // True to translate the surface in the first direction
-                    TranslateSurface2: false,
-                    Merge: true, // True to merge the result with the existing body
-                    UseFeatScope: true, // 影响选择的实体还是影响所有实体
-                    UseAutoSelect: true,
-                    T0: (int)swStartConditions_e.swStartSketchPlane, // 起始条件，草图平面
-                    StartOffset: 0,  // 起始偏移距离
-                    FlipStartOffset: false
-                );
+                case "/api/close-sketch":
+                    RequirePost(method, resp, () => HandleCloseSketch(resp));
+                    break;
 
+                case "/api/create-box":
+                    RequirePost(method, resp, () => HandleCreateBox(req, resp));
+                    break;
 
-                // api5: 获取选择的实体信息
-                // var seleMgr = swApp.Sw.IActiveDoc2.ISelectionManager;
-                var seleMgr = doc.ISelectionManager;
-                var count = seleMgr.GetSelectedObjectCount2(-1); // -1 代表所有类型的选择
-                if (count < 1)
-                {
-                    MessageBox.Show("没有选择任何实体");
-                }
-
-                //var data = new List<string>(count);
-
-                for (int i = 1; i < count + 1; i++)
-                {
-                    var mark = seleMgr.GetSelectedObjectMark(i);
-                    var type = seleMgr.GetSelectedObjectType3(i, mark);
-                    var obj = seleMgr.GetSelectedObject6(i, mark);
-
-                    // 选择的位置点
-                    var selePosition = seleMgr.GetSelectionPoint2(i, mark) as double[];
-                    string info;
-                    if (selePosition != null && selePosition.Length >= 3)
-                    {
-                        info = $"Index {i}: 一个 {type} 类型的实体，标记是 {mark}，位置是 ({selePosition[0]}, {selePosition[1]}, {selePosition[2]})";
-                    }
-                    else
-                    {
-                        info = $"Index {i}: 一个 {type} 类型的实体，标记是 {mark}，没有可用的选择点";
-                    }
-
-                    Console.WriteLine(info);
-                    //data.Add(info);
-
-                    if (obj is IFeature feature)
-                    {
-                        Console.WriteLine($"这个实体的名称是 {feature.Name}，特征类型是 {feature.GetTypeName2()}");
-                    }
-                }
-
-
-                // api6: 获取自定义属性
-                var cusMgr = doc.Extension.CustomPropertyManager[""];
-
-                object names = new object(),
-                    values = new object(), 
-                    types = new object(), 
-                    resolved = new object(), 
-                    links = new object();
-
-                cusMgr.GetAll3(ref names, ref types, ref values, ref resolved, ref links);
-
-                var cusNames = names as string[];
-                var cusValues = values as string[];
-                var cusTypes = (types as int[]).Select(t => (swCustomInfoType_e)t).ToArray();
-
-                // Console.WriteLine($"第一个自定义属性：{cusNames[0]}");
-                // 还可以打印出许多其他自定义属性
-
-                for (int i = 0; i < cusNames.Length; i++)
-                {
-                    Console.WriteLine($"属性名称: {cusNames[i]}, 类型: {cusTypes[i]}, 值: {cusValues[i]}");
-                }
-
-                // 增添一些自定义属性
-                var result = cusMgr.Add3("Author", (int)swCustomInfoType_e.swCustomInfoText, "John Doe", (int)swCustomPropertyAddOption_e.swCustomPropertyDeleteAndAdd);
-                var addResult = (swCustomInfoAddResult_e)result;
-
-                if (addResult != swCustomInfoAddResult_e.swCustomInfoAddResult_AddedOrChanged) {
-                    Console.WriteLine($"添加自定义属性失败，失败原因：{addResult}");
-                }
-
-                var result2 = cusMgr.Add3("Author2", (int)swCustomInfoType_e.swCustomInfoText, "John Doe", (int)swCustomPropertyAddOption_e.swCustomPropertyDeleteAndAdd);
-                var addResult2 = (swCustomInfoAddResult_e)result;
-
-                if (addResult2 != swCustomInfoAddResult_e.swCustomInfoAddResult_AddedOrChanged)
-                {
-                    Console.WriteLine($"添加自定义属性失败，失败原因：{addResult2}");
-                }
-
-                // 删除一个自定义属性
-                var result3 = (swCustomInfoDeleteResult_e)cusMgr.Delete("Author");
-                if (result3 != swCustomInfoDeleteResult_e.swCustomInfoDeleteResult_OK){
-                    Console.WriteLine($"删除自定义属性失败，失败原因：{result3}");
-                }
-
-
-                // api7: 方程式管理
-                
-                // 获取方程式管理器
-                var equMgr = doc.GetEquationMgr();
-                var equCount = equMgr.GetCount();
-
-                // 默认没有方程式，需要自己添加
-                for (int i = 0; i < equCount; i++)
-                {
-                    var equ = equMgr.Equation[i];
-                    Console.WriteLine($"方程式 {i}: {equ}");
-                }
-
-                // 缩放选择内容到合适大小
-                doc.ViewZoomToSelection();
-
-                // 退出草图
-                skeMgr.InsertSketch(true);
-
+                default:
+                    SendJson(resp, 404, new { success = false, message = $"未知端点: {path}" });
+                    break;
             }
         }
+
+        private static void RequirePost(string method, HttpListenerResponse resp, Action handler)
+        {
+            if (method != "POST")
+            {
+                SendJson(resp, 405, new { success = false, message = "此端点仅接受 POST 请求" });
+                return;
+            }
+            handler();
+        }
+
+        #endregion
+
+        #region 端点处理
+
+        private static void HandlePing(HttpListenerResponse resp)
+        {
+            SendJson(resp, 200, new { success = true, message = "SolidWorks API 服务运行中" });
+        }
+
+        private static void HandleNewPart(HttpListenerResponse resp)
+        {
+            try
+            {
+                _commands.NewPart();
+                SendJson(resp, 200, new { success = true, message = "新建零件文档成功" });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"新建零件失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSelectPlane(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                int index = GetInt(body, "index", 0);
+
+                _commands.SelectPlaneAndStartSketch(index);
+                SendJson(resp, 200, new { success = true, message = $"已选择基准面 [{index}] 并进入草图编辑" });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"选择基准面失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSketchLine(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                double x1 = GetDouble(body, "x1");
+                double y1 = GetDouble(body, "y1");
+                double x2 = GetDouble(body, "x2");
+                double y2 = GetDouble(body, "y2");
+
+                _commands.SketchLine(x1, y1, x2, y2);
+                SendJson(resp, 200, new { success = true, message = $"绘制直线: ({x1}, {y1}) -> ({x2}, {y2})" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"绘制直线失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSketchRectangle(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                double x1 = GetDouble(body, "x1");
+                double y1 = GetDouble(body, "y1");
+                double x2 = GetDouble(body, "x2");
+                double y2 = GetDouble(body, "y2");
+
+                _commands.SketchRectangle(x1, y1, x2, y2);
+                SendJson(resp, 200, new { success = true, message = $"绘制矩形: ({x1}, {y1}) -> ({x2}, {y2})" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"绘制矩形失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSketchCircle(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                double cx = GetDouble(body, "cx");
+                double cy = GetDouble(body, "cy");
+                double radius = GetDouble(body, "radius");
+
+                if (radius <= 0)
+                    throw new ArgumentOutOfRangeException("radius", "半径必须为正数");
+
+                _commands.SketchCircle(cx, cy, radius);
+                SendJson(resp, 200, new { success = true, message = $"绘制圆: 圆心({cx}, {cy}), 半径 {radius}" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"绘制圆失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleExtrusion(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                double depth = GetDouble(body, "depth");
+
+                _commands.Extrusion(depth);
+                SendJson(resp, 200, new { success = true, message = $"拉伸完成，深度: {depth} 米" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"拉伸失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleCloseSketch(HttpListenerResponse resp)
+        {
+            try
+            {
+                _commands.CloseSketch();
+                SendJson(resp, 200, new { success = true, message = "已退出草图编辑" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"退出草图失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleCreateBox(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                double length = GetDouble(body, "length");
+                double width = GetDouble(body, "width");
+                double height = GetDouble(body, "height");
+
+                _commands.CreateBox(length, width, height);
+                SendJson(resp, 200, new { success = true, message = $"长方体创建成功 ({length} x {width} x {height} 米)" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"创建长方体失败: {ex.Message}" });
+            }
+        }
+
+        #endregion
+
+        #region JSON 辅助方法
+
+        /// <summary>
+        /// 读取请求体并反序列化为 Dictionary。
+        /// </summary>
+        private static Dictionary<string, object> ReadJsonBody(HttpListenerRequest req)
+        {
+            if (!req.HasEntityBody)
+                return new Dictionary<string, object>();
+
+            using (var reader = new StreamReader(req.InputStream, req.ContentEncoding))
+            {
+                var json = reader.ReadToEnd();
+                if (string.IsNullOrWhiteSpace(json))
+                    return new Dictionary<string, object>();
+
+                var result = _json.Deserialize<Dictionary<string, object>>(json);
+                return result ?? new Dictionary<string, object>();
+            }
+        }
+
+        /// <summary>
+        /// 从字典中获取 double 值，找不到则抛出 KeyNotFoundException。
+        /// </summary>
+        private static double GetDouble(Dictionary<string, object> body, string key)
+        {
+            if (!body.ContainsKey(key))
+                throw new KeyNotFoundException($"缺少必要参数: {key}");
+
+            return Convert.ToDouble(body[key]);
+        }
+
+        /// <summary>
+        /// 从字典中获取 int 值，找不到则返回默认值。
+        /// </summary>
+        private static int GetInt(Dictionary<string, object> body, string key, int defaultValue)
+        {
+            if (!body.ContainsKey(key))
+                return defaultValue;
+
+            return Convert.ToInt32(body[key]);
+        }
+
+        /// <summary>
+        /// 发送 JSON 响应。
+        /// </summary>
+        private static void SendJson(HttpListenerResponse resp, int statusCode, object data)
+        {
+            resp.StatusCode = statusCode;
+            resp.ContentType = "application/json; charset=utf-8";
+
+            var json = _json.Serialize(data);
+            var buffer = Encoding.UTF8.GetBytes(json);
+
+            resp.ContentLength64 = buffer.Length;
+            resp.OutputStream.Write(buffer, 0, buffer.Length);
+            resp.Close();
+        }
+
+        #endregion
     }
 }

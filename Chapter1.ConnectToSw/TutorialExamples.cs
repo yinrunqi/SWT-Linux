@@ -1,0 +1,264 @@
+using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swconst;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using Xarial.XCad.SolidWorks;
+
+namespace Chapter1.ConnectToSw
+{
+    /// <summary>
+    /// 原有教程代码的归档，保留完整注释供学习参考。
+    /// 这些代码从 Program.cs 的 Main 方法中移出。
+    /// </summary>
+    internal static class TutorialExamples
+    {
+        // 获取基准面函数
+        public static IEnumerable<IFeature> GetRefPlane(IModelDoc2 doc)
+        {
+            var feat = doc.FirstFeature() as IFeature;
+            while (feat != null)
+            {
+                var name = feat.GetTypeName2();
+                // 如果名字是 "RefPlane"，就是基准面特征
+                if (name == "RefPlane")
+                {
+                    yield return feat;
+                }
+                feat = feat.GetNextFeature() as IFeature;
+            }
+        }
+
+        /// <summary>
+        /// 运行原有的教程示例代码（api1 ~ api7）。
+        /// 从原 Program.Main 完整迁移，保留所有注释。
+        /// </summary>
+        public static void RunAll(ISwApplication swApp)
+        {
+            // 弹出一个消息框，上面写着 "Hello SolidWorks"
+            // swApp.ShowMessageBox("Hello SolidWorks");
+
+            // api1: 创建一个新的零件文档
+            // swApp.Sw.NewPart();
+
+            // 前面带不带 I 的区别
+            // var part = swApp.Sw.INewPart();
+            // 或者也可以
+            //var part = swApp.Sw.NewPart() as IPartDoc;
+
+            // api2: 新建打开文档
+
+            // 获取默认模板路径
+            var templatePart = swApp.Sw.GetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplatePart);
+            if (string.IsNullOrWhiteSpace(templatePart))
+            {
+                Console.WriteLine("默认模板为空，尝试从模板目录查找...");
+
+                var dirs = swApp.Sw.GetUserPreferenceStringValue(
+                    (int)swUserPreferenceStringValue_e.swFileLocationsDocumentTemplates);
+
+                var dirList = dirs.Split(';');
+
+                foreach (var dir in dirList)
+                {
+                    if (!Directory.Exists(dir)) continue;
+
+                    var files = Directory.GetFiles(dir, "*.prtdot");
+
+                    if (files.Length > 0)
+                    {
+                        templatePart = files[0];
+                        Console.WriteLine($"找到模板: {templatePart}");
+                        break;
+                    }
+                }
+            }
+
+            //  使用默认模板创建一个新的零件文档
+            var doc = swApp.Sw.INewDocument2(templatePart, 0, 300d, 300d);
+
+            //swApp.ShowMessageBox("Finish Creating New Document");
+
+            // 如何不显示操作过程
+            // 先关闭图形界面更新
+            //var activeView = doc.ActiveView as IModelView;
+            //activeView.EnableGraphicsUpdate = false;
+            // 做好操作后再打开图形界面更新
+            //activeView.EnableGraphicsUpdate = true;
+
+
+            // api3: 新建草图特征，绘制直线
+            // 获取当前文档
+            // var doc = swApp.Sw.IActiveDoc2;
+
+            if (doc.GetType() != (int)swDocumentTypes_e.swDocPART)
+            {
+                Console.WriteLine("当前文档不是零件");
+                return;
+            }
+
+            // 先选择一个基准面
+            IFeature refFeat = GetRefPlane(doc).FirstOrDefault();
+
+            // 选中这个基准面
+            // 第一个参数 false: 是否加入之前的选择列表，加入就是多选
+            // 第二个参数 int Mark
+            refFeat.Select2(false, 0);
+
+            // 在基准面上新建一个草图
+            var skeMgr = doc.SketchManager;
+            skeMgr.InsertSketch(true);
+            // 或者直接 
+            // doc.SketchManager.InsertSketch(true);
+
+            // 这里可能有激活捕捉设置
+
+            // 绘制一条直线
+            // 这里 1 1 就是 x y 坐标，单位是米
+            // skeMgr.CreateLine(0, 0, 0, 1, 1, 0);
+
+            // 可以创建其他的草图元素，比如圆，矩形等，都是通过 SketchManager 来创建的
+            // api4: 绘制一个中心矩形，并拉伸
+            double width = 0.01;
+            skeMgr.CreateCenterRectangle(0, 0, 0, width, width, 0);
+
+            double height = 0.01;
+            // 拉伸
+            var featMgr = doc.FeatureManager;
+            featMgr.FeatureExtrusion3(
+                Sd: true, // 是否是单向拉伸
+                Flip: false, // 是否翻转拉伸方向
+                Dir: false,
+                T1: (int)swEndConditions_e.swEndCondBlind, // 结束条件，盲孔
+                T2: (int)swEndConditions_e.swEndCondBlind, // 第二个方向的结束条件，盲孔
+                D1: height, // 拉伸深度
+                D2: 0,
+                Dchk1: false, // True to allow drafting in the first direction
+                Dchk2: false,
+                Ddir1: false,
+                Ddir2: false,
+                Dang1: 0,      // Draft angle in the first direction
+                Dang2: 0,
+                OffsetReverse1: false, // True to reverse the offset direction in the first direction
+                OffsetReverse2: false,
+                TranslateSurface1: false, // True to translate the surface in the first direction
+                TranslateSurface2: false,
+                Merge: true, // True to merge the result with the existing body
+                UseFeatScope: true, // 影响选择的实体还是影响所有实体
+                UseAutoSelect: true,
+                T0: (int)swStartConditions_e.swStartSketchPlane, // 起始条件，草图平面
+                StartOffset: 0,  // 起始偏移距离
+                FlipStartOffset: false
+            );
+
+
+            // api5: 获取选择的实体信息
+            // var seleMgr = swApp.Sw.IActiveDoc2.ISelectionManager;
+            var seleMgr = doc.ISelectionManager;
+            var count = seleMgr.GetSelectedObjectCount2(-1); // -1 代表所有类型的选择
+            if (count < 1)
+            {
+                MessageBox.Show("没有选择任何实体");
+            }
+
+            //var data = new List<string>(count);
+
+            for (int i = 1; i < count + 1; i++)
+            {
+                var mark = seleMgr.GetSelectedObjectMark(i);
+                var type = seleMgr.GetSelectedObjectType3(i, mark);
+                var obj = seleMgr.GetSelectedObject6(i, mark);
+
+                // 选择的位置点
+                var selePosition = seleMgr.GetSelectionPoint2(i, mark) as double[];
+                string info;
+                if (selePosition != null && selePosition.Length >= 3)
+                {
+                    info = $"Index {i}: 一个 {type} 类型的实体，标记是 {mark}，位置是 ({selePosition[0]}, {selePosition[1]}, {selePosition[2]})";
+                }
+                else
+                {
+                    info = $"Index {i}: 一个 {type} 类型的实体，标记是 {mark}，没有可用的选择点";
+                }
+
+                Console.WriteLine(info);
+                //data.Add(info);
+
+                if (obj is IFeature feature)
+                {
+                    Console.WriteLine($"这个实体的名称是 {feature.Name}，特征类型是 {feature.GetTypeName2()}");
+                }
+            }
+
+
+            // api6: 获取自定义属性
+            var cusMgr = doc.Extension.CustomPropertyManager[""];
+
+            object names = new object(),
+                values = new object(),
+                types = new object(),
+                resolved = new object(),
+                links = new object();
+
+            cusMgr.GetAll3(ref names, ref types, ref values, ref resolved, ref links);
+
+            var cusNames = names as string[];
+            var cusValues = values as string[];
+            var cusTypes = (types as int[]).Select(t => (swCustomInfoType_e)t).ToArray();
+
+            // Console.WriteLine($"第一个自定义属性：{cusNames[0]}");
+            // 还可以打印出许多其他自定义属性
+
+            for (int i = 0; i < cusNames.Length; i++)
+            {
+                Console.WriteLine($"属性名称: {cusNames[i]}, 类型: {cusTypes[i]}, 值: {cusValues[i]}");
+            }
+
+            // 增添一些自定义属性
+            var result = cusMgr.Add3("Author", (int)swCustomInfoType_e.swCustomInfoText, "John Doe", (int)swCustomPropertyAddOption_e.swCustomPropertyDeleteAndAdd);
+            var addResult = (swCustomInfoAddResult_e)result;
+
+            if (addResult != swCustomInfoAddResult_e.swCustomInfoAddResult_AddedOrChanged)
+            {
+                Console.WriteLine($"添加自定义属性失败，失败原因：{addResult}");
+            }
+
+            var result2 = cusMgr.Add3("Author2", (int)swCustomInfoType_e.swCustomInfoText, "John Doe", (int)swCustomPropertyAddOption_e.swCustomPropertyDeleteAndAdd);
+            var addResult2 = (swCustomInfoAddResult_e)result;
+
+            if (addResult2 != swCustomInfoAddResult_e.swCustomInfoAddResult_AddedOrChanged)
+            {
+                Console.WriteLine($"添加自定义属性失败，失败原因：{addResult2}");
+            }
+
+            // 删除一个自定义属性
+            var result3 = (swCustomInfoDeleteResult_e)cusMgr.Delete("Author");
+            if (result3 != swCustomInfoDeleteResult_e.swCustomInfoDeleteResult_OK)
+            {
+                Console.WriteLine($"删除自定义属性失败，失败原因：{result3}");
+            }
+
+
+            // api7: 方程式管理
+
+            // 获取方程式管理器
+            var equMgr = doc.GetEquationMgr();
+            var equCount = equMgr.GetCount();
+
+            // 默认没有方程式，需要自己添加
+            for (int i = 0; i < equCount; i++)
+            {
+                var equ = equMgr.Equation[i];
+                Console.WriteLine($"方程式 {i}: {equ}");
+            }
+
+            // 缩放选择内容到合适大小
+            doc.ViewZoomToSelection();
+
+            // 退出草图
+            skeMgr.InsertSketch(true);
+        }
+    }
+}
