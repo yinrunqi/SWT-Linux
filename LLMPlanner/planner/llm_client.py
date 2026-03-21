@@ -1,0 +1,301 @@
+"""
+llm_client.py — LLM 客户端
+
+参考 VideoTool/engine 架构，实现：
+1. 从环境变量读取 OPENAI_BASE_URL 和 OPENAI_API_KEY
+2. diskcache 磁盘缓存（SHA256 哈希，减少重复调用费用）
+3. tenacity 自动重试（应对网络抖动和限流）
+4. OpenAI 结构化输出（Structured Outputs via json_schema）
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import sys
+from pathlib import Path
+from typing import Optional
+
+import diskcache
+from openai import OpenAI, BadRequestError
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+
+from .schemas import SwModelingPlan
+
+# ============================================================
+# 默认配置
+# ============================================================
+
+# 默认模型：gpt-4o 支持结构化输出（Structured Outputs）
+DEFAULT_MODEL = "gpt-4o"
+
+# 缓存目录：planner 同级的 .llm_cache 文件夹
+CACHE_DIR = Path(__file__).resolve().parent / ".llm_cache"
+
+# System Prompt：告知 LLM 可用的 SolidWorks API 及其参数
+SYSTEM_PROMPT = """\
+你是一个 SolidWorks 自动建模助手。用户会用自然语言描述想要创建的 3D 模型，
+你需要将其转换为一系列 SolidWorks 操作步骤。
+
+## 可用操作及参数
+
+1. **new_part** — 新建零件文档（无参数）
+2. **select_plane** — 选择基准面并进入草图编辑
+   - index: int — 0=前视基准面, 1=上视基准面, 2=右视基准面
+3. **sketch_line** — 在草图中画直线
+   - x1, y1: float — 起点坐标（米）
+   - x2, y2: float — 终点坐标（米）
+4. **sketch_rectangle** — 在草图中画矩形（对角线两点）
+   - x1, y1: float — 左下角坐标（米）
+   - x2, y2: float — 右上角坐标（米）
+5. **sketch_circle** — 在草图中画圆
+   - cx, cy: float — 圆心坐标（米）
+   - radius: float — 半径（米）
+6. **feature_extrusion** — 拉伸当前草图
+   - depth: float — 拉伸深度（米）
+7. **close_sketch** — 退出草图编辑（不拉伸）
+8. **create_box** — 组合操作：一步创建长方体
+   - length: float — 长度（米）
+   - width: float — 宽度（米）
+   - height: float — 高度（米）
+
+## 重要规则
+
+- 所有尺寸单位为 **米**。如果用户说"100mm"，你需要转换为 0.1 米。
+- 如果用户说"10cm"，需转换为 0.1 米。常见单位换算：1mm=0.001m, 1cm=0.01m。
+- 如果用户未指定尺寸，请根据常理给出合理的默认值（通常在 0.01~0.5 米范围）。
+- 对于简单的长方体，优先使用 create_box 组合操作。
+- 对于复杂形状，使用原子操作组合：先 new_part → select_plane → 画草图 → extrusion。
+- feature_extrusion 会自动退出草图再拉伸，不需要在拉伸前调用 close_sketch。
+- 如果需要在同一零件上做多个特征（如挖孔），拉伸后需要再次 select_plane 进入新草图。
+- 步骤必须逻辑正确，按照 SolidWorks 的操作流程排列。
+"""
+
+
+# ============================================================
+# 缓存工具
+# ============================================================
+
+def _make_cache_key(model: str, system_prompt: str, user_prompt: str) -> str:
+    """
+    将请求内容哈希为缓存 key。
+    使用 SHA256 保证低碰撞概率。
+    """
+    content = json.dumps({
+        "model": model,
+        "system_prompt": system_prompt,
+        "user_prompt": user_prompt,
+    }, ensure_ascii=False, sort_keys=True)
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
+# ============================================================
+# SwLLMClient
+# ============================================================
+
+class SwLLMClient:
+    """
+    SolidWorks LLM 客户端。
+
+    功能：
+    - 读取环境变量 OPENAI_BASE_URL / OPENAI_API_KEY
+    - 使用 diskcache 缓存 LLM 响应
+    - 使用 tenacity 自动重试
+    - 使用 OpenAI Structured Outputs 解析为 SwModelingPlan
+    - 如果 API 不支持 Structured Outputs，自动降级为 JSON mode
+    """
+
+    def __init__(
+        self,
+        model: Optional[str] = None,
+        cache_dir: Optional[str] = None,
+        use_cache: bool = True,
+    ):
+        # 读取环境变量
+        api_key = os.getenv("OPENAI_API_KEY")
+        base_url = os.getenv("OPENAI_BASE_URL")
+
+        if not api_key:
+            print("[错误] 未设置环境变量 OPENAI_API_KEY", file=sys.stderr)
+            print("请在终端中设置：export OPENAI_API_KEY=your_key_here", file=sys.stderr)
+            sys.exit(1)
+
+        # 初始化 OpenAI 客户端
+        client_kwargs = {"api_key": api_key}
+        if base_url:
+            client_kwargs["base_url"] = base_url
+            print(f"[LLM] 使用自定义 API 地址: {base_url}")
+
+        self.client = OpenAI(**client_kwargs)
+        self.model = model or DEFAULT_MODEL
+        print(f"[LLM] 使用模型: {self.model}")
+
+        # 是否已检测到 API 不支持 Structured Outputs，自动降级
+        self._use_structured_output = True
+
+        # 初始化缓存
+        self.use_cache = use_cache
+        if use_cache:
+            cache_path = cache_dir or str(CACHE_DIR)
+            self.cache = diskcache.Cache(cache_path)
+            print(f"[LLM] 缓存目录: {cache_path}")
+        else:
+            self.cache = None
+            print("[LLM] 缓存已禁用")
+
+    def plan(self, user_instruction: str) -> SwModelingPlan:
+        """
+        将用户自然语言指令转换为 SolidWorks 建模计划。
+
+        Args:
+            user_instruction: 用户输入的建模指令，如 "创建一个 100mm x 50mm x 30mm 的长方体"
+
+        Returns:
+            SwModelingPlan: 结构化的建模计划
+        """
+        # 1. 检查缓存
+        if self.use_cache and self.cache is not None:
+            cache_key = _make_cache_key(self.model, SYSTEM_PROMPT, user_instruction)
+            cached = self.cache.get(cache_key)
+            if cached is not None:
+                print("[LLM] 命中缓存，跳过 API 调用")
+                return SwModelingPlan.model_validate_json(cached)
+
+        # 2. 调用 LLM API（带重试）
+        print(f'[LLM] 正在分析指令: "{user_instruction}"')
+        result = self._call_api(user_instruction)
+
+        # 3. 写入缓存
+        if self.use_cache and self.cache is not None:
+            cache_key = _make_cache_key(self.model, SYSTEM_PROMPT, user_instruction)
+            self.cache.set(cache_key, result.model_dump_json())
+            print("[LLM] 已写入缓存")
+
+        return result
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=30),
+        retry=retry_if_exception_type((Exception,)),
+        before_sleep=lambda retry_state: print(
+            f"[LLM] API 调用失败: {retry_state.outcome.exception()}\n"
+            f"[LLM] {retry_state.next_action.sleep} 秒后重试... "
+            f"(第 {retry_state.attempt_number} 次)"
+        ),
+    )
+    def _call_api(self, user_instruction: str) -> SwModelingPlan:
+        """
+        调用 OpenAI API 获取建模计划。
+
+        策略：
+        1. 优先使用 Structured Outputs（beta.chat.completions.parse）
+        2. 如果 API 返回 BadRequestError（说明不支持），自动降级为 JSON mode
+        3. 降级后后续调用不再尝试 Structured Outputs
+
+        使用 tenacity 自动重试（最多 3 次，指数退避）。
+        """
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_instruction},
+        ]
+
+        if self._use_structured_output:
+            try:
+                return self._call_structured_output(messages)
+            except BadRequestError as e:
+                # API 不支持 Structured Outputs，降级为 JSON mode
+                print(f"[LLM] Structured Outputs 不被支持 ({e.message})，降级为 JSON mode...")
+                self._use_structured_output = False
+                return self._call_json_mode(messages)
+        else:
+            return self._call_json_mode(messages)
+
+    def _call_structured_output(self, messages: list[dict]) -> SwModelingPlan:
+        """
+        使用 OpenAI Structured Outputs（beta.chat.completions.parse）。
+        仅适用于支持 response_format=json_schema 的模型和 API。
+
+        支持的模型（OpenAI 官方）：
+        - gpt-4o-2024-08-06 及之后版本
+        - gpt-4o-mini-2024-07-18 及之后版本
+        - gpt-4.5-preview
+        - o1, o3-mini 等推理模型
+        """
+        print("[LLM] 使用 Structured Outputs 模式")
+        completion = self.client.beta.chat.completions.parse(
+            model=self.model,
+            messages=messages,
+            response_format=SwModelingPlan,
+        )
+
+        result = completion.choices[0].message.parsed
+
+        if result is None:
+            # 如果结构化输出解析失败，尝试从文本内容恢复
+            content = completion.choices[0].message.content
+            if content:
+                print("[LLM] 结构化解析失败，尝试从文本恢复...")
+                result = SwModelingPlan.model_validate_json(content)
+            else:
+                raise ValueError("LLM 未返回有效的建模计划")
+
+        print("[LLM] ✅ Structured Outputs 解析成功")
+        return result
+
+    def _call_json_mode(self, messages: list[dict]) -> SwModelingPlan:
+        """
+        降级模式：使用 JSON mode（response_format=json_object）+ 手动 Pydantic 解析。
+        兼容所有 OpenAI 兼容的第三方 API。
+
+        注意：JSON mode 需要在 system prompt 中明确要求输出 JSON 格式，
+        这里通过追加提示来实现。
+        """
+        print("[LLM] 使用 JSON mode 降级模式")
+
+        # 在 system prompt 后追加 JSON 输出格式要求
+        json_hint = (
+            "\n\n## 输出格式\n"
+            "你必须以纯 JSON 格式返回，不要包含任何 markdown 代码块标记。"
+            "JSON 结构：{\"user_intent\": \"...\", \"steps\": [{\"operation\": \"...\", "
+            "\"params\": {...}, \"description\": \"...\"}], \"notes\": \"...\"}\n"
+            "operation 可选值：new_part, select_plane, sketch_line, sketch_rectangle, "
+            "sketch_circle, feature_extrusion, close_sketch, create_box。"
+        )
+        patched_messages = messages.copy()
+        patched_messages[0] = {
+            "role": "system",
+            "content": messages[0]["content"] + json_hint,
+        }
+
+        completion = self.client.chat.completions.create(
+            model=self.model,
+            messages=patched_messages,
+            response_format={"type": "json_object"},
+        )
+
+        content = completion.choices[0].message.content
+        if not content:
+            raise ValueError("LLM 未返回任何内容")
+
+        # 清理可能的 markdown 代码块标记
+        text = content.strip()
+        if text.startswith("```"):
+            lines = text.split("\n")
+            lines = [l for l in lines if not l.strip().startswith("```")]
+            text = "\n".join(lines)
+
+        result = SwModelingPlan.model_validate_json(text)
+        print("[LLM] ✅ JSON mode 解析成功")
+        return result
+
+    def clear_cache(self):
+        """清空所有缓存。"""
+        if self.cache is not None:
+            self.cache.clear()
+            print("[LLM] 缓存已清空")
+
+    def close(self):
+        """关闭缓存连接。"""
+        if self.cache is not None:
+            self.cache.close()
