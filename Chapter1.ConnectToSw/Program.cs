@@ -71,15 +71,20 @@ namespace Chapter1.ConnectToSw
             Console.WriteLine($"[OK] HTTP API 服务已启动，监听: {ListenUrl}");
             Console.WriteLine();
             Console.WriteLine("可用端点:");
-            Console.WriteLine("  GET  /api/ping                 - 健康检查");
-            Console.WriteLine("  POST /api/new-part             - 新建零件文档");
-            Console.WriteLine("  POST /api/select-plane         - 选择基准面并进入草图");
-            Console.WriteLine("  POST /api/sketch/line          - 画直线");
-            Console.WriteLine("  POST /api/sketch/rectangle     - 画矩形");
-            Console.WriteLine("  POST /api/sketch/circle        - 画圆");
-            Console.WriteLine("  POST /api/feature/extrusion    - 拉伸");
-            Console.WriteLine("  POST /api/close-sketch         - 退出草图");
-            Console.WriteLine("  POST /api/create-box           - 组合: 创建长方体");
+            Console.WriteLine("  GET  /api/ping                    - 健康检查");
+            Console.WriteLine("  POST /api/new-part                - 新建零件文档");
+            Console.WriteLine("  POST /api/select-plane            - 选择基准面并进入草图");
+            Console.WriteLine("  POST /api/sketch/line             - 画直线");
+            Console.WriteLine("  POST /api/sketch/rectangle        - 画矩形");
+            Console.WriteLine("  POST /api/sketch/circle           - 画圆");
+            Console.WriteLine("  POST /api/feature/extrusion       - 拉伸");
+            Console.WriteLine("  POST /api/close-sketch            - 退出草图");
+            Console.WriteLine("  POST /api/create-box              - 组合: 创建长方体");
+            Console.WriteLine("  --- 查询 & 编辑 ---");
+            Console.WriteLine("  GET  /api/feature-tree            - 获取特征树（含尺寸）");
+            Console.WriteLine("  GET  /api/body-bounding-box       - 获取实体包围盒");
+            Console.WriteLine("  POST /api/select-face-and-sketch  - 射线选面并进入草图");
+            Console.WriteLine("  POST /api/modify-dimension        - 修改特征尺寸值");
             Console.WriteLine();
             Console.WriteLine("按 Ctrl+C 停止服务...");
             Console.WriteLine();
@@ -186,6 +191,22 @@ namespace Chapter1.ConnectToSw
 
                 case "/api/create-box":
                     RequirePost(method, resp, () => HandleCreateBox(req, resp));
+                    break;
+
+                case "/api/feature-tree":
+                    HandleFeatureTree(resp);
+                    break;
+
+                case "/api/body-bounding-box":
+                    HandleBodyBoundingBox(resp);
+                    break;
+
+                case "/api/select-face-and-sketch":
+                    RequirePost(method, resp, () => HandleSelectFaceAndSketch(req, resp));
+                    break;
+
+                case "/api/modify-dimension":
+                    RequirePost(method, resp, () => HandleModifyDimension(req, resp));
                     break;
 
                 default:
@@ -408,6 +429,109 @@ namespace Chapter1.ConnectToSw
             }
         }
 
+        private static void HandleFeatureTree(HttpListenerResponse resp)
+        {
+            try
+            {
+                var features = _commands.GetFeatureTree();
+                SendJson(resp, 200, new { success = true, features = features });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"获取特征树失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleBodyBoundingBox(HttpListenerResponse resp)
+        {
+            try
+            {
+                var box = _commands.GetBodyBoundingBox();
+                SendJson(resp, 200, new { success = true, boundingBox = box });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"获取包围盒失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSelectFaceAndSketch(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                // 射线起点
+                double rx = GetDouble(body, "rx");
+                double ry = GetDouble(body, "ry");
+                double rz = GetDouble(body, "rz");
+                // 射线方向
+                double dx = GetDouble(body, "dx");
+                double dy = GetDouble(body, "dy");
+                double dz = GetDouble(body, "dz");
+
+                var result = _commands.SelectFaceByRayAndStartSketch(rx, ry, rz, dx, dy, dz);
+                SendJson(resp, 200, new { success = true, message = result["message"], faceType = result["faceType"] });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"选面并进入草图失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleModifyDimension(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string featureName = GetString(body, "featureName");
+                string dimensionName = GetStringOrDefault(body, "dimensionName", "");
+                double newValue = GetDouble(body, "newValue");
+
+                var result = _commands.ModifyFeatureDimension(featureName, dimensionName, newValue);
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = result["message"],
+                    featureName = result["featureName"],
+                    dimensionName = result["dimensionName"],
+                    oldValue = result["oldValue"],
+                    newValue = result["newValue"],
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"修改尺寸失败: {ex.Message}" });
+            }
+        }
+
         #endregion
 
         #region JSON 辅助方法
@@ -451,6 +575,28 @@ namespace Chapter1.ConnectToSw
                 return defaultValue;
 
             return Convert.ToInt32(body[key]);
+        }
+
+        /// <summary>
+        /// 从字典中获取 string 值，找不到则抛出 KeyNotFoundException。
+        /// </summary>
+        private static string GetString(Dictionary<string, object> body, string key)
+        {
+            if (!body.ContainsKey(key))
+                throw new KeyNotFoundException($"缺少必要参数: {key}");
+
+            return body[key]?.ToString() ?? "";
+        }
+
+        /// <summary>
+        /// 从字典中获取 string 值，找不到则返回默认值。
+        /// </summary>
+        private static string GetStringOrDefault(Dictionary<string, object> body, string key, string defaultValue)
+        {
+            if (!body.ContainsKey(key))
+                return defaultValue;
+
+            return body[key]?.ToString() ?? defaultValue;
         }
 
         /// <summary>

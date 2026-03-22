@@ -22,6 +22,11 @@ class OperationType(str, Enum):
     SKETCH_CIRCLE = "sketch_circle"
     FEATURE_EXTRUSION = "feature_extrusion"
     CLOSE_SKETCH = "close_sketch"
+    # --- 查询 & 编辑 ---
+    FEATURE_TREE = "feature_tree"
+    BODY_BOUNDING_BOX = "body_bounding_box"
+    SELECT_FACE_AND_SKETCH = "select_face_and_sketch"
+    MODIFY_DIMENSION = "modify_dimension"
 
 
 class SwOperation(BaseModel):
@@ -44,7 +49,11 @@ class SwOperation(BaseModel):
             "- sketch_rectangle: {x1, y1, x2, y2: float} — 对角线两点坐标（米）\n"
             "- sketch_circle: {cx, cy, radius: float} — 圆心坐标和半径（米）\n"
             "- feature_extrusion: {depth: float} — 拉伸深度（米）\n"
-            "- close_sketch: 无参数"
+            "- close_sketch: 无参数\n"
+            "- feature_tree: 无参数（查询操作，返回特征树含尺寸信息）\n"
+            "- body_bounding_box: 无参数（查询操作，返回包围盒）\n"
+            "- select_face_and_sketch: {rx, ry, rz, dx, dy, dz: float} — 射线起点和方向（米）\n"
+            "- modify_dimension: {featureName: str, dimensionName: str (可选), newValue: float 或 delta: float} — 修改特征尺寸。newValue 设绝对值，delta 设增量（二选一）"
         )
     )
     description: str = Field(

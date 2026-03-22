@@ -130,3 +130,6 @@ python -m planner.main --no-cache "创建一个长方体"
 ```bash
 deactivate
 ```
+
+## TODO List
+- [ ] 查看 json mode 是否报错

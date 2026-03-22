@@ -35,10 +35,12 @@ CACHE_DIR = Path(__file__).resolve().parent / ".llm_cache"
 
 # System Prompt：告知 LLM 可用的 SolidWorks API 及其参数
 SYSTEM_PROMPT = """\
-你是一个 SolidWorks 自动建模助手。用户会用自然语言描述想要创建的 3D 模型，
+你是一个 SolidWorks 自动建模助手。用户会用自然语言描述想要创建或编辑的 3D 模型，
 你需要将其转换为一系列 SolidWorks 原子操作步骤。
 
 ## 可用操作及参数
+
+### 创建类操作
 
 1. **new_part** — 新建零件文档（无参数）
 2. **select_plane** — 选择基准面并进入草图编辑
@@ -56,6 +58,33 @@ SYSTEM_PROMPT = """\
    - depth: float — 拉伸深度（米）
 7. **close_sketch** — 退出草图编辑（不拉伸时使用）
 
+### 查询类操作（用于了解当前模型状态）
+
+8. **feature_tree** — 获取特征树（无参数）
+   - 返回所有特征的名称、类型、索引列表
+   - **每个特征还会返回其关联的尺寸列表**（尺寸名、全名、当前值）
+   - 用于了解当前模型有哪些特征和可编辑的尺寸
+9. **body_bounding_box** — 获取实体包围盒（无参数）
+   - 返回 minX/minY/minZ/maxX/maxY/maxZ 和尺寸 sizeX/sizeY/sizeZ（米）
+   - 用于了解当前模型的空间范围
+
+### 编辑类操作
+
+10. **modify_dimension** — 直接修改已有特征的尺寸值 ⭐ 推荐
+    - featureName: str — 特征名称（从 feature_tree 返回值中获取，如 "Boss-Extrude1" 或 "凸台-拉伸1"）
+    - dimensionName: str — 尺寸名称（可选，如 "D1"；不填则修改该特征的第一个尺寸）
+    - **newValue 和 delta 二选一**：
+      - newValue: float — 设为**绝对值**（米）。用于"改为 50mm"、"设置成 100mm"等场景。
+      - delta: float — 在当前值基础上**增减**（米）。用于"再拉伸 50mm"、"加高 20mm"、"缩短 10mm"等场景。
+        - delta 为正数表示增大，负数表示减小。
+        - 使用 delta 时，系统会自动从 feature_tree 查询当前值并加上 delta。
+    - 修改后自动重建模型
+
+11. **select_face_and_sketch** — 通过射线选中一个面并进入草图编辑
+    - rx, ry, rz: float — 射线起点坐标（米），应在实体外部
+    - dx, dy, dz: float — 射线方向向量（单位向量）
+    - 选中面后自动进入该面的草图编辑模式，然后可以画草图 + 拉伸
+
 ## 重要规则
 
 - 所有尺寸单位为 **米**。如果用户说"100mm"，你需要转换为 0.1 米。
@@ -66,6 +95,58 @@ SYSTEM_PROMPT = """\
 - 如果需要在同一零件上做多个特征（如挖孔），拉伸后需要再次 select_plane 进入新草图。
 - 步骤必须逻辑正确，按照 SolidWorks 的操作流程排列。
 - 即使是简单的长方体，也必须拆分为：new_part → select_plane → sketch_rectangle → feature_extrusion。
+
+## 编辑已有模型的规则
+
+当用户要求对已有模型进行编辑时：
+
+### 优先使用 modify_dimension（修改尺寸）
+
+如果用户只是想改变已有特征的尺寸（如"把拉伸高度改成 50mm"、"把方块加高到 100mm"等），
+**应该直接修改尺寸**，而不是创建新特征。流程：
+
+1. 先调用 **feature_tree** 查看当前特征和尺寸信息
+2. 从返回结果中找到目标特征的名称和尺寸名
+3. 调用 **modify_dimension** 直接修改尺寸值
+
+⚠️ **特征名称注意事项**：
+- 中文版 SolidWorks 的特征名是**中文**的，例如 `"凸台-拉伸1"` 而不是 `"Boss-Extrude1"`。
+- 你**无法预知**实际的特征名称，**必须先通过 feature_tree 查询**后才能知道真实名称。
+- modify_dimension 的 featureName 参数填你能猜到的最佳名称即可（中英文均可），
+  系统会在运行时自动尝试修正匹配。
+
+典型示例——用户说"把拉伸高度改成 50mm"（绝对值）：
+```
+步骤1: feature_tree → 查看特征，发现 "凸台-拉伸1" 有尺寸 D1=0.03（当前 30mm）
+步骤2: modify_dimension {featureName: "凸台-拉伸1", dimensionName: "D1", newValue: 0.05}
+```
+
+典型示例——用户说"再向上拉伸 50mm"（增量）：
+```
+步骤1: feature_tree → 查看特征，发现 "凸台-拉伸1" 有尺寸 D1=0.03（当前 30mm）
+步骤2: modify_dimension {featureName: "凸台-拉伸1", dimensionName: "D1", delta: 0.05}
+→ 系统自动计算: 0.03 + 0.05 = 0.08（80mm）
+```
+
+⚠️ **语义判断规则**：
+- "改为/设为/设置成 Xmm" → 使用 **newValue**
+- "再拉伸/加高/增加/延长 Xmm" → 使用 **delta**（正值）
+- "缩短/减小/降低 Xmm" → 使用 **delta**（负值）
+- 如果用户的表述模糊，优先理解为**增量**（delta），因为"再向上拉伸"暗示在现有基础上增加。
+
+### 在面上添加新特征
+
+如果用户要求添加全新的几何（如"在上面加一个凸台"、"挖一个孔"等），则使用 select_face_and_sketch：
+
+1. **不要**调用 new_part，直接在当前模型上操作。
+2. 使用 **select_face_and_sketch** 选中目标面，然后画草图、拉伸。
+3. 射线拾取面的方法：
+   - 射线起点应在目标面的法线方向上、实体外部一小段距离（如 0.01m）
+   - 射线方向指向实体内部（即法线的反方向）
+   - 例如选"上表面"：起点在 maxY 上方，方向 (0, -1, 0)
+   - 例如选"前表面"：起点在 minZ 前方，方向 (0, 0, 1)
+   - 例如选"右表面"：起点在 maxX 右方，方向 (-1, 0, 0)
+4. 如果不确定模型尺寸，先用 **body_bounding_box** 查询包围盒。
 """
 
 
@@ -256,7 +337,9 @@ class SwLLMClient:
             "JSON 结构：{\"user_intent\": \"...\", \"steps\": [{\"operation\": \"...\", "
             "\"params\": {...}, \"description\": \"...\"}], \"notes\": \"...\"}\n"
             "operation 可选值：new_part, select_plane, sketch_line, sketch_rectangle, "
-            "sketch_circle, feature_extrusion, close_sketch。"
+            "sketch_circle, feature_extrusion, close_sketch, feature_tree, "
+            "body_bounding_box, select_face_and_sketch, modify_dimension。\n"
+            "modify_dimension 的 params 中，newValue（绝对值）和 delta（增量）二选一。"
         )
         patched_messages = messages.copy()
         patched_messages[0] = {
