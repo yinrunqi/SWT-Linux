@@ -22,7 +22,6 @@ OPERATION_ENDPOINT_MAP: dict[OperationType, tuple[str, str]] = {
     OperationType.SKETCH_CIRCLE:      ("POST", "/api/sketch/circle"),
     OperationType.FEATURE_EXTRUSION:  ("POST", "/api/feature/extrusion"),
     OperationType.CLOSE_SKETCH:       ("POST", "/api/close-sketch"),
-    OperationType.CREATE_BOX:         ("POST", "/api/create-box"),
 }
 
 

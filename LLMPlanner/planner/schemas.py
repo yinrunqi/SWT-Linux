@@ -22,7 +22,6 @@ class OperationType(str, Enum):
     SKETCH_CIRCLE = "sketch_circle"
     FEATURE_EXTRUSION = "feature_extrusion"
     CLOSE_SKETCH = "close_sketch"
-    CREATE_BOX = "create_box"
 
 
 class SwOperation(BaseModel):
@@ -45,8 +44,7 @@ class SwOperation(BaseModel):
             "- sketch_rectangle: {x1, y1, x2, y2: float} — 对角线两点坐标（米）\n"
             "- sketch_circle: {cx, cy, radius: float} — 圆心坐标和半径（米）\n"
             "- feature_extrusion: {depth: float} — 拉伸深度（米）\n"
-            "- close_sketch: 无参数\n"
-            "- create_box: {length, width, height: float} — 长宽高（米）"
+            "- close_sketch: 无参数"
         )
     )
     description: str = Field(

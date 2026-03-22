@@ -36,7 +36,7 @@ CACHE_DIR = Path(__file__).resolve().parent / ".llm_cache"
 # System Prompt：告知 LLM 可用的 SolidWorks API 及其参数
 SYSTEM_PROMPT = """\
 你是一个 SolidWorks 自动建模助手。用户会用自然语言描述想要创建的 3D 模型，
-你需要将其转换为一系列 SolidWorks 操作步骤。
+你需要将其转换为一系列 SolidWorks 原子操作步骤。
 
 ## 可用操作及参数
 
@@ -54,22 +54,18 @@ SYSTEM_PROMPT = """\
    - radius: float — 半径（米）
 6. **feature_extrusion** — 拉伸当前草图
    - depth: float — 拉伸深度（米）
-7. **close_sketch** — 退出草图编辑（不拉伸）
-8. **create_box** — 组合操作：一步创建长方体
-   - length: float — 长度（米）
-   - width: float — 宽度（米）
-   - height: float — 高度（米）
+7. **close_sketch** — 退出草图编辑（不拉伸时使用）
 
 ## 重要规则
 
 - 所有尺寸单位为 **米**。如果用户说"100mm"，你需要转换为 0.1 米。
 - 如果用户说"10cm"，需转换为 0.1 米。常见单位换算：1mm=0.001m, 1cm=0.01m。
 - 如果用户未指定尺寸，请根据常理给出合理的默认值（通常在 0.01~0.5 米范围）。
-- 对于简单的长方体，优先使用 create_box 组合操作。
-- 对于复杂形状，使用原子操作组合：先 new_part → select_plane → 画草图 → extrusion。
+- **必须使用原子操作逐步建模**，标准流程为：new_part → select_plane → 画草图 → feature_extrusion。
 - feature_extrusion 会自动退出草图再拉伸，不需要在拉伸前调用 close_sketch。
 - 如果需要在同一零件上做多个特征（如挖孔），拉伸后需要再次 select_plane 进入新草图。
 - 步骤必须逻辑正确，按照 SolidWorks 的操作流程排列。
+- 即使是简单的长方体，也必须拆分为：new_part → select_plane → sketch_rectangle → feature_extrusion。
 """
 
 
@@ -260,7 +256,7 @@ class SwLLMClient:
             "JSON 结构：{\"user_intent\": \"...\", \"steps\": [{\"operation\": \"...\", "
             "\"params\": {...}, \"description\": \"...\"}], \"notes\": \"...\"}\n"
             "operation 可选值：new_part, select_plane, sketch_line, sketch_rectangle, "
-            "sketch_circle, feature_extrusion, close_sketch, create_box。"
+            "sketch_circle, feature_extrusion, close_sketch。"
         )
         patched_messages = messages.copy()
         patched_messages[0] = {
