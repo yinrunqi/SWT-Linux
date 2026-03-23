@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SolidWorks LLM 自动建模 Demo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>🔧 SolidWorks LLM 自动建模</h1>
+    <div class="header-right">
+      <button class="settings-toggle" id="settings-toggle" title="设置">⚙️</button>
+      <div class="status">
+        <div class="dot" id="status-dot"></div>
+        <span id="status-text">检查连接中…</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Panel -->
+  <div class="settings" id="settings">
+    <div class="settings-row">
+      <label for="api-key">API Key</label>
+      <input id="api-key" type="password" placeholder="sk-..." autocomplete="off">
+    </div>
+    <div class="settings-row">
+      <label for="base-url">Base URL <span class="hint">（可选）</span></label>
+      <input id="base-url" type="text" placeholder="https://api.openai.com/v1">
+    </div>
+    <div class="settings-row">
+      <label for="model-select">模型</label>
+      <select id="model-select">
+        <option value="gpt-4o-mini" selected>gpt-4o-mini（快速）</option>
+        <option value="gpt-4o">gpt-4o（更强）</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Chat Area -->
+  <div class="chat" id="chat">
+    <div class="welcome">
+      <h2>SolidWorks 自然语言建模助手</h2>
+      <p>输入自然语言指令，AI 自动规划并执行 SolidWorks 建模操作</p>
+      <div class="examples">
+        <button onclick="useExample('创建一个 100mm x 50mm x 30mm 的长方体')">📦 长方体</button>
+        <button onclick="useExample('画一个半径 20mm、高 50mm 的圆柱')">🔵 圆柱</button>
+        <button onclick="useExample('创建一个边长 40mm 的正方体')">⬜ 正方体</button>
+        <button onclick="useExample('在上表面画一个直径 15mm 的圆，向下切除 10mm')">🕳️ 挖孔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Bar -->
+  <div class="input-bar">
+    <input id="input" type="text" placeholder="输入建模指令，如：创建一个 100mm 的正方体" autofocus>
+    <button id="send-btn">发送</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

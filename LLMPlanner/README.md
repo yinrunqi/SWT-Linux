@@ -131,5 +131,49 @@ python -m planner.main --no-cache "创建一个长方体"
 deactivate
 ```
 
+## Web Demo（可视化界面）
+
+除命令行外，还提供了一个 ChatGPT 风格的 Web 界面用于演示。
+
+### 安装额外依赖
+
+```bash
+pip install flask flask-cors
+```
+
+### 启动
+
+```bash
+cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
+
+# 启动 Web Demo（默认端口 5000）
+python -m web.app
+
+# 指定端口
+python -m web.app --port 8080
+
+# 指定模型
+python -m web.app --model gpt-4o
+```
+
+打开浏览器访问 `http://localhost:5000`，在输入框输入自然语言建模指令即可。
+
+### Web Demo 文件结构
+
+```
+LLMPlanner/
+└── web/
+    ├── app.py              # Flask 后端（复用 planner 模块）
+    └── static/
+        ├── index.html      # 前端页面
+        ├── style.css       # 样式
+        └── app.js          # 交互逻辑
+```
+
 ## TODO List
 - [ ] 查看 json mode 是否报错
+
+
+## demo 示例
++ 创建一个凸台，底为长 100 mm，宽 50 mm 的长方体，向上拉伸 30 mm
++ 将刚才的凸台再向上拉伸 50 mm
