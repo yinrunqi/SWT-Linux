@@ -78,6 +78,7 @@ namespace Chapter1.ConnectToSw
             Console.WriteLine("  POST /api/sketch/rectangle        - 画矩形");
             Console.WriteLine("  POST /api/sketch/circle           - 画圆");
             Console.WriteLine("  POST /api/feature/extrusion       - 拉伸");
+            Console.WriteLine("  POST /api/feature/cut-extrusion   - 切除拉伸（挖孔/开槽）");
             Console.WriteLine("  POST /api/close-sketch            - 退出草图");
             Console.WriteLine("  POST /api/create-box              - 组合: 创建长方体");
             Console.WriteLine("  --- 查询 & 编辑 ---");
@@ -185,6 +186,10 @@ namespace Chapter1.ConnectToSw
                     RequirePost(method, resp, () => HandleExtrusion(req, resp));
                     break;
 
+                case "/api/feature/cut-extrusion":
+                    RequirePost(method, resp, () => HandleCutExtrusion(req, resp));
+                    break;
+
                 case "/api/close-sketch":
                     RequirePost(method, resp, () => HandleCloseSketch(resp));
                     break;
@@ -280,9 +285,11 @@ namespace Chapter1.ConnectToSw
                 double y1 = GetDouble(body, "y1");
                 double x2 = GetDouble(body, "x2");
                 double y2 = GetDouble(body, "y2");
+                double z1 = GetDoubleOrDefault(body, "z1", 0);
+                double z2 = GetDoubleOrDefault(body, "z2", 0);
 
-                _commands.SketchLine(x1, y1, x2, y2);
-                SendJson(resp, 200, new { success = true, message = $"绘制直线: ({x1}, {y1}) -> ({x2}, {y2})" });
+                _commands.SketchLine(x1, y1, x2, y2, z1, z2);
+                SendJson(resp, 200, new { success = true, message = $"绘制直线: ({x1}, {y1}, {z1}) -> ({x2}, {y2}, {z2})" });
             }
             catch (KeyNotFoundException ex)
             {
@@ -307,8 +314,10 @@ namespace Chapter1.ConnectToSw
                 double y1 = GetDouble(body, "y1");
                 double x2 = GetDouble(body, "x2");
                 double y2 = GetDouble(body, "y2");
+                double z1 = GetDoubleOrDefault(body, "z1", 0);
+                double z2 = GetDoubleOrDefault(body, "z2", 0);
 
-                _commands.SketchRectangle(x1, y1, x2, y2);
+                _commands.SketchRectangle(x1, y1, x2, y2, z1, z2);
                 SendJson(resp, 200, new { success = true, message = $"绘制矩形: ({x1}, {y1}) -> ({x2}, {y2})" });
             }
             catch (KeyNotFoundException ex)
@@ -333,12 +342,13 @@ namespace Chapter1.ConnectToSw
                 double cx = GetDouble(body, "cx");
                 double cy = GetDouble(body, "cy");
                 double radius = GetDouble(body, "radius");
+                double cz = GetDoubleOrDefault(body, "cz", 0);
 
                 if (radius <= 0)
                     throw new ArgumentOutOfRangeException("radius", "半径必须为正数");
 
-                _commands.SketchCircle(cx, cy, radius);
-                SendJson(resp, 200, new { success = true, message = $"绘制圆: 圆心({cx}, {cy}), 半径 {radius}" });
+                _commands.SketchCircle(cx, cy, radius, cz);
+                SendJson(resp, 200, new { success = true, message = $"绘制圆: 圆心({cx}, {cy}, {cz}), 半径 {radius}" });
             }
             catch (KeyNotFoundException ex)
             {
@@ -383,6 +393,38 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"拉伸失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleCutExtrusion(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                double depth = GetDouble(body, "depth");
+                string endCondition = GetStringOrDefault(body, "endCondition", "blind");
+                bool flipDirection = false;
+                if (body.ContainsKey("flipDirection"))
+                    flipDirection = Convert.ToBoolean(body["flipDirection"]);
+
+                _commands.CutExtrusion(depth, endCondition, flipDirection);
+                SendJson(resp, 200, new { success = true, message = $"切除拉伸完成，深度: {depth} 米, 终止条件: {endCondition}" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"切除拉伸失败: {ex.Message}" });
             }
         }
 
@@ -478,7 +520,15 @@ namespace Chapter1.ConnectToSw
                 double dz = GetDouble(body, "dz");
 
                 var result = _commands.SelectFaceByRayAndStartSketch(rx, ry, rz, dx, dy, dz);
-                SendJson(resp, 200, new { success = true, message = result["message"], faceType = result["faceType"] });
+                var respData = new Dictionary<string, object>
+                {
+                    { "success", true },
+                    { "message", result["message"] },
+                    { "faceType", result["faceType"] },
+                };
+                if (result.ContainsKey("hitPoint"))
+                    respData["hitPoint"] = result["hitPoint"];
+                SendJson(resp, 200, respData);
             }
             catch (KeyNotFoundException ex)
             {
@@ -562,6 +612,17 @@ namespace Chapter1.ConnectToSw
         {
             if (!body.ContainsKey(key))
                 throw new KeyNotFoundException($"缺少必要参数: {key}");
+
+            return Convert.ToDouble(body[key]);
+        }
+
+        /// <summary>
+        /// 从字典中获取 double 值，找不到则返回默认值。
+        /// </summary>
+        private static double GetDoubleOrDefault(Dictionary<string, object> body, string key, double defaultValue)
+        {
+            if (!body.ContainsKey(key))
+                return defaultValue;
 
             return Convert.ToDouble(body[key]);
         }

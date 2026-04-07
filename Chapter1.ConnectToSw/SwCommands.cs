@@ -32,6 +32,42 @@ namespace Chapter1.ConnectToSw
         #region 辅助方法
 
         /// <summary>
+        /// 将模型坐标 (x, y, z) 通过当前活动草图的 ModelToSketchTransform 变换为草图坐标。
+        /// 返回 (sx, sy)。如果没有活动草图或变换矩阵不可用，原样返回 (x, y)。
+        /// 
+        /// 这是关键方法：当草图建立在某个面上（如长方体上表面）时，
+        /// 草图坐标系与模型坐标系不同，必须做此变换才能在正确位置绘图。
+        /// </summary>
+        private void ModelToSketchPoint(double mx, double my, double mz, out double sx, out double sy)
+        {
+            var sketch = ActiveDoc.SketchManager.ActiveSketch;
+            if (sketch == null)
+            {
+                // 没有活动草图，原样返回
+                sx = mx; sy = my;
+                return;
+            }
+
+            var xform = sketch.ModelToSketchTransform;
+            if (xform == null)
+            {
+                sx = mx; sy = my;
+                return;
+            }
+
+            // 使用 MathUtility 做变换
+            var mathUtil = (IMathUtility)_swApp.IGetMathUtility();
+            var ptData = new double[] { mx, my, mz };
+            var mathPt = (IMathPoint)mathUtil.CreatePoint(ptData);
+            var sketchPt = (IMathPoint)mathPt.MultiplyTransform(xform);
+            var result = (double[])sketchPt.ArrayData;
+
+            sx = result[0];
+            sy = result[1];
+            // result[2] 是草图 Z，2D 草图中忽略
+        }
+
+        /// <summary>
         /// 获取零件模板路径。优先使用 SolidWorks 默认模板，
         /// 若为空则从模板目录查找第一个 .prtdot 文件。
         /// </summary>
@@ -229,6 +265,8 @@ namespace Chapter1.ConnectToSw
         /// 通过射线拾取方式选中一个面并进入草图编辑模式。
         /// 给定射线起点(rx, ry, rz)和方向(dx, dy, dz)，找到最近的面并选中它。
         /// 坐标单位：米。
+        /// 
+        /// 返回中包含 sketchTransform 信息，用于调用方将模型坐标转换为草图坐标。
         /// </summary>
         public Dictionary<string, object> SelectFaceByRayAndStartSketch(
             double rx, double ry, double rz,
@@ -244,52 +282,137 @@ namespace Chapter1.ConnectToSw
             if (bodies == null || bodies.Length == 0)
                 throw new InvalidOperationException("当前零件没有实体");
 
-            var body = bodies[0] as IBody2;
+            // ---- 遍历所有实体的面，通过射线求交找到最近的实体面 ----
+            // （不使用 SelectByRay，因为它可能选中基准面而非实体面）
+            IFace2 bestFace = null;
+            double bestDist = double.MaxValue;
+            double[] bestHitPt = null;
 
-            // 使用 IModelDoc2.RayIntersections 获取射线与实体的交点
-            // 参数：Body, RayOrigin(x,y,z), RayDirection(x,y,z), Options, HitRadius
-            // 使用 GetFirstFace / GetNextFace 遍历面，通过射线方向判断命中
-            // 更好的方式：直接用 SelectByRay 方法
-            bool selected = ((IModelDoc2)ActiveDoc).Extension.SelectByRay(
-                rx, ry, rz,    // 射线起点
-                dx, dy, dz,    // 射线方向
-                0.001,         // 命中半径（1mm 容差）
-                (int)swSelectType_e.swSelFACES,  // 选择类型：面
-                false,         // Append: false 表示不追加选择
-                0,             // Mark
-                0              // Action: 0 = select
-            );
-
-            if (!selected)
-                throw new InvalidOperationException(
-                    $"未能通过射线选中面。射线起点({rx},{ry},{rz})，方向({dx},{dy},{dz})。" +
-                    "请确保射线方向正确，且起点在实体外部。");
-
-            // 获取选中面的信息
-            var selMgr = ActiveDoc.ISelectionManager;
-            int selCount = selMgr.GetSelectedObjectCount2(-1);
-            string faceName = "";
-            if (selCount > 0)
+            foreach (object bodyObj in bodies)
             {
-                var selFace = selMgr.GetSelectedObject6(1, -1) as IFace2;
-                if (selFace != null)
+                var body = bodyObj as IBody2;
+                if (body == null) continue;
+
+                var face = (IFace2)body.GetFirstFace();
+                while (face != null)
                 {
-                    var surface = selFace.IGetSurface();
-                    bool isPlane = surface.IsPlane();
-                    faceName = isPlane ? "平面" : "曲面";
+                    var surface = face.IGetSurface();
+                    if (surface.IsPlane())
+                    {
+                        // 平面：求射线与平面交点
+                        // 获取平面参数：法向量和到原点的距离
+                        var planeParams = (double[])surface.PlaneParams;
+                        // planeParams: [nx, ny, nz, rootX, rootY, rootZ]
+                        double nx = planeParams[0], ny = planeParams[1], nz = planeParams[2];
+                        double rootX = planeParams[3], rootY = planeParams[4], rootZ = planeParams[5];
+
+                        // 射线：P = Origin + t * Dir
+                        // 平面：dot(P - Root, Normal) = 0
+                        // t = dot(Root - Origin, Normal) / dot(Dir, Normal)
+                        double denom = dx * nx + dy * ny + dz * nz;
+                        if (Math.Abs(denom) < 1e-12) { face = (IFace2)face.GetNextFace(); continue; } // 平行
+
+                        double t = ((rootX - rx) * nx + (rootY - ry) * ny + (rootZ - rz) * nz) / denom;
+                        if (t < 0) { face = (IFace2)face.GetNextFace(); continue; } // 交点在射线反方向
+
+                        // 交点
+                        double hitX = rx + t * dx, hitY = ry + t * dy, hitZ = rz + t * dz;
+
+                        // 检查交点是否在面的边界内（使用 GetClosestPointOn）
+                        var closest = (double[])face.GetClosestPointOn(hitX, hitY, hitZ);
+                        double distToFace = Math.Sqrt(
+                            Math.Pow(closest[0] - hitX, 2) +
+                            Math.Pow(closest[1] - hitY, 2) +
+                            Math.Pow(closest[2] - hitZ, 2));
+
+                        if (distToFace < 0.0001 && t < bestDist) // 交点在面内且更近
+                        {
+                            bestDist = t;
+                            bestFace = face;
+                            bestHitPt = new[] { hitX, hitY, hitZ };
+                        }
+                    }
+                    else
+                    {
+                        // 非平面（曲面）：用 GetClosestPointOn 近似
+                        var closest = (double[])face.GetClosestPointOn(rx, ry, rz);
+                        double distToOrigin = Math.Sqrt(
+                            Math.Pow(closest[0] - rx, 2) +
+                            Math.Pow(closest[1] - ry, 2) +
+                            Math.Pow(closest[2] - rz, 2));
+
+                        if (distToOrigin < bestDist)
+                        {
+                            bestDist = distToOrigin;
+                            bestFace = face;
+                            bestHitPt = new[] { closest[0], closest[1], closest[2] };
+                        }
+                    }
+
+                    face = (IFace2)face.GetNextFace();
                 }
             }
 
+            if (bestFace == null)
+                throw new InvalidOperationException(
+                    $"未能通过射线选中实体面。射线起点({rx},{ry},{rz})，方向({dx},{dy},{dz})。");
+
+            // 输出选中面的详细信息
+            var hitSurface = bestFace.IGetSurface();
+            string faceType = hitSurface.IsPlane() ? "平面" : "曲面";
+            if (hitSurface.IsPlane())
+            {
+                var pp = (double[])hitSurface.PlaneParams;
+                Console.WriteLine($"[SwCommands] 射线命中实体面: {faceType}，法向量=({pp[0]:F3},{pp[1]:F3},{pp[2]:F3})，" +
+                    $"面上点=({pp[3]:F4},{pp[4]:F4},{pp[5]:F4})，交点=({bestHitPt[0]:F4},{bestHitPt[1]:F4},{bestHitPt[2]:F4})");
+            }
+
+            // 选中该面：通过实体选中（IEntity.Select4 确保选中的是实体面而不是其他类型）
+            var faceEntity = (IEntity)bestFace;
+            bool selected = faceEntity.Select4(false, null);
+            if (!selected)
+                throw new InvalidOperationException("选中实体面失败");
+
             // 进入草图编辑模式
             ActiveDoc.SketchManager.InsertSketch(true);
-            Console.WriteLine($"[SwCommands] 已通过射线选中{faceName}并进入草图编辑");
 
-            return new Dictionary<string, object>
+            // 获取草图坐标变换信息
+            var activeSketch = ActiveDoc.SketchManager.ActiveSketch;
+            double[] xformData = null;
+            if (activeSketch != null)
+            {
+                // ModelToSketchTransform: 将模型坐标转换为草图坐标
+                var xform = activeSketch.ModelToSketchTransform;
+                if (xform != null)
+                {
+                    xformData = (double[])xform.ArrayData;
+                    Console.WriteLine($"[SwCommands] 草图变换矩阵 (ModelToSketch): " +
+                        $"[{xformData[0]:F3},{xformData[1]:F3},{xformData[2]:F3}," +
+                        $" {xformData[3]:F3},{xformData[4]:F3},{xformData[5]:F3}," +
+                        $" {xformData[6]:F3},{xformData[7]:F3},{xformData[8]:F3}," +
+                        $" {xformData[9]:F4},{xformData[10]:F4},{xformData[11]:F4}]");
+                }
+            }
+
+            Console.WriteLine($"[SwCommands] 已通过射线选中实体{faceType}并进入草图编辑");
+
+            var result = new Dictionary<string, object>
             {
                 { "selected", true },
-                { "faceType", faceName },
-                { "message", $"已选中{faceName}并进入草图编辑" },
+                { "faceType", faceType },
+                { "hitPoint", new Dictionary<string, double> {
+                    { "x", bestHitPt[0] }, { "y", bestHitPt[1] }, { "z", bestHitPt[2] }
+                }},
+                { "message", $"已选中{faceType}并进入草图编辑" },
             };
+
+            // 返回草图变换矩阵，让调用方可以正确计算草图坐标
+            if (xformData != null)
+            {
+                result["sketchTransform"] = xformData;
+            }
+
+            return result;
         }
 
         #endregion
@@ -340,36 +463,51 @@ namespace Chapter1.ConnectToSw
         }
 
         /// <summary>
-        /// 在当前草图中绘制一条直线。坐标单位：米。
+        /// 在当前草图中绘制一条直线。
+        /// 坐标为模型空间 3D 坐标（单位：米），会自动通过 ModelToSketchTransform 变换到草图坐标系。
+        /// z1, z2 可选，默认 0（适用于在基准面上的草图）。
         /// </summary>
-        public void SketchLine(double x1, double y1, double x2, double y2)
+        public void SketchLine(double x1, double y1, double x2, double y2, double z1 = 0, double z2 = 0)
         {
             EnsureActiveDoc();
-            // z 坐标为 0（2D 草图）
-            ActiveDoc.SketchManager.CreateLine(x1, y1, 0, x2, y2, 0);
-            Console.WriteLine($"[SwCommands] 绘制直线: ({x1}, {y1}) -> ({x2}, {y2})");
+            double sx1, sy1, sx2, sy2;
+            ModelToSketchPoint(x1, y1, z1, out sx1, out sy1);
+            ModelToSketchPoint(x2, y2, z2, out sx2, out sy2);
+            ActiveDoc.SketchManager.CreateLine(sx1, sy1, 0, sx2, sy2, 0);
+            Console.WriteLine($"[SwCommands] 绘制直线: 模型({x1},{y1},{z1}) -> ({x2},{y2},{z2})，草图({sx1:F4},{sy1:F4}) -> ({sx2:F4},{sy2:F4})");
         }
 
         /// <summary>
-        /// 在当前草图中绘制一个矩形（对角线两点）。坐标单位：米。
+        /// 在当前草图中绘制一个矩形（对角线两点）。
+        /// 坐标为模型空间 3D 坐标（单位：米），自动变换到草图坐标系。
+        /// z1, z2 可选。
         /// </summary>
-        public void SketchRectangle(double x1, double y1, double x2, double y2)
+        public void SketchRectangle(double x1, double y1, double x2, double y2, double z1 = 0, double z2 = 0)
         {
             EnsureActiveDoc();
-            ActiveDoc.SketchManager.CreateCornerRectangle(x1, y1, 0, x2, y2, 0);
-            Console.WriteLine($"[SwCommands] 绘制矩形: ({x1}, {y1}) -> ({x2}, {y2})");
+            double sx1, sy1, sx2, sy2;
+            ModelToSketchPoint(x1, y1, z1, out sx1, out sy1);
+            ModelToSketchPoint(x2, y2, z2, out sx2, out sy2);
+            ActiveDoc.SketchManager.CreateCornerRectangle(sx1, sy1, 0, sx2, sy2, 0);
+            Console.WriteLine($"[SwCommands] 绘制矩形: 模型({x1},{y1}) -> ({x2},{y2})，草图({sx1:F4},{sy1:F4}) -> ({sx2:F4},{sy2:F4})");
         }
 
         /// <summary>
-        /// 在当前草图中绘制一个圆。坐标和半径单位：米。
+        /// 在当前草图中绘制一个圆。
+        /// 圆心坐标为模型空间 3D 坐标（单位：米），自动变换到草图坐标系。
+        /// 半径在草图平面内保持不变。cz 可选。
         /// </summary>
-        public void SketchCircle(double cx, double cy, double radius)
+        public void SketchCircle(double cx, double cy, double radius, double cz = 0)
         {
             EnsureActiveDoc();
-            // CreateSketchArc 或 CreateCircleByRadius
-            // 使用 CreateCircle 方法：圆心 + 圆上一点
-            ActiveDoc.SketchManager.CreateCircle(cx, cy, 0, cx + radius, cy, 0);
-            Console.WriteLine($"[SwCommands] 绘制圆: 圆心({cx}, {cy}), 半径 {radius}");
+            double sx, sy;
+            ModelToSketchPoint(cx, cy, cz, out sx, out sy);
+            // 圆上一点也需要变换，使用同一平面上偏移 radius 的点
+            double sx2, sy2;
+            ModelToSketchPoint(cx + radius, cy, cz, out sx2, out sy2);
+            double sketchRadius = Math.Sqrt((sx2 - sx) * (sx2 - sx) + (sy2 - sy) * (sy2 - sy));
+            ActiveDoc.SketchManager.CreateCircle(sx, sy, 0, sx + sketchRadius, sy, 0);
+            Console.WriteLine($"[SwCommands] 绘制圆: 模型圆心({cx},{cy},{cz}), 半径 {radius}，草图圆心({sx:F4},{sy:F4}), 草图半径 {sketchRadius:F4}");
         }
 
         /// <summary>
@@ -430,6 +568,184 @@ namespace Chapter1.ConnectToSw
             ((ModelDoc2)ActiveDoc).ViewZoomtofit2();
 
             Console.WriteLine($"[SwCommands] 拉伸完成，深度: {depth} 米");
+        }
+
+        /// <summary>
+        /// 退出草图并执行切除拉伸（挖孔/开槽等减法操作）。
+        /// depth 为切除深度，单位：米。
+        /// endCondition: "blind"(盲孔), "through_all"(贯穿), "mid_plane"(中间面), "up_to_next"(到下一面)
+        /// flipDirection: 是否反转切除方向
+        /// </summary>
+        public void CutExtrusion(double depth, string endCondition = "blind", bool flipDirection = false)
+        {
+            EnsureActiveDoc();
+
+            var mdoc = (ModelDoc2)ActiveDoc;
+
+            // 检查是否在草图编辑模式中
+            var activeSketch = ActiveDoc.SketchManager.ActiveSketch;
+            Console.WriteLine($"[SwCommands] 切除拉伸 - 当前ActiveSketch: {(activeSketch != null ? "有" : "无")}");
+
+            // 退出草图编辑模式（使用 IModelDoc2.InsertSketch2 —— 官方推荐方式）
+            // SketchManager.InsertSketch(true) 在某些情况下（如实体面上的草图）可能无法正确退出，
+            // 而 IModelDoc2.InsertSketch2(true) 是官方示例中使用的方法。
+            mdoc.InsertSketch2(true);
+
+            // 验证草图是否已退出
+            activeSketch = ActiveDoc.SketchManager.ActiveSketch;
+            Console.WriteLine($"[SwCommands] 切除拉伸 - InsertSketch2后ActiveSketch: {(activeSketch != null ? "仍在编辑!" : "已退出")}");
+
+            // 如果草图还没退出，尝试再次退出
+            if (activeSketch != null)
+            {
+                Console.WriteLine("[SwCommands] 草图未退出，尝试 SketchManager.InsertSketch(true)...");
+                ActiveDoc.SketchManager.InsertSketch(true);
+                activeSketch = ActiveDoc.SketchManager.ActiveSketch;
+                Console.WriteLine($"[SwCommands] 第二次退出后ActiveSketch: {(activeSketch != null ? "仍在编辑!" : "已退出")}");
+            }
+
+            // 检查当前选择状态（调试信息）
+            var selMgr = ActiveDoc.ISelectionManager;
+            int selCount = selMgr.GetSelectedObjectCount2(-1);
+            Console.WriteLine($"[SwCommands] 切除拉伸 - 退出草图后选中对象数: {selCount}");
+            for (int i = 1; i <= selCount; i++)
+            {
+                int selType = selMgr.GetSelectedObjectType3(i, -1);
+                Console.WriteLine($"[SwCommands]   选中项 {i}: 类型={selType}");
+            }
+
+            // 解析终止条件
+            int t1;
+            switch (endCondition.ToLower())
+            {
+                case "through_all": t1 = (int)swEndConditions_e.swEndCondThroughAll; break;
+                case "mid_plane": t1 = (int)swEndConditions_e.swEndCondMidPlane; break;
+                case "up_to_next": t1 = (int)swEndConditions_e.swEndCondUpToNext; break;
+                default: t1 = (int)swEndConditions_e.swEndCondBlind; break;
+            }
+
+            Console.WriteLine($"[SwCommands] 切除拉伸参数 - depth={depth}, endCondition={endCondition}(t1={t1}), flip={flipDirection}");
+
+            // 策略：先尝试和 Extrusion 一样直接调用（依赖退出草图后的自动选择），
+            // 如果失败再手动选择草图重试。
+
+            // 执行切除拉伸
+            var feat = ActiveDoc.FeatureManager.FeatureCut4(
+                true,               // 1.  Sd - 单方向
+                flipDirection,      // 2.  Flip - 是否反转方向
+                false,              // 3.  Dir - 方向2
+                t1,                 // 4.  T1 - 终止条件1 (int)
+                0,                  // 5.  T2 - 终止条件2（单端切除时不使用）
+                depth,              // 6.  D1 - 深度1 (double)
+                depth,              // 7.  D2 - 深度2 (double)
+                false,              // 8.  Dchk1 - 拔模开关1
+                false,              // 9.  Dchk2 - 拔模开关2
+                false,              // 10. Ddir1 - 拔模方向1
+                false,              // 11. Ddir2 - 拔模方向2
+                0.0,                // 12. Dang1 - 拔模角度1 (double)
+                0.0,                // 13. Dang2 - 拔模角度2 (double)
+                false,              // 14. OffsetReverse1
+                false,              // 15. OffsetReverse2
+                false,              // 16. TranslateSurface1
+                false,              // 17. TranslateSurface2
+                false,              // 18. NormalCut - 非钣金法向切除，普通零件用 false
+                true,               // 19. UseFeatScope - 使用特征范围
+                true,               // 20. UseAutoSelect - 自动选择受影响实体
+                false,              // 21. AssemblyFeatureScope
+                false,              // 22. AutoSelectComponents
+                false,              // 23. PropagateFeatureToCutBody
+                (int)swStartConditions_e.swStartSketchPlane,  // 24. T0 - 起始条件 (int)
+                0.0,                // 25. StartOffset (double)
+                false,              // 26. FlipStartOffset
+                false               // 27. OptimizeGeometry
+            );
+
+            Console.WriteLine($"[SwCommands] FeatureCut4 返回: {(feat != null ? feat.Name : "null")}");
+
+            // 如果直接调用失败，手动选择草图并重试
+            if (feat == null)
+            {
+                Console.WriteLine("[SwCommands] 首次切除失败，尝试手动选择草图后重试...");
+                
+                // 清除选择，然后用 SelectByID2 选中草图
+                ActiveDoc.ClearSelection2(true);
+                
+                // 遍历特征树找到最后一个草图
+                string lastSketchName = null;
+                IFeature curFeat = (IFeature)ActiveDoc.FirstFeature();
+                while (curFeat != null)
+                {
+                    if (curFeat.GetTypeName2() == "ProfileFeature")
+                        lastSketchName = curFeat.Name;
+                    curFeat = (IFeature)curFeat.GetNextFeature();
+                }
+
+                if (lastSketchName != null)
+                {
+                    // 使用 SelectByID2 选中草图，指定 Mark=1（某些特征创建需要 Mark 值）
+                    var ext = mdoc.Extension;
+                    bool sel = ext.SelectByID2(lastSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
+                    Console.WriteLine($"[SwCommands] SelectByID2(\"{lastSketchName}\", \"SKETCH\") = {sel}");
+                    
+                    // 检查选择类型
+                    selCount = selMgr.GetSelectedObjectCount2(-1);
+                    for (int i = 1; i <= selCount; i++)
+                    {
+                        int selType = selMgr.GetSelectedObjectType3(i, -1);
+                        Console.WriteLine($"[SwCommands]   选中项 {i}: 类型={selType}");
+                    }
+                }
+
+                feat = ActiveDoc.FeatureManager.FeatureCut4(
+                    true, flipDirection, false,
+                    t1, 0, depth, depth,
+                    false, false, false, false,
+                    0.0, 0.0, false, false, false, false,
+                    false, true, true, false, false, false,
+                    (int)swStartConditions_e.swStartSketchPlane, 0.0, false, false
+                );
+                Console.WriteLine($"[SwCommands] 第二次 FeatureCut4 返回: {(feat != null ? feat.Name : "null")}");
+            }
+
+            // 如果还是失败，尝试反转方向
+            if (feat == null)
+            {
+                Console.WriteLine("[SwCommands] 第二次切除失败，尝试反转方向...");
+                
+                ActiveDoc.ClearSelection2(true);
+                string lastSketchName2 = null;
+                IFeature curFeat2 = (IFeature)ActiveDoc.FirstFeature();
+                while (curFeat2 != null)
+                {
+                    if (curFeat2.GetTypeName2() == "ProfileFeature")
+                        lastSketchName2 = curFeat2.Name;
+                    curFeat2 = (IFeature)curFeat2.GetNextFeature();
+                }
+                if (lastSketchName2 != null)
+                {
+                    mdoc.Extension.SelectByID2(lastSketchName2, "SKETCH", 0, 0, 0, false, 0, null, 0);
+                }
+
+                feat = ActiveDoc.FeatureManager.FeatureCut4(
+                    true, !flipDirection, false,
+                    t1, 0, depth, depth,
+                    false, false, false, false,
+                    0.0, 0.0, false, false, false, false,
+                    false, true, true, false, false, false,
+                    (int)swStartConditions_e.swStartSketchPlane, 0.0, false, false
+                );
+                Console.WriteLine($"[SwCommands] 反转方向后 FeatureCut4 返回: {(feat != null ? feat.Name : "null")}");
+            }
+
+            if (feat == null)
+            {
+                throw new InvalidOperationException("切除拉伸失败，请确保草图闭合且位于实体面上。请查看 C# 控制台的调试信息。");
+            }
+
+            // 缩放到合适视图
+            ((ModelDoc2)ActiveDoc).ViewZoomtofit2();
+
+            Console.WriteLine($"[SwCommands] 切除拉伸完成，深度: {depth} 米, 终止条件: {endCondition}");
         }
 
         /// <summary>

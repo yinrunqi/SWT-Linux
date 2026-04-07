@@ -56,21 +56,29 @@ SYSTEM_PROMPT = """\
    - radius: float — 半径（米）
 6. **feature_extrusion** — 拉伸当前草图
    - depth: float — 拉伸深度（米）
-7. **close_sketch** — 退出草图编辑（不拉伸时使用）
+7. **feature_cut_extrusion** — 切除拉伸（挖孔/开槽/减法建模）
+   - depth: float — 切除深度（米）
+   - endCondition: str — 终止条件（可选，默认 "blind"）
+     - "blind": 盲孔（指定深度）
+     - "through_all": 完全贯穿
+     - "mid_plane": 从草图面两侧各切一半深度
+     - "up_to_next": 切到下一个面
+   - flipDirection: bool — 是否反转切除方向（可选，默认 false）
+8. **close_sketch** — 退出草图编辑（不拉伸时使用）
 
 ### 查询类操作（用于了解当前模型状态）
 
-8. **feature_tree** — 获取特征树（无参数）
+9. **feature_tree** — 获取特征树（无参数）
    - 返回所有特征的名称、类型、索引列表
    - **每个特征还会返回其关联的尺寸列表**（尺寸名、全名、当前值）
    - 用于了解当前模型有哪些特征和可编辑的尺寸
-9. **body_bounding_box** — 获取实体包围盒（无参数）
+10. **body_bounding_box** — 获取实体包围盒（无参数）
    - 返回 minX/minY/minZ/maxX/maxY/maxZ 和尺寸 sizeX/sizeY/sizeZ（米）
    - 用于了解当前模型的空间范围
 
 ### 编辑类操作
 
-10. **modify_dimension** — 直接修改已有特征的尺寸值 ⭐ 推荐
+11. **modify_dimension** — 直接修改已有特征的尺寸值 ⭐ 推荐
     - featureName: str — 特征名称（从 feature_tree 返回值中获取，如 "Boss-Extrude1" 或 "凸台-拉伸1"）
     - dimensionName: str — 尺寸名称（可选，如 "D1"；不填则修改该特征的第一个尺寸）
     - **newValue 和 delta 二选一**：
@@ -80,7 +88,7 @@ SYSTEM_PROMPT = """\
         - 使用 delta 时，系统会自动从 feature_tree 查询当前值并加上 delta。
     - 修改后自动重建模型
 
-11. **select_face_and_sketch** — 通过射线选中一个面并进入草图编辑
+12. **select_face_and_sketch** — 通过射线选中一个面并进入草图编辑
     - rx, ry, rz: float — 射线起点坐标（米），应在实体外部
     - dx, dy, dz: float — 射线方向向量（单位向量）
     - 选中面后自动进入该面的草图编辑模式，然后可以画草图 + 拉伸
@@ -106,8 +114,11 @@ SYSTEM_PROMPT = """\
 
 ## 重要规则
 - **必须使用原子操作逐步建模**，标准流程为：new_part → select_plane → 画草图 → feature_extrusion。
-- feature_extrusion 会自动退出草图再拉伸，不需要在拉伸前调用 close_sketch。
-- 如果需要在同一零件上做多个特征（如挖孔），拉伸后需要再次 select_plane 进入新草图。
+- feature_extrusion 和 feature_cut_extrusion 都会自动退出草图再执行操作，不需要在前面调用 close_sketch。
+- **挖孔/开槽/减法操作必须用 feature_cut_extrusion**，不能用 feature_extrusion。
+  - 典型流程：先创建基础实体 → select_face_and_sketch 选中目标面 → 画切除轮廓（如圆孔、矩形槽）→ feature_cut_extrusion。
+  - 贯穿孔用 endCondition="through_all"，盲孔用 endCondition="blind" 并指定 depth。
+- 如果需要在同一零件上做多个特征（如挖孔），拉伸后需要再次 select_face_and_sketch 或 select_plane 进入新草图。
 - 步骤必须逻辑正确，按照 SolidWorks 的操作流程排列。
 - 即使是简单的长方体，也必须拆分为：new_part → select_plane → sketch_rectangle → feature_extrusion。
 
@@ -359,7 +370,7 @@ class SwLLMClient:
             "JSON 结构：{\"user_intent\": \"...\", \"steps\": [{\"operation\": \"...\", "
             "\"params\": {...}, \"description\": \"...\"}], \"notes\": \"...\"}\n"
             "operation 可选值：new_part, select_plane, sketch_line, sketch_rectangle, "
-            "sketch_circle, feature_extrusion, close_sketch, feature_tree, "
+            "sketch_circle, feature_extrusion, feature_cut_extrusion, close_sketch, feature_tree, "
             "body_bounding_box, select_face_and_sketch, modify_dimension。\n"
             "modify_dimension 的 params 中，newValue（绝对值）和 delta（增量）二选一。"
         )

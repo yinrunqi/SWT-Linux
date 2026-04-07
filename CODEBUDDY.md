@@ -64,6 +64,7 @@ msbuild SolidWorksTutorial.slnx /p:Configuration=Debug
 | POST | `/api/sketch/rectangle` | `{ "x1", "y1", "x2", "y2" }` | 画矩形（米） |
 | POST | `/api/sketch/circle` | `{ "cx", "cy", "radius" }` | 画圆（米） |
 | POST | `/api/feature/extrusion` | `{ "depth" }` | 拉伸当前草图（米） |
+| POST | `/api/feature/cut-extrusion` | `{ "depth", "endCondition"(可选), "flipDirection"(可选) }` | 切除拉伸（米），endCondition: blind/through_all/mid_plane/up_to_next |
 | POST | `/api/close-sketch` | 无 | 退出草图编辑 |
 | POST | `/api/create-box` | `{ "length", "width", "height" }` | 组合操作：创建长方体（米） |
 | GET | `/api/feature-tree` | 无 | 获取特征树（返回 features 数组） |

@@ -21,6 +21,7 @@ class OperationType(str, Enum):
     SKETCH_RECTANGLE = "sketch_rectangle"
     SKETCH_CIRCLE = "sketch_circle"
     FEATURE_EXTRUSION = "feature_extrusion"
+    FEATURE_CUT_EXTRUSION = "feature_cut_extrusion"
     CLOSE_SKETCH = "close_sketch"
     # --- 查询 & 编辑 ---
     FEATURE_TREE = "feature_tree"
@@ -47,12 +48,17 @@ class SwOperation(BaseModel):
             "- select_plane: {index: int} — 0=前视面, 1=上视面, 2=右视面\n"
             "- sketch_line: {x1, y1, x2, y2: float} — 起点终点坐标（米）\n"
             "- sketch_rectangle: {x1, y1, x2, y2: float} — 对角线两点坐标（米）\n"
-            "- sketch_circle: {cx, cy, radius: float} — 圆心坐标和半径（米）\n"
+            "- sketch_circle: {cx, cy, radius: float} 或 {cx, cy, cz, radius: float} — "
+            "在基准面上画圆时用 2D (cx,cy)；在实体面上画圆时用 3D (cx,cy,cz)，"
+            "坐标为模型空间坐标（米），C# 端自动转换为草图坐标。radius 控制圆的半径（米），即孔径=radius×2\n"
             "- feature_extrusion: {depth: float} — 拉伸深度（米）\n"
+            "- feature_cut_extrusion: {depth: float, endCondition: str (可选, 默认blind), flipDirection: bool (可选)} — "
+            "切除拉伸/打孔（米）。孔的直径由之前 sketch_circle 的 radius 决定。"
+            "endCondition 可选: blind(盲孔), through_all(贯穿), mid_plane(中间面), up_to_next(到下一面)\n"
             "- close_sketch: 无参数\n"
             "- feature_tree: 无参数（查询操作，返回特征树含尺寸信息）\n"
             "- body_bounding_box: 无参数（查询操作，返回包围盒）\n"
-            "- select_face_and_sketch: {rx, ry, rz, dx, dy, dz: float} — 射线起点和方向（米）\n"
+            "- select_face_and_sketch: {rx, ry, rz, dx, dy, dz: float} — 射线起点和方向（米），用于选中实体面并进入草图编辑\n"
             "- modify_dimension: {featureName: str, dimensionName: str (可选), newValue: float 或 delta: float} — 修改特征尺寸。newValue 设绝对值，delta 设增量（二选一）"
         )
     )
