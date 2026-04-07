@@ -520,6 +520,39 @@ namespace Chapter1.ConnectToSw
             Console.WriteLine("[SwCommands] 退出草图编辑");
         }
 
+        /// <summary>
+        /// 在当前草图中绘制一条中心线（构造线）。
+        /// 中心线不参与轮廓，仅用于旋转轴等辅助用途。
+        /// 坐标为模型空间 3D 坐标（单位：米），会自动通过 ModelToSketchTransform 变换到草图坐标系。
+        /// </summary>
+        public void SketchCenterLine(double x1, double y1, double x2, double y2, double z1 = 0, double z2 = 0)
+        {
+            EnsureActiveDoc();
+            double sx1, sy1, sx2, sy2;
+            ModelToSketchPoint(x1, y1, z1, out sx1, out sy1);
+            ModelToSketchPoint(x2, y2, z2, out sx2, out sy2);
+            ActiveDoc.SketchManager.CreateCenterLine(sx1, sy1, 0, sx2, sy2, 0);
+            Console.WriteLine($"[SwCommands] 绘制中心线: 模型({x1},{y1},{z1}) -> ({x2},{y2},{z2})，草图({sx1:F4},{sy1:F4}) -> ({sx2:F4},{sy2:F4})");
+        }
+
+        /// <summary>
+        /// 在当前草图中绘制一段圆弧（通过圆心+起点+终点+方向）。
+        /// 坐标为模型空间 3D 坐标（单位：米），会自动通过 ModelToSketchTransform 变换到草图坐标系。
+        /// direction: 1=顺时针, -1=逆时针
+        /// </summary>
+        public void SketchArc(double cx, double cy, double startX, double startY,
+                              double endX, double endY, short direction,
+                              double cz = 0, double startZ = 0, double endZ = 0)
+        {
+            EnsureActiveDoc();
+            double scx, scy, ssx, ssy, sex, sey;
+            ModelToSketchPoint(cx, cy, cz, out scx, out scy);
+            ModelToSketchPoint(startX, startY, startZ, out ssx, out ssy);
+            ModelToSketchPoint(endX, endY, endZ, out sex, out sey);
+            ActiveDoc.SketchManager.CreateArc(scx, scy, 0, ssx, ssy, 0, sex, sey, 0, direction);
+            Console.WriteLine($"[SwCommands] 绘制圆弧: 圆心({cx},{cy}), 起点({startX},{startY}), 终点({endX},{endY}), 方向={direction}");
+        }
+
         #endregion
 
         #region 原子操作 — 特征
@@ -568,6 +601,63 @@ namespace Chapter1.ConnectToSw
             ((ModelDoc2)ActiveDoc).ViewZoomtofit2();
 
             Console.WriteLine($"[SwCommands] 拉伸完成，深度: {depth} 米");
+        }
+
+        /// <summary>
+        /// 退出草图并执行旋转操作（旋转凸台或旋转切除）。
+        /// 草图中必须包含一条中心线作为旋转轴。
+        /// angleDeg: 旋转角度（度），360 表示完整旋转。
+        /// isCut: true=旋转切除, false=旋转凸台。
+        /// reverseDir: 是否反转旋转方向。
+        /// </summary>
+        public void Revolve(double angleDeg, bool isCut = false, bool reverseDir = false)
+        {
+            EnsureActiveDoc();
+
+            if (angleDeg <= 0 || angleDeg > 360)
+                throw new ArgumentOutOfRangeException(nameof(angleDeg), "旋转角度必须在 (0, 360] 之间");
+
+            double angleRad = angleDeg * Math.PI / 180.0;
+
+            var mdoc = (ModelDoc2)ActiveDoc;
+
+            // 退出草图编辑模式（使用 IModelDoc2.InsertSketch2 —— 官方推荐方式）
+            // SketchManager.InsertSketch(true) 在某些情况下可能无法正确退出草图，
+            // 导致 FeatureRevolve2 返回 null（与 CutExtrusion 遇到的问题一致）
+            mdoc.InsertSketch2(true);
+
+            // 执行旋转
+            var feat = ActiveDoc.FeatureManager.FeatureRevolve2(
+                /* SingleDir */     true,
+                /* IsSolid */       true,
+                /* IsThin */        false,
+                /* IsCut */         isCut,
+                /* ReverseDir */    reverseDir,
+                /* BothDirectionUpToSameEntity */ false,
+                /* Dir1Type */      (int)swEndConditions_e.swEndCondBlind,
+                /* Dir2Type */      (int)swEndConditions_e.swEndCondBlind,
+                /* Dir1Angle */     angleRad,
+                /* Dir2Angle */     0,
+                /* OffsetReverse1 */ false,
+                /* OffsetReverse2 */ false,
+                /* OffsetDistance1 */ 0,
+                /* OffsetDistance2 */ 0,
+                /* ThinType */      0,
+                /* ThinThickness1 */ 0,
+                /* ThinThickness2 */ 0,
+                /* Merge */         true,
+                /* UseFeatScope */  true,
+                /* UseAutoSelect */ true
+            );
+
+            if (feat == null)
+                throw new InvalidOperationException("旋转操作失败，请确保草图中包含有效的轮廓和中心线作为旋转轴。");
+
+            // 缩放到合适视图
+            ((ModelDoc2)ActiveDoc).ViewZoomtofit2();
+
+            string type = isCut ? "切除" : "凸台";
+            Console.WriteLine($"[SwCommands] 旋转{type}完成，角度: {angleDeg}°");
         }
 
         /// <summary>

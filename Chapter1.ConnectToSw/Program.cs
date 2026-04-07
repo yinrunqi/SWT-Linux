@@ -77,7 +77,10 @@ namespace Chapter1.ConnectToSw
             Console.WriteLine("  POST /api/sketch/line             - 画直线");
             Console.WriteLine("  POST /api/sketch/rectangle        - 画矩形");
             Console.WriteLine("  POST /api/sketch/circle           - 画圆");
+            Console.WriteLine("  POST /api/sketch/centerline       - 画中心线（旋转轴）");
+            Console.WriteLine("  POST /api/sketch/arc              - 画圆弧");
             Console.WriteLine("  POST /api/feature/extrusion       - 拉伸");
+            Console.WriteLine("  POST /api/feature/revolve         - 旋转凸台/切除");
             Console.WriteLine("  POST /api/feature/cut-extrusion   - 切除拉伸（挖孔/开槽）");
             Console.WriteLine("  POST /api/close-sketch            - 退出草图");
             Console.WriteLine("  POST /api/create-box              - 组合: 创建长方体");
@@ -182,8 +185,20 @@ namespace Chapter1.ConnectToSw
                     RequirePost(method, resp, () => HandleSketchCircle(req, resp));
                     break;
 
+                case "/api/sketch/centerline":
+                    RequirePost(method, resp, () => HandleSketchCenterLine(req, resp));
+                    break;
+
+                case "/api/sketch/arc":
+                    RequirePost(method, resp, () => HandleSketchArc(req, resp));
+                    break;
+
                 case "/api/feature/extrusion":
                     RequirePost(method, resp, () => HandleExtrusion(req, resp));
+                    break;
+
+                case "/api/feature/revolve":
+                    RequirePost(method, resp, () => HandleRevolve(req, resp));
                     break;
 
                 case "/api/feature/cut-extrusion":
@@ -393,6 +408,103 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"拉伸失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSketchCenterLine(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                double x1 = GetDouble(body, "x1");
+                double y1 = GetDouble(body, "y1");
+                double x2 = GetDouble(body, "x2");
+                double y2 = GetDouble(body, "y2");
+                double z1 = GetDoubleOrDefault(body, "z1", 0);
+                double z2 = GetDoubleOrDefault(body, "z2", 0);
+
+                _commands.SketchCenterLine(x1, y1, x2, y2, z1, z2);
+                SendJson(resp, 200, new { success = true, message = $"绘制中心线: ({x1}, {y1}, {z1}) -> ({x2}, {y2}, {z2})" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"绘制中心线失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSketchArc(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                double cx = GetDouble(body, "cx");
+                double cy = GetDouble(body, "cy");
+                double startX = GetDouble(body, "startX");
+                double startY = GetDouble(body, "startY");
+                double endX = GetDouble(body, "endX");
+                double endY = GetDouble(body, "endY");
+                short direction = (short)GetInt(body, "direction", 1);
+                double cz = GetDoubleOrDefault(body, "cz", 0);
+                double startZ = GetDoubleOrDefault(body, "startZ", 0);
+                double endZ = GetDoubleOrDefault(body, "endZ", 0);
+
+                _commands.SketchArc(cx, cy, startX, startY, endX, endY, direction, cz, startZ, endZ);
+                SendJson(resp, 200, new { success = true, message = $"绘制圆弧: 圆心({cx},{cy}), 起点({startX},{startY}), 终点({endX},{endY}), 方向={direction}" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"绘制圆弧失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleRevolve(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                double angle = GetDoubleOrDefault(body, "angle", 360);
+                bool isCut = false;
+                if (body.ContainsKey("isCut"))
+                    isCut = Convert.ToBoolean(body["isCut"]);
+                bool reverseDir = false;
+                if (body.ContainsKey("reverseDir"))
+                    reverseDir = Convert.ToBoolean(body["reverseDir"]);
+
+                _commands.Revolve(angle, isCut, reverseDir);
+                string type = isCut ? "切除" : "凸台";
+                SendJson(resp, 200, new { success = true, message = $"旋转{type}完成，角度: {angle}°" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"旋转失败: {ex.Message}" });
             }
         }
 

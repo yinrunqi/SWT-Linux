@@ -54,9 +54,18 @@ SYSTEM_PROMPT = """\
 5. **sketch_circle** — 在草图中画圆
    - cx, cy: float — 圆心坐标（米）
    - radius: float — 半径（米）
-6. **feature_extrusion** — 拉伸当前草图
+6. **sketch_centerline** — 在草图中画中心线（构造线，用于旋转轴）
+   - x1, y1: float — 起点坐标（米）
+   - x2, y2: float — 终点坐标（米）
+   - 中心线不参与轮廓封闭，仅用作旋转特征的旋转轴
+7. **sketch_arc** — 在草图中画圆弧
+   - cx, cy: float — 圆弧圆心坐标（米）
+   - startX, startY: float — 圆弧起点坐标（米）
+   - endX, endY: float — 圆弧终点坐标（米）
+   - direction: int — 绘制方向。1=顺时针, -1=逆时针
+8. **feature_extrusion** — 拉伸当前草图
    - depth: float — 拉伸深度（米）
-7. **feature_cut_extrusion** — 切除拉伸（挖孔/开槽/减法建模）
+9. **feature_cut_extrusion** — 切除拉伸（挖孔/开槽/减法建模）
    - depth: float — 切除深度（米）
    - endCondition: str — 终止条件（可选，默认 "blind"）
      - "blind": 盲孔（指定深度）
@@ -64,21 +73,27 @@ SYSTEM_PROMPT = """\
      - "mid_plane": 从草图面两侧各切一半深度
      - "up_to_next": 切到下一个面
    - flipDirection: bool — 是否反转切除方向（可选，默认 false）
-8. **close_sketch** — 退出草图编辑（不拉伸时使用）
+10. **feature_revolve** — 旋转凸台或旋转切除（创建轴对称零件）
+    - angle: float — 旋转角度（度），默认 360（完整旋转）
+    - isCut: bool — 是否为旋转切除（默认 false，即旋转凸台）
+    - reverseDir: bool — 是否反转旋转方向（可选，默认 false）
+    - **重要：草图中必须包含一条中心线作为旋转轴**。旋转轮廓必须在中心线的一侧。
+    - 典型流程：select_plane → sketch_centerline（画旋转轴）→ 画轮廓草图 → feature_revolve
+11. **close_sketch** — 退出草图编辑（不拉伸时使用）
 
 ### 查询类操作（用于了解当前模型状态）
 
-9. **feature_tree** — 获取特征树（无参数）
+12. **feature_tree** — 获取特征树（无参数）
    - 返回所有特征的名称、类型、索引列表
    - **每个特征还会返回其关联的尺寸列表**（尺寸名、全名、当前值）
    - 用于了解当前模型有哪些特征和可编辑的尺寸
-10. **body_bounding_box** — 获取实体包围盒（无参数）
+13. **body_bounding_box** — 获取实体包围盒（无参数）
    - 返回 minX/minY/minZ/maxX/maxY/maxZ 和尺寸 sizeX/sizeY/sizeZ（米）
    - 用于了解当前模型的空间范围
 
 ### 编辑类操作
 
-11. **modify_dimension** — 直接修改已有特征的尺寸值 ⭐ 推荐
+14. **modify_dimension** — 直接修改已有特征的尺寸值 ⭐ 推荐
     - featureName: str — 特征名称（从 feature_tree 返回值中获取，如 "Boss-Extrude1" 或 "凸台-拉伸1"）
     - dimensionName: str — 尺寸名称（可选，如 "D1"；不填则修改该特征的第一个尺寸）
     - **newValue 和 delta 二选一**：
@@ -88,7 +103,7 @@ SYSTEM_PROMPT = """\
         - 使用 delta 时，系统会自动从 feature_tree 查询当前值并加上 delta。
     - 修改后自动重建模型
 
-12. **select_face_and_sketch** — 通过射线选中一个面并进入草图编辑
+15. **select_face_and_sketch** — 通过射线选中一个面并进入草图编辑
     - rx, ry, rz: float — 射线起点坐标（米），应在实体外部
     - dx, dy, dz: float — 射线方向向量（单位向量）
     - 选中面后自动进入该面的草图编辑模式，然后可以画草图 + 拉伸
@@ -114,10 +129,33 @@ SYSTEM_PROMPT = """\
 
 ## 重要规则
 - **必须使用原子操作逐步建模**，标准流程为：new_part → select_plane → 画草图 → feature_extrusion。
-- feature_extrusion 和 feature_cut_extrusion 都会自动退出草图再执行操作，不需要在前面调用 close_sketch。
+- feature_extrusion、feature_cut_extrusion 和 feature_revolve 都会自动退出草图再执行操作，不需要在前面调用 close_sketch。
 - **挖孔/开槽/减法操作必须用 feature_cut_extrusion**，不能用 feature_extrusion。
   - 典型流程：先创建基础实体 → select_face_and_sketch 选中目标面 → 画切除轮廓（如圆孔、矩形槽）→ feature_cut_extrusion。
   - 贯穿孔用 endCondition="through_all"，盲孔用 endCondition="blind" 并指定 depth。
+- **旋转（Revolve）用于创建轴对称零件**（圆柱、圆锥、球体、轮毂、酒杯等）。
+  - 典型流程：new_part → select_plane → sketch_centerline（画旋转轴）→ 在中心线一侧画轴截面轮廓（用 sketch_line、sketch_arc 等）→ **feature_revolve**（必须调用此步骤才能生成 3D 实体！）
+  - **旋转轮廓必须是轴截面形状**（即沿旋转轴的半截面），**绝对不能用 sketch_circle 做旋转轮廓**！
+    - ❌ 错误：sketch_circle 画圆 → feature_revolve → 得到甜甜圈/环面（不是圆柱）
+    - ✅ 正确：sketch_line 画矩形截面 → feature_revolve → 得到圆柱
+  - **旋转轮廓必须在中心线的同一侧**，轮廓本身需要闭合（轮廓线 + 中心线形成封闭区域）。
+  - ⭐ **圆柱体完整示例**（直径 40mm、高度 80mm，即半径 R=0.02m，高度 H=0.08m）：
+    1. new_part {}
+    2. select_plane {index: 0}  ← 前视基准面
+    3. sketch_centerline {x1: 0, y1: 0, x2: 0, y2: 0.08}  ← Y轴方向的旋转轴
+    4. sketch_line {x1: 0, y1: 0, x2: 0.02, y2: 0}      ← 底边
+    5. sketch_line {x1: 0.02, y1: 0, x2: 0.02, y2: 0.08}  ← 右边
+    6. sketch_line {x1: 0.02, y1: 0.08, x2: 0, y2: 0.08}  ← 顶边
+    7. feature_revolve {angle: 360}  ← ⚠️ **必须有这一步！** 旋转 360° 生成圆柱
+    （轮廓左边与中心线重合，无需额外画线）
+  - ⭐ **球体示例**（直径 50mm，半径 R=0.025m）：
+    1. new_part {}
+    2. select_plane {index: 0}
+    3. sketch_centerline {x1: 0, y1: -0.025, x2: 0, y2: 0.025}
+    4. sketch_arc {cx: 0, cy: 0, startX: 0, startY: -0.025, endX: 0, endY: 0.025, direction: -1}
+    5. feature_revolve {angle: 360}  ← ⚠️ **必须有这一步！**
+    （注意：**不需要画直线来封闭轮廓**！圆弧端点在旋转轴上，SolidWorks 自动用旋转轴封闭。
+     如果画一条与中心线重合的直线反而会导致旋转失败！）
 - 如果需要在同一零件上做多个特征（如挖孔），拉伸后需要再次 select_face_and_sketch 或 select_plane 进入新草图。
 - 步骤必须逻辑正确，按照 SolidWorks 的操作流程排列。
 - 即使是简单的长方体，也必须拆分为：new_part → select_plane → sketch_rectangle → feature_extrusion。
@@ -370,7 +408,8 @@ class SwLLMClient:
             "JSON 结构：{\"user_intent\": \"...\", \"steps\": [{\"operation\": \"...\", "
             "\"params\": {...}, \"description\": \"...\"}], \"notes\": \"...\"}\n"
             "operation 可选值：new_part, select_plane, sketch_line, sketch_rectangle, "
-            "sketch_circle, feature_extrusion, feature_cut_extrusion, close_sketch, feature_tree, "
+            "sketch_circle, sketch_centerline, sketch_arc, feature_extrusion, feature_cut_extrusion, "
+            "feature_revolve, close_sketch, feature_tree, "
             "body_bounding_box, select_face_and_sketch, modify_dimension。\n"
             "modify_dimension 的 params 中，newValue（绝对值）和 delta（增量）二选一。"
         )
