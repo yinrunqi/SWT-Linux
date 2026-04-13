@@ -955,6 +955,300 @@ namespace Chapter1.ConnectToSw
             };
         }
 
+        /// <summary>
+        /// 创建圆角特征。
+        /// 通过射线选中实体的边，再应用圆角。
+        /// radius: 圆角半径（米）
+        /// 
+        /// 选边策略:
+        /// - "all": 选中当前实体的所有边
+        /// - "ray": 通过射线选中特定边（提供 rx,ry,rz,dx,dy,dz）
+        /// </summary>
+        public Dictionary<string, object> Fillet(double radius, string edgeSelection,
+            double rx = 0, double ry = 0, double rz = 0,
+            double dx = 0, double dy = 0, double dz = 0)
+        {
+            EnsureActiveDoc();
+
+            if (radius <= 0)
+                throw new ArgumentOutOfRangeException(nameof(radius), "圆角半径必须为正数");
+
+            var partDoc = ActiveDoc as IPartDoc;
+            if (partDoc == null)
+                throw new InvalidOperationException("当前文档不是零件文档");
+
+            var mdoc = (ModelDoc2)ActiveDoc;
+            var ext = mdoc.Extension;
+
+            // 清除当前选择
+            ActiveDoc.ClearSelection2(true);
+
+            int edgeCount = 0;
+
+            if (edgeSelection.ToLower() == "all")
+            {
+                // 选中所有边
+                var bodies = partDoc.GetBodies2((int)swBodyType_e.swSolidBody, true) as object[];
+                if (bodies == null || bodies.Length == 0)
+                    throw new InvalidOperationException("当前零件没有实体");
+
+                foreach (object bodyObj in bodies)
+                {
+                    var body = bodyObj as IBody2;
+                    if (body == null) continue;
+
+                    var edges = body.GetEdges() as object[];
+                    if (edges == null) continue;
+
+                    foreach (object edgeObj in edges)
+                    {
+                        var edge = edgeObj as IEdge;
+                        if (edge == null) continue;
+
+                        var entity = (IEntity)edge;
+                        // Mark = 1 用于圆角边选择
+                        bool sel = entity.Select4(edgeCount > 0, null);
+                        if (sel) edgeCount++;
+                    }
+                }
+                Console.WriteLine($"[SwCommands] 圆角: 选中所有边，共 {edgeCount} 条");
+            }
+            else if (edgeSelection.ToLower() == "ray")
+            {
+                // 通过射线选中边
+                bool sel = ext.SelectByRay(rx, ry, rz, dx, dy, dz, 0.001,
+                    (int)swSelectType_e.swSelEDGES, false, 0, 0);
+                if (!sel)
+                    throw new InvalidOperationException(
+                        $"未能通过射线选中边。射线起点({rx},{ry},{rz})，方向({dx},{dy},{dz})");
+                edgeCount = 1;
+                Console.WriteLine($"[SwCommands] 圆角: 通过射线选中 1 条边");
+            }
+            else
+            {
+                throw new ArgumentException($"未知的选边方式: {edgeSelection}，可选 'all' 或 'ray'");
+            }
+
+            if (edgeCount == 0)
+                throw new InvalidOperationException("未选中任何边");
+
+            // 使用 FeatureFillet3 创建圆角
+            // Options = 195 = swFeatureFilletPropagate | swFeatureFilletKeepFeatures | swFeatureFilletUniformRadius 等组合
+            // 对于简单恒定半径圆角，后面的数组参数传空即可
+            double[] radiiArray = new double[0];
+            double[] dist2Array = new double[0];
+            double[] conicRhosArray = new double[0];
+            double[] setBackArray = new double[0];
+            double[] pointRadiusArray = new double[0];
+            double[] pointDist2Array = new double[0];
+            double[] pointRhoArray = new double[0];
+
+            var feat = (Feature)ActiveDoc.FeatureManager.FeatureFillet3(
+                195,                // Options (标准简单圆角选项组合)
+                radius,             // R1 - 圆角半径
+                0,                  // R2 - 非对称时的第二半径（对称时为 0）
+                0,                  // Rho - 圆锥形状值
+                0,                  // Ftyp - 0=Simple (简单恒定半径圆角)
+                0,                  // OverflowType - 0=Default
+                0,                  // ConicRhoType - 0=Circular (圆形截面)
+                radiiArray,         // Radii
+                dist2Array,         // Dist2Arr
+                conicRhosArray,     // RhoArr
+                setBackArray,       // SetBackDistances
+                pointRadiusArray,   // PointRadiusArray
+                pointDist2Array,    // PointDist2Array
+                pointRhoArray       // PointRhoArray
+            );
+
+            if (feat == null)
+                throw new InvalidOperationException("创建圆角失败，请确保选中了有效的边");
+
+            // 缩放到合适视图
+            ((ModelDoc2)ActiveDoc).ViewZoomtofit2();
+
+            Console.WriteLine($"[SwCommands] 圆角创建成功，半径: {radius} 米，选中 {edgeCount} 条边");
+
+            return new Dictionary<string, object>
+            {
+                { "featureName", feat.Name },
+                { "edgeCount", edgeCount },
+                { "radius", radius },
+                { "message", $"圆角创建成功，半径 {radius * 1000:F1}mm，{edgeCount} 条边" },
+            };
+        }
+
+        /// <summary>
+        /// 创建倒角特征。
+        /// 通过射线选中实体的边，再应用倒角。
+        /// 
+        /// chamferType: 
+        ///   "equal_distance" - 等距倒角（distance1 = distance2）
+        ///   "distance_distance" - 不等距倒角（distance1 和 distance2 不同）
+        ///   "distance_angle" - 距离-角度倒角（distance1 和 angle）
+        /// 
+        /// 选边策略:
+        /// - "all": 选中当前实体的所有边
+        /// - "ray": 通过射线选中特定边
+        /// </summary>
+        public Dictionary<string, object> Chamfer(string chamferType, double distance1,
+            string edgeSelection,
+            double distance2 = 0, double angle = 45,
+            double rx = 0, double ry = 0, double rz = 0,
+            double dx = 0, double dy = 0, double dz = 0)
+        {
+            EnsureActiveDoc();
+
+            if (distance1 <= 0)
+                throw new ArgumentOutOfRangeException(nameof(distance1), "倒角距离必须为正数");
+
+            var partDoc = ActiveDoc as IPartDoc;
+            if (partDoc == null)
+                throw new InvalidOperationException("当前文档不是零件文档");
+
+            var mdoc = (ModelDoc2)ActiveDoc;
+            var ext = mdoc.Extension;
+
+            // 清除当前选择
+            ActiveDoc.ClearSelection2(true);
+
+            int edgeCount = 0;
+
+            if (edgeSelection.ToLower() == "all")
+            {
+                // 选中所有边
+                var bodies = partDoc.GetBodies2((int)swBodyType_e.swSolidBody, true) as object[];
+                if (bodies == null || bodies.Length == 0)
+                    throw new InvalidOperationException("当前零件没有实体");
+
+                foreach (object bodyObj in bodies)
+                {
+                    var body = bodyObj as IBody2;
+                    if (body == null) continue;
+
+                    var edges = body.GetEdges() as object[];
+                    if (edges == null) continue;
+
+                    foreach (object edgeObj in edges)
+                    {
+                        var edge = edgeObj as IEdge;
+                        if (edge == null) continue;
+
+                        var entity = (IEntity)edge;
+                        bool sel = entity.Select4(edgeCount > 0, null);
+                        if (sel) edgeCount++;
+                    }
+                }
+                Console.WriteLine($"[SwCommands] 倒角: 选中所有边，共 {edgeCount} 条");
+            }
+            else if (edgeSelection.ToLower() == "ray")
+            {
+                bool sel = ext.SelectByRay(rx, ry, rz, dx, dy, dz, 0.001,
+                    (int)swSelectType_e.swSelEDGES, false, 0, 0);
+                if (!sel)
+                    throw new InvalidOperationException(
+                        $"未能通过射线选中边。射线起点({rx},{ry},{rz})，方向({dx},{dy},{dz})");
+                edgeCount = 1;
+                Console.WriteLine($"[SwCommands] 倒角: 通过射线选中 1 条边");
+            }
+            else
+            {
+                throw new ArgumentException($"未知的选边方式: {edgeSelection}，可选 'all' 或 'ray'");
+            }
+
+            if (edgeCount == 0)
+                throw new InvalidOperationException("未选中任何边");
+
+            // --- 倒角参数计算 ---
+            // 使用 IModelDoc2.FeatureChamfer(Width, Angle, Flip) 方法（3参数版）
+            // 此方法比 IFeatureManager.InsertFeatureChamfer（8参数版）更可靠
+            //
+            // Width: 倒角距离（米）
+            // Angle: 倒角角度（弧度），45° = π/4 时为等距倒角
+            // Flip: false=从第一个面量角度，true=从另一个面量角度
+            //
+            // 等距倒角: Width=d, Angle=45°(π/4)
+            // 距离-角度: Width=d, Angle=指定角度
+            // 距离-距离: Width=d1, Angle=atan(d2/d1) — 通过几何关系换算
+
+            double chamferWidth, chamferAngleRad;
+            bool flip = false;
+
+            switch (chamferType.ToLower())
+            {
+                case "equal_distance":
+                    // 等距倒角：45° 角，两面等距
+                    chamferWidth = distance1;
+                    chamferAngleRad = Math.PI / 4.0; // 45°
+                    break;
+                case "distance_distance":
+                    // 不等距倒角：通过 atan(d2/d1) 换算角度
+                    double d2 = distance2 > 0 ? distance2 : distance1;
+                    chamferWidth = distance1;
+                    chamferAngleRad = Math.Atan2(d2, distance1);
+                    break;
+                case "distance_angle":
+                    // 距离-角度倒角
+                    chamferWidth = distance1;
+                    chamferAngleRad = angle * Math.PI / 180.0;
+                    break;
+                default:
+                    throw new ArgumentException(
+                        $"未知的倒角类型: {chamferType}，可选 'equal_distance', 'distance_distance', 'distance_angle'");
+            }
+
+            Console.WriteLine($"[SwCommands] 倒角参数: Width={chamferWidth}m ({chamferWidth * 1000:F2}mm), Angle={chamferAngleRad}rad ({chamferAngleRad * 180 / Math.PI:F1}°), Flip={flip}");
+
+            // 记录调用前的特征数量，用于判断倒角是否成功
+            int featCountBefore = 0;
+            {
+                Feature f = (Feature)mdoc.FirstFeature();
+                while (f != null)
+                {
+                    featCountBefore++;
+                    f = (Feature)f.GetNextFeature();
+                }
+            }
+
+            // 使用 IModelDoc2.FeatureChamfer 创建倒角（返回 void）
+            mdoc.FeatureChamfer(chamferWidth, chamferAngleRad, flip);
+
+            // 重建模型确保特征生效
+            mdoc.EditRebuild3();
+
+            // 通过特征数量变化判断倒角是否成功创建
+            string featName = "倒角";
+            int featCountAfter = 0;
+            {
+                Feature f = (Feature)mdoc.FirstFeature();
+                Feature lastF = null;
+                while (f != null)
+                {
+                    featCountAfter++;
+                    lastF = f;
+                    f = (Feature)f.GetNextFeature();
+                }
+                if (lastF != null && featCountAfter > featCountBefore)
+                    featName = lastF.Name;
+            }
+
+            if (featCountAfter <= featCountBefore)
+                throw new InvalidOperationException("创建倒角失败，特征树中未新增倒角特征。请确保选中了有效的边");
+
+            // 缩放到合适视图
+            mdoc.ViewZoomtofit2();
+
+            Console.WriteLine($"[SwCommands] 倒角创建成功，类型: {chamferType}，距离1: {distance1} 米，{edgeCount} 条边");
+
+            return new Dictionary<string, object>
+            {
+                { "featureName", featName },
+                { "edgeCount", edgeCount },
+                { "chamferType", chamferType },
+                { "distance1", distance1 },
+                { "message", $"倒角创建成功，类型 {chamferType}，距离 {distance1 * 1000:F1}mm，{edgeCount} 条边" },
+            };
+        }
+
         #endregion
 
         #region 组合操作

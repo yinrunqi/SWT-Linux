@@ -89,6 +89,8 @@ namespace Chapter1.ConnectToSw
             Console.WriteLine("  GET  /api/body-bounding-box       - 获取实体包围盒");
             Console.WriteLine("  POST /api/select-face-and-sketch  - 射线选面并进入草图");
             Console.WriteLine("  POST /api/modify-dimension        - 修改特征尺寸值");
+            Console.WriteLine("  POST /api/feature/fillet           - 圆角");
+            Console.WriteLine("  POST /api/feature/chamfer          - 倒角");
             Console.WriteLine();
             Console.WriteLine("按 Ctrl+C 停止服务...");
             Console.WriteLine();
@@ -227,6 +229,14 @@ namespace Chapter1.ConnectToSw
 
                 case "/api/modify-dimension":
                     RequirePost(method, resp, () => HandleModifyDimension(req, resp));
+                    break;
+
+                case "/api/feature/fillet":
+                    RequirePost(method, resp, () => HandleFillet(req, resp));
+                    break;
+
+                case "/api/feature/chamfer":
+                    RequirePost(method, resp, () => HandleChamfer(req, resp));
                     break;
 
                 default:
@@ -691,6 +701,103 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"修改尺寸失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleFillet(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                double radius = GetDouble(body, "radius");
+                string edgeSelection = GetStringOrDefault(body, "edgeSelection", "all");
+                double rx = GetDoubleOrDefault(body, "rx", 0);
+                double ry = GetDoubleOrDefault(body, "ry", 0);
+                double rz = GetDoubleOrDefault(body, "rz", 0);
+                double dx = GetDoubleOrDefault(body, "dx", 0);
+                double dy = GetDoubleOrDefault(body, "dy", 0);
+                double dz = GetDoubleOrDefault(body, "dz", 0);
+
+                var result = _commands.Fillet(radius, edgeSelection, rx, ry, rz, dx, dy, dz);
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = result["message"],
+                    featureName = result["featureName"],
+                    edgeCount = result["edgeCount"],
+                    radius = result["radius"],
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"创建圆角失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleChamfer(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string chamferType = GetStringOrDefault(body, "type", "equal_distance");
+                double distance1 = GetDouble(body, "distance1");
+                string edgeSelection = GetStringOrDefault(body, "edgeSelection", "all");
+                double distance2 = GetDoubleOrDefault(body, "distance2", 0);
+                double angle = GetDoubleOrDefault(body, "angle", 45);
+                double rx = GetDoubleOrDefault(body, "rx", 0);
+                double ry = GetDoubleOrDefault(body, "ry", 0);
+                double rz = GetDoubleOrDefault(body, "rz", 0);
+                double dx = GetDoubleOrDefault(body, "dx", 0);
+                double dy = GetDoubleOrDefault(body, "dy", 0);
+                double dz = GetDoubleOrDefault(body, "dz", 0);
+
+                var result = _commands.Chamfer(chamferType, distance1, edgeSelection,
+                    distance2, angle, rx, ry, rz, dx, dy, dz);
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = result["message"],
+                    featureName = result["featureName"],
+                    edgeCount = result["edgeCount"],
+                    chamferType = result["chamferType"],
+                    distance1 = result["distance1"],
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"创建倒角失败: {ex.Message}" });
             }
         }
 

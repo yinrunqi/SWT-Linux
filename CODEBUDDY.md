@@ -49,7 +49,7 @@ msbuild SolidWorksTutorial.slnx /p:Configuration=Debug
 ### Chapter1 文件结构
 
 - `Program.cs` — HTTP 服务入口：Main 启动流程 + HttpListener 监听循环 + 路由分发 + 各端点 handler
-- `SwCommands.cs` — SolidWorks 操作封装类：持有 ISldWorks 引用和当前文档状态，提供原子操作（NewPart、SelectPlaneAndStartSketch、SketchLine/Rectangle/Circle/CenterLine/Arc、Extrusion、Revolve、CutExtrusion、CloseSketch）、查询操作（GetFeatureTree、GetBodyBoundingBox）、面选择操作（SelectFaceByRayAndStartSketch）和组合操作（CreateBox）
+- `SwCommands.cs` — SolidWorks 操作封装类：持有 ISldWorks 引用和当前文档状态，提供原子操作（NewPart、SelectPlaneAndStartSketch、SketchLine/Rectangle/Circle/CenterLine/Arc、Extrusion、Revolve、CutExtrusion、Fillet、Chamfer、CloseSketch）、查询操作（GetFeatureTree、GetBodyBoundingBox）、面选择操作（SelectFaceByRayAndStartSketch）和组合操作（CreateBox）
 
 ### HTTP API 端点
 
@@ -74,6 +74,8 @@ msbuild SolidWorksTutorial.slnx /p:Configuration=Debug
 | GET | `/api/body-bounding-box` | 无 | 获取实体包围盒（返回 boundingBox 对象） |
 | POST | `/api/select-face-and-sketch` | `{ "rx", "ry", "rz", "dx", "dy", "dz" }` | 射线拾取面并进入草图编辑 |
 | POST | `/api/modify-dimension` | `{ "featureName", "dimensionName"(可选), "newValue" }` | 修改已有特征的尺寸值（米） |
+| POST | `/api/feature/fillet` | `{ "radius", "edgeSelection"(可选), "rx","ry","rz","dx","dy","dz"(射线模式) }` | 圆角特征（米） |
+| POST | `/api/feature/chamfer` | `{ "type"(可选), "distance1", "distance2"(可选), "angle"(可选), "edgeSelection"(可选), 射线参数 }` | 倒角特征（米） |
 
 ### 核心依赖
 

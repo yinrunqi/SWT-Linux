@@ -80,20 +80,42 @@ SYSTEM_PROMPT = """\
     - **重要：草图中必须包含一条中心线作为旋转轴**。旋转轮廓必须在中心线的一侧。
     - 典型流程：select_plane → sketch_centerline（画旋转轴）→ 画轮廓草图 → feature_revolve
 11. **close_sketch** — 退出草图编辑（不拉伸时使用）
+12. **feature_fillet** — 圆角特征（在已有实体的边上添加圆角过渡）
+    - radius: float — 圆角半径（米）
+    - edgeSelection: str — 选边方式（可选，默认 "all"）
+      - "all": 选中实体的所有边
+      - "ray": 通过射线选中特定边
+    - rx, ry, rz, dx, dy, dz: float — 射线参数（edgeSelection="ray" 时使用）
+    - **不需要进入草图**，直接对已有实体的边执行。
+    - 典型流程：创建实体 → feature_fillet
+13. **feature_chamfer** — 倒角特征（在已有实体的边上添加倒角）
+    - type: str — 倒角类型（可选，默认 "equal_distance"）
+      - "equal_distance": 等距倒角（两侧距离相同）
+      - "distance_distance": 不等距倒角（两侧距离不同）
+      - "distance_angle": 距离-角度倒角
+    - distance1: float — 倒角距离（米）
+    - distance2: float — 第二距离（distance_distance 模式，米，可选）
+    - angle: float — 倒角角度（distance_angle 模式，度，可选，默认 45）
+    - edgeSelection: str — 选边方式（可选，默认 "all"）
+      - "all": 选中实体的所有边
+      - "ray": 通过射线选中特定边
+    - rx, ry, rz, dx, dy, dz: float — 射线参数（edgeSelection="ray" 时使用）
+    - **不需要进入草图**，直接对已有实体的边执行。
+    - 典型流程：创建实体 → feature_chamfer
 
 ### 查询类操作（用于了解当前模型状态）
 
-12. **feature_tree** — 获取特征树（无参数）
+14. **feature_tree** — 获取特征树（无参数）
    - 返回所有特征的名称、类型、索引列表
    - **每个特征还会返回其关联的尺寸列表**（尺寸名、全名、当前值）
    - 用于了解当前模型有哪些特征和可编辑的尺寸
-13. **body_bounding_box** — 获取实体包围盒（无参数）
+15. **body_bounding_box** — 获取实体包围盒（无参数）
    - 返回 minX/minY/minZ/maxX/maxY/maxZ 和尺寸 sizeX/sizeY/sizeZ（米）
    - 用于了解当前模型的空间范围
 
 ### 编辑类操作
 
-14. **modify_dimension** — 直接修改已有特征的尺寸值 ⭐ 推荐
+16. **modify_dimension** — 直接修改已有特征的尺寸值 ⭐ 推荐
     - featureName: str — 特征名称（从 feature_tree 返回值中获取，如 "Boss-Extrude1" 或 "凸台-拉伸1"）
     - dimensionName: str — 尺寸名称（可选，如 "D1"；不填则修改该特征的第一个尺寸）
     - **newValue 和 delta 二选一**：
@@ -103,7 +125,7 @@ SYSTEM_PROMPT = """\
         - 使用 delta 时，系统会自动从 feature_tree 查询当前值并加上 delta。
     - 修改后自动重建模型
 
-15. **select_face_and_sketch** — 通过射线选中一个面并进入草图编辑
+17. **select_face_and_sketch** — 通过射线选中一个面并进入草图编辑
     - rx, ry, rz: float — 射线起点坐标（米），应在实体外部
     - dx, dy, dz: float — 射线方向向量（单位向量）
     - 选中面后自动进入该面的草图编辑模式，然后可以画草图 + 拉伸
@@ -409,7 +431,7 @@ class SwLLMClient:
             "\"params\": {...}, \"description\": \"...\"}], \"notes\": \"...\"}\n"
             "operation 可选值：new_part, select_plane, sketch_line, sketch_rectangle, "
             "sketch_circle, sketch_centerline, sketch_arc, feature_extrusion, feature_cut_extrusion, "
-            "feature_revolve, close_sketch, feature_tree, "
+            "feature_revolve, feature_fillet, feature_chamfer, close_sketch, feature_tree, "
             "body_bounding_box, select_face_and_sketch, modify_dimension。\n"
             "modify_dimension 的 params 中，newValue（绝对值）和 delta（增量）二选一。"
         )
