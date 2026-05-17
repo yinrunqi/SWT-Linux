@@ -73,33 +73,67 @@ namespace Chapter1.ConnectToSw
         /// </summary>
         private string GetPartTemplatePath()
         {
+            // 1. 尝试获取 SolidWorks 配置的默认零件模板
             var template = _swApp.GetUserPreferenceStringValue(
                 (int)swUserPreferenceStringValue_e.swDefaultTemplatePart);
 
-            if (!string.IsNullOrWhiteSpace(template))
+            Console.WriteLine($"[SwCommands] swDefaultTemplatePart = \"{template}\"");
+
+            // 检查是否为有效的真实文件路径（排除 ~BLANK_PART_TEMPLATE.prtdot 等内部占位符）
+            if (!string.IsNullOrWhiteSpace(template) && File.Exists(template))
                 return template;
 
-            Console.WriteLine("[SwCommands] 默认模板为空，尝试从模板目录查找...");
+            Console.WriteLine("[SwCommands] 默认模板无效或不存在，尝试从模板目录查找...");
 
+            // 2. 从模板目录中搜索 .prtdot 文件
             var dirs = _swApp.GetUserPreferenceStringValue(
                 (int)swUserPreferenceStringValue_e.swFileLocationsDocumentTemplates);
 
-            if (string.IsNullOrWhiteSpace(dirs))
-                throw new InvalidOperationException("无法获取 SolidWorks 模板目录配置");
+            Console.WriteLine($"[SwCommands] 模板目录配置 = \"{dirs}\"");
 
-            foreach (var dir in dirs.Split(';'))
+            if (!string.IsNullOrWhiteSpace(dirs))
             {
-                if (!Directory.Exists(dir)) continue;
-
-                var files = Directory.GetFiles(dir, "*.prtdot");
-                if (files.Length > 0)
+                foreach (var dir in dirs.Split(';'))
                 {
-                    Console.WriteLine($"[SwCommands] 找到模板: {files[0]}");
-                    return files[0];
+                    if (!Directory.Exists(dir)) continue;
+
+                    var files = Directory.GetFiles(dir, "*.prtdot");
+                    if (files.Length > 0)
+                    {
+                        Console.WriteLine($"[SwCommands] 找到模板: {files[0]}");
+                        return files[0];
+                    }
                 }
             }
 
-            throw new InvalidOperationException("未找到任何零件模板文件 (.prtdot)");
+            // 3. 最后兜底：尝试 SolidWorks 安装目录下的默认模板
+            var swDir = Path.GetDirectoryName(_swApp.GetExecutablePath());
+            if (!string.IsNullOrWhiteSpace(swDir))
+            {
+                // SolidWorks 默认模板通常在 lang\<language>\Tutorial 或 templates 目录下
+                var searchDirs = new[]
+                {
+                    Path.Combine(swDir, "lang", "chinese-simplified", "Tutorial"),
+                    Path.Combine(swDir, "lang", "chinese", "Tutorial"),
+                    Path.Combine(swDir, "lang", "english", "Tutorial"),
+                    Path.Combine(swDir, "templates"),
+                    swDir,
+                };
+
+                foreach (var dir in searchDirs)
+                {
+                    if (!Directory.Exists(dir)) continue;
+                    var files = Directory.GetFiles(dir, "*.prtdot");
+                    if (files.Length > 0)
+                    {
+                        Console.WriteLine($"[SwCommands] 从安装目录找到模板: {files[0]}");
+                        return files[0];
+                    }
+                }
+            }
+
+            throw new InvalidOperationException(
+                "未找到任何零件模板文件 (.prtdot)。请在 SolidWorks 中设置：工具→选项→默认模板→零件");
         }
 
         /// <summary>
@@ -427,9 +461,17 @@ namespace Chapter1.ConnectToSw
             if (string.IsNullOrWhiteSpace(_partTemplatePath))
                 throw new InvalidOperationException("零件模板路径未配置");
 
+            Console.WriteLine($"[SwCommands] NewPart: 使用模板 \"{_partTemplatePath}\"");
+            Console.WriteLine($"[SwCommands] NewPart: 模板文件是否存在 = {File.Exists(_partTemplatePath)}");
+
             var doc = _swApp.INewDocument2(_partTemplatePath, 0, 0, 0);
+            Console.WriteLine($"[SwCommands] NewPart: INewDocument2 返回 {(doc == null ? "null" : "非null")}");
+
             if (doc == null)
-                throw new InvalidOperationException("创建零件文档失败");
+            {
+                throw new InvalidOperationException(
+                    $"创建零件文档失败 (模板={_partTemplatePath}, 文件存在={File.Exists(_partTemplatePath)})");
+            }
 
             if (doc.GetType() != (int)swDocumentTypes_e.swDocPART)
                 throw new InvalidOperationException("创建的文档不是零件类型");
@@ -508,6 +550,48 @@ namespace Chapter1.ConnectToSw
             double sketchRadius = Math.Sqrt((sx2 - sx) * (sx2 - sx) + (sy2 - sy) * (sy2 - sy));
             ActiveDoc.SketchManager.CreateCircle(sx, sy, 0, sx + sketchRadius, sy, 0);
             Console.WriteLine($"[SwCommands] 绘制圆: 模型圆心({cx},{cy},{cz}), 半径 {radius}，草图圆心({sx:F4},{sy:F4}), 草图半径 {sketchRadius:F4}");
+        }
+
+        /// <summary>
+        /// 在当前草图中绘制一个椭圆。
+        /// 椭圆中心坐标为模型空间 3D 坐标（单位：米），自动变换到草图坐标系。
+        /// majorRadius: 长轴半径（米），沿 X 方向（草图坐标系）
+        /// minorRadius: 短轴半径（米），沿 Y 方向（草图坐标系）
+        /// </summary>
+        public void SketchEllipse(double cx, double cy, double majorRadius, double minorRadius, double cz = 0)
+        {
+            EnsureActiveDoc();
+
+            if (majorRadius <= 0)
+                throw new ArgumentOutOfRangeException(nameof(majorRadius), "长轴半径必须为正数");
+            if (minorRadius <= 0)
+                throw new ArgumentOutOfRangeException(nameof(minorRadius), "短轴半径必须为正数");
+
+            // 将中心点从模型坐标转换为草图坐标
+            double scx, scy;
+            ModelToSketchPoint(cx, cy, cz, out scx, out scy);
+
+            // 将长轴端点从模型坐标转换为草图坐标
+            double smx, smy;
+            ModelToSketchPoint(cx + majorRadius, cy, cz, out smx, out smy);
+            // 计算草图空间中的长轴半径
+            double sketchMajorR = Math.Sqrt((smx - scx) * (smx - scx) + (smy - scy) * (smy - scy));
+
+            // 将短轴端点从模型坐标转换为草图坐标
+            double snx, sny;
+            ModelToSketchPoint(cx, cy + minorRadius, cz, out snx, out sny);
+            // 计算草图空间中的短轴半径
+            double sketchMinorR = Math.Sqrt((snx - scx) * (snx - scx) + (sny - scy) * (sny - scy));
+
+            // CreateEllipse 参数：中心点、长轴上的点、短轴上的点（均为草图坐标）
+            ActiveDoc.SketchManager.CreateEllipse(
+                scx, scy, 0,                       // 中心点
+                scx + sketchMajorR, scy, 0,         // 长轴上的点
+                scx, scy + sketchMinorR, 0           // 短轴上的点
+            );
+
+            Console.WriteLine($"[SwCommands] 绘制椭圆: 模型中心({cx},{cy},{cz}), 长轴半径 {majorRadius}, 短轴半径 {minorRadius}，" +
+                $"草图中心({scx:F4},{scy:F4}), 草图长轴 {sketchMajorR:F4}, 草图短轴 {sketchMinorR:F4}");
         }
 
         /// <summary>

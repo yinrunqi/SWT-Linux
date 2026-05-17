@@ -79,6 +79,7 @@ namespace Chapter1.ConnectToSw
             Console.WriteLine("  POST /api/sketch/circle           - 画圆");
             Console.WriteLine("  POST /api/sketch/centerline       - 画中心线（旋转轴）");
             Console.WriteLine("  POST /api/sketch/arc              - 画圆弧");
+            Console.WriteLine("  POST /api/sketch/ellipse           - 画椭圆");
             Console.WriteLine("  POST /api/feature/extrusion       - 拉伸");
             Console.WriteLine("  POST /api/feature/revolve         - 旋转凸台/切除");
             Console.WriteLine("  POST /api/feature/cut-extrusion   - 切除拉伸（挖孔/开槽）");
@@ -195,6 +196,10 @@ namespace Chapter1.ConnectToSw
                     RequirePost(method, resp, () => HandleSketchArc(req, resp));
                     break;
 
+                case "/api/sketch/ellipse":
+                    RequirePost(method, resp, () => HandleSketchEllipse(req, resp));
+                    break;
+
                 case "/api/feature/extrusion":
                     RequirePost(method, resp, () => HandleExtrusion(req, resp));
                     break;
@@ -273,6 +278,9 @@ namespace Chapter1.ConnectToSw
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[错误] 新建零件失败: {ex.Message}");
+                Console.WriteLine($"[错误] 异常类型: {ex.GetType().FullName}");
+                Console.WriteLine($"[错误] 堆栈: {ex.StackTrace}");
                 SendJson(resp, 500, new { success = false, message = $"新建零件失败: {ex.Message}" });
             }
         }
@@ -480,6 +488,43 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"绘制圆弧失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSketchEllipse(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                double cx = GetDouble(body, "cx");
+                double cy = GetDouble(body, "cy");
+                double majorRadius = GetDouble(body, "majorRadius");
+                double minorRadius = GetDouble(body, "minorRadius");
+                double cz = GetDoubleOrDefault(body, "cz", 0);
+
+                if (majorRadius <= 0)
+                    throw new ArgumentOutOfRangeException("majorRadius", "长轴半径必须为正数");
+                if (minorRadius <= 0)
+                    throw new ArgumentOutOfRangeException("minorRadius", "短轴半径必须为正数");
+
+                _commands.SketchEllipse(cx, cy, majorRadius, minorRadius, cz);
+                SendJson(resp, 200, new { success = true, message = $"绘制椭圆: 中心({cx}, {cy}, {cz}), 长轴半径 {majorRadius}, 短轴半径 {minorRadius}" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"绘制椭圆失败: {ex.Message}" });
             }
         }
 

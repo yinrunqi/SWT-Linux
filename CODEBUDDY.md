@@ -49,7 +49,7 @@ msbuild SolidWorksTutorial.slnx /p:Configuration=Debug
 ### Chapter1 文件结构
 
 - `Program.cs` — HTTP 服务入口：Main 启动流程 + HttpListener 监听循环 + 路由分发 + 各端点 handler
-- `SwCommands.cs` — SolidWorks 操作封装类：持有 ISldWorks 引用和当前文档状态，提供原子操作（NewPart、SelectPlaneAndStartSketch、SketchLine/Rectangle/Circle/CenterLine/Arc、Extrusion、Revolve、CutExtrusion、Fillet、Chamfer、CloseSketch）、查询操作（GetFeatureTree、GetBodyBoundingBox）、面选择操作（SelectFaceByRayAndStartSketch）和组合操作（CreateBox）
+- `SwCommands.cs` — SolidWorks 操作封装类：持有 ISldWorks 引用和当前文档状态，提供原子操作（NewPart、SelectPlaneAndStartSketch、SketchLine/Rectangle/Circle/CenterLine/Arc/Ellipse、Extrusion、Revolve、CutExtrusion、Fillet、Chamfer、CloseSketch）、查询操作（GetFeatureTree、GetBodyBoundingBox）、面选择操作（SelectFaceByRayAndStartSketch）和组合操作（CreateBox）
 
 ### HTTP API 端点
 
@@ -65,6 +65,7 @@ msbuild SolidWorksTutorial.slnx /p:Configuration=Debug
 | POST | `/api/sketch/circle` | `{ "cx", "cy", "radius" }` | 画圆（米） |
 | POST | `/api/sketch/centerline` | `{ "x1", "y1", "x2", "y2" }` | 画中心线/构造线（米），用于旋转轴 |
 | POST | `/api/sketch/arc` | `{ "cx", "cy", "startX", "startY", "endX", "endY", "direction" }` | 画圆弧（米），direction: 1=顺时针, -1=逆时针 |
+| POST | `/api/sketch/ellipse` | `{ "cx", "cy", "majorRadius", "minorRadius" }` | 画椭圆（米），长轴半径沿X方向，短轴半径沿Y方向 |
 | POST | `/api/feature/extrusion` | `{ "depth" }` | 拉伸当前草图（米） |
 | POST | `/api/feature/revolve` | `{ "angle"(可选,默认360), "isCut"(可选), "reverseDir"(可选) }` | 旋转凸台/切除（度），草图需含中心线 |
 | POST | `/api/feature/cut-extrusion` | `{ "depth", "endCondition"(可选), "flipDirection"(可选) }` | 切除拉伸（米），endCondition: blind/through_all/mid_plane/up_to_next |

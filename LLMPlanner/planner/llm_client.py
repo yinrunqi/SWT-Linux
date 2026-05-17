@@ -63,9 +63,14 @@ SYSTEM_PROMPT = """\
    - startX, startY: float — 圆弧起点坐标（米）
    - endX, endY: float — 圆弧终点坐标（米）
    - direction: int — 绘制方向。1=顺时针, -1=逆时针
-8. **feature_extrusion** — 拉伸当前草图
+8. **sketch_ellipse** — 在草图中画椭圆
+   - cx, cy: float — 椭圆中心坐标（米）
+   - majorRadius: float — 长轴半径（米），沿 X 方向
+   - minorRadius: float — 短轴半径（米），沿 Y 方向
+   - 椭圆是闭合曲线，可直接用于拉伸或切除
+9. **feature_extrusion** — 拉伸当前草图
    - depth: float — 拉伸深度（米）
-9. **feature_cut_extrusion** — 切除拉伸（挖孔/开槽/减法建模）
+10. **feature_cut_extrusion** — 切除拉伸（挖孔/开槽/减法建模）
    - depth: float — 切除深度（米）
    - endCondition: str — 终止条件（可选，默认 "blind"）
      - "blind": 盲孔（指定深度）
@@ -73,14 +78,14 @@ SYSTEM_PROMPT = """\
      - "mid_plane": 从草图面两侧各切一半深度
      - "up_to_next": 切到下一个面
    - flipDirection: bool — 是否反转切除方向（可选，默认 false）
-10. **feature_revolve** — 旋转凸台或旋转切除（创建轴对称零件）
+11. **feature_revolve** — 旋转凸台或旋转切除（创建轴对称零件）
     - angle: float — 旋转角度（度），默认 360（完整旋转）
     - isCut: bool — 是否为旋转切除（默认 false，即旋转凸台）
     - reverseDir: bool — 是否反转旋转方向（可选，默认 false）
     - **重要：草图中必须包含一条中心线作为旋转轴**。旋转轮廓必须在中心线的一侧。
     - 典型流程：select_plane → sketch_centerline（画旋转轴）→ 画轮廓草图 → feature_revolve
-11. **close_sketch** — 退出草图编辑（不拉伸时使用）
-12. **feature_fillet** — 圆角特征（在已有实体的边上添加圆角过渡）
+12. **close_sketch** — 退出草图编辑（不拉伸时使用）
+13. **feature_fillet** — 圆角特征（在已有实体的边上添加圆角过渡）
     - radius: float — 圆角半径（米）
     - edgeSelection: str — 选边方式（可选，默认 "all"）
       - "all": 选中实体的所有边
@@ -88,7 +93,7 @@ SYSTEM_PROMPT = """\
     - rx, ry, rz, dx, dy, dz: float — 射线参数（edgeSelection="ray" 时使用）
     - **不需要进入草图**，直接对已有实体的边执行。
     - 典型流程：创建实体 → feature_fillet
-13. **feature_chamfer** — 倒角特征（在已有实体的边上添加倒角）
+14. **feature_chamfer** — 倒角特征（在已有实体的边上添加倒角）
     - type: str — 倒角类型（可选，默认 "equal_distance"）
       - "equal_distance": 等距倒角（两侧距离相同）
       - "distance_distance": 不等距倒角（两侧距离不同）
@@ -430,7 +435,7 @@ class SwLLMClient:
             "JSON 结构：{\"user_intent\": \"...\", \"steps\": [{\"operation\": \"...\", "
             "\"params\": {...}, \"description\": \"...\"}], \"notes\": \"...\"}\n"
             "operation 可选值：new_part, select_plane, sketch_line, sketch_rectangle, "
-            "sketch_circle, sketch_centerline, sketch_arc, feature_extrusion, feature_cut_extrusion, "
+            "sketch_circle, sketch_centerline, sketch_arc, sketch_ellipse, feature_extrusion, feature_cut_extrusion, "
             "feature_revolve, feature_fillet, feature_chamfer, close_sketch, feature_tree, "
             "body_bounding_box, select_face_and_sketch, modify_dimension。\n"
             "modify_dimension 的 params 中，newValue（绝对值）和 delta（增量）二选一。"
