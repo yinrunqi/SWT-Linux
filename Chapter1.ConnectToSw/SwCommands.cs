@@ -22,6 +22,13 @@ namespace Chapter1.ConnectToSw
         /// </summary>
         public IModelDoc2 ActiveDoc { get; private set; }
 
+        /// <summary>
+        /// 标记当前草图是否在基准面上（而非实体面上）。
+        /// 如果为 true，绘图方法将直接把传入的 (x, y) 作为草图平面内坐标，
+        /// 而不通过 ModelToSketchTransform 变换。
+        /// </summary>
+        private bool _sketchOnRefPlane = false;
+
         public SwCommands(ISldWorks swApp)
         {
             _swApp = swApp ?? throw new ArgumentNullException(nameof(swApp));
@@ -35,11 +42,20 @@ namespace Chapter1.ConnectToSw
         /// 将模型坐标 (x, y, z) 通过当前活动草图的 ModelToSketchTransform 变换为草图坐标。
         /// 返回 (sx, sy)。如果没有活动草图或变换矩阵不可用，原样返回 (x, y)。
         /// 
-        /// 这是关键方法：当草图建立在某个面上（如长方体上表面）时，
-        /// 草图坐标系与模型坐标系不同，必须做此变换才能在正确位置绘图。
+        /// 特殊规则：如果当前草图在基准面上（_sketchOnRefPlane = true），
+        /// 则直接把 (x, y) 作为草图平面内坐标返回，不做 3D→2D 变换。
+        /// 这是因为 API 调用方传入的 (x, y) 本意就是草图平面内的 2D 坐标。
+        /// 只有当草图在实体面上时才需要完整的 ModelToSketchTransform 变换。
         /// </summary>
         private void ModelToSketchPoint(double mx, double my, double mz, out double sx, out double sy)
         {
+            // 基准面上的草图：直接用 (x, y) 作为草图坐标
+            if (_sketchOnRefPlane)
+            {
+                sx = mx; sy = my;
+                return;
+            }
+
             var sketch = ActiveDoc.SketchManager.ActiveSketch;
             if (sketch == null)
             {
@@ -409,6 +425,7 @@ namespace Chapter1.ConnectToSw
 
             // 进入草图编辑模式
             ActiveDoc.SketchManager.InsertSketch(true);
+            _sketchOnRefPlane = false;  // 标记：草图在实体面上，需要变换坐标
 
             // 获取草图坐标变换信息
             var activeSketch = ActiveDoc.SketchManager.ActiveSketch;
@@ -501,6 +518,7 @@ namespace Chapter1.ConnectToSw
             plane.Select2(false, 0);
 
             ActiveDoc.SketchManager.InsertSketch(true);
+            _sketchOnRefPlane = true;  // 标记：草图在基准面上
             Console.WriteLine($"[SwCommands] 已选择基准面 [{planeIndex}] 并进入草图编辑");
         }
 
@@ -601,6 +619,7 @@ namespace Chapter1.ConnectToSw
         {
             EnsureActiveDoc();
             ActiveDoc.SketchManager.InsertSketch(true);
+            _sketchOnRefPlane = false;
             Console.WriteLine("[SwCommands] 退出草图编辑");
         }
 
@@ -651,11 +670,13 @@ namespace Chapter1.ConnectToSw
             if (depth <= 0)
                 throw new ArgumentOutOfRangeException(nameof(depth), "拉伸深度必须为正数");
 
-            // 先退出草图编辑模式
-            ActiveDoc.SketchManager.InsertSketch(true);
+            // 退出草图编辑模式（使用 InsertSketch2 — 与 CutExtrusion/Revolve 保持一致）
+            var mdoc = (ModelDoc2)ActiveDoc;
+            mdoc.InsertSketch2(true);
+            _sketchOnRefPlane = false;
 
             // 执行拉伸
-            ActiveDoc.FeatureManager.FeatureExtrusion3(
+            var feat = ActiveDoc.FeatureManager.FeatureExtrusion3(
                 Sd: true,
                 Flip: false,
                 Dir: false,
@@ -681,8 +702,13 @@ namespace Chapter1.ConnectToSw
                 FlipStartOffset: false
             );
 
-            // 缩放到合适视图（ViewZoomtofit2 在 ModelDoc2 类上，需强转）
-            ((ModelDoc2)ActiveDoc).ViewZoomtofit2();
+            Console.WriteLine($"[SwCommands] FeatureExtrusion3 返回: {(feat != null ? "成功" : "null")}");
+
+            if (feat == null)
+                throw new InvalidOperationException("拉伸失败，请确保草图中有封闭的轮廓");
+
+            // 缩放到合适视图
+            mdoc.ViewZoomtofit2();
 
             Console.WriteLine($"[SwCommands] 拉伸完成，深度: {depth} 米");
         }
@@ -709,6 +735,7 @@ namespace Chapter1.ConnectToSw
             // SketchManager.InsertSketch(true) 在某些情况下可能无法正确退出草图，
             // 导致 FeatureRevolve2 返回 null（与 CutExtrusion 遇到的问题一致）
             mdoc.InsertSketch2(true);
+            _sketchOnRefPlane = false;
 
             // 执行旋转
             var feat = ActiveDoc.FeatureManager.FeatureRevolve2(
@@ -764,6 +791,7 @@ namespace Chapter1.ConnectToSw
             // SketchManager.InsertSketch(true) 在某些情况下（如实体面上的草图）可能无法正确退出，
             // 而 IModelDoc2.InsertSketch2(true) 是官方示例中使用的方法。
             mdoc.InsertSketch2(true);
+            _sketchOnRefPlane = false;
 
             // 验证草图是否已退出
             activeSketch = ActiveDoc.SketchManager.ActiveSketch;
@@ -1072,7 +1100,17 @@ namespace Chapter1.ConnectToSw
             if (edgeSelection.ToLower() == "all")
             {
                 // 选中所有边
+                Console.WriteLine($"[SwCommands] 圆角: ActiveDoc类型={ActiveDoc.GetType()}, partDoc类型={partDoc.GetType()}");
                 var bodies = partDoc.GetBodies2((int)swBodyType_e.swSolidBody, true) as object[];
+                Console.WriteLine($"[SwCommands] 圆角: GetBodies2(visible=true) 返回 {(bodies == null ? "null" : $"数组长度={bodies.Length}")}");
+
+                // 如果可见实体为空，尝试获取所有实体（包括不可见的）
+                if (bodies == null || bodies.Length == 0)
+                {
+                    bodies = partDoc.GetBodies2((int)swBodyType_e.swSolidBody, false) as object[];
+                    Console.WriteLine($"[SwCommands] 圆角: GetBodies2(visible=false) 返回 {(bodies == null ? "null" : $"数组长度={bodies.Length}")}");
+                }
+
                 if (bodies == null || bodies.Length == 0)
                     throw new InvalidOperationException("当前零件没有实体");
 
@@ -1090,7 +1128,6 @@ namespace Chapter1.ConnectToSw
                         if (edge == null) continue;
 
                         var entity = (IEntity)edge;
-                        // Mark = 1 用于圆角边选择
                         bool sel = entity.Select4(edgeCount > 0, null);
                         if (sel) edgeCount++;
                     }
