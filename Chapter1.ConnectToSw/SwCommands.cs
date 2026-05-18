@@ -1137,11 +1137,28 @@ namespace Chapter1.ConnectToSw
             else if (edgeSelection.ToLower() == "ray")
             {
                 // 通过射线选中边
-                bool sel = ext.SelectByRay(rx, ry, rz, dx, dy, dz, 0.001,
+                Console.WriteLine($"[SwCommands] 圆角: 射线选边 起点({rx},{ry},{rz}) 方向({dx},{dy},{dz}) 容差=0.002m");
+                bool sel = ext.SelectByRay(rx, ry, rz, dx, dy, dz, 0.002,
                     (int)swSelectType_e.swSelEDGES, false, 0, 0);
                 if (!sel)
+                {
+                    // 输出包围盒帮助调试
+                    string bboxInfo = "";
+                    try
+                    {
+                        var bodies2 = partDoc.GetBodies2((int)swBodyType_e.swSolidBody, true) as object[];
+                        if (bodies2 != null && bodies2.Length > 0)
+                        {
+                            var bb = ((IBody2)bodies2[0]).GetBodyBox() as double[];
+                            if (bb != null)
+                                bboxInfo = $" 实体包围盒: ({bb[0]:F4},{bb[1]:F4},{bb[2]:F4})->({bb[3]:F4},{bb[4]:F4},{bb[5]:F4})";
+                        }
+                    }
+                    catch { }
+                    Console.WriteLine($"[SwCommands] 圆角: 射线未命中任何边。{bboxInfo}");
                     throw new InvalidOperationException(
-                        $"未能通过射线选中边。射线起点({rx},{ry},{rz})，方向({dx},{dy},{dz})");
+                        $"未能通过射线选中边。射线起点({rx},{ry},{rz})，方向({dx},{dy},{dz})。{bboxInfo}请确保射线起点在实体附近且方向指向边。");
+                }
                 edgeCount = 1;
                 Console.WriteLine($"[SwCommands] 圆角: 通过射线选中 1 条边");
             }
@@ -1263,11 +1280,27 @@ namespace Chapter1.ConnectToSw
             }
             else if (edgeSelection.ToLower() == "ray")
             {
-                bool sel = ext.SelectByRay(rx, ry, rz, dx, dy, dz, 0.001,
+                Console.WriteLine($"[SwCommands] 倒角: 射线选边 起点({rx},{ry},{rz}) 方向({dx},{dy},{dz}) 容差=0.002m");
+                bool sel = ext.SelectByRay(rx, ry, rz, dx, dy, dz, 0.002,
                     (int)swSelectType_e.swSelEDGES, false, 0, 0);
                 if (!sel)
+                {
+                    string bboxInfo = "";
+                    try
+                    {
+                        var bodies2 = partDoc.GetBodies2((int)swBodyType_e.swSolidBody, true) as object[];
+                        if (bodies2 != null && bodies2.Length > 0)
+                        {
+                            var bb = ((IBody2)bodies2[0]).GetBodyBox() as double[];
+                            if (bb != null)
+                                bboxInfo = $" 实体包围盒: ({bb[0]:F4},{bb[1]:F4},{bb[2]:F4})->({bb[3]:F4},{bb[4]:F4},{bb[5]:F4})";
+                        }
+                    }
+                    catch { }
+                    Console.WriteLine($"[SwCommands] 倒角: 射线未命中任何边。{bboxInfo}");
                     throw new InvalidOperationException(
-                        $"未能通过射线选中边。射线起点({rx},{ry},{rz})，方向({dx},{dy},{dz})");
+                        $"未能通过射线选中边。射线起点({rx},{ry},{rz})，方向({dx},{dy},{dz})。{bboxInfo}请确保射线起点在实体附近且方向指向边。");
+                }
                 edgeCount = 1;
                 Console.WriteLine($"[SwCommands] 倒角: 通过射线选中 1 条边");
             }

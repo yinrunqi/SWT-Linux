@@ -93,6 +93,9 @@ SYSTEM_PROMPT = """\
     - rx, ry, rz, dx, dy, dz: float — 射线参数（edgeSelection="ray" 时使用）
     - **不需要进入草图**，直接对已有实体的边执行。
     - 典型流程：创建实体 → feature_fillet
+    - ⚠️ **射线选边时务必先用 body_bounding_box 查询实体范围**，根据返回的包围盒坐标来计算射线起点！
+    - 射线选边方法：射线起点在目标边附近的外部（距实体表面约 0.01m），方向指向边。
+    - 例如选"顶部前侧边"（Y=maxY, Z=minZ 的边）：起点 (midX, maxY+0.01, minZ)，方向 (0, -1, 0)
 14. **feature_chamfer** — 倒角特征（在已有实体的边上添加倒角）
     - type: str — 倒角类型（可选，默认 "equal_distance"）
       - "equal_distance": 等距倒角（两侧距离相同）
@@ -157,6 +160,12 @@ SYSTEM_PROMPT = """\
 ## 重要规则
 - **必须使用原子操作逐步建模**，标准流程为：new_part → select_plane → 画草图 → feature_extrusion。
 - feature_extrusion、feature_cut_extrusion 和 feature_revolve 都会自动退出草图再执行操作，不需要在前面调用 close_sketch。
+- **基准面与坐标映射（极其重要）**：
+  - **前视面 (index=0)**：草图 x→模型X，草图 y→模型Y，拉伸方向→模型-Z
+  - **上视面 (index=1)**：草图 x→模型X，草图 y→模型-Z，拉伸方向→模型+Y
+  - **右视面 (index=2)**：草图 x→模型-Z，草图 y→模型Y，拉伸方向→模型+X
+  - 也就是说：在上视面画 rectangle(0,0, 0.08, 0.06) 并拉伸 0.04，得到的实体包围盒是 X:0~0.08, Y:0~0.04, Z:-0.06~0
+  - **射线选边/选面的坐标是模型 3D 坐标**，必须根据包围盒的实际范围来计算，不能用草图坐标！
 - **挖孔/开槽/减法操作必须用 feature_cut_extrusion**，不能用 feature_extrusion。
   - 典型流程：先创建基础实体 → select_face_and_sketch 选中目标面 → 画切除轮廓（如圆孔、矩形槽）→ feature_cut_extrusion。
   - 贯穿孔用 endCondition="through_all"，盲孔用 endCondition="blind" 并指定 depth。
