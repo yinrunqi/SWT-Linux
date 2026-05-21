@@ -39,6 +39,153 @@ namespace Chapter1.ConnectToSw
         #region 辅助方法
 
         /// <summary>
+        /// 根据语义化边位置名称（如 "top_front", "bottom_left" 等）自动计算射线参数并选中对应的边。
+        /// 
+        /// 支持的位置名称格式为 "面1_面2"，表示两个面的交线（即边）。
+        /// 面名称：top(顶面,Y=maxY), bottom(底面,Y=minY), front(前面,Z=maxZ), back(后面,Z=minZ),
+        ///         left(左面,X=minX), right(右面,X=maxX)
+        /// 
+        /// 例如：
+        /// - "top_front"：顶面与前面的交线（Y=maxY, Z=maxZ 的那条边）
+        /// - "top_back"：顶面与后面的交线（Y=maxY, Z=minZ 的那条边）
+        /// - "top_left"：顶面与左面的交线（Y=maxY, X=minX 的那条边）
+        /// - "top_right"：顶面与右面的交线（Y=maxY, X=maxX 的那条边）
+        /// - "bottom_front"：底面与前面的交线
+        /// - "front_left"：前面与左面的交线
+        /// 等等...
+        /// </summary>
+        /// <returns>选中的边数量（成功时为 1）</returns>
+        private int SelectEdgeByPosition(IPartDoc partDoc, IModelDocExtension ext,
+            string positionName, string featureLabel)
+        {
+            // 获取包围盒
+            var bodies = partDoc.GetBodies2((int)swBodyType_e.swSolidBody, true) as object[];
+            if (bodies == null || bodies.Length == 0)
+                throw new InvalidOperationException("当前零件没有实体");
+
+            var bbox = ((IBody2)bodies[0]).GetBodyBox() as double[];
+            if (bbox == null)
+                throw new InvalidOperationException("无法获取实体包围盒");
+
+            double minX = bbox[0], minY = bbox[1], minZ = bbox[2];
+            double maxX = bbox[3], maxY = bbox[4], maxZ = bbox[5];
+            double midX = (minX + maxX) / 2;
+            double midY = (minY + maxY) / 2;
+            double midZ = (minZ + maxZ) / 2;
+            double offset = 0.01; // 射线起点到面的偏移量（10mm）
+
+            Console.WriteLine($"[SwCommands] {featureLabel}: 语义化选边 \"{positionName}\"");
+            Console.WriteLine($"[SwCommands] {featureLabel}: 包围盒 ({minX:F4},{minY:F4},{minZ:F4})->({maxX:F4},{maxY:F4},{maxZ:F4})");
+
+            // 解析位置名称：拆分为两个面名
+            string normalized = positionName.ToLower().Trim();
+            string[] parts = normalized.Split(new char[] { '_', '-', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (parts.Length != 2)
+                throw new ArgumentException(
+                    $"无效的边位置名: \"{positionName}\"。格式应为 \"面1_面2\"（如 top_front, bottom_left）。" +
+                    $"可用面名: top, bottom, front, back, left, right");
+
+            // 确定射线起点和方向
+            // 策略：从两个面的"外部交线"方向射入，命中该交线（边）
+            // 射线从两个面的法线外侧交汇点出发，指向包围盒中心
+            double rx, ry, rz, dx, dy, dz;
+            ComputeEdgeRay(parts[0], parts[1], minX, minY, minZ, maxX, maxY, maxZ,
+                midX, midY, midZ, offset, out rx, out ry, out rz, out dx, out dy, out dz);
+
+            Console.WriteLine($"[SwCommands] {featureLabel}: 计算射线 起点({rx:F4},{ry:F4},{rz:F4}) 方向({dx:F4},{dy:F4},{dz:F4})");
+
+            bool sel = ext.SelectByRay(rx, ry, rz, dx, dy, dz, 0.002,
+                (int)swSelectType_e.swSelEDGES, false, 0, 0);
+
+            if (!sel)
+                throw new InvalidOperationException(
+                    $"未能通过语义化位置 \"{positionName}\" 选中边。" +
+                    $"计算的射线: 起点({rx:F4},{ry:F4},{rz:F4}), 方向({dx:F4},{dy:F4},{dz:F4})。" +
+                    $"包围盒: ({minX:F4},{minY:F4},{minZ:F4})->({maxX:F4},{maxY:F4},{maxZ:F4})");
+
+            Console.WriteLine($"[SwCommands] {featureLabel}: 通过语义化位置 \"{positionName}\" 选中 1 条边");
+            return 1;
+        }
+
+        /// <summary>
+        /// 根据两个面名计算用于选取其交线（边）的射线起点和方向。
+        /// 射线起点在目标边的外侧中点附近，方向斜 45° 指向包围盒内部。
+        /// </summary>
+        private void ComputeEdgeRay(string face1, string face2,
+            double minX, double minY, double minZ,
+            double maxX, double maxY, double maxZ,
+            double midX, double midY, double midZ, double offset,
+            out double rx, out double ry, out double rz,
+            out double dx, out double dy, out double dz)
+        {
+            // 初始化：射线起点设为包围盒中心，方向为零
+            rx = midX; ry = midY; rz = midZ;
+            dx = 0; dy = 0; dz = 0;
+
+            // 根据面名设置对应坐标分量
+            // face1 和 face2 各锁定一个坐标轴到包围盒的边界值
+            ApplyFaceConstraint(face1, ref rx, ref ry, ref rz, ref dx, ref dy, ref dz,
+                minX, minY, minZ, maxX, maxY, maxZ, offset);
+            ApplyFaceConstraint(face2, ref rx, ref ry, ref rz, ref dx, ref dy, ref dz,
+                minX, minY, minZ, maxX, maxY, maxZ, offset);
+
+            // 归一化方向向量
+            double len = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+            if (len < 1e-10)
+            {
+                // 如果方向为零，默认指向中心
+                dx = midX - rx; dy = midY - ry; dz = midZ - rz;
+                len = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+            }
+            if (len > 1e-10)
+            {
+                dx /= len; dy /= len; dz /= len;
+            }
+        }
+
+        /// <summary>
+        /// 根据单个面名设置射线起点的对应坐标分量和方向分量。
+        /// </summary>
+        private void ApplyFaceConstraint(string faceName,
+            ref double rx, ref double ry, ref double rz,
+            ref double dx, ref double dy, ref double dz,
+            double minX, double minY, double minZ,
+            double maxX, double maxY, double maxZ, double offset)
+        {
+            switch (faceName)
+            {
+                case "top":
+                    ry = maxY + offset;  // 起点在顶面上方
+                    dy += -1;            // 方向向下
+                    break;
+                case "bottom":
+                    ry = minY - offset;  // 起点在底面下方
+                    dy += 1;             // 方向向上
+                    break;
+                case "front":
+                    rz = maxZ + offset;  // 起点在前面前方（Z正方向）
+                    dz += -1;            // 方向向后
+                    break;
+                case "back":
+                    rz = minZ - offset;  // 起点在后面后方
+                    dz += 1;             // 方向向前
+                    break;
+                case "left":
+                    rx = minX - offset;  // 起点在左面左方
+                    dx += 1;             // 方向向右
+                    break;
+                case "right":
+                    rx = maxX + offset;  // 起点在右面右方
+                    dx += -1;            // 方向向左
+                    break;
+                default:
+                    throw new ArgumentException(
+                        $"未知的面名称: \"{faceName}\"。可选: top, bottom, front, back, left, right");
+            }
+        }
+
+        /// <summary>
         /// 将模型坐标 (x, y, z) 通过当前活动草图的 ModelToSketchTransform 变换为草图坐标。
         /// 返回 (sx, sy)。如果没有活动草图或变换矩阵不可用，原样返回 (x, y)。
         /// 
@@ -1164,7 +1311,8 @@ namespace Chapter1.ConnectToSw
             }
             else
             {
-                throw new ArgumentException($"未知的选边方式: {edgeSelection}，可选 'all' 或 'ray'");
+                // 尝试作为语义化边位置名解析（如 "top_front", "bottom_left" 等）
+                edgeCount = SelectEdgeByPosition(partDoc, ext, edgeSelection, "圆角");
             }
 
             if (edgeCount == 0)
@@ -1306,7 +1454,8 @@ namespace Chapter1.ConnectToSw
             }
             else
             {
-                throw new ArgumentException($"未知的选边方式: {edgeSelection}，可选 'all' 或 'ray'");
+                // 尝试作为语义化边位置名解析（如 "top_front", "bottom_left" 等）
+                edgeCount = SelectEdgeByPosition(partDoc, ext, edgeSelection, "倒角");
             }
 
             if (edgeCount == 0)

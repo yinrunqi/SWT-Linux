@@ -89,13 +89,22 @@ SYSTEM_PROMPT = """\
     - radius: float — 圆角半径（米）
     - edgeSelection: str — 选边方式（可选，默认 "all"）
       - "all": 选中实体的所有边
-      - "ray": 通过射线选中特定边
-    - rx, ry, rz, dx, dy, dz: float — 射线参数（edgeSelection="ray" 时使用）
+      - "ray": 通过射线选中特定边（需提供 rx,ry,rz,dx,dy,dz）
+      - **"面1_面2" 语义化选边（强烈推荐！）**：直接指定边的位置，C# 端自动计算射线
+        - 格式：两个面名用下划线连接，表示这两个面的交线
+        - 面名：top(顶面), bottom(底面), front(前面), back(后面), left(左面), right(右面)
+        - 示例：
+          - "top_front": 顶面与前面的交边
+          - "top_back": 顶面与后面的交边
+          - "top_left": 顶面与左面的交边
+          - "top_right": 顶面与右面的交边
+          - "bottom_front": 底面与前面的交边
+          - "front_left": 前面与左面的交边
+          - "front_right": 前面与右面的交边
+    - rx, ry, rz, dx, dy, dz: float — 射线参数（仅 edgeSelection="ray" 时使用）
     - **不需要进入草图**，直接对已有实体的边执行。
     - 典型流程：创建实体 → feature_fillet
-    - ⚠️ **射线选边时务必先用 body_bounding_box 查询实体范围**，根据返回的包围盒坐标来计算射线起点！
-    - 射线选边方法：射线起点在目标边附近的外部（距实体表面约 0.01m），方向指向边。
-    - 例如选"顶部前侧边"（Y=maxY, Z=minZ 的边）：起点 (midX, maxY+0.01, minZ)，方向 (0, -1, 0)
+    - ⚠️ **优先使用语义化选边**（如 "top_front"），避免手动计算射线坐标！
 14. **feature_chamfer** — 倒角特征（在已有实体的边上添加倒角）
     - type: str — 倒角类型（可选，默认 "equal_distance"）
       - "equal_distance": 等距倒角（两侧距离相同）
@@ -104,10 +113,8 @@ SYSTEM_PROMPT = """\
     - distance1: float — 倒角距离（米）
     - distance2: float — 第二距离（distance_distance 模式，米，可选）
     - angle: float — 倒角角度（distance_angle 模式，度，可选，默认 45）
-    - edgeSelection: str — 选边方式（可选，默认 "all"）
-      - "all": 选中实体的所有边
-      - "ray": 通过射线选中特定边
-    - rx, ry, rz, dx, dy, dz: float — 射线参数（edgeSelection="ray" 时使用）
+    - edgeSelection: str — 选边方式（可选，默认 "all"），同 feature_fillet（支持 "all"、"ray"、语义化选边）
+    - rx, ry, rz, dx, dy, dz: float — 射线参数（仅 edgeSelection="ray" 时使用）
     - **不需要进入草图**，直接对已有实体的边执行。
     - 典型流程：创建实体 → feature_chamfer
 
