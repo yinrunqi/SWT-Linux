@@ -809,8 +809,10 @@ namespace Chapter1.ConnectToSw
 
         /// <summary>
         /// 退出草图并拉伸当前草图。depth 为拉伸深度，单位：米。
+        /// flipDirection: 是否翻转拉伸方向（默认 false）。
+        /// midPlane: 是否使用中间面拉伸（从草图面两侧各拉伸 depth/2），默认 false。
         /// </summary>
-        public void Extrusion(double depth)
+        public void Extrusion(double depth, bool flipDirection = false, bool midPlane = false)
         {
             EnsureActiveDoc();
 
@@ -822,15 +824,41 @@ namespace Chapter1.ConnectToSw
             mdoc.InsertSketch2(true);
             _sketchOnRefPlane = false;
 
+            // 确定终止条件和深度
+            int t1, t2;
+            double d1, d2;
+            bool sd; // Sd: true=单方向, false=双方向（中间面）
+
+            if (midPlane)
+            {
+                // 中间面拉伸：从草图面两侧各拉伸一半
+                t1 = (int)swEndConditions_e.swEndCondMidPlane;
+                t2 = (int)swEndConditions_e.swEndCondBlind;
+                d1 = depth;   // 总深度（SolidWorks 中间面模式会自动两侧各拉 depth/2）
+                d2 = 0;
+                sd = false;
+            }
+            else
+            {
+                // 单方向盲拉伸
+                t1 = (int)swEndConditions_e.swEndCondBlind;
+                t2 = (int)swEndConditions_e.swEndCondBlind;
+                d1 = depth;
+                d2 = 0;
+                sd = true;
+            }
+
             // 执行拉伸
+            // 注意：Flip 参数控制的是"拉伸侧面翻转"(用于双向拉伸选择哪一侧)
+            //       Dir 参数才是真正的"反转拉伸方向"(Reverse Direction)
             var feat = ActiveDoc.FeatureManager.FeatureExtrusion3(
-                Sd: true,
+                Sd: sd,
                 Flip: false,
-                Dir: false,
-                T1: (int)swEndConditions_e.swEndCondBlind,
-                T2: (int)swEndConditions_e.swEndCondBlind,
-                D1: depth,
-                D2: 0,
+                Dir: flipDirection,
+                T1: t1,
+                T2: t2,
+                D1: d1,
+                D2: d2,
                 Dchk1: false,
                 Dchk2: false,
                 Ddir1: false,
@@ -849,7 +877,7 @@ namespace Chapter1.ConnectToSw
                 FlipStartOffset: false
             );
 
-            Console.WriteLine($"[SwCommands] FeatureExtrusion3 返回: {(feat != null ? "成功" : "null")}");
+            Console.WriteLine($"[SwCommands] FeatureExtrusion3 返回: {(feat != null ? "成功" : "null")} (flip={flipDirection}, midPlane={midPlane})");
 
             if (feat == null)
                 throw new InvalidOperationException("拉伸失败，请确保草图中有封闭的轮廓");
@@ -857,7 +885,7 @@ namespace Chapter1.ConnectToSw
             // 缩放到合适视图
             mdoc.ViewZoomtofit2();
 
-            Console.WriteLine($"[SwCommands] 拉伸完成，深度: {depth} 米");
+            Console.WriteLine($"[SwCommands] 拉伸完成，深度: {depth} 米, 方向翻转: {flipDirection}, 中间面: {midPlane}");
         }
 
         /// <summary>

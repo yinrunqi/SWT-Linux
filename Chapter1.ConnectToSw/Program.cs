@@ -130,7 +130,11 @@ namespace Chapter1.ConnectToSw
                     {
                         SendJson(context.Response, 500, new { success = false, message = $"服务器内部错误: {ex.Message}" });
                     }
-                    catch { /* 忽略响应写入失败 */ }
+                    catch
+                    {
+                        // 响应可能已部分发送（客户端超时断开），中止连接
+                        try { context.Response.Abort(); } catch { }
+                    }
                 }
             }
 
@@ -407,9 +411,15 @@ namespace Chapter1.ConnectToSw
             {
                 var body = ReadJsonBody(req);
                 double depth = GetDouble(body, "depth");
+                bool flipDirection = false;
+                if (body.ContainsKey("flipDirection"))
+                    flipDirection = Convert.ToBoolean(body["flipDirection"]);
+                bool midPlane = false;
+                if (body.ContainsKey("midPlane"))
+                    midPlane = Convert.ToBoolean(body["midPlane"]);
 
-                _commands.Extrusion(depth);
-                SendJson(resp, 200, new { success = true, message = $"拉伸完成，深度: {depth} 米" });
+                _commands.Extrusion(depth, flipDirection, midPlane);
+                SendJson(resp, 200, new { success = true, message = $"拉伸完成，深度: {depth} 米, 方向翻转: {flipDirection}, 中间面: {midPlane}" });
             }
             catch (KeyNotFoundException ex)
             {

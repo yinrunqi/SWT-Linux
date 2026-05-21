@@ -70,6 +70,8 @@ SYSTEM_PROMPT = """\
    - 椭圆是闭合曲线，可直接用于拉伸或切除
 9. **feature_extrusion** — 拉伸当前草图
    - depth: float — 拉伸深度（米）
+   - flipDirection: bool — 是否翻转拉伸方向（可选，默认 false）。用于向反方向拉伸（如从面向下拉伸凳腿）
+   - midPlane: bool — 是否使用中间面拉伸（可选，默认 false）。从草图面两侧各拉伸 depth/2
 10. **feature_cut_extrusion** — 切除拉伸（挖孔/开槽/减法建模）
    - depth: float — 切除深度（米）
    - endCondition: str — 终止条件（可选，默认 "blind"）
@@ -167,6 +169,12 @@ SYSTEM_PROMPT = """\
 ## 重要规则
 - **必须使用原子操作逐步建模**，标准流程为：new_part → select_plane → 画草图 → feature_extrusion。
 - feature_extrusion、feature_cut_extrusion 和 feature_revolve 都会自动退出草图再执行操作，不需要在前面调用 close_sketch。
+- **拉伸方向控制**：
+  - 在基准面上：默认拉伸方向为面的正法向量方向（前视面→+Z，上视面→+Y，右视面→+X）
+  - 在实体面上：默认拉伸方向为面的法向量方向（select_face_and_sketch 日志会打印法向量）
+  - **flipDirection=true** 翻转默认方向（仅在需要反方向时使用）
+  - **midPlane=true** 从草图面两侧各拉伸一半深度
+  - 例如做板凳：上视面画凳面矩形拉伸20mm（默认+Y向上）；然后选底面（法向量-Y），在底面画腿截面直接拉伸300mm（默认沿法向量-Y即向下），不需要flipDirection
 - **基准面与坐标映射（极其重要）**：
   - **前视面 (index=0)**：草图 x→模型X，草图 y→模型Y，拉伸方向→模型-Z
   - **上视面 (index=1)**：草图 x→模型X，草图 y→模型-Z，拉伸方向→模型+Y
