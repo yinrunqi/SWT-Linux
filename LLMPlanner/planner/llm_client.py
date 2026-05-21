@@ -52,7 +52,8 @@ SYSTEM_PROMPT = """\
    - x1, y1: float — 左下角坐标（米）
    - x2, y2: float — 右上角坐标（米）
 5. **sketch_circle** — 在草图中画圆
-   - cx, cy: float — 圆心坐标（米）
+   - cx, cy: float — 圆心坐标（米）。在基准面草图中这是 2D 草图坐标；在实体面草图中这是**模型 3D 坐标**的 X 和 Y 分量。
+   - cz: float — 圆心 Z 坐标（可选，默认 0）。**在实体面草图中必须正确设置**以指定圆心在模型空间中的完整 3D 位置。
    - radius: float — 半径（米）
 6. **sketch_centerline** — 在草图中画中心线（构造线，用于旋转轴）
    - x1, y1: float — 起点坐标（米）
@@ -70,7 +71,7 @@ SYSTEM_PROMPT = """\
    - 椭圆是闭合曲线，可直接用于拉伸或切除
 9. **feature_extrusion** — 拉伸当前草图
    - depth: float — 拉伸深度（米）
-   - flipDirection: bool — 是否翻转拉伸方向（可选，默认 false）。用于向反方向拉伸（如从面向下拉伸凳腿）
+   - flipDirection: bool — 是否翻转拉伸方向（可选，默认 false）。⚠️ 在实体面上拉伸时，默认方向就是面的外法向量方向（离开面的方向），通常不需要设 true。仅在需要向面的内侧拉伸时才设 true。
    - midPlane: bool — 是否使用中间面拉伸（可选，默认 false）。从草图面两侧各拉伸 depth/2
 10. **feature_cut_extrusion** — 切除拉伸（挖孔/开槽/减法建模）
    - depth: float — 切除深度（米）
@@ -175,12 +176,30 @@ SYSTEM_PROMPT = """\
   - **flipDirection=true** 翻转默认方向（仅在需要反方向时使用）
   - **midPlane=true** 从草图面两侧各拉伸一半深度
   - 例如做板凳：上视面画凳面矩形拉伸20mm（默认+Y向上）；然后选底面（法向量-Y），在底面画腿截面直接拉伸300mm（默认沿法向量-Y即向下），不需要flipDirection
+- **实体面草图坐标（极其重要！）**：
+  - 在基准面上画草图时：只需传 (x, y)，这就是草图平面的 2D 坐标。
+  - 在实体面上画草图时：**必须传模型 3D 坐标 (cx, cy, cz)**，系统会自动通过 ModelToSketchTransform 转换为草图坐标。
+  - ⚠️ **不要把 Z 方向的偏移量放在 cy 里**！在实体面上画图必须正确设置 cz/z1/z2 参数。
+  - ⭐ **板凳完整示例**（200mm×200mm×20mm 凳面 + 4 条圆柱腿，腿直径 20mm，长 300mm，距边缘 30mm）：
+    **同一草图中可以画多个不相连闭合轮廓（如 4 个圆），然后一次拉伸会生成多个凸台！**
+    完整步骤序列（共 10 个 operation）：
+    1. new_part {}
+    2. select_plane {index: 1}  ← 上视面
+    3. sketch_rectangle {x1: -0.1, y1: -0.1, x2: 0.1, y2: 0.1}  ← 凳面 200×200mm
+    4. feature_extrusion {depth: 0.02}  ← 凳面厚度 20mm，向+Y拉伸，实体范围 Y:0~0.02
+    5. select_face_and_sketch {rx: 0, ry: -0.01, rz: 0, dx: 0, dy: 1, dz: 0}  ← 射线起点在底面下方(Y=-0.01)，方向向上(dy=+1)命中底面(Y=0)
+    6. sketch_circle {cx: -0.07, cy: 0, cz: -0.07, radius: 0.01}  ← 左后腿（底面 cy=0，Z偏移放cz）
+    7. sketch_circle {cx: 0.07, cy: 0, cz: -0.07, radius: 0.01}   ← 右后腿
+    8. sketch_circle {cx: -0.07, cy: 0, cz: 0.07, radius: 0.01}   ← 左前腿
+    9. sketch_circle {cx: 0.07, cy: 0, cz: 0.07, radius: 0.01}    ← 右前腿
+    10. feature_extrusion {depth: 0.3}  ← 4 条腿同时拉伸 300mm（不需要 flipDirection！底面法向量-Y即向下）
 - **基准面与坐标映射（极其重要）**：
   - **前视面 (index=0)**：草图 x→模型X，草图 y→模型Y，拉伸方向→模型-Z
   - **上视面 (index=1)**：草图 x→模型X，草图 y→模型-Z，拉伸方向→模型+Y
   - **右视面 (index=2)**：草图 x→模型-Z，草图 y→模型Y，拉伸方向→模型+X
   - 也就是说：在上视面画 rectangle(0,0, 0.08, 0.06) 并拉伸 0.04，得到的实体包围盒是 X:0~0.08, Y:0~0.04, Z:-0.06~0
   - **射线选边/选面的坐标是模型 3D 坐标**，必须根据包围盒的实际范围来计算，不能用草图坐标！
+  - **select_face_and_sketch 射线规则**：射线起点(rx,ry,rz)必须在目标面的**外侧**，方向(dx,dy,dz)指向实体内部。例如选底面(Y=0)时：起点 ry=-0.01（在面下方），方向 dy=+1（向上射入实体）。选顶面(Y=0.02)时：起点 ry=0.03（在面上方），方向 dy=-1（向下射入实体）。
 - **挖孔/开槽/减法操作必须用 feature_cut_extrusion**，不能用 feature_extrusion。
   - 典型流程：先创建基础实体 → select_face_and_sketch 选中目标面 → 画切除轮廓（如圆孔、矩形槽）→ feature_cut_extrusion。
   - 贯穿孔用 endCondition="through_all"，盲孔用 endCondition="blind" 并指定 depth。
@@ -207,7 +226,8 @@ SYSTEM_PROMPT = """\
     5. feature_revolve {angle: 360}  ← ⚠️ **必须有这一步！**
     （注意：**不需要画直线来封闭轮廓**！圆弧端点在旋转轴上，SolidWorks 自动用旋转轴封闭。
      如果画一条与中心线重合的直线反而会导致旋转失败！）
-- 如果需要在同一零件上做多个特征（如挖孔），拉伸后需要再次 select_face_and_sketch 或 select_plane 进入新草图。
+- **同一草图多轮廓技巧**：如果要在同一个面上拉伸多个相同高度的凸台（如 4 条桌腿），只需 select_face_and_sketch 一次，在同一个草图中画所有轮廓（如 4 个圆），然后一次 feature_extrusion 即可生成所有凸台。**不需要为每个凸台单独选面！**
+- 如果需要在同一零件上做**不同高度**的多个特征（如挖孔），拉伸后需要再次 select_face_and_sketch 或 select_plane 进入新草图。
 - 步骤必须逻辑正确，按照 SolidWorks 的操作流程排列。
 - 即使是简单的长方体，也必须拆分为：new_part → select_plane → sketch_rectangle → feature_extrusion。
 
@@ -388,8 +408,8 @@ class SwLLMClient:
         调用 OpenAI API 获取建模计划。
 
         策略：
-        1. 优先使用 Structured Outputs（beta.chat.completions.parse）
-        2. 如果 API 返回 BadRequestError（说明不支持），自动降级为 JSON mode
+        1. 优先使用 Structured Outputs（json_schema with strict=False）
+        2. 如果 API 返回 BadRequestError（说明不支持），自动降级为 JSON mode（json_object）
         3. 降级后后续调用不再尝试 Structured Outputs
 
         使用 tenacity 自动重试（最多 3 次，指数退避）。
@@ -402,13 +422,39 @@ class SwLLMClient:
         if self._use_structured_output:
             try:
                 return self._call_structured_output(messages)
-            except BadRequestError as e:
-                # API 不支持 Structured Outputs，降级为 JSON mode
-                print(f"[LLM] Structured Outputs 不被支持 ({e.message})，降级为 JSON mode...")
-                self._use_structured_output = False
-                return self._call_json_mode(messages)
+            except (BadRequestError, Exception) as e:
+                error_msg = str(e)
+                if "additionalProperties" in error_msg or "json_schema" in error_msg.lower() or "response_format" in error_msg.lower():
+                    # API 不支持当前 schema 格式，降级为 JSON mode
+                    print(f"[LLM] Structured Outputs 不被支持 ({error_msg[:100]})，降级为 JSON mode...")
+                    self._use_structured_output = False
+                    return self._call_json_mode(messages)
+                else:
+                    raise
         else:
             return self._call_json_mode(messages)
+
+    @staticmethod
+    def _patch_schema_additional_properties(schema: dict) -> dict:
+        """
+        递归给 JSON schema 中所有 object 类型（含 properties 字段）添加
+        "additionalProperties": false，以满足 OpenAI Structured Outputs 的严格要求。
+        同时确保所有 properties 中的字段都被列为 required。
+        """
+        if isinstance(schema, dict):
+            if schema.get("type") == "object" and "properties" in schema:
+                schema["additionalProperties"] = False
+                # OpenAI 要求所有属性都是 required
+                if "required" not in schema:
+                    schema["required"] = list(schema["properties"].keys())
+            for value in schema.values():
+                if isinstance(value, dict):
+                    SwLLMClient._patch_schema_additional_properties(value)
+                elif isinstance(value, list):
+                    for item in value:
+                        if isinstance(item, dict):
+                            SwLLMClient._patch_schema_additional_properties(item)
+        return schema
 
     def _call_structured_output(self, messages: list[dict]) -> SwModelingPlan:
         """
@@ -422,23 +468,29 @@ class SwLLMClient:
         - o1, o3-mini 等推理模型
         """
         print("[LLM] 使用 Structured Outputs 模式")
-        completion = self.client.beta.chat.completions.parse(
+
+        # 手动构建 JSON schema；使用非严格模式因为 params 是动态 dict
+        raw_schema = SwModelingPlan.model_json_schema()
+        patched_schema = self._patch_schema_additional_properties(raw_schema)
+
+        completion = self.client.chat.completions.create(
             model=self.model,
             messages=messages,
-            response_format=SwModelingPlan,
+            response_format={
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "SwModelingPlan",
+                    "strict": False,
+                    "schema": patched_schema,
+                },
+            },
         )
 
-        result = completion.choices[0].message.parsed
+        content = completion.choices[0].message.content
+        if not content:
+            raise ValueError("LLM 未返回有效的建模计划")
 
-        if result is None:
-            # 如果结构化输出解析失败，尝试从文本内容恢复
-            content = completion.choices[0].message.content
-            if content:
-                print("[LLM] 结构化解析失败，尝试从文本恢复...")
-                result = SwModelingPlan.model_validate_json(content)
-            else:
-                raise ValueError("LLM 未返回有效的建模计划")
-
+        result = SwModelingPlan.model_validate_json(content)
         print("[LLM] ✅ Structured Outputs 解析成功")
         return result
 
@@ -462,7 +514,9 @@ class SwLLMClient:
             "sketch_circle, sketch_centerline, sketch_arc, sketch_ellipse, feature_extrusion, feature_cut_extrusion, "
             "feature_revolve, feature_fillet, feature_chamfer, close_sketch, feature_tree, "
             "body_bounding_box, select_face_and_sketch, modify_dimension。\n"
-            "modify_dimension 的 params 中，newValue（绝对值）和 delta（增量）二选一。"
+            "modify_dimension 的 params 中，newValue（绝对值）和 delta（增量）二选一。\n\n"
+            "⚠️ **极其重要：你必须一次性输出所有步骤，不能截断！** 如果模型需要4条腿，就必须有4个 sketch_circle 步骤（或者在同一草图中画4个圆）。"
+            "**每个 steps 数组元素必须是一个对象（Object），包含 operation、params、description 三个字段。绝对不能是字符串或其他类型！**"
         )
         patched_messages = messages.copy()
         patched_messages[0] = {

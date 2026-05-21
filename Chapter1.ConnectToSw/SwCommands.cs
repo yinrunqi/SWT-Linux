@@ -550,9 +550,73 @@ namespace Chapter1.ConnectToSw
                 }
             }
 
+            // 如果射线未命中，自动尝试反转方向（容错：LLM 常搞反射线方向）
+            if (bestFace == null)
+            {
+                Console.WriteLine($"[SwCommands] 射线({rx},{ry},{rz})方向({dx},{dy},{dz})未命中，尝试反转方向...");
+                double rdx = -dx, rdy = -dy, rdz = -dz;
+                foreach (object bodyObj in bodies)
+                {
+                    var body = bodyObj as IBody2;
+                    if (body == null) continue;
+
+                    var face = (IFace2)body.GetFirstFace();
+                    while (face != null)
+                    {
+                        var surface = face.IGetSurface();
+                        if (surface.IsPlane())
+                        {
+                            var planeParams = (double[])surface.PlaneParams;
+                            double nx = planeParams[0], ny = planeParams[1], nz = planeParams[2];
+                            double rootX = planeParams[3], rootY = planeParams[4], rootZ = planeParams[5];
+
+                            double denom = rdx * nx + rdy * ny + rdz * nz;
+                            if (Math.Abs(denom) < 1e-12) { face = (IFace2)face.GetNextFace(); continue; }
+
+                            double t = ((rootX - rx) * nx + (rootY - ry) * ny + (rootZ - rz) * nz) / denom;
+                            if (t < 0) { face = (IFace2)face.GetNextFace(); continue; }
+
+                            double hitX = rx + t * rdx, hitY = ry + t * rdy, hitZ = rz + t * rdz;
+                            var closest = (double[])face.GetClosestPointOn(hitX, hitY, hitZ);
+                            double distToFace = Math.Sqrt(
+                                Math.Pow(closest[0] - hitX, 2) +
+                                Math.Pow(closest[1] - hitY, 2) +
+                                Math.Pow(closest[2] - hitZ, 2));
+
+                            if (distToFace < 0.0001 && t < bestDist)
+                            {
+                                bestDist = t;
+                                bestFace = face;
+                                bestHitPt = new[] { hitX, hitY, hitZ };
+                            }
+                        }
+                        else
+                        {
+                            var closest = (double[])face.GetClosestPointOn(rx, ry, rz);
+                            double distToOrigin = Math.Sqrt(
+                                Math.Pow(closest[0] - rx, 2) +
+                                Math.Pow(closest[1] - ry, 2) +
+                                Math.Pow(closest[2] - rz, 2));
+
+                            if (distToOrigin < bestDist)
+                            {
+                                bestDist = distToOrigin;
+                                bestFace = face;
+                                bestHitPt = new[] { closest[0], closest[1], closest[2] };
+                            }
+                        }
+
+                        face = (IFace2)face.GetNextFace();
+                    }
+                }
+
+                if (bestFace != null)
+                    Console.WriteLine($"[SwCommands] 反转方向({rdx},{rdy},{rdz})成功命中面！");
+            }
+
             if (bestFace == null)
                 throw new InvalidOperationException(
-                    $"未能通过射线选中实体面。射线起点({rx},{ry},{rz})，方向({dx},{dy},{dz})。");
+                    $"未能通过射线选中实体面。射线起点({rx},{ry},{rz})，方向({dx},{dy},{dz})及其反方向均未命中。");
 
             // 输出选中面的详细信息
             var hitSurface = bestFace.IGetSurface();
