@@ -11,6 +11,8 @@
 # ============================================
 !.gitignore
 !CODEBUDDY.md
+!README.md
+!TEST.md
 !run_test.sh
 !run_service.bat
 !build_service.bat
@@ -20,6 +22,9 @@
 
 # IDE 个人工作区配置 —— 不入库（保持被 * 忽略，此处仅作说明）
 # SolidWorksTutorial.code-workspace
+
+# NuGet 包目录 —— 不入库（靠 packages.config 还原，含第三方包自带 README 也一并排除）
+packages/**
 
 # ============================================
 # 项目文档
