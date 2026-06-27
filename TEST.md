@@ -187,6 +187,31 @@ python LLMPlanner/test/test_stool_llm.py stool_fillet
 
 ---
 
+## 九、日常物体建模（LLM 自然语言 → 自动规划 → 执行）
+
+实用日常物体的自动建模测试，位于 `test/objects/` 目录，每个物体一个独立脚本，
+共享工具在 `test/objects/_common.py`（封装前置检查、LLM 规划+执行、几何验证）。
+
+> 这些脚本用 `from _common import ...`，需**从 `test/objects/` 目录运行**。
+
+```cmd
+cd C:\codes\sw\SolidWorksTutorial\LLMPlanner\test\objects
+
+REM 收纳盒：外形 120×80×50mm，壁厚 8mm，顶部开口内腔 + 顶边 R3mm 圆角
+REM （考验：拉伸 + 实体面切除内腔[抽壳替代法] + 圆角）
+python test_storage_box.py
+
+REM 骰子：20mm 正方体 + 所有 12 条棱边 R2mm 圆角（圆润手感）
+REM （考验：拉伸 + edgeSelection="all" 全边圆角）
+python test_dice.py
+```
+
+> ⚠️ **实体面上画矩形的坑**：在实体面（如盒子顶面 Y=0.05）上用 sketch_rectangle 画内腔时，
+> 必须传完整 3D 坐标——y1=y2=面的Y坐标，Z 方向偏移放进 z1/z2（不能放 y）。
+> 此规则已写入 system prompt，LLM 现已能正确生成。
+
+---
+
 ## 测试分类说明
 
 | 类别 | 驱动方式 | 说明 |
@@ -198,6 +223,8 @@ python LLMPlanner/test/test_stool_llm.py stool_fillet
 | `test_fillet_chamfer` | API 直调 | 圆角 / 倒角 |
 | `test_stool` | API 直调 | 板凳建模（含反向拉伸） |
 | `test_stool_llm` | LLM 规划 | 自然语言 → 板凳建模 |
+| `objects/test_storage_box` | LLM 规划 | 收纳盒（内腔 + 圆角） |
+| `objects/test_dice` | LLM 规划 | 骰子（圆角立方体） |
 
 > **API 直调**类测试直接构造操作序列调用 C# 服务，不依赖 LLM，可用于验证底层建模能力；
 > **LLM 规划**类测试走完整链路（自然语言 → LLM 解析 → 执行），需要配置好 API Key。
