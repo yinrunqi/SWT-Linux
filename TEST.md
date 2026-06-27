@@ -11,6 +11,8 @@
 
 ## 环境准备
 
+在 cmd bash 上运行：
+
 ```cmd
 cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
 venv\Scripts\activate.bat
