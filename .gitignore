@@ -11,11 +11,15 @@
 # ============================================
 !.gitignore
 !CODEBUDDY.md
+!run_test.sh
+!run_service.bat
+!build_service.bat
 
 # ============================================
-# Chapter1.ConnectToSw — 只跟踪根目录下的 .cs
+# Chapter1.ConnectToSw — 跟踪根目录下的 .cs 与 README
 # ============================================
 !Chapter1.ConnectToSw/*.cs
+!Chapter1.ConnectToSw/README.md
 
 # ============================================
 # LLMPlanner — 跟踪除缓存外的所有文件
