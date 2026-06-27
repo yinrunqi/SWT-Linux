@@ -24,6 +24,33 @@ set OPENAI_BASE_URL=<你的_API_BASE_URL，如 https://api.openai.com/v1>
 
 ---
 
+## 测试日志约定
+
+测试运行的输出日志**统一存放在 `LLMPlanner/log/` 目录**，保持仓库整洁。该目录已在 `.gitignore` 中排除（`LLMPlanner/log/**` 与 `LLMPlanner/**/*.log`），**不会提交到 git**。
+
+将测试输出重定向到该目录，例如：
+
+```cmd
+cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
+if not exist log mkdir log
+python test\test_stool_llm.py stool_fillet > log\test_stool_fillet.log 2>&1
+```
+
+> **Windows 编码提示**：测试输出含 emoji（✅ 🎉 等），Windows 控制台默认 GBK 编码会报 `UnicodeEncodeError`。
+> 运行 Python 测试前请设置 UTF-8，并用 `-X utf8` 启动：
+> ```cmd
+> set PYTHONUTF8=1
+> set PYTHONIOENCODING=utf-8
+> python -X utf8 test\test_stool_llm.py stool_fillet > log\test_stool_fillet.log 2>&1
+> ```
+
+> **缓存提示**：修改了 `planner/llm_client.py` 中的 prompt 后，需先清空 LLM 缓存，否则会命中旧计划：
+> ```cmd
+> python -c "import diskcache; c=diskcache.Cache('planner/.llm_cache'); c.clear(); c.close(); print('缓存已清空')"
+> ```
+
+---
+
 ## 一、基础用法（命令行直接建模）
 
 ```cmd
