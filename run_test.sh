@@ -106,7 +106,7 @@
 # python LLMPlanner/test/test_stool.py flip  # 上视面画 50×50mm 矩形，flipDirection=true 向下拉伸 30mm，验证包围盒 Y 方向
 
 # 仅测试四脚板凳完整建模
-# python LLMPlanner/test/test_stool.py stool # 凳面 200×200×20mm + 4条圆柱腿（⌀20mm×300mm），总高 320mm
+# python LLMPlanner/test/test_stool.py stool # 凳面 200×200×20mm + 4条圆柱腿（⌀20mm×150mm），总高 170mm
 
 # 带圆角的四脚板凳
 # python LLMPlanner/test/test_stool.py stool_fillet # 凳面顶部 4 边 R5mm 圆角 + 4条腿，验证圆角特征存在
@@ -118,9 +118,9 @@
 
 # LLM 四脚板凳自动建模
 # python LLMPlanner/test/test_stool_llm.py stool
-# LLM Prompt: "创建一个四脚板凳：凳面为 200mm×200mm×20mm 的方形平板，在凳面底部四角各有一条圆柱形凳腿（直径 20mm，长 200mm），腿的圆心距凳面边缘 30mm。"
+# LLM Prompt: "创建一个四脚板凳：凳面为 200mm×200mm×20mm 的方形平板，在凳面底部四角各有一条圆柱形凳腿（直径 20mm，长 150mm），腿的圆心距凳面边缘 30mm。"
 
 # LLM 带圆角的四脚板凳自动建模
 # python LLMPlanner/test/test_stool_llm.py stool_fillet
-# LLM Prompt: "创建一个四脚板凳并对凳面做圆角处理：凳面为 200mm×200mm×20mm 的方形平板，在凳面底部四角各有一条圆柱形凳腿（直径 20mm，长 200mm），腿的圆心距凳面边缘 30mm。最后对凳面顶部的 4 条边做 R5mm 圆角。"
+# LLM Prompt: "创建一个四脚板凳并对凳面做圆角处理：凳面为 200mm×200mm×20mm 的方形平板，在凳面底部四角各有一条圆柱形凳腿（直径 20mm，长 150mm），腿的圆心距凳面边缘 30mm。最后对凳面顶部的 4 条边做 R5mm 圆角。"
 
