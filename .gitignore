@@ -15,11 +15,32 @@
 !run_service.bat
 !build_service.bat
 
+# 解决方案文件（复现必需）
+!SolidWorksTutorial.slnx
+
+# IDE 个人工作区配置 —— 不入库（保持被 * 忽略，此处仅作说明）
+# SolidWorksTutorial.code-workspace
+
 # ============================================
-# Chapter1.ConnectToSw — 跟踪根目录下的 .cs 与 README
+# 项目文档
+# ============================================
+!docs/
+!docs/*.md
+
+# ============================================
+# Chapter1.ConnectToSw — 跟踪复现所需的源码与工程文件
 # ============================================
 !Chapter1.ConnectToSw/*.cs
 !Chapter1.ConnectToSw/README.md
+!Chapter1.ConnectToSw/*.csproj
+!Chapter1.ConnectToSw/packages.config
+!Chapter1.ConnectToSw/App.config
+!Chapter1.ConnectToSw/Properties/
+!Chapter1.ConnectToSw/Properties/*.cs
+
+# Chapter1.ConnectToSw 构建产物 —— 不入库
+Chapter1.ConnectToSw/bin/**
+Chapter1.ConnectToSw/obj/**
 
 # ============================================
 # LLMPlanner — 跟踪除缓存外的所有文件
