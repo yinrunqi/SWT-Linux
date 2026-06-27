@@ -110,19 +110,19 @@ def test_stool():
     
     设计参数：
     - 凳面: 200mm × 200mm × 20mm (上视面画矩形, 向上拉伸)
-    - 凳腿: 4 根圆柱，直径 20mm (半径 10mm)，长 300mm
+    - 凳腿: 4 根圆柱，直径 20mm (半径 10mm)，长 150mm
     - 凳腿位置: 距边缘 30mm 的四个角
 
     策略：
     1. 上视面画凳面矩形 → 拉伸 20mm (向上)
-    2. 选底面 → 画 4 个圆（腿截面）→ 反向拉伸 300mm (向下)
+    2. 选底面 → 画 4 个圆（腿截面）→ 反向拉伸 150mm (向下)
        由于当前 API 一次选面 → 画图 → 拉伸只能做一个特征，
        需要 4 次 "选底面 → 画圆 → 反向拉伸" 循环。
 
     预期结果：
-    - 总高 = 凳面 20mm + 凳腿 300mm = 320mm
-    - 包围盒: X=0~0.2, Y=-0.3~0.02, Z=-0.2~0
-    - 凳面在 Y[0, 0.02]，腿在 Y[-0.3, 0]（底面法向量 -Y，默认拉伸方向即向下）
+    - 总高 = 凳面 20mm + 凳腿 150mm = 170mm
+    - 包围盒: X=0~0.2, Y=-0.15~0.02, Z=-0.2~0
+    - 凳面在 Y[0, 0.02]，腿在 Y[-0.15, 0]（底面法向量 -Y，默认拉伸方向即向下）
     """
     print("\n" + "=" * 60)
     print("测试 2：四脚板凳建模")
@@ -166,7 +166,7 @@ def test_stool():
     ]
 
     leg_radius = 0.01  # 10mm 半径 = 20mm 直径
-    leg_length = 0.30  # 300mm 腿长
+    leg_length = 0.15  # 150mm 腿长
 
     for i, (lx, lz, name) in enumerate(leg_positions):
         print(f"\n--- Step 2.{i+1}: 创建{name} ---")
@@ -191,7 +191,7 @@ def test_stool():
         result = api_post("/api/feature/extrusion", {
             "depth": leg_length
         })
-        assert_success(result, f"{name}向下拉伸 300mm")
+        assert_success(result, f"{name}向下拉伸 150mm")
 
     # === 验证最终结果 ===
     print("\n--- 验证最终包围盒 ---")
@@ -201,8 +201,8 @@ def test_stool():
           f"Z[{bbox['minZ']:.4f},{bbox['maxZ']:.4f}]")
     print(f"  尺寸: {bbox['sizeX']*1000:.1f} × {bbox['sizeY']*1000:.1f} × {bbox['sizeZ']*1000:.1f} mm")
 
-    # 总高应该是 凳面 20mm + 腿 300mm = 320mm
-    assert_approx(bbox["sizeY"], 0.32, 0.002, "总高度 320mm (凳面20+腿300)")
+    # 总高应该是 凳面 20mm + 腿 150mm = 170mm
+    assert_approx(bbox["sizeY"], 0.17, 0.002, "总高度 170mm (凳面20+腿150)")
     # 宽度 200mm
     assert_approx(bbox["sizeX"], 0.2, 0.001, "宽度 200mm")
 
@@ -262,7 +262,7 @@ def test_stool_with_fillet():
         assert_success(result, f"画{name}截面圆")
         # 底面法向量为 -Y，默认拉伸方向即为向下，不需要 flipDirection
         result = api_post("/api/feature/extrusion", {
-            "depth": 0.30
+            "depth": 0.15
         })
         assert_success(result, f"{name}向下拉伸")
 
@@ -280,7 +280,7 @@ def test_stool_with_fillet():
     print("\n--- 验证 ---")
     bbox = api_get("/api/body-bounding-box")["boundingBox"]
     print(f"  最终包围盒尺寸: {bbox['sizeX']*1000:.1f} × {bbox['sizeY']*1000:.1f} × {bbox['sizeZ']*1000:.1f} mm")
-    assert_approx(bbox["sizeY"], 0.32, 0.002, "总高度 320mm")
+    assert_approx(bbox["sizeY"], 0.17, 0.002, "总高度 170mm")
 
     tree = api_get("/api/feature-tree")
     features = tree["features"]

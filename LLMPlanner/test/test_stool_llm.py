@@ -149,10 +149,10 @@ def test_stool_llm():
 
     用户 Prompt: 简短的板凳描述
     预期 LLM 计划: new_part → 画凳面 → 拉伸 → 选面画腿 → 拉伸 ×4
-    预期结果: 200×200×20mm 凳面 + 4条 ⌀20mm×300mm 腿，总高 320mm
+    预期结果: 200×200×20mm 凳面 + 4条 ⌀20mm×150mm 腿，总高 170mm
 
     验证条件（宽松）：
-    - 包围盒总高约 320mm (凳面 20mm + 腿 300mm)
+    - 包围盒总高约 170mm (凳面 20mm + 腿 150mm)
     - 包围盒宽约 200mm
     - 至少有 5 个拉伸特征（1 凳面 + 4 腿）
     """
@@ -162,7 +162,7 @@ def test_stool_llm():
 
     prompt = (
         "创建一个四脚板凳：凳面为 200mm×200mm×20mm 的方形平板，"
-        "在凳面底部四角各有一条圆柱形凳腿（直径 20mm，长 300mm），"
+        "在凳面底部四角各有一条圆柱形凳腿（直径 20mm，长 150mm），"
         "腿的圆心距凳面边缘 30mm。"
     )
     print(f"  用户 Prompt: \"{prompt}\"\n")
@@ -230,9 +230,9 @@ def test_stool_llm():
     # 6. 验证几何结果
     print("\n--- 几何验证 ---")
 
-    # 验证包围盒：约 200mm × 320mm × 200mm
+    # 验证包围盒：约 200mm × 170mm × 200mm
     bbox_ok = verify_bounding_box(
-        {"sizeX": 200, "sizeY": 320, "sizeZ": 200},
+        {"sizeX": 200, "sizeY": 170, "sizeZ": 200},
         tolerance_mm=20  # LLM 可能位置稍有偏差
     )
 
@@ -260,7 +260,7 @@ def test_stool_fillet_llm():
     - 使用语义化选边（如 "top_front"）
 
     验证条件（宽松）：
-    - 包围盒总高约 320mm
+    - 包围盒总高约 170mm
     - 至少有 5 个拉伸特征 + 圆角特征
     """
     print("=" * 60)
@@ -270,7 +270,7 @@ def test_stool_fillet_llm():
     prompt = (
         "创建一个四脚板凳并对凳面做圆角处理："
         "凳面为 200mm×200mm×20mm 的方形平板，"
-        "在凳面底部四角各有一条圆柱形凳腿（直径 20mm，长 300mm），"
+        "在凳面底部四角各有一条圆柱形凳腿（直径 20mm，长 150mm），"
         "腿的圆心距凳面边缘 30mm。"
         "最后对凳面顶部的 4 条边做 R5mm 圆角。"
     )
@@ -339,9 +339,9 @@ def test_stool_fillet_llm():
     # 6. 验证几何结果
     print("\n--- 几何验证 ---")
 
-    # 验证包围盒：约 200mm × 320mm × 200mm
+    # 验证包围盒：约 200mm × 170mm × 200mm
     bbox_ok = verify_bounding_box(
-        {"sizeX": 200, "sizeY": 320, "sizeZ": 200},
+        {"sizeX": 200, "sizeY": 170, "sizeZ": 200},
         tolerance_mm=20
     )
 
