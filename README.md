@@ -1,4 +1,4 @@
-# SolidWorksTutorial — 基于 LLM 的 SolidWorks 自然语言自动建模
+# SolidWorksCopilot — 基于 LLM 的 SolidWorks 自然语言自动建模
 
 ## 一、项目背景
 
