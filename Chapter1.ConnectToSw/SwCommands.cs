@@ -773,10 +773,16 @@ namespace Chapter1.ConnectToSw
             EnsureActiveDoc();
             double sx, sy;
             ModelToSketchPoint(cx, cy, cz, out sx, out sy);
-            // 圆上一点也需要变换，使用同一平面上偏移 radius 的点
-            double sx2, sy2;
-            ModelToSketchPoint(cx + radius, cy, cz, out sx2, out sy2);
-            double sketchRadius = Math.Sqrt((sx2 - sx) * (sx2 - sx) + (sy2 - sy) * (sy2 - sy));
+
+            // ModelToSketchTransform 是刚性变换（旋转+平移，无缩放），
+            // 因此草图平面内的半径恒等于模型空间的 radius，直接使用即可。
+            //
+            // ⚠️ 不要用"变换 (cx+radius, cy, cz) 偏移点再求两点距离"来反推半径！
+            // 当面的法线恰好沿模型 X 轴时（如立方体的左面/右面），模型 X 方向会被
+            // 映射到草图平面外（草图 Z），导致偏移点的草图 XY 与圆心重合、算出半径=0、
+            // 进而生成无效的零半径圆，切除/拉伸失败。
+            double sketchRadius = radius;
+
             ActiveDoc.SketchManager.CreateCircle(sx, sy, 0, sx + sketchRadius, sy, 0);
             Console.WriteLine($"[SwCommands] 绘制圆: 模型圆心({cx},{cy},{cz}), 半径 {radius}，草图圆心({sx:F4},{sy:F4}), 草图半径 {sketchRadius:F4}");
         }
@@ -800,17 +806,11 @@ namespace Chapter1.ConnectToSw
             double scx, scy;
             ModelToSketchPoint(cx, cy, cz, out scx, out scy);
 
-            // 将长轴端点从模型坐标转换为草图坐标
-            double smx, smy;
-            ModelToSketchPoint(cx + majorRadius, cy, cz, out smx, out smy);
-            // 计算草图空间中的长轴半径
-            double sketchMajorR = Math.Sqrt((smx - scx) * (smx - scx) + (smy - scy) * (smy - scy));
-
-            // 将短轴端点从模型坐标转换为草图坐标
-            double snx, sny;
-            ModelToSketchPoint(cx, cy + minorRadius, cz, out snx, out sny);
-            // 计算草图空间中的短轴半径
-            double sketchMinorR = Math.Sqrt((snx - scx) * (snx - scx) + (sny - scy) * (sny - scy));
+            // ModelToSketchTransform 是刚性变换（旋转+平移，无缩放），
+            // 草图平面内的长/短轴半径恒等于模型空间的 majorRadius/minorRadius。
+            // ⚠️ 不要用"变换偏移端点再求距离"来反推（当面法线沿模型 X/Y 轴时偏移会落到草图平面外，算出 0）。
+            double sketchMajorR = majorRadius;
+            double sketchMinorR = minorRadius;
 
             // CreateEllipse 参数：中心点、长轴上的点、短轴上的点（均为草图坐标）
             ActiveDoc.SketchManager.CreateEllipse(

@@ -705,6 +705,8 @@ namespace Chapter1.ConnectToSw
                 };
                 if (result.ContainsKey("hitPoint"))
                     respData["hitPoint"] = result["hitPoint"];
+                if (result.ContainsKey("sketchTransform"))
+                    respData["sketchTransform"] = result["sketchTransform"];
                 SendJson(resp, 200, respData);
             }
             catch (KeyNotFoundException ex)
