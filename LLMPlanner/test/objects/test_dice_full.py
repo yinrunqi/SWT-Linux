@@ -49,7 +49,7 @@ def api(path, body=None):
 
 def make_cube():
     """创建 20mm 立方体。"""
-    api("/api/new-part")
+    api("/api/new-part", {})  # 传空 body 以走 POST（new-part 仅接受 POST）
     api("/api/select-plane", {"index": 1})  # 上视面
     api("/api/sketch/rectangle", {"x1": -HALF, "y1": -HALF, "x2": HALF, "y2": HALF})
     api("/api/feature/extrusion", {"depth": 0.02})

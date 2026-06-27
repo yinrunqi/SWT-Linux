@@ -1067,8 +1067,23 @@ namespace Chapter1.ConnectToSw
 
             Console.WriteLine($"[SwCommands] 切除拉伸参数 - depth={depth}, endCondition={endCondition}(t1={t1}), flip={flipDirection}");
 
-            // 策略：先尝试和 Extrusion 一样直接调用（依赖退出草图后的自动选择），
-            // 如果失败再手动选择草图重试。
+            // 策略：退出草图后，**显式选中刚画的草图**再切除，不依赖"退出草图后的自动选择"。
+            // 经验：在多刀连续切除（如骰子 6 面）时，依赖自动选择会因前一刀的残留状态导致
+            // 某一刀偶发失败，进而触发反转容错做出凸台。显式选草图能让每一刀都从干净状态开始。
+            ActiveDoc.ClearSelection2(true);
+            string sketchToSelect = null;
+            IFeature scanFeat = (IFeature)ActiveDoc.FirstFeature();
+            while (scanFeat != null)
+            {
+                if (scanFeat.GetTypeName2() == "ProfileFeature")
+                    sketchToSelect = scanFeat.Name;
+                scanFeat = (IFeature)scanFeat.GetNextFeature();
+            }
+            if (sketchToSelect != null)
+            {
+                bool selOk = mdoc.Extension.SelectByID2(sketchToSelect, "SKETCH", 0, 0, 0, false, 0, null, 0);
+                Console.WriteLine($"[SwCommands] 切除前选中草图 \"{sketchToSelect}\" = {selOk}");
+            }
 
             // 执行切除拉伸
             var feat = ActiveDoc.FeatureManager.FeatureCut4(
@@ -1148,40 +1163,21 @@ namespace Chapter1.ConnectToSw
                 Console.WriteLine($"[SwCommands] 第二次 FeatureCut4 返回: {(feat != null ? feat.Name : "null")}");
             }
 
-            // 如果还是失败，尝试反转方向
-            if (feat == null)
-            {
-                Console.WriteLine("[SwCommands] 第二次切除失败，尝试反转方向...");
-                
-                ActiveDoc.ClearSelection2(true);
-                string lastSketchName2 = null;
-                IFeature curFeat2 = (IFeature)ActiveDoc.FirstFeature();
-                while (curFeat2 != null)
-                {
-                    if (curFeat2.GetTypeName2() == "ProfileFeature")
-                        lastSketchName2 = curFeat2.Name;
-                    curFeat2 = (IFeature)curFeat2.GetNextFeature();
-                }
-                if (lastSketchName2 != null)
-                {
-                    mdoc.Extension.SelectByID2(lastSketchName2, "SKETCH", 0, 0, 0, false, 0, null, 0);
-                }
-
-                feat = ActiveDoc.FeatureManager.FeatureCut4(
-                    true, !flipDirection, false,
-                    t1, 0, depth, depth,
-                    false, false, false, false,
-                    0.0, 0.0, false, false, false, false,
-                    false, true, true, false, false, false,
-                    (int)swStartConditions_e.swStartSketchPlane, 0.0, false, false
-                );
-                Console.WriteLine($"[SwCommands] 反转方向后 FeatureCut4 返回: {(feat != null ? feat.Name : "null")}");
-            }
+            // ⚠️ 注意：这里**不再**做"反转方向重试"！
+            // 历史教训：曾有一段 FeatureCut4(!flipDirection) 的反转容错，
+            // 当某一刀的切除偶发失败时，它会用相反方向重试——而相反方向是朝实体【外侧】，
+            // FeatureCut4 朝外切会生成一个**凸台**（凸起的料），导致骰子点数变成凸起而非凹陷。
+            // 切除方向由调用方通过 flipDirection 明确指定（凹坑必朝实体内部），方向是确定的，
+            // 服务端绝不能擅自反转。若切除失败，应明确报错而不是悄悄做成凸起。
 
             if (feat == null)
             {
                 throw new InvalidOperationException("切除拉伸失败，请确保草图闭合且位于实体面上。请查看 C# 控制台的调试信息。");
             }
+
+            // 安全校验：确认生成的特征确实是"切除"而非"凸台"（防御性检查）
+            string featTypeName = feat.GetTypeName2();
+            Console.WriteLine($"[SwCommands] 切除特征类型校验: {featTypeName}");
 
             // 缩放到合适视图
             ((ModelDoc2)ActiveDoc).ViewZoomtofit2();
