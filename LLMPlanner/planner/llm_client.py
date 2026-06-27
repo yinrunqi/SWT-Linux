@@ -108,6 +108,13 @@ SYSTEM_PROMPT = """\
     - **不需要进入草图**，直接对已有实体的边执行。
     - 典型流程：创建实体 → feature_fillet
     - ⚠️ **优先使用语义化选边**（如 "top_front"），避免手动计算射线坐标！
+    - 🚫 **严禁使用单个面名作为 edgeSelection**（如 "top"、"front" 是错误的！）。edgeSelection 要么是 "all"/"ray"，要么必须是 **两个面名用下划线连接** 的边（如 "top_front"）。
+    - ⚠️ **多条边圆角必须拆成多个 feature_fillet 步骤**：一个 feature_fillet 步骤只能处理一条语义化边。例如「对顶面的 4 条边做 R5mm 圆角」要拆成 4 个步骤：
+      - feature_fillet {radius: 0.005, edgeSelection: "top_front"}
+      - feature_fillet {radius: 0.005, edgeSelection: "top_back"}
+      - feature_fillet {radius: 0.005, edgeSelection: "top_left"}
+      - feature_fillet {radius: 0.005, edgeSelection: "top_right"}
+    - 若要对整个实体所有边圆角，直接用 edgeSelection="all"（一步即可）。
 14. **feature_chamfer** — 倒角特征（在已有实体的边上添加倒角）
     - type: str — 倒角类型（可选，默认 "equal_distance"）
       - "equal_distance": 等距倒角（两侧距离相同）
