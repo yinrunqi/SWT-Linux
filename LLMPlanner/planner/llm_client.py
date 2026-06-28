@@ -80,7 +80,10 @@ SYSTEM_PROMPT = """\
      - "through_all": 完全贯穿
      - "mid_plane": 从草图面两侧各切一半深度
      - "up_to_next": 切到下一个面
-   - flipDirection: bool — 是否反转切除方向（可选，默认 false）
+   - flipDirection: bool — **"翻转切除侧"（可选，默认 false）**。⚠️ 这个参数控制"切掉轮廓的哪一侧"，不是简单的方向反转：
+     - **flipDirection=false（默认，绝大多数情况都用它）**：从草图面朝实体【内部】挖掉轮廓内的材料，得到正确的孔/凹槽/凹坑。
+     - flipDirection=true：切掉轮廓【外侧】的材料（即保留轮廓内、挖掉轮廓外）。这会把整个面挖掉一圈，几乎总是错误的，除非你确实想做"反向挖除"。
+     - 经验法则：在面上画一个小圆/小矩形想挖出一个凹坑或孔时，**一律用默认 flipDirection=false**。
 11. **feature_revolve** — 旋转凸台或旋转切除（创建轴对称零件）
     - angle: float — 旋转角度（度），默认 360（完整旋转）
     - isCut: bool — 是否为旋转切除（默认 false，即旋转凸台）
@@ -183,10 +186,23 @@ SYSTEM_PROMPT = """\
   - **flipDirection=true** 翻转默认方向（仅在需要反方向时使用）
   - **midPlane=true** 从草图面两侧各拉伸一半深度
   - 例如做板凳：上视面画凳面矩形拉伸20mm（默认+Y向上）；然后选底面（法向量-Y），在底面画腿截面直接拉伸300mm（默认沿法向量-Y即向下），不需要flipDirection
+- ⚠️⚠️ **拉伸轴上的"零件中心"位置（极其重要，极易算错！）**：
+  - 普通（非 midPlane）拉伸：零件沿拉伸轴从 **0 延伸到 depth**，因此该轴上的**中心是 depth/2，不是 0**！
+    例如上视面画 [-0.01,0.01]² 矩形拉伸 0.02：包围盒 X∈[-0.01,0.01]、Z∈[-0.01,0.01]（这两轴居中于0），但 **Y∈[0,0.02]，Y 方向中心是 0.01**。
+    此时选 +Y/-Y 面、或在各面上定位特征时，Y 坐标必须围绕 **0.01**（如顶面 Y=0.02、底面 Y=0、面中心 Y=0.01），**绝不能想当然用 0**！否则射线会打到棱边圆角、坐标会偏出面外。
+  - ⭐ **要让零件在原点完全居中**（正方体、骰子、球、对称件等强烈建议）：拉伸时设 **midPlane=true**，零件就沿拉伸轴对称分布在 [-depth/2, +depth/2]，三个轴都以原点为中心，后续选面射线和特征坐标在各轴都可围绕 0 计算，最省心、最不易错。
 - **实体面草图坐标（极其重要！）**：
   - 在基准面上画草图时：只需传 (x, y)，这就是草图平面的 2D 坐标。
   - 在实体面上画草图时：**必须传模型 3D 坐标 (cx, cy, cz)**，系统会自动通过 ModelToSketchTransform 转换为草图坐标。
   - ⚠️ **不要把 Z 方向的偏移量放在 cy 里**！在实体面上画图必须正确设置 cz/z1/z2 参数。
+  - ⚠️⚠️ **面内轴 vs 法向轴（在某个面上布置多个特征时极易搞错！）**：
+    一个轴对齐的平面，其法向沿某个坐标轴，该面【只能在另外两个轴方向】上展开。在该面上画草图时：
+    - **法向所在的那个轴坐标必须固定 = 该面的位置**（所有点都相同）；
+    - **只能让另外两个"面内轴"的坐标变化**来布置点位。
+    - 轴映射：法向沿 **X** 的面（左/右面）→ 面内轴是 **Y 和 Z**（X 固定）；
+      法向沿 **Y** 的面（顶/底面）→ 面内轴是 **X 和 Z**（Y 固定）；
+      法向沿 **Z** 的面（前/后面）→ 面内轴是 **X 和 Y**（Z 固定）。
+    - 🚫 典型错误：在前/后面（Z 法向）布点时，本应固定 cz、变化 cx 和 cy，却错误地变化了 cz——点就脱离了该面，切除/拉伸失败。
   - ⭐ **板凳完整示例**（200mm×200mm×20mm 凳面 + 4 条圆柱腿，腿直径 20mm，长 300mm，距边缘 30mm）：
     **同一草图中可以画多个不相连闭合轮廓（如 4 个圆），然后一次拉伸会生成多个凸台！**
     完整步骤序列（共 10 个 operation）：
@@ -233,9 +249,12 @@ SYSTEM_PROMPT = """\
   - 也就是说：在上视面画 rectangle(0,0, 0.08, 0.06) 并拉伸 0.04，得到的实体包围盒是 X:0~0.08, Y:0~0.04, Z:-0.06~0
   - **射线选边/选面的坐标是模型 3D 坐标**，必须根据包围盒的实际范围来计算，不能用草图坐标！
   - **select_face_and_sketch 射线规则**：射线起点(rx,ry,rz)必须在目标面的**外侧**，方向(dx,dy,dz)指向实体内部。例如选底面(Y=0)时：起点 ry=-0.01（在面下方），方向 dy=+1（向上射入实体）。选顶面(Y=0.02)时：起点 ry=0.03（在面上方），方向 dy=-1（向下射入实体）。
-- **挖孔/开槽/减法操作必须用 feature_cut_extrusion**，不能用 feature_extrusion。
+- **挖孔/开槽/凹坑/减法操作必须用 feature_cut_extrusion**，不能用 feature_extrusion。
   - 典型流程：先创建基础实体 → select_face_and_sketch 选中目标面 → 画切除轮廓（如圆孔、矩形槽）→ feature_cut_extrusion。
-  - 贯穿孔用 endCondition="through_all"，盲孔用 endCondition="blind" 并指定 depth。
+  - 贯穿孔用 endCondition="through_all"，盲孔/凹坑用 endCondition="blind" 并指定 depth。
+  - ⚠️ **切除方向**：在面上画好小轮廓后，**用默认 flipDirection=false** 即可朝实体内部正确挖出孔/凹坑。
+    千万不要为了"朝内挖"而设 flipDirection=true——那是"翻转切除侧"，会把轮廓外侧的整片区域挖掉（如在面上挖一个小圆点却变成整面凹陷一层）。
+  - 在同一个面上要挖多个相同深度的孔/凹坑时，select_face_and_sketch 一次，在同一草图里画多个轮廓，再一次 feature_cut_extrusion 即可。
 - **旋转（Revolve）用于创建轴对称零件**（圆柱、圆锥、球体、轮毂、酒杯等）。
   - 典型流程：new_part → select_plane → sketch_centerline（画旋转轴）→ 在中心线一侧画轴截面轮廓（用 sketch_line、sketch_arc 等）→ **feature_revolve**（必须调用此步骤才能生成 3D 实体！）
   - **旋转轮廓必须是轴截面形状**（即沿旋转轴的半截面），**绝对不能用 sketch_circle 做旋转轮廓**！
@@ -263,6 +282,11 @@ SYSTEM_PROMPT = """\
 - 如果需要在同一零件上做**不同高度**的多个特征（如挖孔），拉伸后需要再次 select_face_and_sketch 或 select_plane 进入新草图。
 - 步骤必须逻辑正确，按照 SolidWorks 的操作流程排列。
 - 即使是简单的长方体，也必须拆分为：new_part → select_plane → sketch_rectangle → feature_extrusion。
+- ⚠️⚠️ **必须完整枚举每一个步骤，绝对禁止省略或偷懒！**
+  - 即使多个部位的操作高度重复（如在 6 个面上各挖若干凹坑、阵列 N 个相同特征），也**必须把每一面、每一个特征对应的所有 operation 全部逐条写出**。
+  - 🚫 严禁出现"其余各面同理""依次类推""后续步骤略""重复上述操作"之类的占位/省略描述，也不能把多步合并成一步。
+  - 每一个 step 都必须是带 operation + params 的完整对象。计划再长也要一次性输出完整（哪怕几十上百步）。
+  - 例如"在多个面上分别挖孔/开槽"：每一个面都要有独立完整的 select_face_and_sketch + 若干画草图 + feature_cut_extrusion 步骤，涉及几个面就要写几组，一个都不能少。
 
 ## 编辑已有模型的规则
 
@@ -509,6 +533,8 @@ class SwLLMClient:
         completion = self.client.chat.completions.create(
             model=self.model,
             messages=messages,
+            temperature=0,     # 建模是确定性任务，降到 0 提升稳定性，避免时而完整时而截断
+            max_tokens=16000,  # 复杂模型（如骰子 21 点≈50 步）计划较长，放大上限避免输出被截断
             response_format={
                 "type": "json_schema",
                 "json_schema": {
@@ -560,6 +586,8 @@ class SwLLMClient:
         completion = self.client.chat.completions.create(
             model=self.model,
             messages=patched_messages,
+            temperature=0,     # 建模是确定性任务，降到 0 提升稳定性，避免时而完整时而截断
+            max_tokens=16000,  # 复杂模型计划较长，放大上限避免输出被截断
             response_format={"type": "json_object"},
         )
 

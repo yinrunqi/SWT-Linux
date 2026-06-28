@@ -522,6 +522,83 @@ namespace Chapter1.ConnectToSw
         #region 原子操作 — 面选择
 
         /// <summary>
+        /// 沿给定射线在所有实体面中查找命中的面，**优先返回最近的平面**；
+        /// 仅当射线没有命中任何平面时，才返回离射线起点最近的曲面。
+        /// 这样可避免圆角后实体上的大量曲面（圆角面）在选面时与平面竞争而被误选。
+        /// </summary>
+        private void FindFaceByRay(object[] bodies,
+            double rx, double ry, double rz, double dx, double dy, double dz,
+            out IFace2 hitFace, out double[] hitPoint)
+        {
+            IFace2 bestPlanar = null; double bestPlanarT = double.MaxValue; double[] bestPlanarPt = null;
+            IFace2 bestCurved = null; double bestCurvedDist = double.MaxValue; double[] bestCurvedPt = null;
+
+            foreach (object bodyObj in bodies)
+            {
+                var body = bodyObj as IBody2;
+                if (body == null) continue;
+
+                var face = (IFace2)body.GetFirstFace();
+                while (face != null)
+                {
+                    var surface = face.IGetSurface();
+                    if (surface.IsPlane())
+                    {
+                        // 平面：求射线与平面交点（P = Origin + t·Dir）
+                        var pp = (double[])surface.PlaneParams;
+                        double nx = pp[0], ny = pp[1], nz = pp[2];
+                        double rootX = pp[3], rootY = pp[4], rootZ = pp[5];
+                        double denom = dx * nx + dy * ny + dz * nz;
+                        if (Math.Abs(denom) >= 1e-12) // 非平行
+                        {
+                            double t = ((rootX - rx) * nx + (rootY - ry) * ny + (rootZ - rz) * nz) / denom;
+                            if (t >= 0) // 交点在射线正方向
+                            {
+                                double hx = rx + t * dx, hy = ry + t * dy, hz = rz + t * dz;
+                                var closest = (double[])face.GetClosestPointOn(hx, hy, hz);
+                                double d = Math.Sqrt(
+                                    Math.Pow(closest[0] - hx, 2) +
+                                    Math.Pow(closest[1] - hy, 2) +
+                                    Math.Pow(closest[2] - hz, 2));
+                                if (d < 0.0001 && t < bestPlanarT) // 交点落在面内且更近
+                                {
+                                    bestPlanarT = t; bestPlanar = face; bestPlanarPt = new[] { hx, hy, hz };
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // 曲面：用 GetClosestPointOn 取离射线起点最近的点近似。
+                        // ⚠️ GetClosestPointOn 不考虑射线方向，必须额外判定该点在射线【前方】，
+                        // 否则当射线朝实体外侧时，也会错误命中起点附近、位于射线反方向的圆角曲面，
+                        // 从而吞掉本应触发的"反转方向重试"。
+                        var closest = (double[])face.GetClosestPointOn(rx, ry, rz);
+                        double vx = closest[0] - rx, vy = closest[1] - ry, vz = closest[2] - rz;
+                        double forwardDot = vx * dx + vy * dy + vz * dz; // 与射线方向同向才算前方
+                        if (forwardDot >= -1e-9)
+                        {
+                            double d = Math.Sqrt(vx * vx + vy * vy + vz * vz);
+                            if (d < bestCurvedDist)
+                            {
+                                bestCurvedDist = d; bestCurved = face; bestCurvedPt = new[] { closest[0], closest[1], closest[2] };
+                            }
+                        }
+                    }
+
+                    face = (IFace2)face.GetNextFace();
+                }
+            }
+
+            // 平面优先
+            Console.WriteLine($"[FindFaceByRay] 起点({rx},{ry},{rz}) 方向({dx},{dy},{dz}) => " +
+                $"平面命中={(bestPlanar != null ? $"是(t={bestPlanarT:F4})" : "否")}, " +
+                $"曲面命中={(bestCurved != null ? $"是(d={bestCurvedDist:F4})" : "否")}");
+            if (bestPlanar != null) { hitFace = bestPlanar; hitPoint = bestPlanarPt; }
+            else { hitFace = bestCurved; hitPoint = bestCurvedPt; }
+        }
+
+        /// <summary>
         /// 通过射线拾取方式选中一个面并进入草图编辑模式。
         /// 给定射线起点(rx, ry, rz)和方向(dx, dy, dz)，找到最近的面并选中它。
         /// 坐标单位：米。
@@ -542,139 +619,24 @@ namespace Chapter1.ConnectToSw
             if (bodies == null || bodies.Length == 0)
                 throw new InvalidOperationException("当前零件没有实体");
 
-            // ---- 遍历所有实体的面，通过射线求交找到最近的实体面 ----
-            // （不使用 SelectByRay，因为它可能选中基准面而非实体面）
-            IFace2 bestFace = null;
-            double bestDist = double.MaxValue;
-            double[] bestHitPt = null;
+            // ---- 遍历所有实体的面，通过射线求交找到目标面 ----
+            // 规则：**平面命中优先于曲面**。用于挖孔/凹坑的草图几乎总是画在平面上；
+            // 圆角后实体会多出大量曲面（圆角面），若让曲面与平面一起按距离竞争，
+            // 当射线起点贴近目标面时极易误选到邻近的圆角曲面，导致在曲面上画草图、切除失败。
+            // 因此只要射线命中任一平面就优先选最近的平面，仅当无任何平面命中时才退而选曲面。
+            IFace2 bestFace;
+            double[] bestHitPt;
 
-            foreach (object bodyObj in bodies)
-            {
-                var body = bodyObj as IBody2;
-                if (body == null) continue;
+            // 正向射线
+            FindFaceByRay(bodies, rx, ry, rz, dx, dy, dz, out bestFace, out bestHitPt);
 
-                var face = (IFace2)body.GetFirstFace();
-                while (face != null)
-                {
-                    var surface = face.IGetSurface();
-                    if (surface.IsPlane())
-                    {
-                        // 平面：求射线与平面交点
-                        // 获取平面参数：法向量和到原点的距离
-                        var planeParams = (double[])surface.PlaneParams;
-                        // planeParams: [nx, ny, nz, rootX, rootY, rootZ]
-                        double nx = planeParams[0], ny = planeParams[1], nz = planeParams[2];
-                        double rootX = planeParams[3], rootY = planeParams[4], rootZ = planeParams[5];
-
-                        // 射线：P = Origin + t * Dir
-                        // 平面：dot(P - Root, Normal) = 0
-                        // t = dot(Root - Origin, Normal) / dot(Dir, Normal)
-                        double denom = dx * nx + dy * ny + dz * nz;
-                        if (Math.Abs(denom) < 1e-12) { face = (IFace2)face.GetNextFace(); continue; } // 平行
-
-                        double t = ((rootX - rx) * nx + (rootY - ry) * ny + (rootZ - rz) * nz) / denom;
-                        if (t < 0) { face = (IFace2)face.GetNextFace(); continue; } // 交点在射线反方向
-
-                        // 交点
-                        double hitX = rx + t * dx, hitY = ry + t * dy, hitZ = rz + t * dz;
-
-                        // 检查交点是否在面的边界内（使用 GetClosestPointOn）
-                        var closest = (double[])face.GetClosestPointOn(hitX, hitY, hitZ);
-                        double distToFace = Math.Sqrt(
-                            Math.Pow(closest[0] - hitX, 2) +
-                            Math.Pow(closest[1] - hitY, 2) +
-                            Math.Pow(closest[2] - hitZ, 2));
-
-                        if (distToFace < 0.0001 && t < bestDist) // 交点在面内且更近
-                        {
-                            bestDist = t;
-                            bestFace = face;
-                            bestHitPt = new[] { hitX, hitY, hitZ };
-                        }
-                    }
-                    else
-                    {
-                        // 非平面（曲面）：用 GetClosestPointOn 近似
-                        var closest = (double[])face.GetClosestPointOn(rx, ry, rz);
-                        double distToOrigin = Math.Sqrt(
-                            Math.Pow(closest[0] - rx, 2) +
-                            Math.Pow(closest[1] - ry, 2) +
-                            Math.Pow(closest[2] - rz, 2));
-
-                        if (distToOrigin < bestDist)
-                        {
-                            bestDist = distToOrigin;
-                            bestFace = face;
-                            bestHitPt = new[] { closest[0], closest[1], closest[2] };
-                        }
-                    }
-
-                    face = (IFace2)face.GetNextFace();
-                }
-            }
-
-            // 如果射线未命中，自动尝试反转方向（容错：LLM 常搞反射线方向）
+            // 未命中则反转方向重试（容错：LLM 常把射线方向搞反）
             if (bestFace == null)
             {
                 Console.WriteLine($"[SwCommands] 射线({rx},{ry},{rz})方向({dx},{dy},{dz})未命中，尝试反转方向...");
-                double rdx = -dx, rdy = -dy, rdz = -dz;
-                foreach (object bodyObj in bodies)
-                {
-                    var body = bodyObj as IBody2;
-                    if (body == null) continue;
-
-                    var face = (IFace2)body.GetFirstFace();
-                    while (face != null)
-                    {
-                        var surface = face.IGetSurface();
-                        if (surface.IsPlane())
-                        {
-                            var planeParams = (double[])surface.PlaneParams;
-                            double nx = planeParams[0], ny = planeParams[1], nz = planeParams[2];
-                            double rootX = planeParams[3], rootY = planeParams[4], rootZ = planeParams[5];
-
-                            double denom = rdx * nx + rdy * ny + rdz * nz;
-                            if (Math.Abs(denom) < 1e-12) { face = (IFace2)face.GetNextFace(); continue; }
-
-                            double t = ((rootX - rx) * nx + (rootY - ry) * ny + (rootZ - rz) * nz) / denom;
-                            if (t < 0) { face = (IFace2)face.GetNextFace(); continue; }
-
-                            double hitX = rx + t * rdx, hitY = ry + t * rdy, hitZ = rz + t * rdz;
-                            var closest = (double[])face.GetClosestPointOn(hitX, hitY, hitZ);
-                            double distToFace = Math.Sqrt(
-                                Math.Pow(closest[0] - hitX, 2) +
-                                Math.Pow(closest[1] - hitY, 2) +
-                                Math.Pow(closest[2] - hitZ, 2));
-
-                            if (distToFace < 0.0001 && t < bestDist)
-                            {
-                                bestDist = t;
-                                bestFace = face;
-                                bestHitPt = new[] { hitX, hitY, hitZ };
-                            }
-                        }
-                        else
-                        {
-                            var closest = (double[])face.GetClosestPointOn(rx, ry, rz);
-                            double distToOrigin = Math.Sqrt(
-                                Math.Pow(closest[0] - rx, 2) +
-                                Math.Pow(closest[1] - ry, 2) +
-                                Math.Pow(closest[2] - rz, 2));
-
-                            if (distToOrigin < bestDist)
-                            {
-                                bestDist = distToOrigin;
-                                bestFace = face;
-                                bestHitPt = new[] { closest[0], closest[1], closest[2] };
-                            }
-                        }
-
-                        face = (IFace2)face.GetNextFace();
-                    }
-                }
-
+                FindFaceByRay(bodies, rx, ry, rz, -dx, -dy, -dz, out bestFace, out bestHitPt);
                 if (bestFace != null)
-                    Console.WriteLine($"[SwCommands] 反转方向({rdx},{rdy},{rdz})成功命中面！");
+                    Console.WriteLine("[SwCommands] 反转方向后成功命中面！");
             }
 
             if (bestFace == null)

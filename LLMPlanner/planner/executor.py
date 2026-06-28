@@ -414,10 +414,11 @@ class SwExecutor:
             print()
 
         try:
+            # 超时设为 90s：实体含较多圆角/倒角/切除特征时，射线选面与特征树遍历会变慢（可能 >30s）
             if method == "POST":
-                resp = self.session.post(url, json=step.params if step.params else None, timeout=30)
+                resp = self.session.post(url, json=step.params if step.params else None, timeout=90)
             else:
-                resp = self.session.get(url, timeout=30)
+                resp = self.session.get(url, timeout=90)
 
             data = resp.json()
 
