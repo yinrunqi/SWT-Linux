@@ -2,6 +2,8 @@
 
 本文件整理了 LLMPlanner 的端到端测试用例与运行方式。所有测试均通过 HTTP 调用 C# 服务驱动 SolidWorks 实际建模。
 
+> 📌 **约定**：所有"LLM 自动建模任务"使用的自然语言 Prompt 都记录在本文件中（见各 LLM 规划类用例旁的 `Prompt:` 标注），便于随时复现。新增自动建模任务时，请同步把其 Prompt 补充到这里。
+
 > 前置条件（每次测试都需要）：
 > 1. **SolidWorks 已启动**（普通权限，详见 `Chapter1.ConnectToSw/README.md`）
 > 2. **C# HTTP API 服务已运行**（`run_service.bat` 或 `Chapter1.ConnectToSw\bin\Debug\Chapter1.ConnectToSw.exe`）
@@ -201,10 +203,31 @@ REM 收纳盒：外形 120×80×50mm，壁厚 8mm，顶部开口内腔 + 顶边 
 REM （考验：拉伸 + 实体面切除内腔[抽壳替代法] + 圆角）
 python test_storage_box.py
 
-REM 骰子：20mm 正方体 + 所有 12 条棱边 R2mm 圆角（圆润手感）
+REM 骰子（简化版）：20mm 正方体 + 所有 12 条棱边 R2mm 圆角（圆润手感）
 REM （考验：拉伸 + edgeSelection="all" 全边圆角）
 python test_dice.py
+
+REM 骰子（完整标准版 · API 直调，确定性）：20mm 立方体 + 12 棱 R1.5mm 圆角 + 6 面共 21 个点数凹坑
+REM 坐标人工算好写死，不经过 LLM；逐刀打印体积变化用于验证（每点≈10.6mm³）。
+python test_dice_full.py
+
+REM 骰子（完整标准版 · LLM 端到端）：自然语言 → GPT-4o 规划 → 自动建出标准骰子
+REM 仅给规则、不给坐标，全靠 LLM 推算；预期 38 步全过、包围盒 20mm、对面点数和为 7。
+python test_dice_llm.py
 ```
+
+> **`test_dice_llm.py` 使用的完整 LLM Prompt（只给规则、不给坐标/步骤，考验 LLM 规划能力）**：
+> ```text
+> 请帮我建模一颗标准的六面骰子（色子），要求如下：
+> 1. 骰子主体是一个边长 20mm 的正方体；
+> 2. 正方体的 12 条棱边都做 R1.5mm 的圆角，让边角圆润；
+> 3. 六个面上分别有 1、2、3、4、5、6 个圆形点数；每个点数是一个直径约 3mm、深约 1.5mm 的圆形凹坑（向内凹陷，不是凸起）；
+> 4. 遵循标准骰子规则：相对的两个面点数之和为 7（即 1 对 6、2 对 5、3 对 4）；
+> 5. 各面点数的常规排布：1 点在面中心；2 点和 3 点沿面的一条对角线均匀分布；4 点在面的四个角附近；5 点是四个角加面中心；6 点是两列、每列三个点。
+> 请自行计算每个面以及每个凹点在模型空间中的位置，完成完整建模。
+> ```
+> 该任务考验 LLM 的多项规划能力：居中建模（midPlane）、面内轴 vs 法向轴映射、对面点数和为 7、凹坑切除方向（flipDirection=false）、以及一次性完整枚举约 50 个步骤而不偷懒。
+> ⚠️ 复现要点：必须 `temperature=0`（否则长计划时而完整时而截断），且改过 prompt 后要清 LLM 缓存。
 
 > ⚠️ **实体面上画矩形的坑**：在实体面（如盒子顶面 Y=0.05）上用 sketch_rectangle 画内腔时，
 > 必须传完整 3D 坐标——y1=y2=面的Y坐标，Z 方向偏移放进 z1/z2（不能放 y）。
@@ -224,7 +247,9 @@ python test_dice.py
 | `test_stool` | API 直调 | 板凳建模（含反向拉伸） |
 | `test_stool_llm` | LLM 规划 | 自然语言 → 板凳建模 |
 | `objects/test_storage_box` | LLM 规划 | 收纳盒（内腔 + 圆角） |
-| `objects/test_dice` | LLM 规划 | 骰子（圆角立方体） |
+| `objects/test_dice` | LLM 规划 | 骰子（简化版：圆角立方体） |
+| `objects/test_dice_full` | API 直调 | 标准骰子（确定性：立方体 + 圆角 + 21 凹点） |
+| `objects/test_dice_llm` | LLM 规划 | 标准骰子（端到端：自然语言 → 完整 21 凹点骰子） |
 
 > **API 直调**类测试直接构造操作序列调用 C# 服务，不依赖 LLM，可用于验证底层建模能力；
 > **LLM 规划**类测试走完整链路（自然语言 → LLM 解析 → 执行），需要配置好 API Key。
