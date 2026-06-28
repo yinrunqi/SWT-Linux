@@ -454,6 +454,37 @@ namespace Chapter1.ConnectToSw
             return result;
         }
 
+        /// <summary>
+        /// 获取当前零件所有实体的总体积（立方米）。
+        /// 用于精确判断切除/凸台效果：切除使体积减小，凸台使体积增大。
+        /// </summary>
+        public double GetBodyVolume()
+        {
+            EnsureActiveDoc();
+
+            var partDoc = ActiveDoc as IPartDoc;
+            if (partDoc == null)
+                throw new InvalidOperationException("当前文档不是零件文档");
+
+            var bodies = partDoc.GetBodies2((int)swBodyType_e.swSolidBody, true) as object[];
+            if (bodies == null || bodies.Length == 0)
+                throw new InvalidOperationException("当前零件没有实体（可能还未建模）");
+
+            double totalVolume = 0;
+            foreach (object bodyObj in bodies)
+            {
+                var body = bodyObj as IBody2;
+                if (body == null) continue;
+                // GetMassProperties: 返回 double[12]，索引 3 是体积（立方米）
+                var mp = body.GetMassProperties(0) as double[];
+                if (mp != null && mp.Length > 3)
+                    totalVolume += mp[3];
+            }
+
+            Console.WriteLine($"[SwCommands] 实体总体积: {totalVolume:E6} 立方米 ({totalVolume * 1e9:F1} 立方毫米)");
+            return totalVolume;
+        }
+
         #endregion
 
         #region 原子操作 — 面选择
@@ -1067,23 +1098,11 @@ namespace Chapter1.ConnectToSw
 
             Console.WriteLine($"[SwCommands] 切除拉伸参数 - depth={depth}, endCondition={endCondition}(t1={t1}), flip={flipDirection}");
 
-            // 策略：退出草图后，**显式选中刚画的草图**再切除，不依赖"退出草图后的自动选择"。
-            // 经验：在多刀连续切除（如骰子 6 面）时，依赖自动选择会因前一刀的残留状态导致
-            // 某一刀偶发失败，进而触发反转容错做出凸台。显式选草图能让每一刀都从干净状态开始。
-            ActiveDoc.ClearSelection2(true);
-            string sketchToSelect = null;
-            IFeature scanFeat = (IFeature)ActiveDoc.FirstFeature();
-            while (scanFeat != null)
-            {
-                if (scanFeat.GetTypeName2() == "ProfileFeature")
-                    sketchToSelect = scanFeat.Name;
-                scanFeat = (IFeature)scanFeat.GetNextFeature();
-            }
-            if (sketchToSelect != null)
-            {
-                bool selOk = mdoc.Extension.SelectByID2(sketchToSelect, "SKETCH", 0, 0, 0, false, 0, null, 0);
-                Console.WriteLine($"[SwCommands] 切除前选中草图 \"{sketchToSelect}\" = {selOk}");
-            }
+            // 策略：依赖退出草图（InsertSketch2）后 SolidWorks 的自动选择状态直接切除。
+            // ⚠️ 不要在此手动遍历特征树"选最后一个草图"——拉伸立方体后，本体的轮廓草图
+            // （如 20×20 矩形）和刚画的切除草图都是 ProfileFeature，手动选可能误选到本体草图，
+            // 导致用 20×20 截面切除（体积约 20×20×depth），形成大范围错误切除。
+            // 退出草图后的自动选择恰好指向刚画的切除草图，是最可靠的。
 
             // 执行切除拉伸
             var feat = ActiveDoc.FeatureManager.FeatureCut4(

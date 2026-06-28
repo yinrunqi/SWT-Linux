@@ -232,6 +232,10 @@ namespace Chapter1.ConnectToSw
                     HandleBodyBoundingBox(resp);
                     break;
 
+                case "/api/body-volume":
+                    HandleBodyVolume(resp);
+                    break;
+
                 case "/api/select-face-and-sketch":
                     RequirePost(method, resp, () => HandleSelectFaceAndSketch(req, resp));
                     break;
@@ -662,6 +666,23 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"获取特征树失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleBodyVolume(HttpListenerResponse resp)
+        {
+            try
+            {
+                double vol = _commands.GetBodyVolume();
+                SendJson(resp, 200, new { success = true, volume = vol, volumeMm3 = vol * 1e9 });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"获取体积失败: {ex.Message}" });
             }
         }
 
