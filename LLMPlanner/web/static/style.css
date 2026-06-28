@@ -276,8 +276,10 @@ body {
   display: flex;
   gap: 10px;
   flex-shrink: 0;
+  align-items: flex-end;
 }
-.input-bar input {
+.input-bar input,
+.input-bar textarea {
   flex: 1;
   background: var(--bg-input);
   border: 1px solid var(--border);
@@ -288,8 +290,17 @@ body {
   outline: none;
   transition: border-color .2s;
 }
-.input-bar input:focus { border-color: var(--accent); }
-.input-bar input::placeholder { color: var(--text-dim); }
+.input-bar textarea {
+  resize: vertical;
+  min-height: 44px;
+  max-height: 240px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+.input-bar input:focus,
+.input-bar textarea:focus { border-color: var(--accent); }
+.input-bar input::placeholder,
+.input-bar textarea::placeholder { color: var(--text-dim); }
 .input-bar button {
   background: var(--accent);
   border: none;
