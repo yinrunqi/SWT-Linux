@@ -29,6 +29,15 @@ namespace Chapter1.ConnectToSw
         /// </summary>
         private bool _sketchOnRefPlane = false;
 
+        /// <summary>
+        /// 记录"最近一次进入草图编辑时新建的那个草图"的特征名。
+        /// 在 SelectPlaneAndStartSketch / SelectFaceByRayAndStartSketch 进入草图后捕获，
+        /// 供 CutExtrusion 在退出草图后【显式按名选中该草图】，避免依赖 SolidWorks
+        /// 退出草图后的自动选择（自动选择在首刀切除时可能误指向立方体本体的轮廓草图，
+        /// 导致用 20×20 全截面切除而非小圆点）。
+        /// </summary>
+        private string _activeSketchName = null;
+
         public SwCommands(ISldWorks swApp)
         {
             _swApp = swApp ?? throw new ArgumentNullException(nameof(swApp));
@@ -324,6 +333,29 @@ namespace Chapter1.ConnectToSw
         {
             if (ActiveDoc == null)
                 throw new InvalidOperationException("当前没有活动文档，请先调用 NewPart 创建零件");
+        }
+
+        /// <summary>
+        /// 进入草图编辑后立即调用：捕获"刚刚新建的那个草图"的特征名并存入 _activeSketchName。
+        /// 新建草图总是追加到特征树末尾，因此取最后一个 ProfileFeature 即为刚建的草图。
+        /// 同时打印特征树里所有 ProfileFeature（草图）名字，便于诊断"切除选错草图"问题。
+        /// </summary>
+        private void CaptureActiveSketchName()
+        {
+            _activeSketchName = null;
+            var sketchNames = new List<string>();
+            IFeature feat = (IFeature)ActiveDoc.FirstFeature();
+            while (feat != null)
+            {
+                if (feat.GetTypeName2() == "ProfileFeature")
+                {
+                    sketchNames.Add(feat.Name);
+                    _activeSketchName = feat.Name; // 末尾的那个即最新建的
+                }
+                feat = (IFeature)feat.GetNextFeature();
+            }
+            Console.WriteLine($"[SwCommands] 进入草图后特征树中的草图: [{string.Join(", ", sketchNames)}]，" +
+                $"捕获当前草图 = \"{_activeSketchName}\"");
         }
 
         /// <summary>
@@ -668,6 +700,7 @@ namespace Chapter1.ConnectToSw
             // 进入草图编辑模式
             ActiveDoc.SketchManager.InsertSketch(true);
             _sketchOnRefPlane = false;  // 标记：草图在实体面上，需要变换坐标
+            CaptureActiveSketchName();  // 捕获刚新建的草图名，供切除时显式选中
 
             // 获取草图坐标变换信息
             var activeSketch = ActiveDoc.SketchManager.ActiveSketch;
@@ -761,6 +794,7 @@ namespace Chapter1.ConnectToSw
 
             ActiveDoc.SketchManager.InsertSketch(true);
             _sketchOnRefPlane = true;  // 标记：草图在基准面上
+            CaptureActiveSketchName();  // 捕获刚新建的草图名，供切除时显式选中
             Console.WriteLine($"[SwCommands] 已选择基准面 [{planeIndex}] 并进入草图编辑");
         }
 
@@ -1098,11 +1132,28 @@ namespace Chapter1.ConnectToSw
 
             Console.WriteLine($"[SwCommands] 切除拉伸参数 - depth={depth}, endCondition={endCondition}(t1={t1}), flip={flipDirection}");
 
-            // 策略：依赖退出草图（InsertSketch2）后 SolidWorks 的自动选择状态直接切除。
-            // ⚠️ 不要在此手动遍历特征树"选最后一个草图"——拉伸立方体后，本体的轮廓草图
-            // （如 20×20 矩形）和刚画的切除草图都是 ProfileFeature，手动选可能误选到本体草图，
-            // 导致用 20×20 截面切除（体积约 20×20×depth），形成大范围错误切除。
-            // 退出草图后的自动选择恰好指向刚画的切除草图，是最可靠的。
+            // 策略：显式按名选中"进入草图时捕获的那个草图"（_activeSketchName）再切除，
+            // 不依赖退出草图后 SolidWorks 的自动选择。
+            // 经验：自动选择在首刀切除时可能误指向立方体本体的 20×20 轮廓草图，
+            // 导致用全截面切除（体积≈20×20×depth）而非小圆点。
+            // 这里通过创建草图时即捕获的名字精确锁定目标草图，从根本上消除歧义。
+            if (!string.IsNullOrEmpty(_activeSketchName))
+            {
+                ActiveDoc.ClearSelection2(true);
+                bool selOk = mdoc.Extension.SelectByID2(_activeSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
+                Console.WriteLine($"[SwCommands] 切除前显式选中草图 \"{_activeSketchName}\" = {selOk}");
+                if (!selOk)
+                    Console.WriteLine("[SwCommands] ⚠️ 按名选中草图失败，将回退到自动选择状态");
+
+                // 打印当前选择，确认选到的是切除小圆草图
+                int curSel = selMgr.GetSelectedObjectCount2(-1);
+                for (int i = 1; i <= curSel; i++)
+                    Console.WriteLine($"[SwCommands]   显式选中后选中项 {i}: 类型={selMgr.GetSelectedObjectType3(i, -1)}");
+            }
+            else
+            {
+                Console.WriteLine("[SwCommands] ⚠️ 未捕获到草图名，回退到退出草图后的自动选择");
+            }
 
             // 执行切除拉伸
             var feat = ActiveDoc.FeatureManager.FeatureCut4(
@@ -1137,32 +1188,17 @@ namespace Chapter1.ConnectToSw
 
             Console.WriteLine($"[SwCommands] FeatureCut4 返回: {(feat != null ? feat.Name : "null")}");
 
-            // 如果直接调用失败，手动选择草图并重试
+            // 如果直接调用失败，再次显式选中捕获的草图并重试
             if (feat == null)
             {
-                Console.WriteLine("[SwCommands] 首次切除失败，尝试手动选择草图后重试...");
-                
-                // 清除选择，然后用 SelectByID2 选中草图
-                ActiveDoc.ClearSelection2(true);
-                
-                // 遍历特征树找到最后一个草图
-                string lastSketchName = null;
-                IFeature curFeat = (IFeature)ActiveDoc.FirstFeature();
-                while (curFeat != null)
-                {
-                    if (curFeat.GetTypeName2() == "ProfileFeature")
-                        lastSketchName = curFeat.Name;
-                    curFeat = (IFeature)curFeat.GetNextFeature();
-                }
+                Console.WriteLine("[SwCommands] 首次切除失败，重新显式选中草图后重试...");
 
-                if (lastSketchName != null)
+                ActiveDoc.ClearSelection2(true);
+                if (!string.IsNullOrEmpty(_activeSketchName))
                 {
-                    // 使用 SelectByID2 选中草图，指定 Mark=1（某些特征创建需要 Mark 值）
-                    var ext = mdoc.Extension;
-                    bool sel = ext.SelectByID2(lastSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
-                    Console.WriteLine($"[SwCommands] SelectByID2(\"{lastSketchName}\", \"SKETCH\") = {sel}");
-                    
-                    // 检查选择类型
+                    bool sel = mdoc.Extension.SelectByID2(_activeSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
+                    Console.WriteLine($"[SwCommands] 重试 SelectByID2(\"{_activeSketchName}\", \"SKETCH\") = {sel}");
+
                     selCount = selMgr.GetSelectedObjectCount2(-1);
                     for (int i = 1; i <= selCount; i++)
                     {

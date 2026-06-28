@@ -47,23 +47,43 @@ def api(path, body=None):
     return r.json()
 
 
+def volume_mm3():
+    """获取当前实体总体积（立方毫米）。失败返回 None。"""
+    try:
+        j = api("/api/body-volume")
+        if j.get("success"):
+            return j.get("volumeMm3")
+    except Exception:
+        pass
+    return None
+
+
+EDGE_FILLET_R = 0.0015   # 棱边圆角半径 1.5mm（让骰子边角圆润、更逼真）
+
+
 def make_cube():
-    """创建 20mm 立方体。"""
+    """创建 20mm 立方体，并对 12 条棱边做圆角，得到圆润的骰子外形。"""
     api("/api/new-part", {})  # 传空 body 以走 POST（new-part 仅接受 POST）
     api("/api/select-plane", {"index": 1})  # 上视面
     api("/api/sketch/rectangle", {"x1": -HALF, "y1": -HALF, "x2": HALF, "y2": HALF})
     api("/api/feature/extrusion", {"depth": 0.02})
+    # 先把 12 条棱边圆角，再切点数（点数在距边 5mm 处，不受 R1.5 圆角影响）
+    fr = api("/api/feature/fillet", {"radius": EDGE_FILLET_R, "edgeSelection": "all"})
+    print(f"  棱边圆角: {'✅' if fr.get('success') else '❌ ' + str(fr.get('message'))}")
 
 
-def cut_face_pips(name, select_ray, circles, flip=True):
+def cut_face_pips(name, select_ray, circles, flip=False):
     """
     在一个面上切出若干凹点。
     name:       面名（打印用）
     select_ray: select_face_and_sketch 的射线参数 dict
     circles:    圆心列表 [{cx,cy,cz}, ...]（模型 3D 坐标，米）
-    flip:       切除方向是否反转（面法向量朝外，凹点需朝内切）
+    flip:       FeatureCut4 的"翻转切除侧"。必须为 False！
+                经实测：flip=False 时切除朝实体【内部】，正确切出小圆点凹坑(≈10.6mm³)；
+                flip=True 会切掉小圆【外侧】的整面环形区域(≈589mm³)，导致整面凹陷。
     """
     print(f"  [{name} {len(circles)} 点]")
+    vol_before = volume_mm3()
     f = api("/api/select-face-and-sketch", select_ray)
     if not f.get("success"):
         print(f"    ❌ 选面失败: {f.get('message')}")
@@ -73,7 +93,16 @@ def cut_face_pips(name, select_ray, circles, flip=True):
     cut = api("/api/feature/cut-extrusion",
               {"depth": PIP_DEPTH, "endCondition": "blind", "flipDirection": flip})
     ok = cut.get("success", False)
+    vol_after = volume_mm3()
+    # 每个凹点理论切除量 ≈ π·r²·depth = π·1.5²·1.5 ≈ 10.6 mm³
+    expected = len(circles) * 3.14159 * (PIP_R * 1000) ** 2 * (PIP_DEPTH * 1000)
+    delta = (vol_before - vol_after) if (vol_before and vol_after) else None
+    delta_str = f"{delta:.1f}" if delta is not None else "?"
     print(f"    {'✅' if ok else '❌'} 切除: {cut.get('message')}")
+    print(f"       体积变化: {vol_before:.1f} → {vol_after:.1f} mm³  "
+          f"(实际切除 {delta_str}, 理论 ≈{expected:.1f} mm³)")
+    if delta is not None and delta > expected * 3:
+        print(f"       ⚠️⚠️ 切除量异常偏大！疑似误用整面轮廓切除（应 ≈{expected:.1f}）")
     return ok
 
 
