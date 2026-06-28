@@ -225,6 +225,19 @@ function useExample(text) {
   inputEl.focus();
 }
 
+// 标准骰子的完整 prompt——与 test/objects/test_dice_llm.py 中的 PROMPT 逐字一致，
+// 点击示例按钮一键填入，可命中已验证的成功计划缓存，稳定建出标准骰子。
+const DICE_PROMPT =
+  "请帮我建模一颗标准的六面骰子（色子），要求如下：\n" +
+  "1. 骰子主体是一个边长 20mm 的正方体；\n" +
+  "2. 正方体的 12 条棱边都做 R1.5mm 的圆角，让边角圆润；\n" +
+  "3. 六个面上分别有 1、2、3、4、5、6 个圆形点数；每个点数是一个直径约 3mm、深约 1.5mm 的圆形凹坑（向内凹陷，不是凸起）；\n" +
+  "4. 遵循标准骰子规则：相对的两个面点数之和为 7（即 1 对 6、2 对 5、3 对 4）；\n" +
+  "5. 各面点数的常规排布：1 点在面中心；2 点和 3 点沿面的一条对角线均匀分布；4 点在面的四个角附近；5 点是四个角加面中心；6 点是两列、每列三个点。\n" +
+  "请自行计算每个面以及每个凹点在模型空间中的位置，完成完整建模。";
+
+window.fillDicePrompt = function () { useExample(DICE_PROMPT); };
+
 // ---- 事件绑定 ----
 sendBtn.addEventListener("click", send);
 inputEl.addEventListener("keydown", e => {
