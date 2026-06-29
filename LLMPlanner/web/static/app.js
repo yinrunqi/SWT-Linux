@@ -238,6 +238,15 @@ const DICE_PROMPT =
 
 window.fillDicePrompt = function () { useExample(DICE_PROMPT); };
 
+// 收纳盒的完整 prompt——与 test/objects/test_storage_box.py 中的 prompt 逐字一致。
+// 实测 11/11 步通过：盒体拉伸 + 顶面切除内腔 + 顶部 4 边 R3mm 圆角。
+const STORAGE_BOX_PROMPT =
+  "创建一个长方形收纳盒：外部尺寸为长 120mm、宽 80mm、高 50mm，" +
+  "盒壁厚度 8mm，盒子内部是一个开口向上的空腔（顶部敞开），" +
+  "底部厚度也是 8mm。最后对盒子顶部开口的四条边做 R3mm 圆角。";
+
+window.fillStorageBoxPrompt = function () { useExample(STORAGE_BOX_PROMPT); };
+
 // ---- 事件绑定 ----
 sendBtn.addEventListener("click", send);
 inputEl.addEventListener("keydown", e => {

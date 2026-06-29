@@ -201,6 +201,7 @@ cd C:\codes\sw\SolidWorksTutorial\LLMPlanner\test\objects
 
 REM 收纳盒：外形 120×80×50mm，壁厚 8mm，顶部开口内腔 + 顶边 R3mm 圆角
 REM （考验：拉伸 + 实体面切除内腔[抽壳替代法] + 圆角）
+REM 实测 11/11 步通过：盒体 1 次拉伸 + 顶面切除内腔 1 次 + 顶部 4 边各 R3mm 圆角。
 python test_storage_box.py
 
 REM 骰子（简化版）：20mm 正方体 + 所有 12 条棱边 R2mm 圆角（圆润手感）
@@ -215,6 +216,12 @@ REM 骰子（完整标准版 · LLM 端到端）：自然语言 → GPT-4o 规�
 REM 仅给规则、不给坐标，全靠 LLM 推算；预期 38 步全过、包围盒 20mm、对面点数和为 7。
 python test_dice_llm.py
 ```
+
+> **`test_storage_box.py` 使用的完整 LLM Prompt**：
+> ```text
+> 创建一个长方形收纳盒：外部尺寸为长 120mm、宽 80mm、高 50mm，盒壁厚度 8mm，盒子内部是一个开口向上的空腔（顶部敞开），底部厚度也是 8mm。最后对盒子顶部开口的四条边做 R3mm 圆角。
+> ```
+> 该任务考验 LLM 的多项规划能力：拉伸外形 + 在顶面画内腔轮廓做"抽壳替代法"切除（内腔尺寸=外形−2×壁厚、深度=外形高−底厚）+ 顶部开口四条边各做一次圆角（语义化边名 `top_front/top_back/top_left/top_right` 不可合并）。
 
 > **`test_dice_llm.py` 使用的完整 LLM Prompt（只给规则、不给坐标/步骤，考验 LLM 规划能力）**：
 > ```text
