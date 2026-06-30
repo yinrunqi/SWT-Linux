@@ -221,6 +221,15 @@ python test_dice_llm.py
 > ```text
 > 创建一个长方形收纳盒：外部尺寸为长 120mm、宽 80mm、高 50mm，盒壁厚度 8mm，盒子内部是一个开口向上的空腔（顶部敞开），底部厚度也是 8mm。最后对盒子顶部开口的四条边做 R3mm 圆角。
 > ```
+>
+> **`test_storage_box.py` 验证点**：脚本基于 `_common.py` 的 `run_object_test()` 通用流程，依次校验以下几项：
+> 1. **前置检查**：`OPENAI_API_KEY` 已设置 + C# 服务（`localhost:5100`）能 ping 通；
+> 2. **LLM 调用成功**：`SwLLMClient.plan()` 返回合法 `SwModelingPlan`（Structured Outputs 模式）；
+> 3. **计划结构完整性**：步骤中必须出现 `new_part`、`feature_extrusion`、`feature_cut_extrusion` 三种操作（`required_ops`）；
+> 4. **执行成功率**：调用 C# HTTP API 逐步执行，要求**全部步骤** `success=true`，否则判定失败；
+> 5. **几何包围盒**：调用 `/api/body-bounding-box` 取实体包围盒，要求 X=120、Y=50、Z=80 mm，每轴容差 ±20mm（脚本判定的**最终判据**）；
+> 6. **特征计数**（仅告警不影响判定）：特征树里 `Extrusion ≥ 1`、`Cut ≥ 1`，未达只输出 `⚠️` 提示。
+>
 > 该任务考验 LLM 的多项规划能力：拉伸外形 + 在顶面画内腔轮廓做"抽壳替代法"切除（内腔尺寸=外形−2×壁厚、深度=外形高−底厚）+ 顶部开口四条边各做一次圆角（语义化边名 `top_front/top_back/top_left/top_right` 不可合并）。
 
 > **`test_dice_llm.py` 使用的完整 LLM Prompt（只给规则、不给坐标/步骤，考验 LLM 规划能力）**：
@@ -233,6 +242,16 @@ python test_dice_llm.py
 > 5. 各面点数的常规排布：1 点在面中心；2 点和 3 点沿面的一条对角线均匀分布；4 点在面的四个角附近；5 点是四个角加面中心；6 点是两列、每列三个点。
 > 请自行计算每个面以及每个凹点在模型空间中的位置，完成完整建模。
 > ```
+> **`test_dice_llm.py` 验证点**：脚本自带独立的 `main()` 流程（不走 `run_object_test`），依次校验以下几项：
+> 1. **前置检查**：`OPENAI_API_KEY` 已设置 + C# 服务（`localhost:5100`）能 ping 通；
+> 2. **LLM 计划生成**：`SwLLMClient.plan(PROMPT)` 返回合法 `SwModelingPlan`，并打印**操作类型统计**（如 `feature_cut_extrusion`、`feature_fillet`、`sketch_circle` 各多少次），用于直观判断 LLM 是否覆盖到 6 个面的 21 个凹点；
+> 3. **执行成功率（强判据）**：`results` 中**每一步**都 `success=true`，否则失败；
+> 4. **包围盒**：调用 `/api/body-bounding-box`，要求 X/Y/Z 三轴尺寸都 ≈ 20mm（容差 ±3mm，比收纳盒更严）；
+> 5. **体积**：调用 `/api/body-volume` 取实体体积，参考理论值 ≈ 7600~7900 mm³（原始立方体 8000 mm³ 减去 12 棱圆角切削 + 21 个凹点的损耗）；体积仅打印参考，不参与硬判定；
+> 6. **特征数量**：`feature_cut_extrusion ≥ 1`（实测应为 6，每面 1 次）+ `feature_fillet`（实测应为 1，`edgeSelection="all"` 一次圆角全部 12 条棱），打印 `切除步数 / 圆角步数` 供观察。
+>
+> 综合判据：`全步骤成功 AND 包围盒≈20 AND 切除步数≥1` 三者同时满足才打印 `🎉 LLM 自动建骰子通过！`。
+>
 > 该任务考验 LLM 的多项规划能力：居中建模（midPlane）、面内轴 vs 法向轴映射、对面点数和为 7、凹坑切除方向（flipDirection=false）、以及一次性完整枚举约 50 个步骤而不偷懒。
 > ⚠️ 复现要点：必须 `temperature=0`（否则长计划时而完整时而截断），且改过 prompt 后要清 LLM 缓存。
 
