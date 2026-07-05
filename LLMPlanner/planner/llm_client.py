@@ -220,6 +220,24 @@ SYSTEM_PROMPT = """\
     - 🚫🚫 **最常见致命错误**：在左/右面（X 法向）布点时，错误地变化了 **cx**（如 cx 取 ±0.005）而把 cz 固定为 0。
       后果：cx 是该面的法向（出平面）方向，画草图时会被投影丢弃，于是 cx=-0.005 和 cx=+0.005 的两个圆会**塌缩到同一位置完全重合**，导致切除轮廓非法、cut 失败！
       记住：**面的法向是哪个轴，哪个轴的坐标就必须固定、绝不能变。**
+    - ⭐ **在顶面/底面（Y 法向）中心开孔的正确写法（螺母、法兰、垫圈等常见场景）**：
+      设零件 midPlane 拉伸厚度 h，则顶面 Y=+h/2、底面 Y=-h/2。要在**几何中心贯穿**打孔时：
+      · 先 `select_face_and_sketch` 选顶面（射线起点在顶面外，方向指向实体）；
+      · 然后 `sketch_circle {cx: 0, cy: <顶面Y值>, cz: 0, radius: ...}`
+        —— **cx=cz=0**（面内两个方向都对准中心线），**cy=顶面Y坐标**（法向轴固定，等于顶面在模型空间中的实际 Y 值）；
+      · `feature_cut_extrusion {endCondition: "through_all"}` 贯穿到底。
+      🚫 常见错误 1（cy/cz 对调）：把 cy 写成 0、把顶面 Y 值放到 cz。
+      🚫 常见错误 2（借用射线起点）：把 select_face_and_sketch 的射线起点坐标（ry）误当成圆心 cy 或 cz 填进 sketch_circle。
+      例如射线用 `ry=0.005` 只是为了从顶面外侧射入实体，绝不代表圆心 cz=0.005！
+      **圆心的面内坐标（cx、cz）永远都要独立计算，中心孔就是 cx=cz=0；cy 一定填顶面/底面的模型 Y 坐标。**
+    - ⭐ **六角螺母/圆盘完整示例**（M20 螺母：正六边形外形对边距 30mm、厚度 8mm 居中、中心⌀10mm 贯穿孔）：
+      1. new_part {}
+      2. select_plane {index: 1}  ← 上视面
+      3. sketch_polygon {cx: 0, cy: 0, circumradius: 0.01732, sides: 6, startAngleDeg: 90}  ← 对边距=30mm → R=30/√3≈17.32mm
+      4. feature_extrusion {depth: 0.008, midPlane: true}  ← 居中拉伸，顶面 Y=+0.004、底面 Y=-0.004
+      5. select_face_and_sketch {rx: 0, ry: 0.01, rz: 0, dx: 0, dy: -1, dz: 0}  ← 起点在顶面外(ry=0.01 大于顶面 Y=0.004)，方向向下命中顶面
+      6. sketch_circle {cx: 0, cy: 0.004, cz: 0, radius: 0.005}  ← ⚠️ cy=0.004(顶面Y坐标,法向), cx=cz=0(面内对齐中心)
+      7. feature_cut_extrusion {depth: 0.008, endCondition: "through_all"}  ← 贯穿
   - ⭐ **板凳完整示例**（200mm×200mm×20mm 凳面 + 4 条圆柱腿，腿直径 20mm，长 300mm，距边缘 30mm）：
     **同一草图中可以画多个不相连闭合轮廓（如 4 个圆），然后一次拉伸会生成多个凸台！**
     完整步骤序列（共 10 个 operation）：

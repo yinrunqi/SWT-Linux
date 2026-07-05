@@ -92,31 +92,33 @@ def main() -> bool:
             print(f"  ❌ 失败步骤: {r.get('operation')} — {r.get('message')}")
 
     # 3. 几何验证
-    #    正六边形对边距 s=30mm、外接圆半径 R = s/√3 ≈ 17.32mm
-    #    - 若"尖朝上"（顶点在正上方）：包围盒宽（对边距方向 X）=30mm、包围盒高（顶点方向 Z）=2R≈34.64mm
-    #    - 若"平放"（一条边水平在下方）：包围盒宽（顶点方向 X）=2R≈34.64mm、包围盒高（对边距方向 Z）=30mm
-    #    厚度 8mm 沿拉伸轴，若居中则包围盒该轴=8mm。
-    #    体积理论 = (3√3/2)·R²·h − π·5²·8 ≈ 2.598·17.32²·8 − 200π
-    #             = 2.598·300·8 − 628 = 6235 − 628 = 5607 mm³
     bb = bbox_mm()
     vol = volume_mm3()
     print(f"\n包围盒: {bb} mm")
     print(f"体积: {vol:.1f} mm³ (理论 ≈5607 mm³)")
 
-    # 判定：全步骤成功 + 有 polygon + 有 cut_extrusion + 三个轴中最小的应≈8（厚度）
+    # 额外验证：孔必须在几何中心（六边形中心线上）。
+    # 通过 LLM 计划里的 sketch_circle 参数直接检查——命令行/网页都会调用它。
+    # 螺母 midPlane 拉伸后顶面 Y=+0.004，底面 Y=-0.004；圆心的面内坐标 (cx, cz) 必须都 ≈0。
+    circle_step = next((s for s in plan.steps if s.operation.value == "sketch_circle"), None)
+    hole_centered = False
+    if circle_step is not None:
+        cx = float(circle_step.params.get("cx", 0))
+        cz = float(circle_step.params.get("cz", 0))
+        cy = float(circle_step.params.get("cy", 0))
+        # 顶面 Y 法向：法向轴 cy 应≈±0.004，面内轴 cx、cz 都必须≈0（容差 0.5mm）
+        # 若螺母居中，则接受 cy=±0.004；若非居中拉伸则 cy=0.008 或 0（也允许）
+        hole_centered = (abs(cx) < 0.0005) and (abs(cz) < 0.0005)
+        print(f"孔中心 sketch_circle 参数: cx={cx}, cy={cy}, cz={cz} → 中心对齐(面内 cx,cz≈0)={hole_centered}")
+
     polygon_count = op_counts.get("sketch_polygon", 0)
     cut_count = op_counts.get("feature_cut_extrusion", 0)
 
     thickness_ok = False
     outer_ok = False
     if bb is not None:
-        # 找出厚度轴：应 ≈ 8mm，容差 1mm
         thickness_ok = any(abs(s - 8) < 1 for s in bb)
-        # 剩余两轴应为对边距和 2R 的组合（分别 30mm 与 ≈34.64mm）
-        # 允许 ±3mm 容差
-        others = sorted(bb)
-        # 排除最小的厚度轴之后，剩下两轴中一个≈30、一个≈34.64
-        others_no_thickness = [s for s in others if abs(s - 8) >= 1]
+        others_no_thickness = [s for s in bb if abs(s - 8) >= 1]
         if len(others_no_thickness) >= 2:
             outer_ok = (any(abs(s - 30) < 3 for s in others_no_thickness)
                         and any(abs(s - 34.64) < 3 for s in others_no_thickness))
@@ -124,10 +126,10 @@ def main() -> bool:
     volume_ok = (vol is not None and 4500 < vol < 6500)
 
     passed = (ok == len(results)) and (polygon_count >= 1) and (cut_count >= 1) \
-             and thickness_ok and outer_ok and volume_ok
+             and thickness_ok and outer_ok and volume_ok and hole_centered
     print(f"\n判定: 全步骤成功={ok == len(results)}, sketch_polygon 步数={polygon_count}, "
           f"cut_extrusion 步数={cut_count}, 厚度≈8mm={thickness_ok}, 六边形外接尺寸对={outer_ok}, "
-          f"体积∈[4500,6500]={volume_ok}")
+          f"体积∈[4500,6500]={volume_ok}, 孔在中心={hole_centered}")
     print(f"{'🎉 LLM 自动建六角螺母通过！' if passed else '⚠️ 未完全通过'}")
     return passed
 
