@@ -247,6 +247,33 @@ const STORAGE_BOX_PROMPT =
 
 window.fillStorageBoxPrompt = function () { useExample(STORAGE_BOX_PROMPT); };
 
+// 六角螺母（M20）的完整 prompt——与 test/objects/test_hex_nut_llm.py 中的 PROMPT 逐字一致。
+// 实测 7/7 步通过：外接圆半径 17.322mm、厚度 8mm、⌀10mm 贯穿孔，体积 5608 mm³。
+const HEX_NUT_PROMPT =
+  "创建一个 M20 六角螺母：正六边形外形（对边距 30mm，即两条平行边之间的距离为 30mm），" +
+  "厚度 8mm，中心有一个直径 10mm 的贯穿圆孔。螺母沿厚度方向以原点居中。";
+
+window.fillHexNutPrompt = function () { useExample(HEX_NUT_PROMPT); };
+
+// 马克杯（含圆环把手）的完整 prompt——与 test/objects/test_mug_llm.py 中的 PROMPT 逐字一致。
+// 实测 11/11 步通过：包围盒 97×90×70mm、体积 125732 mm³ 与理论 ≈126000 完全吻合。
+const MUG_PROMPT =
+  "请建模一个马克杯：\n" +
+  "1. 杯体是一个圆柱：外径 70mm、高 90mm，实心柱体，用上视基准面画外圆后向上拉伸；\n" +
+  "2. 从杯体顶面向下挖一个空腔：直径 60mm（即壁厚 5mm）、深度 80mm（即底厚 10mm），" +
+  "顶部敞开、底部封闭；\n" +
+  "3. 加一个圆环形把手（形似 'D 字母' 的截面，用一个环形轮廓沿水平方向拉伸而成）：" +
+  "在前视基准面上画两个同心圆（外径 40mm、内径 24mm，即把手条粗 8mm），" +
+  "沿前后（Z）方向使用 midPlane 拉伸 8mm 厚度；\n" +
+  "4. **把手必须与杯壁相交合并**（不能只是相切！）：把手同心圆的中心位于杯壁外侧偏内的位置——" +
+  "让内圆的左沿伸入杯壁内部至少 2mm。（提示：杯外壁在 X=35mm 处，" +
+  "把手中心 X 大约取 35 + 内半径 − 5 ≈ 42mm，能让内圆左沿到 X≈30mm，深入杯壁 5mm）；\n" +
+  "5. 把手在垂直方向（Y）的位置居中于杯高中部，即 Y≈45mm；\n" +
+  "6. 杯子沿 Y 方向从 0 延伸到 90mm（不用居中）。\n" +
+  "所有尺寸使用米制，注意换算（1mm = 0.001m）。";
+
+window.fillMugPrompt = function () { useExample(MUG_PROMPT); };
+
 // ---- 事件绑定 ----
 sendBtn.addEventListener("click", send);
 inputEl.addEventListener("keydown", e => {

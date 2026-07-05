@@ -69,7 +69,18 @@ SYSTEM_PROMPT = """\
    - majorRadius: float — 长轴半径（米），沿 X 方向
    - minorRadius: float — 短轴半径（米），沿 Y 方向
    - 椭圆是闭合曲线，可直接用于拉伸或切除
-9. **feature_extrusion** — 拉伸当前草图
+9. **sketch_polygon** — 在草图中画正 n 边形（3~64 边）
+   - cx, cy: float — 多边形中心坐标（米），在实体面上时可加 cz
+   - circumradius: float — **外接圆半径**（=中心到顶点的距离，单位：米）
+   - sides: int — 边数（正整数，3~64）
+   - startAngleDeg: float (可选，默认 0) — 第一个顶点相对于草图 X 轴的角度（度）。
+     * 正六边形要"尖朝上"（顶点在正上方）→ startAngleDeg=90；
+     * 要"平放"（一条边水平在下方）→ startAngleDeg=0。
+   - ⚠️ 若用户给的是"对边距/两平行边距离"（如 M20 螺母对边距 30mm），
+     圆周半径需换算：正六边形的外接圆半径 = 对边距 / √3 = 对边距 × 0.5774；
+     正八边形的外接圆半径 = 对边距 / (2·cos(π/8)) ≈ 对边距 × 0.5412。
+   - 多边形闭合，可直接用于 feature_extrusion 或 feature_cut_extrusion
+10. **feature_extrusion** — 拉伸当前草图
    - depth: float — 拉伸深度（米）
    - flipDirection: bool — 是否翻转拉伸方向（可选，默认 false）。⚠️ 在实体面上拉伸时，默认方向就是面的外法向量方向（离开面的方向），通常不需要设 true。仅在需要向面的内侧拉伸时才设 true。
    - midPlane: bool — 是否使用中间面拉伸（可选，默认 false）。从草图面两侧各拉伸 depth/2
@@ -255,6 +266,13 @@ SYSTEM_PROMPT = """\
   - 也就是说：在上视面画 rectangle(0,0, 0.08, 0.06) 并拉伸 0.04，得到的实体包围盒是 X:0~0.08, Y:0~0.04, Z:-0.06~0
   - **射线选边/选面的坐标是模型 3D 坐标**，必须根据包围盒的实际范围来计算，不能用草图坐标！
   - **select_face_and_sketch 射线规则**：射线起点(rx,ry,rz)必须在目标面的**外侧**，方向(dx,dy,dz)指向实体内部。例如选底面(Y=0)时：起点 ry=-0.01（在面下方），方向 dy=+1（向上射入实体）。选顶面(Y=0.02)时：起点 ry=0.03（在面上方），方向 dy=-1（向下射入实体）。
+- ⚠️⚠️ **feature_extrusion（加料）vs feature_cut_extrusion（切除）—— 二者绝对不能混淆！**：
+  - **feature_extrusion**：把草图轮廓**加出一段实体**（凸台、柱、棱、把手、腿等，做**加法**的场景）。
+  - **feature_cut_extrusion**：把草图轮廓**从已有实体上挖除掉**（孔、槽、凹坑、内腔等，做**减法**的场景）。
+  - 判断规则：如果用户说"加一个 XX / 长出一段 XX / 有一个 XX 凸起 / 有一条 XX 腿 / 有一个 XX 把手 / 一个 XX 突起"——一律用 feature_extrusion；
+    如果说"挖一个 XX / 掏一个 XX / 打一个 XX 孔 / 切除 XX / 有一个 XX 空腔 / 有一个 XX 凹陷"——一律用 feature_cut_extrusion。
+  - 🚫 常见错误：做完一个 cut_extrusion 后，惯性地把下一个"加料"步骤（如把手、凸台）也写成 cut_extrusion，
+    结果那个环形/凸台轮廓被当成切除操作，因为不与实体相交而变成空操作，实体上根本没有那个特征。
 - **挖孔/开槽/凹坑/减法操作必须用 feature_cut_extrusion**，不能用 feature_extrusion。
   - 典型流程：先创建基础实体 → select_face_and_sketch 选中目标面 → 画切除轮廓（如圆孔、矩形槽）→ feature_cut_extrusion。
   - 贯穿孔用 endCondition="through_all"，盲孔/凹坑用 endCondition="blind" 并指定 depth。
@@ -576,9 +594,9 @@ class SwLLMClient:
             "JSON 结构：{\"user_intent\": \"...\", \"steps\": [{\"operation\": \"...\", "
             "\"params\": {...}, \"description\": \"...\"}], \"notes\": \"...\"}\n"
             "operation 可选值：new_part, select_plane, sketch_line, sketch_rectangle, "
-            "sketch_circle, sketch_centerline, sketch_arc, sketch_ellipse, feature_extrusion, feature_cut_extrusion, "
-            "feature_revolve, feature_fillet, feature_chamfer, close_sketch, feature_tree, "
-            "body_bounding_box, select_face_and_sketch, modify_dimension。\n"
+            "sketch_circle, sketch_centerline, sketch_arc, sketch_ellipse, sketch_polygon, "
+            "feature_extrusion, feature_cut_extrusion, feature_revolve, feature_fillet, feature_chamfer, "
+            "close_sketch, feature_tree, body_bounding_box, select_face_and_sketch, modify_dimension。\n"
             "modify_dimension 的 params 中，newValue（绝对值）和 delta（增量）二选一。\n\n"
             "⚠️ **极其重要：你必须一次性输出所有步骤，不能截断！** 如果模型需要4条腿，就必须有4个 sketch_circle 步骤（或者在同一草图中画4个圆）。"
             "**每个 steps 数组元素必须是一个对象（Object），包含 operation、params、description 三个字段。绝对不能是字符串或其他类型！**"

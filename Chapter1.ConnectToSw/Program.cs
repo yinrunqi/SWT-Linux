@@ -80,6 +80,7 @@ namespace Chapter1.ConnectToSw
             Console.WriteLine("  POST /api/sketch/centerline       - 画中心线（旋转轴）");
             Console.WriteLine("  POST /api/sketch/arc              - 画圆弧");
             Console.WriteLine("  POST /api/sketch/ellipse           - 画椭圆");
+            Console.WriteLine("  POST /api/sketch/polygon           - 画正 n 边形（n=3~64）");
             Console.WriteLine("  POST /api/feature/extrusion       - 拉伸");
             Console.WriteLine("  POST /api/feature/revolve         - 旋转凸台/切除");
             Console.WriteLine("  POST /api/feature/cut-extrusion   - 切除拉伸（挖孔/开槽）");
@@ -202,6 +203,10 @@ namespace Chapter1.ConnectToSw
 
                 case "/api/sketch/ellipse":
                     RequirePost(method, resp, () => HandleSketchEllipse(req, resp));
+                    break;
+
+                case "/api/sketch/polygon":
+                    RequirePost(method, resp, () => HandleSketchPolygon(req, resp));
                     break;
 
                 case "/api/feature/extrusion":
@@ -539,6 +544,45 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"绘制椭圆失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSketchPolygon(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                double cx = GetDouble(body, "cx");
+                double cy = GetDouble(body, "cy");
+                double circumradius = GetDouble(body, "circumradius");
+                if (!body.ContainsKey("sides"))
+                    throw new KeyNotFoundException("缺少必填字段: sides（边数，3~64 的整数）");
+                int sides = Convert.ToInt32(body["sides"]);
+                double startAngleDeg = GetDoubleOrDefault(body, "startAngleDeg", 0);
+                double cz = GetDoubleOrDefault(body, "cz", 0);
+
+                _commands.SketchPolygon(cx, cy, circumradius, sides, startAngleDeg, cz);
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = $"绘制正{sides}边形: 中心({cx}, {cy}, {cz}), 外接圆半径 {circumradius}, 起始角 {startAngleDeg}°"
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"绘制正多边形失败: {ex.Message}" });
             }
         }
 

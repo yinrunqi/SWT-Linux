@@ -851,6 +851,57 @@ namespace Chapter1.ConnectToSw
         }
 
         /// <summary>
+        /// 在当前草图中绘制一个正 n 边形（顶点均匀分布在一个虚拟外接圆上，用 n 条直线首尾相连）。
+        ///
+        /// 参数（均为模型空间坐标/长度，单位：米/度）：
+        ///   cx, cy, cz          — 多边形中心点在模型空间的 3D 坐标（若在基准面上则 cz 可省）
+        ///   circumradius        — 外接圆半径（=中心到顶点的距离）
+        ///   sides               — 边数（3~64），要求为整数
+        ///   startAngleDeg       — 第一个顶点相对于草图 X 轴（草图局部坐标）的角度（度），默认 0
+        ///                          例如 startAngleDeg=90 时，六边形有一个顶点在正上方（"顶点朝上"）；
+        ///                                startAngleDeg=0  时，六边形有一条边沿水平方向（"平放"）。
+        ///
+        /// ⚠️ 注意：与 SketchCircle 一样，circumradius 直接作为草图平面内半径使用（ModelToSketchTransform 是刚性变换，
+        /// 半径在草图平面内不变，不能通过"偏移点两次变换后求距离"来反推——面法向沿模型 X/Y 轴时会算出 0）。
+        /// </summary>
+        public void SketchPolygon(double cx, double cy, double circumradius, int sides,
+            double startAngleDeg = 0, double cz = 0)
+        {
+            EnsureActiveDoc();
+
+            if (sides < 3 || sides > 64)
+                throw new ArgumentOutOfRangeException(nameof(sides), "边数必须在 3~64 之间");
+            if (circumradius <= 0)
+                throw new ArgumentOutOfRangeException(nameof(circumradius), "外接圆半径必须为正数");
+
+            // 中心点变换到草图坐标
+            double scx, scy;
+            ModelToSketchPoint(cx, cy, cz, out scx, out scy);
+
+            // 在草图局部平面内计算 n 个顶点：起始角 startAngleDeg，然后每步 360/n 度
+            double startRad = startAngleDeg * Math.PI / 180.0;
+            double stepRad = 2.0 * Math.PI / sides;
+
+            var pts = new double[sides, 2];
+            for (int i = 0; i < sides; i++)
+            {
+                double a = startRad + i * stepRad;
+                pts[i, 0] = scx + circumradius * Math.Cos(a);
+                pts[i, 1] = scy + circumradius * Math.Sin(a);
+            }
+
+            // 用 n 条直线首尾相连组成闭合多边形
+            for (int i = 0; i < sides; i++)
+            {
+                int j = (i + 1) % sides;
+                ActiveDoc.SketchManager.CreateLine(pts[i, 0], pts[i, 1], 0, pts[j, 0], pts[j, 1], 0);
+            }
+
+            Console.WriteLine($"[SwCommands] 绘制正{sides}边形: 模型中心({cx},{cy},{cz}), 外接圆半径 {circumradius}, " +
+                $"起始角 {startAngleDeg}°，草图中心({scx:F4},{scy:F4})，共 {sides} 条边");
+        }
+
+        /// <summary>
         /// 退出当前草图编辑模式（不进行拉伸）。
         /// </summary>
         public void CloseSketch()
