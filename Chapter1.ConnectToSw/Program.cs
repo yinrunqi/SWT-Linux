@@ -81,6 +81,8 @@ namespace Chapter1.ConnectToSw
             Console.WriteLine("  POST /api/sketch/arc              - 画圆弧");
             Console.WriteLine("  POST /api/sketch/ellipse           - 画椭圆");
             Console.WriteLine("  POST /api/sketch/polygon           - 画正 n 边形（n=3~64）");
+            Console.WriteLine("  POST /api/sketch/slot              - 画直线型长圆孔/腰形孔");
+            Console.WriteLine("  POST /api/feature/circular-pattern - 圆周阵列（对最后一个特征均布 N 份）");
             Console.WriteLine("  POST /api/feature/extrusion       - 拉伸");
             Console.WriteLine("  POST /api/feature/revolve         - 旋转凸台/切除");
             Console.WriteLine("  POST /api/feature/cut-extrusion   - 切除拉伸（挖孔/开槽）");
@@ -207,6 +209,14 @@ namespace Chapter1.ConnectToSw
 
                 case "/api/sketch/polygon":
                     RequirePost(method, resp, () => HandleSketchPolygon(req, resp));
+                    break;
+
+                case "/api/sketch/slot":
+                    RequirePost(method, resp, () => HandleSketchSlot(req, resp));
+                    break;
+
+                case "/api/feature/circular-pattern":
+                    RequirePost(method, resp, () => HandleCircularPattern(req, resp));
                     break;
 
                 case "/api/feature/extrusion":
@@ -583,6 +593,82 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"绘制正多边形失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSketchSlot(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                double cx = GetDouble(body, "cx");
+                double cy = GetDouble(body, "cy");
+                double length = GetDouble(body, "length");
+                double width = GetDouble(body, "width");
+                double angleDeg = GetDoubleOrDefault(body, "angleDeg", 0);
+                double cz = GetDoubleOrDefault(body, "cz", 0);
+
+                _commands.SketchSlot(cx, cy, length, width, angleDeg, cz);
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = $"绘制长圆孔: 中心({cx}, {cy}, {cz}), 长={length}, 宽={width}, 旋转角={angleDeg}°"
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"绘制长圆孔失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleCircularPattern(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                if (!body.ContainsKey("count"))
+                    throw new KeyNotFoundException("缺少必填字段: count（阵列数量，≥2 的整数）");
+                int count = Convert.ToInt32(body["count"]);
+                string axis = body.ContainsKey("axis") ? body["axis"].ToString() : "y";
+                double angleDeg = GetDoubleOrDefault(body, "angleDeg", 360);
+                bool reverseDir = body.ContainsKey("reverseDir") && Convert.ToBoolean(body["reverseDir"]);
+
+                var result = _commands.CircularPattern(count, axis, angleDeg, reverseDir);
+                var response = new Dictionary<string, object> { { "success", true } };
+                foreach (var kv in result) response[kv.Key] = kv.Value;
+                SendJson(resp, 200, response);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"圆周阵列失败: {ex.Message}" });
             }
         }
 

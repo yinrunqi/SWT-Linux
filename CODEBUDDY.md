@@ -67,6 +67,8 @@ msbuild SolidWorksTutorial.slnx /p:Configuration=Debug
 | POST | `/api/sketch/arc` | `{ "cx", "cy", "startX", "startY", "endX", "endY", "direction" }` | 画圆弧（米），direction: 1=顺时针, -1=逆时针 |
 | POST | `/api/sketch/ellipse` | `{ "cx", "cy", "majorRadius", "minorRadius" }` | 画椭圆（米），长轴半径沿X方向，短轴半径沿Y方向 |
 | POST | `/api/sketch/polygon` | `{ "cx", "cy", "circumradius", "sides", "startAngleDeg"(可选), "cz"(可选) }` | 画正 n 边形（3~64），circumradius=外接圆半径（米），startAngleDeg=第一个顶点相对草图 X 轴的角度（度） |
+| POST | `/api/sketch/slot` | `{ "cx", "cy", "length", "width", "angleDeg"(可选), "cz"(可选) }` | 画长圆孔/腰形孔（当前本地 SW 上退化为中心矩形近似）。要求 length > width |
+| POST | `/api/feature/circular-pattern` | `{ "count", "axis"(可选,x/y/z,默认y), "angleDeg"(可选,默认360), "reverseDir"(可选) }` | 对最后特征做圆周阵列（本地 SW 上 API 调用成功但几何未完全生效，暂不推荐依赖） |
 | POST | `/api/feature/extrusion` | `{ "depth", "flipDirection"(可选), "midPlane"(可选) }` | 拉伸当前草图（米），flipDirection翻转方向，midPlane中间面拉伸 |
 | POST | `/api/feature/revolve` | `{ "angle"(可选,默认360), "isCut"(可选), "reverseDir"(可选) }` | 旋转凸台/切除（度），草图需含中心线 |
 | POST | `/api/feature/cut-extrusion` | `{ "depth", "endCondition"(可选), "flipDirection"(可选) }` | 切除拉伸（米），endCondition: blind/through_all/mid_plane/up_to_next |

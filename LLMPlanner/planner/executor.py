@@ -29,11 +29,13 @@ OPERATION_ENDPOINT_MAP: dict[OperationType, tuple[str, str]] = {
     OperationType.SKETCH_ARC:         ("POST", "/api/sketch/arc"),
     OperationType.SKETCH_ELLIPSE:     ("POST", "/api/sketch/ellipse"),
     OperationType.SKETCH_POLYGON:     ("POST", "/api/sketch/polygon"),
+    OperationType.SKETCH_SLOT:        ("POST", "/api/sketch/slot"),
     OperationType.FEATURE_EXTRUSION:  ("POST", "/api/feature/extrusion"),
     OperationType.FEATURE_CUT_EXTRUSION: ("POST", "/api/feature/cut-extrusion"),
     OperationType.FEATURE_REVOLVE:    ("POST", "/api/feature/revolve"),
     OperationType.FEATURE_FILLET:     ("POST", "/api/feature/fillet"),
     OperationType.FEATURE_CHAMFER:    ("POST", "/api/feature/chamfer"),
+    OperationType.FEATURE_CIRCULAR_PATTERN: ("POST", "/api/feature/circular-pattern"),
     OperationType.CLOSE_SKETCH:       ("POST", "/api/close-sketch"),
     # --- 查询 & 编辑 ---
     OperationType.FEATURE_TREE:            ("GET",  "/api/feature-tree"),

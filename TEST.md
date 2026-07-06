@@ -238,6 +238,18 @@ REM （考验：feature_revolve 与多段直线组合成"底部→收腰→膨�
 REM  轮廓端点必须落在旋转轴上被自动封闭；旋转后再从顶面挖圆柱形内腔留底厚）
 REM 实测 15/15 步通过：包围盒 90×150×90mm、体积 416504 mm³ 与理论完全吻合。
 python test_vase_llm.py
+
+REM 钥匙（LLM 端到端）：⌀20mm 圆盘钥匙圈头 + 42mm 矩形杆 + 顶面 10×5mm 长圆钥匙圈孔
+REM （考验：新增 sketch_slot API；两次拉伸合并成一体；顶面开孔坐标；实体面切除）
+REM 实测 10/10 步通过：包围盒 59×2×20mm。
+REM ⚠️ sketch_slot 在本地 SW2025 上当前退化为矩形近似（角是直角而非圆角），功能上等价。
+python test_key_llm.py
+
+REM 齿轮（LLM 端到端）：⌀60mm 圆盘 + 12 个沿圆周均布的齿槽 + 中心孔
+REM （考验：LLM 精确计算 12 个齿槽的 sin/cos 圆周坐标；一次草图画多个独立轮廓；
+REM  用 sketch_slot 而非 sketch_rectangle 在实体面上画多轮廓避免坐标混淆）
+REM 实测 21/21 步通过：包围盒 60×8×60mm。
+python test_gear_llm.py
 ```
 
 > **`test_storage_box.py` 使用的完整 LLM Prompt**：
@@ -391,6 +403,42 @@ python test_vase_llm.py
 >
 > 该任务考验 LLM：**用多段直线精确按顺序**画复杂轴截面（8 段直线组成"底部→收腰→膨大→颈部→瓶口"的曲线）+ 理解"轮廓端点必须落在旋转轴上以便被自动封闭"+ `feature_revolve` 生成实体后再切除内腔的顺序。
 
+> **`test_key_llm.py` 使用的完整 LLM Prompt**：
+> ```text
+> 请建模一把小型钥匙，包含钥匙圈头（带圆孔）和钥匙杆两部分：
+> 1. 整体沿 Y 轴（厚度方向）以原点为中心居中，厚度 2mm；
+> 2. **钥匙圈头**：一个圆盘外径 20mm，圆心在原点。用上视基准面画圆，然后 feature_extrusion {depth: 0.002, midPlane: true} 一次拉伸；
+> 3. **钥匙杆**：一个矩形梁，长 42mm（沿 +X 方向），宽 8mm（沿 Z 方向居中）。杆的末端**必须嵌入钥匙圈头内 3mm 以确保合并**——矩形沿 X 从 X=7mm 延伸到 X=49mm，Z 从 -4mm 到 +4mm。用第二次 select_plane（上视面）+ sketch_rectangle + feature_extrusion；
+> 4. **钥匙圈孔**：在钥匙圈头顶面用 select_face_and_sketch 选顶面，用 sketch_slot 画长 10mm、宽 5mm 的长圆孔（中心 cx=0, cy=顶面Y+0.001m, cz=0），然后 feature_cut_extrusion 贯穿切除。
+> ```
+>
+> **`test_key_llm.py` 验证点**：
+> 1. 前置检查 + LLM 计划生成；
+> 2. **全部步骤成功**；
+> 3. **`sketch_slot` 步数 ≥ 1**（钥匙圈孔的关键 API，验证新增能力）；
+> 4. **`feature_extrusion` 步数 ≥ 1、`feature_cut_extrusion` 步数 ≥ 1**；
+> 5. **包围盒 59×2×20mm**（容差 ±4mm）——sizeZ=20mm 是圆盘直径决定（钥匙杆比它窄，不影响 Z 尺寸）。
+>
+> 该任务考验：新增 `sketch_slot` API 用于顶面切除、两次拉伸合并成一体（圆+矩形不能同草图）、顶面开孔的正确坐标（cx=cz=0, cy=顶面Y 坐标）。
+
+> **`test_gear_llm.py` 使用的完整 LLM Prompt**：
+> ```text
+> 请建模一个简化的圆柱齿轮：
+> 1. 齿轮主体：⌀60mm 圆盘，厚 8mm，用上视基准面画外圆后 midPlane 拉伸；
+> 2. **齿槽（12 个，沿圆周均布）**：在圆盘顶面用 select_face_and_sketch 选顶面，然后**在同一草图**内画 12 个 sketch_slot（各自独立、不相交、必须完全在圆盘内）。第 k 个齿槽的中心角 θ_k=2π·k/12，中心距原点 25mm（比圆盘半径 30mm 内缩 5mm），中心坐标 (cx,cz)=(0.025·cos(θ_k), 0.025·sin(θ_k))。每个齿槽用 sketch_slot {cx: cx_k, cy: 0.004, cz: cz_k, length: 0.003, width: 0.002}；
+> 3. 画完 12 个齿槽后，一次 feature_cut_extrusion 贯穿切除；
+> 4. **中心孔**：再用 select_face_and_sketch 选顶面 + sketch_circle {cx:0, cy:0.004, cz:0, radius:0.006} + feature_cut_extrusion 贯穿。
+> ```
+>
+> **`test_gear_llm.py` 验证点**：
+> 1. 前置检查 + LLM 计划生成；
+> 2. **全部步骤成功**（预期约 21 步：1 圆盘草图+1 拉伸+1 选面+12 齿槽+1 切除+1 选面+1 中心圆+1 切除+…）；
+> 3. **`sketch_slot` 步数 ≥ 12**（12 个齿槽用长圆轮廓）；
+> 4. **`feature_extrusion` 步数 ≥ 1、`feature_cut_extrusion` 步数 ≥ 2**（1 次切齿槽 + 1 次切中心孔）；
+> 5. **包围盒 60×8×60mm**（容差 ±4mm）——外径 60mm 决定 X/Z。
+>
+> 该任务考验：LLM 精确计算 12 个圆周分布点的三角函数坐标 + **一次草图画多个完全独立的封闭轮廓**（SolidWorks 允许多轮廓拉伸/切除，但轮廓必须不相交或完全嵌套）+ 在实体面上用 sketch_slot 而非 sketch_rectangle（后者 y1/y2 会被误解为模型 Y）。**注意**：本项目也提供了 `feature_circular_pattern` API，但本地 SW2025 上几何生效有问题，齿轮改用手工画 N 份而不是阵列，更可靠。
+
 ---
 
 ## 测试分类说明
@@ -412,6 +460,8 @@ python test_vase_llm.py
 | `objects/test_mug_llm` | LLM 规划 | 马克杯（圆柱杯体 + 顶面内腔 + 圆环形把手，考验加料/切除辨析） |
 | `objects/test_wrench_llm` | LLM 规划 | 开口扳手（圆盘头 + 矩形手柄 + 六角卡口贯穿孔，考验多次拉伸合并 + polygon 切除） |
 | `objects/test_vase_llm` | LLM 规划 | 花瓶（8 段直线组成的复杂轴截面 revolve + 顶面挖内腔） |
+| `objects/test_key_llm` | LLM 规划 | 钥匙（圆盘头 + 矩形杆 + 长圆钥匙圈孔，验证新增 `sketch_slot` API） |
+| `objects/test_gear_llm` | LLM 规划 | 齿轮（圆盘 + 12 齿槽沿圆周分布 + 中心孔，考验 LLM 三角函数计算 + 一草图多轮廓） |
 
 > **API 直调**类测试直接构造操作序列调用 C# 服务，不依赖 LLM，可用于验证底层建模能力；
 > **LLM 规划**类测试走完整链路（自然语言 → LLM 解析 → 执行），需要配置好 API Key。

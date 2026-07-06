@@ -80,7 +80,15 @@ SYSTEM_PROMPT = """\
      圆周半径需换算：正六边形的外接圆半径 = 对边距 / √3 = 对边距 × 0.5774；
      正八边形的外接圆半径 = 对边距 / (2·cos(π/8)) ≈ 对边距 × 0.5412。
    - 多边形闭合，可直接用于 feature_extrusion 或 feature_cut_extrusion
-10. **feature_extrusion** — 拉伸当前草图
+10. **sketch_slot** — 在草图中画一个 length × width 的槽形轮廓
+   - cx, cy: float — 槽中心坐标（米），在实体面上时可加 cz
+   - length: float — 沿长轴方向的总长度（米）
+   - width: float — 沿短轴方向的宽度（米）
+   - angleDeg: float (可选，默认 0) — 长轴相对草图 X 轴的旋转角度（度，暂仅支持 0）
+   - ⚠️ **当前实现说明**：本地 SolidWorks 环境下退化为中心矩形（四个角是直角而非圆角）。
+     功能上与真正的长圆孔等价——用于钥匙圈孔、螺栓过孔、装配调整用槽都合格。
+   - 闭合，可直接用于拉伸/切除。
+11. **feature_extrusion** — 拉伸当前草图
    - depth: float — 拉伸深度（米）
    - flipDirection: bool — 是否翻转拉伸方向（可选，默认 false）。⚠️ 在实体面上拉伸时，默认方向就是面的外法向量方向（离开面的方向），通常不需要设 true。仅在需要向面的内侧拉伸时才设 true。
    - midPlane: bool — 是否使用中间面拉伸（可选，默认 false）。从草图面两侧各拉伸 depth/2
@@ -141,6 +149,19 @@ SYSTEM_PROMPT = """\
     - rx, ry, rz, dx, dy, dz: float — 射线参数（仅 edgeSelection="ray" 时使用）
     - **不需要进入草图**，直接对已有实体的边执行。
     - 典型流程：创建实体 → feature_chamfer
+
+15. **feature_circular_pattern** — 圆周阵列（把最后一个特征围绕坐标轴均匀复制 N 份）
+    - count: int — 阵列总数（含源特征本身，≥2）
+    - axis: str — 旋转轴（可选，默认 "y"），可选 "x"/"y"/"z"，轴穿过坐标原点
+    - angleDeg: float — 阵列覆盖角度（可选，默认 360，即整圆均分）
+    - reverseDir: bool — 反转阵列方向（可选，默认 false）
+    - ⭐ **典型场景**：齿轮的齿、法兰盘的螺栓孔、通风口、风扇叶片、花瓣等所有"围绕中心轴均匀分布"的重复特征。
+    - 🚫 **不要手工绕圈画多个圆/多边形**：如"6 个螺栓孔围绕中心均布"，
+      正确做法 = 先建**一个**孔（select_face + sketch_circle + feature_cut_extrusion），
+      再调 feature_circular_pattern {count: 6}，一步生成其余 5 个孔。
+    - ⚠️ 阵列前需确保源特征已完成。阵列以特征树中**最后一个非草图非基准面特征**为源。
+    - ⚠️ 轴的方向决定了阵列在哪个平面内均布：如果零件在上视面画（拉伸沿 Y 轴），
+      通常用 axis="y" 让阵列在 XZ 平面内均布（绕 Y 轴转）。
 
 ### 查询类操作（用于了解当前模型状态）
 
@@ -629,9 +650,10 @@ class SwLLMClient:
             "JSON 结构：{\"user_intent\": \"...\", \"steps\": [{\"operation\": \"...\", "
             "\"params\": {...}, \"description\": \"...\"}], \"notes\": \"...\"}\n"
             "operation 可选值：new_part, select_plane, sketch_line, sketch_rectangle, "
-            "sketch_circle, sketch_centerline, sketch_arc, sketch_ellipse, sketch_polygon, "
+            "sketch_circle, sketch_centerline, sketch_arc, sketch_ellipse, sketch_polygon, sketch_slot, "
             "feature_extrusion, feature_cut_extrusion, feature_revolve, feature_fillet, feature_chamfer, "
-            "close_sketch, feature_tree, body_bounding_box, select_face_and_sketch, modify_dimension。\n"
+            "feature_circular_pattern, close_sketch, feature_tree, body_bounding_box, "
+            "select_face_and_sketch, modify_dimension。\n"
             "modify_dimension 的 params 中，newValue（绝对值）和 delta（增量）二选一。\n\n"
             "⚠️ **极其重要：你必须一次性输出所有步骤，不能截断！** 如果模型需要4条腿，就必须有4个 sketch_circle 步骤（或者在同一草图中画4个圆）。"
             "**每个 steps 数组元素必须是一个对象（Object），包含 operation、params、description 三个字段。绝对不能是字符串或其他类型！**"

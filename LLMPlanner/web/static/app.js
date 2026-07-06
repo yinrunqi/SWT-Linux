@@ -324,6 +324,51 @@ const VASE_PROMPT =
 
 window.fillVasePrompt = function () { useExample(VASE_PROMPT); };
 
+// 钥匙 prompt——与 test/objects/test_key_llm.py 中的 PROMPT 逐字一致。
+// 实测 10/10 步通过：包围盒 59×2×20mm（sizeZ=20 由圆盘直径决定）。
+const KEY_PROMPT =
+  "请建模一把小型钥匙，包含钥匙圈头（带圆孔）和钥匙杆两部分：\n" +
+  "1. 整体沿 Y 轴（厚度方向）以原点为中心居中，厚度 2mm；\n" +
+  "2. **钥匙圈头**：一个圆盘外径 20mm，圆心在原点。用上视基准面（select_plane {index:1}）画圆，" +
+  "然后 feature_extrusion {depth: 0.002, midPlane: true} 一次拉伸；\n" +
+  "3. **钥匙杆**：一个矩形梁，长 42mm（沿 +X 方向），宽 8mm（沿 Z 方向居中）。" +
+  "杆的末端**必须嵌入钥匙圈头内 3mm 以确保合并**成单一实体——" +
+  "即矩形沿 X 从 X=7mm（钥匙圈半径 10mm 减 3mm 嵌入）延伸到 X=49mm，" +
+  "沿 Z 从 Z=-4mm 到 Z=+4mm。**用第二次 select_plane {index:1}（上视面）" +
+  "+ sketch_rectangle {x1:0.007, y1:-0.004, x2:0.049, y2:0.004} + feature_extrusion " +
+  "{depth: 0.002, midPlane: true}**（不能和圆盘画在同一草图里）；\n" +
+  "4. **钥匙圈孔**：在钥匙圈头顶面用 select_face_and_sketch 选顶面，" +
+  "然后**用 sketch_slot 画一个长圆孔**：中心 cx=0、cy=顶面 Y 坐标(+0.001m)、cz=0，" +
+  "长 10mm（沿 X 方向）、宽 5mm，然后 feature_cut_extrusion 贯穿切除。\n" +
+  "所有尺寸使用米制（1mm = 0.001m）。";
+
+window.fillKeyPrompt = function () { useExample(KEY_PROMPT); };
+
+// 齿轮 prompt——与 test/objects/test_gear_llm.py 中的 PROMPT 逐字一致。
+// 实测 21/21 步通过：包围盒 60×8×60mm、12 齿槽 + 中心孔。
+const GEAR_PROMPT =
+  "请建模一个简化的圆柱齿轮：\n" +
+  "1. 齿轮主体：⌀60mm 圆盘，厚 8mm，用上视基准面画外圆 (cx=0,cy=0,radius=0.03)，" +
+  "然后 feature_extrusion {depth: 0.008, midPlane: true} 居中拉伸；\n" +
+  "2. **齿槽（12 个，沿圆周均布）**：在圆盘顶面（Y=+0.004m）上用 select_face_and_sketch 选顶面，" +
+  "然后**在同一草图**内画 12 个小矩形（用 sketch_slot 画,不能相交,必须完全在圆盘内）。\n" +
+  "   计算：第 k 个齿槽（k=0..11）的中心角 θ_k = 2π·k/12（弧度），" +
+  "**中心距原点 25mm（圆盘半径 30mm 内缩 5mm）**，" +
+  "中心坐标 (cx_k, cz_k) = (0.025·cos(θ_k), 0.025·sin(θ_k))。\n" +
+  "   ⚠️ **用 sketch_slot 而不是 sketch_rectangle**（sketch_rectangle 的 y1/y2 在实体面上会被误解为模型 Y）。\n" +
+  "   每个齿槽：sketch_slot {cx: cx_k, cy: 0.004, cz: cz_k, length: 0.003, width: 0.002}\n" +
+  "   ⚠️ **必须自己算好 12 个齿槽的 cx/cz**（Python 中 cos(0)=1,sin(0)=0," +
+  "cos(π/6)≈0.866,sin(π/6)=0.5 等等,把 0.025 乘上去），一次给出全部 12 个 sketch_slot 步骤。\n" +
+  "   ⚠️ **不要偷懒用文字说\"依此类推\"，必须真的列出全部 12 个 sketch_slot 步骤**。\n" +
+  "3. 画完 12 个齿槽后，一次 **feature_cut_extrusion {depth: 0.008, " +
+  "endCondition: 'through_all'}** 贯穿切除，形成 12 个齿槽；\n" +
+  "4. **中心孔**：再用 select_face_and_sketch 选顶面（射线 rx=0, ry=0.01, rz=0, dy=-1），" +
+  "然后 sketch_circle {cx: 0, cy: 0.004, cz: 0, radius: 0.006} 画中心 ⌀12mm 圆，" +
+  "feature_cut_extrusion {depth: 0.008, endCondition: 'through_all'} 贯穿。\n" +
+  "所有尺寸使用米制（1mm = 0.001m）。";
+
+window.fillGearPrompt = function () { useExample(GEAR_PROMPT); };
+
 // ---- 事件绑定 ----
 sendBtn.addEventListener("click", send);
 inputEl.addEventListener("keydown", e => {
