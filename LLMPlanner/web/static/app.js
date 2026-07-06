@@ -279,6 +279,51 @@ const MUG_PROMPT =
 
 window.fillMugPrompt = function () { useExample(MUG_PROMPT); };
 
+// 开口扳手 prompt——与 test/objects/test_wrench_llm.py 中的 PROMPT 逐字一致。
+// 实测 10/10 步通过：包围盒 140×8×40mm、体积 20938 mm³。
+const WRENCH_PROMPT =
+  "请建模一把开口扳手（板手），由头部圆盘、手柄矩形梁、以及头部中心的六角螺母卡口组成：\n" +
+  "1. 扳手整体沿厚度方向（Y 轴）以原点居中，厚度 8mm；\n" +
+  "2. **头部**是一个圆盘：外径 40mm，圆心在原点。用上视基准面画圆，midPlane 拉伸 8mm；\n" +
+  "3. **手柄**是一个矩形梁：长 120mm（沿 +X 方向），宽 15mm（沿 Z 方向居中），厚度同样 8mm。" +
+  "手柄末端**必须嵌入头部圆盘内 5mm 以确保合并**成单一实体——" +
+  "即矩形沿 X 方向从 X=15mm（圆盘半径 20mm 减 5mm）延伸到 X=120mm，" +
+  "沿 Z 从 -7.5mm 到 +7.5mm。需要**用第二次 select_plane（上视面）+ sketch_rectangle + feature_extrusion**" +
+  "（不能和头部画在同一个草图里，因为 SolidWorks 不允许一个草图里画圆和矩形两个相交但不嵌套的轮廓）；\n" +
+  "4. **六角卡口**：在头部顶面用 select_face_and_sketch 选顶面，用 sketch_polygon 画一个" +
+  "**正六边形**（对边距 13mm、尖朝上），然后 feature_cut_extrusion 贯穿切除，形成螺母卡口。" +
+  "对边距 13mm 对应外接圆半径 = 13 / √3 ≈ 7.51mm；\n" +
+  "5. 六边形中心应对齐头部圆盘中心：cx=0、cz=0（面内两个方向对齐），" +
+  "cy=顶面 Y 坐标 (+0.004m)。\n" +
+  "所有尺寸使用米制（1mm = 0.001m）。";
+
+window.fillWrenchPrompt = function () { useExample(WRENCH_PROMPT); };
+
+// 花瓶 prompt——与 test/objects/test_vase_llm.py 中的 PROMPT 逐字一致。
+// 实测 15/15 步通过：包围盒 90×150×90mm、体积 416504 mm³。
+const VASE_PROMPT =
+  "请建模一个花瓶：轴对称形状（用旋转特征生成），底部平坦、瓶身中部略膨大、瓶颈收窄、瓶口再略外扩。\n" +
+  "在**前视基准面**（select_plane {index:0}）上画一个位于旋转轴右侧的**半截面轮廓**并旋转 360°：\n" +
+  "1. 首先画中心线（旋转轴）：从 (x=0, y=0) 到 (x=0, y=0.15)，沿 Y 轴向上；\n" +
+  "2. 然后**按顺序依次画 8 段直线**首尾相连组成花瓶的右半轮廓（所有坐标单位：米）：\n" +
+  "   ① sketch_line (0, 0) → (0.03, 0)      ← 底面（旋转轴到底盘外沿）\n" +
+  "   ② sketch_line (0.03, 0) → (0.03, 0.01)  ← 底盘垂直段\n" +
+  "   ③ sketch_line (0.03, 0.01) → (0.045, 0.04)  ← 斜向外扩到最粗处\n" +
+  "   ④ sketch_line (0.045, 0.04) → (0.045, 0.07)  ← 中部最粗处垂直段\n" +
+  "   ⑤ sketch_line (0.045, 0.07) → (0.02, 0.1)   ← 收腰到瓶颈\n" +
+  "   ⑥ sketch_line (0.02, 0.1) → (0.0275, 0.13)  ← 瓶颈外扩形成瓶口\n" +
+  "   ⑦ sketch_line (0.0275, 0.13) → (0.0275, 0.15) ← 瓶口垂直段\n" +
+  "   ⑧ sketch_line (0.0275, 0.15) → (0, 0.15)   ← 顶面（回到旋转轴）\n" +
+  "3. 调用 feature_revolve {angle: 360}，形成实心花瓶（此时**不需要**画额外直线封闭轮廓，" +
+  "轮廓两端都在旋转轴上，SolidWorks 会用旋转轴自动封闭）；\n" +
+  "4. 花瓶应有内腔（空心）：**旋转完成后**用 select_face_and_sketch 选中顶面（射线起点 ry=0.2 大于瓶高 0.15，" +
+  "方向 dy=-1），在顶面上画一个直径 36mm 的圆（cx=0, cy=0.15, cz=0, radius=0.018），" +
+  "然后 feature_cut_extrusion 盲孔切除 140mm 深度（endCondition='blind'），" +
+  "留下 10mm 底厚（花瓶高 150mm，切 140mm 后剩底部 10mm）。\n" +
+  "所有尺寸均为米制。整个花瓶从底部 Y=0 延伸到顶部 Y=0.15。";
+
+window.fillVasePrompt = function () { useExample(VASE_PROMPT); };
+
 // ---- 事件绑定 ----
 sendBtn.addEventListener("click", send);
 inputEl.addEventListener("keydown", e => {
