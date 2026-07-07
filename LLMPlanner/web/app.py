@@ -58,6 +58,22 @@ def index():
     return send_from_directory(app.static_folder, "index.html")
 
 
+# datasets/ 静态文件访问（供前端"三视图建模"示例按钮拉取样例图片）
+_DATASETS_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "datasets",
+)
+
+
+@app.route("/datasets/<path:subpath>")
+def serve_dataset(subpath: str):
+    """
+    暴露 LLMPlanner/datasets/ 下的文件（仅只读）。
+    仅用于给前端加载"三视图建模"示例图片（B01 L 型支架 drawing.png 等）。
+    """
+    return send_from_directory(_DATASETS_DIR, subpath)
+
+
 # ============================================================
 # API 端点
 # ============================================================
@@ -88,9 +104,16 @@ def run():
     base_url = data.get("base_url", "").strip()
     model = data.get("model", "gpt-4o-mini").strip()
     dry_run = data.get("dry_run", False)
+    # 多模态：可选图片（base64，可含或不含 data URI 前缀；不含时按 JPEG 处理）
+    image_raw = data.get("image", "") or ""
+    image_b64 = image_raw.strip()
+    # 若前端传的是完整 data URI（data:image/png;base64,...），后端只需 base64 部分即可
+    if image_b64.startswith("data:") and "," in image_b64:
+        image_b64 = image_b64.split(",", 1)[1]
 
-    if not instruction:
-        return jsonify({"success": False, "error": "指令不能为空"}), 400
+    # 有图片时允许 instruction 为空；纯文本时必须有 instruction
+    if not instruction and not image_b64:
+        return jsonify({"success": False, "error": "指令与图片不能同时为空"}), 400
     if not api_key:
         return jsonify({"success": False, "error": "请填写 API Key"}), 400
 
@@ -98,8 +121,8 @@ def run():
         # 获取 LLM 客户端
         llm_client = _get_llm_client(api_key, base_url, model)
 
-        # 1. LLM 规划
-        plan = llm_client.plan(instruction)
+        # 1. LLM 规划（有图走多模态两阶段；无图走纯文本）
+        plan = llm_client.plan(instruction, image_base64=image_b64 or None)
         plan_dict = plan.model_dump()
 
         # 2. 执行

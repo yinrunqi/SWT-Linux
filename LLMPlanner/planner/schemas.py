@@ -134,3 +134,100 @@ class SwModelingPlan(BaseModel):
         default="",
         description="补充说明或注意事项（如尺寸假设、单位换算等）"
     )
+
+
+# ============================================================
+# 三视图中间表示（IR）—— 多模态建模第一阶段的结构化输出
+# ============================================================
+
+
+class DimensionSpec(BaseModel):
+    """三视图图纸上的一条尺寸标注。"""
+    label: str = Field(
+        description="尺寸的名称/含义（如 '总长' '孔径' '厚度' '中心距'）"
+    )
+    value_mm: float = Field(
+        description="尺寸数值（毫米）。阶段 B 会统一 ÷1000 转米。"
+    )
+    applies_to: str = Field(
+        default="",
+        description="该尺寸作用的对象（如 'front.width' 'hole1.diameter' 'plate.thickness'），"
+                    "便于阶段 B 定位到具体的建模参数。"
+    )
+
+
+class ViewProfile(BaseModel):
+    """单个视图的轮廓结构。"""
+    view_name: str = Field(
+        description="视图名。三视图约定使用 'front'(主视图) / 'top'(俯视图) / 'right'(侧视图)"
+    )
+    base_plane: str = Field(
+        description="该视图对应的 SolidWorks 基准面："
+                    "front→前视面(index=0), top→上视面(index=1), right→右视面(index=2)"
+    )
+    outline_desc: str = Field(
+        description="该视图轮廓的中文自然语言描述（形状类型、大致轮廓、关键构成元素）。"
+                    "示例：'一个 L 形轮廓，外接矩形 60×40mm，内凹缺口 30×20mm 位于右上角'"
+    )
+
+
+class FeatureHint(BaseModel):
+    """图纸上的附加特征（孔/圆角/倒角/凹槽等）。"""
+    kind: str = Field(
+        description="特征种类：'hole'(孔) / 'fillet'(圆角) / 'chamfer'(倒角) / "
+                    "'slot'(槽) / 'pocket'(凹坑) / 'boss'(凸台) 等"
+    )
+    location_desc: str = Field(
+        description="该特征在哪个视图/哪个位置。示例：'front 视图左下角，距底边 10mm、距左边 8mm'"
+    )
+    size_desc: str = Field(
+        default="",
+        description="该特征的尺寸描述。示例：'⌀5mm 贯穿孔' / 'R3mm 圆角' / '10×5mm 长圆槽'"
+    )
+
+
+class ThreeViewIR(BaseModel):
+    """
+    三视图中间表示（Intermediate Representation）。
+
+    多模态建模两阶段管线的**阶段 A** 结构化输出：
+        输入：一张标注了尺寸的三视图图片（PNG/JPG，可能附文字补充）
+        输出：ThreeViewIR（本模型）
+    然后阶段 B 会把这个 IR 交给建模 LLM 转换为 SwModelingPlan。
+
+    职责单一：只做"看图 → 结构化描述几何与尺寸"，不排具体 SolidWorks 步骤。
+    """
+    part_type: str = Field(
+        description="零件的顶层类型分类（决定阶段 B 的建模策略）。可选值："
+                    "'extrude_prism'(拉伸棱柱) / 'revolve'(旋转体) / "
+                    "'plate_with_holes'(带孔平板) / 'stepped_shaft'(阶梯轴) / "
+                    "'l_bracket'(L 型支架) / 'flange'(法兰) / 'other'(其它)"
+    )
+    base_view: str = Field(
+        default="front",
+        description="主视图对应的基准面（front/top/right）。约定：主视图→前视面(0)、"
+                    "俯视图→上视面(1)、侧视图→右视面(2)。"
+    )
+    overall_size_mm: dict = Field(
+        default_factory=dict,
+        description="零件的总体包围盒尺寸（毫米），至少含 length/width/height 三个键（可缺则填 0）。"
+                    "示例：{'length': 60, 'width': 40, 'height': 20}"
+    )
+    profiles: list[ViewProfile] = Field(
+        default_factory=list,
+        description="各视图的轮廓描述列表。至少给出主视图；有俯视图/侧视图也一并列出。"
+    )
+    dimensions: list[DimensionSpec] = Field(
+        default_factory=list,
+        description="**逐条枚举图纸上所有可读到的尺寸标注**。这一步至关重要——阶段 B 依赖此列表"
+                    "还原绝对尺寸，缺失/误读会直接导致建出的零件尺寸错误。宁可多不可少。"
+    )
+    features: list[FeatureHint] = Field(
+        default_factory=list,
+        description="附加特征列表（孔/圆角/倒角/槽/凹坑等），每项都要指明位置和尺寸。"
+    )
+    assumptions: str = Field(
+        default="",
+        description="若图纸上某些尺寸未标注/看不清，此处说明所做的合理假设"
+                    "（如'厚度未标注，假设为 10mm；孔位对称假设'）"
+    )

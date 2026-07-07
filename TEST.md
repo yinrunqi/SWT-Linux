@@ -465,6 +465,79 @@ python test_gear_llm.py
 | `objects/test_vase_llm` | LLM 规划 | 花瓶（8 段直线组成的复杂轴截面 revolve + 顶面挖内腔） |
 | `objects/test_key_llm` | LLM 规划 | 钥匙（圆盘头 + 矩形杆 + 长圆钥匙圈孔 + 5 齿锯齿边，验证新增 `sketch_slot` API 及多轮廓齿槽切除） |
 | `objects/test_gear_llm` | LLM 规划 | 齿轮（圆盘 + 12 齿槽沿圆周分布 + 中心孔，考验 LLM 三角函数计算 + 一草图多轮廓） |
+| `test_skill_regression` | Skill 架构 | Skill 动态加载零回归验证（9 项：registry 加载 / SYSTEM_PROMPT 包含 core / full 模式注入所有 input_modes / cache_key 稳定 / routed 模式命中规则 / _build_user_message 图文格式 / stage_b_prompt 拼装 …） |
+| `test_three_view_e2e` | 多模态 LLM | 三视图端到端建模（B01 L 型支架 PNG → Vision → ThreeViewIR → SwModelingPlan → SolidWorks，验证包围盒与体积） |
 
 > **API 直调**类测试直接构造操作序列调用 C# 服务，不依赖 LLM，可用于验证底层建模能力；
-> **LLM 规划**类测试走完整链路（自然语言 → LLM 解析 → 执行），需要配置好 API Key。
+> **LLM 规划**类测试走完整链路（自然语言 → LLM 解析 → 执行），需要配置好 API Key；
+> **Skill 架构**类测试验证文件驱动的 Skill 动态加载（Prompt 优雅化）零回归；
+> **多模态 LLM** 类测试走两阶段流水线（图片+文字 → Vision IR → 建模 Plan → 执行）。
+
+---
+
+## 十一、Skill 架构零回归测试
+
+400 行硬编码 `SYSTEM_PROMPT` 已重构为 `planner/skills/{core,recipes,input_modes}/*.md`（文件驱动，加物件 = 加一个 md）。该测试验证：
+
+- Registry 正确加载 5 个 core skill（header / operations / units / rules / editing）
+- 全局 `SYSTEM_PROMPT`（`skill_mode=full`）包含所有 core skill 正文（保证行为等价）
+- `skill_mode=routed`：text 输入不误注入 three_view skill；three_view 输入正确注入 skill
+- Cache key 计算稳定（相同输入 → 相同 key）
+- 多模态入口 `_build_user_message` 在图文/纯文场景返回正确的 OpenAI messages 结构
+- `_compose_stage_b_prompt` 正确拼装 IR + 用户文字 + 阶段 B 指引
+
+```cmd
+cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
+venv\Scripts\python.exe -X utf8 test\test_skill_regression.py
+```
+
+实测：**9/9 项全部通过**，秒级完成（不调 API、不建模）。
+
+> 若想额外做真实 LLM 层的零回归验证，跑一个已知能建成功的 LLM 测试（如 `test_hex_nut_llm`）——实测重构后依然 7/7 步通过，体积 5606.7 mm³ 与理论 5607 精确吻合。
+
+---
+
+## 十二、多模态三视图建模（第一期）
+
+Web 界面点击 **📎** 按钮上传三视图 PNG（或直接拖入），后端两阶段流水线：Vision 看图 → `ThreeViewIR` 结构化 IR → 建模 `SwModelingPlan` → SolidWorks 建模。
+
+**LLM Prompt（阶段 B 前用户文字）**：
+
+```text
+这是一张 L 型支架的三视图。请根据图纸精确建模，注意主视图轮廓、俯视图/侧视图给出的深度，以及所有标注尺寸。
+```
+
+**端到端验证脚本**（先生成 B01 L 型支架样例三视图 PNG，再走完整管线）：
+
+```cmd
+cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
+
+REM 生成 B01 三视图 PNG + groundtruth.json（一次即可，产物已入库以便复现）
+venv\Scripts\python.exe -X utf8 datasets\manual_three_view\B01_l_bracket\make_drawing.py
+
+REM 端到端管线：图片 → Vision → IR → Plan → 建模 → 验证
+venv\Scripts\python.exe -X utf8 test\test_three_view_e2e.py > log\test_3view_e2e.log 2>&1
+```
+
+**验证点**：
+
+- 阶段 A（Vision）识别 `part_type: l_bracket`，`dimensions` 数组包含图上全部 5 个尺寸（60 / 40 / 30 / 20 / 20 mm）
+- 阶段 B 采纳 skill 中的"L 形正确画法"，用 6 段 `sketch_line` 组成 L 形闭合轮廓 + 1 次 `feature_extrusion`（共 9 步）
+- 全部步骤成功执行
+- 包围盒 60 × 40 × 20 mm（容差 ±3mm）
+- 体积 36000 mm³（容差 ±5%）
+
+**实测**：9/9 步通过，包围盒精确 60 × 40 × 20 mm，体积 35999.999 mm³ 与理论完全吻合。
+
+> **`test_three_view_e2e.py` 使用的 LLM Prompt**（已同步至本节）：
+> ```text
+> 这是一张 L 型支架的三视图。请根据图纸精确建模，注意主视图轮廓、俯视图/侧视图给出的深度，以及所有标注尺寸。
+> ```
+
+**Web 界面手动测试**（打开 `http://localhost:5000`）：
+
+1. 点击欢迎区 **📐 三视图建模 (L 型支架)** 示例按钮，自动加载 B01 PNG 与 prompt
+2. （可选）拖拽任意其他工程图纸 PNG 到对话区
+3. 点发送 → 观察计划卡片输出的 operation 序列 + 执行日志
+
+---

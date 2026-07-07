@@ -1,0 +1,132 @@
+---
+name: three_view
+description: 三视图输入模式 —— 从带尺寸标注的三视图图片提取结构化 IR
+triggers: [三视图, orthographic, three-view, front top right]
+applies_to: [three_view]
+---
+## 三视图输入模式（Vision 阶段 A）
+
+用户上传的图片是一张**带尺寸标注的三视图工程图纸**。你的任务是**只做"看图 → 结构化 IR"**，
+输出严格符合 `ThreeViewIR` schema 的 JSON 结构。**不要**在此阶段排 SolidWorks 步骤——那是阶段 B 的工作。
+
+### 一、视图↔基准面映射（重要约定）
+
+| 视图 | SolidWorks 基准面 | select_plane index |
+|---|---|---|
+| 主视图（front，看前面）  | 前视基准面 | 0 |
+| 俯视图（top，从上往下）  | 上视基准面 | 1 |
+| 侧视图（right，看右侧） | 右视基准面 | 2 |
+
+**深度维度取自相邻视图**：
+- 主视图给出零件的 **X（宽）** 和 **Y（高）**
+- 俯视图给出零件的 **X（宽）** 和 **Z（深）**  ← Z 是主视图看不到的深度
+- 侧视图给出零件的 **Z（深）** 和 **Y（高）**
+
+拿到"总长/总宽/总高"时按此映射填入 `overall_size_mm`。
+
+### 二、必须先逐条枚举全部尺寸
+
+在填充 `profiles` 和 `features` 之前，**先完整枚举** `dimensions` 数组——图纸上**每一个可读到的
+尺寸标注数字**都必须列出来（哪怕你觉得多余）。这是三视图能建对的**核心保障**。
+
+- 每条尺寸至少给 `label`（人类描述）和 `value_mm`（毫米数值）
+- 尽量补充 `applies_to`（如 `front.width` / `hole1.diameter` / `plate.thickness`），方便阶段 B 使用
+- 如果尺寸标注写的是 φ/⌀（直径符号），value_mm 填**直径值**，label 里写"孔径 xxmm"或"直径 xxmm"
+
+🚫 严禁遗漏尺寸；🚫 严禁把不同尺寸合并成一条。
+
+### 三、零件类型（part_type）判断
+
+看主视图轮廓与俯视图/侧视图深度即可决定：
+
+- **extrude_prism**：主视图是任意封闭多边形/带孔多边形，俯视图和侧视图都是简单矩形
+  （深度是常数）——最常见的 2.5D 拉伸件。
+- **revolve**：主视图是关于中心线对称的半截面，俯视图是一个（或几个同心）圆环。——轴对称件。
+- **plate_with_holes**：主视图为平板矩形，视图上分布多个圆（表示孔）。
+- **stepped_shaft**：主视图为多段矩形拼接（不同直径的圆柱），俯视图为同心圆环。
+- **l_bracket**：主视图为 L 型（一个矩形被切一个矩形缺口），俯视图/侧视图为矩形。
+- **flange**：主视图为圆盘，俯视图/侧视图上均匀分布若干圆孔。
+- 其它情况填 **other**。
+
+### 四、特征提取要点（features）
+
+- 每个圆（在主视图/俯视图/侧视图中）都可能是**孔**，都要提取为一个 `FeatureHint(kind='hole')`
+- 圆的位置用**该视图内的相对坐标**描述（如"距左边 10mm、距底边 8mm"）
+- 孔径写在 `size_desc`（如 `⌀5mm 贯穿` 或 `⌀5mm 深 10mm`）
+- 图上有 R 标注 → 圆角（`kind='fillet'`）；C 或 45° 标注 → 倒角（`kind='chamfer'`）
+- 长圆槽/腰形孔 → `kind='slot'`，标 length×width
+- 凹坑/沉孔 → `kind='pocket'`
+
+### 五、绝对尺寸恢复
+
+**优先使用图纸上直接标注的毫米数值**（若数字后有 mm、单位默认为 mm）。如果整张图纸完全没有
+尺寸标注（罕见），才把 `dimensions` 留空并在 `assumptions` 里注明"图纸未标注尺寸，需外部提示"。
+
+### 六、profiles 描述格式
+
+每个视图一条 `ViewProfile`：
+- `view_name`：`front`/`top`/`right`
+- `base_plane`：与 view_name 对应的 SolidWorks 基准面
+- `outline_desc`：用自然中文精确描述该视图的形状。示例：
+    - `"主视图轮廓：一个 60×40mm 的矩形，右上角切除一个 30×20mm 的小矩形形成 L 形"`
+    - `"俯视图轮廓：一个 60×30mm 的矩形，中间从上到下分布 3 个等距圆孔（每个 ⌀5mm）"`
+
+### 七、约束
+
+- 输出必须是符合 `ThreeViewIR` schema 的**纯 JSON**（不要 markdown 代码块包裹）
+- **不要**输出 SolidWorks 操作步骤——那是阶段 B 的事
+- **不要**编造图上没有的尺寸；未标注就在 `assumptions` 里说明
+- 若图片明显不是三视图（如照片/渲染图/单张视图），把 `part_type` 填 `other` 并在 `assumptions` 里说明识别到的情况
+
+阶段 B 会拿到这个 IR + core 里的所有建模规则/示例，把 IR 精确翻译为 `SwModelingPlan`。
+
+### 八、阶段 B 特别指引（防止典型错误）
+
+以下几条**在两阶段管线的阶段 B（IR → SwModelingPlan）中格外重要**：
+
+1. **L 形 / 带缺口的凹形轮廓 —— 严禁在同一草图里画外接矩形 + 缺口矩形**！
+   两个矩形相交但不嵌套会触发 core/03_rules 中的"同一草图轮廓合法性约束"错误
+   （SolidWorks 会报"草图轮廓无效/未闭合"）。**必须**采用以下两种正确画法之一：
+
+   ⭐ **方案 A（强烈推荐，一次拉伸最省事）**：用 `sketch_line` 逐段画出 L 形闭合轮廓的每一条边线，
+   再一次 `feature_extrusion`。**共 8 个步骤**，示例（外接 60×40mm，右上角切除 30×20mm，深度 20mm）：
+   ```
+   1. new_part {}
+   2. select_plane {index: 0}                                            ← 前视基准面
+   3. sketch_line {x1:0,    y1:0,    x2:0.06, y2:0}                      ← 底边
+   4. sketch_line {x1:0.06, y1:0,    x2:0.06, y2:0.02}                   ← 右下短竖(高 20mm=0.02)
+   5. sketch_line {x1:0.06, y1:0.02, x2:0.03, y2:0.02}                   ← 缺口底
+   6. sketch_line {x1:0.03, y1:0.02, x2:0.03, y2:0.04}                   ← 缺口左竖(长 20mm=0.02)
+   7. sketch_line {x1:0.03, y1:0.04, x2:0,    y2:0.04}                   ← 顶边(长 30mm=0.03)
+   8. sketch_line {x1:0,    y1:0.04, x2:0,    y2:0}                      ← 左边(高 40mm=0.04)
+   9. feature_extrusion {depth: 0.02}                                    ← 一次拉伸 20mm
+   ```
+
+   ⭐ **方案 B（先加料再切除，共 8 步）**：完整步骤**一步不能省**：
+   ```
+   1. new_part {}
+   2. select_plane {index: 0}                                            ← 前视基准面
+   3. sketch_rectangle {x1:0, y1:0, x2:0.06, y2:0.04}                    ← 外接矩形 60×40
+   4. feature_extrusion {depth: 0.02}                                    ← ⚠️必须先拉伸出实体!!
+   5. select_face_and_sketch {rx:0.045, ry:0.03, rz:0.01, dx:0, dy:0, dz:-1}  ← 选前面(Z=0 平面): 起点 Z=0.01, 方向 dz=-1 射向 Z=0 面
+   6. sketch_rectangle {x1:0.03, y1:0.02, z1:0, x2:0.06, y2:0.04, z2:0}  ← 在前面画缺口矩形 30×20 (⚠️ z1=z2=前面 Z 坐标=0)
+   7. feature_cut_extrusion {depth: 0.02, endCondition: "through_all"}   ← 贯穿切除
+   ```
+
+   🚫 **绝对禁止**：把 `feature_cut_extrusion` 放在 `feature_extrusion` 之前（空气里切不了东西）；
+       或者只写 `sketch_rectangle` 两个矩形就直接 `feature_extrusion`（会报"轮廓无效"）。
+
+2. **拉伸方向 & 深度取自哪个视图**：
+   - 若 `base_view=front`（主视图对应前视基准面 index=0），拉伸深度取俯视图/侧视图的 Z 方向尺寸
+   - 若 `base_view=top` (index=1)，拉伸深度取主视图/侧视图的 Y 方向尺寸
+   - 若 `base_view=right` (index=2)，拉伸深度取主视图/俯视图的 X 方向尺寸
+
+3. **孔的位置换算**：IR 里 features 描述孔的位置常用"距底边 X mm、距左边 Y mm"，阶段 B 要把它换算成对应
+   基准面草图坐标（原点在草图中心或左下取决于是否用绝对坐标画的轮廓）。若外形矩形是从 (0,0) 画到 (W,H)，
+   那孔中心 = (距左边 mm/1000, 距底边 mm/1000)。
+
+4. **枚举完整**：IR 的 `features` 里有几个孔就要有几个 `sketch_circle + feature_cut_extrusion`（或一次
+   sketch 多个圆 + 一次 cut）。禁止合并、省略。
+
+5. **对称件优先 midPlane**：如 IR 中 `part_type` 是 revolve/hex_nut/dice 等对称件且未指定原点位置，
+   拉伸时加 `midPlane: true` 让零件在原点居中，后续选面坐标计算最简。

@@ -323,3 +323,163 @@ body {
 .chat::-webkit-scrollbar { width: 6px; }
 .chat::-webkit-scrollbar-track { background: transparent; }
 .chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+
+/* ==========================================
+   多模态：图片上传相关 UI
+   ========================================== */
+
+/* Input bar 外层容器（承载预览条 + 输入行） */
+.input-bar-wrap {
+  background: var(--bg-chat);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.input-bar-wrap .input-bar {
+  border-top: none;
+  background: transparent;
+}
+
+/* 📎 附件按钮：与发送按钮同一视觉语言，但更低调 */
+.attach-btn {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color .2s, transform .1s, background .2s;
+  align-self: flex-end;
+}
+.attach-btn:hover {
+  border-color: var(--accent);
+  background: rgba(108, 92, 231, 0.15);
+}
+.attach-btn:active { transform: scale(0.94); }
+.attach-btn.loaded {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.25), rgba(79, 195, 247, 0.15));
+}
+
+/* 输入框上方的图片预览条 */
+.image-preview-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(15, 52, 96, 0.4);
+  backdrop-filter: blur(6px);
+  animation: slideDown .18s ease-out;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+#image-preview-thumb {
+  width: 60px; height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: transform .15s;
+}
+#image-preview-thumb:hover { transform: scale(1.06); }
+.image-preview-info {
+  flex: 1;
+  min-width: 0;
+}
+.image-preview-name {
+  font-size: 13px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.image-preview-size {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+.image-preview-remove {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: color .2s, background .2s;
+}
+.image-preview-remove:hover {
+  color: var(--error);
+  background: rgba(239, 83, 80, 0.12);
+}
+
+/* 拖拽上传覆盖层 */
+.drop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(15, 52, 96, 0.85);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: opacity .18s;
+}
+.drop-overlay.active {
+  display: flex;
+  animation: fadeIn .18s ease-out;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.drop-hint {
+  border: 3px dashed var(--accent);
+  border-radius: 20px;
+  padding: 60px 100px;
+  font-size: 20px;
+  color: var(--accent);
+  text-align: center;
+  background: rgba(79, 195, 247, 0.08);
+}
+.drop-icon {
+  font-size: 60px;
+  margin-bottom: 12px;
+}
+
+/* 用户气泡中的图片 */
+.msg-user-image {
+  display: block;
+  max-width: 280px;
+  max-height: 280px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  transition: transform .15s;
+  border: 1px solid var(--border);
+}
+.msg-user-image:hover { transform: scale(1.02); }
+
+/* 全屏图片查看模态 */
+.image-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+  animation: fadeIn .15s ease-out;
+}
+.image-modal.active { display: flex; }
+.image-modal img {
+  max-width: 92vw;
+  max-height: 92vh;
+  border-radius: 6px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+}

@@ -170,10 +170,140 @@ LLMPlanner/
         └── app.js          # 交互逻辑
 ```
 
+## Skill 动态加载架构（Prompt 优雅化）
+
+**问题**：过去 `SYSTEM_PROMPT` 直接硬编码在 `llm_client.py` 里（约 400 行）。每加一类物体（骰子/板凳/钥匙…）就往里塞一段"⭐ 完整示例"，改完还要清 diskcache——臃肿且难维护。
+
+**解决**：Prompt 拆分为**文件驱动的 Skill 体系**，加物件 = 新增一个 Markdown 文件，零 Python 改动。
+
+### 目录结构
+
+```
+planner/skills/
+├── core/                         # 恒定注入：所有对话都会用到的通用规则
+│   ├── 00_header.md              # 系统开场白
+│   ├── 01_operations.md          # 21 个原子 operation 及其参数
+│   ├── 02_units.md               # 单位换算（mm↔m）
+│   ├── 03_rules.md               # 拉伸方向/坐标映射/多轮廓约束等核心规则 + 板凳/骰子等示例
+│   └── 04_editing.md             # 编辑已有模型（modify_dimension / 面上加特征）
+├── recipes/                      # 按用户指令关键词命中注入（当前示例都在 03_rules.md 内嵌）
+└── input_modes/                  # 按输入模态命中注入
+    └── three_view.md             # 三视图建模规则（视图↔基准面/枚举尺寸/L 形正确画法等）
+```
+
+### Skill 文件格式（带 YAML frontmatter 的 md）
+
+```markdown
+---
+name: stool
+description: 四脚板凳/桌子类 —— 凳面拉伸 + 四腿 + 圆角
+triggers: [板凳, 凳子, 桌子, stool]
+applies_to: [text, three_view]
+---
+
+# 正文（会作为 System Prompt 的一部分喂给 LLM）
+...
+```
+
+frontmatter 极简 YAML 子集（**不引入 pyyaml 依赖**），支持 `key: value`、`key: [a, b, c]`、`key: true/false`。
+
+### 运行时组装
+
+`SkillRegistry` 启动时扫描 `planner/skills/**.md`；`SkillSelector` 按 triggers 关键词打分挑 top-K；`build_system_prompt` 拼装 `core 全量 + 命中的 recipes/input_modes`。
+
+`SwLLMClient` 支持两种模式：
+
+- `skill_mode="full"`（默认）：注入全部 core + 全部 recipes/input_modes。**与迁移前的硬编码 SYSTEM_PROMPT 字节级等价**，保证零回归。
+- `skill_mode="routed"`：core 全量 + 仅命中 triggers 的 recipes/input_modes。省 token，多模态阶段 B 默认走此模式。
+
+**缓存自动失效**：`_make_cache_key(model, system_prompt, user_prompt, image?)` 依赖组装后的 prompt 内容；skill 变了缓存 key 自动变，无需手动 `clear-cache`。
+
+### 新增建模知识的流程
+
+1. 在 `planner/skills/recipes/` 下新建 `my_part.md`
+2. 写好 frontmatter（关键：`triggers` 关键词、`applies_to`）
+3. 正文写建模步骤示例
+4. 完了。下一次 LLM 请求命中相关关键词时会自动注入，无需改任何 Python 代码。
+
+## 多模态：从三视图图纸建模（第一期）
+
+支持上传**带尺寸标注的三视图 PNG**，自动识别几何 + 生成 SolidWorks 建模计划。
+
+### 两阶段流水线
+
+```
+用户上传三视图 PNG + 可选文字说明
+    ↓
+阶段 A（Vision）: 图片 + core + input_modes/three_view → ThreeViewIR (结构化 IR)
+    ↓
+阶段 B（Text）  : IR + core + input_modes/three_view → SwModelingPlan
+    ↓
+Executor 执行 → SolidWorks 建出零件
+```
+
+**中间表示（`schemas.py::ThreeViewIR`）**：
+
+- `part_type`：零件顶层类型（l_bracket / extrude_prism / flange / revolve …）
+- `base_view`：主视图对应基准面（front→前视 0 / top→上视 1 / right→右视 2）
+- `overall_size_mm`：总体包围盒尺寸
+- `profiles[]`：各视图轮廓的中文描述
+- `dimensions[]`：**逐条枚举图纸上所有可读到的尺寸标注**（阶段 A 的核心产出）
+- `features[]`：孔/圆角/倒角/槽/凹坑等附加特征
+- `assumptions`：缺失尺寸的合理假设说明
+
+### 使用方式
+
+**Web 界面**（推荐）：
+1. 打开 `http://localhost:5000`
+2. 点击底部 **📎** 按钮上传三视图图片，或直接**拖入**图片文件
+3. 输入框输入文字说明（可选），点发送
+4. AI 会输出计划卡片 + 执行日志 + 完成摘要
+
+也可点击欢迎区的 **📐 三视图建模 (L 型支架)** 示例按钮，一键加载 B01 样例。
+
+**Python API**：
+
+```python
+import base64
+from planner.llm_client import SwLLMClient
+
+img_b64 = base64.b64encode(open("drawing.png", "rb").read()).decode()
+
+client = SwLLMClient(use_cache=True, skill_mode="routed")
+plan = client.plan("这是一张 L 型支架的三视图……", image_base64=img_b64)
+# plan 是 SwModelingPlan，走标准 executor.execute_plan(plan) 建模
+```
+
+### 端到端验证
+
+`test/test_three_view_e2e.py` 演示了完整流程（B01 L 型支架三视图 PNG → 建模 → 包围盒/体积验证）。实测 9/9 步通过，包围盒 60×40×20mm、体积 36000 mm³ 与理论完全吻合。
+
+### 测例数据集金字塔（规划中）
+
+- **Tier S**：TriView2CAD（20 万 PNG+DXF+STEP，含尺寸标注，MIT）——公开数据集主力 benchmark
+- **Tier A**：CAD-VGDrawing（15 万 SVG，MIT）——SVG 直读路径评测
+- **Tier B**：手工标注三视图（`datasets/manual_three_view/`）——中文场景 demo 与 Vision 能力验证
+- **Tier C**：合成三视图（脚本生成，CI 快跑）
+
+详见 `docs/multimodal-plan.md`。
+
+## 回归测试
+
+```bash
+# 结构化单元测试（不调 API，秒级完成）
+venv\Scripts\python.exe -X utf8 test\test_skill_regression.py
+
+# 端到端多模态测试（需 SolidWorks + API Key）
+venv\Scripts\python.exe -X utf8 test\test_three_view_e2e.py
+```
+
 ## TODO List
 - [ ] 查看 json mode 是否报错
+- [ ] 从 core/03_rules.md 拆出独立的 stool/dice/hex_nut/mug/wrench/vase/key/gear recipes，让 routed 模式真正省 token
+- [ ] 引入 TriView2CAD / CAD-VGDrawing 数据集脚本，跑 Tier S/A benchmark
 
 
 ## demo 示例
 + 创建一个凸台，底为长 100 mm，宽 50 mm 的长方体，向上拉伸 30 mm
 + 将刚才的凸台再向上拉伸 50 mm
++ **[多模态]** 上传 B01 L 型支架三视图 PNG，AI 自动识别并建出 60×40×20mm 的 L 形零件

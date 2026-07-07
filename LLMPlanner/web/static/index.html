@@ -57,14 +57,41 @@
         <button onclick="fillVasePrompt()">🏺 花瓶</button>
         <button onclick="fillKeyPrompt()">🔑 钥匙</button>
         <button onclick="fillGearPrompt()">⚙️ 齿轮</button>
+        <button onclick="fillThreeViewExample()">📐 三视图建模 (L 型支架)</button>
       </div>
     </div>
   </div>
 
+  <!-- 拖拽上传覆盖层 -->
+  <div class="drop-overlay" id="drop-overlay">
+    <div class="drop-hint">
+      <div class="drop-icon">📐</div>
+      <div>松开上传三视图 / 图纸</div>
+    </div>
+  </div>
+
+  <!-- 图片查看大图覆盖层 -->
+  <div class="image-modal" id="image-modal" onclick="closeImageModal()">
+    <img id="image-modal-img" alt="preview">
+  </div>
+
   <!-- Input Bar -->
-  <div class="input-bar">
-    <textarea id="input" rows="3" placeholder="输入建模指令（支持多行粘贴，如骰子任务）。Enter 发送，Shift+Enter 换行。" autofocus></textarea>
-    <button id="send-btn">发送</button>
+  <div class="input-bar-wrap">
+    <!-- 图片预览条（有选中图片时显示） -->
+    <div class="image-preview-bar" id="image-preview-bar" style="display: none;">
+      <img id="image-preview-thumb" alt="thumb">
+      <div class="image-preview-info">
+        <div class="image-preview-name" id="image-preview-name"></div>
+        <div class="image-preview-size" id="image-preview-size"></div>
+      </div>
+      <button class="image-preview-remove" id="image-preview-remove" title="移除">×</button>
+    </div>
+    <div class="input-bar">
+      <input type="file" id="file-input" accept="image/*" style="display: none;">
+      <button class="attach-btn" id="attach-btn" title="上传图纸（三视图 / 手绘 / 效果图）">📎</button>
+      <textarea id="input" rows="3" placeholder="输入建模指令，或点 📎 / 拖入图纸文件。Enter 发送，Shift+Enter 换行。" autofocus></textarea>
+      <button id="send-btn">发送</button>
+    </div>
   </div>
 
   <script src="app.js"></script>

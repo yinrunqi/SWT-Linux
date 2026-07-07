@@ -16,6 +16,21 @@ const apiKeyEl = document.getElementById("api-key");
 const baseUrlEl = document.getElementById("base-url");
 const modelEl = document.getElementById("model-select");
 
+// 图片上传相关
+const fileInputEl = document.getElementById("file-input");
+const attachBtn = document.getElementById("attach-btn");
+const imgPreviewBar = document.getElementById("image-preview-bar");
+const imgPreviewThumb = document.getElementById("image-preview-thumb");
+const imgPreviewName = document.getElementById("image-preview-name");
+const imgPreviewSize = document.getElementById("image-preview-size");
+const imgPreviewRemove = document.getElementById("image-preview-remove");
+const dropOverlay = document.getElementById("drop-overlay");
+const imageModal = document.getElementById("image-modal");
+const imageModalImg = document.getElementById("image-modal-img");
+
+// 当前选中的图片（base64 无前缀 + data URI 供预览）
+let currentImage = null;  // { name, sizeKB, base64, dataUri }
+
 let busy = false;
 
 // ---- 设置面板切换 ----
@@ -64,7 +79,10 @@ async function init() {
 // ---- 发送指令 ----
 async function send() {
   const text = inputEl.value.trim();
-  if (!text || busy) return;
+  const hasImage = currentImage !== null;
+  // 文字与图片至少要有一个
+  if (!text && !hasImage) return;
+  if (busy) return;
 
   const apiKey = apiKeyEl.value.trim();
   if (!apiKey) {
@@ -83,11 +101,15 @@ async function send() {
   const welcome = document.querySelector(".welcome");
   if (welcome) welcome.remove();
 
-  // 用户消息
-  appendUser(text);
+  // 用户消息（含图片则一并展示）
+  appendUser(text, hasImage ? currentImage.dataUri : null);
+
+  // 发送后清空图片选择（保留最后一次以便查看，但下一次发送要重新选）
+  const imageToSend = hasImage ? currentImage.base64 : null;
+  if (hasImage) clearImage();
 
   // Loading
-  const loadingId = appendLoading();
+  const loadingId = appendLoading(imageToSend ? "正在识别图纸并规划建模 …" : "正在思考并执行中 …");
 
   try {
     const res = await fetch(`${API}/api/run`, {
@@ -95,6 +117,7 @@ async function send() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         instruction: text,
+        image: imageToSend,
         api_key: apiKey,
         base_url: baseUrlEl.value.trim(),
         model: modelEl.value,
@@ -120,21 +143,30 @@ async function send() {
 
 // ---- 渲染函数 ----
 
-function appendUser(text) {
+function appendUser(text, imageDataUri) {
   const div = document.createElement("div");
   div.className = "msg";
-  div.innerHTML = `<div class="msg-user">${esc(text)}</div>`;
+  const imgHtml = imageDataUri
+    ? `<img class="msg-user-image" src="${imageDataUri}" alt="uploaded" onclick="openImageModal('${imageDataUri}')">`
+    : "";
+  const textHtml = text ? esc(text) : "<em style='opacity:0.6'>（仅图片）</em>";
+  // 若同时有图和文，前面加 🎯 前缀；纯图时不加
+  const prefix = text ? "🎯 " : "";
+  div.innerHTML = `<div class="msg-user" style="white-space: normal;">
+    ${imgHtml}
+    <div style="white-space: pre-wrap;">${prefix}${textHtml}</div>
+  </div>`;
   chatEl.appendChild(div);
   scrollBottom();
 }
 
 let loadingCounter = 0;
-function appendLoading() {
+function appendLoading(hint) {
   const id = "loading-" + (++loadingCounter);
   const div = document.createElement("div");
   div.className = "msg";
   div.id = id;
-  div.innerHTML = `<div class="msg-ai"><div class="loading"><div class="spinner"></div>正在思考并执行中…</div></div>`;
+  div.innerHTML = `<div class="msg-ai"><div class="loading"><div class="spinner"></div>${esc(hint || "正在思考并执行中…")}</div></div>`;
   chatEl.appendChild(div);
   scrollBottom();
   return id;
@@ -387,6 +419,150 @@ const GEAR_PROMPT =
   "所有尺寸使用米制（1mm = 0.001m）。";
 
 window.fillGearPrompt = function () { useExample(GEAR_PROMPT); };
+
+// ========================================
+// 图片上传：选择 / 预览 / 压缩 / base64 / 拖拽 / 查看大图
+// ========================================
+
+const MAX_EDGE = 2048;       // 最长边不超过此像素
+const JPEG_QUALITY = 0.85;
+const MAX_ORIGINAL_MB = 20;  // OpenAI Vision 上限
+
+// 从 File 对象读为压缩后的 base64（无前缀）+ data URI 缩略图
+async function loadAndCompressImage(file) {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("请上传图片文件（jpg/png/webp/gif）");
+  }
+  if (file.size > MAX_ORIGINAL_MB * 1024 * 1024) {
+    throw new Error(`图片过大（${(file.size / 1024 / 1024).toFixed(1)}MB > ${MAX_ORIGINAL_MB}MB）`);
+  }
+
+  const bitmap = await createImageBitmap(file);
+  // 计算缩放
+  const maxEdge = Math.max(bitmap.width, bitmap.height);
+  const scale = maxEdge > MAX_EDGE ? MAX_EDGE / maxEdge : 1;
+  const w = Math.round(bitmap.width * scale);
+  const h = Math.round(bitmap.height * scale);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  // 白底：三视图 PNG 若有透明背景会导致 JPEG 变黑，先铺白
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(bitmap, 0, 0, w, h);
+
+  const dataUri = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
+  const base64 = dataUri.split(",", 2)[1];
+  return {
+    name: file.name,
+    sizeKB: Math.round((base64.length * 3 / 4) / 1024),
+    base64,
+    dataUri,
+    width: w,
+    height: h,
+  };
+}
+
+async function handleFileSelected(file) {
+  try {
+    const img = await loadAndCompressImage(file);
+    setImage(img);
+  } catch (e) {
+    appendError(e.message);
+  }
+}
+
+function setImage(img) {
+  currentImage = img;
+  imgPreviewThumb.src = img.dataUri;
+  imgPreviewName.textContent = img.name;
+  imgPreviewSize.textContent = `${img.width}×${img.height} · ${img.sizeKB} KB`;
+  imgPreviewBar.style.display = "flex";
+  attachBtn.classList.add("loaded");
+}
+
+function clearImage() {
+  currentImage = null;
+  fileInputEl.value = "";
+  imgPreviewBar.style.display = "none";
+  imgPreviewThumb.src = "";
+  attachBtn.classList.remove("loaded");
+}
+
+function openImageModal(dataUri) {
+  imageModalImg.src = dataUri;
+  imageModal.classList.add("active");
+}
+function closeImageModal() {
+  imageModal.classList.remove("active");
+}
+window.openImageModal = openImageModal;
+window.closeImageModal = closeImageModal;
+
+// 点击预览缩略图放大
+imgPreviewThumb.addEventListener("click", () => {
+  if (currentImage) openImageModal(currentImage.dataUri);
+});
+
+// 附件按钮触发文件选择
+attachBtn.addEventListener("click", () => fileInputEl.click());
+
+// 文件选择
+fileInputEl.addEventListener("change", async () => {
+  const file = fileInputEl.files && fileInputEl.files[0];
+  if (file) await handleFileSelected(file);
+});
+
+// 移除图片
+imgPreviewRemove.addEventListener("click", clearImage);
+
+// 拖拽上传（整个页面接收）
+let dragCounter = 0;
+window.addEventListener("dragenter", e => {
+  if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files")) {
+    e.preventDefault();
+    dragCounter++;
+    dropOverlay.classList.add("active");
+  }
+});
+window.addEventListener("dragover", e => {
+  if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files")) {
+    e.preventDefault();
+  }
+});
+window.addEventListener("dragleave", e => {
+  if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files")) {
+    dragCounter = Math.max(0, dragCounter - 1);
+    if (dragCounter === 0) dropOverlay.classList.remove("active");
+  }
+});
+window.addEventListener("drop", async e => {
+  e.preventDefault();
+  dragCounter = 0;
+  dropOverlay.classList.remove("active");
+  const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if (file) await handleFileSelected(file);
+});
+
+// 示例按钮：三视图建模 —— 从服务端拉 B01 L 型支架图片并预填 prompt
+window.fillThreeViewExample = async function () {
+  try {
+    const res = await fetch("/datasets/manual_three_view/B01_l_bracket/drawing.png");
+    if (!res.ok) throw new Error("三视图示例图片未找到");
+    const blob = await res.blob();
+    const file = new File([blob], "B01_l_bracket.png", { type: "image/png" });
+    await handleFileSelected(file);
+    inputEl.value =
+      "这是一张 L 型支架的三视图。请根据图纸精确建模，注意主视图轮廓、" +
+      "俯视图/侧视图给出的深度，以及所有标注尺寸。";
+    inputEl.focus();
+  } catch (e) {
+    appendError("加载三视图示例失败：" + e.message);
+  }
+};
+
 
 // ---- 事件绑定 ----
 sendBtn.addEventListener("click", send);

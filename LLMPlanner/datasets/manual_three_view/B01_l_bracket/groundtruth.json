@@ -1,0 +1,19 @@
+{
+  "part_id": "B01",
+  "name": "L bracket",
+  "part_type": "l_bracket",
+  "expected_bbox_mm": {
+    "length": 60,
+    "height": 40,
+    "depth": 20
+  },
+  "expected_volume_mm3": 36000,
+  "key_dimensions_mm": {
+    "outer_length": 60,
+    "outer_height": 40,
+    "cutout_length": 30,
+    "cutout_height": 20,
+    "depth": 20
+  },
+  "notes": "外接 60×40mm 矩形右上角切除 30×20mm 缺口形成 L 形，沿 Z 方向拉伸 20mm。"
+}
