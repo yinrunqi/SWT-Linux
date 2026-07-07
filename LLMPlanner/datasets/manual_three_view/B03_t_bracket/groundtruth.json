@@ -1,0 +1,53 @@
+{
+  "part_id": "B03",
+  "name": "B03 T 型支架",
+  "part_type": "t_bracket",
+  "profile_xy": [
+    [
+      20,
+      0
+    ],
+    [
+      40,
+      0
+    ],
+    [
+      40,
+      30
+    ],
+    [
+      60,
+      30
+    ],
+    [
+      60,
+      45
+    ],
+    [
+      0,
+      45
+    ],
+    [
+      0,
+      30
+    ],
+    [
+      20,
+      30
+    ]
+  ],
+  "depth_z": 15,
+  "holes": [],
+  "expected_bbox_mm": {
+    "length": 60,
+    "height": 45,
+    "depth": 15
+  },
+  "expected_volume_mm3": 22500.0,
+  "key_dimensions_mm": {
+    "outer_length": 60,
+    "outer_height": 45,
+    "depth": 15
+  },
+  "notes": "T 形轮廓：外接 60×45mm，顶部横杆 60×15mm、下方竖杆 20×30mm 居中，沿 Z 拉伸 15mm。"
+}

@@ -1,0 +1,56 @@
+{
+  "part_id": "B02",
+  "name": "B02 带 2 孔平板",
+  "part_type": "plate_with_holes",
+  "profile_xy": [
+    [
+      0,
+      0
+    ],
+    [
+      80,
+      0
+    ],
+    [
+      80,
+      40
+    ],
+    [
+      0,
+      40
+    ]
+  ],
+  "depth_z": 10,
+  "holes": [
+    {
+      "cx": 20,
+      "cy": 20,
+      "radius": 5,
+      "label": "左孔 ⌀10"
+    },
+    {
+      "cx": 60,
+      "cy": 20,
+      "radius": 5,
+      "label": "右孔 ⌀10"
+    }
+  ],
+  "expected_bbox_mm": {
+    "length": 80,
+    "height": 40,
+    "depth": 10
+  },
+  "expected_volume_mm3": 30429.204,
+  "key_dimensions_mm": {
+    "outer_length": 80,
+    "outer_height": 40,
+    "depth": 10,
+    "hole1_diameter": 10,
+    "hole1_center_x": 20,
+    "hole1_center_y": 20,
+    "hole2_diameter": 10,
+    "hole2_center_x": 60,
+    "hole2_center_y": 20
+  },
+  "notes": "80×40×10mm 平板，2 个 ⌀10mm 通孔，孔中心距左/右边缘各 20mm、距上下边缘 20mm。"
+}

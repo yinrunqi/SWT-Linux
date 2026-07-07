@@ -1,24 +1,26 @@
 """
-test_three_view_e2e.py — 三视图多模态建模端到端验证
+test_three_view_e2e.py — 三视图多模态建模端到端验证（可参数化任意样例）
 
-流程：
-  1. 读一张 B01 L 型支架三视图 PNG（含尺寸标注）
+流程（对每个样例都做一遍）：
+  1. 读该样例的 drawing.png（含尺寸标注）+ groundtruth.json
   2. base64 编码传给 SwLLMClient.plan(image_base64=...)
   3. 两阶段流水线：Vision → ThreeViewIR → SwModelingPlan
   4. Executor 执行 plan 到 SolidWorks
-  5. 验证包围盒 ≈ 60 × 40 × 20mm、体积 ≈ 36000 mm³
+  5. 验证包围盒与体积吻合 groundtruth（±3mm / ±5%）
 
 用法：
-  set OPENAI_API_KEY=...
-  set OPENAI_BASE_URL=...
-  cd LLMPlanner
+  # 默认跑 B01
   venv\\Scripts\\python.exe -X utf8 test\\test_three_view_e2e.py
+
+  # 指定样例（可多个）
+  venv\\Scripts\\python.exe -X utf8 test\\test_three_view_e2e.py B01 B02 B03
 """
 from __future__ import annotations
 
 import base64
 import json
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 # 保证从 LLMPlanner 目录运行
@@ -31,8 +33,49 @@ from planner.executor import SwExecutor  # noqa: E402
 
 
 SW_URL = "http://localhost:5100"
-DRAWING = ROOT / "datasets" / "manual_three_view" / "B01_l_bracket" / "drawing.png"
-GT_PATH = ROOT / "datasets" / "manual_three_view" / "B01_l_bracket" / "groundtruth.json"
+DATASET_DIR = ROOT / "datasets" / "manual_three_view"
+
+
+# ============================================================
+# 样例注册 —— 与 datasets/manual_three_view/build_all.py 保持一致
+# ============================================================
+
+
+@dataclass
+class Sample:
+    part_id: str
+    subdir: str
+    text_hint: str  # 阶段 A（Vision）用的文字提示
+
+
+SAMPLES: dict[str, Sample] = {
+    "B01": Sample(
+        part_id="B01",
+        subdir="B01_l_bracket",
+        text_hint=(
+            "这是一张 L 型支架的三视图。请根据图纸精确建模，"
+            "注意主视图轮廓、俯视图/侧视图给出的深度，以及所有标注尺寸。"
+        ),
+    ),
+    "B02": Sample(
+        part_id="B02",
+        subdir="B02_plate_with_holes",
+        text_hint=(
+            "这是一张带 2 个通孔的矩形平板三视图。请根据图纸精确建模，"
+            "注意平板的长宽高、孔的直径与位置，以及所有标注尺寸。"
+            "孔沿 Z 方向贯穿。"
+        ),
+    ),
+    "B03": Sample(
+        part_id="B03",
+        subdir="B03_t_bracket",
+        text_hint=(
+            "这是一张 T 型支架的三视图。请根据图纸精确建模，"
+            "T 形是顶部横杆加中间竖杆的结构。注意主视图的 T 形轮廓、"
+            "俯视图/侧视图给出的深度，以及所有标注尺寸。"
+        ),
+    ),
+}
 
 
 def check_sw() -> bool:
@@ -66,41 +109,31 @@ def volume_mm3() -> float | None:
         return None
 
 
-def main() -> bool:
-    print("=" * 60)
-    print("多模态三视图建模端到端验证 — B01 L 型支架")
-    print("=" * 60)
+def run_one(sample: Sample, client: SwLLMClient) -> bool:
+    print("=" * 72)
+    print(f"多模态三视图建模 · {sample.part_id} —— {sample.subdir}")
+    print("=" * 72)
 
-    if not DRAWING.exists():
-        print(f"[SKIP] 缺少三视图 PNG: {DRAWING}")
+    drawing = DATASET_DIR / sample.subdir / "drawing.png"
+    gt_path = DATASET_DIR / sample.subdir / "groundtruth.json"
+    if not drawing.exists():
+        print(f"[SKIP] 缺少 drawing.png: {drawing}")
         return False
-    if not GT_PATH.exists():
-        print(f"[SKIP] 缺少 groundtruth: {GT_PATH}")
-        return False
-    if not check_sw():
-        print("[SKIP] SolidWorks C# 服务未运行 (http://localhost:5100)")
+    if not gt_path.exists():
+        print(f"[SKIP] 缺少 groundtruth.json: {gt_path}")
         return False
 
-    gt = json.loads(GT_PATH.read_text(encoding="utf-8"))
+    gt = json.loads(gt_path.read_text(encoding="utf-8"))
     exp = gt["expected_bbox_mm"]
     exp_vol = gt["expected_volume_mm3"]
-    print(f"预期包围盒: {exp}  预期体积: {exp_vol} mm³\n")
+    print(f"[GT] bbox={exp} mm  volume={exp_vol} mm³\n")
 
     # 1) 编码图片
-    img_b64 = base64.b64encode(DRAWING.read_bytes()).decode("ascii")
+    img_b64 = base64.b64encode(drawing.read_bytes()).decode("ascii")
     print(f"图片 base64 长度: {len(img_b64)} 字节")
 
     # 2) LLM 规划（两阶段）
-    text_hint = (
-        "这是一张 L 型支架的三视图。请根据图纸精确建模，注意主视图轮廓、"
-        "俯视图/侧视图给出的深度，以及所有标注尺寸。"
-    )
-    client = SwLLMClient(use_cache=True, skill_mode="routed")
-    try:
-        plan = client.plan(text_hint, image_base64=img_b64)
-    finally:
-        client.close()
-
+    plan = client.plan(sample.text_hint, image_base64=img_b64)
     print(f"\nLLM 计划: intent={plan.user_intent}, {len(plan.steps)} 步")
     for i, s in enumerate(plan.steps, 1):
         print(f"  {i:2d}. {s.operation.value:<24s} {s.params if s.params else '{}'}")
@@ -123,22 +156,51 @@ def main() -> bool:
     print(f"\n实际包围盒: {bb} mm")
     print(f"实际体积: {vol} mm³")
 
-    # 判定：三个轴任意排列应包含 60/40/20（因视图↔基准面映射有几种合理解读）
     if bb is None or vol is None:
+        print("[FAIL] 无法读取包围盒或体积")
         return False
+
     sizes = sorted([bb["sizeX"], bb["sizeY"], bb["sizeZ"]])
     expected_sizes = sorted([exp["length"], exp["height"], exp["depth"]])
     dims_ok = all(abs(a - b) < 3 for a, b in zip(sizes, expected_sizes))
-    vol_ok = abs(vol - exp_vol) / exp_vol < 0.05  # ±5%
+    vol_ok = abs(vol - exp_vol) / exp_vol < 0.05
     all_ok = ok == len(results) and dims_ok and vol_ok
     print(
         f"\n判定: 步骤成功={ok == len(results)}, "
-        f"包围盒尺寸±3mm 通过={dims_ok}, "
-        f"体积±5% 通过={vol_ok}"
+        f"包围盒±3mm={dims_ok}, 体积±5%={vol_ok}"
     )
-    print("🎉 通过！" if all_ok else "⚠️ 未完全通过")
+    print("🎉 通过！\n" if all_ok else "⚠️ 未完全通过\n")
     return all_ok
 
 
+def main(argv: list[str]) -> bool:
+    if not check_sw():
+        print("[SKIP] SolidWorks C# 服务未运行 (http://localhost:5100)")
+        return False
+
+    # 默认跑 B01；也可命令行指定
+    ids = argv[1:] if len(argv) > 1 else ["B01"]
+    samples = []
+    for sid in ids:
+        if sid not in SAMPLES:
+            print(f"[WARN] 未知样例 {sid}，可选：{list(SAMPLES)}")
+            continue
+        samples.append(SAMPLES[sid])
+    if not samples:
+        return False
+
+    client = SwLLMClient(use_cache=True, skill_mode="routed")
+    try:
+        results = [run_one(s, client) for s in samples]
+    finally:
+        client.close()
+
+    n_pass = sum(results)
+    print("=" * 72)
+    print(f"总结: {n_pass}/{len(results)} 样例通过")
+    print("=" * 72)
+    return n_pass == len(results)
+
+
 if __name__ == "__main__":
-    sys.exit(0 if main() else 1)
+    sys.exit(0 if main(sys.argv) else 1)

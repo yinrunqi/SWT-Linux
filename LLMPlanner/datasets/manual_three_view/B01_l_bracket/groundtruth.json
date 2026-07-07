@@ -1,19 +1,45 @@
 {
   "part_id": "B01",
-  "name": "L bracket",
+  "name": "B01 L 型支架",
   "part_type": "l_bracket",
+  "profile_xy": [
+    [
+      0,
+      0
+    ],
+    [
+      60,
+      0
+    ],
+    [
+      60,
+      20
+    ],
+    [
+      30,
+      20
+    ],
+    [
+      30,
+      40
+    ],
+    [
+      0,
+      40
+    ]
+  ],
+  "depth_z": 20,
+  "holes": [],
   "expected_bbox_mm": {
     "length": 60,
     "height": 40,
     "depth": 20
   },
-  "expected_volume_mm3": 36000,
+  "expected_volume_mm3": 36000.0,
   "key_dimensions_mm": {
     "outer_length": 60,
     "outer_height": 40,
-    "cutout_length": 30,
-    "cutout_height": 20,
     "depth": 20
   },
-  "notes": "外接 60×40mm 矩形右上角切除 30×20mm 缺口形成 L 形，沿 Z 方向拉伸 20mm。"
+  "notes": "外接 60×40mm 矩形右上角切除 30×20mm 缺口形成 L 形，沿 Z 拉伸 20mm。"
 }
