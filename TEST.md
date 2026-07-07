@@ -239,9 +239,10 @@ REM  轮廓端点必须落在旋转轴上被自动封闭；旋转后再从顶面
 REM 实测 15/15 步通过：包围盒 90×150×90mm、体积 416504 mm³ 与理论完全吻合。
 python test_vase_llm.py
 
-REM 钥匙（LLM 端到端）：⌀20mm 圆盘钥匙圈头 + 42mm 矩形杆 + 顶面 10×5mm 长圆钥匙圈孔
-REM （考验：新增 sketch_slot API；两次拉伸合并成一体；顶面开孔坐标；实体面切除）
-REM 实测 10/10 步通过：包围盒 59×2×20mm。
+REM 钥匙（LLM 端到端）：⌀20mm 圆盘钥匙圈头 + 42mm 矩形杆 + 顶面 10×5mm 长圆钥匙圈孔 + 5 齿锯齿
+REM （考验：新增 sketch_slot API；两次拉伸合并成一体；顶面开孔坐标；
+REM  钥匙齿——一草图内 5 个独立齿槽 sketch_slot 贴齐杆的一条长边 + 一次贯穿切除形成锯齿）
+REM 实测 17/17 步通过：包围盒 59×2×20mm、体积 1096.7 mm³ 与理论完全吻合。
 REM ⚠️ sketch_slot 在本地 SW2025 上当前退化为矩形近似（角是直角而非圆角），功能上等价。
 python test_key_llm.py
 
@@ -405,21 +406,23 @@ python test_gear_llm.py
 
 > **`test_key_llm.py` 使用的完整 LLM Prompt**：
 > ```text
-> 请建模一把小型钥匙，包含钥匙圈头（带圆孔）和钥匙杆两部分：
+> 请建模一把小型钥匙，包含钥匙圈头（带圆孔）、钥匙杆、钥匙齿三部分：
 > 1. 整体沿 Y 轴（厚度方向）以原点为中心居中，厚度 2mm；
-> 2. **钥匙圈头**：一个圆盘外径 20mm，圆心在原点。用上视基准面画圆，然后 feature_extrusion {depth: 0.002, midPlane: true} 一次拉伸；
-> 3. **钥匙杆**：一个矩形梁，长 42mm（沿 +X 方向），宽 8mm（沿 Z 方向居中）。杆的末端**必须嵌入钥匙圈头内 3mm 以确保合并**——矩形沿 X 从 X=7mm 延伸到 X=49mm，Z 从 -4mm 到 +4mm。用第二次 select_plane（上视面）+ sketch_rectangle + feature_extrusion；
-> 4. **钥匙圈孔**：在钥匙圈头顶面用 select_face_and_sketch 选顶面，用 sketch_slot 画长 10mm、宽 5mm 的长圆孔（中心 cx=0, cy=顶面Y+0.001m, cz=0），然后 feature_cut_extrusion 贯穿切除。
+> 2. 钥匙圈头：⌀20mm 圆盘（上视基准面 + sketch_circle + feature_extrusion depth=0.002 midPlane）；
+> 3. 钥匙杆：42mm×8mm 矩形梁（X∈[0.007, 0.049], Z∈[-0.004, +0.004]），第二次 select_plane(1) + sketch_rectangle + feature_extrusion，末端嵌入圈头 3mm；
+> 4. 钥匙圈孔：select_face_and_sketch 选圈头顶面 + sketch_slot(cx=0, cy=0.001, cz=0, length=0.01, width=0.005) + feature_cut_extrusion 贯穿；
+> 5. **钥匙齿**：再一次 select_face_and_sketch 选钥匙杆顶面（射线起点 rx=0.03, ry=0.01, rz=0, 方向 dy=-1），在同一草图内画 5 个 sketch_slot 齿槽：cx=[0.017, 0.023, 0.029, 0.035, 0.041]、cy=0.001、cz=0.003（贴齐杆 +Z 长边）、length=0.003、width=0.002，一次 feature_cut_extrusion 贯穿形成锯齿。
 > ```
 >
 > **`test_key_llm.py` 验证点**：
 > 1. 前置检查 + LLM 计划生成；
-> 2. **全部步骤成功**；
-> 3. **`sketch_slot` 步数 ≥ 1**（钥匙圈孔的关键 API，验证新增能力）；
-> 4. **`feature_extrusion` 步数 ≥ 1、`feature_cut_extrusion` 步数 ≥ 1**；
-> 5. **包围盒 59×2×20mm**（容差 ±4mm）——sizeZ=20mm 是圆盘直径决定（钥匙杆比它窄，不影响 Z 尺寸）。
+> 2. **全部步骤成功**（预期约 17 步：1 圆盘草图 + 1 拉伸 + 1 选面 + 1 矩形 + 1 拉伸 + 1 选面 + 1 圈孔 slot + 1 切除 + 1 选面 + 5 齿槽 slot + 1 切除 = 17）；
+> 3. **`sketch_slot` 步数 ≥ 6**（1 圈孔 + 5 齿槽）；
+> 4. **`feature_cut_extrusion` 步数 ≥ 2**（切圈孔 + 切齿槽）；
+> 5. **包围盒 59×2×20mm**（容差 ±4mm）——sizeZ=20mm 是圆盘直径决定；
+> 6. **体积 ≈ 1096.7 mm³**（圆盘 π·10²·2 − 圈孔 π·(5×2.5)·2 ≈ 圆盘净值 + 杆 42×8×2 = 672 − 齿槽 5×(3×2×2)=60，实测精确吻合）。
 >
-> 该任务考验：新增 `sketch_slot` API 用于顶面切除、两次拉伸合并成一体（圆+矩形不能同草图）、顶面开孔的正确坐标（cx=cz=0, cy=顶面Y 坐标）。
+> 该任务考验：新增 `sketch_slot` API 用于顶面切除、两次拉伸合并成一体（圆+矩形不能同草图）、顶面开孔的正确坐标、**在钥匙杆顶面一草图内画 5 个独立齿槽轮廓 + 一次贯穿切除形成锯齿边（这是钥匙的标志性特征）**。
 
 > **`test_gear_llm.py` 使用的完整 LLM Prompt**：
 > ```text
@@ -460,7 +463,7 @@ python test_gear_llm.py
 | `objects/test_mug_llm` | LLM 规划 | 马克杯（圆柱杯体 + 顶面内腔 + 圆环形把手，考验加料/切除辨析） |
 | `objects/test_wrench_llm` | LLM 规划 | 开口扳手（圆盘头 + 矩形手柄 + 六角卡口贯穿孔，考验多次拉伸合并 + polygon 切除） |
 | `objects/test_vase_llm` | LLM 规划 | 花瓶（8 段直线组成的复杂轴截面 revolve + 顶面挖内腔） |
-| `objects/test_key_llm` | LLM 规划 | 钥匙（圆盘头 + 矩形杆 + 长圆钥匙圈孔，验证新增 `sketch_slot` API） |
+| `objects/test_key_llm` | LLM 规划 | 钥匙（圆盘头 + 矩形杆 + 长圆钥匙圈孔 + 5 齿锯齿边，验证新增 `sketch_slot` API 及多轮廓齿槽切除） |
 | `objects/test_gear_llm` | LLM 规划 | 齿轮（圆盘 + 12 齿槽沿圆周分布 + 中心孔，考验 LLM 三角函数计算 + 一草图多轮廓） |
 
 > **API 直调**类测试直接构造操作序列调用 C# 服务，不依赖 LLM，可用于验证底层建模能力；
