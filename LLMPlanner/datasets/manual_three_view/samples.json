@@ -1,0 +1,72 @@
+{
+  "_comment": [
+    "三视图样例单一数据源。Python 生成脚本 / e2e 测试 / Web demo 前端都从这里读，",
+    "以后新增样例只改这一个 JSON 文件即可。",
+    "字段说明：",
+    "  part_id / subdir / name / part_type / notes / profile_xy / depth_z / holes",
+    "    → 供 datasets/manual_three_view/build_all.py 生成 drawing.png + groundtruth.json",
+    "  ui.label / ui.prompt",
+    "    → 供 web/static/app.js 渲染欢迎区按钮 + 自动填 prompt",
+    "  test.text_hint",
+    "    → 供 test/test_three_view_e2e.py 作为 Vision 阶段的用户文字提示"
+  ],
+  "samples": [
+    {
+      "part_id": "B01",
+      "subdir": "B01_l_bracket",
+      "name": "B01 L 型支架",
+      "part_type": "l_bracket",
+      "notes": "外接 60×40mm 矩形右上角切除 30×20mm 缺口形成 L 形，沿 Z 拉伸 20mm。",
+      "profile_xy": [[0, 0], [60, 0], [60, 20], [30, 20], [30, 40], [0, 40]],
+      "depth_z": 20,
+      "holes": [],
+      "ui": {
+        "label": "📐 L 型支架",
+        "prompt": "这是一张 L 型支架的三视图。请根据图纸精确建模，注意主视图轮廓、俯视图/侧视图给出的深度，以及所有标注尺寸。"
+      },
+      "test": {
+        "text_hint": "这是一张 L 型支架的三视图。请根据图纸精确建模，注意主视图轮廓、俯视图/侧视图给出的深度，以及所有标注尺寸。"
+      }
+    },
+    {
+      "part_id": "B02",
+      "subdir": "B02_plate_with_holes",
+      "name": "B02 带 2 孔平板",
+      "part_type": "plate_with_holes",
+      "notes": "80×40×10mm 平板，2 个 ⌀10mm 通孔，孔中心距左/右边缘各 20mm、距上下边缘 20mm。",
+      "profile_xy": [[0, 0], [80, 0], [80, 40], [0, 40]],
+      "depth_z": 10,
+      "holes": [
+        {"cx": 20, "cy": 20, "radius": 5, "label": "左孔 ⌀10"},
+        {"cx": 60, "cy": 20, "radius": 5, "label": "右孔 ⌀10"}
+      ],
+      "ui": {
+        "label": "🕳️ 带 2 孔平板",
+        "prompt": "这是一张带 2 个通孔的矩形平板三视图。请根据图纸精确建模，注意平板的长宽高、孔的直径与位置，以及所有标注尺寸。孔沿 Z 方向贯穿。"
+      },
+      "test": {
+        "text_hint": "这是一张带 2 个通孔的矩形平板三视图。请根据图纸精确建模，注意平板的长宽高、孔的直径与位置，以及所有标注尺寸。孔沿 Z 方向贯穿。"
+      }
+    },
+    {
+      "part_id": "B03",
+      "subdir": "B03_t_bracket",
+      "name": "B03 T 型支架",
+      "part_type": "t_bracket",
+      "notes": "T 形轮廓：外接 60×45mm，顶部横杆 60×15mm、下方竖杆 20×30mm 居中，沿 Z 拉伸 15mm。",
+      "profile_xy": [
+        [20, 0], [40, 0], [40, 30], [60, 30],
+        [60, 45], [0, 45], [0, 30], [20, 30]
+      ],
+      "depth_z": 15,
+      "holes": [],
+      "ui": {
+        "label": "🔩 T 型支架",
+        "prompt": "这是一张 T 型支架的三视图。请根据图纸精确建模，T 形是顶部横杆加中间竖杆的结构。注意主视图的 T 形轮廓、俯视图/侧视图给出的深度，以及所有标注尺寸。"
+      },
+      "test": {
+        "text_hint": "这是一张 T 型支架的三视图。请根据图纸精确建模，T 形是顶部横杆加中间竖杆的结构。注意主视图的 T 形轮廓、俯视图/侧视图给出的深度，以及所有标注尺寸。"
+      }
+    }
+  ]
+}

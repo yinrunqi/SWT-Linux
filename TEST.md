@@ -2,7 +2,9 @@
 
 本文件整理了 LLMPlanner 的端到端测试用例与运行方式。所有测试均通过 HTTP 调用 C# 服务驱动 SolidWorks 实际建模。
 
-> 📌 **约定**：所有"LLM 自动建模任务"使用的自然语言 Prompt 都记录在本文件中（见各 LLM 规划类用例旁的 `Prompt:` 标注），便于随时复现。新增自动建模任务时，请同步把其 Prompt 补充到这里。
+> 📌 **约定 1**：所有"LLM 自动建模任务"使用的自然语言 Prompt 都记录在本文件中（见各 LLM 规划类用例旁的 `Prompt:` 标注），便于随时复现。新增自动建模任务时，请同步把其 Prompt 补充到这里。
+>
+> 📌 **约定 2**：新增一个**三视图样例**（B04/B05/…）时，务必：（a）在 `datasets/manual_three_view/samples.json` 中追加配置；（b）跑通 `test_three_view_e2e.py <part_id>` 端到端验证；（c）在 §12.2 表格中登记该样例，并同步把该样例的 `text_hint` 加到 §12.3。完整 SOP 见 §12.5。（Web demo 按钮 由 samples.json 自动驱动，无需单独修改前端）
 
 > 前置条件（每次测试都需要）：
 > 1. **SolidWorks 已启动**（普通权限，详见 `Chapter1.ConnectToSw/README.md`）
@@ -466,7 +468,9 @@ python test_gear_llm.py
 | `objects/test_key_llm` | LLM 规划 | 钥匙（圆盘头 + 矩形杆 + 长圆钥匙圈孔 + 5 齿锯齿边，验证新增 `sketch_slot` API 及多轮廓齿槽切除） |
 | `objects/test_gear_llm` | LLM 规划 | 齿轮（圆盘 + 12 齿槽沿圆周分布 + 中心孔，考验 LLM 三角函数计算 + 一草图多轮廓） |
 | `test_skill_regression` | Skill 架构 | Skill 动态加载零回归验证（9 项：registry 加载 / SYSTEM_PROMPT 包含 core / full 模式注入所有 input_modes / cache_key 稳定 / routed 模式命中规则 / _build_user_message 图文格式 / stage_b_prompt 拼装 …） |
-| `test_three_view_e2e` | 多模态 LLM | 三视图端到端建模（B01 L 型支架 PNG → Vision → ThreeViewIR → SwModelingPlan → SolidWorks，验证包围盒与体积） |
+| `test_three_view_e2e B01` | 多模态 LLM | 三视图端到端 · B01 L 型支架（60×40×20mm，含右上角 30×20 缺口） |
+| `test_three_view_e2e B02` | 多模态 LLM | 三视图端到端 · B02 带 2 孔平板（80×40×10mm + 2×⌀10 通孔） |
+| `test_three_view_e2e B03` | 多模态 LLM | 三视图端到端 · B03 T 型支架（60×45×15mm，T 形双凹角复杂轮廓） |
 
 > **API 直调**类测试直接构造操作序列调用 C# 服务，不依赖 LLM，可用于验证底层建模能力；
 > **LLM 规划**类测试走完整链路（自然语言 → LLM 解析 → 执行），需要配置好 API Key；
@@ -501,43 +505,101 @@ venv\Scripts\python.exe -X utf8 test\test_skill_regression.py
 
 Web 界面点击 **📎** 按钮上传三视图 PNG（或直接拖入），后端两阶段流水线：Vision 看图 → `ThreeViewIR` 结构化 IR → 建模 `SwModelingPlan` → SolidWorks 建模。
 
-**LLM Prompt（阶段 B 前用户文字）**：
+### 12.1 单一数据源架构
 
-```text
-这是一张 L 型支架的三视图。请根据图纸精确建模，注意主视图轮廓、俯视图/侧视图给出的深度，以及所有标注尺寸。
+所有三视图样例的 **几何定义、UI 元数据、Vision prompt** 三合一集中在：
+
+```
+LLMPlanner/datasets/manual_three_view/samples.json
 ```
 
-**端到端验证脚本**（先生成 B01 L 型支架样例三视图 PNG，再走完整管线）：
+该 JSON 被三处共用（改一处三处同步）：
+
+| 消费方 | 用到的字段 |
+|---|---|
+| `datasets/manual_three_view/build_all.py`（生成 PNG + groundtruth） | `profile_xy` / `depth_z` / `holes` / `name` / `notes` |
+| `test/test_three_view_e2e.py`（端到端 LLM 测试） | `part_id` / `subdir` / `test.text_hint` |
+| Web demo `/api/three-view-samples` → `app.js` 欢迎区按钮 | `part_id` / `subdir` / `ui.label` / `ui.prompt` |
+
+### 12.2 现有样例（3 个，全部端到端通过）
+
+| ID | 名称 | 尺寸 | 特征 | 步数 | 体积（mm³） |
+|---|---|---|---|---|---|
+| **B01** | L 型支架 | 60×40×20 mm | 右上角切 30×20 缺口 | 9/9 | 35999.999 |
+| **B02** | 带 2 孔平板 | 80×40×10 mm | 2 × ⌀10 通孔（中心距边 20mm） | 8/8 | 30429.20 |
+| **B03** | T 型支架 | 60×45×15 mm | T 形（横杆 60×15 + 竖杆 20×30 居中） | 11/11 | 22500 |
+
+### 12.3 从零复现全部三视图端到端验证
 
 ```cmd
 cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
 
-REM 生成 B01 三视图 PNG + groundtruth.json（一次即可，产物已入库以便复现）
-venv\Scripts\python.exe -X utf8 datasets\manual_three_view\B01_l_bracket\make_drawing.py
+REM 【步骤 1】从 samples.json 一键批量生成所有三视图 PNG + groundtruth.json
+venv\Scripts\python.exe -X utf8 datasets\manual_three_view\build_all.py
 
-REM 端到端管线：图片 → Vision → IR → Plan → 建模 → 验证
-venv\Scripts\python.exe -X utf8 test\test_three_view_e2e.py > log\test_3view_e2e.log 2>&1
+REM 【步骤 2】清 LLM 缓存（首次跑或改过 skill 后必须）
+venv\Scripts\python.exe -X utf8 -c "import diskcache; c=diskcache.Cache('planner/.llm_cache'); c.clear(); c.close()"
+
+REM 【步骤 3】端到端 LLM 建模（可指定单个或多个 part_id；不带参数默认只跑 B01）
+venv\Scripts\python.exe -X utf8 test\test_three_view_e2e.py B01 B02 B03 > log\test_3view_all.log 2>&1
 ```
 
-**验证点**：
+**每个样例的 LLM prompt**（阶段 A 用户文字，与 samples.json `test.text_hint` 保持一致）：
 
-- 阶段 A（Vision）识别 `part_type: l_bracket`，`dimensions` 数组包含图上全部 5 个尺寸（60 / 40 / 30 / 20 / 20 mm）
-- 阶段 B 采纳 skill 中的"L 形正确画法"，用 6 段 `sketch_line` 组成 L 形闭合轮廓 + 1 次 `feature_extrusion`（共 9 步）
-- 全部步骤成功执行
-- 包围盒 60 × 40 × 20 mm（容差 ±3mm）
-- 体积 36000 mm³（容差 ±5%）
+```text
+B01: 这是一张 L 型支架的三视图。请根据图纸精确建模，注意主视图轮廓、俯视图/侧视图给出的深度，以及所有标注尺寸。
 
-**实测**：9/9 步通过，包围盒精确 60 × 40 × 20 mm，体积 35999.999 mm³ 与理论完全吻合。
+B02: 这是一张带 2 个通孔的矩形平板三视图。请根据图纸精确建模，注意平板的长宽高、孔的直径与位置，以及所有标注尺寸。孔沿 Z 方向贯穿。
 
-> **`test_three_view_e2e.py` 使用的 LLM Prompt**（已同步至本节）：
-> ```text
-> 这是一张 L 型支架的三视图。请根据图纸精确建模，注意主视图轮廓、俯视图/侧视图给出的深度，以及所有标注尺寸。
-> ```
+B03: 这是一张 T 型支架的三视图。请根据图纸精确建模，T 形是顶部横杆加中间竖杆的结构。注意主视图的 T 形轮廓、俯视图/侧视图给出的深度，以及所有标注尺寸。
+```
+
+### 12.4 验证点
+
+- **阶段 A（Vision）**：读到 `part_type` 且 `dimensions` 数组枚举出图纸上所有标注尺寸（宁多不少）
+- **阶段 B（IR→Plan）**：对 L 形/T 形等凹形轮廓采纳 skill 中的"逐段 sketch_line 闭合轮廓"画法（严禁两个矩形拼接）；对带孔零件用 `select_face_and_sketch + sketch_circle + feature_cut_extrusion(through_all)` 组合
+- **执行**：所有步骤 HTTP 返回 success
+- **几何验证**：包围盒 ±3mm 内匹配 groundtruth；体积 ±5% 内匹配 groundtruth
 
 **Web 界面手动测试**（打开 `http://localhost:5000`）：
 
-1. 点击欢迎区 **📐 三视图建模 (L 型支架)** 示例按钮，自动加载 B01 PNG 与 prompt
-2. （可选）拖拽任意其他工程图纸 PNG 到对话区
-3. 点发送 → 观察计划卡片输出的 operation 序列 + 执行日志
+1. 欢迎区"🖼️ 多模态：从三视图图纸建模"分组下会有 3 个按钮（B01/B02/B03）
+2. 按钮由 `/api/three-view-samples` 从 samples.json 动态渲染 —— 新增样例自动出现，无需改前端代码
+3. 点任一按钮 → 自动填 prompt + 加载图片预览 → 按发送即可
+
+### 12.5 SOP：新增一个三视图样例（一处修改，三处同步）
+
+> 目标：加一个样例，让它同时出现在 `build_all.py` 生成产物、端到端测试、Web demo 按钮中。
+
+1. **打开** `datasets/manual_three_view/samples.json`，在 `samples` 数组末尾追加一个对象：
+   ```json
+   {
+     "part_id": "B04",
+     "subdir": "B04_xxx",
+     "name": "B04 XX 型零件",
+     "part_type": "xxx",
+     "notes": "…",
+     "profile_xy": [[0,0], [50,0], [50,30], [0,30]],
+     "depth_z": 25,
+     "holes": [{"cx":10,"cy":10,"radius":3,"label":"…"}],
+     "ui": {"label": "🔷 XX 型", "prompt": "这是一张 XX 型…"},
+     "test": {"text_hint": "这是一张 XX 型…"}
+   }
+   ```
+
+2. **生成图纸**：
+   ```cmd
+   venv\Scripts\python.exe -X utf8 datasets\manual_three_view\build_all.py
+   ```
+
+3. **清缓存跑端到端测试**（只跑新增的）：
+   ```cmd
+   venv\Scripts\python.exe -X utf8 -c "import diskcache; c=diskcache.Cache('planner/.llm_cache'); c.clear(); c.close()"
+   venv\Scripts\python.exe -X utf8 test\test_three_view_e2e.py B04 > log\test_3view_B04.log 2>&1
+   ```
+
+4. **测试通过** → 提交入库（含 `drawing.png` + `groundtruth.json` + samples.json 变更）。**Web demo 无需重启前端**（下次访问会自动 fetch 新按钮），若后端未重启则重启 Flask 加载 samples.json 的新内容。
+
+5. **若测试未通过**：常见原因是 LLM 对该形状没有对应的 skill 指引。检查 `LLMPlanner/planner/skills/input_modes/three_view.md` §7"阶段 B 特别指引"，仿照 L 形/T 形补一段专属规则（正确画法示例 + 反例禁止清单），清缓存重跑。
 
 ---

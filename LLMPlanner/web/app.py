@@ -74,6 +74,35 @@ def serve_dataset(subpath: str):
     return send_from_directory(_DATASETS_DIR, subpath)
 
 
+@app.route("/api/three-view-samples")
+def api_three_view_samples():
+    """
+    返回 datasets/manual_three_view/samples.json 中所有样例的 UI 元数据。
+    供前端 renderThreeViewButtons() 动态渲染欢迎区按钮 —— 之后新增样例
+    只需要改 samples.json，前端会自动跟随。
+    """
+    import json as _json
+
+    samples_path = os.path.join(
+        _DATASETS_DIR, "manual_three_view", "samples.json"
+    )
+    if not os.path.exists(samples_path):
+        return jsonify({"samples": []})
+    data = _json.loads(open(samples_path, encoding="utf-8").read())
+    # 只吐前端需要的字段（不暴露完整几何 groundtruth）
+    ui_only = [
+        {
+            "part_id": s["part_id"],
+            "subdir": s["subdir"],
+            "name": s.get("name", s["part_id"]),
+            "label": s.get("ui", {}).get("label", s["part_id"]),
+            "prompt": s.get("ui", {}).get("prompt", ""),
+        }
+        for s in data.get("samples", [])
+    ]
+    return jsonify({"samples": ui_only})
+
+
 # ============================================================
 # API 端点
 # ============================================================

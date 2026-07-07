@@ -34,10 +34,11 @@ from planner.executor import SwExecutor  # noqa: E402
 
 SW_URL = "http://localhost:5100"
 DATASET_DIR = ROOT / "datasets" / "manual_three_view"
+SAMPLES_JSON = DATASET_DIR / "samples.json"
 
 
 # ============================================================
-# 样例注册 —— 与 datasets/manual_three_view/build_all.py 保持一致
+# 样例注册 —— 从 samples.json 加载（与 build_all.py / web app.js 共用同一数据源）
 # ============================================================
 
 
@@ -48,34 +49,20 @@ class Sample:
     text_hint: str  # 阶段 A（Vision）用的文字提示
 
 
-SAMPLES: dict[str, Sample] = {
-    "B01": Sample(
-        part_id="B01",
-        subdir="B01_l_bracket",
-        text_hint=(
-            "这是一张 L 型支架的三视图。请根据图纸精确建模，"
-            "注意主视图轮廓、俯视图/侧视图给出的深度，以及所有标注尺寸。"
-        ),
-    ),
-    "B02": Sample(
-        part_id="B02",
-        subdir="B02_plate_with_holes",
-        text_hint=(
-            "这是一张带 2 个通孔的矩形平板三视图。请根据图纸精确建模，"
-            "注意平板的长宽高、孔的直径与位置，以及所有标注尺寸。"
-            "孔沿 Z 方向贯穿。"
-        ),
-    ),
-    "B03": Sample(
-        part_id="B03",
-        subdir="B03_t_bracket",
-        text_hint=(
-            "这是一张 T 型支架的三视图。请根据图纸精确建模，"
-            "T 形是顶部横杆加中间竖杆的结构。注意主视图的 T 形轮廓、"
-            "俯视图/侧视图给出的深度，以及所有标注尺寸。"
-        ),
-    ),
-}
+def _load_samples() -> dict[str, Sample]:
+    data = json.loads(SAMPLES_JSON.read_text(encoding="utf-8"))
+    out: dict[str, Sample] = {}
+    for cfg in data["samples"]:
+        text_hint = cfg.get("test", {}).get("text_hint") or cfg.get("ui", {}).get("prompt", "")
+        out[cfg["part_id"]] = Sample(
+            part_id=cfg["part_id"],
+            subdir=cfg["subdir"],
+            text_hint=text_hint,
+        )
+    return out
+
+
+SAMPLES: dict[str, Sample] = _load_samples()
 
 
 def check_sw() -> bool:
