@@ -1005,13 +1005,25 @@ namespace Chapter1.ConnectToSw
         /// 退出草图并拉伸当前草图。depth 为拉伸深度，单位：米。
         /// flipDirection: 是否翻转拉伸方向（默认 false）。
         /// midPlane: 是否使用中间面拉伸（从草图面两侧各拉伸 depth/2），默认 false。
+        /// draftAngleDeg: 拔模角度（度，默认 0=无拔模）。用于生成梯形/漏斗类零件——
+        ///                例如键盘键帽底座、花盆、漏斗、锥台等。
+        ///                取值范围 (0, 89.99)；0 表示无拔模。
+        /// draftOutward: 拔模方向。false（默认）=向内收窄（顶面小于底面，常见如键帽/花盆）；
+        ///               true=向外扩张（顶面大于底面，常见如漏斗）。
         /// </summary>
-        public void Extrusion(double depth, bool flipDirection = false, bool midPlane = false)
+        public void Extrusion(
+            double depth,
+            bool flipDirection = false,
+            bool midPlane = false,
+            double draftAngleDeg = 0.0,
+            bool draftOutward = false)
         {
             EnsureActiveDoc();
 
             if (depth <= 0)
                 throw new ArgumentOutOfRangeException(nameof(depth), "拉伸深度必须为正数");
+            if (draftAngleDeg < 0 || draftAngleDeg >= 90)
+                throw new ArgumentOutOfRangeException(nameof(draftAngleDeg), "拔模角必须在 [0, 90) 度范围内");
 
             // 退出草图编辑模式（使用 InsertSketch2 — 与 CutExtrusion/Revolve 保持一致）
             var mdoc = (ModelDoc2)ActiveDoc;
@@ -1042,9 +1054,15 @@ namespace Chapter1.ConnectToSw
                 sd = true;
             }
 
+            // 拔模参数（SolidWorks API 用弧度）
+            bool enableDraft = draftAngleDeg > 0;
+            double draftRad = enableDraft ? draftAngleDeg * Math.PI / 180.0 : 0.0;
+
             // 执行拉伸
             // 注意：Flip 参数控制的是"拉伸侧面翻转"(用于双向拉伸选择哪一侧)
             //       Dir 参数才是真正的"反转拉伸方向"(Reverse Direction)
+            //       Dchk1=true 启用侧一拔模; Ddir1=true 表示拔模方向向外(outward)。
+            //       Dang1 用弧度。
             var feat = ActiveDoc.FeatureManager.FeatureExtrusion3(
                 Sd: sd,
                 Flip: false,
@@ -1053,11 +1071,11 @@ namespace Chapter1.ConnectToSw
                 T2: t2,
                 D1: d1,
                 D2: d2,
-                Dchk1: false,
+                Dchk1: enableDraft,
                 Dchk2: false,
-                Ddir1: false,
+                Ddir1: draftOutward,
                 Ddir2: false,
-                Dang1: 0,
+                Dang1: draftRad,
                 Dang2: 0,
                 OffsetReverse1: false,
                 OffsetReverse2: false,
@@ -1071,7 +1089,9 @@ namespace Chapter1.ConnectToSw
                 FlipStartOffset: false
             );
 
-            Console.WriteLine($"[SwCommands] FeatureExtrusion3 返回: {(feat != null ? "成功" : "null")} (flip={flipDirection}, midPlane={midPlane})");
+            Console.WriteLine(
+                $"[SwCommands] FeatureExtrusion3 返回: {(feat != null ? "成功" : "null")} " +
+                $"(flip={flipDirection}, midPlane={midPlane}, draftDeg={draftAngleDeg}, outward={draftOutward})");
 
             if (feat == null)
                 throw new InvalidOperationException("拉伸失败，请确保草图中有封闭的轮廓");
@@ -1079,7 +1099,9 @@ namespace Chapter1.ConnectToSw
             // 缩放到合适视图
             mdoc.ViewZoomtofit2();
 
-            Console.WriteLine($"[SwCommands] 拉伸完成，深度: {depth} 米, 方向翻转: {flipDirection}, 中间面: {midPlane}");
+            Console.WriteLine(
+                $"[SwCommands] 拉伸完成，深度: {depth} 米, 方向翻转: {flipDirection}, " +
+                $"中间面: {midPlane}, 拔模: {draftAngleDeg}° {(draftOutward ? "外扩" : "内收")}");
         }
 
         /// <summary>

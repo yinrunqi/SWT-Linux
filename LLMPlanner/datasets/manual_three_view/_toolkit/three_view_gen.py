@@ -64,19 +64,28 @@ class ExtrudedPart:
     - profile_xy 是主视图 XY 平面上的闭合多边形顶点（**逆时针 CCW 为外轮廓**，mm）
     - depth_z 是沿 Z 方向的拉伸深度（mm，> 0）
     - holes 是沿 Z 方向的贯穿圆孔列表（可为空）
+    - top_scale 是顶面轮廓相对于底面的**线性缩放比例**（默认 1.0 = 普通拉伸；
+      <1.0 = 内收拔模，如键帽/花盆；>1.0 = 外扩拔模，如漏斗）。
+      顶面轮廓 = profile_xy 沿其几何中心按 top_scale 缩放后的形状。
+      对应 SolidWorks 拔模角：`draftAngleDeg = degrees(atan((1-top_scale)·半宽 / depth_z))`
+      顶面孔中心也会按 top_scale 从中心向内/外缩放（半径亦缩放），但**当前 B04 只用于纯梯形（无孔）**。
     """
     profile_xy: list[tuple[float, float]]
     depth_z: float
     holes: list[Hole] = field(default_factory=list)
     name: str = ""
-    part_type: str = "extrude_prism"   # l_bracket / plate_with_holes / t_bracket / ...
+    part_type: str = "extrude_prism"   # l_bracket / plate_with_holes / t_bracket / keycap / ...
     notes: str = ""
+    top_scale: float = 1.0             # 拔模：顶面尺寸相对底面的比例
+    profile_centered: bool = False     # 若 True，profile 已围绕原点居中（键帽用；影响 SolidWorks 建模坐标）
 
     def __post_init__(self) -> None:
         if len(self.profile_xy) < 3:
             raise ValueError("profile_xy 至少 3 个顶点")
         if self.depth_z <= 0:
             raise ValueError("depth_z 必须 > 0")
+        if self.top_scale <= 0 or self.top_scale > 5:
+            raise ValueError(f"top_scale 应在 (0, 5] 范围内，got {self.top_scale}")
         # 检查孔全部落在 profile 包围盒内（简单粗筛，不做严格 point-in-polygon）
         bb = self.bbox_xy()
         for h in self.holes:
@@ -85,6 +94,39 @@ class ExtrudedPart:
                 raise ValueError(
                     f"孔 (cx={h.cx}, cy={h.cy}, r={h.radius}) 超出 profile 包围盒 {bb}"
                 )
+        # 拔模拉伸暂不支持孔（避免顶面孔投影与切除组合的复杂性）
+        if self.top_scale != 1.0 and self.holes:
+            raise ValueError("拔模拉伸（top_scale≠1）暂不支持带孔零件")
+
+    # -------- 拔模衍生量 --------
+
+    def has_draft(self) -> bool:
+        return abs(self.top_scale - 1.0) > 1e-6
+
+    def draft_angle_deg(self) -> float:
+        """从 top_scale + depth_z + 半宽 反推 SolidWorks 需要的拔模角度（度）。
+
+        推导：底半宽 W → 顶半宽 W·s，则每侧内缩 W·(1-s)；斜边斜率相对深度 = W(1-s)/h；
+        拔模角 = atan(W(1-s)/h)。若 s>1（外扩）则角度为 atan((s-1)·W/h)，方向向外。
+        取 profile 的 X 半宽做基准（假设 profile 大致方形/居中；键帽满足）。
+        """
+        if not self.has_draft():
+            return 0.0
+        import math
+        xmin, ymin, xmax, ymax = self.bbox_xy()
+        half_w = (xmax - xmin) / 2.0
+        return math.degrees(math.atan(abs(1 - self.top_scale) * half_w / self.depth_z))
+
+    def draft_outward(self) -> bool:
+        return self.top_scale > 1.0
+
+    def top_profile_xy(self) -> list[tuple[float, float]]:
+        """按 top_scale 从 profile 几何中心（bbox 中心）缩放得到顶面轮廓。"""
+        xmin, ymin, xmax, ymax = self.bbox_xy()
+        cx = (xmin + xmax) / 2.0
+        cy = (ymin + ymax) / 2.0
+        s = self.top_scale
+        return [(cx + (x - cx) * s, cy + (y - cy) * s) for x, y in self.profile_xy]
 
     # -------- 派生量（三视图和 groundtruth 都从这些方法取值） --------
 
@@ -117,8 +159,18 @@ class ExtrudedPart:
         return gross - holes_area
 
     def volume_mm3(self) -> float:
-        """零件体积 = profile 净面积 × 拉伸深度。"""
-        return round(self.profile_area_mm2() * self.depth_z, 3)
+        """零件体积。
+        - 普通拉伸: profile 净面积 × 拉伸深度
+        - 拔模拉伸（top_scale≠1）: **棱台/圆台公式** V = h/3 · (A_底 + A_顶 + √(A_底·A_顶))
+          其中 A_顶 = A_底 · top_scale² （因线性缩放 → 面积按平方缩放）
+        """
+        import math
+        a_bottom = self.profile_area_mm2()
+        if not self.has_draft():
+            return round(a_bottom * self.depth_z, 3)
+        a_top = a_bottom * self.top_scale ** 2
+        v = self.depth_z / 3.0 * (a_bottom + a_top + math.sqrt(a_bottom * a_top))
+        return round(v, 3)
 
     def key_dimensions(self) -> dict:
         """从几何自动抽取标注尺寸，用于 groundtruth 和后续 IR 对比。"""
@@ -128,6 +180,13 @@ class ExtrudedPart:
             "outer_height": bb["height"],
             "depth": bb["depth"],
         }
+        # 拔模：额外记录顶面尺寸和拔模角
+        if self.has_draft():
+            xmin, ymin, xmax, ymax = self.bbox_xy()
+            dims["top_length"] = round((xmax - xmin) * self.top_scale, 3)
+            dims["top_height"] = round((ymax - ymin) * self.top_scale, 3)
+            dims["draft_angle_deg"] = round(self.draft_angle_deg(), 3)
+            dims["draft_outward"] = self.draft_outward()
         for i, h in enumerate(self.holes, 1):
             dims[f"hole{i}_diameter"] = round(h.radius * 2, 3)
             dims[f"hole{i}_center_x"] = round(h.cx, 3)
@@ -295,9 +354,20 @@ def render_three_view_png(
         return px, py
 
     # ============ 主视图 front ============
+    # 主视图 = XY 平面上看到的形状（沿 -Z 观察）：底面轮廓实线 + 顶面轮廓虚线（若有拔模）
     dr.text((front_origin[0], front_origin[1] - 60), "主视图 Front", fill="black", font=F_TITLE)
     verts_front = [to_px_front(x, y) for x, y in part.profile_xy]
     _draw_polygon(dr, verts_front, color="black", width=2)
+
+    # 拔模：顶面轮廓用虚线绘制（在主视图上就是"外框实线 + 内框虚线"的键帽经典画法）
+    if part.has_draft():
+        top_profile = part.top_profile_xy()
+        verts_top = [to_px_front(x, y) for x, y in top_profile]
+        # 用虚线闭合画顶面轮廓
+        for i in range(len(verts_top)):
+            a = verts_top[i]
+            b = verts_top[(i + 1) % len(verts_top)]
+            _draw_dashed_line(dr, a[0], a[1], b[0], b[1], color="black")
 
     # 画孔（真圆 + 十字中心）
     for h in part.holes:
@@ -313,14 +383,47 @@ def render_three_view_png(
     _draw_dimension_h(dr, front_left, front_right, front_bottom + 40, f"{int(L)} mm", F_DIM)
     _draw_dimension_v(dr, front_left - 45, front_top, front_bottom, f"{int(HT)} mm", F_DIM, text_on_right=False)
 
+    # 拔模：额外标注顶面尺寸（在主视图内部虚线框旁）
+    if part.has_draft():
+        top_l = L * part.top_scale
+        top_h = HT * part.top_scale
+        # 顶面宽标注放在虚线框上方
+        top_center_x = (front_left + front_right) / 2
+        top_center_y = (front_top + front_bottom) / 2
+        top_left_px = top_center_x - top_l * S / 2
+        top_right_px = top_center_x + top_l * S / 2
+        top_bot_px = top_center_y + top_h * S / 2
+        top_top_px = top_center_y - top_h * S / 2
+        dr.text((top_left_px, top_top_px - 22), f"顶 {int(top_l)}×{int(top_h)} mm", fill="#0066cc", font=F_DIM)
+
     # ============ 俯视图 top ============
+    # 俯视图 = XZ 平面（沿 -Y 观察）：宽 × 深 的形状
+    # 若有拔模：显示为梯形（下边=底面宽 L，上边=顶面宽 L·top_scale，高=深度 D）
     dr.text((top_origin[0], top_origin[1] - 30), "俯视图 Top", fill="black", font=F_TITLE)
     top_w = L * S
     top_d = D * S
-    dr.rectangle(
-        [top_origin[0], top_origin[1], top_origin[0] + top_w, top_origin[1] + top_d],
-        outline="black", width=2,
-    )
+    if part.has_draft():
+        # 梯形：假设顶面在俯视图**上方**（Z=depth 处），底面在下方
+        top_top_w = L * part.top_scale * S
+        cx_top = top_origin[0] + top_w / 2  # X 中心线
+        # 梯形四点（顺时针）：底左、底右、顶右、顶左
+        poly_trap = [
+            (top_origin[0], top_origin[1] + top_d),                    # 底左 (Z=0 侧)
+            (top_origin[0] + top_w, top_origin[1] + top_d),            # 底右
+            (cx_top + top_top_w / 2, top_origin[1]),                   # 顶右 (Z=depth)
+            (cx_top - top_top_w / 2, top_origin[1]),                   # 顶左
+        ]
+        _draw_polygon(dr, poly_trap, color="black", width=2)
+        # 顶面宽度标注（上方）
+        _draw_dimension_h(
+            dr, cx_top - top_top_w / 2, cx_top + top_top_w / 2, top_origin[1] - 20,
+            f"{int(L * part.top_scale)} mm", F_DIM,
+        )
+    else:
+        dr.rectangle(
+            [top_origin[0], top_origin[1], top_origin[0] + top_w, top_origin[1] + top_d],
+            outline="black", width=2,
+        )
     # 孔在俯视图中投影为 2 条虚线段（沿 Z 方向）；简化：画短线段代表
     for h in part.holes:
         # 孔在俯视图中的 X 位置来自 profile.cx
@@ -329,7 +432,7 @@ def render_three_view_png(
         _draw_dashed_line(dr, hx - h.radius * S, top_origin[1], hx - h.radius * S, top_origin[1] + top_d)
         _draw_dashed_line(dr, hx + h.radius * S, top_origin[1], hx + h.radius * S, top_origin[1] + top_d)
 
-    # 俯视图标注：宽（下方）、深（右侧）
+    # 俯视图标注：底宽（下方）、深（右侧）
     _draw_dimension_h(
         dr, top_origin[0], top_origin[0] + top_w, top_origin[1] + top_d + 40,
         f"{int(L)} mm", F_DIM,
@@ -340,13 +443,42 @@ def render_three_view_png(
     )
 
     # ============ 侧视图 right ============
+    # 侧视图 = YZ 平面（沿 -X 观察）：深 × 高 的形状
+    # 若有拔模：显示为梯形（下边=底面高 HT，上边=顶面高 HT·top_scale，宽=深度 D）
     dr.text((right_origin[0], right_origin[1] - 60), "侧视图 Right", fill="black", font=F_TITLE)
     right_w = D * S
     right_h = HT * S
-    dr.rectangle(
-        [right_origin[0], right_origin[1], right_origin[0] + right_w, right_origin[1] + right_h],
-        outline="black", width=2,
-    )
+    if part.has_draft():
+        top_side_h = HT * part.top_scale * S
+        cy_right = right_origin[1] + right_h / 2  # Y 中心线
+        # 梯形四点：底左 (Z=0, Y=full)、底右 (Z=depth, Y=full)、
+        #           顶右 (Z=depth, Y=顶高)、顶左 (Z=0, Y=顶高)
+        # 但侧视图是"Y 是竖轴、Z 是横轴"——键帽应该是"底面在纸下方最宽、顶面在纸上方最窄"
+        # 这里 right_origin 到 right_origin+right_h 是 Y 方向（下→上），right_w 是 Z 深度方向
+        # 修正：Y 向下 = 图像 y 增大 = 底面在下方，顶面在上方
+        cx_right = right_origin[0] + right_w / 2  # 深度方向中心
+        poly_trap_r = [
+            (right_origin[0], right_origin[1] + right_h),                     # 底左 (Z=0, Y=底)
+            (right_origin[0] + right_w, right_origin[1] + right_h),           # 底右 (Z=depth, Y=底)
+            (cx_right + top_side_h / 2 * 0, right_origin[1]),                 # 占位（下面替换）
+            (cx_right - top_side_h / 2 * 0, right_origin[1]),
+        ]
+        # 修正梯形：底面宽 right_h，顶面宽 right_h*top_scale，两侧各内缩相同
+        # 键帽侧视图：底在下（Y=底面高完整），顶在上（Y=顶面高较窄）
+        # 这里 Y 是竖轴，所以"底面高"体现在 Y 方向的整个 right_h，"顶面高"体现在中间收窄
+        # 简化：把梯形沿 Y 方向"上窄下宽"绘制
+        poly_trap_r = [
+            (right_origin[0], right_origin[1] + right_h),
+            (right_origin[0] + right_w, right_origin[1] + right_h),
+            (cx_right + top_side_h / 2, right_origin[1]) if False else (right_origin[0] + right_w * (1 + part.top_scale) / 2, right_origin[1]),
+            (right_origin[0] + right_w * (1 - part.top_scale) / 2, right_origin[1]),
+        ]
+        _draw_polygon(dr, poly_trap_r, color="black", width=2)
+    else:
+        dr.rectangle(
+            [right_origin[0], right_origin[1], right_origin[0] + right_w, right_origin[1] + right_h],
+            outline="black", width=2,
+        )
     # 孔在侧视图投影：孔的 Y 位置对应 profile.cy
     for h in part.holes:
         hy = right_origin[1] + (ymax - h.cy) * S

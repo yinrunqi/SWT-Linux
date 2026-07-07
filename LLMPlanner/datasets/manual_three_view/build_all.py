@@ -52,6 +52,8 @@ def sample_to_part(cfg: dict) -> ExtrudedPart:
         depth_z=cfg["depth_z"],
         holes=holes,
         notes=cfg.get("notes", ""),
+        top_scale=float(cfg.get("top_scale", 1.0)),
+        profile_centered=bool(cfg.get("profile_centered", False)),
     )
 
 

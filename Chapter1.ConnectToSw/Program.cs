@@ -436,9 +436,16 @@ namespace Chapter1.ConnectToSw
                 bool midPlane = false;
                 if (body.ContainsKey("midPlane"))
                     midPlane = Convert.ToBoolean(body["midPlane"]);
+                // 新增：拔模拉伸参数（键帽/花盆/漏斗等梯形零件用）
+                double draftAngleDeg = 0.0;
+                if (body.ContainsKey("draftAngleDeg"))
+                    draftAngleDeg = Convert.ToDouble(body["draftAngleDeg"]);
+                bool draftOutward = false;
+                if (body.ContainsKey("draftOutward"))
+                    draftOutward = Convert.ToBoolean(body["draftOutward"]);
 
-                _commands.Extrusion(depth, flipDirection, midPlane);
-                SendJson(resp, 200, new { success = true, message = $"拉伸完成，深度: {depth} 米, 方向翻转: {flipDirection}, 中间面: {midPlane}" });
+                _commands.Extrusion(depth, flipDirection, midPlane, draftAngleDeg, draftOutward);
+                SendJson(resp, 200, new { success = true, message = $"拉伸完成，深度: {depth} 米, 方向翻转: {flipDirection}, 中间面: {midPlane}, 拔模: {draftAngleDeg}° {(draftOutward ? "外扩" : "内收")}" });
             }
             catch (KeyNotFoundException ex)
             {
