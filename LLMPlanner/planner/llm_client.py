@@ -107,7 +107,7 @@ SYSTEM_PROMPT = """\
     - edgeSelection: str — 选边方式（可选，默认 "all"）
       - "all": 选中实体的所有边
       - "ray": 通过射线选中特定边（需提供 rx,ry,rz,dx,dy,dz）
-      - **"面1_面2" 语义化选边（强烈推荐！）**：直接指定边的位置，C# 端自动计算射线
+      - **"面1_面2" 语义化选边（仅适用于轴对齐长方体）**：C# 端自动计算射线
         - 格式：两个面名用下划线连接，表示这两个面的交线
         - 面名：top(顶面), bottom(底面), front(前面), back(后面), left(左面), right(右面)
         - 示例：
@@ -118,11 +118,23 @@ SYSTEM_PROMPT = """\
           - "bottom_front": 底面与前面的交边
           - "front_left": 前面与左面的交边
           - "front_right": 前面与右面的交边
-    - rx, ry, rz, dx, dy, dz: float — 射线参数（仅 edgeSelection="ray" 时使用）
+    - rx, ry, rz, dx, dy, dz: float — 射线参数（edgeSelection="ray" 时**必填**）
     - **不需要进入草图**，直接对已有实体的边执行。
     - 典型流程：创建实体 → feature_fillet
-    - ⚠️ **优先使用语义化选边**（如 "top_front"），避免手动计算射线坐标！
-    - 🚫 **严禁使用单个面名作为 edgeSelection**（如 "top"、"front" 是错误的！）。edgeSelection 要么是 "all"/"ray"，要么必须是 **两个面名用下划线连接** 的边（如 "top_front"）。
+    - ⚠️ **轴对齐长方体**：优先使用语义化选边（如 "top_front"），避免手动计算射线坐标。
+    - 🚫🚫 **圆柱/轴对称零件（螺栓、轴、滑轮、台阶轴等）圆角选边硬性规则**：
+      - **只能**使用 edgeSelection="ray"，**必须**同时给出 rx,ry,rz,dx,dy,dz 六个参数。
+      - **绝对禁止**任何 "面1_面2" 语义名，包括但不限于：
+        top_front、bottom_front、bottom_top、top_bottom、front_back 等一切含下划线的语义名。
+      - 原因：语义选边基于 AABB 包围盒的六个平面；圆柱/台阶轴没有真正的"前面/底面交线"，
+        即使用 bottom_top 这类"看起来合理"的名字也会射偏（常见失败：射线从包围盒外垂直射入，打不中台阶圆边）。
+      - 射线策略（通用公式，按建模坐标自行代入）：
+        - 设台阶圆边所在高度为 stepY（米），较小段半径为 rSmall（米），轴线沿 Y 时：
+          rx = rSmall × 1.4，ry = stepY + 0.001，rz = 0
+          dx = -1，dy = -1，dz = 0（径向朝轴心 + 轴向略向下，斜向命中圆边）
+        - 轴线沿其他方向时，将上述 Y/径向轴做对应替换。
+    - 🚫 **严禁使用单个面名作为 edgeSelection**（如 "top"、"front" 是错误的！）。
+      edgeSelection 合法值：长方体用 "all" / "ray" / "面1_面2"；圆柱/轴对称零件**只能用** "all" 或 "ray"。
     - ⚠️ **多条边圆角必须拆成多个 feature_fillet 步骤**：一个 feature_fillet 步骤只能处理一条语义化边。例如「对顶面的 4 条边做 R5mm 圆角」要拆成 4 个步骤：
       - feature_fillet {radius: 0.005, edgeSelection: "top_front"}
       - feature_fillet {radius: 0.005, edgeSelection: "top_back"}
@@ -137,7 +149,7 @@ SYSTEM_PROMPT = """\
     - distance1: float — 倒角距离（米）
     - distance2: float — 第二距离（distance_distance 模式，米，可选）
     - angle: float — 倒角角度（distance_angle 模式，度，可选，默认 45）
-    - edgeSelection: str — 选边方式（可选，默认 "all"），同 feature_fillet（支持 "all"、"ray"、语义化选边）
+    - edgeSelection: str — 选边方式（可选，默认 "all"），规则同 feature_fillet（长方体可用语义选边；圆柱/轴对称零件只能用 "all" 或 "ray"）
     - rx, ry, rz, dx, dy, dz: float — 射线参数（仅 edgeSelection="ray" 时使用）
     - **不需要进入草图**，直接对已有实体的边执行。
     - 典型流程：创建实体 → feature_chamfer
@@ -189,6 +201,10 @@ SYSTEM_PROMPT = """\
 - 如果用户未指定尺寸，请根据常理给出合理的默认值（通常在 0.01~0.5 米范围）。
 
 ## 重要规则
+- **圆角/倒角选边决策（生成 feature_fillet / feature_chamfer 前必判断）**：
+  - 若主体由 **sketch_circle 拉伸** 或 **feature_revolve** 构成（圆柱、螺栓、轴、法兰、滑轮等）→ edgeSelection **必须**为 "ray"，params **必须**含 rx,ry,rz,dx,dy,dz；**禁止** bottom_top、bottom_front 等语义名。
+  - 若主体由 **sketch_rectangle 拉伸** 构成的方盒 → 可用 top_front 等语义选边。
+  - 用户描述「头部底面与杆部顶面交界圆角」时，这是**圆柱台阶圆边**，仍属 ray 场景，**不要**发明 bottom_top 等语义名。
 - **必须使用原子操作逐步建模**，标准流程为：new_part → select_plane → 画草图 → feature_extrusion。
 - feature_extrusion、feature_cut_extrusion 和 feature_revolve 都会自动退出草图再执行操作，不需要在前面调用 close_sketch。
 - **拉伸方向控制**：
@@ -220,7 +236,7 @@ SYSTEM_PROMPT = """\
     - 🚫🚫 **最常见致命错误**：在左/右面（X 法向）布点时，错误地变化了 **cx**（如 cx 取 ±0.005）而把 cz 固定为 0。
       后果：cx 是该面的法向（出平面）方向，画草图时会被投影丢弃，于是 cx=-0.005 和 cx=+0.005 的两个圆会**塌缩到同一位置完全重合**，导致切除轮廓非法、cut 失败！
       记住：**面的法向是哪个轴，哪个轴的坐标就必须固定、绝不能变。**
-    - ⭐ **在顶面/底面（Y 法向）中心开孔的正确写法（螺母、法兰、垫圈等常见场景）**：
+    - ⭐ **在顶面/底面（Y 法向）中心开孔的正确写法**：
       设零件 midPlane 拉伸厚度 h，则顶面 Y=+h/2、底面 Y=-h/2。要在**几何中心贯穿**打孔时：
       · 先 `select_face_and_sketch` 选顶面（射线起点在顶面外，方向指向实体）；
       · 然后 `sketch_circle {cx: 0, cy: <顶面Y值>, cz: 0, radius: ...}`
@@ -230,14 +246,6 @@ SYSTEM_PROMPT = """\
       🚫 常见错误 2（借用射线起点）：把 select_face_and_sketch 的射线起点坐标（ry）误当成圆心 cy 或 cz 填进 sketch_circle。
       例如射线用 `ry=0.005` 只是为了从顶面外侧射入实体，绝不代表圆心 cz=0.005！
       **圆心的面内坐标（cx、cz）永远都要独立计算，中心孔就是 cx=cz=0；cy 一定填顶面/底面的模型 Y 坐标。**
-    - ⭐ **六角螺母/圆盘完整示例**（M20 螺母：正六边形外形对边距 30mm、厚度 8mm 居中、中心⌀10mm 贯穿孔）：
-      1. new_part {}
-      2. select_plane {index: 1}  ← 上视面
-      3. sketch_polygon {cx: 0, cy: 0, circumradius: 0.01732, sides: 6, startAngleDeg: 90}  ← 对边距=30mm → R=30/√3≈17.32mm
-      4. feature_extrusion {depth: 0.008, midPlane: true}  ← 居中拉伸，顶面 Y=+0.004、底面 Y=-0.004
-      5. select_face_and_sketch {rx: 0, ry: 0.01, rz: 0, dx: 0, dy: -1, dz: 0}  ← 起点在顶面外(ry=0.01 大于顶面 Y=0.004)，方向向下命中顶面
-      6. sketch_circle {cx: 0, cy: 0.004, cz: 0, radius: 0.005}  ← ⚠️ cy=0.004(顶面Y坐标,法向), cx=cz=0(面内对齐中心)
-      7. feature_cut_extrusion {depth: 0.008, endCondition: "through_all"}  ← 贯穿
   - ⭐ **板凳完整示例**（200mm×200mm×20mm 凳面 + 4 条圆柱腿，腿直径 20mm，长 300mm，距边缘 30mm）：
     **同一草图中可以画多个不相连闭合轮廓（如 4 个圆），然后一次拉伸会生成多个凸台！**
     完整步骤序列（共 10 个 operation）：
@@ -291,7 +299,6 @@ SYSTEM_PROMPT = """\
   - **错误顺序**：先切除做出空腔 → 再加料凸台。
     凸台内嵌到已经存在的空腔里，会在内壁上形成一段"残留凸起"（如马克杯内壁上的圆环凸起），非常不美观。
   - 判断规则：只要凸台的**内嵌部分**在**几何空间上会与后续切除的区域重叠**，就必须"先加料再切除"。
-  - 典型例子：马克杯的把手（内圈嵌入杯壁）与杯内空腔——把手必须在挖空腔之前完成。
 - ⚠️⚠️ **feature_extrusion（加料）vs feature_cut_extrusion（切除）—— 二者绝对不能混淆！**：
   - **feature_extrusion**：把草图轮廓**加出一段实体**（凸台、柱、棱、把手、腿等，做**加法**的场景）。
   - **feature_cut_extrusion**：把草图轮廓**从已有实体上挖除掉**（孔、槽、凹坑、内腔等，做**减法**的场景）。
@@ -623,7 +630,8 @@ class SwLLMClient:
             "sketch_circle, sketch_centerline, sketch_arc, sketch_ellipse, sketch_polygon, "
             "feature_extrusion, feature_cut_extrusion, feature_revolve, feature_fillet, feature_chamfer, "
             "close_sketch, feature_tree, body_bounding_box, select_face_and_sketch, modify_dimension。\n"
-            "modify_dimension 的 params 中，newValue（绝对值）和 delta（增量）二选一。\n\n"
+            "modify_dimension 的 params 中，newValue（绝对值）和 delta（增量）二选一。\n"
+            "圆柱/轴对称零件的 feature_fillet/feature_chamfer：edgeSelection 必须为 ray，且 params 含 rx,ry,rz,dx,dy,dz；禁止 bottom_top 等语义名。\n\n"
             "⚠️ **极其重要：你必须一次性输出所有步骤，不能截断！** 如果模型需要4条腿，就必须有4个 sketch_circle 步骤（或者在同一草图中画4个圆）。"
             "**每个 steps 数组元素必须是一个对象（Object），包含 operation、params、description 三个字段。绝对不能是字符串或其他类型！**"
         )
