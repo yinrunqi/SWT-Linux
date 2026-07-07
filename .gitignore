@@ -17,6 +17,11 @@
 !run_test.sh
 !run_service.bat
 !build_service.bat
+!LLMPlanner/setup_test_env.bat
+!LLMPlanner/setup_test_env.ps1
+!LLMPlanner/setup_test_env.py
+!LLMPlanner/load_env.py
+!LLMPlanner/.env.example
 
 # 解决方案文件（复现必需）
 !SolidWorksTutorial.slnx
@@ -55,6 +60,7 @@ Chapter1.ConnectToSw/obj/**
 
 # LLMPlanner 中需要排除的缓存/生成物
 LLMPlanner/venv/**
+LLMPlanner/.env
 LLMPlanner/**/__pycache__/**
 LLMPlanner/**/.llm_cache/**
 LLMPlanner/log/**

@@ -7,7 +7,7 @@ _common.py — 日常物体 LLM 建模测试的共享工具
 测试前请确保：
   1. SolidWorks 已启动（普通权限）
   2. Chapter1.ConnectToSw.exe 已运行（监听 http://localhost:5100）
-  3. 环境变量 OPENAI_API_KEY 已设置（可选 OPENAI_BASE_URL）
+  3. 已配置 LLMPlanner/.env（可复制 .env.example），或先运行 setup_test_env.bat
 """
 
 import os
@@ -16,13 +16,20 @@ import sys
 import requests
 
 # 将 LLMPlanner 根目录加入模块搜索路径（test/objects/ 往上两级）
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+_LLM_ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
+sys.path.insert(0, _LLM_ROOT)
 
+from load_env import ensure_test_env_loaded
 from planner.schemas import SwModelingPlan
 from planner.llm_client import SwLLMClient
 from planner.executor import SwExecutor
 
-BASE_URL = "http://localhost:5100"
+ensure_test_env_loaded()
+BASE_URL = os.getenv("SW_API_URL", "http://localhost:5100").rstrip("/")
+
+
+def format_volume_mm3(vol: float | None) -> str:
+    return f"{vol:.1f}" if vol is not None else "N/A"
 
 
 def check_prerequisites() -> bool:

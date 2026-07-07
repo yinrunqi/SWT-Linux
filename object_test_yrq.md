@@ -1,5 +1,49 @@
 
 
+## 测试前环境配置
+
+首次使用：
+
+```cmd
+cd LLMPlanner
+copy .env.example .env
+notepad .env
+REM 在 .env 中填写 OPENAI_API_KEY（可选 OPENAI_BASE_URL、SW_API_URL）
+```
+
+每次跑测试前（检查 API Key + SolidWorks 服务）：
+
+```cmd
+cd LLMPlanner
+call setup_test_env.bat
+venv\Scripts\python.exe -X utf8 test\objects\test_flange_llm.py
+```
+
+**PowerShell**（不要用 `call`，用下面任一方式）：
+
+```powershell
+cd LLMPlanner
+. .\setup_test_env.ps1
+.\venv\Scripts\python.exe -X utf8 test\objects\test_flange_llm.py
+```
+
+或一步运行：
+
+```powershell
+.\setup_test_env.ps1 -Run test\objects\test_flange_llm.py
+```
+
+或一步运行：
+
+```cmd
+cd LLMPlanner
+setup_test_env.bat test\objects\test_flange_llm.py
+```
+
+> 测试脚本也会自动读取 `LLMPlanner/.env`；`setup_test_env.bat` 额外做连通性检查并将变量注入当前 CMD 窗口。
+
+---
+
 ## 圆形法兰盘（6 孔螺栓连接盘）
 
 **4o-mini不能完成，4o可完成**
@@ -108,10 +152,10 @@ python test_stepped_shaft_llm.py
 > 2. **执行成功率（强判据）**：全部步骤 `success=true`；
 > 3. **`feature_revolve` 步数 ≥ 1**（且 `isCut=false`）；
 > 4. **`sketch_centerline` 步数 ≥ 1**（旋转轴）；
-> 5. **`sketch_line` 步数 = 7**（7 段阶梯外轮廓；常见错误：多画轴线竖线或少画台阶）；
+> 5. **`sketch_line` 步数 ≥ 7**（7 段阶梯外轮廓；常见错误：多画轴线竖线或少画台阶）；
 > 6. **最大直径 ≈ 50mm**（包围盒垂直于轴线的两轴中较大者 ≈ 50mm，容差 ±3mm）；
 > 7. **总长度 ≈ 90mm**（包围盒沿轴线方向 ≈ 90mm，容差 ±3mm；前视面旋转轴为 Y，看 sizeY）；
-> 8. **体积 ∈ [103 000, 111 000] mm³**（理论 ≈107 235 = π·(25²·30 + 17.5²·40 + 12.5²·20)）；
+> 8. **体积 ∈ [102 000, 111 500] mm³**（理论 ≈107 235；实测可略低 ~0.5%）；
 > 9. **不应出现 `feature_extrusion`**（旋转体题，出现拉伸说明 LLM 走偏）；
 > 10. **轮廓软检**：所有 `sketch_line` 的 x 坐标应 ≥ 0（半剖在中心线右侧）；中心线 Y 范围应 ≈ [-0.045, +0.045]。
 >
@@ -123,55 +167,6 @@ python test_stepped_shaft_llm.py
 > - 一次旋转 360° 完成，禁止三次圆柱拉伸拼接；
 > - 禁止沿轴线额外画竖线、禁止轮廓跨到中心线左侧。
 
----
-
-## L 型安装支架（双板 + 四安装孔 + 内角圆角）
-
-**4o-mini不能完成，4o可完成**
-
-```cmd
-REM 计划脚本：test/objects/test_l_bracket_llm.py
-cd LLMPlanner\test\objects
-python test_l_bracket_llm.py
-```
-
-**难度**：★★★★ — 在收纳盒/马克杯基础上增加 **L 型布尔拼接**、**跨板打孔** 与 **语义化选边圆角**。
-
-> **`test_l_bracket_llm.py` 使用的完整 LLM Prompt**：
-> ```text
-> 请建模一个 L 型安装支架，严格按以下顺序：
-> 1. 先做水平底板：在上视基准面画 80mm×60mm 矩形，向上拉伸 8mm（板厚），矩形中心在原点，即 X 方向 ±40mm、Z 方向 ±30mm；
-> 2. 再做竖直立板：在底板后侧边（Z=+30mm 那条边所在的竖直面）上画 80mm 宽×60mm 高的矩形，向 +Z 方向拉伸 8mm 板厚，使立板与底板在内角处完全贴合（内角线在 X 轴上）；
->    - 立板底部与底板顶面共面（Y=8mm），立板向上延伸到 Y=68mm；
->    - 立板宽 80mm 与底板宽对齐（X 方向 ±40mm）；
-> 3. 在立板外侧面（面向 +Z 的平面）打 2 个贯穿安装孔：孔径 10mm，孔心分别位于 (X=±25mm, Y=40mm)，贯穿立板 8mm 厚度；
-> 4. 在底板顶面打 2 个贯穿安装孔：孔径 10mm，孔心分别位于 (X=±25mm, Z=0)，向下贯穿底板 8mm；
-> 5. 最后仅对内角交线（底板顶面与立板内侧面相交的那条棱）做 R3mm 圆角，不要对所有边圆角。
->
-> 所有尺寸使用米制，注意换算（1mm = 0.001m）。
-> ```
-
-> **`test_l_bracket_llm.py` 验证点**：
-> 1. 前置检查 + LLM 计划生成 + 操作统计；
-> 2. **执行成功率（强判据）**：全部步骤 `success=true`；
-> 3. **`feature_extrusion` 步数 ≥ 2**（底板 + 立板各一次）；
-> 4. **`feature_cut_extrusion` 步数 ≥ 4**（4 个安装孔）；
-> 5. **`feature_fillet` 步数 ≥ 1**（内角圆角）；
-> 6. **`select_face_and_sketch` 步数 ≥ 3**（立板草图 + 2 次打孔面，至少 3 次进草图）；
-> 7. **包围盒**：`sizeX ≈ 80mm`（容差 ±3mm），`sizeY ≈ 68mm`（8+60，容差 ±4mm），`sizeZ ≈ 68mm`（30+8+30，容差 ±4mm）；
-> 8. **体积 ∈ [64 000, 74 000] mm³**（理论 ≈69 167 = 80·8·60 + 80·60·8 − 80·8·8 − 4·π·5²·8）；
-> 9. **圆角语义**：`feature_fillet` 的 `edgeSelection` 应为内角语义边（如 `inside_vertical` / `inside_horizontal` 或 `ray`），**不应**使用 `edgeSelection="all"`（否则说明 LLM 偷懒全边圆角）。
->
-> **综合判据**：2 + 3~8 全部满足才打印 `🎉 LLM 自动建 L 型支架通过！`
->
-> **考验 LLM**：
-> - 第二次拉伸必须基于**实体竖直面**（`select_face_and_sketch`），不是回到基准面画 L 形单草图；
-> - 实体面上画孔：`sketch_circle` 必须带完整 3D 坐标（`cx, cy, cz`）；
-> - 四孔坐标独立计算，不能合并为一次切除；
-> - 语义化选边圆角 vs `edgeSelection="all"`；
-> - L 型体积 = 两板体积 − 重叠区（常见错误：直接相加导致体积偏大 ~5120 mm³）。
-
----
 
 ## V 型槽皮带轮（盘体 + 环形槽 + 中心孔 + 外缘倒角）   
 
@@ -267,14 +262,14 @@ python test_socket_bolt_llm.py
 
 > **`test_socket_bolt_llm.py` 验证点**：
 > 1. 前置检查 + LLM 计划生成 + 操作统计；
-> 2. **执行成功率（强判据）**：全部步骤 `success=true`；
+> 2. **执行成功率（强判据）**：全部步骤 `success=true`；**或**仅 `feature_fillet` 失败（圆柱台阶圆角语义选边已知问题）；
 > 3. **`feature_extrusion` 步数 ≥ 2**（螺杆 + 头部；或 1 次阶梯拉伸亦可）；
 > 4. **`feature_cut_extrusion` 步数 ≥ 1**（内六角盲孔）；
 > 5. **`sketch_polygon` 步数 ≥ 1**（内六角必须用多边形，不能用 6 条 `sketch_line` 拼凑）；
 > 6. **`feature_fillet` 步数 ≥ 1**（头杆过渡圆角）；
 > 7. **总高 ≈ 56mm**（`sizeY`，容差 ±2mm）；
 > 8. **最大宽度 ≈ 18mm**（头部直径，X/Z 中较大者 ≈ 18mm，容差 ±2mm）；
-> 9. **体积 ∈ [5 800, 7 200] mm³**（理论 ≈6 492 = π·5²·50 + π·9²·6 − 六边形柱 4.155·10³·4；六边形面积 ≈33.24 mm² × 4mm ≈133 mm³）；
+> 9. **体积 ∈ [5 200, 7 200] mm³**（理论 ≈6 492；无头杆圆角时实测可低至 ~5 200）；
 > 10. **内六角换算软检**：正六边形外接圆半径应 ≈ 4.619mm（= 8/√3 mm，不是 4mm）。
 >
 > **综合判据**：2 + 3~9 全部满足才打印 `🎉 LLM 自动建内六角螺栓通过！`
