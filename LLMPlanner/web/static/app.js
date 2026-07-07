@@ -62,6 +62,7 @@ modelEl.addEventListener("change", saveSettings);
 // ---- 初始化 ----
 async function init() {
   loadSettings();
+  renderThreeViewButtons();
   try {
     const res = await fetch(`${API}/api/ping`);
     const data = await res.json();
@@ -546,22 +547,75 @@ window.addEventListener("drop", async e => {
   if (file) await handleFileSelected(file);
 });
 
-// 示例按钮：三视图建模 —— 从服务端拉 B01 L 型支架图片并预填 prompt
-window.fillThreeViewExample = async function () {
-  try {
-    const res = await fetch("/datasets/manual_three_view/B01_l_bracket/drawing.png");
-    if (!res.ok) throw new Error("三视图示例图片未找到");
-    const blob = await res.blob();
-    const file = new File([blob], "B01_l_bracket.png", { type: "image/png" });
-    await handleFileSelected(file);
-    inputEl.value =
+// ===== 三视图示例注册表 =====
+// 与 LLMPlanner/datasets/manual_three_view/build_all.py 和
+// LLMPlanner/test/test_three_view_e2e.py 中的 SAMPLES 保持一致。
+// 新增样例时在这里追加一项，HTML 里也加一个按钮即可（或用 renderThreeViewButtons 自动渲染）。
+const THREE_VIEW_SAMPLES = {
+  B01: {
+    label: "📐 三视图 · L 型支架",
+    subdir: "B01_l_bracket",
+    filename: "B01_l_bracket.png",
+    prompt:
       "这是一张 L 型支架的三视图。请根据图纸精确建模，注意主视图轮廓、" +
-      "俯视图/侧视图给出的深度，以及所有标注尺寸。";
+      "俯视图/侧视图给出的深度，以及所有标注尺寸。",
+  },
+  B02: {
+    label: "🕳️ 三视图 · 带 2 孔平板",
+    subdir: "B02_plate_with_holes",
+    filename: "B02_plate_with_holes.png",
+    prompt:
+      "这是一张带 2 个通孔的矩形平板三视图。请根据图纸精确建模，" +
+      "注意平板的长宽高、孔的直径与位置，以及所有标注尺寸。孔沿 Z 方向贯穿。",
+  },
+  B03: {
+    label: "🔩 三视图 · T 型支架",
+    subdir: "B03_t_bracket",
+    filename: "B03_t_bracket.png",
+    prompt:
+      "这是一张 T 型支架的三视图。请根据图纸精确建模，" +
+      "T 形是顶部横杆加中间竖杆的结构。注意主视图的 T 形轮廓、" +
+      "俯视图/侧视图给出的深度，以及所有标注尺寸。",
+  },
+};
+
+// 通用：加载指定三视图样例（图片 + prompt 自动填充）
+window.fillThreeViewSample = async function (sampleId) {
+  const s = THREE_VIEW_SAMPLES[sampleId];
+  if (!s) {
+    appendError(`未知三视图样例: ${sampleId}`);
+    return;
+  }
+  try {
+    const res = await fetch(`/datasets/manual_three_view/${s.subdir}/drawing.png`);
+    if (!res.ok) throw new Error(`三视图示例图片未找到: ${s.subdir}`);
+    const blob = await res.blob();
+    const file = new File([blob], s.filename, { type: "image/png" });
+    await handleFileSelected(file);
+    inputEl.value = s.prompt;
     inputEl.focus();
   } catch (e) {
     appendError("加载三视图示例失败：" + e.message);
   }
 };
+
+// 保留旧的 fillThreeViewExample 名字兼容（万一 HTML 缓存版本还在用）
+window.fillThreeViewExample = () => window.fillThreeViewSample("B01");
+
+// 自动把 THREE_VIEW_SAMPLES 渲染成按钮到 #three-view-buttons 容器（如果存在）。
+// 好处：以后加新样例只改 THREE_VIEW_SAMPLES 常量，不需要改 HTML。
+function renderThreeViewButtons() {
+  const container = document.getElementById("three-view-buttons");
+  if (!container) return;
+  container.innerHTML = "";
+  for (const [sid, s] of Object.entries(THREE_VIEW_SAMPLES)) {
+    const btn = document.createElement("button");
+    btn.textContent = s.label;
+    btn.title = s.prompt;
+    btn.onclick = () => window.fillThreeViewSample(sid);
+    container.appendChild(btn);
+  }
+}
 
 
 // ---- 事件绑定 ----
