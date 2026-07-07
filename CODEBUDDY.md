@@ -122,3 +122,23 @@ Chapter1 展示的典型调用链路是此项目的核心编程模式：
 - **命名空间**：每个 Chapter 项目使用 `ChapterN.项目名` 作为根命名空间（如 `Chapter1.ConnectToSw`）。
 - **代码语言**：注释使用中文，面向中文开发者的教程项目。
 - **SolidWorks 坐标单位**：API 中所有长度单位为**米**（如 `0.01` 表示 10mm）。
+
+### 🛡️ 新增建模物体的 Definition of Done（强约束）
+
+**每次新增一个"自动建模物体"（文字建模 或 三视图样例），只有以下五件事全部完成，任务才算完成。缺任何一项都是半成品，禁止提交。详见 `TEST.md` 顶部"强约定"。**
+
+**文字建模任务**（自然语言 → CAD，如骰子/板凳/齿轮）：
+1. 编写 `LLMPlanner/test/objects/test_<name>_llm.py` 测试脚本（含几何断言）
+2. 执行测试并把日志留在 `LLMPlanner/log/` 目录
+3. 更新 `TEST.md`：分类表新增一行 + 完整 `Prompt:` 原文
+4. 加到 Web demo：`web/static/index.html` 新增示例按钮，`app.js` 加对应 fillXxxPrompt 函数
+5. `git commit + push`，commit message 引用测试关键指标
+
+**三视图多模态样例**（图纸 → CAD，如 B01/B02/B03）：
+1. 追加 `LLMPlanner/datasets/manual_three_view/samples.json`（一处修改，三处消费方自动同步）
+2. 跑 `datasets\manual_three_view\build_all.py` 生成 PNG + groundtruth
+3. 清缓存后跑 `test\test_three_view_e2e.py <part_id>` 端到端验证
+4. 更新 `TEST.md` §12.2 表格 + §12.3 prompt
+5. `git commit + push`（Web demo 按钮自动生成，无需改前端；重启 Flask 加载新 JSON 即可）
+
+> **对 AI 助手**：以上就是"完成"的定义。禁止在测试通过后直接 `git commit` 而不更新 `TEST.md` 与 Web demo。多模态测试首次跑通即可，但 commit message 须注明"首次跑通"。

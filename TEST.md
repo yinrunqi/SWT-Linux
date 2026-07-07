@@ -2,9 +2,35 @@
 
 本文件整理了 LLMPlanner 的端到端测试用例与运行方式。所有测试均通过 HTTP 调用 C# 服务驱动 SolidWorks 实际建模。
 
-> 📌 **约定 1**：所有"LLM 自动建模任务"使用的自然语言 Prompt 都记录在本文件中（见各 LLM 规划类用例旁的 `Prompt:` 标注），便于随时复现。新增自动建模任务时，请同步把其 Prompt 补充到这里。
->
-> 📌 **约定 2**：新增一个**三视图样例**（B04/B05/…）时，务必：（a）在 `datasets/manual_three_view/samples.json` 中追加配置；（b）跑通 `test_three_view_e2e.py <part_id>` 端到端验证；（c）在 §12.2 表格中登记该样例，并同步把该样例的 `text_hint` 加到 §12.3。完整 SOP 见 §12.5。（Web demo 按钮 由 samples.json 自动驱动，无需单独修改前端）
+## 🛡️ 强约定（新增自动建模物体的 Definition of Done）
+
+**每加一个自动建模物体，只有以下 5 项**全部**完成，任务才算完成**。缺任何一项都视为半成品，禁止提交：
+
+### 约定 A ｜ 文字建模任务（自然语言 → CAD）
+
+新增一个物体（骰子/板凳/齿轮/...）时必须：
+
+1. **编写测试脚本** `test/objects/test_<name>_llm.py`，跑通端到端 LLM 建模 + 几何断言（包围盒/体积/特征数至少一项自动校验）
+2. **执行测试并留存日志**：`> log\test_<name>.log 2>&1`，至少展示末尾"判定"行说明通过
+3. **更新 TEST.md**：（a）§十 分类表新增一行；（b）在合适章节写完整 `Prompt:` 原文
+4. **加到 Web demo**：`web/static/index.html` 欢迎区加一个示例按钮（`onclick="fill<Name>Prompt()"`），`app.js` 里加同名函数把 prompt 填入输入框
+5. **git commit + push**，commit message 引用测试通过的关键指标
+
+### 约定 B ｜ 三视图多模态样例（图纸 → CAD）
+
+新增一个三视图样例（B04/B05/...）时必须：
+
+1. **改 samples.json 一处** — `datasets/manual_three_view/samples.json` 追加一个对象（含 `profile_xy`/`depth_z`/`holes`/`ui`/`test` 五组字段）
+2. **一键生成图纸**：`python datasets\manual_three_view\build_all.py`
+3. **清缓存跑端到端**：`python test\test_three_view_e2e.py <part_id> > log\test_3view_<id>.log 2>&1`，末尾"总结"行必须显示"1/1 样例通过"
+4. **更新 TEST.md §12**：（a）§12.2 表格添加一行（步数/体积/特征）；（b）§12.3 追加该样例的 `text_hint`
+5. **git commit + push**
+
+（Web demo 按钮由 samples.json 自动驱动，`app.js` 会 fetch `/api/three-view-samples` 自动生成，**不需要**手动改前端；只需重启 Flask 加载最新 JSON。这就是"单一数据源架构"的收益。）
+
+> 若第 3 步测试未通过：先看 LLM 计划——如果是形状级问题（画法错），在 `planner/skills/input_modes/three_view.md` §7"阶段 B 特别指引"仿照 L 形/T 形补一段专属规则；如果是尺寸识别错，检查图纸清晰度或补图纸标注。清缓存重跑。完整故障排查 SOP 见 §12.5。
+
+> ⚠️ **对 AI 助手的额外指令**：以上约定就是"完成"的定义。**禁止在测试通过后直接 git commit** 而不更新 TEST.md 与 Web demo；也禁止只跑一次通过就当作稳定（多模态测试有 LLM 随机性，B02/B03 只跑一次就算通过是可以接受的，但要在 commit message 中说明"首次跑通"）。
 
 > 前置条件（每次测试都需要）：
 > 1. **SolidWorks 已启动**（普通权限，详见 `Chapter1.ConnectToSw/README.md`）
