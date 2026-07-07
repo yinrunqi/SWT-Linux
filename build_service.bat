@@ -4,7 +4,7 @@ REM 命令行构建 Chapter1.ConnectToSw（无需打开 Visual Studio）
 REM ============================================================
 setlocal
 
-set "MSBUILD=C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe"
+set "MSBUILD=C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe"
 set "PROJ=%~dp0Chapter1.ConnectToSw\Chapter1.ConnectToSw.csproj"
 
 if not exist "%MSBUILD%" (
@@ -21,7 +21,8 @@ if %errorlevel%==0 (
 )
 
 echo [构建] 正在编译 Chapter1.ConnectToSw ...
-"%MSBUILD%" "%PROJ%" /p:Configuration=Debug /v:minimal /nologo /t:Rebuild
+REM 本机若仅安装 .NET 4.7.1 目标包，用 /p:TargetFrameworkVersion=v4.7.1 覆盖 csproj 中的 v4.7.2
+"%MSBUILD%" "%PROJ%" /p:Configuration=Debug /p:TargetFrameworkVersion=v4.7.1 /v:minimal /nologo /t:Rebuild
 if %errorlevel% neq 0 (
     echo [失败] 构建失败，退出码 %errorlevel%
     exit /b %errorlevel%
