@@ -69,6 +69,51 @@
       }
     },
     {
+      "part_id": "B07",
+      "subdir": "B07_switch_panel",
+      "name": "B07 86 型开关面板",
+      "part_type": "switch_panel",
+      "notes": "86×86×10mm 方形面板，四个竖直棱边 R3 圆角，中央 50×50×3mm 矩形凹槽（放置开关按键的窗口），四角各一个 ⌀3mm 贯穿螺丝孔（距角 8mm，即坐标 ±35,±35）。这是家用 86 型开关面板的标准外形。",
+      "profile_xy": [[-43, -43], [43, -43], [43, 43], [-43, 43]],
+      "depth_z": 10,
+      "profile_centered": true,
+      "holes": [],
+      "operations": [
+        {
+          "type": "cutout_on_face",
+          "face": "top",
+          "shape": "rectangle",
+          "cx": 0, "cy": 0, "width": 50, "height": 50,
+          "depth": 3,
+          "through_all": false,
+          "label": "中央按键窗口 50×50×3mm"
+        },
+        {
+          "type": "cutout_on_face",
+          "face": "top",
+          "shape": "circle",
+          "radius": 1.5,
+          "positions": [[35, 35], [-35, 35], [35, -35], [-35, -35]],
+          "depth": 0,
+          "through_all": true,
+          "label": "四角 ⌀3 螺丝孔"
+        },
+        {
+          "type": "fillet_edges",
+          "edges": "vertical_corners",
+          "radius": 3,
+          "label": "四个竖直棱边 R3"
+        }
+      ],
+      "ui": {
+        "label": "🔲 86 型开关面板",
+        "prompt": "这是一张家用 86 型开关面板的三视图。面板是 86×86×10mm 的方形板，四个竖直棱边有 R3 圆角，顶面中央有一个 50×50×3mm 的矩形凹槽（用于安装开关按键），四角各有一个 ⌀3mm 的贯穿螺丝孔。请按底座→凹槽→贯穿孔→圆角的顺序建模。"
+      },
+      "test": {
+        "text_hint": "这是一张家用 86 型开关面板的三视图。面板是 86×86×10mm 的方形板，四个竖直棱边有 R3 圆角，顶面中央有一个 50×50×3mm 的矩形凹槽（用于安装开关按键），四角各有一个 ⌀3mm 的贯穿螺丝孔。请按底座→凹槽→贯穿孔→圆角的顺序建模。"
+      }
+    },
+    {
       "part_id": "B04",
       "subdir": "B04_keycap",
       "name": "B04 键盘键帽（教学简化版）",

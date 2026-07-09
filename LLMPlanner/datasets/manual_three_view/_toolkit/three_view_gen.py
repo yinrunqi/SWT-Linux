@@ -56,6 +56,80 @@ class Hole:
     label: str = ""    # 可选标注（如 "M5 通孔"）
 
 
+# ============================================================
+# 复合特征：底座之上的附加操作（圆角、面上切除等）
+# ============================================================
+#
+# 每个 Op 表示一次"后处理"：在底座实体建好后，按 operations 列表顺序应用。
+# LLM 建模时也按顺序执行；PNG 渲染时用于在主/俯/侧视图上叠加对应的可见特征。
+#
+# 坐标系约定：所有 op 的坐标都在 **profile 局部坐标系**（与 ExtrudedPart.profile_xy 一致），
+# 即 XY 平面上的 mm 坐标。工具箱负责把它们转成 SolidWorks 模型坐标（× 0.001）+ 面内草图坐标。
+
+
+@dataclass
+class FilletEdges:
+    """圆角修饰边。
+
+    edges 指定哪些边圆角，支持以下常量字符串：
+      - "top_perimeter"   顶面轮廓周边（拔模件的顶面小周长；普通件的上表面周长）
+      - "bottom_perimeter" 底面轮廓周边
+      - "vertical_corners" 四个竖直棱边（外壳/开关面板四角常用）
+      - "all_perimeter"   顶+底两圈周边
+      - "all"             所有边（谨慎使用，可能引入不必要的圆角）
+    """
+    edges: str
+    radius: float          # 圆角半径（mm）
+    label: str = ""
+
+
+@dataclass
+class CutoutOnFace:
+    """在指定面上切除一个形状（凹槽或贯穿孔）。
+
+    face: 目标面
+      - "top"     顶面（+Z，拔模件是小面；普通件是上表面）
+      - "bottom"  底面（-Z）
+      - "front" / "back" / "left" / "right" 四个侧面（当前先只支持 top/bottom）
+    shape: 切除形状
+      - "circle"       用 cx, cy, radius
+      - "rectangle"    用 cx, cy, width, height（矩形中心在 (cx,cy)）
+      - "slot"         用 cx, cy, length, width（腰形孔中心在 (cx,cy)，长轴沿 X）
+    depth: 切除深度（mm）；若 through_all=true 则忽略
+    through_all: 是否贯穿切除
+    positions: 若非空，忽略 (cx, cy)，在多个位置各切一份（用于四角螺丝孔阵列）
+    """
+    face: str
+    shape: str            # "circle" | "rectangle" | "slot"
+    depth: float          # mm
+    through_all: bool = False
+    cx: float = 0.0
+    cy: float = 0.0
+    radius: float = 0.0
+    width: float = 0.0
+    height: float = 0.0
+    length: float = 0.0
+    positions: list[tuple[float, float]] = field(default_factory=list)
+    label: str = ""
+
+
+# Op = FilletEdges | CutoutOnFace （Python 3.10+ 联合类型，我们不强 typing）
+
+
+def _cutout_shape_area(op: "CutoutOnFace") -> float:
+    """计算 CutoutOnFace 的截面面积（mm²）。"""
+    import math
+    if op.shape == "circle":
+        return math.pi * op.radius ** 2
+    if op.shape == "rectangle":
+        return op.width * op.height
+    if op.shape == "slot":
+        # 腰形孔：矩形 + 两个半圆，等价于 length×width + π×(width/2)²  但常用近似 length×width
+        # 其中长度已经包含两端半圆的直径
+        return (op.length - op.width) * op.width + math.pi * (op.width / 2) ** 2
+    raise ValueError(f"未知切除形状: {op.shape}")
+
+
 @dataclass
 class ExtrudedPart:
     """
@@ -78,6 +152,7 @@ class ExtrudedPart:
     notes: str = ""
     top_scale: float = 1.0             # 拔模：顶面尺寸相对底面的比例
     profile_centered: bool = False     # 若 True，profile 已围绕原点居中（键帽用；影响 SolidWorks 建模坐标）
+    operations: list = field(default_factory=list)  # 附加复合特征：FilletEdges / CutoutOnFace 混合列表，按顺序应用
 
     def __post_init__(self) -> None:
         if len(self.profile_xy) < 3:
@@ -159,17 +234,29 @@ class ExtrudedPart:
         return gross - holes_area
 
     def volume_mm3(self) -> float:
-        """零件体积。
+        """零件体积（自动扣除 operations 里的所有切除量）。
         - 普通拉伸: profile 净面积 × 拉伸深度
         - 拔模拉伸（top_scale≠1）: **棱台/圆台公式** V = h/3 · (A_底 + A_顶 + √(A_底·A_顶))
           其中 A_顶 = A_底 · top_scale² （因线性缩放 → 面积按平方缩放）
+        - 复合特征：每个 CutoutOnFace 扣除 shape_area × 切除深度（贯穿则按 depth_z）；
+          FilletEdges 的体积影响极小，暂忽略。
         """
         import math
         a_bottom = self.profile_area_mm2()
         if not self.has_draft():
-            return round(a_bottom * self.depth_z, 3)
-        a_top = a_bottom * self.top_scale ** 2
-        v = self.depth_z / 3.0 * (a_bottom + a_top + math.sqrt(a_bottom * a_top))
+            v = a_bottom * self.depth_z
+        else:
+            a_top = a_bottom * self.top_scale ** 2
+            v = self.depth_z / 3.0 * (a_bottom + a_top + math.sqrt(a_bottom * a_top))
+
+        # 扣除复合切除
+        for op in self.operations:
+            if isinstance(op, CutoutOnFace):
+                area = _cutout_shape_area(op)
+                d = self.depth_z if op.through_all else op.depth
+                # positions 若不为空则每个位置扣一份，否则单份
+                n = max(1, len(op.positions))
+                v -= area * d * n
         return round(v, 3)
 
     def key_dimensions(self) -> dict:
@@ -333,16 +420,27 @@ def render_three_view_png(
     F_LABEL = _load_font(20)
     F_DIM = _load_font(18)
 
-    S = scale_px_per_mm
     bb = part.bbox_3d_mm()
     L, HT, D = bb["length"], bb["height"], bb["depth"]
 
+    # ---- 自适应比例：确保主视图 + 俯视图 高度总和不超过画布 ----
+    # 主视图高 = HT*S，俯视图高 = D*S；两者中间预留 100px 标注区
+    # 主视图起点 y=250，画布高 1200，底部留 100px → 可用高度 850px
+    # HT*S + D*S + 100(中间) <= 850  →  S <= 750 / (HT+D)
+    S = scale_px_per_mm
+    max_h_sum = 750  # 主视图 + 俯视图的总像素高度上限
+    if (HT + D) * S > max_h_sum:
+        S = max(3, int(max_h_sum / (HT + D)))
+    # 宽度也约束：主视图 + 100 + 侧视图 <= 1400（画布 1600，两侧留 200 边距）
+    max_w_sum = 1400
+    if (L + D + 200) * S > max_w_sum:  # +200 是两个视图之间的间距
+        S = max(3, min(S, int(max_w_sum / (L + D + 100))))
+
     # ---- 布局：4 个象限的中心位置 ----
     #    前上、右上、前下（俯视）；右下留空
-    #    每个视图分配 700×450 的显示区
-    front_origin = (200, 250)   # 主视图左上角像素
-    top_origin = (200, 700)     # 俯视图左上角像素
-    right_origin = (900, 250)   # 侧视图左上角像素
+    front_origin = (200, 250)                          # 主视图左上角
+    top_origin = (200, 250 + int(HT * S) + 120)        # 俯视图跟在主视图下方 + 120px 间距
+    right_origin = (200 + int(L * S) + 200, 250)       # 侧视图在主视图右侧 + 200px 间距
 
     # profile_xy 到主视图的映射：**注意 Y 轴翻转**（图纸 Y 向下）
     xmin, ymin, xmax, ymax = part.bbox_xy()
@@ -512,6 +610,15 @@ def render_three_view_png(
         tw = bbox[2] - bbox[0]
         dr.text((lx + 2, ly - 22), label, fill="black", font=F_DIM)
 
+    # ============ 渲染复合特征（cutouts / fillets）============
+    # 主视图上：顶面切除画实线（可见），底面切除画虚线（不可见）
+    # 圆角特征：额外文字标注
+    _render_composite_ops(
+        dr, part, to_px_front, S, F_DIM,
+        top_origin=top_origin, top_w=top_w, top_d=top_d,
+        right_origin=right_origin, right_w=right_w, right_h=right_h,
+    )
+
     # ============ 顶部标题 ============
     title = f"{part.name} · 三视图 (第三角画法)"
     dr.text((W // 2 - 150, 40), title, fill="black", font=F_TITLE)
@@ -616,6 +723,139 @@ def _annotate_notches(
 
 
 # ============================================================
+# 渲染复合特征（cutouts / fillets）
+# ============================================================
+
+
+def _render_composite_ops(
+    dr: ImageDraw.ImageDraw,
+    part: "ExtrudedPart",
+    to_px_front,
+    S: int,
+    font: ImageFont.ImageFont,
+    top_origin: tuple[int, int],
+    top_w: float,
+    top_d: float,
+    right_origin: tuple[int, int],
+    right_w: float,
+    right_h: float,
+) -> None:
+    """
+    把复合特征（CutoutOnFace / FilletEdges）叠加渲染到三视图上。
+
+    主视图规则（沿 -Z 观察 → 看到底座 XY 轮廓）：
+      - 顶面（+Z 面）切除：**实线**（可见）
+      - 底面（-Z 面）切除：**虚线**（不可见）
+      - 贯穿切除：实线 + 虚线都画（同一形状叠加，看起来就是实线）
+    俯视图规则（沿 -Y 观察 → 看到 XZ 侧影）：
+      - 顶面切除表现为顶部（Z=depth 侧）向下凹陷
+      - 底面切除表现为底部（Z=0 侧）向上凹陷
+      - 我们简化：画虚线段表示切除的 Z 深度范围
+    侧视图规则（沿 -X 观察）：同理但用 Y 位置
+
+    圆角：只在图例区加文字说明（不改轮廓），避免误导 Vision 认为主轮廓有变化。
+    """
+    # 先收集所有 op 分类
+    fillets = [op for op in part.operations if isinstance(op, FilletEdges)]
+    cutouts = [op for op in part.operations if isinstance(op, CutoutOnFace)]
+
+    # ---- 主视图上叠加 cutouts ----
+    for op in cutouts:
+        # 决定线型：顶面=实线（可见），底面=虚线（不可见），贯穿=实线
+        solid = op.face == "top" or op.through_all
+
+        # 展开成位置列表（若 positions 为空，用单个 (cx, cy)）
+        positions = op.positions if op.positions else [(op.cx, op.cy)]
+
+        for cx, cy in positions:
+            _draw_cutout_shape_at(
+                dr, op, cx, cy, to_px_front, S,
+                color="black", solid=solid,
+            )
+
+    # ---- 圆角：在标题下方加文字图例 ----
+    if fillets:
+        legend_y = 90  # 靠近顶部
+        legend_x = 200
+        for f in fillets:
+            label = f"● 圆角 {f.edges} R{f.radius}mm" + (f" ({f.label})" if f.label else "")
+            dr.text((legend_x, legend_y), label, fill="#0066cc", font=font)
+            legend_y += 22
+
+
+def _draw_cutout_shape_at(
+    dr: ImageDraw.ImageDraw,
+    op: CutoutOnFace,
+    cx: float, cy: float,
+    to_px_front,
+    S: int,
+    color: str = "black",
+    solid: bool = True,
+) -> None:
+    """在主视图指定位置画一个切除形状（circle/rectangle/slot）。"""
+    px, py = to_px_front(cx, cy)
+
+    if op.shape == "circle":
+        r_px = op.radius * S
+        if solid:
+            dr.ellipse([px - r_px, py - r_px, px + r_px, py + r_px], outline=color, width=2)
+        else:
+            _draw_dashed_arc(dr, px, py, r_px, color=color)
+        # 十字中心线
+        _draw_center_marker(dr, px, py, size=r_px + 4, color=color)
+
+    elif op.shape == "rectangle":
+        w_px = op.width * S / 2
+        h_px = op.height * S / 2
+        if solid:
+            dr.rectangle([px - w_px, py - h_px, px + w_px, py + h_px], outline=color, width=2)
+        else:
+            for a, b in [
+                ((px - w_px, py - h_px), (px + w_px, py - h_px)),
+                ((px + w_px, py - h_px), (px + w_px, py + h_px)),
+                ((px + w_px, py + h_px), (px - w_px, py + h_px)),
+                ((px - w_px, py + h_px), (px - w_px, py - h_px)),
+            ]:
+                _draw_dashed_line(dr, a[0], a[1], b[0], b[1], color=color)
+
+    elif op.shape == "slot":
+        # 腰形孔：两端半圆 + 中间矩形
+        L_px = op.length * S / 2  # 半长
+        W_px = op.width * S / 2   # 半宽（半径）
+        # 中间矩形部分从 (-L+W, -W) 到 (L-W, W)
+        rect_left = px - L_px + W_px
+        rect_right = px + L_px - W_px
+        if solid:
+            dr.line([(rect_left, py - W_px), (rect_right, py - W_px)], fill=color, width=2)
+            dr.line([(rect_left, py + W_px), (rect_right, py + W_px)], fill=color, width=2)
+            # 两端半圆
+            dr.arc([px - L_px, py - W_px, rect_left + W_px, py + W_px],
+                   start=90, end=270, fill=color, width=2)
+            dr.arc([rect_right - W_px, py - W_px, px + L_px, py + W_px],
+                   start=270, end=90, fill=color, width=2)
+        else:
+            _draw_dashed_line(dr, rect_left, py - W_px, rect_right, py - W_px, color=color)
+            _draw_dashed_line(dr, rect_left, py + W_px, rect_right, py + W_px, color=color)
+            _draw_dashed_arc(dr, px - L_px + W_px, py, W_px, color=color, start=90, end=270)
+            _draw_dashed_arc(dr, px + L_px - W_px, py, W_px, color=color, start=270, end=90)
+
+
+def _draw_dashed_arc(
+    dr: ImageDraw.ImageDraw,
+    cx: float, cy: float, r: float,
+    color: str = "black",
+    start: int = 0, end: int = 360,
+    dash_len_deg: int = 8, gap_deg: int = 4,
+) -> None:
+    """画虚线圆弧。"""
+    ang = start
+    while ang < end:
+        a2 = min(ang + dash_len_deg, end)
+        dr.arc([cx - r, cy - r, cx + r, cy + r], start=ang, end=a2, fill=color, width=1)
+        ang = a2 + gap_deg
+
+
+# ============================================================
 # groundtruth 导出
 # ============================================================
 
@@ -635,10 +875,41 @@ def save_groundtruth(part: ExtrudedPart, out_path: Path, part_id: str) -> None:
         "expected_bbox_mm": part.bbox_3d_mm(),
         "expected_volume_mm3": round(part.volume_mm3(), 3),
         "key_dimensions_mm": part.key_dimensions(),
+        "operations": _serialize_operations(part.operations),
         "notes": part.notes,
     }
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(gt, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _serialize_operations(ops: list) -> list:
+    """把 operations 列表序列化为 JSON-safe 的 dict 列表。"""
+    out = []
+    for op in ops:
+        if isinstance(op, FilletEdges):
+            out.append({
+                "type": "fillet_edges",
+                "edges": op.edges,
+                "radius": op.radius,
+                "label": op.label,
+            })
+        elif isinstance(op, CutoutOnFace):
+            out.append({
+                "type": "cutout_on_face",
+                "face": op.face,
+                "shape": op.shape,
+                "depth": op.depth,
+                "through_all": op.through_all,
+                "cx": op.cx,
+                "cy": op.cy,
+                "radius": op.radius,
+                "width": op.width,
+                "height": op.height,
+                "length": op.length,
+                "positions": op.positions,
+                "label": op.label,
+            })
+    return out
 
 
 # ============================================================

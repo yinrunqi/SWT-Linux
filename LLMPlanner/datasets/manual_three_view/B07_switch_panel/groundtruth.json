@@ -1,0 +1,92 @@
+{
+  "part_id": "B07",
+  "name": "B07 86 型开关面板",
+  "part_type": "switch_panel",
+  "profile_xy": [
+    [
+      -43,
+      -43
+    ],
+    [
+      43,
+      -43
+    ],
+    [
+      43,
+      43
+    ],
+    [
+      -43,
+      43
+    ]
+  ],
+  "depth_z": 10,
+  "holes": [],
+  "expected_bbox_mm": {
+    "length": 86,
+    "height": 86,
+    "depth": 10
+  },
+  "expected_volume_mm3": 66177.257,
+  "key_dimensions_mm": {
+    "outer_length": 86,
+    "outer_height": 86,
+    "depth": 10
+  },
+  "operations": [
+    {
+      "type": "cutout_on_face",
+      "face": "top",
+      "shape": "rectangle",
+      "depth": 3.0,
+      "through_all": false,
+      "cx": 0.0,
+      "cy": 0.0,
+      "radius": 0.0,
+      "width": 50.0,
+      "height": 50.0,
+      "length": 0.0,
+      "positions": [],
+      "label": "中央按键窗口 50×50×3mm"
+    },
+    {
+      "type": "cutout_on_face",
+      "face": "top",
+      "shape": "circle",
+      "depth": 0.0,
+      "through_all": true,
+      "cx": 0.0,
+      "cy": 0.0,
+      "radius": 1.5,
+      "width": 0.0,
+      "height": 0.0,
+      "length": 0.0,
+      "positions": [
+        [
+          35,
+          35
+        ],
+        [
+          -35,
+          35
+        ],
+        [
+          35,
+          -35
+        ],
+        [
+          -35,
+          -35
+        ]
+      ],
+      "label": "四角 ⌀3 螺丝孔"
+    },
+    {
+      "type": "fillet_edges",
+      "edges": "vertical_corners",
+      "radius": 3.0,
+      "label": "四个竖直棱边 R3"
+    }
+  ],
+  "notes": "86×86×10mm 方形面板，四个竖直棱边 R3 圆角，中央 50×50×3mm 矩形凹槽（放置开关按键的窗口），四角各一个 ⌀3mm 贯穿螺丝孔（距角 8mm，即坐标 ±35,±35）。这是家用 86 型开关面板的标准外形。"
+}

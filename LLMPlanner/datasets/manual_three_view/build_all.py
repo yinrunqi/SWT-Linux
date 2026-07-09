@@ -21,7 +21,9 @@ from pathlib import Path
 _THIS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(_THIS_DIR))
 
-from _toolkit import ExtrudedPart, Hole, build_part  # noqa: E402
+from _toolkit import (  # noqa: E402
+    ExtrudedPart, Hole, FilletEdges, CutoutOnFace, build_part,
+)
 
 
 SAMPLES_JSON = _THIS_DIR / "samples.json"
@@ -45,6 +47,7 @@ def sample_to_part(cfg: dict) -> ExtrudedPart:
         for h in cfg.get("holes", [])
     ]
     profile = [tuple(pt) for pt in cfg["profile_xy"]]
+    operations = _parse_operations(cfg.get("operations", []))
     return ExtrudedPart(
         name=cfg["name"],
         part_type=cfg.get("part_type", "extrude_prism"),
@@ -54,7 +57,39 @@ def sample_to_part(cfg: dict) -> ExtrudedPart:
         notes=cfg.get("notes", ""),
         top_scale=float(cfg.get("top_scale", 1.0)),
         profile_centered=bool(cfg.get("profile_centered", False)),
+        operations=operations,
     )
+
+
+def _parse_operations(ops_cfg: list) -> list:
+    """把 JSON 里的 operations 数组解析为 FilletEdges/CutoutOnFace 实例列表。"""
+    parsed: list = []
+    for o in ops_cfg:
+        t = o.get("type")
+        if t == "fillet_edges":
+            parsed.append(FilletEdges(
+                edges=o["edges"],
+                radius=float(o["radius"]),
+                label=o.get("label", ""),
+            ))
+        elif t == "cutout_on_face":
+            parsed.append(CutoutOnFace(
+                face=o["face"],
+                shape=o["shape"],
+                depth=float(o.get("depth", 0.0)),
+                through_all=bool(o.get("through_all", False)),
+                cx=float(o.get("cx", 0.0)),
+                cy=float(o.get("cy", 0.0)),
+                radius=float(o.get("radius", 0.0)),
+                width=float(o.get("width", 0.0)),
+                height=float(o.get("height", 0.0)),
+                length=float(o.get("length", 0.0)),
+                positions=[tuple(p) for p in o.get("positions", [])],
+                label=o.get("label", ""),
+            ))
+        else:
+            raise ValueError(f"未知 operation type: {t}")
+    return parsed
 
 
 def main() -> None:

@@ -193,6 +193,126 @@ applies_to: [three_view]
 
    **验证**：拔模后包围盒仍等于底面尺寸（因为底最大）；体积用棱台公式 `V = h/3·(A底+A顶+√(A底·A顶))` 而非 `A×h`。
 
+1d. **复合特征 — 底座之外的圆角/凹槽/面上多孔阵列（现代精巧件必备）**
+
+   真实的日常物件（开关面板、门锁扣板、键帽、遥控器…）几乎都是"底座拉伸 + 若干附加特征"的组合。识别这些附加特征并按**正确顺序**追加到 SwModelingPlan 就是阶段 B 的核心工作。
+
+   **A. 边圆角（feature_fillet）**：
+   识别信号：图纸上外轮廓的角是**弧线**而不是直角；或标注了 "R5"、"⌢R3" 等字样。
+   正确画法：先建好底座（拉伸完），**再**追加 `feature_fillet` 步骤。
+
+   ⚠️ **edgeSelection 只支持三种取值**（其他任何字符串都会 400）：
+   1. `"all"` — 圆角实体的所有边（会顺带把不想圆的边也圆角，需谨慎）
+   2. `"面1_面2"` — 由两个面名交出的一条边（**每次只圆角一条边**）
+      - 可用面名：`top` / `bottom` / `front` / `back` / `left` / `right`
+      - 示例：`top_front`（顶面与前面的交线）、`front_left`（前面与左面的交线，即某个竖直棱边）
+   3. `"ray"` — 用射线选一条边（需要 rx/ry/rz/dx/dy/dz 参数）
+
+   ⚠️ **绝对不能用**：`"vertical_corners"`、`"top_perimeter"`、`"all_perimeter"` — 这些语义名 **C# 服务不认识，会 400**！要圆多条边**必须拆成多次 feature_fillet 分别指定**。
+
+   **对应关系速查**（矩形板底座沿 Z 拉伸时）：
+   | 你想圆角的边 | 该边由哪两面相交 | edgeSelection |
+   |---|---|---|
+   | 顶面周边（4 条）| top-front / top-back / top-left / top-right | 拆成 4 次 fillet |
+   | 底面周边（4 条）| bottom-front / bottom-back / bottom-left / bottom-right | 拆成 4 次 fillet |
+   | 四竖直棱边（4 条，连接顶底的立柱边）| front-left / front-right / back-left / back-right | 拆成 4 次 fillet |
+   | 全部 12 条边 | 直接用 `"all"` | 一次 fillet |
+
+   示例（86 型面板的 4 竖直棱边 R3 圆角，必须 4 次）：
+   ```
+   feature_fillet {radius: 0.003, edgeSelection: "front_left"}
+   feature_fillet {radius: 0.003, edgeSelection: "front_right"}
+   feature_fillet {radius: 0.003, edgeSelection: "back_left"}
+   feature_fillet {radius: 0.003, edgeSelection: "back_right"}
+   ```
+
+   ⚠️ **顺序**：圆角必须在**所有拉伸/切除之后**执行，否则后续面上加特征时会因面变成曲面而失败。
+
+   **B. 面上凹槽（不贯穿的矩形/圆形/腰形切除）**：
+   识别信号：主视图或俯视图上出现"外框实线 + 内框实线"（不是虚线，因为凹槽底部可见）；侧视图上有"阶梯"轮廓。
+   正确画法：`select_face_and_sketch` 选中要凹陷的面 → `sketch_rectangle/circle/slot` → `feature_cut_extrusion` 指定深度（**不用 through_all**）。
+   ```
+   select_face_and_sketch {rx:0, ry:0, rz:0.011, dx:0, dy:0, dz:-1}   ← 选顶面（Z=10 上方射线向下）
+   sketch_rectangle {x1:-0.025, y1:-0.025, x2:0.025, y2:0.025}         ← 中央 50×50 凹槽
+   feature_cut_extrusion {depth: 0.003}                                ← 挖深 3mm
+   ```
+
+   **C. 面上多孔阵列（对称 N 孔）**：
+   识别信号：主视图或俯视图上有**多个相同尺寸的圆**（如 4 角螺丝孔、6 边法兰孔）。
+   正确画法：一次 `select_face_and_sketch` → 多次 `sketch_circle`（一个孔一个圆）→ 一次 `feature_cut_extrusion(through_all)` 一起切。
+   ```
+   select_face_and_sketch {rx:0, ry:0, rz:0.011, dx:0, dy:0, dz:-1}
+   sketch_circle {cx:0.04, cy:0.04, cz:0, radius:0.0015}   ← 右上 ⌀3
+   sketch_circle {cx:-0.04, cy:0.04, cz:0, radius:0.0015}  ← 左上
+   sketch_circle {cx:0.04, cy:-0.04, cz:0, radius:0.0015}  ← 右下
+   sketch_circle {cx:-0.04, cy:-0.04, cz:0, radius:0.0015} ← 左下
+   feature_cut_extrusion {depth: 0.01, endCondition: "through_all"}
+   ```
+   ⚠️ 4 个 sketch_circle **必须在同一次 select_face_and_sketch 之后连续画**，否则会退到不同草图导致 cut 只切中最后一个。
+
+   **D. 面选择的坐标系（重要）**：
+   `select_face_and_sketch` 用**射线**选中面。射线起点（rx/ry/rz）必须在目标面**外侧**，方向（dx/dy/dz）指向实体内部。
+   - 顶面 (+Z 面, Z=depth)：起点 rz=depth+0.001, 方向 dz=-1
+   - 底面 (-Z 面, Z=0)：    起点 rz=-0.001,      方向 dz=+1
+   - 前面 (+Y 面, Y=max)：   起点 ry=max+0.001,   方向 dy=-1
+   - 后面 (-Y 面, Y=min)：   起点 ry=min-0.001,   方向 dy=+1
+   - 右面 (+X 面, X=max)：   起点 rx=max+0.001,   方向 dx=-1
+   - 左面 (-X 面, X=min)：   起点 rx=min-0.001,   方向 dx=+1
+   （即使方向搞反了，C# 服务会自动反转重试，但把起点放到面外侧不容易翻车。）
+
+   **E. 面内草图坐标系**：进入面草图后，`sketch_*` 的 cx/cy 是**面内 2D 坐标**（不是模型 3D 坐标）。顶面/底面上，(cx, cy) 直接对应 (X, Y) 模型坐标；侧面上则映射到面所在平面。第一版建议只在顶面/底面加特征。
+
+   **F. 顺序总纲（Golden Order）**：
+   ```
+   1. new_part
+   2. select_plane + sketch_底面轮廓 + feature_extrusion (可选拔模)   ← 底座
+   3. 面上凹槽（若有）：select_face_and_sketch + sketch_* + feature_cut_extrusion(blind)
+   4. 面上通孔阵列（若有）：select_face_and_sketch + N×sketch_circle + feature_cut_extrusion(through_all)
+   5. 圆角（若有）：feature_fillet × N（对多条边**必须拆成多次**，每次用 `"面1_面2"`；或一次用 `"all"` 圆所有边）
+   ```
+   ⚠️ **圆角必须最后**！在有圆角边的面上再加特征会失败。
+
+   **G. 完整示例：86 型开关面板 (B07)** — **⚠️ 必须完全按此模板照抄坐标系！**
+
+   零件：86×86×10mm 底座（前视面拉伸），顶面中央 50×50×3mm 凹槽，四角 ⌀3 贯穿孔，四竖直边 R3 圆角。
+
+   **关键认知**：因为底座在**前视基准面（XY 平面）**画的、沿 **Z 方向拉伸**，所以：
+   - "顶面" = 拉伸出的 **+Z 面**（Z=depth=0.01m），**不是** +Y 面！
+   - "底面" = 起始面（Z=0）
+   - "侧面" = ±X 或 ±Y 面
+
+   因此选顶面的射线起点必须是 **rz=0.011（Z=10mm+ε）、方向 dz=-1**。**严禁**用 ry=0.011、dy=-1（那会选中 Y=+43 的侧面，不是顶面）！
+
+   完整 17 步 plan：
+   ```
+   1.  new_part {}
+   2.  select_plane {index:0}                                                     ← 前视面 XY
+   3.  sketch_rectangle {x1:-0.043, y1:-0.043, x2:0.043, y2:0.043}                ← 86×86 底座轮廓
+   4.  feature_extrusion {depth:0.01}                                             ← 沿 Z 拉伸 10mm → 顶面在 Z=10mm
+   5.  select_face_and_sketch {rx:0, ry:0, rz:0.011, dx:0, dy:0, dz:-1}           ← ⭐ 选顶面 (Z=10mm 那个方形)
+   6.  sketch_rectangle {x1:-0.025, y1:-0.025, x2:0.025, y2:0.025}                ← 面内 2D 坐标：中央 50×50 凹槽
+   7.  feature_cut_extrusion {depth:0.003}                                        ← 挖 3mm 深 (不 through_all)
+   8.  select_face_and_sketch {rx:0, ry:0, rz:0.011, dx:0, dy:0, dz:-1}           ← 再选一次顶面
+   9.  sketch_circle {cx:0.035, cy:0.035, radius:0.0015}                          ← 右上角 ⌀3
+   10. sketch_circle {cx:-0.035, cy:0.035, radius:0.0015}                         ← 左上角
+   11. sketch_circle {cx:0.035, cy:-0.035, radius:0.0015}                         ← 右下角
+   12. sketch_circle {cx:-0.035, cy:-0.035, radius:0.0015}                        ← 左下角
+   13. feature_cut_extrusion {depth:0.01, endCondition:"through_all"}             ← 一次贯穿切 4 孔
+   14. feature_fillet {radius:0.003, edgeSelection:"front_left"}                  ← ⭐ 竖直棱边 1
+   15. feature_fillet {radius:0.003, edgeSelection:"front_right"}                 ← 竖直棱边 2
+   16. feature_fillet {radius:0.003, edgeSelection:"back_left"}                   ← 竖直棱边 3
+   17. feature_fillet {radius:0.003, edgeSelection:"back_right"}                  ← 竖直棱边 4
+   ```
+
+   **常见错误对比表**：
+   | 错误 | 后果 |
+   |---|---|
+   | `select_face_and_sketch {rx:0, ry:0.011, rz:0, dx:0, dy:-1, dz:0}` | 选中的是 +Y 面（86×10 侧面），不是顶面 |
+   | 在面上画 rectangle 时坐标写全局 3D 而不是 2D 面内 | 例如 y=0.01 想表示"在 Z=10mm 的顶面上"—— 是错的！面内 sketch_rectangle 只有 x1/y1/x2/y2 两维 |
+   | 4 个 sketch_circle 分散在多次 select_face_and_sketch 之间 | 每次 select 会创建新草图，导致最后一次 cut 只切最后一个圆 |
+   | 圆角放在切除之前 | 圆角改变了顶面拓扑，后续 select_face_and_sketch 可能失败 |
+   | `feature_fillet {edgeSelection: "vertical_corners"}` 或 `"top_perimeter"` | ❌ **C# 服务不认这些语义名，会 400**！必须拆成 `front_left` / `front_right` / `back_left` / `back_right` 四次 fillet |
+
 2. **拉伸方向 & 深度取自哪个视图**：
    - 若 `base_view=front`（主视图对应前视基准面 index=0），拉伸深度取俯视图/侧视图的 Z 方向尺寸
    - 若 `base_view=top` (index=1)，拉伸深度取主视图/侧视图的 Y 方向尺寸
