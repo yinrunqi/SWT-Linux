@@ -205,8 +205,25 @@ applies_to: [three_view]
    1. `"all"` — 圆角实体的所有边（会顺带把不想圆的边也圆角，需谨慎）
    2. `"面1_面2"` — 由两个面名交出的一条边（**每次只圆角一条边**）
       - 可用面名：`top` / `bottom` / `front` / `back` / `left` / `right`
-      - 示例：`top_front`（顶面与前面的交线）、`front_left`（前面与左面的交线，即某个竖直棱边）
+      - 示例：`top_front`（顶面与前面的交线）、`front_left`（前面与左面的交线）
    3. `"ray"` — 用射线选一条边（需要 rx/ry/rz/dx/dy/dz 参数）
+
+   ⚠️ **语义面名的实际映射（关键，与直觉相反！）**：C# 服务端的实现是
+   - **top = +Y 面（Y=maxY），bottom = -Y 面** —— 不是"顶面"是 "+Y 侧"！
+   - **front = +Z 面（Z=maxZ）= 拉伸出的顶面！back = -Z 面 = 起始底面**
+   - **left = -X 面，right = +X 面**
+
+   所以**对于底座沿 Z 拉伸**的常见零件：
+   - `front_*` = **顶面周边的水平边**（+Z 面 × 其他面 交线）
+   - `back_*` = **底面周边的水平边**
+   - `top_*` / `bottom_*` = **±Y 侧面周边的边**（多是水平边）
+   - **没有直接的"竖直棱边"名字**（连接顶底的 Z 方向立柱边）。要圆角这类边**建议用 `"all"`**（如 B07 那样，会圆所有 12 条边，视觉效果通常等价"整体圆角"）。
+
+   ⚠️ **中央被挖穿会断掉部分边 → 圆角失败**：
+   例如 30×80×3 薄板中央挖了 20×10 腰形孔（长轴 X），那么 `back_left`（-Z 底面 × -X 左面 交线）这条边在 Y=0 位置被腰形孔切成两段——服务端射线打在 Y=0 处只能选到断裂后的一小段短边，FeatureFillet 拒绝创建，返回 400。**对策**：
+   - **减少要圆角的边数**：只圆角**未被中央孔断裂的边**（如上述 30×80 例：front_left/front_right 打的是顶面沿 Y 的长边，不被腰形孔挖穿）
+   - 或用 `"all"` 一次性圆角（SolidWorks 会自动跳过失败的边）
+   - **忌**：对薄板挖穿件盲目 4 次 fillet（会在断裂边上失败）
 
    ⚠️ **绝对不能用**：`"vertical_corners"`、`"top_perimeter"`、`"all_perimeter"` — 这些语义名 **C# 服务不认识，会 400**！要圆多条边**必须拆成多次 feature_fillet 分别指定**。
 
@@ -231,6 +248,8 @@ applies_to: [three_view]
    **B. 面上凹槽（不贯穿的矩形/圆形/腰形切除）**：
    识别信号：主视图或俯视图上出现"外框实线 + 内框实线"（不是虚线，因为凹槽底部可见）；侧视图上有"阶梯"轮廓。
    正确画法：`select_face_and_sketch` 选中要凹陷的面 → `sketch_rectangle/circle/slot` → `feature_cut_extrusion` 指定深度（**不用 through_all**）。
+
+   ⚠️ **腰形孔（slot / 长圆孔）**：图纸上是"矩形两端加半圆"的形状，用 `sketch_slot {cx, cy, length, width}` 一次画好。`length` 是长轴总长（包含两端半圆的直径），必须 > `width`。**注意：当前本地 SolidWorks 上 sketch_slot 内部退化为中心矩形（直角而非圆角），功能上等价 —— 门锁扣板/钥匙孔/螺栓过孔用矩形完全可以，不影响体积正确性。**
    ```
    select_face_and_sketch {rx:0, ry:0, rz:0.011, dx:0, dy:0, dz:-1}   ← 选顶面（Z=10 上方射线向下）
    sketch_rectangle {x1:-0.025, y1:-0.025, x2:0.025, y2:0.025}         ← 中央 50×50 凹槽
@@ -251,6 +270,14 @@ applies_to: [three_view]
    ⚠️ 4 个 sketch_circle **必须在同一次 select_face_and_sketch 之后连续画**，否则会退到不同草图导致 cut 只切中最后一个。
 
    **D. 面选择的坐标系（重要）**：
+
+   ⚠️ **黄金定律**：无论零件是"厚"还是"薄"，只要底座是在**前视基准面(XY)**画草图后沿 **Z 方向拉伸**（feature_extrusion depth=d），那么：
+   - **顶面永远 = Z=d 那个面**（拉伸方向的正端）
+   - **底面永远 = Z=0 那个面**（起始面）
+   - 无论 d 是 0.003（薄板 3mm）还是 0.1（10cm 厚），Z 方向就是深度方向！**Z 不是"竖直方向"，也不是"最短的方向"**！
+
+   常见误区：LLM 看到扁平薄板（如 80×30×3mm，其中 Z=3mm 最薄）会误以为 Y 或 X 才是"高度/厚度"→ 用 ry 或 rx 做射线起点。**这是错的**！只要建模时 depth 用在 feature_extrusion 上，那个方向就是 Z、就是"厚度"、顶面就是 Z=depth 的面。
+
    `select_face_and_sketch` 用**射线**选中面。射线起点（rx/ry/rz）必须在目标面**外侧**，方向（dx/dy/dz）指向实体内部。
    - 顶面 (+Z 面, Z=depth)：起点 rz=depth+0.001, 方向 dz=-1
    - 底面 (-Z 面, Z=0)：    起点 rz=-0.001,      方向 dz=+1
@@ -259,6 +286,25 @@ applies_to: [three_view]
    - 右面 (+X 面, X=max)：   起点 rx=max+0.001,   方向 dx=-1
    - 左面 (-X 面, X=min)：   起点 rx=min-0.001,   方向 dx=+1
    （即使方向搞反了，C# 服务会自动反转重试，但把起点放到面外侧不容易翻车。）
+
+   ⚠️ **射线水平位置 (rx, ry) 必须打在"面上有实体的地方"，不能打在中央！**
+
+   **黄金规则**：`select_face_and_sketch` 的 rx/ry 起点**绝不要用 (0, 0) 中央位置**，而应该**永远选在底座包围盒的角部**（例如底座 X_max × Y_max 的 60~80% 处）。
+
+   为什么：中央位置几乎肯定会被后续切除操作挖空（凹槽、孔常在中央），一旦挖空，后续再用 rx=0, ry=0 打射线就会**穿过空洞什么也没选中**，服务返回 400。而选角部则**永远打在实体上**，因为整个建模过程中角部区域基本不会被挖。
+
+   **通用配方**：
+   - 底座 X∈[-a/2, a/2], Y∈[-b/2, b/2]（居中）时 → 射线起点用 `rx=a*0.3, ry=b*0.3`
+   - 底座 X∈[0, a], Y∈[0, b]（左下角为原点）时 → 射线起点用 `rx=a*0.7, ry=b*0.7`
+
+   例如：
+   | 底座尺寸 | 射线起点安全位置 |
+   |---|---|
+   | 86×86 居中 → X∈[-43,43], Y∈[-43,43] | rx=0.03, ry=0.03 (角部 30mm) |
+   | 30×80 居中 → X∈[-15,15], Y∈[-40,40] | rx=0.01, ry=0.03 (角部) |
+   | 60×40 从原点 → X∈[0,60], Y∈[0,40] | rx=0.05, ry=0.03 (角部) |
+
+   失败信号：`未能通过射线选中实体面。射线起点(x,y,z)及其反方向均未命中` → 说明射线打空了。此时立刻改成角部位置重试。
 
    **E. 面内草图坐标系**：进入面草图后，`sketch_*` 的 cx/cy 是**面内 2D 坐标**（不是模型 3D 坐标）。顶面/底面上，(cx, cy) 直接对应 (X, Y) 模型坐标；侧面上则映射到面所在平面。第一版建议只在顶面/底面加特征。
 
@@ -289,10 +335,10 @@ applies_to: [three_view]
    2.  select_plane {index:0}                                                     ← 前视面 XY
    3.  sketch_rectangle {x1:-0.043, y1:-0.043, x2:0.043, y2:0.043}                ← 86×86 底座轮廓
    4.  feature_extrusion {depth:0.01}                                             ← 沿 Z 拉伸 10mm → 顶面在 Z=10mm
-   5.  select_face_and_sketch {rx:0, ry:0, rz:0.011, dx:0, dy:0, dz:-1}           ← ⭐ 选顶面 (Z=10mm 那个方形)
+   5.  select_face_and_sketch {rx:0.03, ry:0.03, rz:0.011, dx:0, dy:0, dz:-1}    ← ⭐ 选顶面: 起点偏离中心(避免命中未来会被挖的中央凹槽), 打在角部实体上
    6.  sketch_rectangle {x1:-0.025, y1:-0.025, x2:0.025, y2:0.025}                ← 面内 2D 坐标：中央 50×50 凹槽
    7.  feature_cut_extrusion {depth:0.003}                                        ← 挖 3mm 深 (不 through_all)
-   8.  select_face_and_sketch {rx:0, ry:0, rz:0.011, dx:0, dy:0, dz:-1}           ← 再选一次顶面
+   8.  select_face_and_sketch {rx:0.03, ry:0.03, rz:0.011, dx:0, dy:0, dz:-1}    ← 再选一次顶面: 依然打在角部(中央已被挖 3mm 凹槽, 但角部顶面仍在 Z=10)
    9.  sketch_circle {cx:0.035, cy:0.035, radius:0.0015}                          ← 右上角 ⌀3
    10. sketch_circle {cx:-0.035, cy:0.035, radius:0.0015}                         ← 左上角
    11. sketch_circle {cx:0.035, cy:-0.035, radius:0.0015}                         ← 右下角
@@ -312,6 +358,30 @@ applies_to: [three_view]
    | 4 个 sketch_circle 分散在多次 select_face_and_sketch 之间 | 每次 select 会创建新草图，导致最后一次 cut 只切最后一个圆 |
    | 圆角放在切除之前 | 圆角改变了顶面拓扑，后续 select_face_and_sketch 可能失败 |
    | `feature_fillet {edgeSelection: "vertical_corners"}` 或 `"top_perimeter"` | ❌ **C# 服务不认这些语义名，会 400**！必须拆成 `front_left` / `front_right` / `back_left` / `back_right` 四次 fillet |
+
+   **H. 完整示例：门锁扣板 (B06)** — 展示**薄底座 + 腰形孔 + 螺丝孔阵列 + 圆角**的组合：
+
+   零件：80(Y)×30(X)×3(Z)mm 薄板（居中），中央 20×10mm 腰形孔贯穿，两端 (0, ±32) 位置各一个 ⌀5 螺丝孔贯穿，4 竖直棱边 R5 圆角。
+
+   ⚠️ **薄板陷阱**：Z=3mm 是拉伸方向 = 顶面在 Z=3mm。**不要**因为 Z 最薄就把 X 或 Y 当作"高度"！
+
+   ```
+   1.  new_part {}
+   2.  select_plane {index:0}                                                     ← 前视面 XY
+   3.  sketch_rectangle {x1:-0.015, y1:-0.04, x2:0.015, y2:0.04}                  ← 30(X)×80(Y) 底座轮廓
+   4.  feature_extrusion {depth:0.003}                                            ← 沿 Z 拉伸 3mm → 顶面在 Z=3mm
+   5.  select_face_and_sketch {rx:0.01, ry:0.03, rz:0.004, dx:0, dy:0, dz:-1}     ← ⭐ 选顶面 (Z=3mm 那个薄面), 射线起点在角部
+   6.  sketch_slot {cx:0, cy:0, length:0.02, width:0.01}                          ← 中央 20×10 腰形孔 (长轴沿 X, 因为 length 参数=X 方向)
+   7.  feature_cut_extrusion {depth:0.003, endCondition:"through_all"}            ← 贯穿切除腰形孔
+   8.  select_face_and_sketch {rx:0.01, ry:0.03, rz:0.004, dx:0, dy:0, dz:-1}     ← 再选顶面(角部, 因为中央已被 slot 挖穿)
+   9.  sketch_circle {cx:0, cy:0.032, radius:0.0025}                              ← 上端 ⌀5 螺丝孔
+   10. sketch_circle {cx:0, cy:-0.032, radius:0.0025}                             ← 下端 ⌀5 螺丝孔
+   11. feature_cut_extrusion {depth:0.003, endCondition:"through_all"}            ← 贯穿切 2 孔
+   12. feature_fillet {radius:0.005, edgeSelection:"front_left"}                  ← 竖直棱边 1/4
+   13. feature_fillet {radius:0.005, edgeSelection:"front_right"}                 ← 2/4
+   14. feature_fillet {radius:0.005, edgeSelection:"back_left"}                   ← 3/4
+   15. feature_fillet {radius:0.005, edgeSelection:"back_right"}                  ← 4/4
+   ```
 
 2. **拉伸方向 & 深度取自哪个视图**：
    - 若 `base_view=front`（主视图对应前视基准面 index=0），拉伸深度取俯视图/侧视图的 Z 方向尺寸

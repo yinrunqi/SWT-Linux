@@ -124,9 +124,10 @@ def _cutout_shape_area(op: "CutoutOnFace") -> float:
     if op.shape == "rectangle":
         return op.width * op.height
     if op.shape == "slot":
-        # 腰形孔：矩形 + 两个半圆，等价于 length×width + π×(width/2)²  但常用近似 length×width
-        # 其中长度已经包含两端半圆的直径
-        return (op.length - op.width) * op.width + math.pi * (op.width / 2) ** 2
+        # ⚠️ 关键注意：C# 服务的 sketch_slot 在本地 SolidWorks 上**退化为中心矩形**（length × width）。
+        # 所以体积扣除量必须与 SW 实际建模一致，用矩形面积；否则 gt 会与实测偏差 ~7%。
+        # 若将来 SketchSlot 修复为真正腰形孔，改回：(L-W)·W + π·(W/2)²
+        return op.length * op.width
     raise ValueError(f"未知切除形状: {op.shape}")
 
 

@@ -1,0 +1,90 @@
+{
+  "part_id": "B06",
+  "name": "B06 门锁扣板",
+  "part_type": "lock_striker",
+  "profile_xy": [
+    [
+      -15,
+      -40
+    ],
+    [
+      15,
+      -40
+    ],
+    [
+      15,
+      40
+    ],
+    [
+      -15,
+      40
+    ]
+  ],
+  "depth_z": 3,
+  "holes": [],
+  "expected_bbox_mm": {
+    "length": 30,
+    "height": 80,
+    "depth": 3
+  },
+  "expected_volume_mm3": 6482.19,
+  "key_dimensions_mm": {
+    "outer_length": 30,
+    "outer_height": 80,
+    "depth": 3
+  },
+  "operations": [
+    {
+      "type": "cutout_on_face",
+      "face": "top",
+      "shape": "slot",
+      "depth": 3.0,
+      "through_all": true,
+      "cx": 0.0,
+      "cy": 0.0,
+      "radius": 0.0,
+      "width": 10.0,
+      "height": 0.0,
+      "length": 20.0,
+      "positions": [],
+      "label": "中央腰形锁舌孔 20×10mm"
+    },
+    {
+      "type": "cutout_on_face",
+      "face": "top",
+      "shape": "circle",
+      "depth": 3.0,
+      "through_all": true,
+      "cx": 0.0,
+      "cy": 0.0,
+      "radius": 2.5,
+      "width": 0.0,
+      "height": 0.0,
+      "length": 0.0,
+      "positions": [
+        [
+          0,
+          32
+        ],
+        [
+          0,
+          -32
+        ]
+      ],
+      "label": "两端 ⌀5 螺丝孔"
+    },
+    {
+      "type": "fillet_edges",
+      "edges": "front_left",
+      "radius": 3.0,
+      "label": "顶面左边"
+    },
+    {
+      "type": "fillet_edges",
+      "edges": "front_right",
+      "radius": 3.0,
+      "label": "顶面右边"
+    }
+  ],
+  "notes": "门锁扣板：30(X)×80(Y)×3(Z)mm 矩形薄板居中。中央 20×10mm 腰形孔贯穿，两端 (0, ±32) ⌀5 螺丝孔贯穿，顶面前后长边 R3 圆角（仅 front_left/front_right 两次；因中央被挖穿, back 侧边被断裂无法圆角）。"
+}
