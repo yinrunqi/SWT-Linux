@@ -1847,85 +1847,106 @@ namespace Chapter1.ConnectToSw
                 default: throw new ArgumentException($"未知的轴向: {axis}，可选 x/y/z");
             }
 
-            IEdge chosenEdge = null;
+            // ---- 2a. 找一个"轴线沿 wantDir 方向"的圆柱面（不是圆边！）----
+            //         SolidWorks API 文档明确说圆周阵列的方向对象可以是:
+            //           - IRefAxis (参考轴)
+            //           - Cylindrical/Conical IFace2 (圆柱/圆锥面)
+            //           - Linear IEdge (直线边)
+            //         **不接受**普通"圆形 IEdge"作轴——历史代码用圆边选轴，SolidWorks 会
+            //         创建"死特征"（树上有阵列节点但几何未生效，静默失败）。
+            //         正确做法：找一个圆柱面，用它的轴线做圆周阵列的旋转轴。
+            IFace2 chosenCylFace = null;
+            double cylAxisX = 0, cylAxisY = 0, cylAxisZ = 0;
             {
                 var bodies = (object[])((IPartDoc)ActiveDoc).GetBodies2((int)swBodyType_e.swAllBodies, false);
                 foreach (var bObj in bodies)
                 {
                     var body = (IBody2)bObj;
-                    var edges = (object[])body.GetEdges();
-                    if (edges == null) continue;
-                    foreach (var eObj in edges)
+                    var faces = (object[])body.GetFaces();
+                    if (faces == null) continue;
+                    foreach (var fObj in faces)
                     {
-                        var edge = (IEdge)eObj;
-                        var curve = (ICurve)edge.IGetCurve();
-                        if (curve == null || !curve.IsCircle()) continue;
-                        // 圆边的法向 = 圆所在平面的法线
-                        // ICurve.CircleParams 返回 [cx, cy, cz, ax, ay, az, radius]，(ax,ay,az) 是圆的法线
-                        var cp = (double[])curve.CircleParams;
+                        var face = (IFace2)fObj;
+                        var surf = (ISurface)face.IGetSurface();
+                        if (surf == null || !surf.IsCylinder()) continue;
+                        // ISurface.CylinderParams 返回 [ox, oy, oz, ax, ay, az, radius]
+                        //   (ox,oy,oz) = 圆柱轴上一点, (ax,ay,az) = 轴向量
+                        var cp = (double[])surf.CylinderParams;
                         if (cp == null || cp.Length < 7) continue;
                         double ax = cp[3], ay = cp[4], az = cp[5];
-                        // 归一化
                         double norm = Math.Sqrt(ax * ax + ay * ay + az * az);
                         if (norm < 1e-9) continue;
                         ax /= norm; ay /= norm; az /= norm;
-                        // 与目标方向余弦（取绝对值以允许反向）
                         double dot = Math.Abs(ax * wantDir[0] + ay * wantDir[1] + az * wantDir[2]);
                         if (dot > 0.9)
                         {
-                            chosenEdge = edge;
-                            Console.WriteLine($"[SwCommands] 找到圆边: 圆心=({cp[0]:F4},{cp[1]:F4},{cp[2]:F4}), 法线=({ax:F3},{ay:F3},{az:F3}), R={cp[6]:F4}");
+                            chosenCylFace = face;
+                            cylAxisX = ax; cylAxisY = ay; cylAxisZ = az;
+                            Console.WriteLine($"[SwCommands] 找到圆柱面: 轴上一点=({cp[0]:F4},{cp[1]:F4},{cp[2]:F4}), 轴向=({ax:F3},{ay:F3},{az:F3}), R={cp[6]:F4}");
                             break;
                         }
                     }
-                    if (chosenEdge != null) break;
+                    if (chosenCylFace != null) break;
                 }
             }
-            if (chosenEdge == null)
+            if (chosenCylFace == null)
                 throw new InvalidOperationException(
-                    $"实体上找不到法线沿 {axis} 轴的圆形边。圆周阵列需要实体有一条圆边作为旋转轴参考 " +
-                    $"（例如齿轮圆盘的外圆边、法兰盘的孔边等）。");
+                    $"实体上找不到轴线沿 {axis} 方向的圆柱面。圆周阵列需要一个圆柱面（外圆柱或孔的内圆柱面）作为旋转轴。" +
+                    $"典型场景：齿轮圆盘的外圆柱面 / 法兰盘的孔内圆柱面 / 螺栓孔的内壁。");
 
+            // ---- 2b. 选中圆柱面后, 用 InsertAxis2 创建一条参考轴 ----
+            //         SolidWorks 会自动识别"选中的是圆柱面"→ 沿其轴线创建参考轴。
+            //         这条 axis 会作为独立特征添加到树末尾, 稳定可靠。
             ActiveDoc.ClearSelection2(true);
-            // 用圆边上一点通过 SelectByID2 选中，Mark=1 表示阵列旋转轴参考
-            var circleParams2 = (double[])((ICurve)chosenEdge.IGetCurve()).CircleParams;
-            double ccx = circleParams2[0], ccy = circleParams2[1], ccz = circleParams2[2];
-            double rr = circleParams2[6];
-            // 沿圆周尝试 8 个候选角度（每 45°），若被切除掉一段，另一段应仍在圆边上
-            bool eSel = false;
-            double edgePx = 0, edgePy = 0, edgePz = 0;
-            for (int k = 0; k < 8 && !eSel; k++)
-            {
-                double ang = k * Math.PI / 4;
-                double sa1 = Math.Sin(ang), ca1 = Math.Cos(ang);
-                if (axisLower == "y")      { edgePx = ccx + rr * ca1; edgePy = ccy; edgePz = ccz + rr * sa1; }
-                else if (axisLower == "x") { edgePx = ccx; edgePy = ccy + rr * ca1; edgePz = ccz + rr * sa1; }
-                else /* z */               { edgePx = ccx + rr * ca1; edgePy = ccy + rr * sa1; edgePz = ccz; }
-                eSel = ext.SelectByID2("", "EDGE", edgePx, edgePy, edgePz, false, 1, null, 0);
-            }
-            if (!eSel)
-                throw new InvalidOperationException($"未能通过任何圆周候选点选中圆形边（尝试了 8 个角度）");
-            Console.WriteLine($"[SwCommands] 已选中圆形边作为旋转轴参考 (Mark=1, 点=({edgePx:F4},{edgePy:F4},{edgePz:F4}))");
+            bool faceSel = ((Entity)chosenCylFace).Select4(false, null);
+            if (!faceSel)
+                throw new InvalidOperationException("未能选中圆柱面(用于创建参考轴)");
+            Console.WriteLine($"[SwCommands] 已选中圆柱面");
 
-            // ---- 3. 追加选中源特征 ----
-            // 用 Feature.Select2(Append=true, Mark=4) 直接选中特征对象，避免中文名 SelectByID2 的可能问题
+            bool axisCreated = mdoc.InsertAxis2(true);
+            if (!axisCreated)
+                throw new InvalidOperationException("InsertAxis2 返回 false, 未能创建参考轴");
+
+            // 拿到刚创建的参考轴 = 特征树最后一个特征
+            IFeature axisFeat = null;
+            {
+                IFeature f = (IFeature)mdoc.FirstFeature();
+                while (f != null)
+                {
+                    if (f.GetTypeName2() == "RefAxis") axisFeat = f;
+                    f = (IFeature)f.GetNextFeature();
+                }
+            }
+            if (axisFeat == null)
+                throw new InvalidOperationException("参考轴创建后未能在特征树中找到");
+            Console.WriteLine($"[SwCommands] 已创建参考轴: {axisFeat.Name} (基于圆柱面)");
+
+            // ---- 3. 有序选择: Mark=1 选轴, Mark=4 选源特征 ----
+            //         SolidWorks API Remark: "You must select the features or components before selecting the axis"
+            //         但也有资料说反过来 —— 我们按官方 CSharp 示例更常见的顺序: 先轴后特征。
+            //         关键是两个 Mark 都必须存在, 顺序对 FeatureCircularPattern4/5 影响较小。
+            ActiveDoc.ClearSelection2(true);
+            if (!axisFeat.Select2(false, 1))
+                throw new InvalidOperationException($"未能选中参考轴 {axisFeat.Name} (Mark=1)");
+            Console.WriteLine($"[SwCommands] 已选中参考轴: {axisFeat.Name} (Mark=1)");
+
             if (!sourceFeat.Select2(true, 4))
-                throw new InvalidOperationException($"未能选中源特征 {sourceFeat.Name}");
+                throw new InvalidOperationException($"未能选中源特征 {sourceFeat.Name} (Mark=4)");
             Console.WriteLine($"[SwCommands] 已选中源特征: {sourceFeat.Name} (Mark=4)");
 
-            // ---- 4. 调用 FeatureCircularPattern5 ----
+            // ---- 4. 调用 FeatureCircularPattern4 (7 参数, 与 SW 2018+ 兼容且稳定) ----
+            //   签名: (Number, Spacing, FlipDir, DName, GeometryPattern, EqualSpacing, VaryInstance)
+            //   Spacing = 总角度 (弧度), EqualSpacing=true 时 SolidWorks 会自动均分。
             double angleRad = angleDeg * Math.PI / 180.0;
-            bool equalSpacing = true;
 
-            // 用 FeatureCircularPattern2（5 参数）——最简单可靠的旧版本
-            // 签名: (Int32 Num, Double Spacing, Boolean FlipDirection, String DName, Boolean GeometryPattern)
-            //   GeometryPattern=false 是常规"特征阵列"（更稳定）
-            var patternFeat = mdoc.FeatureManager.FeatureCircularPattern2(
-                count,
-                angleRad,
-                reverseDir,
-                "NULL",
-                false            // GeometryPattern
+            var patternFeat = mdoc.FeatureManager.FeatureCircularPattern4(
+                count,             // Number
+                angleRad,          // Spacing (总角度, EqualSpacing=true 时 SW 均分)
+                reverseDir,        // FlipDirection
+                "NULL",            // DName
+                false,             // GeometryPattern (false = 完整特征阵列, 更稳定)
+                true,              // EqualSpacing (关键！360°/count 均匀分布)
+                false              // VaryInstance
             );
 
             if (patternFeat == null)
