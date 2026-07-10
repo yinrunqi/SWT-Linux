@@ -1,0 +1,82 @@
+{
+  "part_id": "B05",
+  "name": "B05 完整版键盘键帽",
+  "part_type": "keycap_full",
+  "profile_xy": [
+    [
+      -9,
+      -9
+    ],
+    [
+      9,
+      -9
+    ],
+    [
+      9,
+      9
+    ],
+    [
+      -9,
+      9
+    ]
+  ],
+  "depth_z": 8,
+  "holes": [],
+  "expected_bbox_mm": {
+    "length": 18,
+    "height": 18,
+    "depth": 8
+  },
+  "expected_volume_mm3": 1626.667,
+  "key_dimensions_mm": {
+    "outer_length": 18,
+    "outer_height": 18,
+    "depth": 8,
+    "top_length": 14.0,
+    "top_height": 14.0,
+    "draft_angle_deg": 14.036,
+    "draft_outward": false
+  },
+  "operations": [
+    {
+      "type": "cutout_on_face",
+      "face": "bottom",
+      "shape": "rectangle",
+      "depth": 3.0,
+      "through_all": false,
+      "cx": 0.0,
+      "cy": 0.0,
+      "radius": 0.0,
+      "width": 12.0,
+      "height": 12.0,
+      "length": 0.0,
+      "positions": [],
+      "label": "底面键轴卡口凹槽 12×12×3mm"
+    },
+    {
+      "type": "fillet_edges",
+      "edges": "front_left",
+      "radius": 1.5,
+      "label": "顶面左边 R1.5"
+    },
+    {
+      "type": "fillet_edges",
+      "edges": "front_right",
+      "radius": 1.5,
+      "label": "顶面右边 R1.5"
+    },
+    {
+      "type": "fillet_edges",
+      "edges": "front_top",
+      "radius": 1.5,
+      "label": "顶面前边 R1.5"
+    },
+    {
+      "type": "fillet_edges",
+      "edges": "front_bottom",
+      "radius": 1.5,
+      "label": "顶面后边 R1.5"
+    }
+  ],
+  "notes": "B04 键帽的完整版：底 18×18mm、顶 14×14mm、高 8mm 拔模拉伸（内收 14.04°），底面中央有一个 12×12×3mm 的方形凹槽（键轴卡口简化版，不贯穿），顶面周边 4 条边 R1.5 圆角。整体沿 Z 拉伸，底面(-Z 面)在 Z=0、顶面(+Z 面)在 Z=8mm。"
+}
