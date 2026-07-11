@@ -14,7 +14,8 @@ const settingsEl = document.getElementById("settings");
 const settingsToggle = document.getElementById("settings-toggle");
 const apiKeyEl = document.getElementById("api-key");
 const baseUrlEl = document.getElementById("base-url");
-const modelEl = document.getElementById("model-select");
+const visionModelEl = document.getElementById("vision-model-select");
+const planModelEl = document.getElementById("plan-model-select");
 
 // 图片上传相关
 const fileInputEl = document.getElementById("file-input");
@@ -42,8 +43,14 @@ settingsToggle.addEventListener("click", () => {
 // ---- localStorage 持久化设置 ----
 function loadSettings() {
   apiKeyEl.value = localStorage.getItem("sw_api_key") || "";
-  baseUrlEl.value = localStorage.getItem("sw_base_url") || "";
-  modelEl.value = localStorage.getItem("sw_model") || "gpt-4o-mini";
+  // base_url 用 HTML value 的默认（juheai 中转站）作为空值时的兜底
+  const savedBase = localStorage.getItem("sw_base_url");
+  if (savedBase !== null) baseUrlEl.value = savedBase;
+  // Vision/Plan 模型独立记忆，缺省都用 HTML 里已 selected 的 claude-sonnet-5
+  const savedVision = localStorage.getItem("sw_vision_model");
+  if (savedVision) visionModelEl.value = savedVision;
+  const savedPlan = localStorage.getItem("sw_plan_model");
+  if (savedPlan) planModelEl.value = savedPlan;
   // 如果还没填 key，默认展开设置面板
   if (!apiKeyEl.value) {
     settingsEl.classList.add("open");
@@ -53,11 +60,13 @@ function loadSettings() {
 function saveSettings() {
   localStorage.setItem("sw_api_key", apiKeyEl.value);
   localStorage.setItem("sw_base_url", baseUrlEl.value);
-  localStorage.setItem("sw_model", modelEl.value);
+  localStorage.setItem("sw_vision_model", visionModelEl.value);
+  localStorage.setItem("sw_plan_model", planModelEl.value);
 }
 apiKeyEl.addEventListener("input", saveSettings);
 baseUrlEl.addEventListener("input", saveSettings);
-modelEl.addEventListener("change", saveSettings);
+visionModelEl.addEventListener("change", saveSettings);
+planModelEl.addEventListener("change", saveSettings);
 
 // ---- 初始化 ----
 async function init() {
@@ -121,7 +130,8 @@ async function send() {
         image: imageToSend,
         api_key: apiKey,
         base_url: baseUrlEl.value.trim(),
-        model: modelEl.value,
+        vision_model: visionModelEl.value,
+        plan_model: planModelEl.value,
       }),
     });
     const data = await res.json();

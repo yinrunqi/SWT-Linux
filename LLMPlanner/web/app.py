@@ -35,9 +35,18 @@ executor: SwExecutor | None = None
 _llm_cache: dict[str, SwLLMClient] = {}
 
 
-def _get_llm_client(api_key: str, base_url: str, model: str) -> SwLLMClient:
-    """获取或创建 LLM 客户端，相同配置复用实例。"""
-    cache_key = f"{api_key}|{base_url}|{model}"
+def _get_llm_client(
+    api_key: str,
+    base_url: str,
+    vision_model: str,
+    plan_model: str,
+) -> SwLLMClient:
+    """获取或创建 LLM 客户端，相同配置复用实例。
+
+    Vision 和 Plan 可分别配不同模型（例如 Vision 用便宜多模态 + Plan 用强规划）。
+    若两者相同，SwLLMClient 会在启动日志里打印"Vision + Plan 同"提示。
+    """
+    cache_key = f"{api_key}|{base_url}|{vision_model}|{plan_model}"
     if cache_key not in _llm_cache:
         # 临时设置环境变量供 SwLLMClient 读取
         os.environ["OPENAI_API_KEY"] = api_key
@@ -45,7 +54,11 @@ def _get_llm_client(api_key: str, base_url: str, model: str) -> SwLLMClient:
             os.environ["OPENAI_BASE_URL"] = base_url
         elif "OPENAI_BASE_URL" in os.environ:
             del os.environ["OPENAI_BASE_URL"]
-        _llm_cache[cache_key] = SwLLMClient(model=model, use_cache=True)
+        _llm_cache[cache_key] = SwLLMClient(
+            vision_model=vision_model,
+            plan_model=plan_model,
+            use_cache=True,
+        )
     return _llm_cache[cache_key]
 
 
@@ -123,7 +136,9 @@ def run():
       "instruction": "创建一个100mm的正方体",
       "api_key": "sk-...",
       "base_url": "https://...",   (可选)
-      "model": "gpt-4o-mini",
+      "vision_model": "basic/claude-sonnet-5",  (可选，Vision 阶段模型)
+      "plan_model":   "basic/claude-sonnet-5",  (可选，Plan 阶段模型)
+      "model": "gpt-4o",           (旧协议兼容，Vision + Plan 共用此模型)
       "dry_run": false
     }
     """
@@ -131,7 +146,16 @@ def run():
     instruction = data.get("instruction", "").strip()
     api_key = data.get("api_key", "").strip()
     base_url = data.get("base_url", "").strip()
-    model = data.get("model", "gpt-4o-mini").strip()
+    # 兼容两种协议:
+    #   新协议 (推荐): vision_model + plan_model 分别指定
+    #   旧协议 (兼容): 单一 model 字段, Vision 和 Plan 都用它
+    vision_model = data.get("vision_model", "").strip()
+    plan_model = data.get("plan_model", "").strip()
+    legacy_model = data.get("model", "").strip()
+    if not vision_model:
+        vision_model = legacy_model or "gpt-4o"
+    if not plan_model:
+        plan_model = legacy_model or "gpt-4o"
     dry_run = data.get("dry_run", False)
     # 多模态：可选图片（base64，可含或不含 data URI 前缀；不含时按 JPEG 处理）
     image_raw = data.get("image", "") or ""
@@ -147,8 +171,8 @@ def run():
         return jsonify({"success": False, "error": "请填写 API Key"}), 400
 
     try:
-        # 获取 LLM 客户端
-        llm_client = _get_llm_client(api_key, base_url, model)
+        # 获取 LLM 客户端（Vision / Plan 可为不同模型）
+        llm_client = _get_llm_client(api_key, base_url, vision_model, plan_model)
 
         # 1. LLM 规划（有图走多模态两阶段；无图走纯文本）
         plan = llm_client.plan(instruction, image_base64=image_b64 or None)
