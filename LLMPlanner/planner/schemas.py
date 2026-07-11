@@ -10,7 +10,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class OperationType(str, Enum):
@@ -194,6 +194,7 @@ class FeatureHint(BaseModel):
                     "'slot'(槽) / 'pocket'(凹坑) / 'boss'(凸台) 等"
     )
     location_desc: str = Field(
+        default="",
         description="该特征在哪个视图/哪个位置。示例：'front 视图左下角，距底边 10mm、距左边 8mm'"
     )
     size_desc: str = Field(
@@ -247,3 +248,11 @@ class ThreeViewIR(BaseModel):
         description="若图纸上某些尺寸未标注/看不清，此处说明所做的合理假设"
                     "（如'厚度未标注，假设为 10mm；孔位对称假设'）"
     )
+
+    @field_validator("assumptions", mode="before")
+    @classmethod
+    def _coerce_assumptions_to_str(cls, v):
+        """兼容 Claude 系列输出的 list[str]：自动 join 成单 string。"""
+        if isinstance(v, list):
+            return "; ".join(str(x) for x in v)
+        return v

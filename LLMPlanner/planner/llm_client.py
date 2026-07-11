@@ -31,6 +31,81 @@ from .skill_registry import SkillRegistry, SkillSelector, build_system_prompt, d
 # 默认模型：gpt-4o 支持结构化输出（Structured Outputs）
 DEFAULT_MODEL = "gpt-4o"
 
+
+def _resolve_model_env(
+    prefer_env: str,
+    fallback_env: str = "PLANNER_MODEL",
+    default: str = DEFAULT_MODEL,
+) -> str:
+    """按环境变量优先级解析模型名：prefer_env > fallback_env > default。
+    Vision 用 VISION_MODEL；Plan 用 PLAN_MODEL；两者都不设时统一读 PLANNER_MODEL，
+    最后回退到 DEFAULT_MODEL(gpt-4o)。
+    """
+    return (
+        os.getenv(prefer_env)
+        or os.getenv(fallback_env)
+        or default
+    )
+
+
+def _strip_markdown_fence(text: str) -> str:
+    """从 LLM 返回内容里剥除 ```json / ``` 等 markdown 代码块包裹。
+    某些中转站（例如 juheai 上的 Claude 系列）即使传了 response_format=json_object
+    也可能返回 ```json {...} ``` 包裹的内容，需容错剥壳。
+    """
+    if not text:
+        return text
+    t = text.strip()
+    if not t.startswith("```"):
+        return t
+    # 去掉首尾 ``` 行
+    lines = t.split("\n")
+    # 剥掉所有以 ``` 开头的行
+    lines = [ln for ln in lines if not ln.strip().startswith("```")]
+    return "\n".join(lines).strip()
+
+
+def _extract_first_json_block(text: str) -> Optional[str]:
+    """从任意文本里提取第一个完整的 JSON **对象**块（顶层必须是 {}, 不接受纯数组）。
+    Claude 系列偏好"先分析后输出"，即便要求"纯 JSON"也常返回：
+        "我来分析这个零件...\n\n```json\n{...}\n```\n\n分析完毕。"
+    此函数按大括号计数匹配第一个平衡的 {...} 子串（跳过内部字符串和 [数组] 中的括号）。
+    只匹配 {} 是刻意的——我们的顶层数据结构都是对象（ThreeViewIR, SwModelingPlan），
+    不希望误取到 `dimensions: [...]` 或 `overall_size_mm: [-142.5, 142.5]` 里的数组片段。
+    找不到时返回 None。
+    """
+    if not text:
+        return None
+    # 先剥壳一次减少干扰
+    text = _strip_markdown_fence(text)
+    # 只找第一个 {
+    start = text.find("{")
+    if start < 0:
+        return None
+    depth = 0
+    in_str = False
+    escape = False
+    for i in range(start, len(text)):
+        ch = text[i]
+        if escape:
+            escape = False
+            continue
+        if ch == "\\":
+            escape = True
+            continue
+        if ch == '"':
+            in_str = not in_str
+            continue
+        if in_str:
+            continue
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start:i + 1]
+    return None  # 没匹配到完整闭合
+
 # 缓存目录：planner 同级的 .llm_cache 文件夹
 CACHE_DIR = Path(__file__).resolve().parent / ".llm_cache"
 
@@ -119,14 +194,22 @@ class SwLLMClient:
         use_cache: bool = True,
         skill_mode: str = "full",
         registry: Optional[SkillRegistry] = None,
+        vision_model: Optional[str] = None,
+        plan_model: Optional[str] = None,
     ):
         """
         Args:
+            model: 兼容旧调用点——若显式给了这个参数，Vision 和 Plan 都用它。
+            vision_model: 阶段 A (Vision 看三视图) 使用的模型。优先级：
+                构造函数参数 > 环境变量 VISION_MODEL > PLANNER_MODEL > DEFAULT_MODEL。
+            plan_model: 阶段 B (SwModelingPlan 生成) 使用的模型。优先级：
+                构造函数参数 > 环境变量 PLAN_MODEL > PLANNER_MODEL > DEFAULT_MODEL。
+                两阶段允许用不同模型：例如 Vision 用便宜多模态模型 (qwen-vl-plus)，
+                Plan 用强规划模型 (basic/claude-sonnet-5)。
             skill_mode: Skill 组装模式：
                 - "full"（默认）：注入所有 core + 全部 recipes/input_modes。与迁移前的
                   硬编码 SYSTEM_PROMPT 逐字符等价，保证零回归。
-                - "routed"：core 全量 + 仅命中 triggers 的 recipes/input_modes。用于减
-                  少 prompt 体积；后续三视图/图片场景默认走此模式。
+                - "routed"：core 全量 + 仅命中 triggers 的 recipes/input_modes。
             registry: 可选自定义 SkillRegistry；缺省用默认（planner/skills/）。
         """
         # 读取环境变量
@@ -145,8 +228,23 @@ class SwLLMClient:
             print(f"[LLM] 使用自定义 API 地址: {base_url}")
 
         self.client = OpenAI(**client_kwargs)
-        self.model = model or DEFAULT_MODEL
-        print(f"[LLM] 使用模型: {self.model}")
+
+        # 解析 Vision / Plan 双模型（若传了 model 参数则两者都用它）
+        if model is not None:
+            self.vision_model = model
+            self.plan_model = model
+        else:
+            self.vision_model = vision_model or _resolve_model_env("VISION_MODEL")
+            self.plan_model = plan_model or _resolve_model_env("PLAN_MODEL")
+
+        # 兼容旧代码：self.model 保留（用作 cache_key 拼接和降级消息）——取 plan_model
+        self.model = self.plan_model
+
+        if self.vision_model == self.plan_model:
+            print(f"[LLM] 使用模型 (Vision + Plan 同): {self.plan_model}")
+        else:
+            print(f"[LLM] Vision 模型: {self.vision_model}")
+            print(f"[LLM] Plan   模型: {self.plan_model}")
 
         # 是否已检测到 API 不支持 Structured Outputs，自动降级
         self._use_structured_output = True
@@ -294,7 +392,7 @@ class SwLLMClient:
         cache_key = None
         if self.use_cache and self.cache is not None:
             cache_key = _make_cache_key(
-                self.model, system_prompt, text_hint + "\n[STAGE=A]", image_base64
+                self.vision_model, system_prompt, text_hint + "\n[STAGE=A]", image_base64
             )
             cached = self.cache.get(cache_key)
             if cached is not None:
@@ -309,15 +407,35 @@ class SwLLMClient:
         return ir
 
     @staticmethod
+    def _detect_image_mime(image_base64: str) -> str:
+        """从 base64 编码的字节头自动检测图片 MIME 类型。
+        某些中转站（例如 juheai 上的 Claude 系列）会严格校验图片类型标签与实际字节
+        是否一致，若声明 image/jpeg 而实际是 PNG 会返回 500。
+        """
+        # base64 编码前 8 字符大致对应二进制前 6 字节
+        head = image_base64[:16] if image_base64 else ""
+        if head.startswith("iVBORw0K"):     # PNG: 89 50 4E 47 0D 0A 1A 0A
+            return "image/png"
+        if head.startswith("/9j/"):          # JPEG: FF D8 FF
+            return "image/jpeg"
+        if head.startswith("R0lGOD"):        # GIF: 47 49 46
+            return "image/gif"
+        if head.startswith("UklGR"):         # WebP: 52 49 46 46 ...
+            return "image/webp"
+        # 未知格式：保守回退到 png（工程图纸最常见）
+        return "image/png"
+
+    @staticmethod
     def _build_user_message(text: str, image_base64: Optional[str] = None) -> dict:
         """构造 OpenAI messages 中的 user 消息，支持纯文本 / 图文混合。"""
         if not image_base64:
             return {"role": "user", "content": text}
-        # 判断格式：默认按 JPEG data URI；如果调用方已给了完整 data URI 则透传
+        # 判断格式：如果调用方已给了完整 data URI 则透传，否则从字节头自动检测 MIME
         if image_base64.startswith("data:"):
             url = image_base64
         else:
-            url = f"data:image/jpeg;base64,{image_base64}"
+            mime = SwLLMClient._detect_image_mime(image_base64)
+            url = f"data:{mime};base64,{image_base64}"
         return {
             "role": "user",
             "content": [
@@ -347,7 +465,7 @@ class SwLLMClient:
 
         try:
             completion = self.client.chat.completions.create(
-                model=self.model,
+                model=self.vision_model,
                 messages=messages,
                 temperature=0,
                 max_tokens=8000,
@@ -363,13 +481,24 @@ class SwLLMClient:
             content = completion.choices[0].message.content
             if not content:
                 raise ValueError("Vision 未返回有效 IR")
+            # 某些中转站/Claude 系列即便走 json_schema 也可能返回 markdown 包裹的 JSON，先剥壳
+            content = _strip_markdown_fence(content)
             return ThreeViewIR.model_validate_json(content)
         except BadRequestError as e:
             print(f"[LLM] 阶段 A Structured Outputs 不支持({str(e)[:100]}), 降级为 JSON mode")
+        except Exception as e:
+            # 例如 ValidationError: 返回不是有效 IR（可能被 markdown 包裹 / 加了额外字段）
+            print(f"[LLM] 阶段 A Structured Outputs 解析失败({type(e).__name__}: {str(e)[:100]}), 降级为 JSON mode")
 
         # 降级：JSON mode
         json_hint = (
-            "\n\n请以纯 JSON 输出，字段严格符合 ThreeViewIR schema:\n"
+            "\n\n## 🔴 输出格式（极端重要）\n"
+            "本次调用**必须**只返回一个 JSON 对象，其他内容都不允许：\n"
+            "- ❌ 禁止在 JSON 前后加任何文字分析/解释/开场白/结束语\n"
+            "- ❌ 禁止用 markdown 代码块包裹（不要 ```json 或 ```）\n"
+            "- ❌ 禁止说\"我来分析\"/\"以下是\"/\"分析完毕\"等\n"
+            "- ✅ 你的整个回复必须以 { 开头、以 } 结尾\n\n"
+            "JSON 字段结构（ThreeViewIR schema）：\n"
             "{part_type, base_view, overall_size_mm, profiles[], dimensions[], features[], assumptions}"
         )
         # 修改 system message
@@ -379,7 +508,7 @@ class SwLLMClient:
             "content": messages[0]["content"] + json_hint,
         }
         completion = self.client.chat.completions.create(
-            model=self.model,
+            model=self.vision_model,
             messages=patched_msgs,
             temperature=0,
             max_tokens=8000,
@@ -388,11 +517,17 @@ class SwLLMClient:
         content = completion.choices[0].message.content
         if not content:
             raise ValueError("Vision 未返回任何内容")
-        text = content.strip()
-        if text.startswith("```"):
-            lines = [ln for ln in text.split("\n") if not ln.strip().startswith("```")]
-            text = "\n".join(lines)
-        return ThreeViewIR.model_validate_json(text)
+        # 先尝试剥壳解析；失败则尝试从任意文本中提取第一个 JSON 块（应对 Claude 啰嗦倾向）
+        try:
+            return ThreeViewIR.model_validate_json(_strip_markdown_fence(content))
+        except Exception:
+            extracted = _extract_first_json_block(content)
+            if extracted is None:
+                raise ValueError(
+                    f"Vision 未能返回可解析的 JSON。前 300 字符: {content[:300]!r}"
+                )
+            print(f"[LLM] 从 Vision 回复中提取到 JSON 块 ({len(extracted)} 字符)")
+            return ThreeViewIR.model_validate_json(extracted)
 
     @staticmethod
     def _compose_stage_b_prompt(user_instruction: str, ir: ThreeViewIR) -> str:
@@ -465,15 +600,19 @@ class SwLLMClient:
         if self._use_structured_output:
             try:
                 return self._call_structured_output(messages)
-            except (BadRequestError, Exception) as e:
+            except BadRequestError as e:
+                # API 明确拒绝 json_schema/response_format → 一次性关闭结构化输出，走 JSON mode
+                print(f"[LLM] Structured Outputs 不被 API 支持 ({str(e)[:100]})，降级为 JSON mode...")
+                self._use_structured_output = False
+                return self._call_json_mode(messages)
+            except Exception as e:
+                # 其他错误：例如 pydantic ValidationError (返回被 markdown 包裹 / 结构不匹配)
+                # 常见于 Claude 系列通过中转站——不是 API 层面拒绝而是内容不合规。
+                # 单次调用降级到 JSON mode，但保留 _use_structured_output 允许下次再试
+                # (若发现连续多次都要降级，可考虑改为永久关闭)
                 error_msg = str(e)
-                if "additionalProperties" in error_msg or "json_schema" in error_msg.lower() or "response_format" in error_msg.lower():
-                    # API 不支持当前 schema 格式，降级为 JSON mode
-                    print(f"[LLM] Structured Outputs 不被支持 ({error_msg[:100]})，降级为 JSON mode...")
-                    self._use_structured_output = False
-                    return self._call_json_mode(messages)
-                else:
-                    raise
+                print(f"[LLM] Structured Outputs 解析失败 ({type(e).__name__}: {error_msg[:100]})，本次降级为 JSON mode...")
+                return self._call_json_mode(messages)
         else:
             return self._call_json_mode(messages)
 
@@ -535,6 +674,9 @@ class SwLLMClient:
         if not content:
             raise ValueError("LLM 未返回有效的建模计划")
 
+        # 某些中转站/Claude 系列即使走 json_schema 也可能返回 markdown 包裹的 JSON，剥壳
+        content = _strip_markdown_fence(content)
+
         result = SwModelingPlan.model_validate_json(content)
         print("[LLM] ✅ Structured Outputs 解析成功")
         return result
@@ -551,14 +693,17 @@ class SwLLMClient:
 
         # 在 system prompt 后追加 JSON 输出格式要求
         json_hint = (
-            "\n\n## 输出格式\n"
-            "你必须以纯 JSON 格式返回，不要包含任何 markdown 代码块标记。"
+            "\n\n## 🔴 输出格式（极端重要）\n"
+            "本次调用**必须**只返回一个 JSON 对象，其他内容都不允许：\n"
+            "- ❌ 禁止在 JSON 前后加任何文字分析/解释/开场白/结束语（不要说\"我来分析\"/\"以下是\"）\n"
+            "- ❌ 禁止用 markdown 代码块包裹（不要 ```json 或 ```）\n"
+            "- ✅ 你的整个回复必须以 `{` 开头、以 `}` 结尾，中间不含任何非 JSON 字符\n\n"
             "JSON 结构：{\"user_intent\": \"...\", \"steps\": [{\"operation\": \"...\", "
             "\"params\": {...}, \"description\": \"...\"}], \"notes\": \"...\"}\n"
             "operation 可选值：new_part, select_plane, sketch_line, sketch_rectangle, "
             "sketch_circle, sketch_centerline, sketch_arc, sketch_ellipse, sketch_polygon, sketch_slot, "
             "feature_extrusion, feature_cut_extrusion, feature_revolve, feature_fillet, feature_chamfer, "
-            "feature_circular_pattern, close_sketch, feature_tree, body_bounding_box, "
+            "feature_circular_pattern, feature_linear_pattern, close_sketch, feature_tree, body_bounding_box, "
             "select_face_and_sketch, modify_dimension。\n"
             "modify_dimension 的 params 中，newValue（绝对值）和 delta（增量）二选一。\n\n"
             "⚠️ **极其重要：你必须一次性输出所有步骤，不能截断！** 如果模型需要4条腿，就必须有4个 sketch_circle 步骤（或者在同一草图中画4个圆）。"
@@ -582,14 +727,17 @@ class SwLLMClient:
         if not content:
             raise ValueError("LLM 未返回任何内容")
 
-        # 清理可能的 markdown 代码块标记
-        text = content.strip()
-        if text.startswith("```"):
-            lines = text.split("\n")
-            lines = [l for l in lines if not l.strip().startswith("```")]
-            text = "\n".join(lines)
-
-        result = SwModelingPlan.model_validate_json(text)
+        # 剥壳 → 若失败则从任意文本中提取第一个 JSON 块（应对 Claude 啰嗦倾向）
+        try:
+            result = SwModelingPlan.model_validate_json(_strip_markdown_fence(content))
+        except Exception:
+            extracted = _extract_first_json_block(content)
+            if extracted is None:
+                raise ValueError(
+                    f"LLM 未能返回可解析的 JSON。前 300 字符: {content[:300]!r}"
+                )
+            print(f"[LLM] 从 Plan 回复中提取到 JSON 块 ({len(extracted)} 字符)")
+            result = SwModelingPlan.model_validate_json(extracted)
         print("[LLM] ✅ JSON mode 解析成功")
         return result
 
