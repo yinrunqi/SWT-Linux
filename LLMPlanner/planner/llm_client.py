@@ -156,8 +156,13 @@ def _make_cache_key(
     """
     将请求内容哈希为缓存 key。使用 SHA256 保证低碰撞概率。
 
+    Key 组成: model + system_prompt + user_prompt (+ image_sha256).
+
     - image_base64 若非空，其 SHA256 摘要也纳入 key（同一张图 + 同一段文字 → 命中缓存，
       避免重复调用昂贵的 Vision API；不同图片自动分开缓存）。
+    - **skill_mode 隐式纳入**: skill_mode 会影响 system_prompt 的实际内容 (full vs routed
+      注入的 recipes/input_modes 数量不同), 所以只要 system_prompt 相同, cache 就应该命中,
+      不同就 miss——这是正确的语义。修改 skill 文件或切换 skill_mode 会自动让缓存失效。
     - **向后兼容**：不传 image_base64 时，计算逻辑与旧版完全相同，历史缓存条目 key 不变。
     """
     payload: dict = {
