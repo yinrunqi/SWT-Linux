@@ -27,14 +27,25 @@
       <input id="api-key" type="password" placeholder="sk-..." autocomplete="off">
     </div>
     <div class="settings-row">
-      <label for="base-url">Base URL <span class="hint">（可选）</span></label>
-      <input id="base-url" type="text" placeholder="https://api.openai.com/v1">
+      <label for="base-url">Base URL <span class="hint">（可选，中转站选 Claude/GPT-5 系列必填）</span></label>
+      <input id="base-url" type="text" value="https://api.juheai.top/v1" placeholder="https://api.openai.com/v1">
     </div>
     <div class="settings-row">
       <label for="model-select">模型</label>
       <select id="model-select">
-        <option value="gpt-4o-mini" selected>gpt-4o-mini（快速）</option>
-        <option value="gpt-4o">gpt-4o（更强）</option>
+        <optgroup label="⭐ 推荐（复合建模能力强）">
+          <option value="basic/claude-sonnet-5" selected>claude-sonnet-5（推荐，Vision+复合规划最强，2/10 元/M）</option>
+          <option value="basic/claude-opus-4-8">claude-opus-4-8（顶配，价格最高）</option>
+        </optgroup>
+        <optgroup label="OpenAI">
+          <option value="gpt-4o">gpt-4o（原基线，简单零件够用）</option>
+          <option value="gpt-4o-mini">gpt-4o-mini（快速，简单任务）</option>
+          <option value="basic/gpt-5.6-terra">gpt-5.6-terra（GPT-5 系列，长上下文）</option>
+        </optgroup>
+        <optgroup label="其他">
+          <option value="basic/claude-haiku-4-5-20251001">claude-haiku-4-5（快速版 Claude）</option>
+          <option value="deepseek-v3.2-thinking">deepseek-v3.2-thinking（思考链）</option>
+        </optgroup>
       </select>
     </div>
   </div>
