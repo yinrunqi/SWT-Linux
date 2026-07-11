@@ -36,6 +36,7 @@ OPERATION_ENDPOINT_MAP: dict[OperationType, tuple[str, str]] = {
     OperationType.FEATURE_FILLET:     ("POST", "/api/feature/fillet"),
     OperationType.FEATURE_CHAMFER:    ("POST", "/api/feature/chamfer"),
     OperationType.FEATURE_CIRCULAR_PATTERN: ("POST", "/api/feature/circular-pattern"),
+    OperationType.FEATURE_LINEAR_PATTERN: ("POST", "/api/feature/linear-pattern"),
     OperationType.CLOSE_SKETCH:       ("POST", "/api/close-sketch"),
     # --- 查询 & 编辑 ---
     OperationType.FEATURE_TREE:            ("GET",  "/api/feature-tree"),

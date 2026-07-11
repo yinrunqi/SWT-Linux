@@ -1968,6 +1968,238 @@ namespace Chapter1.ConnectToSw
             };
         }
 
+        /// <summary>
+        /// 对最后一个创建的特征做**线性阵列**（Linear Pattern），沿 1 个或 2 个方向复制。
+        /// 常用于：键盘按键矩阵、格栅通风孔、蜂窝板、齿条等。
+        ///
+        /// 参数：
+        ///   num1      — 方向 1 的实例总数（含原始特征本身，num1 >= 2）
+        ///   spacing1  — 方向 1 每份之间的间距（米，> 0）
+        ///   dir1Axis  — 方向 1 的轴，可选 "x"/"y"/"z"，默认 "x"
+        ///   num2      — 方向 2 的实例总数（可选，>= 1；=1 表示只做单向阵列）
+        ///   spacing2  — 方向 2 每份之间的间距（米，num2>=2 时必填）
+        ///   dir2Axis  — 方向 2 的轴，可选 "x"/"y"/"z"，与 dir1Axis 不同
+        ///   flip1     — 是否反转方向 1（默认 false）
+        ///   flip2     — 是否反转方向 2（默认 false）
+        ///
+        /// 说明：
+        ///   源特征使用当前零件最新创建的实体特征（自动定位为特征树末尾的非草图非基准面特征）。
+        ///   方向参考对象用**实体上一条与目标轴平行的直线边**（每个长方体天然有 12 条边）。
+        ///   若找不到匹配方向的直线边（如零件只有球面/曲面），会报错。
+        /// </summary>
+        public Dictionary<string, object> LinearPattern(
+            int num1, double spacing1, string dir1Axis,
+            int num2, double spacing2, string dir2Axis,
+            bool flip1, bool flip2)
+        {
+            EnsureActiveDoc();
+
+            if (num1 < 2)
+                throw new ArgumentOutOfRangeException(nameof(num1), "方向 1 实例数必须 >= 2");
+            if (spacing1 <= 0)
+                throw new ArgumentOutOfRangeException(nameof(spacing1), "方向 1 间距必须 > 0");
+            if (num2 < 1)
+                throw new ArgumentOutOfRangeException(nameof(num2), "方向 2 实例数必须 >= 1（=1 表示单向阵列）");
+            if (num2 >= 2 && spacing2 <= 0)
+                throw new ArgumentOutOfRangeException(nameof(spacing2), "方向 2 实例数 >=2 时间距必须 > 0");
+            if (num2 >= 2 && dir1Axis.ToLower() == dir2Axis.ToLower())
+                throw new ArgumentException("方向 1 与方向 2 的轴必须不同");
+
+            var mdoc = (ModelDoc2)ActiveDoc;
+
+            // ---- 1. 找源特征（跳过草图/基准面/参考几何） ----
+            IFeature sourceFeat = null;
+            {
+                IFeature f = (IFeature)mdoc.FirstFeature();
+                while (f != null)
+                {
+                    string tn = f.GetTypeName2();
+                    if (tn != "ProfileFeature" && tn != "RefPlane" && tn != "OriginProfileFeature"
+                        && tn != "Sketch" && !tn.StartsWith("Ref"))
+                    {
+                        sourceFeat = f;
+                    }
+                    f = (IFeature)f.GetNextFeature();
+                }
+            }
+            if (sourceFeat == null)
+                throw new InvalidOperationException("找不到可作为阵列源的特征");
+            Console.WriteLine($"[SwCommands] 线性阵列源特征: {sourceFeat.Name} (type={sourceFeat.GetTypeName2()})");
+
+            // ---- 2. 找方向 1 的参考直线边 ----
+            IEdge dir1Edge = FindLinearEdgeAlong(dir1Axis);
+            if (dir1Edge == null)
+                throw new InvalidOperationException(
+                    $"实体上找不到沿 {dir1Axis} 方向的直线边。线性阵列需要至少一条方向参考边。" +
+                    $"典型场景：任何长方体/立方体天然有 12 条边（4×X + 4×Y + 4×Z）");
+            Console.WriteLine($"[SwCommands] 找到方向 1 参考边（沿 {dir1Axis}）");
+
+            IEdge dir2Edge = null;
+            if (num2 >= 2)
+            {
+                dir2Edge = FindLinearEdgeAlong(dir2Axis);
+                if (dir2Edge == null)
+                    throw new InvalidOperationException(
+                        $"实体上找不到沿 {dir2Axis} 方向的直线边。二维阵列需要两个方向的参考边。");
+                Console.WriteLine($"[SwCommands] 找到方向 2 参考边（沿 {dir2Axis}）");
+            }
+
+            // ---- 3. 有序选择: Mark=1 方向 1 边, Mark=2 方向 2 边（如果有）, Mark=4 源特征 ----
+            //   参考 SolidWorks API 文档: 
+            //     IEntity::Select4 with ISelectData::Mark=1 for Direction 1
+            //     IEntity::Select4 with ISelectData::Mark=2 and 4 to mark directions
+            //     (Note: LinearPattern 的 Mark=2 是 Direction 2, Mark=4 是要阵列的特征)
+            ActiveDoc.ClearSelection2(true);
+
+            bool dir1Sel = ((Entity)dir1Edge).Select4(false, MakeSelData(1));
+            if (!dir1Sel)
+                throw new InvalidOperationException("未能选中方向 1 参考边 (Mark=1)");
+            Console.WriteLine($"[SwCommands] 已选中方向 1 参考边 (Mark=1)");
+
+            if (dir2Edge != null)
+            {
+                bool dir2Sel = ((Entity)dir2Edge).Select4(true, MakeSelData(2));
+                if (!dir2Sel)
+                    throw new InvalidOperationException("未能选中方向 2 参考边 (Mark=2)");
+                Console.WriteLine($"[SwCommands] 已选中方向 2 参考边 (Mark=2)");
+            }
+
+            if (!sourceFeat.Select2(true, 4))
+                throw new InvalidOperationException($"未能选中源特征 {sourceFeat.Name} (Mark=4)");
+            Console.WriteLine($"[SwCommands] 已选中源特征: {sourceFeat.Name} (Mark=4)");
+
+            // ---- 4. 调用 FeatureLinearPattern2（9 参数），完成后通过 ILinearPatternFeatureData 修正 D2PatternSeedOnly ----
+            //   ⚠️ 关键坑：SolidWorks 的 LinearPattern 默认 D2PatternSeedOnly=true！
+            //       表现为：二维阵列只生成 D1 行 + D2 列 L 形（N1+N2-1 个），而非完整 N1×N2 网格。
+            //   FeatureLinearPattern5 虽然有 D2PatternSeedOnly 参数但本地 SW 上传 false 也未生效
+            //       （疑似 COM 参数解析问题或版本兼容）。
+            //   最可靠方案：先用 v2 建阵列，然后通过 GetDefinition() 拿到 ILinearPatternFeatureData
+            //       并显式设 D2PatternSeedOnly=false 后 ModifyDefinition 提交，SolidWorks 会重建阵列。
+            var patternFeat = mdoc.FeatureManager.FeatureLinearPattern2(
+                num1, spacing1,
+                num2, num2 >= 2 ? spacing2 : 0.001,
+                flip1, flip2,
+                "NULL", "NULL",
+                false      // GeometryPattern
+            );
+
+            if (patternFeat == null)
+                throw new InvalidOperationException("线性阵列创建失败（FeatureLinearPattern2 返回 null）");
+
+            // ---- 5. 事后修正 D2PatternSeedOnly ⇒ 生成完整 N1×N2 网格 ----
+            //   SolidWorks 默认 D2PatternSeedOnly=true (仅对种子做 D2 阵列, 忽略 D1 已生成的实例)
+            //   → 二维阵列只出 L 形分布 N1+N2-1 个, 而非 N1×N2 完整网格
+            //   通过 ILinearPatternFeatureData 显式设 false 后重新提交定义
+            if (num2 >= 2)
+            {
+                try
+                {
+                    var defObj = patternFeat.GetDefinition();
+                    Console.WriteLine($"[SwCommands] patternFeat.GetDefinition() 返回类型: {defObj?.GetType().FullName ?? "null"}");
+                    var patternData = defObj as ILinearPatternFeatureData;
+                    if (patternData == null)
+                    {
+                        Console.WriteLine("[SwCommands] ⚠️ GetDefinition 结果无法转为 ILinearPatternFeatureData");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[SwCommands] 修正前 D2PatternSeedOnly={patternData.D2PatternSeedOnly}, D1TotalInstances={patternData.D1TotalInstances}, D2TotalInstances={patternData.D2TotalInstances}");
+                        patternData.D2PatternSeedOnly = false;
+                        Console.WriteLine($"[SwCommands] 设置后 D2PatternSeedOnly={patternData.D2PatternSeedOnly}");
+                        bool ok = patternFeat.ModifyDefinition(patternData, mdoc, null);
+                        Console.WriteLine($"[SwCommands] ModifyDefinition 返回 {ok}");
+                        // 再拿一次确认
+                        var pd2 = patternFeat.GetDefinition() as ILinearPatternFeatureData;
+                        if (pd2 != null)
+                            Console.WriteLine($"[SwCommands] 修正后重读 D2PatternSeedOnly={pd2.D2PatternSeedOnly}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[SwCommands] ⚠️ 修正 D2PatternSeedOnly 异常: {ex.GetType().Name}: {ex.Message}");
+                }
+            }
+
+            mdoc.EditRebuild3();
+            ((ModelDoc2)ActiveDoc).ViewZoomtofit2();
+
+            int totalCount = num1 * Math.Max(num2, 1);
+            Console.WriteLine($"[SwCommands] 线性阵列创建成功: 特征={patternFeat.Name}, 方向1={num1}×{spacing1 * 1000:F1}mm, 方向2={num2}×{spacing2 * 1000:F1}mm, 总数={totalCount}");
+
+            return new Dictionary<string, object>
+            {
+                { "featureName", patternFeat.Name },
+                { "sourceFeature", sourceFeat.Name },
+                { "num1", num1 },
+                { "spacing1", spacing1 },
+                { "dir1Axis", dir1Axis },
+                { "num2", num2 },
+                { "spacing2", spacing2 },
+                { "dir2Axis", dir2Axis },
+                { "totalCount", totalCount },
+                { "message", $"线性阵列创建成功：方向 1 沿 {dir1Axis.ToUpper()} {num1} 份间距 {spacing1 * 1000:F1}mm，方向 2 沿 {dir2Axis.ToUpper()} {num2} 份间距 {spacing2 * 1000:F1}mm，共 {totalCount} 个实例" },
+            };
+        }
+
+        /// <summary>
+        /// 遍历实体所有边，找一条**方向平行于目标轴**（|cos| > 0.95）的**直线边**。
+        /// 长方体天然有 12 条这样的边（每个轴向 4 条）；圆盘外圆虽是圆边不算。
+        /// </summary>
+        private IEdge FindLinearEdgeAlong(string axis)
+        {
+            double[] wantDir;
+            switch (axis.ToLower())
+            {
+                case "x": wantDir = new[] { 1.0, 0.0, 0.0 }; break;
+                case "y": wantDir = new[] { 0.0, 1.0, 0.0 }; break;
+                case "z": wantDir = new[] { 0.0, 0.0, 1.0 }; break;
+                default: throw new ArgumentException($"未知轴向: {axis}");
+            }
+
+            var bodies = (object[])((IPartDoc)ActiveDoc).GetBodies2((int)swBodyType_e.swAllBodies, false);
+            if (bodies == null) return null;
+            foreach (var bObj in bodies)
+            {
+                var body = (IBody2)bObj;
+                var edges = (object[])body.GetEdges();
+                if (edges == null) continue;
+                foreach (var eObj in edges)
+                {
+                    var edge = (IEdge)eObj;
+                    var curve = (ICurve)edge.IGetCurve();
+                    if (curve == null || !curve.IsLine()) continue;
+                    // ICurve.LineParams 返回 [rx, ry, rz, dx, dy, dz]：起点 + 方向单位向量
+                    var lp = (double[])curve.LineParams;
+                    if (lp == null || lp.Length < 6) continue;
+                    double dx = lp[3], dy = lp[4], dz = lp[5];
+                    double norm = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                    if (norm < 1e-9) continue;
+                    dx /= norm; dy /= norm; dz /= norm;
+                    // ⚠️ 关键: 不用 Math.Abs, 只接受"正方向"的边 (即 dot > 0.95)。
+                    //         若接受负方向 (Math.Abs), 阵列会沿 -axis 走, 大概率飞出实体外
+                    //         导致部分实例不生效。用户可通过 flip1/flip2 显式反向。
+                    double dot = dx * wantDir[0] + dy * wantDir[1] + dz * wantDir[2];
+                    if (dot > 0.95)
+                    {
+                        Console.WriteLine($"[SwCommands]   命中 {axis}+ 方向边: 起点=({lp[0]:F4},{lp[1]:F4},{lp[2]:F4}), 方向=({dx:F3},{dy:F3},{dz:F3})");
+                        return edge;
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 创建一个 SelectData 对象并设置 Mark 值——SolidWorks API 里 IEntity.Select4
+        /// 必须传 ISelectData，用 Mark 区分参考对象角色。
+        /// </summary>
+        private SelectData MakeSelData(int mark)
+        {
+            var sd = (SelectData)((ISelectionMgr)ActiveDoc.SelectionManager).CreateSelectData();
+            sd.Mark = mark;
+            return sd;
+        }
+
         #endregion
 
         #region 组合操作

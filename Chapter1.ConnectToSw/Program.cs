@@ -83,6 +83,7 @@ namespace Chapter1.ConnectToSw
             Console.WriteLine("  POST /api/sketch/polygon           - 画正 n 边形（n=3~64）");
             Console.WriteLine("  POST /api/sketch/slot              - 画直线型长圆孔/腰形孔");
             Console.WriteLine("  POST /api/feature/circular-pattern - 圆周阵列（对最后一个特征均布 N 份）");
+            Console.WriteLine("  POST /api/feature/linear-pattern   - 线性阵列（1D/2D，最后一个特征沿轴向复制 N₁×N₂ 份）");
             Console.WriteLine("  POST /api/feature/extrusion       - 拉伸");
             Console.WriteLine("  POST /api/feature/revolve         - 旋转凸台/切除");
             Console.WriteLine("  POST /api/feature/cut-extrusion   - 切除拉伸（挖孔/开槽）");
@@ -217,6 +218,10 @@ namespace Chapter1.ConnectToSw
 
                 case "/api/feature/circular-pattern":
                     RequirePost(method, resp, () => HandleCircularPattern(req, resp));
+                    break;
+
+                case "/api/feature/linear-pattern":
+                    RequirePost(method, resp, () => HandleLinearPattern(req, resp));
                     break;
 
                 case "/api/feature/extrusion":
@@ -676,6 +681,54 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"圆周阵列失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleLinearPattern(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                if (!body.ContainsKey("num1"))
+                    throw new KeyNotFoundException("缺少必填字段: num1（方向 1 实例数，≥2 的整数）");
+                if (!body.ContainsKey("spacing1"))
+                    throw new KeyNotFoundException("缺少必填字段: spacing1（方向 1 间距，米，> 0）");
+
+                int num1 = Convert.ToInt32(body["num1"]);
+                double spacing1 = Convert.ToDouble(body["spacing1"]);
+                string dir1Axis = body.ContainsKey("dir1Axis") ? body["dir1Axis"].ToString() : "x";
+
+                int num2 = body.ContainsKey("num2") ? Convert.ToInt32(body["num2"]) : 1;
+                double spacing2 = body.ContainsKey("spacing2") ? Convert.ToDouble(body["spacing2"]) : 0.0;
+                string dir2Axis = body.ContainsKey("dir2Axis") ? body["dir2Axis"].ToString() : "y";
+
+                bool flip1 = body.ContainsKey("flip1") && Convert.ToBoolean(body["flip1"]);
+                bool flip2 = body.ContainsKey("flip2") && Convert.ToBoolean(body["flip2"]);
+
+                var result = _commands.LinearPattern(num1, spacing1, dir1Axis, num2, spacing2, dir2Axis, flip1, flip2);
+                var response = new Dictionary<string, object> { { "success", true } };
+                foreach (var kv in result) response[kv.Key] = kv.Value;
+                SendJson(resp, 200, response);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"线性阵列失败: {ex.Message}" });
             }
         }
 

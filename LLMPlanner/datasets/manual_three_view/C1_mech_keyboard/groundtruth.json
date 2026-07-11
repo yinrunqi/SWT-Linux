@@ -1,0 +1,38 @@
+{
+  "part_id": "C1",
+  "name": "C1 迷你机械键盘 (65 键 线性阵列)",
+  "part_type": "mech_keyboard",
+  "profile_xy": [
+    [
+      -142.5,
+      -47.5
+    ],
+    [
+      142.5,
+      -47.5
+    ],
+    [
+      142.5,
+      47.5
+    ],
+    [
+      -142.5,
+      47.5
+    ]
+  ],
+  "depth_z": 15,
+  "holes": [],
+  "expected_bbox_mm": {
+    "length": 285.0,
+    "height": 95.0,
+    "depth": 20
+  },
+  "expected_volume_mm3": 465600.0,
+  "key_dimensions_mm": {
+    "outer_length": 285.0,
+    "outer_height": 95.0,
+    "depth": 15
+  },
+  "operations": [],
+  "notes": "首个大规模复合建模挑战: 285×95×15mm 底座 + 5×13=65 键帽阵列(每键 15×15×5mm, 拔模凸起). 用户 prompt 不写建模步骤, LLM 需自主识别应该使用 feature_linear_pattern 一步生成 65 键(不是画 65 次). | 手工修正: 底座 406125 + 65 键(每键梯形棱台 15²→12² 高 5mm ≈ 915.0 mm³) = 465600.0 mm³; 键帽凸起后总深度 = 15+5 = 20mm."
+}
