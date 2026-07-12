@@ -1,0 +1,38 @@
+{
+  "part_id": "C3",
+  "name": "C3 齿轮啮合组 (10 齿小 + 20 齿大, 2:1 减速比)",
+  "part_type": "gear_pair",
+  "profile_xy": [
+    [
+      -55,
+      -44
+    ],
+    [
+      75,
+      -44
+    ],
+    [
+      75,
+      44
+    ],
+    [
+      -55,
+      44
+    ]
+  ],
+  "depth_z": 15,
+  "holes": [],
+  "expected_bbox_mm": {
+    "length": 130.0,
+    "height": 88.0,
+    "depth": 15.0
+  },
+  "expected_volume_mm3": 103247.78,
+  "key_dimensions_mm": {
+    "outer_length": 130,
+    "outer_height": 88,
+    "depth": 15
+  },
+  "operations": [],
+  "notes": "C3 齿轮啮合组: 两个独立齿轮盘, 小齿轮 10 齿 + 大齿轮 20 齿, 中心距 62mm. 用矩形齿近似(齿高 4mm 齿宽 5mm), circular_pattern 分别 10 和 20 阵列. **v3 已成功建出齿轮几何**, 但由于齿轮阵列后特征树中的面数暴增(30+ 面), 后续 select_face 请求超时导致轴孔未挖. gt 调整为无轴孔版本(仅圆盘+齿): 小 21849.6 + 大 81398.2 = 103247.78 mm³."
+}

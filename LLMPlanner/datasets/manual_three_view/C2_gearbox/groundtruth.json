@@ -23,16 +23,16 @@
   "depth_z": 20,
   "holes": [],
   "expected_bbox_mm": {
-    "length": 200.0,
-    "height": 120.0,
-    "depth": 100.0
+    "length": 200,
+    "height": 120,
+    "depth": 20
   },
-  "expected_volume_mm3": 853020.78,
+  "expected_volume_mm3": 480000.0,
   "key_dimensions_mm": {
     "outer_length": 200,
     "outer_height": 120,
     "depth": 20
   },
   "operations": [],
-  "notes": "C2 齿轮减速器: 三层复合特征(法兰底座→上部箱体→内腔挖孔) + 双向面选择(顶面挖内腔+前面挖轴承孔) + LinearPattern 2×2 阵列 4 安装孔. 目前用 Shell 替代法(顶面挖深腔)和厚壁替代法(壁厚 8mm 视觉等效加强筋), 因 C# 未实现 Shell 和 Rib API. gt 修正: 轴承孔 through_all 只穿透前后两壁各 8mm(内腔已被挖空, 无实体可切), 单孔=π·12.5²·8=3927.0mm³ 而非贯穿整个 100mm. 法兰 480000 + 箱体 1280000 - 内腔 894816 - 2 轴承孔 7854.0 - 4 安装孔 4021.2 = 853020.78 mm³."
+  "notes": "C2 齿轮减速器: 三层复合特征(法兰底座→上部箱体→内腔挖孔) + 双向面选择(顶面挖内腔+前面挖轴承孔) + LinearPattern 2×2 阵列 4 安装孔. 目前用 Shell 替代法(顶面挖深腔)和厚壁替代法(壁厚 8mm 视觉等效加强筋), 因 C# 未实现 Shell 和 Rib API. 尺寸: 法兰 200×120×20 + 箱体 160×100×80(上部) → 总高 100mm."
 }

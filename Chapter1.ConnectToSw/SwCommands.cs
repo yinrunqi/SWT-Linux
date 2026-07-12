@@ -1798,7 +1798,8 @@ namespace Chapter1.ConnectToSw
         ///   使用 SolidWorks 的临时轴（Temporary Axes）作为旋转轴——即三个坐标基准面的交线（X/Y/Z 轴）。
         /// </summary>
         public Dictionary<string, object> CircularPattern(int count, string axis = "y",
-            double angleDeg = 360, bool reverseDir = false)
+            double angleDeg = 360, bool reverseDir = false,
+            double? axisOriginX = null, double? axisOriginY = null, double? axisOriginZ = null)
         {
             EnsureActiveDoc();
 
@@ -1855,8 +1856,20 @@ namespace Chapter1.ConnectToSw
             //         **不接受**普通"圆形 IEdge"作轴——历史代码用圆边选轴，SolidWorks 会
             //         创建"死特征"（树上有阵列节点但几何未生效，静默失败）。
             //         正确做法：找一个圆柱面，用它的轴线做圆周阵列的旋转轴。
+            //
+            // ⚠️ 多实体零件下的关键改进：
+            //   若 axisOrigin(X,Y,Z) 给定，则不选任意一个匹配方向的圆柱面（这会导致在多实体
+            //   零件里"绕错了实体"，例如两个齿轮各自的圆盘都有 Z 轴向圆柱面，遍历时先命中的
+            //   那一个会被选中——阵列结果绕错圆心，10 个副本飞出实体外，SolidWorks 静默丢弃，
+            //   只剩种子。修复：以 axisOrigin 为目标点，选**其轴线离这一点最近**的圆柱面。
+            //   若未给 axisOrigin，退化为老行为（第一个匹配方向的圆柱面）。
             IFace2 chosenCylFace = null;
             double cylAxisX = 0, cylAxisY = 0, cylAxisZ = 0;
+            bool hasOrigin = axisOriginX.HasValue && axisOriginY.HasValue && axisOriginZ.HasValue;
+            double tx = axisOriginX ?? 0.0;
+            double ty = axisOriginY ?? 0.0;
+            double tz = axisOriginZ ?? 0.0;
+            double bestDist = double.MaxValue;
             {
                 var bodies = (object[])((IPartDoc)ActiveDoc).GetBodies2((int)swBodyType_e.swAllBodies, false);
                 foreach (var bObj in bodies)
@@ -1878,16 +1891,36 @@ namespace Chapter1.ConnectToSw
                         if (norm < 1e-9) continue;
                         ax /= norm; ay /= norm; az /= norm;
                         double dot = Math.Abs(ax * wantDir[0] + ay * wantDir[1] + az * wantDir[2]);
-                        if (dot > 0.9)
+                        if (dot <= 0.9) continue;
+
+                        if (hasOrigin)
                         {
+                            // 计算 axisOrigin 到轴线 (ox,oy,oz)+t*(ax,ay,az) 的垂直距离
+                            double dx = tx - cp[0], dy = ty - cp[1], dz = tz - cp[2];
+                            double proj = dx * ax + dy * ay + dz * az;
+                            double px = dx - proj * ax, py = dy - proj * ay, pz = dz - proj * az;
+                            double dist = Math.Sqrt(px * px + py * py + pz * pz);
+                            if (dist < bestDist)
+                            {
+                                bestDist = dist;
+                                chosenCylFace = face;
+                                cylAxisX = ax; cylAxisY = ay; cylAxisZ = az;
+                                Console.WriteLine($"[SwCommands] 候选圆柱面: 轴上一点=({cp[0]:F4},{cp[1]:F4},{cp[2]:F4}), 距目标点距离={dist:F4}m, R={cp[6]:F4}");
+                            }
+                        }
+                        else
+                        {
+                            // 未给 axisOrigin：取第一个匹配方向的圆柱面（老行为）
                             chosenCylFace = face;
                             cylAxisX = ax; cylAxisY = ay; cylAxisZ = az;
                             Console.WriteLine($"[SwCommands] 找到圆柱面: 轴上一点=({cp[0]:F4},{cp[1]:F4},{cp[2]:F4}), 轴向=({ax:F3},{ay:F3},{az:F3}), R={cp[6]:F4}");
                             break;
                         }
                     }
-                    if (chosenCylFace != null) break;
+                    if (chosenCylFace != null && !hasOrigin) break;
                 }
+                if (hasOrigin && chosenCylFace != null)
+                    Console.WriteLine($"[SwCommands] 最终选中的圆柱面: 距 axisOrigin ({tx:F4},{ty:F4},{tz:F4}) 距离 {bestDist:F4}m");
             }
             if (chosenCylFace == null)
                 throw new InvalidOperationException(

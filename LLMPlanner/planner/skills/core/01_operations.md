@@ -9,6 +9,26 @@ applies_to: [text, three_view]
 ### 创建类操作
 
 1. **new_part** — 新建零件文档（无参数）
+   - 🔴 **一个 plan 里 new_part 只能调用一次**（永远是第 1 步）！
+   - `new_part` 的语义是"关闭当前文档并打开一个全新的空文档"，**不是** "在当前文档里新建一个实体"。
+   - 如果零件包含**多个不相连的实体**（例如两个独立的齿轮、两个分离的小零件），**不要**用第二次 new_part 分开建——那会销毁前一个实体！
+   - **正确做法**：一次 new_part → 在同一文档里连续用 `sketch_* + feature_extrusion` 画多个独立实体（SolidWorks 允许同一零件文件内存在多个不相连的实体）。
+   - 例：两个齿轮 → 一次 new_part → 画小齿轮圆 + 拉伸 + 齿 + 阵列 → **不要 new_part** → 直接画大齿轮圆(在不同位置) + 拉伸 + 齿 + 阵列。SolidWorks 检测到新草图与已有实体不接触，会自动生成一个新实体（同零件多实体）。
+   - 💡 **多实体零件的推荐建模顺序**（避免重复选面 + 缩短特征树深度）：
+     ```
+     step 1: new_part
+     step 2: select_plane index=0                    ← 前视基准面（草图1）
+     step 3: 在**同一草图1里**同时画所有实体的外圈轮廓 + 所有轴孔的圆
+            例：小齿轮 sketch_circle R=20 中心 (-31,0)
+                大齿轮 sketch_circle R=40 中心 (+31,0)
+                小齿轮轴孔 sketch_circle R=4 中心 (-31,0)   ← 同一草图, 与外圈同心
+                大齿轮轴孔 sketch_circle R=6 中心 (+31,0)   ← 同一草图, 与外圈同心
+     step 4: feature_extrusion depth=0.015           ← 一步拉伸出两个圆环(外圈-内孔自动挖空)
+     step 5+: 依次 select_plane index=0 → sketch_rectangle 齿 → feature_extrusion → feature_circular_pattern
+     ```
+     **原理**：**同心多圆在同一草图 + 一次拉伸 = 自动形成"圆环"体（外圆凸起-内孔挖除）**——
+     不需要单独 select_face 选顶面再画孔，也不需要额外的 cut_extrusion。这是最简洁的多实体轴孔方案。
+     好处：轴孔自然融入第一步拉伸，后续步骤特征树浅，绝不会因射线选面超时。
 2. **select_plane** — 选择基准面并进入草图编辑
    - index: int — 0=前视基准面, 1=上视基准面, 2=右视基准面
 3. **sketch_line** — 在草图中画直线

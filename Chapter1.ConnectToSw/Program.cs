@@ -656,8 +656,12 @@ namespace Chapter1.ConnectToSw
                 string axis = body.ContainsKey("axis") ? body["axis"].ToString() : "y";
                 double angleDeg = GetDoubleOrDefault(body, "angleDeg", 360);
                 bool reverseDir = body.ContainsKey("reverseDir") && Convert.ToBoolean(body["reverseDir"]);
+                // 可选：显式指定旋转轴心（多实体零件中用于避开歧义，选轴线最近此点的圆柱面）
+                double? axisOriginX = body.ContainsKey("axisOriginX") ? (double?)Convert.ToDouble(body["axisOriginX"]) : null;
+                double? axisOriginY = body.ContainsKey("axisOriginY") ? (double?)Convert.ToDouble(body["axisOriginY"]) : null;
+                double? axisOriginZ = body.ContainsKey("axisOriginZ") ? (double?)Convert.ToDouble(body["axisOriginZ"]) : null;
 
-                var result = _commands.CircularPattern(count, axis, angleDeg, reverseDir);
+                var result = _commands.CircularPattern(count, axis, angleDeg, reverseDir, axisOriginX, axisOriginY, axisOriginZ);
                 var response = new Dictionary<string, object> { { "success", true } };
                 foreach (var kv in result) response[kv.Key] = kv.Value;
                 SendJson(resp, 200, response);
