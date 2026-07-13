@@ -58,6 +58,14 @@ def _get_llm_client(
             vision_model=vision_model,
             plan_model=plan_model,
             use_cache=True,
+            # ⚠️ 关键：与命令行测试 test_three_view_e2e.py 保持一致的 skill_mode。
+            #   命令行用 skill_mode="routed"，只按 input_mode 精挑相关 skill 灌入 system_prompt。
+            #   若 Web demo 用默认 skill_mode="full"，会把所有 skill 都灌入 → system_prompt
+            #   完全不同 → cache key 完全不同 → 无法命中命令行已经跑通的 cache，
+            #   而且 context 过大会让 Sonnet 5 更容易算错坐标（真实事故：C3 大齿轮种子齿
+            #   x2=0.0675 而不是 0.0375，齿宽 35mm 而非 5mm，齿全飞出去）。
+            #   两边统一为 "routed" 后：同一 prompt + 同一图 → 同一 cache key → 秒回同一 plan
+            skill_mode="routed",
         )
     return _llm_cache[cache_key]
 
