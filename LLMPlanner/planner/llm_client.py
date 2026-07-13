@@ -356,7 +356,32 @@ class SwLLMClient:
         图片 → SwModelingPlan（两阶段）：
             阶段 A：Vision 模型看图 → ThreeViewIR（结构化 IR）
             阶段 B：把 IR 序列化后作为文字 user_prompt → 走 _plan_text 生成 SwModelingPlan
+
+        ⚠️ 端到端缓存（v2 改进 - 修复 Sonnet 5 Vision 非确定性导致 cache 永远 miss 的问题）：
+            旧行为：阶段 A cache_key = f(image_hash + text_hint) 可命中；
+                    阶段 B cache_key = f(text_hint + **IR_json**) → IR 每次内容不同
+                    → cache_key 每次不同 → **每次都 miss 都花钱**！
+            新行为：额外增加一个「端到端 cache」（key = f(image_hash + text_hint + plan_model)），
+                    命中直接返回最终 plan，**完全跳过阶段 A + B 两次 API 调用**。
+                    这是"金标准"cache——只要同一张图 + 同一段 text 就秒回，用户不再花冤枉钱。
+                    首次调用仍走完整两阶段流水线并写入端到端 cache。
         """
+        # ⭐ 端到端 cache 优先检查（命中直接返回最终 plan，跳过 Vision + Plan 两次 API 调用）
+        e2e_cache_key: Optional[str] = None
+        if self.use_cache and self.cache is not None:
+            # 端到端 key 不依赖 system_prompt（避免 skill 内容微调导致缓存失效）
+            # 而依赖 (plan_model, text_hint, image_sha256)——这三者一致就百分百命中
+            e2e_cache_key = _make_cache_key(
+                self.plan_model,
+                "e2e_multimodal",  # 与阶段 A/B 的 cache 空间区分开
+                user_instruction,
+                image_base64,
+            )
+            cached = self.cache.get(e2e_cache_key)
+            if cached is not None:
+                print("[LLM] ⭐ 端到端缓存命中！跳过 Vision + Plan 两阶段, 零 API 花费")
+                return SwModelingPlan.model_validate_json(cached)
+
         # 阶段 A：Vision 提取 IR
         ir = self._extract_three_view_ir(user_instruction, image_base64)
         print(
@@ -369,7 +394,14 @@ class SwLLMClient:
         # "阶段 B 特别指引"章节（L 型/带缺口的正确画法等）注入到 system prompt
         stage_b_prompt = self._compose_stage_b_prompt(user_instruction, ir)
         print("[LLM] 阶段 B: 将 IR 转换为 SwModelingPlan …")
-        return self._plan_text(stage_b_prompt, input_mode="three_view")
+        plan = self._plan_text(stage_b_prompt, input_mode="three_view")
+
+        # 写入端到端 cache（下次同图同 text_hint 直接秒回）
+        if self.use_cache and self.cache is not None and e2e_cache_key is not None:
+            self.cache.set(e2e_cache_key, plan.model_dump_json())
+            print("[LLM] ⭐ 已写入端到端缓存（下次同图同 text 秒回免费）")
+
+        return plan
 
     def _extract_three_view_ir(
         self,
