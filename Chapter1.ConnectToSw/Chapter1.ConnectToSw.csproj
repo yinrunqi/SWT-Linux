@@ -80,6 +80,10 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <!-- 装配体空模板（运行时需要复制到 bin/Debug/resources/） -->
+    <None Include="resources\empty_assembly_template.SLDASM">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Xarial.XCad.SolidWorks.0.8.3\build\Xarial.XCad.SolidWorks.targets" Condition="Exists('..\packages\Xarial.XCad.SolidWorks.0.8.3\build\Xarial.XCad.SolidWorks.targets')" />

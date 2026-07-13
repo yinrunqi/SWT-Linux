@@ -43,6 +43,10 @@ packages/**
 !Chapter1.ConnectToSw/Properties/
 !Chapter1.ConnectToSw/Properties/*.cs
 
+# 资源文件（装配体空模板等运行时依赖资源）
+!Chapter1.ConnectToSw/resources/
+!Chapter1.ConnectToSw/resources/**
+
 # Chapter1.ConnectToSw 构建产物 —— 不入库
 Chapter1.ConnectToSw/bin/**
 Chapter1.ConnectToSw/obj/**

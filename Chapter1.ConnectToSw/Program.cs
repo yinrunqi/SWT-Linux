@@ -272,6 +272,59 @@ namespace Chapter1.ConnectToSw
                     RequirePost(method, resp, () => HandleChamfer(req, resp));
                     break;
 
+                // ========== 装配体端点（Stage B: 装配体 API 扩展）==========
+                case "/api/assembly/new":
+                    RequirePost(method, resp, () => HandleAssemblyNew(req, resp));
+                    break;
+                case "/api/assembly/add-component":
+                    RequirePost(method, resp, () => HandleAssemblyAddComponent(req, resp));
+                    break;
+                case "/api/assembly/mate-coincident":
+                    RequirePost(method, resp, () => HandleAssemblyMateCoincident(req, resp));
+                    break;
+                case "/api/assembly/mate-concentric":
+                    RequirePost(method, resp, () => HandleAssemblyMateConcentric(req, resp));
+                    break;
+                case "/api/assembly/mate-gear":
+                    RequirePost(method, resp, () => HandleAssemblyMateGear(req, resp));
+                    break;
+                case "/api/assembly/save":
+                    RequirePost(method, resp, () => HandleAssemblySave(resp));
+                    break;
+                case "/api/assembly/rebuild":
+                    RequirePost(method, resp, () => HandleAssemblyRebuild(resp));
+                    break;
+                case "/api/assembly/open":
+                    RequirePost(method, resp, () => HandleAssemblyOpen(req, resp));
+                    break;
+                case "/api/assembly/unfix-component":
+                    RequirePost(method, resp, () => HandleUnfixComponent(req, resp));
+                    break;
+                case "/api/assembly/rotate-component":
+                    RequirePost(method, resp, () => HandleRotateComponent(req, resp));
+                    break;
+                case "/api/assembly/rotate-component-by-drag":
+                    RequirePost(method, resp, () => HandleRotateComponentByDrag(req, resp));
+                    break;
+                case "/api/assembly/animate-rotate-component":
+                    RequirePost(method, resp, () => HandleAnimateRotateComponent(req, resp));
+                    break;
+                case "/api/assembly/get-component-transform":
+                    RequirePost(method, resp, () => HandleGetComponentTransform(req, resp));
+                    break;
+                case "/api/assembly/start-spin":
+                    RequirePost(method, resp, () => HandleStartSpin(req, resp));
+                    break;
+                case "/api/assembly/start-spin-gear-pair":
+                    RequirePost(method, resp, () => HandleStartSpinGearPair(req, resp));
+                    break;
+                case "/api/assembly/stop-spin":
+                    RequirePost(method, resp, () => HandleStopSpin(resp));
+                    break;
+                case "/api/save-part-as":
+                    RequirePost(method, resp, () => HandleSavePartAs(req, resp));
+                    break;
+
                 default:
                     SendJson(resp, 404, new { success = false, message = $"未知端点: {path}" });
                     break;
@@ -1070,6 +1123,356 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"创建倒角失败: {ex.Message}" });
+            }
+        }
+
+        // ================================================================
+        // 装配体端点 handlers（Stage B）
+        //   POST /api/assembly/new           { savePath }                         → 新建装配体
+        //   POST /api/assembly/add-component { partPath, x, y, z }               → 加零件
+        //   POST /api/assembly/mate-coincident {comp1,plane1,comp2,plane2}       → 重合配合
+        //   POST /api/assembly/mate-concentric {comp1,rx1,ry1,rz1,dx1,dy1,dz1,
+        //                                       comp2,rx2,ry2,rz2,dx2,dy2,dz2}   → 同心配合
+        //   POST /api/assembly/mate-gear     {上同 + gearRatioNumerator/
+        //                                     Denominator/reverse}                → 齿轮联动
+        //   POST /api/assembly/save          {}                                   → 保存装配体
+        //   POST /api/assembly/rebuild       {}                                   → 强制重建
+        //   POST /api/save-part-as           { savePath }                         → 零件另存为
+        // ================================================================
+        private static void HandleAssemblyNew(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string savePath = GetString(body, "savePath");
+                _commands.NewAssembly(savePath);
+                SendJson(resp, 200, new { success = true, message = $"新建装配体成功: {savePath}" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] 新建装配体失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = $"新建装配体失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleAssemblyAddComponent(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string partPath = GetString(body, "partPath");
+                double x = GetDoubleOrDefault(body, "x", 0);
+                double y = GetDoubleOrDefault(body, "y", 0);
+                double z = GetDoubleOrDefault(body, "z", 0);
+                string compName = _commands.AddComponent(partPath, x, y, z);
+                SendJson(resp, 200, new { success = true, message = $"已加入组件: {compName}", componentName = compName });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] AddComponent 失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = $"加入组件失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleAssemblyMateCoincident(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string comp1 = GetString(body, "component1");
+                string plane1 = GetStringOrDefault(body, "plane1", "前视基准面");
+                string comp2 = GetString(body, "component2");
+                string plane2 = GetStringOrDefault(body, "plane2", "前视基准面");
+                var result = _commands.MateCoincident(comp1, plane1, comp2, plane2);
+                SendJson(resp, 200, new { success = true, message = "Coincident Mate 完成", result });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] MateCoincident 失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = $"重合配合失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleAssemblyMateConcentric(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string comp1 = GetString(body, "component1");
+                double rx1 = GetDouble(body, "rx1"); double ry1 = GetDouble(body, "ry1"); double rz1 = GetDouble(body, "rz1");
+                double dx1 = GetDouble(body, "dx1"); double dy1 = GetDouble(body, "dy1"); double dz1 = GetDouble(body, "dz1");
+                string comp2 = GetString(body, "component2");
+                double rx2 = GetDouble(body, "rx2"); double ry2 = GetDouble(body, "ry2"); double rz2 = GetDouble(body, "rz2");
+                double dx2 = GetDouble(body, "dx2"); double dy2 = GetDouble(body, "dy2"); double dz2 = GetDouble(body, "dz2");
+                var result = _commands.MateConcentric(
+                    comp1, rx1, ry1, rz1, dx1, dy1, dz1,
+                    comp2, rx2, ry2, rz2, dx2, dy2, dz2);
+                SendJson(resp, 200, new { success = true, message = "Concentric Mate 完成", result });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] MateConcentric 失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = $"同心配合失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleAssemblyMateGear(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string comp1 = GetString(body, "component1");
+                double rx1 = GetDouble(body, "rx1"); double ry1 = GetDouble(body, "ry1"); double rz1 = GetDouble(body, "rz1");
+                double dx1 = GetDouble(body, "dx1"); double dy1 = GetDouble(body, "dy1"); double dz1 = GetDouble(body, "dz1");
+                string comp2 = GetString(body, "component2");
+                double rx2 = GetDouble(body, "rx2"); double ry2 = GetDouble(body, "ry2"); double rz2 = GetDouble(body, "rz2");
+                double dx2 = GetDouble(body, "dx2"); double dy2 = GetDouble(body, "dy2"); double dz2 = GetDouble(body, "dz2");
+                double num = GetDouble(body, "gearRatioNumerator");
+                double den = GetDouble(body, "gearRatioDenominator");
+                bool reverse = body.ContainsKey("reverse") && Convert.ToBoolean(body["reverse"]);
+                var result = _commands.MateGear(
+                    comp1, rx1, ry1, rz1, dx1, dy1, dz1,
+                    comp2, rx2, ry2, rz2, dx2, dy2, dz2,
+                    num, den, reverse);
+                SendJson(resp, 200, new { success = true, message = $"Gear Mate 完成 (比 {num}:{den})", result });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] MateGear 失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = $"齿轮配合失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleAssemblySave(HttpListenerResponse resp)
+        {
+            try
+            {
+                _commands.SaveAssembly();
+                SendJson(resp, 200, new { success = true, message = "装配体已保存" });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"保存装配体失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleAssemblyRebuild(HttpListenerResponse resp)
+        {
+            try
+            {
+                _commands.RebuildAssembly();
+                SendJson(resp, 200, new { success = true, message = "装配体已重建" });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"重建失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSavePartAs(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string savePath = GetString(body, "savePath");
+                var result = _commands.SavePartAs(savePath);
+                SendJson(resp, 200, new { success = true, message = $"零件已另存为: {result["path"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"零件另存为失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleGetComponentTransform(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string comp = GetString(body, "componentName");
+                var result = _commands.GetComponentTransform(comp);
+                SendJson(resp, 200, new { success = true, message = "OK", result });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] GetComponentTransform 失败: {ex.Message}");
+                SendJson(resp, 500, new { success = false, message = ex.Message });
+            }
+        }
+
+        private static void HandleStartSpin(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string comp = GetString(body, "componentName");
+                double px = GetDoubleOrDefault(body, "axisPointX", 0);
+                double py = GetDoubleOrDefault(body, "axisPointY", 0);
+                double pz = GetDoubleOrDefault(body, "axisPointZ", 0);
+                double dx = GetDoubleOrDefault(body, "axisDirX", 0);
+                double dy = GetDoubleOrDefault(body, "axisDirY", 0);
+                double dz = GetDoubleOrDefault(body, "axisDirZ", 1);
+                double stepDeg = GetDoubleOrDefault(body, "anglePerStepDeg", 5);
+                int delay = GetInt(body, "stepDelayMs", 100);
+                var result = _commands.StartSpin(comp, px, py, pz, dx, dy, dz, stepDeg, delay);
+                SendJson(resp, 200, new { success = true, message = $"'{comp}' 开始持续旋转", result });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] StartSpin 失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = $"启动旋转失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleStartSpinGearPair(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string driver = GetString(body, "driverName");
+                string driven = GetString(body, "drivenName");
+                double dvAxX = GetDouble(body, "driverAxisX");
+                double dvAxY = GetDouble(body, "driverAxisY");
+                double dvAxZ = GetDoubleOrDefault(body, "driverAxisZ", 0);
+                double dnAxX = GetDouble(body, "drivenAxisX");
+                double dnAxY = GetDouble(body, "drivenAxisY");
+                double dnAxZ = GetDoubleOrDefault(body, "drivenAxisZ", 0);
+                double dirX = GetDoubleOrDefault(body, "axisDirX", 0);
+                double dirY = GetDoubleOrDefault(body, "axisDirY", 0);
+                double dirZ = GetDoubleOrDefault(body, "axisDirZ", 1);
+                double stepDeg = GetDoubleOrDefault(body, "driverAnglePerStepDeg", 5);
+                double ratio = GetDouble(body, "gearRatio");
+                int delay = GetInt(body, "stepDelayMs", 100);
+                var result = _commands.StartSpinGearPair(
+                    driver, dvAxX, dvAxY, dvAxZ,
+                    driven, dnAxX, dnAxY, dnAxZ,
+                    dirX, dirY, dirZ,
+                    stepDeg, ratio, delay);
+                SendJson(resp, 200, new { success = true, message = $"齿轮对开始持续联动旋转", result });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] StartSpinGearPair 失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = ex.Message });
+            }
+        }
+
+        private static void HandleStopSpin(HttpListenerResponse resp)
+        {
+            try
+            {
+                var result = _commands.StopSpin();
+                SendJson(resp, 200, new { success = true, message = "已停止", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = ex.Message });
+            }
+        }
+
+        private static void HandleUnfixComponent(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string comp = GetString(body, "componentName");
+                _commands.UnfixComponent(comp);
+                SendJson(resp, 200, new { success = true, message = $"'{comp}' 已浮动 (Float)" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] UnfixComponent 失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = $"浮动组件失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleAssemblyOpen(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string assemblyPath = GetString(body, "assemblyPath");
+                _commands.OpenAssembly(assemblyPath);
+                SendJson(resp, 200, new { success = true, message = $"装配体已打开: {assemblyPath}" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] 打开装配体失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = $"打开装配体失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleRotateComponent(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string comp = GetString(body, "componentName");
+                double px = GetDoubleOrDefault(body, "axisPointX", 0);
+                double py = GetDoubleOrDefault(body, "axisPointY", 0);
+                double pz = GetDoubleOrDefault(body, "axisPointZ", 0);
+                // 默认绕装配体 Z 轴
+                double dx = GetDoubleOrDefault(body, "axisDirX", 0);
+                double dy = GetDoubleOrDefault(body, "axisDirY", 0);
+                double dz = GetDoubleOrDefault(body, "axisDirZ", 1);
+                double angleDeg = GetDoubleOrDefault(body, "angleDegrees", 0);
+                double angleRad = angleDeg * Math.PI / 180.0;
+                var result = _commands.RotateComponent(comp, px, py, pz, dx, dy, dz, angleRad);
+                SendJson(resp, 200, new { success = true, message = $"'{comp}' 已旋转 {angleDeg}°", result });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] RotateComponent 失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = $"旋转组件失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleRotateComponentByDrag(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string comp = GetString(body, "componentName");
+                double px = GetDoubleOrDefault(body, "axisPointX", 0);
+                double py = GetDoubleOrDefault(body, "axisPointY", 0);
+                double pz = GetDoubleOrDefault(body, "axisPointZ", 0);
+                double dx = GetDoubleOrDefault(body, "axisDirX", 0);
+                double dy = GetDoubleOrDefault(body, "axisDirY", 0);
+                double dz = GetDoubleOrDefault(body, "axisDirZ", 1);
+                double angleDeg = GetDoubleOrDefault(body, "angleDegrees", 0);
+                double angleRad = angleDeg * Math.PI / 180.0;
+                var result = _commands.RotateComponentByDrag(comp, px, py, pz, dx, dy, dz, angleRad);
+                SendJson(resp, 200, new { success = true, message = $"'{comp}' 已通过 DragOperator 旋转 {angleDeg}°", result });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] RotateComponentByDrag 失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = $"DragOperator 旋转失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleAnimateRotateComponent(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string comp = GetString(body, "componentName");
+                double px = GetDoubleOrDefault(body, "axisPointX", 0);
+                double py = GetDoubleOrDefault(body, "axisPointY", 0);
+                double pz = GetDoubleOrDefault(body, "axisPointZ", 0);
+                double dx = GetDoubleOrDefault(body, "axisDirX", 0);
+                double dy = GetDoubleOrDefault(body, "axisDirY", 0);
+                double dz = GetDoubleOrDefault(body, "axisDirZ", 1);
+                double totalDeg = GetDoubleOrDefault(body, "totalAngleDegrees", 360);
+                int steps = GetInt(body, "steps", 36);
+                int delay = GetInt(body, "stepDelayMs", 50);
+                var result = _commands.AnimateRotateComponent(comp, px, py, pz, dx, dy, dz, totalDeg, steps, delay);
+                SendJson(resp, 200, new { success = true, message = $"'{comp}' 动画旋转完成 ({totalDeg}° / {steps} 步)", result });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] AnimateRotateComponent 失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = $"动画旋转失败: {ex.Message}" });
             }
         }
 

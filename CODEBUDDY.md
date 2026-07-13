@@ -81,6 +81,30 @@ msbuild SolidWorksTutorial.slnx /p:Configuration=Debug
 | POST | `/api/feature/fillet` | `{ "radius", "edgeSelection"(可选), "rx","ry","rz","dx","dy","dz"(射线模式) }` | 圆角特征（米） |
 | POST | `/api/feature/chamfer` | `{ "type"(可选), "distance1", "distance2"(可选), "angle"(可选), "edgeSelection"(可选), 射线参数 }` | 倒角特征（米） |
 
+#### 装配体端点（Stage B，2026-07-13 新增）
+
+装配体建模能力独立于零件建模：`_activeAssembly` 字段与 `ActiveDoc` 解耦，两个上下文并行工作，保证零件建模能力（B01~C3）完全不受影响。
+
+| 方法 | 端点 | 请求参数 | 说明 |
+|---|---|---|---|
+| POST | `/api/assembly/new` | `{ "savePath" }` | 新建装配体（内部机制：打开 `resources/empty_assembly_template.SLDASM` + SaveAs2 到 `savePath`，绕开 SW2025 中文版无 asmdot 模板的问题）|
+| POST | `/api/assembly/open` | `{ "assemblyPath" }` | 打开已存在的 .SLDASM 文件 |
+| POST | `/api/assembly/save` | 无 | 保存当前装配体 |
+| POST | `/api/assembly/rebuild` | 无 | 强制重建装配体 |
+| POST | `/api/assembly/add-component` | `{ "partPath", "x", "y", "z" }` | 加零件到装配体指定位置（米）|
+| POST | `/api/assembly/unfix-component` | `{ "componentName" }` | 组件从 Fixed 变 Float（第一个组件默认 Fixed 需手动浮动才能被拖动）|
+| POST | `/api/assembly/mate-coincident` | `{ "component1", "plane1", "component2", "plane2" }` | 重合配合（默认基准面为"前视基准面"）|
+| POST | `/api/assembly/mate-concentric` | `{ "component1", "rx1","ry1","rz1","dx1","dy1","dz1", "component2", "rx2",... }` | 同心配合（射线选圆柱面）|
+| POST | `/api/assembly/mate-gear` | 同 mate-concentric + `{ "gearRatioNumerator", "gearRatioDenominator", "reverse"(可选) }` | **齿轮联动配合**（传动比 = 分子/分母）|
+| POST | `/api/save-part-as` | `{ "savePath" }` | 零件另存为独立 .SLDPRT（供装配体引用）|
+| POST | `/api/assembly/get-component-transform` | `{ "componentName" }` | 读组件当前 Transform 矩阵（调试用）|
+| POST | `/api/assembly/rotate-component` | `{ "componentName", "axisPointX/Y/Z", "axisDirX/Y/Z", "angleDegrees" }` | ⚠️ **编程旋转组件（当前有已知问题，见 assembly_smoke/README.md）**|
+| POST | `/api/assembly/rotate-component-by-drag` | 同上 | ⚠️ 同上 |
+
+**装配体端点已知问题**：SW2025 中文版下 `SetTransformAndSolve3` / `Transform2` setter / `IDragOperator.Drag` 三种编程旋转 API 都返回成功但组件 Transform 前后不变，**用户手动拖动小齿轮时大齿轮按 2:1 联动完全正常**（Gear Mate 100% 有效），说明是编程 API 层面的问题，不是装配体本身问题。详见 `LLMPlanner/assembly_smoke/README.md`。
+
+**装配体空模板**：`Chapter1.ConnectToSw/resources/empty_assembly_template.SLDASM`（57KB，随构建产物一起 copy 到 bin/Debug/resources/）。
+
 ### 核心依赖
 
 | 包 | 版本 | 用途 |

@@ -38,6 +38,22 @@ namespace Chapter1.ConnectToSw
         /// </summary>
         private string _activeSketchName = null;
 
+        // ============================================================
+        // 装配体状态字段（Stage B: 装配体 API 扩展）
+        //   零件建模状态 (ActiveDoc / _activeSketchName / _sketchOnRefPlane) 独立保留，
+        //   装配体状态与之解耦。两套字段并行工作，互不干扰，保证已有零件建模能力（B01~C3）
+        //   完全不受影响。
+        // ============================================================
+        /// <summary>
+        /// 当前活动的装配体文档（IAssemblyDoc 也是 IModelDoc2）。
+        /// NewAssembly() 后设置，装配体端点操作时使用。
+        /// </summary>
+        private IAssemblyDoc _activeAssembly = null;
+        /// <summary>装配体保存到磁盘的完整路径（用于 SelectByID2 组件寻址所需的装配体名）。</summary>
+        private string _activeAssemblyPath = null;
+        /// <summary>装配体名（不含扩展名），SelectByID2 的组件名格式 "PlaneName@Component@AssemblyName" 需要它。</summary>
+        private string _activeAssemblyName = null;
+
         public SwCommands(ISldWorks swApp)
         {
             _swApp = swApp ?? throw new ArgumentNullException(nameof(swApp));
@@ -2342,6 +2358,958 @@ namespace Chapter1.ConnectToSw
             Extrusion(height);
 
             Console.WriteLine($"[SwCommands] 长方体创建成功 ({length} x {width} x {height} 米)");
+        }
+
+        #endregion
+
+        // ================================================================
+        // 装配体 API 扩展（Stage B）— 让齿轮转起来的基础
+        //
+        // 设计原则（严格遵守）：
+        //   1) 不修改任何已有零件方法，装配体方法**追加**在这里；
+        //   2) 装配体状态存于独立字段 _activeAssembly，与 ActiveDoc（零件）解耦；
+        //   3) 一个服务实例可同时管理"零件"和"装配体"两个上下文（零件建完再进装配体）。
+        //
+        // 已验证事实（来自 Phase 2 pywin32 冒烟）：
+        //   - SolidWorks 2025 中文版没有 asmdot 模板文件 → 用预先准备的 empty_template
+        //   - AddComponent5 参数顺序: (compName, config, appearance, docType, autoConfig, x, y, z)
+        //   - SelectByID2 装配体上下文组件名格式: "前视基准面@gear_small-1@gear_pair_assembly"
+        //   - AddMate5 参数(15 个): (MateType, Align, Flip, Distance, DistAbsUpper, DistAbsLower,
+        //                            GearNum, GearDen, Angle, AngleAbsUpper, AngleAbsLower,
+        //                            ForPositioningOnly, LockRotation, WidthMateOption, ErrorStatus)
+        //   - Mate 类型: swMateCOINCIDENT=0, swMateCONCENTRIC=1, swMateGEAR=10
+        // ================================================================
+        #region 装配体扩展
+
+        /// <summary>
+        /// 装配体空模板文件的完整路径（项目内置资源）。
+        ///   由于 SolidWorks 2025 中文版没有 .asmdot 模板文件，我们无法用 INewDocument2
+        ///   直接建装配体。策略：项目 resources/ 目录内置一份 empty_assembly_template.SLDASM，
+        ///   通过 OpenDoc6 打开这个空装配体 + SaveAs2 到目标路径 → 得到全新装配体文档。
+        /// </summary>
+        private string GetAssemblyTemplatePath()
+        {
+            // 1. 项目 resources 目录（相对可执行文件位置）
+            var exeDir = AppDomain.CurrentDomain.BaseDirectory;
+            var candidates = new[]
+            {
+                Path.Combine(exeDir, "resources", "empty_assembly_template.SLDASM"),
+                Path.Combine(exeDir, "..", "..", "resources", "empty_assembly_template.SLDASM"),  // dev: bin/Debug -> project root/resources
+                Path.Combine(exeDir, "..", "..", "..", "Chapter1.ConnectToSw", "resources", "empty_assembly_template.SLDASM"),
+            };
+            foreach (var c in candidates)
+            {
+                var full = Path.GetFullPath(c);
+                if (File.Exists(full))
+                {
+                    Console.WriteLine($"[SwCommands] 装配体模板 (内置): {full}");
+                    return full;
+                }
+            }
+
+            // 2. 尝试 SolidWorks 配置的默认 .asmdot 模板（Phase 2 已知中文版没有，兜底而已）
+            var pref = _swApp.GetUserPreferenceStringValue(
+                (int)swUserPreferenceStringValue_e.swDefaultTemplateAssembly);
+            if (!string.IsNullOrWhiteSpace(pref) && File.Exists(pref))
+            {
+                Console.WriteLine($"[SwCommands] 装配体模板 (SolidWorks 默认): {pref}");
+                return pref;
+            }
+
+            // 3. 扫描 SolidWorks 模板目录找 .asmdot
+            var dirs = _swApp.GetUserPreferenceStringValue(
+                (int)swUserPreferenceStringValue_e.swFileLocationsDocumentTemplates);
+            if (!string.IsNullOrWhiteSpace(dirs))
+            {
+                foreach (var dir in dirs.Split(';'))
+                {
+                    if (!Directory.Exists(dir)) continue;
+                    var files = Directory.GetFiles(dir, "*.asmdot");
+                    if (files.Length > 0)
+                    {
+                        Console.WriteLine($"[SwCommands] 装配体模板 (扫描): {files[0]}");
+                        return files[0];
+                    }
+                }
+            }
+
+            throw new InvalidOperationException(
+                "找不到任何装配体模板。请在 resources/ 目录下放置 empty_assembly_template.SLDASM " +
+                "（或在 SolidWorks 里手动新建空装配体并保存为此名）。");
+        }
+
+        /// <summary>确保当前有活动装配体（装配体端点入口守卫）。</summary>
+        private void EnsureActiveAssembly()
+        {
+            if (_activeAssembly == null)
+                throw new InvalidOperationException("没有活动的装配体文档，请先调用 /api/assembly/new");
+        }
+
+        /// <summary>
+        /// 新建装配体文档。
+        ///   策略：打开内置空模板 + SaveAs2 到目标路径。避开 INewDocument2 找不到 asmdot 模板的问题。
+        /// </summary>
+        /// <param name="savePath">装配体保存路径（.SLDASM）。必须给完整路径。</param>
+        public void NewAssembly(string savePath)
+        {
+            if (string.IsNullOrWhiteSpace(savePath))
+                throw new ArgumentException("savePath 不能为空", nameof(savePath));
+            if (!Path.IsPathRooted(savePath))
+                throw new ArgumentException("savePath 必须是绝对路径", nameof(savePath));
+            if (!savePath.EndsWith(".SLDASM", StringComparison.OrdinalIgnoreCase))
+                savePath += ".SLDASM";
+
+            var templatePath = GetAssemblyTemplatePath();
+
+            // 关闭同名装配体（避免文件锁死）
+            try
+            {
+                var fname = Path.GetFileName(savePath);
+                _swApp.CloseDoc(fname);
+            }
+            catch { /* 忽略 */ }
+            if (File.Exists(savePath))
+            {
+                File.Delete(savePath);
+                Console.WriteLine($"[SwCommands] 已删除旧装配体文件: {savePath}");
+            }
+
+            // 打开空模板
+            int errors = 0, warnings = 0;
+            var asmDoc = _swApp.OpenDoc6(
+                templatePath,
+                (int)swDocumentTypes_e.swDocASSEMBLY,
+                0,
+                "",
+                ref errors,
+                ref warnings) as IAssemblyDoc;
+            if (asmDoc == null)
+                throw new InvalidOperationException($"打开装配体模板失败: errors={errors}, warnings={warnings}");
+            Console.WriteLine($"[SwCommands] 打开空装配体模板: {templatePath} (errors={errors}, warnings={warnings})");
+
+            // SaveAs2 到目标路径（老 SaveAs2 简单 4 参版本）
+            var modelDoc = (IModelDoc2)asmDoc;
+            int saveResult = modelDoc.SaveAs2(savePath, 0, false, false);
+            Console.WriteLine($"[SwCommands] 装配体 SaveAs2 → {savePath} (ret={saveResult})");
+
+            _activeAssembly = asmDoc;
+            _activeAssemblyPath = savePath;
+            _activeAssemblyName = Path.GetFileNameWithoutExtension(savePath);
+            Console.WriteLine($"[SwCommands] 新建装配体成功: 名称='{_activeAssemblyName}'");
+        }
+
+        /// <summary>
+        /// 把 .SLDPRT 零件文件加入当前装配体。
+        /// </summary>
+        /// <param name="partPath">零件文件路径（绝对路径）</param>
+        /// <param name="x">放置 X 坐标（米，装配体坐标系）</param>
+        /// <param name="y">放置 Y 坐标（米）</param>
+        /// <param name="z">放置 Z 坐标（米）</param>
+        /// <returns>加入后的 Component2 实例名（例如 "gear_small-1"）</returns>
+        public string AddComponent(string partPath, double x, double y, double z)
+        {
+            EnsureActiveAssembly();
+            if (string.IsNullOrWhiteSpace(partPath))
+                throw new ArgumentException("partPath 不能为空", nameof(partPath));
+            if (!File.Exists(partPath))
+                throw new FileNotFoundException($"零件文件不存在: {partPath}", partPath);
+
+            // 预加载零件（AddComponent5 需要零件已在内存中）
+            int errors = 0, warnings = 0;
+            var partDoc = _swApp.OpenDoc6(
+                partPath,
+                (int)swDocumentTypes_e.swDocPART,
+                0,
+                "",
+                ref errors,
+                ref warnings);
+            if (partDoc == null)
+                throw new InvalidOperationException($"预加载零件失败: {partPath} (errors={errors})");
+            Console.WriteLine($"[SwCommands] 预加载零件: {partPath} (errors={errors}, warnings={warnings})");
+
+            // 切回装配体作为活动文档
+            _swApp.ActivateDoc3(
+                _activeAssemblyName + ".SLDASM",
+                true,
+                (int)swRebuildOnActivation_e.swDontRebuildActiveDoc,
+                ref errors);
+
+            // AddComponent5 参数:
+            //   (compName, configOpt, newConfigName, useConfigForPartRefs, existConfigName, x, y, z)
+            var comp = _activeAssembly.AddComponent5(
+                partPath,
+                (int)swAddComponentConfigOptions_e.swAddComponentConfigOptions_CurrentSelectedConfig,
+                "",
+                false,
+                "",
+                x, y, z) as IComponent2;
+            if (comp == null)
+                throw new InvalidOperationException($"AddComponent5 返回 null: partPath={partPath}");
+
+            var compName = comp.Name2;
+            Console.WriteLine($"[SwCommands] 已加入组件: {compName} @ ({x*1000:F1},{y*1000:F1},{z*1000:F1}) mm");
+            return compName;
+        }
+
+        /// <summary>
+        /// 装配体上下文中的 SelectByID2 组件成员选择封装。
+        ///   name 格式: "<成员名>@<组件名>@<装配体名>"
+        ///   例如选组件 gear_small-1 的前视基准面: name="前视基准面@gear_small-1@gear_pair_assembly"
+        ///   
+        /// SolidWorks 中文版基准面名字:
+        ///   - "前视基准面" (Front Plane)
+        ///   - "上视基准面" (Top Plane)  
+        ///   - "右视基准面" (Right Plane)
+        /// </summary>
+        private bool SelectByIDInAssembly(string memberName, string componentName, string objType, int mark, bool append)
+        {
+            var ext = ((IModelDoc2)_activeAssembly).Extension;
+            var fullName = $"{memberName}@{componentName}@{_activeAssemblyName}";
+            var ok = ext.SelectByID2(fullName, objType, 0.0, 0.0, 0.0, append, mark, null, 0);
+            Console.WriteLine($"[SwCommands] SelectByID2('{fullName}', '{objType}', mark={mark}) → {ok}");
+            return ok;
+        }
+
+        /// <summary>装配体：清除当前选择。</summary>
+        private void ClearAssemblySelection()
+        {
+            ((IModelDoc2)_activeAssembly).ClearSelection2(true);
+        }
+
+        /// <summary>
+        /// 加"重合"配合（Coincident Mate）：让两个组件的基准面重合。
+        /// 常用于让两个齿轮在同一 Z 平面上并排（各自的前视基准面重合）。
+        /// </summary>
+        /// <param name="comp1Name">组件 1 实例名（如 "gear_small-1"）</param>
+        /// <param name="plane1Name">组件 1 上的基准面名（默认 "前视基准面"）</param>
+        /// <param name="comp2Name">组件 2 实例名</param>
+        /// <param name="plane2Name">组件 2 上的基准面名</param>
+        public Dictionary<string, object> MateCoincident(
+            string comp1Name, string plane1Name,
+            string comp2Name, string plane2Name)
+        {
+            EnsureActiveAssembly();
+            ClearAssemblySelection();
+
+            var ok1 = SelectByIDInAssembly(plane1Name, comp1Name, "PLANE", 1, false);
+            var ok2 = SelectByIDInAssembly(plane2Name, comp2Name, "PLANE", 1, true);
+            if (!ok1 || !ok2)
+                throw new InvalidOperationException(
+                    $"Coincident Mate 选面失败: ok1={ok1}, ok2={ok2}. " +
+                    $"请确认组件名和基准面名。中文默认: 前视基准面/上视基准面/右视基准面");
+
+            int errStatus = 0;
+            var mate = _activeAssembly.AddMate5(
+                (int)swMateType_e.swMateCOINCIDENT,   // MateTypeFromEnum
+                (int)swMateAlign_e.swMateAlignALIGNED, // AlignFromEnum
+                false,      // Flip
+                0.0, 0.0, 0.0,   // Distance / Upper / Lower
+                1.0, 1.0,        // GearRatioNumerator / Denominator (Coincident 用不到)
+                0.0, 0.0, 0.0,   // Angle / Upper / Lower
+                false, false,     // ForPositioningOnly, LockRotation
+                0,               // WidthMateOption
+                out errStatus);
+            Console.WriteLine($"[SwCommands] MateCoincident 结果: mate={(mate == null ? "null" : "OK")}, errStatus={errStatus}");
+            if (errStatus != (int)swAddMateError_e.swAddMateError_NoError)
+                throw new InvalidOperationException(
+                    $"Coincident Mate 失败: errStatus={errStatus} " +
+                    "(1=NoError, 2=IncorrectMateType, 3=IncorrectAlignment, 4=IncorrectSelections, 5=OverDefined)");
+            return new Dictionary<string, object>
+            {
+                ["mateType"] = "Coincident",
+                ["component1"] = comp1Name,
+                ["plane1"] = plane1Name,
+                ["component2"] = comp2Name,
+                ["plane2"] = plane2Name,
+                ["errStatus"] = errStatus,
+            };
+        }
+
+        /// <summary>
+        /// 加"同心"配合（Concentric Mate）：让两个组件的圆柱面/圆边同轴。
+        /// 齿轮组常用：把两个齿轮各自"绕自己的轴旋转"约束住 → 齿轮和圆柱面同心，
+        /// 就等于给齿轮定义了旋转轴。
+        /// 
+        /// 由于装配体里选择"零件的某个圆柱面"必须用面射线/坐标定位，参数暂时用"面射线"方案：
+        ///   传入两组组件+射线参数，服务端在各自组件坐标系下找圆柱面。
+        /// 
+        /// 简化版：本次实现要求两个组件的**圆盘轴都平行 Z 轴** (齿轮场景总是如此)，
+        ///   直接用组件的**任意一个圆柱面**通过 SelectByID2 名字选择太复杂 —— 走"射线拾取"路径。
+        /// 
+        /// TODO(下一版): 支持传"轴基准" (Axis) 而不是圆柱面, 更稳定。
+        /// </summary>
+        public Dictionary<string, object> MateConcentric(
+            string comp1Name, double rx1, double ry1, double rz1, double dx1, double dy1, double dz1,
+            string comp2Name, double rx2, double ry2, double rz2, double dx2, double dy2, double dz2)
+        {
+            EnsureActiveAssembly();
+            ClearAssemblySelection();
+
+            // 在装配体的每个组件上射线找圆柱面
+            IFace2 face1 = SelectComponentFaceByRay(comp1Name, rx1, ry1, rz1, dx1, dy1, dz1, appendSelect: false, mark: 1);
+            IFace2 face2 = SelectComponentFaceByRay(comp2Name, rx2, ry2, rz2, dx2, dy2, dz2, appendSelect: true, mark: 1);
+            if (face1 == null || face2 == null)
+                throw new InvalidOperationException($"Concentric Mate 选面失败: face1={face1 != null}, face2={face2 != null}");
+
+            int errStatus = 0;
+            var mate = _activeAssembly.AddMate5(
+                (int)swMateType_e.swMateCONCENTRIC,
+                (int)swMateAlign_e.swMateAlignALIGNED,
+                false,
+                0.0, 0.0, 0.0,
+                1.0, 1.0,
+                0.0, 0.0, 0.0,
+                false, false,
+                0,
+                out errStatus);
+            Console.WriteLine($"[SwCommands] MateConcentric 结果: mate={(mate == null ? "null" : "OK")}, errStatus={errStatus}");
+            if (errStatus != (int)swAddMateError_e.swAddMateError_NoError)
+                throw new InvalidOperationException(
+                    $"Concentric Mate 失败: errStatus={errStatus}");
+            return new Dictionary<string, object>
+            {
+                ["mateType"] = "Concentric",
+                ["component1"] = comp1Name,
+                ["component2"] = comp2Name,
+                ["errStatus"] = errStatus,
+            };
+        }
+
+        /// <summary>
+        /// 加"齿轮"配合（Gear Mate）：让两个组件按齿数比联动旋转。
+        ///   传动比 = gearRatioNumerator / gearRatioDenominator
+        ///   例如小齿轮 10 齿, 大齿轮 20 齿 → 大转 1 圈时小转 2 圈 → 传动比 2:1
+        ///   传参: gearRatioNumerator=20 (大), gearRatioDenominator=10 (小), reverse=false/true
+        /// 
+        /// Gear Mate 要求先选中两个组件的圆柱面（各自的分度圆柱面）作为啮合参考。
+        /// </summary>
+        public Dictionary<string, object> MateGear(
+            string comp1Name, double rx1, double ry1, double rz1, double dx1, double dy1, double dz1,
+            string comp2Name, double rx2, double ry2, double rz2, double dx2, double dy2, double dz2,
+            double gearRatioNumerator, double gearRatioDenominator, bool reverse = false)
+        {
+            EnsureActiveAssembly();
+            if (gearRatioNumerator <= 0 || gearRatioDenominator <= 0)
+                throw new ArgumentException("齿数比必须为正数");
+
+            ClearAssemblySelection();
+            IFace2 face1 = SelectComponentFaceByRay(comp1Name, rx1, ry1, rz1, dx1, dy1, dz1, appendSelect: false, mark: 1);
+            IFace2 face2 = SelectComponentFaceByRay(comp2Name, rx2, ry2, rz2, dx2, dy2, dz2, appendSelect: true, mark: 1);
+            if (face1 == null || face2 == null)
+                throw new InvalidOperationException($"Gear Mate 选面失败");
+
+            int errStatus = 0;
+            var alignEnum = reverse
+                ? (int)swMateAlign_e.swMateAlignANTI_ALIGNED
+                : (int)swMateAlign_e.swMateAlignALIGNED;
+            var mate = _activeAssembly.AddMate5(
+                (int)swMateType_e.swMateGEAR,
+                alignEnum,
+                false,
+                0.0, 0.0, 0.0,
+                gearRatioNumerator,     // GearNum (齿数比 分子)
+                gearRatioDenominator,   // GearDen (齿数比 分母)
+                0.0, 0.0, 0.0,
+                false, false,
+                0,
+                out errStatus);
+            Console.WriteLine($"[SwCommands] MateGear 结果: ratio={gearRatioNumerator}:{gearRatioDenominator}, reverse={reverse}, errStatus={errStatus}");
+            if (errStatus != (int)swAddMateError_e.swAddMateError_NoError)
+                throw new InvalidOperationException($"Gear Mate 失败: errStatus={errStatus}");
+            return new Dictionary<string, object>
+            {
+                ["mateType"] = "Gear",
+                ["component1"] = comp1Name,
+                ["component2"] = comp2Name,
+                ["gearRatioNumerator"] = gearRatioNumerator,
+                ["gearRatioDenominator"] = gearRatioDenominator,
+                ["reverse"] = reverse,
+                ["errStatus"] = errStatus,
+            };
+        }
+
+        /// <summary>
+        /// 在装配体的某个组件上，用射线拾取一个面并把它加入当前选择集。
+        ///   射线在**装配体坐标系**下给出。
+        ///   返回选中的 IFace2 引用（供调用方后续使用）。
+        /// </summary>
+        private IFace2 SelectComponentFaceByRay(
+            string componentName,
+            double rx, double ry, double rz,
+            double dx, double dy, double dz,
+            bool appendSelect, int mark)
+        {
+            var asmModel = (IModelDoc2)_activeAssembly;
+            // 找到组件对象
+            var comps = (object[])_activeAssembly.GetComponents(false);
+            IComponent2 targetComp = null;
+            foreach (var c in comps)
+            {
+                var comp = c as IComponent2;
+                if (comp != null && comp.Name2 == componentName)
+                {
+                    targetComp = comp;
+                    break;
+                }
+            }
+            if (targetComp == null)
+                throw new InvalidOperationException($"装配体中找不到组件: '{componentName}'. 可用组件: [{string.Join(", ", comps.Select(o => (o as IComponent2)?.Name2 ?? "?"))}]");
+
+            // 归一化方向
+            double norm = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+            if (norm < 1e-9) throw new ArgumentException("射线方向不能为零向量");
+            dx /= norm; dy /= norm; dz /= norm;
+
+            // 从组件的实体里找面
+            IFace2 chosenFace = null;
+            double minDist = double.MaxValue;
+            var bodies = (object[])targetComp.GetBodies3((int)swBodyType_e.swAllBodies, out _);
+            if (bodies != null)
+            {
+                foreach (var bObj in bodies)
+                {
+                    var body = bObj as IBody2;
+                    if (body == null) continue;
+                    var faces = (object[])body.GetFaces();
+                    if (faces == null) continue;
+                    foreach (var fObj in faces)
+                    {
+                        var face = fObj as IFace2;
+                        if (face == null) continue;
+                        // 只考虑圆柱面（Concentric/Gear Mate 需要圆柱面）
+                        var surf = face.IGetSurface() as ISurface;
+                        if (surf == null || !surf.IsCylinder()) continue;
+                        var closest = (double[])face.GetClosestPointOn(rx, ry, rz);
+                        if (closest == null || closest.Length < 3) continue;
+                        var dxo = closest[0] - rx; var dyo = closest[1] - ry; var dzo = closest[2] - rz;
+                        var forwardDot = dxo * dx + dyo * dy + dzo * dz;
+                        if (forwardDot < 0) continue;  // 面在射线反方向
+                        var dist = Math.Sqrt(dxo * dxo + dyo * dyo + dzo * dzo);
+                        if (dist < minDist)
+                        {
+                            minDist = dist;
+                            chosenFace = face;
+                        }
+                    }
+                }
+            }
+            if (chosenFace == null)
+                throw new InvalidOperationException(
+                    $"组件 '{componentName}' 上未找到方向匹配的圆柱面 (射线起点=({rx:F4},{ry:F4},{rz:F4}), 方向=({dx:F3},{dy:F3},{dz:F3}))");
+
+            var isEnt = chosenFace as IEntity;
+            var selOk = isEnt.Select4(appendSelect, null);
+            Console.WriteLine($"[SwCommands] 组件 '{componentName}' 上选中圆柱面, dist={minDist * 1000:F2}mm, append={appendSelect}, ok={selOk}");
+            return chosenFace;
+        }
+
+        /// <summary>
+        /// 把当前活动零件文档另存为独立 .sldprt 文件（供装配用）。
+        /// </summary>
+        /// <param name="savePath">目标 .sldprt 完整路径</param>
+        public Dictionary<string, object> SavePartAs(string savePath)
+        {
+            EnsureActiveDoc();
+            if (string.IsNullOrWhiteSpace(savePath))
+                throw new ArgumentException("savePath 不能为空", nameof(savePath));
+            if (!Path.IsPathRooted(savePath))
+                throw new ArgumentException("savePath 必须是绝对路径", nameof(savePath));
+            if (!savePath.EndsWith(".SLDPRT", StringComparison.OrdinalIgnoreCase))
+                savePath += ".SLDPRT";
+
+            int result = ActiveDoc.SaveAs2(savePath, 0, false, false);
+            Console.WriteLine($"[SwCommands] SavePartAs → {savePath} (ret={result})");
+            return new Dictionary<string, object>
+            {
+                ["path"] = savePath,
+                ["result"] = result,
+            };
+        }
+
+        /// <summary>
+        /// 装配体：强制重建。
+        /// </summary>
+        public void RebuildAssembly()
+        {
+            EnsureActiveAssembly();
+            ((IModelDoc2)_activeAssembly).EditRebuild3();
+            Console.WriteLine("[SwCommands] 装配体 Rebuild 完成");
+        }
+
+        /// <summary>
+        /// 保存当前装配体。
+        /// </summary>
+        public void SaveAssembly()
+        {
+            EnsureActiveAssembly();
+            var modelDoc = (IModelDoc2)_activeAssembly;
+            int result = modelDoc.SaveAs2(_activeAssemblyPath, 0, false, false);
+            Console.WriteLine($"[SwCommands] 装配体 Save → {_activeAssemblyPath} (ret={result})");
+        }
+
+        /// <summary>
+        /// 读取一个组件在装配体坐标系下的当前 Transform 矩阵（16 元素 double 数组）。
+        ///   用于诊断: 旋转后位置是否真的变了。
+        /// </summary>
+        public Dictionary<string, object> GetComponentTransform(string componentName)
+        {
+            EnsureActiveAssembly();
+            var comps = (object[])_activeAssembly.GetComponents(false);
+            IComponent2 targetComp = null;
+            foreach (var c in comps)
+            {
+                var comp = c as IComponent2;
+                if (comp != null && comp.Name2 == componentName)
+                {
+                    targetComp = comp;
+                    break;
+                }
+            }
+            if (targetComp == null)
+                throw new InvalidOperationException($"找不到组件: {componentName}");
+
+            var t = (MathTransform)targetComp.Transform2;
+            var arr = (double[])t.ArrayData;
+            // 提取旋转子矩阵前 9 项 + 平移 3 项
+            return new Dictionary<string, object>
+            {
+                ["componentName"] = componentName,
+                ["fullMatrix"] = arr,
+                ["rotationMatrix3x3"] = new double[] { arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], arr[6], arr[7], arr[8] },
+                ["translationXYZ"] = new double[] { arr[9], arr[10], arr[11] },
+                ["scale"] = arr[12],
+                ["isFixed"] = targetComp.IsFixed(),
+            };
+        }
+
+        /// <summary>
+        /// 把指定组件设为"浮动"（Float）— 允许被 Transform 旋转/移动。
+        ///   AddComponent5 加进来的第一个组件默认是"固定"（Fixed），Fixed 组件的 Transform
+        ///   修改会被 SolidWorks 忽略 —— 这正是我们旋转小齿轮"视觉无变化"的根因。
+        /// </summary>
+        public void UnfixComponent(string componentName)
+        {
+            EnsureActiveAssembly();
+            ClearAssemblySelection();
+            // 选择组件: name 格式 "componentName@assemblyName", type = "COMPONENT"
+            var ext = ((IModelDoc2)_activeAssembly).Extension;
+            var fullName = $"{componentName}@{_activeAssemblyName}";
+            bool ok = ext.SelectByID2(fullName, "COMPONENT", 0.0, 0.0, 0.0, false, 0, null, 0);
+            if (!ok)
+                throw new InvalidOperationException($"选择组件失败: {fullName}");
+            _activeAssembly.UnfixComponent();
+            Console.WriteLine($"[SwCommands] 已浮动 (Float) 组件: {componentName}");
+        }
+
+        /// <summary>
+        /// 打开一个已存在的装配体文件（把它设为当前 _activeAssembly）。
+        ///   用于外部工作流：先 NewAssembly 建，再关闭并重新打开操作；
+        ///   或直接对已有 .SLDASM 文件做 rotate 等操作。
+        /// </summary>
+        public void OpenAssembly(string assemblyPath)
+        {
+            if (string.IsNullOrWhiteSpace(assemblyPath))
+                throw new ArgumentException("assemblyPath 不能为空", nameof(assemblyPath));
+            if (!File.Exists(assemblyPath))
+                throw new FileNotFoundException($"装配体文件不存在: {assemblyPath}", assemblyPath);
+
+            int errors = 0, warnings = 0;
+            var asmDoc = _swApp.OpenDoc6(
+                assemblyPath,
+                (int)swDocumentTypes_e.swDocASSEMBLY,
+                0,
+                "",
+                ref errors,
+                ref warnings) as IAssemblyDoc;
+            if (asmDoc == null)
+                throw new InvalidOperationException($"打开装配体失败: {assemblyPath} (errors={errors})");
+            _activeAssembly = asmDoc;
+            _activeAssemblyPath = assemblyPath;
+            _activeAssemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
+            Console.WriteLine($"[SwCommands] 已打开装配体: {_activeAssemblyName} (errors={errors}, warnings={warnings})");
+        }
+
+        /// <summary>
+        /// 让一个组件绕装配体坐标系某个轴旋转指定角度 —— 用 IDragOperator (模拟用户拖动).
+        ///   这是 SolidWorks 官方推荐的"通过 API 触发约束联动"方案.
+        ///   
+        /// ⚠️ 用 Transform2 setter / SetTransformAndSolve3 无效 (Gear Mate 会反解).
+        ///   诊断证据 (phase6/phase7): 前后 Transform 完全一样, 视觉无变化.
+        ///   
+        /// DragOperator 模拟的是"用户在 SW 界面里手动拖组件"的行为, 会正确触发 Gear Mate 联动.
+        /// </summary>
+        public Dictionary<string, object> RotateComponentByDrag(
+            string componentName,
+            double axisPointX, double axisPointY, double axisPointZ,
+            double axisDirX, double axisDirY, double axisDirZ,
+            double angleRad)
+        {
+            EnsureActiveAssembly();
+
+            // 找目标组件
+            var comps = (object[])_activeAssembly.GetComponents(false);
+            IComponent2 targetComp = null;
+            foreach (var c in comps)
+            {
+                var comp = c as IComponent2;
+                if (comp != null && comp.Name2 == componentName)
+                {
+                    targetComp = comp;
+                    break;
+                }
+            }
+            if (targetComp == null)
+                throw new InvalidOperationException($"找不到组件: {componentName}");
+
+            // 获取 DragOperator (SolidWorks 官方推荐的组件拖动 API)
+            var dragOp = _activeAssembly.GetDragOperator() as IDragOperator;
+            if (dragOp == null)
+                throw new InvalidOperationException("GetDragOperator 返回 null");
+
+            // 构造"绕轴旋转"变换矩阵 (与 RotateComponent 用法一致)
+            var mathUtil = (IMathUtility)_swApp.GetMathUtility();
+            var mathPoint = (MathPoint)mathUtil.CreatePoint(new object[] { axisPointX, axisPointY, axisPointZ });
+            var mathVector = (MathVector)mathUtil.CreateVector(new object[] { axisDirX, axisDirY, axisDirZ });
+            var rotateTransform = (MathTransform)mathUtil.CreateTransformRotateAxis(mathPoint, mathVector, angleRad);
+            if (rotateTransform == null)
+                throw new InvalidOperationException("CreateTransformRotateAxis 返回 null");
+
+            // DragOperator 的正确用法 (反射得到的 API 签名):
+            //   1. AddComponent(comp, false)   - 加要拖的组件
+            //   2. BeginDrag()                  - 开始拖动会话
+            //   3. Drag(transform)              - 应用变换 (可多次调用)
+            //   4. EndDrag()                    - 结束会话, 提交变换
+            //
+            // ⚠️ Drag 传 MathTransform 表示"目标绝对变换"或"相对变换" (取决于 UseAbsoluteTransform).
+            //   默认 UseAbsoluteTransform=false → 相对变换 (即"在当前位置上再应用这个变换")
+            bool ok = false;
+            try
+            {
+                bool addOk = dragOp.AddComponent(targetComp, false);
+                Console.WriteLine($"[SwCommands] DragOperator.AddComponent → {addOk}");
+
+                // 可选: 设置 UseAbsoluteTransform=false 表示相对变换
+                dragOp.UseAbsoluteTransform = false;
+                dragOp.GraphicsRedrawEnabled = true;
+
+                bool beginOk = dragOp.BeginDrag();
+                Console.WriteLine($"[SwCommands] DragOperator.BeginDrag → {beginOk}");
+
+                bool dragOk = dragOp.Drag(rotateTransform);
+                Console.WriteLine($"[SwCommands] DragOperator.Drag(transform) → {dragOk}");
+
+                bool endOk = dragOp.EndDrag();
+                Console.WriteLine($"[SwCommands] DragOperator.EndDrag → {endOk}");
+
+                ok = addOk && beginOk && dragOk && endOk;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SwCommands] DragOperator 序列抛异常: {ex.Message}");
+                ok = false;
+            }
+
+            // 刷新图形显示
+            ((IModelDoc2)_activeAssembly).GraphicsRedraw2();
+
+            Console.WriteLine(
+                $"[SwCommands] RotateComponentByDrag: '{componentName}' 绕轴({axisPointX*1000:F1},{axisPointY*1000:F1},{axisPointZ*1000:F1})mm " +
+                $"方向({axisDirX:F2},{axisDirY:F2},{axisDirZ:F2}) 旋转 {angleRad*180/Math.PI:F2}° → ok={ok}");
+
+            return new Dictionary<string, object>
+            {
+                ["componentName"] = componentName,
+                ["angleDegrees"] = angleRad * 180.0 / Math.PI,
+                ["method"] = "DragOperator",
+                ["ok"] = ok,
+            };
+        }
+
+        /// <summary>
+        /// 让一个组件绕装配体坐标系某个轴旋转指定角度。
+        ///   通过 IComponent2.SetTransformAndSolve3 更新组件的 Transform 矩阵，
+        ///   SolidWorks 会触发约束求解器 → Gear Mate 自动联动其他齿轮。
+        /// 
+        /// 参数：
+        ///   componentName - 组件实例名（如 "gear_small-1"）
+        ///   axisPointX/Y/Z - 旋转轴穿过的点（装配体坐标系，米）
+        ///   axisDirX/Y/Z - 旋转轴方向向量（会被归一化）
+        ///   angleRad - 旋转角度（弧度，正值按右手定则）
+        /// </summary>
+        public Dictionary<string, object> RotateComponent(
+            string componentName,
+            double axisPointX, double axisPointY, double axisPointZ,
+            double axisDirX, double axisDirY, double axisDirZ,
+            double angleRad)
+        {
+            EnsureActiveAssembly();
+
+            // 找目标组件
+            var comps = (object[])_activeAssembly.GetComponents(false);
+            IComponent2 targetComp = null;
+            foreach (var c in comps)
+            {
+                var comp = c as IComponent2;
+                if (comp != null && comp.Name2 == componentName)
+                {
+                    targetComp = comp;
+                    break;
+                }
+            }
+            if (targetComp == null)
+                throw new InvalidOperationException(
+                    $"找不到组件: '{componentName}'. 可用组件: [{string.Join(", ", comps.Select(o => (o as IComponent2)?.Name2 ?? "?"))}]");
+
+            // 用 MathUtility 构造 "绕 axis 旋转 angleRad" 的变换矩阵
+            var mathUtil = (IMathUtility)_swApp.GetMathUtility();
+            var pointArr = new object[] { axisPointX, axisPointY, axisPointZ };
+            var vectorArr = new object[] { axisDirX, axisDirY, axisDirZ };
+            var mathPoint = (MathPoint)mathUtil.CreatePoint(pointArr);
+            var mathVector = (MathVector)mathUtil.CreateVector(vectorArr);
+            var rotateTransform = (MathTransform)mathUtil.CreateTransformRotateAxis(mathPoint, mathVector, angleRad);
+            if (rotateTransform == null)
+                throw new InvalidOperationException("CreateTransformRotateAxis 返回 null（可能轴向量为零）");
+
+            // 取组件当前 Transform, 叠加旋转
+            var currentTransform = (MathTransform)targetComp.Transform2;
+            // 组件新位置 = 当前 × 旋转（先旋转后当前变换 - SolidWorks 使用行主序矩阵）
+            // 试验证明: newTransform = currentTransform.Multiply(rotateTransform) 会绕组件本地坐标系
+            //         newTransform = rotateTransform.Multiply(currentTransform) 会绕装配体世界坐标系
+            // 齿轮啮合需要"绕世界坐标系里的齿轮轴"旋转，所以用后者
+            var newTransform = (MathTransform)rotateTransform.Multiply(currentTransform);
+
+            // ⚠️ 关键: SolidWorks 2025 中文版 SetTransformAndSolve3 会被 Gear Mate 约束
+            //   "反解"回原样 (Transform 数值上不变), API 返回 ok=True 但完全没生效.
+            //   诊断证据 (phase6_diagnose.py): 前后 Transform 完全一样.
+            //   
+            // 换方案: 直接赋值 Transform2 属性 - 这是"底层"操作, 绕过约束求解器,
+            //   齿轮真的会转. 代价: Gear Mate 不会自动联动另一个齿轮 (需要外部手工同步).
+            //   联动方案见 RotateGearPair (旋转两齿轮时按传动比手工同步角度).
+            bool ok = true;
+            int errorStatus = 0;
+            try
+            {
+                targetComp.Transform2 = newTransform;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SwCommands] Transform2 赋值失败: {ex.Message}");
+                ok = false;
+                errorStatus = -1;
+            }
+
+            // 强制刷新图形显示 (装配体不需要 EditRebuild3, 只需要重绘)
+            ((IModelDoc2)_activeAssembly).GraphicsRedraw2();
+
+            Console.WriteLine(
+                $"[SwCommands] RotateComponent: '{componentName}' 绕轴({axisPointX*1000:F1},{axisPointY*1000:F1},{axisPointZ*1000:F1})mm " +
+                $"方向({axisDirX:F2},{axisDirY:F2},{axisDirZ:F2}) 旋转 {angleRad*180/Math.PI:F2}° " +
+                $"→ ok={ok}, errorStatus={errorStatus}");
+
+            return new Dictionary<string, object>
+            {
+                ["componentName"] = componentName,
+                ["angleDegrees"] = angleRad * 180.0 / Math.PI,
+                ["axisPoint"] = new double[] { axisPointX, axisPointY, axisPointZ },
+                ["axisDirection"] = new double[] { axisDirX, axisDirY, axisDirZ },
+                ["ok"] = ok,
+                ["errorStatus"] = errorStatus,
+            };
+        }
+
+        /// <summary>
+        /// 手工联动式旋转两个齿轮 (按传动比同步).
+        ///   由于 SetTransformAndSolve3 被 Gear Mate 反解, 无法通过约束求解自动联动.
+        ///   替代方案: 一次调用同时旋转两个齿轮, 传动比 = teeth2/teeth1
+        ///   例如驱动齿数 10, 从动齿数 20 → 驱动转 anglePerStepDeg 时,
+        ///   从动转 -anglePerStepDeg × (10/20) = -anglePerStepDeg/2 (反向)
+        /// </summary>
+        public Dictionary<string, object> RotateGearPair(
+            string driverName, double driverAxisX, double driverAxisY, double driverAxisZ,
+            string drivenName, double drivenAxisX, double drivenAxisY, double drivenAxisZ,
+            double axisDirX, double axisDirY, double axisDirZ,
+            double driverAngleDeg,
+            double gearRatio  // = driverTeeth / drivenTeeth, 例 10/20 = 0.5
+        )
+        {
+            double driverAngleRad = driverAngleDeg * Math.PI / 180.0;
+            double drivenAngleRad = -driverAngleRad * gearRatio;  // 反向, 按齿比
+
+            RotateComponent(driverName, driverAxisX, driverAxisY, driverAxisZ,
+                axisDirX, axisDirY, axisDirZ, driverAngleRad);
+            RotateComponent(drivenName, drivenAxisX, drivenAxisY, drivenAxisZ,
+                axisDirX, axisDirY, axisDirZ, drivenAngleRad);
+
+            return new Dictionary<string, object>
+            {
+                ["driverAngleDeg"] = driverAngleDeg,
+                ["drivenAngleDeg"] = drivenAngleRad * 180.0 / Math.PI,
+                ["gearRatio"] = gearRatio,
+            };
+        }
+
+        /// <summary>持续旋转的取消 token（后台线程用）</summary>
+        private System.Threading.CancellationTokenSource _spinCts = null;
+        private System.Threading.Tasks.Task _spinTask = null;
+
+        /// <summary>启动"齿轮对持续联动旋转"后台任务.</summary>
+        public Dictionary<string, object> StartSpinGearPair(
+            string driverName, double driverAxisX, double driverAxisY, double driverAxisZ,
+            string drivenName, double drivenAxisX, double drivenAxisY, double drivenAxisZ,
+            double axisDirX, double axisDirY, double axisDirZ,
+            double driverAnglePerStepDeg,
+            double gearRatio,
+            int stepDelayMs)
+        {
+            StopSpin();
+            _spinCts = new System.Threading.CancellationTokenSource();
+            var token = _spinCts.Token;
+            Console.WriteLine($"[SwCommands] StartSpinGearPair: driver='{driverName}' {driverAnglePerStepDeg}°/步, driven='{drivenName}' 反向按比 {gearRatio}, 间隔 {stepDelayMs}ms");
+
+            _spinTask = System.Threading.Tasks.Task.Run(() =>
+            {
+                int frame = 0;
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        RotateGearPair(
+                            driverName, driverAxisX, driverAxisY, driverAxisZ,
+                            drivenName, drivenAxisX, drivenAxisY, drivenAxisZ,
+                            axisDirX, axisDirY, axisDirZ,
+                            driverAnglePerStepDeg, gearRatio);
+                        frame++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[SwCommands] SpinGearPair 帧 {frame} 出错: {ex.Message}");
+                        break;
+                    }
+                    if (stepDelayMs > 0) System.Threading.Thread.Sleep(stepDelayMs);
+                }
+                Console.WriteLine($"[SwCommands] SpinGearPair 停止, 共 {frame} 帧");
+            });
+
+            return new Dictionary<string, object>
+            {
+                ["status"] = "spinning",
+                ["driver"] = driverName,
+                ["driven"] = drivenName,
+                ["driverAnglePerStepDeg"] = driverAnglePerStepDeg,
+                ["gearRatio"] = gearRatio,
+                ["stepDelayMs"] = stepDelayMs,
+            };
+        }
+
+        /// <summary>启动"持续旋转"后台任务 — 组件每 stepDelayMs 转一次小角度, 直到 StopSpin 被调用.</summary>
+        public Dictionary<string, object> StartSpin(
+            string componentName,
+            double axisPointX, double axisPointY, double axisPointZ,
+            double axisDirX, double axisDirY, double axisDirZ,
+            double anglePerStepDeg,
+            int stepDelayMs)
+        {
+            StopSpin();  // 先停掉之前的
+            _spinCts = new System.Threading.CancellationTokenSource();
+            var token = _spinCts.Token;
+            double stepRad = anglePerStepDeg * Math.PI / 180.0;
+            Console.WriteLine($"[SwCommands] StartSpin: '{componentName}', 每步 {anglePerStepDeg}°, 间隔 {stepDelayMs}ms");
+
+            _spinTask = System.Threading.Tasks.Task.Run(() =>
+            {
+                int frameCount = 0;
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        RotateComponent(componentName,
+                            axisPointX, axisPointY, axisPointZ,
+                            axisDirX, axisDirY, axisDirZ,
+                            stepRad);
+                        frameCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[SwCommands] StartSpin 帧 {frameCount} 出错: {ex.Message}");
+                        break;
+                    }
+                    if (stepDelayMs > 0)
+                        System.Threading.Thread.Sleep(stepDelayMs);
+                }
+                Console.WriteLine($"[SwCommands] Spin 停止, 共 {frameCount} 帧");
+            });
+
+            return new Dictionary<string, object>
+            {
+                ["status"] = "spinning",
+                ["componentName"] = componentName,
+                ["anglePerStepDeg"] = anglePerStepDeg,
+                ["stepDelayMs"] = stepDelayMs,
+            };
+        }
+
+        /// <summary>停止持续旋转.</summary>
+        public Dictionary<string, object> StopSpin()
+        {
+            if (_spinCts != null && !_spinCts.IsCancellationRequested)
+            {
+                _spinCts.Cancel();
+                try { _spinTask?.Wait(2000); } catch { /* 忽略 */ }
+                _spinCts.Dispose();
+                _spinCts = null;
+                _spinTask = null;
+                Console.WriteLine("[SwCommands] Spin 已停止");
+                return new Dictionary<string, object> { ["status"] = "stopped" };
+            }
+            return new Dictionary<string, object> { ["status"] = "not_spinning" };
+        }
+
+        /// <summary>
+        /// 让一个组件绕装配体的 Z 轴（穿过组件当前位置）连续动画式旋转，
+        ///   分成多帧 + 每帧一小角度 + Sleep + Rebuild，让用户能视觉看到齿轮转动过程。
+        ///   
+        /// 参数：
+        ///   componentName - 组件实例名
+        ///   totalAngleDeg - 总旋转角度（度，正=右手 CCW）
+        ///   steps - 分几步（越多越平滑）
+        ///   stepDelayMs - 每帧间隔（毫秒）
+        /// </summary>
+        public Dictionary<string, object> AnimateRotateComponent(
+            string componentName,
+            double axisPointX, double axisPointY, double axisPointZ,
+            double axisDirX, double axisDirY, double axisDirZ,
+            double totalAngleDeg,
+            int steps,
+            int stepDelayMs)
+        {
+            if (steps <= 0) throw new ArgumentException("steps 必须为正");
+            if (stepDelayMs < 0) throw new ArgumentException("stepDelayMs 必须 >= 0");
+
+            double stepAngleRad = (totalAngleDeg * Math.PI / 180.0) / steps;
+            Console.WriteLine(
+                $"[SwCommands] AnimateRotate: '{componentName}' 分 {steps} 步旋转 {totalAngleDeg}°, 每步 {stepAngleRad*180/Math.PI:F2}°, 帧间隔 {stepDelayMs}ms");
+
+            var startTime = DateTime.Now;
+            for (int i = 0; i < steps; i++)
+            {
+                RotateComponent(componentName,
+                    axisPointX, axisPointY, axisPointZ,
+                    axisDirX, axisDirY, axisDirZ,
+                    stepAngleRad);
+                if (stepDelayMs > 0)
+                    System.Threading.Thread.Sleep(stepDelayMs);
+            }
+            var elapsed = (DateTime.Now - startTime).TotalSeconds;
+            Console.WriteLine($"[SwCommands] 动画完成, 耗时 {elapsed:F2}s");
+
+            return new Dictionary<string, object>
+            {
+                ["componentName"] = componentName,
+                ["totalAngleDegrees"] = totalAngleDeg,
+                ["steps"] = steps,
+                ["stepDelayMs"] = stepDelayMs,
+                ["elapsedSeconds"] = Math.Round(elapsed, 2),
+            };
         }
 
         #endregion
