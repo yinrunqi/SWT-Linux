@@ -564,6 +564,45 @@ window.addEventListener("drop", async e => {
 let THREE_VIEW_SAMPLES = {};  // 启动时由 fetch 填充：{part_id: {subdir, label, prompt}}
 
 // 通用：加载指定三视图样例（图片 + prompt 自动填充）
+// ⚠️ 关键：**样例图片不走 canvas JPEG 压缩管线**——直接用原始 PNG bytes 的 base64。
+//    原因：canvas.toDataURL("image/jpeg", ...) 在浏览器里不完全确定性
+//    (同一 PNG 每次转出的 JPEG 都可能有几字节差异)，会让 image_sha256 每次不同，
+//    导致端到端 cache 永远 miss——用户点样例每次都花 API 钱。
+//    直接读原始 PNG bytes → 每次 hash 一致 → cache 稳定命中。
+async function loadRawPngAsImage(url, filename) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`图片未找到: ${url}`);
+  const blob = await res.blob();
+  // 读原始 bytes 转 base64（不经过 canvas 重编码）
+  const buffer = await blob.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  // 每 1024 字节分片调用 String.fromCharCode 避免栈溢出
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 1024) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + 1024, bytes.length)));
+  }
+  const base64 = btoa(binary);
+  // 为预览需要缩略 dataUri（用 canvas 是安全的，只影响显示不影响 base64）
+  const bitmap = await createImageBitmap(blob);
+  const canvas = document.createElement("canvas");
+  const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  const dataUri = canvas.toDataURL("image/png");  // 缩略图仅用于预览
+  return {
+    name: filename,
+    sizeKB: Math.round((base64.length * 3 / 4) / 1024),
+    base64,  // ⭐ 原始 PNG 的 base64, 与 python 的 base64.b64encode(f.read()) 完全一致
+    dataUri,
+    width: bitmap.width,
+    height: bitmap.height,
+  };
+}
+
 window.fillThreeViewSample = async function (sampleId) {
   const s = THREE_VIEW_SAMPLES[sampleId];
   if (!s) {
@@ -571,12 +610,10 @@ window.fillThreeViewSample = async function (sampleId) {
     return;
   }
   try {
-    const res = await fetch(`/datasets/manual_three_view/${s.subdir}/drawing.png`);
-    if (!res.ok) throw new Error(`三视图示例图片未找到: ${s.subdir}`);
-    const blob = await res.blob();
+    const url = `/datasets/manual_three_view/${s.subdir}/drawing.png`;
     const filename = `${s.subdir}.png`;
-    const file = new File([blob], filename, { type: "image/png" });
-    await handleFileSelected(file);
+    const img = await loadRawPngAsImage(url, filename);
+    setImage(img);
     inputEl.value = s.prompt;
     inputEl.focus();
   } catch (e) {
