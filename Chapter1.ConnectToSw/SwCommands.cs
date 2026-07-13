@@ -1911,6 +1911,52 @@ namespace Chapter1.ConnectToSw
             double tx = axisOriginX ?? 0.0;
             double ty = axisOriginY ?? 0.0;
             double tz = axisOriginZ ?? 0.0;
+
+            // ⚠️ 多实体零件 v2 关键改进：
+            //   如果 LLM 没传 axisOrigin, 不再盲选"第一个"匹配的圆柱面（老逻辑在多实体下总是命中 bodies[0] 的圆柱，
+            //   例如 C3 齿轮组: 先建的小齿轮圆盘永远排在 bodies[0], 大齿轮的种子齿被错误地绕小齿轮圆心阵列, 副本飞出实体外被静默丢弃）。
+            //   改进: 从**源特征（sourceFeat, 刚建的种子特征）的几何中心**推导默认目标点, 选轴线离此点最近的圆柱面。
+            //   这样"要阵列哪个特征, 就自动绕该特征所在的圆柱轴", 语义正确。
+            //   显式给 axisOrigin 的优先级最高（覆盖自动推导）。
+            if (!hasOrigin)
+            {
+                try
+                {
+                    // 用 sourceFeat 的面包围盒中点作为"源特征几何中心"
+                    var srcFaces = sourceFeat.GetFaces() as object[];
+                    if (srcFaces != null && srcFaces.Length > 0)
+                    {
+                        double smnx = double.MaxValue, smny = double.MaxValue, smnz = double.MaxValue;
+                        double smxx = double.MinValue, smxy = double.MinValue, smxz = double.MinValue;
+                        foreach (var fObj in srcFaces)
+                        {
+                            var f = fObj as IFace2;
+                            if (f == null) continue;
+                            var bx = f.GetBox() as double[];
+                            if (bx == null || bx.Length < 6) continue;
+                            if (bx[0] < smnx) smnx = bx[0];
+                            if (bx[1] < smny) smny = bx[1];
+                            if (bx[2] < smnz) smnz = bx[2];
+                            if (bx[3] > smxx) smxx = bx[3];
+                            if (bx[4] > smxy) smxy = bx[4];
+                            if (bx[5] > smxz) smxz = bx[5];
+                        }
+                        if (smnx != double.MaxValue)
+                        {
+                            tx = (smnx + smxx) / 2.0;
+                            ty = (smny + smxy) / 2.0;
+                            tz = (smnz + smxz) / 2.0;
+                            hasOrigin = true;   // 触发"最近圆柱面"选择逻辑
+                            Console.WriteLine($"[SwCommands] 未传 axisOrigin, 从源特征\"{sourceFeat.Name}\"包围盒中点推导目标点: ({tx:F4},{ty:F4},{tz:F4})");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[SwCommands] 推导源特征中心失败, 回退到第一个匹配圆柱面: {ex.Message}");
+                }
+            }
+
             double bestDist = double.MaxValue;
             {
                 var bodies = (object[])((IPartDoc)ActiveDoc).GetBodies2((int)swBodyType_e.swAllBodies, false);
@@ -1952,7 +1998,7 @@ namespace Chapter1.ConnectToSw
                         }
                         else
                         {
-                            // 未给 axisOrigin：取第一个匹配方向的圆柱面（老行为）
+                            // 未给 axisOrigin 且源特征中心推导也失败：取第一个匹配方向的圆柱面（老行为）
                             chosenCylFace = face;
                             cylAxisX = ax; cylAxisY = ay; cylAxisZ = az;
                             Console.WriteLine($"[SwCommands] 找到圆柱面: 轴上一点=({cp[0]:F4},{cp[1]:F4},{cp[2]:F4}), 轴向=({ax:F3},{ay:F3},{az:F3}), R={cp[6]:F4}");
@@ -1962,7 +2008,7 @@ namespace Chapter1.ConnectToSw
                     if (chosenCylFace != null && !hasOrigin) break;
                 }
                 if (hasOrigin && chosenCylFace != null)
-                    Console.WriteLine($"[SwCommands] 最终选中的圆柱面: 距 axisOrigin ({tx:F4},{ty:F4},{tz:F4}) 距离 {bestDist:F4}m");
+                    Console.WriteLine($"[SwCommands] 最终选中的圆柱面: 距目标点 ({tx:F4},{ty:F4},{tz:F4}) 距离 {bestDist:F4}m");
             }
             if (chosenCylFace == null)
                 throw new InvalidOperationException(
