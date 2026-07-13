@@ -461,12 +461,32 @@ namespace Chapter1.ConnectToSw
             if (bodies == null || bodies.Length == 0)
                 throw new InvalidOperationException("当前零件没有实体（可能还未建模）");
 
-            // 使用第一个实体的包围盒
-            var body = bodies[0] as IBody2;
-            // GetBodyBox 返回 double[6]: { minX, minY, minZ, maxX, maxY, maxZ }
-            var box = body.GetBodyBox() as double[];
-            if (box == null || box.Length < 6)
-                throw new InvalidOperationException("无法获取实体包围盒");
+            // ⚠️ 多实体零件：合并所有实体的包围盒
+            //   老代码只取 bodies[0]，多实体零件下会漏掉其他实体（例如两个不相连的齿轮）
+            //   现在遍历每个实体的 GetBodyBox()，取 min/max 的并集
+            double minX = double.MaxValue, minY = double.MaxValue, minZ = double.MaxValue;
+            double maxX = double.MinValue, maxY = double.MinValue, maxZ = double.MinValue;
+            int bodyCount = 0;
+            foreach (var bObj in bodies)
+            {
+                var b = bObj as IBody2;
+                if (b == null) continue;
+                var bx = b.GetBodyBox() as double[];
+                if (bx == null || bx.Length < 6) continue;
+                if (bx[0] < minX) minX = bx[0];
+                if (bx[1] < minY) minY = bx[1];
+                if (bx[2] < minZ) minZ = bx[2];
+                if (bx[3] > maxX) maxX = bx[3];
+                if (bx[4] > maxY) maxY = bx[4];
+                if (bx[5] > maxZ) maxZ = bx[5];
+                bodyCount++;
+            }
+            if (bodyCount == 0)
+                throw new InvalidOperationException("无法获取任何实体的包围盒");
+
+            var box = new double[] { minX, minY, minZ, maxX, maxY, maxZ };
+            if (bodyCount > 1)
+                Console.WriteLine($"[SwCommands] 检测到 {bodyCount} 个实体，合并包围盒");
 
             var result = new Dictionary<string, double>
             {
@@ -1029,6 +1049,28 @@ namespace Chapter1.ConnectToSw
             var mdoc = (ModelDoc2)ActiveDoc;
             mdoc.InsertSketch2(true);
             _sketchOnRefPlane = false;
+
+            // ⚠️ 多轮廓草图关键修复：显式选中"进入草图时捕获的那个草图"，
+            // 不依赖退出草图后 SolidWorks 的自动选择。
+            //
+            // 问题背景：当同一个草图里有多个不相交的封闭轮廓（例如两个齿轮的圆盘同时画在
+            // 前视基准面上），退出草图后 SolidWorks 的"自动选中"可能选空或选错，
+            // 导致 FeatureExtrusion3 返回 null（错误信息："请确保草图中有封闭的轮廓"）。
+            //
+            // 修复：与 CutExtrusion 保持一致，用 _activeSketchName 显式按名选中草图。
+            // 选中整个草图后 SolidWorks 会自动把草图中的所有封闭轮廓都作为拉伸源。
+            if (!string.IsNullOrEmpty(_activeSketchName))
+            {
+                ActiveDoc.ClearSelection2(true);
+                bool selOk = mdoc.Extension.SelectByID2(_activeSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
+                Console.WriteLine($"[SwCommands] 拉伸前显式选中草图 \"{_activeSketchName}\" = {selOk}");
+                if (!selOk)
+                    Console.WriteLine("[SwCommands] ⚠️ 按名选中草图失败，将回退到自动选择状态");
+            }
+            else
+            {
+                Console.WriteLine("[SwCommands] ⚠️ 未捕获到草图名，回退到退出草图后的自动选择");
+            }
 
             // 确定终止条件和深度
             int t1, t2;
