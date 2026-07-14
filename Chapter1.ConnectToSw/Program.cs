@@ -294,6 +294,9 @@ namespace Chapter1.ConnectToSw
                 case "/api/assembly/rebuild":
                     RequirePost(method, resp, () => HandleAssemblyRebuild(resp));
                     break;
+                case "/api/assembly/check-interference":
+                    RequirePost(method, resp, () => HandleAssemblyInterference(resp));
+                    break;
                 case "/api/assembly/open":
                     RequirePost(method, resp, () => HandleAssemblyOpen(req, resp));
                     break;
@@ -329,6 +332,9 @@ namespace Chapter1.ConnectToSw
                     break;
                 case "/api/assembly/motion/play":
                     RequirePost(method, resp, () => HandlePlayMotionStudy(resp));
+                    break;
+                case "/api/assembly/motion/set-time":
+                    RequirePost(method, resp, () => HandleSetMotionStudyTime(req, resp));
                     break;
                 case "/api/assembly/motion/stop":
                     RequirePost(method, resp, () => HandleStopMotionStudy(resp));
@@ -1284,6 +1290,25 @@ namespace Chapter1.ConnectToSw
             }
         }
 
+        private static void HandleAssemblyInterference(HttpListenerResponse resp)
+        {
+            try
+            {
+                var result = _commands.CheckAssemblyInterference();
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = $"干涉数量: {result["interferenceCount"]}",
+                    result,
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] 装配体干涉检测失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = ex.Message });
+            }
+        }
+
         private static void HandleSavePartAs(HttpListenerRequest req, HttpListenerResponse resp)
         {
             try
@@ -1429,6 +1454,29 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 Console.WriteLine($"[错误] 播放 Motion Study 失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = ex.Message });
+            }
+        }
+
+        private static void HandleSetMotionStudyTime(
+            HttpListenerRequest req,
+            HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                double seconds = GetDouble(body, "seconds");
+                var result = _commands.SetMotionStudyTime(seconds);
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = $"Motion Study 已定位到 {seconds:F3}s",
+                    result,
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] Motion Study 定位失败: {ex.Message}\n{ex.StackTrace}");
                 SendJson(resp, 500, new { success = false, message = ex.Message });
             }
         }

@@ -16,7 +16,7 @@ late-binding 稳得多, 之前 SelectByID2/AddMate5 类型不匹配的坑在 C# 
          b) 齿轮 2 圆柱面 与 装配体 Z 轴 Concentric  → 两个各自的旋转轴定位
          c) 齿轮 1 前视基准面 与 装配体 前视基准面 Coincident
          d) Gear Mate: 齿轮 1 圆柱面 ↔ 齿轮 2 圆柱面 (齿数比 20:10)
-       但如果两个齿轮加进去的位置本身就在正确位置 (X=-32, X=+32, Z=0), 装配体
+       但如果两个齿轮加进去的位置本身就在正确位置 (X=-30, X=+30, Z=0), 装配体
        Rigid 固定它们, 就不需要 Concentric 定位, 只加:
          - Gear Mate (齿数比) → 拖一个另一个联动
        但 AddComponent 后, 组件默认是"浮动"(不固定), 除非第一个组件. 拖动会散架.
@@ -28,10 +28,10 @@ late-binding 稳得多, 之前 SelectByID2/AddMate5 类型不匹配的坑在 C# 
     - 拖动小齿轮看大齿轮是否联动
 
   齿轮圆柱面射线参数 (装配体坐标系, 圆盘 Z∈[0, 15mm]):
-    - 小齿轮圆盘轴线在 (X=-32, Y=0), 直径 40mm → 从远处 X 射向轴
-      起点 (-100, 0, 7.5), 方向 (+1, 0, 0)
-    - 大齿轮圆盘轴线在 (X=+32, Y=0), 直径 80mm
-      起点 (100, 0, 7.5), 方向 (-1, 0, 0)
+    - 小齿轮轴线在 (X=-30, Y=0), 分度圆直径 40mm → 从中心射向孔壁
+      起点 (-30, 0, 7.5), 方向 (+1, 0, 0)
+    - 大齿轮轴线在 (X=+30, Y=0), 分度圆直径 80mm
+      起点 (+30, 0, 7.5), 方向 (+1, 0, 0)
 """
 import os
 import requests
@@ -39,11 +39,11 @@ import sys
 
 BASE = "http://localhost:5100"
 SMOKE_DIR = os.path.dirname(os.path.abspath(__file__))
-SMALL_GEAR = os.path.join(SMOKE_DIR, "gear_small.SLDPRT")
-BIG_GEAR = os.path.join(SMOKE_DIR, "gear_big_phased.SLDPRT")
-ASSEMBLY_PATH = os.path.join(SMOKE_DIR, "gear_pair_assembly_v3.SLDASM")
-SMALL_GEAR_X = -0.032
-BIG_GEAR_X = 0.032
+SMALL_GEAR = os.path.join(SMOKE_DIR, "gear_small_involute_bored.SLDPRT")
+BIG_GEAR = os.path.join(SMOKE_DIR, "gear_big_involute_bored.SLDPRT")
+ASSEMBLY_PATH = os.path.join(SMOKE_DIR, "gear_pair_assembly_v4.SLDASM")
+SMALL_GEAR_X = -0.030
+BIG_GEAR_X = 0.030
 
 
 def call(path, body=None, timeout=90):
@@ -74,7 +74,7 @@ def main():
         sys.exit(1)
 
     # Step 2: 加入小齿轮
-    print("\n--- Step 2: 加入小齿轮 @ X=-32mm ---")
+    print("\n--- Step 2: 加入小齿轮 @ X=-30mm ---")
     r = call("/api/assembly/add-component", {
         "partPath": SMALL_GEAR,
         "x": SMALL_GEAR_X, "y": 0, "z": 0,
@@ -85,7 +85,7 @@ def main():
     print(f"    小齿轮组件名: {small_name}")
 
     # Step 3: 加入大齿轮
-    print("\n--- Step 3: 加入大齿轮 @ X=+32mm ---")
+    print("\n--- Step 3: 加入大齿轮 @ X=+30mm ---")
     r = call("/api/assembly/add-component", {
         "partPath": BIG_GEAR,
         "x": BIG_GEAR_X, "y": 0, "z": 0,
@@ -96,7 +96,7 @@ def main():
     print(f"    大齿轮组件名: {big_name}")
 
     # Step 4: Coincident Mate - 让两齿轮的前视基准面重合 (对齐到 Z=0)
-    # 大齿轮的 9° 半齿距相位已直接建入 gear_big_phased.SLDPRT，
+    # 大齿轮的 9° 半齿距相位已直接建入渐开线轮廓，
     # 不依赖会出现“返回成功但 Transform 不变”的组件旋转 API。
     print("\n--- Step 4: Coincident Mate 前视基准面 ---")
     r = call("/api/assembly/mate-coincident", {
@@ -109,17 +109,17 @@ def main():
     # Step 5: Gear Mate - 齿数比 20:10 (大:小)
     print("\n--- Step 5: Gear Mate 齿数比 20:10 (大齿:小齿) ---")
     # 射线选圆柱面:
-    #   - 小齿轮: 圆盘中心 (装配体) X=-32, 从 X=-100 射向 +X 方向命中圆柱面
-    #   - 大齿轮: 圆盘中心 X=+32, 从 X=+100 射向 -X 方向命中圆柱面
+    #   - 两条射线都从齿轮中心沿 +X 发出，优先命中 5mm 中心孔圆柱面。
     r = call("/api/assembly/mate-gear", {
         "component1": small_name,
-        "rx1": -0.10, "ry1": 0, "rz1": 0.0075,
+        "rx1": SMALL_GEAR_X, "ry1": 0, "rz1": 0.0075,
         "dx1": 1, "dy1": 0, "dz1": 0,
         "component2": big_name,
-        "rx2": 0.10, "ry2": 0, "rz2": 0.0075,
-        "dx2": -1, "dy2": 0, "dz2": 0,
+        "rx2": BIG_GEAR_X, "ry2": 0, "rz2": 0.0075,
+        "dx2": 1, "dy2": 0, "dz2": 0,
         "gearRatioNumerator": 20,
         "gearRatioDenominator": 10,
+        # IGearMateFeatureData.Reverse=false 对应当前两孔圆柱面的外啮合方向。
         "reverse": False,
     }, timeout=120)
     if r is None:

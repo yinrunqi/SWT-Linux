@@ -669,13 +669,15 @@ C3: 这是一张齿轮啮合组的三视图, 由两个平行放置的直齿圆�
 
 ## 十三、Motion Study 齿轮动画测试
 
-该测试不调用 LLM，打开预置 `gear_pair_assembly_v3.SLDASM`，先验证双齿轮中心距为 64mm，再创建恒速旋转马达并播放，验证 Motion timebar 推进以及小/大齿轮 Transform 均发生变化。装配体中的大齿轮预先错相 9°（20 齿的半个齿距），保证矩形齿顶对准小齿轮齿槽。
+该测试不调用 LLM，打开预置 `gear_pair_assembly_v4.SLDASM`，先验证同模数渐开线齿轮的理论中心距为 60mm，再创建恒速旋转马达并播放，验证 Motion timebar 推进以及小/大齿轮 Transform 均发生变化。齿轮参数为模数 4mm、压力角 30°、齿数 10:20、齿根深度 1.25m；大齿轮预先错相半齿距 9°。
 
 ```cmd
 cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
 venv\Scripts\python.exe -X utf8 assembly_smoke\test_motion_study.py > log\test_motion_study.log 2>&1
+venv\Scripts\python.exe -X utf8 assembly_smoke\test_gear_geometry.py
+venv\Scripts\python.exe -X utf8 assembly_smoke\capture_gear_animation.py
 ```
 
-实测：中心距=64.000mm，Motion timebar=1.125s，主动小齿轮矩阵变化 1.800802，从动大齿轮矩阵变化 1.325782，Gear Mate 联动通过。
+实测：中心距=60.000mm，主动小齿轮转角 -64.458°、从动大齿轮 +32.229°，满足外啮合反向 `-2:1`；纯几何测试在完整齿周期内采样 73 帧，无边线交叉或包含型重叠；SolidWorks 原生干涉检测对导出的 25 帧全部返回零干涉。GIF 输出到 `log/gear_validation/gear_cycle.gif`。
 
 ---

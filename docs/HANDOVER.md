@@ -170,9 +170,9 @@ c:\codes\sw\SolidWorksTutorial\
 │   │   ├── README.md            # 🌟 装配体 API 详细文档 + 已知问题排查过程
 │   │   ├── phase1_build_two_gears.py  # 用 API 建齿轮零件
 │   │   ├── phase3_via_csharp_api.py   # 端到端搭齿轮啮合装配体
-│   │   ├── gear_small.SLDPRT    # 已建好的小齿轮（10 齿）
-│   │   ├── gear_big_phased.SLDPRT # 已建好的大齿轮（20 齿，齿形相位 +9°）
-│   │   └── gear_pair_assembly_v3.SLDASM  # 已建好的啮合装配体（含 Gear Mate）
+│   │   ├── gear_small_involute_bored.SLDPRT # 渐开线小齿轮（10 齿）
+│   │   ├── gear_big_involute_bored.SLDPRT   # 渐开线大齿轮（20 齿，相位 +9°）
+│   │   └── gear_pair_assembly_v4.SLDASM  # 渐开线啮合装配体（外啮合 -2:1）
 │   │
 │   └── log/                     # 测试日志（不入库）
 │
@@ -313,7 +313,7 @@ Get-ItemProperty 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFl
    - 若要旋转/移动它，先 `UnfixComponent`
 
 3. **SelectByID2 装配体上下文的组件成员名字格式**
-   - `'前视基准面@gear_small-1@gear_pair_assembly_v3'`
+   - `'前视基准面@gear_small_involute_bored-1@gear_pair_assembly_v4'`
    - 中文 SolidWorks 默认基准面名：**前视基准面 / 上视基准面 / 右视基准面**
 
 4. **AddMate5 参数是 15 个的巨型签名**（见 SwCommands.cs 里的详细注释）
@@ -416,7 +416,7 @@ Get-ItemProperty 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFl
 
 ### 8.3 装配体（**首个装配体样例，Stage B 新增**）
 `assembly_smoke/`：
-- `gear_pair_assembly_v3.SLDASM` — 齿轮啮合装配体，手动拖动小齿轮 → 大齿轮按 2:1 反向联动 ✅
+- `gear_pair_assembly_v4.SLDASM` — 渐开线齿轮装配体，小齿轮 → 大齿轮按 -2:1 反向联动 ✅
 
 ---
 
@@ -455,7 +455,9 @@ Get-ItemProperty 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFl
 
 **已采用的有效方案**：`IModelDocExtension.GetMotionStudyManager()` → Animation Study → `swFmAEMRotationalMotor` → `PlayFromStart()`。无需 Motion Analysis 许可，本机支持类型位掩码为 7。
 
-实测小齿轮由 30 RPM 马达驱动时，大齿轮通过 Gear Mate 按 2:1 联动；自动测试中 timebar=1.25s、小齿轮矩阵变化 1.325782、大齿轮变化 0.693351。测试：`assembly_smoke/test_motion_study.py`。
+齿轮已从矩形凸齿升级为同模数渐开线齿形：模数 4mm、压力角 30°、齿数 10:20、理论中心距 60mm，并带 ⌀10mm 中心孔。30° 压力角用于避免 10 齿小齿轮根切；大齿轮错相 9°。纯几何测试在一个完整齿周期采样 73 帧，无轮廓交叉。
+
+2026-07-14 进一步修复 Gear Mate 方向：`AddMate5` 的 `AlignFromEnum` 不控制齿轮旋向，必须创建后通过 `IGearMateFeatureData.Reverse` 显式设置。实测小齿轮转角 -64.458°、大齿轮 +32.229°，满足外啮合 `-2:1`。`capture_gear_animation.py` 导出完整齿周期 25 帧 PNG/BMP/GIF，并逐帧通过 `IInterferenceDetectionMgr` 检查，25/25 零干涉。测试：`assembly_smoke/test_gear_geometry.py`、`assembly_smoke/test_motion_study.py`。
 
 Web demo 已增加“加载装配体 / 播放 5 圈 / 停止”控件；直接 Transform 路线仅保留用于历史诊断。
 
@@ -570,7 +572,7 @@ python -X utf8 test\test_three_view_e2e.py B01
 
 # 【6】跑装配体端到端冒烟
 python -X utf8 assembly_smoke\phase3_via_csharp_api.py
-# 期望: 6/6 步通过, 生成 gear_pair_assembly_v3.SLDASM
+# 期望: 6/6 步通过, 生成 gear_pair_assembly_v4.SLDASM
 
 # 【7】启动 Web demo
 python -X utf8 -m web.app --port 5000

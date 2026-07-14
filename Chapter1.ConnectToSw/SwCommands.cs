@@ -852,7 +852,22 @@ namespace Chapter1.ConnectToSw
             double sx1, sy1, sx2, sy2;
             ModelToSketchPoint(x1, y1, z1, out sx1, out sy1);
             ModelToSketchPoint(x2, y2, z2, out sx2, out sy2);
-            ActiveDoc.SketchManager.CreateLine(sx1, sy1, 0, sx2, sy2, 0);
+            var sketchManager = ActiveDoc.SketchManager;
+            bool previousAddToDb = sketchManager.AddToDB;
+            bool previousDisplayWhenAdded = sketchManager.DisplayWhenAdded;
+            try
+            {
+                // 渐开线等高密度折线不能让 SolidWorks 自动推断水平/垂直关系；
+                // 自动吸附会悄悄移动端点，最终把本应闭合的轮廓变成重叠或开口草图。
+                sketchManager.AddToDB = true;
+                sketchManager.DisplayWhenAdded = false;
+                sketchManager.CreateLine(sx1, sy1, 0, sx2, sy2, 0);
+            }
+            finally
+            {
+                sketchManager.AddToDB = previousAddToDb;
+                sketchManager.DisplayWhenAdded = previousDisplayWhenAdded;
+            }
             Console.WriteLine($"[SwCommands] 绘制直线: 模型({x1},{y1},{z1}) -> ({x2},{y2},{z2})，草图({sx1:F4},{sy1:F4}) -> ({sx2:F4},{sy2:F4})");
         }
 
@@ -2507,8 +2522,9 @@ namespace Chapter1.ConnectToSw
             // 关闭同名装配体（避免文件锁死）
             try
             {
-                var fname = Path.GetFileName(savePath);
-                _swApp.CloseDoc(fname);
+                // SolidWorks 的文档标题通常不含扩展名；传 "foo.SLDASM" 会静默不关闭，
+                // 随后的 File.Delete 因文件仍被占用而失败。
+                _swApp.CloseDoc(Path.GetFileNameWithoutExtension(savePath));
             }
             catch { /* 忽略 */ }
             if (File.Exists(savePath))
@@ -2761,6 +2777,39 @@ namespace Chapter1.ConnectToSw
             Console.WriteLine($"[SwCommands] MateGear 结果: ratio={gearRatioNumerator}:{gearRatioDenominator}, reverse={reverse}, errStatus={errStatus}");
             if (errStatus != (int)swAddMateError_e.swAddMateError_NoError)
                 throw new InvalidOperationException($"Gear Mate 失败: errStatus={errStatus}");
+
+            // AddMate5 的 AlignFromEnum 只控制配合实体对齐方式，并不设置齿轮旋转方向。
+            // 必须在创建后修改 IGearMateFeatureData.Reverse；否则外啮合齿轮会同向旋转。
+            IFeature gearMateFeature = null;
+            IFeature topFeature = ((IModelDoc2)_activeAssembly).FirstFeature() as IFeature;
+            while (topFeature != null && gearMateFeature == null)
+            {
+                IFeature subFeature = topFeature.GetFirstSubFeature() as IFeature;
+                while (subFeature != null)
+                {
+                    var gearDefinition = subFeature.GetDefinition() as IGearMateFeatureData;
+                    if (gearDefinition != null)
+                        gearMateFeature = subFeature;
+                    subFeature = subFeature.GetNextSubFeature() as IFeature;
+                }
+                topFeature = topFeature.GetNextFeature() as IFeature;
+            }
+            if (gearMateFeature == null)
+                throw new InvalidOperationException("Gear Mate 已创建，但未能在特征树中找到其定义");
+
+            var gearMateData = gearMateFeature.GetDefinition() as IGearMateFeatureData;
+            if (gearMateData == null)
+                throw new InvalidOperationException("读取 IGearMateFeatureData 失败");
+            gearMateData.Reverse = reverse;
+            bool reverseApplied = gearMateFeature.ModifyDefinition(
+                gearMateData,
+                (IModelDoc2)_activeAssembly,
+                null);
+            if (!reverseApplied)
+                throw new InvalidOperationException($"设置 Gear Mate Reverse={reverse} 失败");
+            ((IModelDoc2)_activeAssembly).EditRebuild3();
+            Console.WriteLine($"[SwCommands] Gear Mate Reverse 已设置为 {reverse}");
+
             return new Dictionary<string, object>
             {
                 ["mateType"] = "Gear",
@@ -2804,6 +2853,30 @@ namespace Chapter1.ConnectToSw
             double norm = Math.Sqrt(dx * dx + dy * dy + dz * dz);
             if (norm < 1e-9) throw new ArgumentException("射线方向不能为零向量");
             dx /= norm; dy /= norm; dz /= norm;
+
+            // 优先让 SolidWorks 的空间索引直接拾取射线命中的面。渐开线齿轮包含数百个
+            // 侧面，逐面 COM 调用 GetClosestPointOn 会耗时数分钟；中心孔射线可直接命中
+            // 唯一的内圆柱面，且选择结果已经带有正确的组件上下文。
+            bool raySelected = asmModel.Extension.SelectByRay(
+                rx, ry, rz, dx, dy, dz, 0.0005,
+                (int)swSelectType_e.swSelFACES,
+                appendSelect, mark, 0);
+            if (raySelected)
+            {
+                var selectionManager = (ISelectionMgr)asmModel.SelectionManager;
+                int selectedCount = selectionManager.GetSelectedObjectCount2(mark);
+                var rayFace = selectionManager.GetSelectedObject6(selectedCount, mark) as IFace2;
+                var raySurface = rayFace?.IGetSurface() as ISurface;
+                if (rayFace != null && raySurface != null && raySurface.IsCylinder())
+                {
+                    Console.WriteLine(
+                        $"[SwCommands] 组件 '{componentName}' 通过 SelectByRay 快速选中圆柱面, " +
+                        $"append={appendSelect}");
+                    return rayFace;
+                }
+                throw new InvalidOperationException(
+                    $"组件 '{componentName}' 的射线命中了非圆柱面；请把射线起点放在中心孔内");
+            }
 
             // 从组件的实体里找面
             IFace2 chosenFace = null;
@@ -2892,6 +2965,69 @@ namespace Chapter1.ConnectToSw
             Console.WriteLine($"[SwCommands] 装配体 Save → {_activeAssemblyPath} (ret={result})");
         }
 
+        /// <summary>使用 SolidWorks 原生干涉检测检查当前装配姿态。</summary>
+        public Dictionary<string, object> CheckAssemblyInterference()
+        {
+            EnsureActiveAssembly();
+            var manager = _activeAssembly.InterferenceDetectionManager;
+            if (manager == null)
+                throw new InvalidOperationException("无法获取 InterferenceDetectionManager");
+
+            try
+            {
+                manager.TreatCoincidenceAsInterference = false;
+                manager.TreatSubAssembliesAsComponents = false;
+                manager.IncludeMultibodyPartInterferences = true;
+                manager.MakeInterferingPartsTransparent = false;
+                manager.CreateFastenersFolder = false;
+                manager.IgnoreHiddenBodies = true;
+                manager.ShowIgnoredInterferences = false;
+                manager.UseTransform = false;
+
+                var interferenceObjects = manager.GetInterferences() as object[];
+                var details = new List<Dictionary<string, object>>();
+                if (interferenceObjects != null)
+                {
+                    foreach (var item in interferenceObjects)
+                    {
+                        var interference = item as IInterference;
+                        if (interference == null || interference.Ignore) continue;
+                        var componentNames = new List<string>();
+                        var components = interference.Components as object[];
+                        if (components != null)
+                        {
+                            foreach (var componentObject in components)
+                            {
+                                var component = componentObject as IComponent2;
+                                if (component != null)
+                                    componentNames.Add(component.Name2);
+                            }
+                        }
+                        details.Add(new Dictionary<string, object>
+                        {
+                            ["components"] = componentNames.ToArray(),
+                            ["volume"] = interference.Volume,
+                            ["isPossibleInterference"] = interference.IsPossibleInterference,
+                        });
+                    }
+                }
+
+                Console.WriteLine(
+                    $"[SwCommands] 装配体干涉检测: count={details.Count}, " +
+                    $"totalVolume={details.Sum(item => Convert.ToDouble(item["volume"])):E6}m³");
+                return new Dictionary<string, object>
+                {
+                    ["interferenceCount"] = details.Count,
+                    ["totalVolume"] = details.Sum(item => Convert.ToDouble(item["volume"])),
+                    ["interferences"] = details.ToArray(),
+                };
+            }
+            finally
+            {
+                manager.Done();
+            }
+        }
+
         /// <summary>
         /// 读取一个组件在装配体坐标系下的当前 Transform 矩阵（16 元素 double 数组）。
         ///   用于诊断: 旋转后位置是否真的变了。
@@ -2971,6 +3107,11 @@ namespace Chapter1.ConnectToSw
             _activeAssembly = asmDoc;
             _activeAssemblyPath = assemblyPath;
             _activeAssemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
+            _swApp.ActivateDoc3(
+                Path.GetFileName(assemblyPath),
+                true,
+                (int)swRebuildOnActivation_e.swDontRebuildActiveDoc,
+                ref errors);
             _activeMotionStudy = null;
             _activeMotionMotor = null;
             Console.WriteLine($"[SwCommands] 已打开装配体: {_activeAssemblyName} (errors={errors}, warnings={warnings})");
@@ -3419,6 +3560,38 @@ namespace Chapter1.ConnectToSw
         /// <summary>寻找组件上轴线平行 Z 轴且半径最大的圆柱面，作为旋转马达方向参考。</summary>
         private IFace2 FindMotorCylinderFace(IComponent2 component)
         {
+            // 渐开线齿轮有数百个平面齿面，但中心孔是唯一圆柱面。直接从组件轴心
+            // 向 +X 射线拾取孔壁，避免逐面 COM 遍历导致创建马达超时。
+            var componentTransform = component.Transform2 as MathTransform;
+            var transformData = componentTransform?.ArrayData as double[];
+            if (transformData != null && transformData.Length >= 12)
+            {
+                var assemblyModel = (IModelDoc2)_activeAssembly;
+                assemblyModel.ClearSelection2(true);
+                bool selected = assemblyModel.Extension.SelectByRay(
+                    transformData[9], transformData[10], 0.0,
+                    1.0, 0.0, 0.0, 0.0005,
+                    (int)swSelectType_e.swSelFACES,
+                    false, 0, 0);
+                if (selected)
+                {
+                    var selectionManager = (ISelectionMgr)assemblyModel.SelectionManager;
+                    var selectedFace = selectionManager.GetSelectedObject6(1, -1) as IFace2;
+                    var selectedSurface = selectedFace?.IGetSurface() as ISurface;
+                    if (selectedFace != null && selectedSurface != null && selectedSurface.IsCylinder())
+                    {
+                        var cylinder = selectedSurface.CylinderParams as double[];
+                        double radius = cylinder != null && cylinder.Length >= 7
+                            ? cylinder[6]
+                            : 0.0;
+                        Console.WriteLine(
+                            $"[SwCommands] Motion 马达通过中心孔射线选面: " +
+                            $"component={component.Name2}, radius={radius * 1000:F2}mm");
+                        return selectedFace;
+                    }
+                }
+            }
+
             IFace2 bestFace = null;
             double bestRadius = -1;
             object bodyInfo;
@@ -3565,6 +3738,20 @@ namespace Chapter1.ConnectToSw
             bool started = study.PlayFromStart();
             Console.WriteLine($"[SwCommands] Motion Study 播放: started={started}, isPlaying={study.IsPlaying}");
             return GetMotionStudyStatus(started);
+        }
+
+        public Dictionary<string, object> SetMotionStudyTime(double seconds)
+        {
+            var study = EnsureMotionStudy();
+            double duration = study.GetDuration();
+            if (seconds < 0 || seconds > duration)
+                throw new ArgumentOutOfRangeException(
+                    nameof(seconds),
+                    $"时间必须在 0 到 {duration:F3}s 之间");
+            bool updated = study.SetTime(seconds);
+            ((IModelDoc2)_activeAssembly).EditRebuild3();
+            Console.WriteLine($"[SwCommands] Motion Study 定位: time={seconds:F3}s, updated={updated}");
+            return GetMotionStudyStatus(updated);
         }
 
         public Dictionary<string, object> StopMotionStudy()

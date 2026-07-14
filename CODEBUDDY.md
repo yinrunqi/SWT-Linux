@@ -105,10 +105,12 @@ msbuild SolidWorksTutorial.slnx /p:Configuration=Debug
 | POST | `/api/assembly/motion/probe` | 无 | 探测 Motion Study / 旋转马达能力 |
 | POST | `/api/assembly/motion/create-gear-motor` | `{ "componentName", "rpm", "durationSeconds", "reverseDirection"(可选) }` | 创建或更新恒速旋转马达 |
 | POST | `/api/assembly/motion/play` | 无 | 从头播放当前 Motion Study |
+| POST | `/api/assembly/motion/set-time` | `{ "seconds" }` | 精确定位 timebar（逐帧导出/验证）|
 | POST | `/api/assembly/motion/stop` | 无 | 停止当前 Motion Study |
 | GET | `/api/assembly/motion/status` | 无 | 读取播放状态、timebar 与时长 |
+| POST | `/api/assembly/check-interference` | 无 | 使用 SolidWorks 原生干涉检测检查当前装配姿态 |
 
-**齿轮动画状态**：直接修改 Transform 的三条旧路径仍不可靠，但 Motion Study 旋转马达已在 SW2025 中文版实测成功：小齿轮可见旋转，大齿轮通过 Gear Mate 按 2:1 联动。Web demo 已提供加载/播放/停止控件，自动化测试见 `LLMPlanner/assembly_smoke/test_motion_study.py`。
+**齿轮动画状态**：直接修改 Transform 的三条旧路径仍不可靠，但 Motion Study 旋转马达已在 SW2025 中文版实测成功。渐开线齿轮中心距 60mm；小/大齿轮实测转角 `-64.458° : +32.229° = -2:1`。完整齿周期导出 25 帧并通过 SolidWorks 原生干涉检测（25/25 零干涉）。Web demo 已提供加载/播放/停止控件。
 
 **装配体空模板**：`Chapter1.ConnectToSw/resources/empty_assembly_template.SLDASM`（57KB，随构建产物一起 copy 到 bin/Debug/resources/）。
 

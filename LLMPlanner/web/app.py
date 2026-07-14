@@ -154,20 +154,24 @@ def _call_sw(path: str, method: str = "POST", body: dict | None = None) -> dict:
 def load_gear_animation():
     """打开预置齿轮装配体，浮动主动轮并创建 5 秒恒速旋转马达。"""
     try:
+        motor_component = "gear_small_involute_bored-1"
         assembly_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "assembly_smoke",
-            "gear_pair_assembly_v3.SLDASM",
+            "gear_pair_assembly_v4.SLDASM",
         )
         if not os.path.exists(assembly_path):
             raise FileNotFoundError(f"预置齿轮装配体不存在: {assembly_path}")
 
         _call_sw("/api/assembly/open", body={"assemblyPath": assembly_path})
-        _call_sw("/api/assembly/unfix-component", body={"componentName": "gear_small-1"})
+        _call_sw(
+            "/api/assembly/unfix-component",
+            body={"componentName": motor_component},
+        )
         motor = _call_sw(
             "/api/assembly/motion/create-gear-motor",
             body={
-                "componentName": "gear_small-1",
+                "componentName": motor_component,
                 "rpm": 60,
                 "durationSeconds": 5,
                 "reverseDirection": False,
