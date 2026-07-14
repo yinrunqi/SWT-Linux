@@ -279,6 +279,18 @@ REM （考验：LLM 精确计算 12 个齿槽的 sin/cos 圆周坐标；一次�
 REM  用 sketch_slot 而非 sketch_rectangle 在实体面上画多轮廓避免坐标混淆）
 REM 实测 21/21 步通过：包围盒 60×8×60mm。
 python test_gear_llm.py
+
+REM 圆形法兰盘（⌀100×12mm + ⌀30 中心孔 + PCD⌀80 上 6×⌀8 螺栓孔）
+python test_flange_llm.py
+
+REM 简化皮带轮（⌀100×20mm + 90/70mm 环槽 + ⌀25 轴孔 + C1 外缘倒角）
+python test_pulley_llm.py
+
+REM 三段阶梯轴（⌀35×40 + ⌀50×30 + ⌀25×20，一次旋转成型）
+python test_stepped_shaft_llm.py
+
+REM 内六角圆柱头螺栓（⌀10×50 杆 + ⌀18×6 头 + 8mm 对边内六角 + R0.5）
+python test_socket_bolt_llm.py
 ```
 
 > **`test_storage_box.py` 使用的完整 LLM Prompt**：
@@ -470,6 +482,39 @@ python test_gear_llm.py
 >
 > 该任务考验：LLM 精确计算 12 个圆周分布点的三角函数坐标 + **一次草图画多个完全独立的封闭轮廓**（SolidWorks 允许多轮廓拉伸/切除，但轮廓必须不相交或完全嵌套）+ 在实体面上用 sketch_slot 而非 sketch_rectangle（后者 y1/y2 会被误解为模型 Y）。**注意**：本项目也提供了 `feature_circular_pattern` API，但本地 SW2025 上几何生效有问题，齿轮改用手工画 N 份而不是阵列，更可靠。
 
+### 9.1 `dev/yrq` 合入的复杂物件 Prompt
+
+以下记录 4 个测例的完整建模语义；测试脚本与 Web demo 使用更详细、逐步骤的同义 Prompt。完整逐字版及几何判据见 `object_test_yrq.md`。
+
+**圆形法兰盘：**
+```text
+请建模一个圆形法兰盘，严格按以下顺序执行：先在上视基准面画直径 100mm 的圆，沿厚度方向居中拉伸 12mm；在盘顶面中心打直径 30mm 的贯穿孔；最后在节圆直径 80mm 上均布 6 个直径 8mm 的贯穿螺栓孔，相邻孔夹角 60°，第一个孔在正 X 轴上。中心孔打通后，后续选面射线必须落在环形实体区域，不能再从圆心选面。请自行计算其余 5 个孔心坐标。所有尺寸使用米制。
+```
+
+**简化 V 型槽皮带轮：**
+```text
+请建模一个简化的 V 型槽皮带轮：先在上视基准面画直径 100mm 的圆并向上拉伸 20mm；在 Y=20mm 顶面画直径 90mm 和 70mm 的两个同心圆，向下盲切 10mm 形成平底环形槽；再在中心打直径 25mm 的贯穿孔；最后仅对轮缘顶部外圆边做 C1mm 等距倒角，不要对所有边倒角。轮体底面位于 Y=0、顶面位于 Y=20mm。
+```
+
+**三段阶梯轴：**
+```text
+请用旋转法创建一根总长 90mm、以原点居中的三段阶梯轴。在前视基准面以 Y 轴为旋转轴，轮廓全部位于 X≥0：最下段 ⌀35mm、高 40mm（Y=-45~-5）；中段 ⌀50mm、高 30mm（Y=-5~+25）；最上段 ⌀25mm、高 20mm（Y=+25~+45）。画中心线 (0,-45)→(0,+45)，再依次画 7 段闭合半剖轮廓：(0,-45)→(17.5,-45)→(17.5,-5)→(25,-5)→(25,25)→(12.5,25)→(12.5,45)→(0,45)，最后一次旋转 360°。不要使用三次圆柱拉伸，也不要沿中心线额外画轮廓线。
+```
+
+**内六角圆柱头螺栓：**
+```text
+请建模一颗无螺纹的内六角圆柱头螺栓：在上视基准面创建 ⌀10mm、长 50mm 的螺杆（Y=0~50）；在螺杆顶面加料拉伸 ⌀18mm、高 6mm 的圆柱头（Y=50~56）；从头部顶面中心向下盲挖 4mm 深的正六边形内六角，对边距 8mm、外接圆半径 8/√3≈4.619mm；最后仅对 Y=50mm 的头杆交界圆边做 R0.5mm 圆角。圆柱台阶圆边必须用 edgeSelection="ray" 并提供六个射线参数，禁止使用 bottom_top 等方盒语义边名。
+```
+
+合入 main 后使用 `basic/claude-sonnet-5`、`skill_mode="routed"` 的真实 SolidWorks 回归结果：
+
+- 法兰盘：15/15 步，100×100×12mm，82146.4mm³，6 个螺栓孔孔心距均为 40.0mm。
+- 皮带轮：12/12 步，100×100×20mm，121973.4mm³，环槽盲切 10mm、轴孔贯穿、C1 ray 倒角成功。
+- 三段阶梯轴：11/11 步，50×50×90mm，107206.8mm³，7 段轮廓一次旋转成功。
+- 内六角螺栓：11/11 步，18×18×56mm，5229.1mm³，内六角 4.619mm 外接圆和 R0.5 ray 圆角成功。
+
+日志：`LLMPlanner/log/test_{flange,pulley,stepped_shaft,socket_bolt}_merge.log`（本地留存，gitignore 排除）。
+
 ---
 
 ## 测试分类说明
@@ -493,6 +538,10 @@ python test_gear_llm.py
 | `objects/test_vase_llm` | LLM 规划 | 花瓶（8 段直线组成的复杂轴截面 revolve + 顶面挖内腔） |
 | `objects/test_key_llm` | LLM 规划 | 钥匙（圆盘头 + 矩形杆 + 长圆钥匙圈孔 + 5 齿锯齿边，验证新增 `sketch_slot` API 及多轮廓齿槽切除） |
 | `objects/test_gear_llm` | LLM 规划 | 齿轮（圆盘 + 12 齿槽沿圆周分布 + 中心孔，考验 LLM 三角函数计算 + 一草图多轮廓） |
+| `objects/test_flange_llm` | LLM 规划 | 圆形法兰盘（中心孔 + PCD 上 6 个螺栓孔，验证环形实体区域选面与极坐标换算） |
+| `objects/test_pulley_llm` | LLM 规划 | 皮带轮（同心双圆环槽 + 中心孔 + 圆柱外缘 ray 倒角） |
+| `objects/test_stepped_shaft_llm` | LLM 规划 | 三段阶梯轴（7 段半剖轮廓一次旋转，验证复杂轴对称轮廓） |
+| `objects/test_socket_bolt_llm` | LLM 规划 | 内六角圆柱头螺栓（两次加料 + 六角盲孔 + 圆柱台阶 ray 圆角） |
 | `test_skill_regression` | Skill 架构 | Skill 动态加载零回归验证（9 项：registry 加载 / SYSTEM_PROMPT 包含 core / full 模式注入所有 input_modes / cache_key 稳定 / routed 模式命中规则 / _build_user_message 图文格式 / stage_b_prompt 拼装 …） |
 | `test_three_view_e2e B01` | 多模态 LLM | 三视图端到端 · B01 L 型支架（60×40×20mm，含右上角 30×20 缺口） |
 | `test_three_view_e2e B02` | 多模态 LLM | 三视图端到端 · B02 带 2 孔平板（80×40×10mm + 2×⌀10 通孔） |
@@ -557,7 +606,7 @@ LLMPlanner/datasets/manual_three_view/samples.json
 | `test/test_three_view_e2e.py`（端到端 LLM 测试） | `part_id` / `subdir` / `test.text_hint` |
 | Web demo `/api/three-view-samples` → `app.js` 欢迎区按钮 | `part_id` / `subdir` / `ui.label` / `ui.prompt` |
 
-### 12.2 现有样例（5 个，全部端到端通过）
+### 12.2 现有样例（12 个，全部端到端通过）
 
 | ID | 名称 | 尺寸 | 特征 | 步数 | 体积（mm³） |
 |---|---|---|---|---|---|
@@ -626,7 +675,7 @@ C3: 这是一张齿轮啮合组的三视图, 由两个平行放置的直齿圆�
 
 **Web 界面手动测试**（打开 `http://localhost:5000`）：
 
-1. 欢迎区"🖼️ 多模态：从三视图图纸建模"分组下会有 3 个按钮（B01/B02/B03）
+1. 欢迎区“由三视图生成”分组下会有 12 个按钮（B01~C3）
 2. 按钮由 `/api/three-view-samples` 从 samples.json 动态渲染 —— 新增样例自动出现，无需改前端代码
 3. 点任一按钮 → 自动填 prompt + 加载图片预览 → 按发送即可
 

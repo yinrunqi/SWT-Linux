@@ -117,7 +117,7 @@ applies_to: [text, three_view]
     - edgeSelection: str — 选边方式（可选，默认 "all"）
       - "all": 选中实体的所有边
       - "ray": 通过射线选中特定边（需提供 rx,ry,rz,dx,dy,dz）
-      - **"面1_面2" 语义化选边（强烈推荐！）**：直接指定边的位置，C# 端自动计算射线
+      - **"面1_面2" 语义化选边（仅适用于轴对齐长方体）**：直接指定边的位置，C# 端自动计算射线
         - 格式：两个面名用下划线连接，表示这两个面的交线
         - 面名：top(顶面), bottom(底面), front(前面), back(后面), left(左面), right(右面)
         - 示例：
@@ -128,11 +128,18 @@ applies_to: [text, three_view]
           - "bottom_front": 底面与前面的交边
           - "front_left": 前面与左面的交边
           - "front_right": 前面与右面的交边
-    - rx, ry, rz, dx, dy, dz: float — 射线参数（仅 edgeSelection="ray" 时使用）
+    - rx, ry, rz, dx, dy, dz: float — 射线参数（edgeSelection="ray" 时必填）
     - **不需要进入草图**，直接对已有实体的边执行。
     - 典型流程：创建实体 → feature_fillet
-    - ⚠️ **优先使用语义化选边**（如 "top_front"），避免手动计算射线坐标！
-    - 🚫 **严禁使用单个面名作为 edgeSelection**（如 "top"、"front" 是错误的！）。edgeSelection 要么是 "all"/"ray"，要么必须是 **两个面名用下划线连接** 的边（如 "top_front"）。
+    - ⚠️ **轴对齐长方体**：优先使用语义化选边（如 "top_front"）。
+    - 🚫🚫 **圆柱/轴对称零件（螺栓、轴、皮带轮、法兰等）局部圆角硬规则**：
+      - 只能使用 `edgeSelection="ray"`，并同时给出 rx/ry/rz/dx/dy/dz。
+      - 禁止 `bottom_top`、`bottom_front`、`top_front` 等 AABB 方盒语义名；圆柱没有对应的平面交边，射线会选偏。
+      - 对轴线沿 Y 的台阶圆边：设台阶高度 stepY、较小段半径 rSmall，可从
+        `rx=rSmall×1.4, ry=stepY+0.001, rz=0` 沿 `dx=-1, dy=-1, dz=0`
+        斜向圆边发射；其他轴向按坐标轴置换。
+    - 🚫 **严禁使用单个面名作为 edgeSelection**（如 "top"、"front"）。
+      合法值：长方体可用 "all"/"ray"/"面1_面2"；圆柱局部选边只能用 "ray"（若确实要处理全部圆边才可用 "all"）。
     - ⚠️ **多条边圆角必须拆成多个 feature_fillet 步骤**：一个 feature_fillet 步骤只能处理一条语义化边。例如「对顶面的 4 条边做 R5mm 圆角」要拆成 4 个步骤：
       - feature_fillet {radius: 0.005, edgeSelection: "top_front"}
       - feature_fillet {radius: 0.005, edgeSelection: "top_back"}
@@ -147,8 +154,8 @@ applies_to: [text, three_view]
     - distance1: float — 倒角距离（米）
     - distance2: float — 第二距离（distance_distance 模式，米，可选）
     - angle: float — 倒角角度（distance_angle 模式，度，可选，默认 45）
-    - edgeSelection: str — 选边方式（可选，默认 "all"），同 feature_fillet（支持 "all"、"ray"、语义化选边）
-    - rx, ry, rz, dx, dy, dz: float — 射线参数（仅 edgeSelection="ray" 时使用）
+    - edgeSelection: str — 选边方式（可选，默认 "all"），规则同 feature_fillet：长方体可用语义选边；圆柱/轴对称零件局部倒角只能用 "ray"
+    - rx, ry, rz, dx, dy, dz: float — 射线参数（edgeSelection="ray" 时必填）
     - **不需要进入草图**，直接对已有实体的边执行。
     - 典型流程：创建实体 → feature_chamfer
 

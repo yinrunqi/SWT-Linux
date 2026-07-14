@@ -5,6 +5,10 @@ triggers: []
 applies_to: [text, three_view]
 ---
 ## 重要规则
+- **圆角/倒角选边前必须先判断零件形状**：
+  - 主体由 `sketch_rectangle` 拉伸而成的轴对齐方盒：可使用 `top_front` 等语义边名。
+  - 主体由 `sketch_circle` 拉伸或 `feature_revolve` 形成的圆柱、螺栓、轴、法兰、皮带轮：局部边必须使用 `edgeSelection="ray"`，且提供 rx/ry/rz/dx/dy/dz。
+  - “头部底面与杆部顶面交界圆边”仍是圆柱台阶圆边，禁止发明 `bottom_top`、`bottom_front` 等方盒语义名。
 - **必须使用原子操作逐步建模**，标准流程为：new_part → select_plane → 画草图 → feature_extrusion。
 - feature_extrusion、feature_cut_extrusion 和 feature_revolve 都会自动退出草图再执行操作，不需要在前面调用 close_sketch。
 - **拉伸方向控制**：
