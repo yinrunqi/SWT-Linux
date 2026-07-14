@@ -10,7 +10,7 @@
 
 ## 0. 一句话总结
 
-**用 LLM（GPT/Claude）把自然语言或三视图图纸自动翻译成 SolidWorks 建模步骤，通过 C# HTTP 服务远程驱动 SolidWorks 完成建模；已支持零件建模（15+ 样例端到端跑通）和装配体建模（含齿轮联动 Mate），下一步是把"编程驱动齿轮转动"这最后一公里打通。**
+**用 LLM（GPT/Claude）把自然语言或三视图图纸自动翻译成 SolidWorks 建模步骤，通过 C# HTTP 服务远程驱动 SolidWorks 完成建模；已支持零件、装配体、Gear Mate 联动以及 Web 控制的 Motion Study 齿轮动画。**
 
 ---
 
@@ -30,7 +30,7 @@
 ### 1.3 当前已支持的输出
 - ✅ **零件建模（.SLDPRT）**：单实体 + 多实体（同一 sldprt 里多个不相连实体）
 - ✅ **装配体（.SLDASM）**：多个 .SLDPRT 组合，含 Coincident/Concentric/**Gear Mate（齿轮联动）** 配合
-- ⏳ **动画驱动**：装配体建成后**手动**拖动组件能让 Gear Mate 联动，但通过 **API 编程驱动组件旋转**未打通（详见第 6 节 "已知问题"）
+- ✅ **动画驱动**：Motion Study 旋转马达可驱动小齿轮，并通过 Gear Mate 带动大齿轮按 2:1 联动；Web demo 支持加载、播放和停止
 
 ---
 
@@ -440,30 +440,29 @@ Get-ItemProperty 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFl
 - 零件另存：`/api/save-part-as`
 - 调试：`/api/assembly/get-component-transform`
 - ⚠️ 有问题：`/api/assembly/rotate-component`、`/api/assembly/rotate-component-by-drag`（见 §10）
+- ✅ Motion Study：`/api/assembly/motion/{probe,create-gear-motor,play,stop,status}`
 
 ---
 
 ## 10. 【重要】未完成 & 已知问题
 
-### 10.1 🔴 编程驱动组件旋转不生效（首要待攻克问题）
+### 10.1 ✅ Motion Study 编程驱动齿轮旋转（2026-07-14 已打通）
 
-**症状**：SW2025 中文版下 3 种旋转 API 全部失败（API 返回 True 但 Transform 前后不变）：
+以下 3 种直接修改组件 Transform 的旧路径仍失败（API 返回 True 但 Transform 不变）：
 - `IComponent2.SetTransformAndSolve3(newTransform, false)` → 返回 True，Transform 不变
 - `component.Transform2 = newTransform` （setter） → 无异常，Transform 不变
 - `IDragOperator.{AddComponent + BeginDrag + Drag(xform) + EndDrag}` → 每步返回 True，Transform 不变
 
-**对比**：**手动在 SolidWorks 界面拖动小齿轮 → 大齿轮按 2:1 反向联动完全正常**，说明装配体本身 100% 正确，是**编程 API 层面**的问题。
+**已采用的有效方案**：`IModelDocExtension.GetMotionStudyManager()` → Animation Study → `swFmAEMRotationalMotor` → `PlayFromStart()`。无需 Motion Analysis 许可，本机支持类型位掩码为 7。
 
-**已尝试的诊断**：`assembly_smoke/README.md` 有完整过程
+实测小齿轮由 30 RPM 马达驱动时，大齿轮通过 Gear Mate 按 2:1 联动；自动测试中 timebar=1.25s、小齿轮矩阵变化 1.325782、大齿轮变化 0.693351。测试：`assembly_smoke/test_motion_study.py`。
 
-**攻克方向建议**（优先级排序）：
-1. **Motion Study API**（`IModelDoc2.GetMotionStudyManager` → `IMotionStudy` → 添加 Motor → 播放） — SolidWorks 官方专门用于动画的 API
-2. `SetPositions2` / `MoveOrCopyBodies2` — 底层几何变换
-3. 咨询 Xarial.XCad 作者或 SolidWorks API 论坛
-4. 用 SendKeys / UI Automation 模拟"移动零部件"操作（下策）
+Web demo 已增加“加载装配体 / 播放 5 圈 / 停止”控件；直接 Transform 路线仅保留用于历史诊断。
 
 ### 10.2 🟡 CircularPattern 在少数情况下几何未完全生效
 CODEBUDDY.md 里的表格已注明"本地 SW 上 API 调用成功但几何未完全生效，暂不推荐依赖"。多实体零件下已加"自动从源特征中心选圆柱面"逻辑，但**极端 case** 可能还有边缘问题，需要观察。
+
+2026-07-14 修复 C3 稳定回归：圆周阵列创建参考轴后，`SelectByID2("草图4","SKETCH")` 返回 false，导致大齿轮种子齿拉伸失败。`Extrusion()` 现会回退到遍历特征树并调用 `IFeature.Select2`；C3 连续 3 次 15/15 通过，包围盒 138×88×15mm。
 
 ### 10.3 🟡 长 sketch/slot 在本地 SW 上退化为矩形近似
 `SketchSlot` 已知问题：本地 SW 上 `CreateSlot4` 有兼容性问题，服务端降级为"中心矩形近似"。理想情况下应该是长圆孔（Slot），但目前是矩形。
@@ -484,8 +483,8 @@ CODEBUDDY.md 里的表格已注明"本地 SW 上 API 调用成功但几何未完
 ### 10.6 🟢 手绘草图 / 效果图输入模式
 架构已预留 `skills/input_modes/` 扩展位，还未实现。可以先做 CAD-VGDrawing 数据集（SVG 直读，比 PNG OCR 简单）。
 
-### 10.7 🟢 Motion Study / 齿轮动画演示
-一旦 §10.1 打通，就可以做 **D1 样例：会转的齿轮减速器**（Web demo 点按钮 → 齿轮自动旋转 5 圈）。这是极具演示效果的功能。
+### 10.7 ✅ Motion Study / 齿轮动画演示
+Web demo 已可加载预置齿轮装配体并播放/停止 5 圈 Motion Study 动画。后续仍可把该能力扩展成由 Planner 自动创建装配体的 D1 样例。
 
 ---
 
@@ -587,7 +586,7 @@ python -X utf8 -m web.app --port 5000
 
 ### 13.1 短期（1 周内可完成）
 - ✅ 熟悉代码，跑通 §12 全流程
-- 攻克 §10.1（Motion Study API），让齿轮真的转起来
+- ✅ Motion Study API 已打通，齿轮可由 Web 控制播放/停止
 - 为剩余 11 个三视图样例预置端到端 cache
 
 ### 13.2 中期（2~4 周）

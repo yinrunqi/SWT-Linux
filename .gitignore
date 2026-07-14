@@ -62,3 +62,7 @@ LLMPlanner/**/__pycache__/**
 LLMPlanner/**/.llm_cache/**
 LLMPlanner/log/**
 LLMPlanner/**/*.log
+
+# SolidWorks 打开文档时生成的临时锁文件，以及装配体冒烟脚本的本地输出
+LLMPlanner/**/~$*
+LLMPlanner/assembly_smoke/gear_pair_assembly_v2.SLDASM

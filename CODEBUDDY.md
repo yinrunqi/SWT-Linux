@@ -102,8 +102,13 @@ msbuild SolidWorksTutorial.slnx /p:Configuration=Debug
 | POST | `/api/assembly/get-component-transform` | `{ "componentName" }` | 读组件当前 Transform 矩阵（调试用）|
 | POST | `/api/assembly/rotate-component` | `{ "componentName", "axisPointX/Y/Z", "axisDirX/Y/Z", "angleDegrees" }` | ⚠️ **编程旋转组件（当前有已知问题，见 assembly_smoke/README.md）**|
 | POST | `/api/assembly/rotate-component-by-drag` | 同上 | ⚠️ 同上 |
+| POST | `/api/assembly/motion/probe` | 无 | 探测 Motion Study / 旋转马达能力 |
+| POST | `/api/assembly/motion/create-gear-motor` | `{ "componentName", "rpm", "durationSeconds", "reverseDirection"(可选) }` | 创建或更新恒速旋转马达 |
+| POST | `/api/assembly/motion/play` | 无 | 从头播放当前 Motion Study |
+| POST | `/api/assembly/motion/stop` | 无 | 停止当前 Motion Study |
+| GET | `/api/assembly/motion/status` | 无 | 读取播放状态、timebar 与时长 |
 
-**装配体端点已知问题**：SW2025 中文版下 `SetTransformAndSolve3` / `Transform2` setter / `IDragOperator.Drag` 三种编程旋转 API 都返回成功但组件 Transform 前后不变，**用户手动拖动小齿轮时大齿轮按 2:1 联动完全正常**（Gear Mate 100% 有效），说明是编程 API 层面的问题，不是装配体本身问题。详见 `LLMPlanner/assembly_smoke/README.md`。
+**齿轮动画状态**：直接修改 Transform 的三条旧路径仍不可靠，但 Motion Study 旋转马达已在 SW2025 中文版实测成功：小齿轮可见旋转，大齿轮通过 Gear Mate 按 2:1 联动。Web demo 已提供加载/播放/停止控件，自动化测试见 `LLMPlanner/assembly_smoke/test_motion_study.py`。
 
 **装配体空模板**：`Chapter1.ConnectToSw/resources/empty_assembly_template.SLDASM`（57KB，随构建产物一起 copy 到 bin/Debug/resources/）。
 

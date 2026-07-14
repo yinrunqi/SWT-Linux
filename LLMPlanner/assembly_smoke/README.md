@@ -12,6 +12,7 @@
 | `gear_pair_no_mate.SLDASM` | 无 Mate 的对照样本（用于验证"完全没有 Mate 时 Transform2 是否生效"）|
 | `phase1_build_two_gears.py` | 用现有零件建模 HTTP API 建两个齿轮零件（用户需手动 SaveAs 保存为 .SLDPRT）|
 | `phase3_via_csharp_api.py` | 用装配体 API 端到端搭齿轮啮合组（新建装配体 + AddComponent × 2 + Coincident Mate + Gear Mate + Save）|
+| `test_motion_study.py` | Motion Study 旋转马达端到端测试：播放、timebar 推进、主动/从动齿轮 Transform 变化 |
 
 ## 快速验证：从头搭一个齿轮啮合组
 
@@ -34,24 +35,26 @@ venv\Scripts\python.exe -X utf8 assembly_smoke\phase3_via_csharp_api.py
 
 之后在 SolidWorks 里打开 `gear_pair_assembly_v3.SLDASM`，用**装配体 → 移动零部件**拖动小齿轮，大齿轮会按 2:1 反向联动旋转。
 
-## ⚠️ 已知问题：编程驱动组件旋转
+## ✅ Motion Study 编程驱动齿轮旋转
 
-**装配体 API 全部功能都打通**，但**通过 API 编程驱动组件旋转（模拟"用户拖"）在 SolidWorks 2025 中文版上未成功**。
+2026-07-14 已通过 Motion Study API 打通可见齿轮动画：
 
-尝试过的方案（全部 API 返回 `success=true`，但组件 Transform 前后完全不变，视觉无变化）：
+- `IModelDocExtension.GetMotionStudyManager()` 获取/创建 Animation Study；
+- `swFmAEMRotationalMotor` + `ISimulationMotorFeatureData.ConstantSpeedMotor()` 创建旋转马达；
+- `IMotionStudy.PlayFromStart()` / `Stop()` 控制播放；
+- 小齿轮由马达驱动，大齿轮通过 Gear Mate 按 2:1 联动；
+- Web demo 提供“加载装配体 / 播放 5 圈 / 停止”控件。
 
-| 方案 | API 调用 | 结果 |
-|---|---|---|
-| SetTransformAndSolve3 | `IComponent2.SetTransformAndSolve3(newTransform, false)` | 返回 True，Transform 不变 |
-| Transform2 直接赋值 | `component.Transform2 = newTransform` | 无异常，Transform 不变 |
-| DragOperator 序列 | `AddComponent + BeginDrag + Drag(xform) + EndDrag` | 每步都返回 True，Transform 不变 |
+自动验证：
 
-对比：**手动在 SolidWorks 界面拖小齿轮 → 大齿轮联动正常**，说明装配体本身（含 Gear Mate）100% 正确，是**编程 API 层面的问题**。
+```bash
+cd LLMPlanner
+venv\Scripts\python.exe -X utf8 assembly_smoke\test_motion_study.py
+```
 
-**后续攻克方向**（未来的独立 issue）：
-1. **Motion Study API**（`IModelDoc2.GetMotionStudyManager`）— SolidWorks 官方的运动算例，专门做齿轮动画。这是最有希望的路径。
-2. **`SetPositions2` 或 `MoveOrCopyBodies2`** — 底层几何变换 API。
-3. 咨询 Xarial.XCad 作者或 SW API 论坛，看是否有 SW2025 特定的组件旋转 API。
+实测：Motion timebar 推进到 1.25s，小齿轮矩阵变化 1.325782，大齿轮矩阵变化 0.693351。
+
+⚠️ `SetTransformAndSolve3`、`Transform2` setter 和 `IDragOperator.Drag` 三条旧路径仍会出现“返回成功但 Transform 不变”，保留用于历史诊断，不作为动画实现。
 
 ## 已提供的 12 个装配体 HTTP 端点
 
@@ -69,4 +72,9 @@ venv\Scripts\python.exe -X utf8 assembly_smoke\phase3_via_csharp_api.py
 | POST `/api/assembly/get-component-transform` | 读组件当前变换矩阵（调试用）| ✅ |
 | POST `/api/assembly/rotate-component` | **编程旋转组件** | ⚠️ 视觉无变化 |
 | POST `/api/assembly/rotate-component-by-drag` | **DragOperator 旋转** | ⚠️ 视觉无变化 |
+| POST `/api/assembly/motion/probe` | Motion Study 能力探针 | ✅ |
+| POST `/api/assembly/motion/create-gear-motor` | 创建或更新旋转马达 | ✅ |
+| POST `/api/assembly/motion/play` | 播放运动算例 | ✅ |
+| POST `/api/assembly/motion/stop` | 停止运动算例 | ✅ |
+| GET `/api/assembly/motion/status` | 查询 timebar / 播放状态 | ✅ |
 | POST `/api/save-part-as` | 零件另存为独立 .SLDPRT | ✅ |

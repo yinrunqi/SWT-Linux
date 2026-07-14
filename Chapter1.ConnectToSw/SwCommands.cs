@@ -1,5 +1,6 @@
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
+using SolidWorks.Interop.swmotionstudy;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -53,6 +54,10 @@ namespace Chapter1.ConnectToSw
         private string _activeAssemblyPath = null;
         /// <summary>装配体名（不含扩展名），SelectByID2 的组件名格式 "PlaneName@Component@AssemblyName" 需要它。</summary>
         private string _activeAssemblyName = null;
+        /// <summary>当前由 API 创建或取得的 Motion Study。</summary>
+        private IMotionStudy _activeMotionStudy = null;
+        /// <summary>当前由 API 创建的旋转马达特征。</summary>
+        private IFeature _activeMotionMotor = null;
 
         public SwCommands(ISldWorks swApp)
         {
@@ -372,6 +377,46 @@ namespace Chapter1.ConnectToSw
             }
             Console.WriteLine($"[SwCommands] 进入草图后特征树中的草图: [{string.Join(", ", sketchNames)}]，" +
                 $"捕获当前草图 = \"{_activeSketchName}\"");
+        }
+
+        /// <summary>
+        /// 显式选中最近创建的草图。
+        /// SelectByID2 在圆周阵列创建参考轴后可能无法按本地化名称选中后续草图，
+        /// 因此失败时遍历特征树并直接调用 IFeature.Select2。
+        /// </summary>
+        private bool SelectActiveSketch(string operationName)
+        {
+            if (string.IsNullOrEmpty(_activeSketchName))
+            {
+                Console.WriteLine($"[SwCommands] ⚠️ {operationName}前未捕获到草图名");
+                return false;
+            }
+
+            ActiveDoc.ClearSelection2(true);
+            var mdoc = (ModelDoc2)ActiveDoc;
+            bool selected = mdoc.Extension.SelectByID2(
+                _activeSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
+            Console.WriteLine(
+                $"[SwCommands] {operationName}前 SelectByID2(\"{_activeSketchName}\", \"SKETCH\") = {selected}");
+            if (selected)
+                return true;
+
+            IFeature feat = (IFeature)ActiveDoc.FirstFeature();
+            while (feat != null)
+            {
+                if (feat.GetTypeName2() == "ProfileFeature" && feat.Name == _activeSketchName)
+                {
+                    ActiveDoc.ClearSelection2(true);
+                    selected = feat.Select2(false, 0);
+                    Console.WriteLine(
+                        $"[SwCommands] {operationName}前回退 IFeature.Select2(\"{_activeSketchName}\") = {selected}");
+                    return selected;
+                }
+                feat = (IFeature)feat.GetNextFeature();
+            }
+
+            Console.WriteLine($"[SwCommands] ⚠️ 特征树中找不到草图 \"{_activeSketchName}\"");
+            return false;
         }
 
         /// <summary>
@@ -1077,11 +1122,9 @@ namespace Chapter1.ConnectToSw
             // 选中整个草图后 SolidWorks 会自动把草图中的所有封闭轮廓都作为拉伸源。
             if (!string.IsNullOrEmpty(_activeSketchName))
             {
-                ActiveDoc.ClearSelection2(true);
-                bool selOk = mdoc.Extension.SelectByID2(_activeSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
-                Console.WriteLine($"[SwCommands] 拉伸前显式选中草图 \"{_activeSketchName}\" = {selOk}");
+                bool selOk = SelectActiveSketch("拉伸");
                 if (!selOk)
-                    Console.WriteLine("[SwCommands] ⚠️ 按名选中草图失败，将回退到自动选择状态");
+                    Console.WriteLine("[SwCommands] ⚠️ 显式选中草图失败，将回退到自动选择状态");
             }
             else
             {
@@ -2495,6 +2538,8 @@ namespace Chapter1.ConnectToSw
             _activeAssembly = asmDoc;
             _activeAssemblyPath = savePath;
             _activeAssemblyName = Path.GetFileNameWithoutExtension(savePath);
+            _activeMotionStudy = null;
+            _activeMotionMotor = null;
             Console.WriteLine($"[SwCommands] 新建装配体成功: 名称='{_activeAssemblyName}'");
         }
 
@@ -2926,6 +2971,8 @@ namespace Chapter1.ConnectToSw
             _activeAssembly = asmDoc;
             _activeAssemblyPath = assemblyPath;
             _activeAssemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
+            _activeMotionStudy = null;
+            _activeMotionMotor = null;
             Console.WriteLine($"[SwCommands] 已打开装配体: {_activeAssemblyName} (errors={errors}, warnings={warnings})");
         }
 
@@ -3311,6 +3358,243 @@ namespace Chapter1.ConnectToSw
                 ["elapsedSeconds"] = Math.Round(elapsed, 2),
             };
         }
+
+        #region Motion Study
+
+        private IMotionStudy EnsureMotionStudy()
+        {
+            EnsureActiveAssembly();
+            if (_activeMotionStudy != null)
+            {
+                _activeMotionStudy.Activate();
+                return _activeMotionStudy;
+            }
+
+            var model = (IModelDoc2)_activeAssembly;
+            var manager = model.Extension.GetMotionStudyManager() as IMotionStudyManager;
+            if (manager == null)
+                throw new InvalidOperationException("GetMotionStudyManager 返回 null，当前 SolidWorks 不提供 Motion Study Manager");
+
+            if (manager.GetMotionStudyCount() > 0)
+            {
+                var rawNames = manager.GetMotionStudyNames();
+                var enumerable = rawNames as System.Collections.IEnumerable;
+                if (enumerable != null)
+                {
+                    foreach (var item in enumerable)
+                    {
+                        if (item == null) continue;
+                        _activeMotionStudy = manager.GetMotionStudy(item.ToString()) as IMotionStudy;
+                        if (_activeMotionStudy != null) break;
+                    }
+                }
+            }
+
+            if (_activeMotionStudy == null)
+                _activeMotionStudy = manager.CreateMotionStudy() as IMotionStudy;
+            if (_activeMotionStudy == null)
+                throw new InvalidOperationException("CreateMotionStudy 返回 null");
+            if (!_activeMotionStudy.Activate() && !_activeMotionStudy.IsActive)
+                throw new InvalidOperationException($"Motion Study \"{_activeMotionStudy.Name}\" 激活失败");
+
+            return _activeMotionStudy;
+        }
+
+        private IComponent2 FindAssemblyComponent(string componentName)
+        {
+            EnsureActiveAssembly();
+            var components = _activeAssembly.GetComponents(false) as object[];
+            if (components != null)
+            {
+                foreach (var item in components)
+                {
+                    var component = item as IComponent2;
+                    if (component != null && component.Name2 == componentName)
+                        return component;
+                }
+            }
+            throw new InvalidOperationException($"装配体中找不到组件: {componentName}");
+        }
+
+        /// <summary>寻找组件上轴线平行 Z 轴且半径最大的圆柱面，作为旋转马达方向参考。</summary>
+        private IFace2 FindMotorCylinderFace(IComponent2 component)
+        {
+            IFace2 bestFace = null;
+            double bestRadius = -1;
+            object bodyInfo;
+            var bodies = component.GetBodies3((int)swBodyType_e.swAllBodies, out bodyInfo) as object[];
+            if (bodies != null)
+            {
+                foreach (var bodyObject in bodies)
+                {
+                    var body = bodyObject as IBody2;
+                    var faces = body?.GetFaces() as object[];
+                    if (faces == null) continue;
+                    foreach (var faceObject in faces)
+                    {
+                        var face = faceObject as IFace2;
+                        var surface = face?.IGetSurface() as ISurface;
+                        if (surface == null || !surface.IsCylinder()) continue;
+                        var cylinder = surface.CylinderParams as double[];
+                        if (cylinder == null || cylinder.Length < 7) continue;
+                        double axisNorm = Math.Sqrt(
+                            cylinder[3] * cylinder[3] +
+                            cylinder[4] * cylinder[4] +
+                            cylinder[5] * cylinder[5]);
+                        if (axisNorm < 1e-9 || Math.Abs(cylinder[5] / axisNorm) < 0.9) continue;
+                        if (cylinder[6] > bestRadius)
+                        {
+                            bestRadius = cylinder[6];
+                            bestFace = face;
+                        }
+                    }
+                }
+            }
+            if (bestFace == null)
+                throw new InvalidOperationException($"组件 \"{component.Name2}\" 上找不到 Z 轴向圆柱面");
+            Console.WriteLine(
+                $"[SwCommands] Motion 马达方向面: component={component.Name2}, radius={bestRadius * 1000:F2}mm");
+            return bestFace;
+        }
+
+        /// <summary>
+        /// 探测当前 SolidWorks 是否支持创建并激活 Animation Motion Study，
+        /// 以及是否能创建旋转马达定义。仅创建 Study，不把马达特征写入装配体。
+        /// </summary>
+        public Dictionary<string, object> ProbeMotionStudyCapabilities()
+        {
+            var study = EnsureMotionStudy();
+            int supportedStudyTypes;
+            bool supportedTypesRead = study.GetSupportedStudyTypes(out supportedStudyTypes);
+            object motorDefinition = study.CreateDefinition(
+                (int)swFeatureNameID_e.swFmAEMRotationalMotor);
+
+            Console.WriteLine(
+                $"[SwCommands] Motion Study 探针: name={study.Name}, active={study.IsActive}, " +
+                $"studyType={study.StudyType}, motorDefinition={(motorDefinition != null)}");
+
+            return new Dictionary<string, object>
+            {
+                ["managerAvailable"] = true,
+                ["studyName"] = study.Name,
+                ["studyType"] = study.StudyType,
+                ["isActive"] = study.IsActive,
+                ["supportedTypesRead"] = supportedTypesRead,
+                ["supportedStudyTypes"] = supportedStudyTypes,
+                ["rotationalMotorDefinitionAvailable"] = motorDefinition != null,
+            };
+        }
+
+        /// <summary>给指定齿轮组件创建恒速旋转马达。</summary>
+        public Dictionary<string, object> CreateGearMotor(
+            string componentName, double rpm, double durationSeconds, bool reverseDirection)
+        {
+            if (rpm <= 0) throw new ArgumentOutOfRangeException(nameof(rpm), "rpm 必须大于 0");
+            if (durationSeconds <= 0)
+                throw new ArgumentOutOfRangeException(nameof(durationSeconds), "durationSeconds 必须大于 0");
+
+            var study = EnsureMotionStudy();
+            var component = FindAssemblyComponent(componentName);
+            var cylinderFace = FindMotorCylinderFace(component);
+
+            if (_activeMotionMotor == null)
+            {
+                var motionFeatures = study.GetMotionFeatures() as object[];
+                if (motionFeatures != null)
+                {
+                    foreach (var featureObject in motionFeatures)
+                    {
+                        var feature = featureObject as IFeature;
+                        if (feature != null && feature.GetTypeName2() == "AEMRotationalMotor")
+                        {
+                            _activeMotionMotor = feature;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (_activeMotionMotor == null)
+            {
+                var motorData = study.CreateDefinition(
+                    (int)swFeatureNameID_e.swFmAEMRotationalMotor) as ISimulationMotorFeatureData;
+                if (motorData == null)
+                    throw new InvalidOperationException("旋转马达定义创建失败");
+
+                motorData.Location = cylinderFace;
+                motorData.DirectionReference = cylinderFace;
+                motorData.ReverseDirection = reverseDirection;
+                motorData.ConstantSpeedMotor(rpm);
+                _activeMotionMotor = study.CreateFeature(motorData) as IFeature;
+                if (_activeMotionMotor == null)
+                    throw new InvalidOperationException("Motion Study 创建旋转马达特征失败");
+            }
+            else
+            {
+                var motorData = _activeMotionMotor.GetDefinition() as ISimulationMotorFeatureData;
+                if (motorData == null)
+                    throw new InvalidOperationException("读取已有旋转马达定义失败");
+                motorData.Location = cylinderFace;
+                motorData.DirectionReference = cylinderFace;
+                motorData.ReverseDirection = reverseDirection;
+                motorData.ConstantSpeedMotor(rpm);
+                if (!_activeMotionMotor.ModifyDefinition(motorData, (IModelDoc2)_activeAssembly, null))
+                    throw new InvalidOperationException("更新已有旋转马达定义失败");
+            }
+            if (!study.SetDuration(durationSeconds))
+                throw new InvalidOperationException($"Motion Study 时长设置失败: {durationSeconds}s");
+
+            Console.WriteLine(
+                $"[SwCommands] 已创建旋转马达: feature={_activeMotionMotor.Name}, " +
+                $"component={componentName}, rpm={rpm}, duration={durationSeconds}s, reverse={reverseDirection}");
+            return new Dictionary<string, object>
+            {
+                ["studyName"] = study.Name,
+                ["motorFeatureName"] = _activeMotionMotor.Name,
+                ["componentName"] = componentName,
+                ["rpm"] = rpm,
+                ["durationSeconds"] = durationSeconds,
+                ["reverseDirection"] = reverseDirection,
+            };
+        }
+
+        public Dictionary<string, object> PlayMotionStudy()
+        {
+            var study = EnsureMotionStudy();
+            study.SetTime(0);
+            bool started = study.PlayFromStart();
+            Console.WriteLine($"[SwCommands] Motion Study 播放: started={started}, isPlaying={study.IsPlaying}");
+            return GetMotionStudyStatus(started);
+        }
+
+        public Dictionary<string, object> StopMotionStudy()
+        {
+            var study = EnsureMotionStudy();
+            bool stopped = study.Stop();
+            Console.WriteLine($"[SwCommands] Motion Study 停止: stopped={stopped}, time={study.GetTime():F3}s");
+            return GetMotionStudyStatus(stopped);
+        }
+
+        public Dictionary<string, object> GetMotionStudyStatus(bool? commandResult = null)
+        {
+            var study = EnsureMotionStudy();
+            var result = new Dictionary<string, object>
+            {
+                ["studyName"] = study.Name,
+                ["studyType"] = study.StudyType,
+                ["isActive"] = study.IsActive,
+                ["isPlaying"] = study.IsPlaying,
+                ["currentTime"] = study.GetTime(),
+                ["duration"] = study.GetDuration(),
+                ["motorCreated"] = _activeMotionMotor != null,
+                ["motorFeatureName"] = _activeMotionMotor?.Name ?? "",
+            };
+            if (commandResult.HasValue)
+                result["commandResult"] = commandResult.Value;
+            return result;
+        }
+
+        #endregion
 
         #endregion
     }

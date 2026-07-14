@@ -12,6 +12,9 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <SolidWorksInstallDir Condition="'$(SolidWorksInstallDir)' == '' and '$(SOLIDWORKS_INSTALL_DIR)' != ''">$(SOLIDWORKS_INSTALL_DIR)</SolidWorksInstallDir>
+    <SolidWorksInstallDir Condition="'$(SolidWorksInstallDir)' == '' and Exists('C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\api\redist\SolidWorks.Interop.swmotionstudy.dll')">C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\</SolidWorksInstallDir>
+    <SolidWorksInstallDir Condition="'$(SolidWorksInstallDir)' == '' and Exists('C:\Program Files\softwares\solidworks2025\Corp\SOLIDWORKS\api\redist\SolidWorks.Interop.swmotionstudy.dll')">C:\Program Files\softwares\solidworks2025\Corp\SOLIDWORKS\</SolidWorksInstallDir>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
@@ -48,6 +51,11 @@
     <Reference Include="SolidWorks.Interop.swpublished, Version=34.1.1.11, Culture=neutral, PublicKeyToken=89a97bdc5284e6d8, processorArchitecture=MSIL">
       <HintPath>..\packages\Xarial.XCad.SolidWorks.0.8.3\lib\net461\SolidWorks.Interop.swpublished.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="SolidWorks.Interop.swmotionstudy">
+      <HintPath>$(SolidWorksInstallDir)api\redist\SolidWorks.Interop.swmotionstudy.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

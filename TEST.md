@@ -505,7 +505,8 @@ python test_gear_llm.py
 | `test_three_view_e2e B22` | 多模态 LLM | 三视图端到端 · B22 圆碗（⌀80×40mm + 顶面 ⌀68×34 深腔，**容器类首例**，用 Shell 替代法） |
 | `test_three_view_e2e C1` | 多模态 LLM | 三视图端到端 · C1 迷你机械键盘（285×95×20mm + 65 键 5×13 二维线性阵列，**LinearPattern 2D 首例**，用 basic/claude-sonnet-5） |
 | `test_three_view_e2e C2` | 多模态 LLM | 三视图端到端 · C2 齿轮减速器外壳（200×120×100mm 三层复合：法兰+箱体+内腔，前后 ⌀25 轴承通孔 through_all 一次贯穿，法兰 4 安装孔 LinearPattern 2×2，**首个三层复合 + 双向面选择 + 贯穿两平行面**） |
-| `test_three_view_e2e C3` | 多模态 LLM | 三视图端到端 · C3 齿轮啮合组（10 齿小齿轮 ⌀40 + 20 齿大齿轮 ⌀80, 中心距 62mm, 减速比 2:1，**首个多实体零件 + 首个真"减速器"传动组**） |
+| `test_three_view_e2e C3` | 多模态 LLM | 三视图端到端 · C3 齿轮啮合组（10 齿小齿轮 ⌀40 + 20 齿大齿轮 ⌀80, 中心距 70mm, 减速比 2:1，**首个多实体零件 + 首个真"减速器"传动组**） |
+| `assembly_smoke/test_motion_study` | 装配体 Motion Study | 旋转马达驱动小齿轮，大齿轮通过 Gear Mate 按 2:1 联动；验证 timebar 与两组件 Transform 均变化 |
 
 > **API 直调**类测试直接构造操作序列调用 C# 服务，不依赖 LLM，可用于验证底层建模能力；
 > **LLM 规划**类测试走完整链路（自然语言 → LLM 解析 → 执行），需要配置好 API Key；
@@ -571,7 +572,7 @@ LLMPlanner/datasets/manual_three_view/samples.json
 | **B22** | 圆碗 | ⌀80×40 mm | 顶面挖 ⌀68×34mm 深腔形成碗形（壁厚 6mm 底厚 6mm），**首个容器类样例**（用 Shell 替代法，即顶面挖深孔，因 C# 服务未实现 FeatureShell） | 7/7 | 77584.77 |
 | **C1** | 迷你机械键盘 | 285×95×20 mm | 285×95×15 底座 + 5×13=**65 键**方形拔模凸起(15×15×5mm, 拔模 11.31°)一步 LinearPattern 阵列生成，**首个二维线性阵列样例 + 首次使用 basic/claude-sonnet-5** | 8/8 | 469933.28 |
 | **C2** | 齿轮减速器外壳 | 200×120×100 mm | 200×120×20 法兰底座 + 上部 160×100×80 中空箱体(内腔 144×84×74, 壁厚 8mm 底厚 6mm) + 前后 ⌀25 轴承通孔(沿 Y 贯穿, 一次 through_all 打通前后壁) + 法兰 4 角 ⌀8 安装孔(LinearPattern 2×2 阵列), **首个三层复合特征 + 双向面选择(+Z 顶面挖内腔 + +Y 前面挖侧孔) + 首次 through_all 一次贯穿两个平行面** | 19/19 | 853020.78 |
-| **C3** | 齿轮啮合组 | 137.6×88×15 mm | 小齿轮 ⌀40+10 齿(中心 X=-35) + 大齿轮 ⌀80+20 齿(中心 X=+35), 中心距 **70mm**(齿顶留 2mm 视觉间隙, 避免矩形齿穿模), 减速比 2:1, 矩形齿高 4mm 齿宽 5mm, **一草图两圆一次拉伸生成两独立实体** + 两个齿轮各自 circular_pattern 阵列, **首个多实体零件(同一 sldprt 里两个不相连实体) + 首个真"减速器"传动组**（暂无轴孔, 因齿轮阵列后特征树面数过多导致选面超时；本简化版为实体齿轮） | 13/13 | 103308.03 |
+| **C3** | 齿轮啮合组 | 138×88×15 mm | 小齿轮 ⌀40+10 齿(中心 X=-35) + 大齿轮 ⌀80+20 齿(中心 X=+35), 中心距 **70mm**(齿顶留 2mm 视觉间隙, 避免矩形齿穿模), 减速比 2:1, 矩形齿高 4mm 齿宽 5mm, 两个齿轮依次完成圆盘拉伸、种子齿拉伸和 circular_pattern 阵列, **首个多实体零件(同一 sldprt 里两个不相连实体) + 首个真"减速器"传动组**（暂无轴孔, 因齿轮阵列后特征树面数过多导致选面超时；本简化版为实体齿轮） | 15/15 | 103247.78 |
 
 ### 12.3 从零复现全部三视图端到端验证
 
@@ -663,5 +664,18 @@ C3: 这是一张齿轮啮合组的三视图, 由两个平行放置的直齿圆�
 4. **测试通过** → 提交入库（含 `drawing.png` + `groundtruth.json` + samples.json 变更）。**Web demo 无需重启前端**（下次访问会自动 fetch 新按钮），若后端未重启则重启 Flask 加载 samples.json 的新内容。
 
 5. **若测试未通过**：常见原因是 LLM 对该形状没有对应的 skill 指引。检查 `LLMPlanner/planner/skills/input_modes/three_view.md` §7"阶段 B 特别指引"，仿照 L 形/T 形补一段专属规则（正确画法示例 + 反例禁止清单），清缓存重跑。
+
+---
+
+## 十三、Motion Study 齿轮动画测试
+
+该测试不调用 LLM，打开预置 `gear_pair_assembly_v3.SLDASM`，创建恒速旋转马达并播放，验证 Motion timebar 推进以及小/大齿轮 Transform 均发生变化。
+
+```cmd
+cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
+venv\Scripts\python.exe -X utf8 assembly_smoke\test_motion_study.py > log\test_motion_study.log 2>&1
+```
+
+实测：Motion timebar=1.250s，主动小齿轮矩阵变化 1.325782，从动大齿轮矩阵变化 0.693351，Gear Mate 联动通过。
 
 ---

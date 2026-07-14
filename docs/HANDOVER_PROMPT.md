@@ -19,7 +19,7 @@
 
 - **系统架构**：Python（LLMPlanner，负责调 LLM 生成 plan）→ HTTP → C#（Chapter1.ConnectToSw，通过 COM 驱动 SolidWorks）→ SolidWorks 2025 中文版桌面进程
 - **已实现**：零件建模（15+ 样例端到端跑通）、装配体建模（含齿轮 Gear Mate 联动）、多模态三视图输入（12 个手工样例）、Skill 化 Prompt 架构、端到端 cache
-- **待攻克**：**编程驱动组件旋转**（Motion Study API 方向）—— C# 服务端 3 种旋转 API 都被 SW2025 中文版拒绝（返回成功但 Transform 前后不变），但用户手动拖动时 Gear Mate 联动完全正常。见 `HANDOVER.md` §10.1。
+- **最新进展**：Motion Study 旋转马达已打通，Web demo 可加载齿轮装配体、播放 5 圈并停止；C3 草图选择回归也已修复。下一项主要工作是 Planner 端支持装配体。见 `HANDOVER.md` §10.1、§10.4。
 
 ## ⛔ 必须遵守的强约束（Definition of Done）
 
@@ -72,7 +72,7 @@
 3. **告诉我你理解到的**：
    - 这个项目在做什么？
    - 系统的三层架构是什么？
-   - 当前最重要的未完成问题是什么？（提示：与齿轮转动相关）
+   - 当前最重要的未完成问题是什么？（提示：Planner 端装配体支持）
    - Definition of Done 的 5 步是什么？
 4. **问我 3 个你觉得对上手最有帮助的问题**（可以是代码位置、历史决策、优先级等）
 

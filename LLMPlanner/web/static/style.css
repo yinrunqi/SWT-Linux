@@ -172,6 +172,43 @@ body {
 }
 .examples button:hover { border-color: var(--accent); }
 
+.gear-animation-panel {
+  max-width: 520px;
+  margin: 24px auto 0;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.gear-animation-title {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.gear-animation-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.gear-animation-actions button {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.gear-animation-actions button:hover:not(:disabled) { border-color: var(--accent); }
+.gear-animation-actions button:disabled { opacity: 0.45; cursor: not-allowed; }
+.gear-animation-status {
+  margin-top: 10px;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+.gear-animation-status.ok { color: var(--success); }
+.gear-animation-status.fail { color: var(--error); }
+
 /* Message Bubbles */
 .msg { max-width: 720px; width: 100%; margin: 0 auto; }
 .msg-user {

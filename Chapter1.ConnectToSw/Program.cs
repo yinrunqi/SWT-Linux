@@ -321,6 +321,21 @@ namespace Chapter1.ConnectToSw
                 case "/api/assembly/stop-spin":
                     RequirePost(method, resp, () => HandleStopSpin(resp));
                     break;
+                case "/api/assembly/motion/probe":
+                    RequirePost(method, resp, () => HandleMotionStudyProbe(resp));
+                    break;
+                case "/api/assembly/motion/create-gear-motor":
+                    RequirePost(method, resp, () => HandleCreateGearMotor(req, resp));
+                    break;
+                case "/api/assembly/motion/play":
+                    RequirePost(method, resp, () => HandlePlayMotionStudy(resp));
+                    break;
+                case "/api/assembly/motion/stop":
+                    RequirePost(method, resp, () => HandleStopMotionStudy(resp));
+                    break;
+                case "/api/assembly/motion/status":
+                    HandleMotionStudyStatus(resp);
+                    break;
                 case "/api/save-part-as":
                     RequirePost(method, resp, () => HandleSavePartAs(req, resp));
                     break;
@@ -1370,6 +1385,81 @@ namespace Chapter1.ConnectToSw
             }
         }
 
+        private static void HandleMotionStudyProbe(HttpListenerResponse resp)
+        {
+            try
+            {
+                var result = _commands.ProbeMotionStudyCapabilities();
+                SendJson(resp, 200, new { success = true, message = "Motion Study 能力探测完成", result });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] Motion Study 探针失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = ex.Message });
+            }
+        }
+
+        private static void HandleCreateGearMotor(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string componentName = GetString(body, "componentName");
+                double rpm = GetDoubleOrDefault(body, "rpm", 60);
+                double durationSeconds = GetDoubleOrDefault(body, "durationSeconds", 5);
+                bool reverseDirection = GetBoolOrDefault(body, "reverseDirection", false);
+                var result = _commands.CreateGearMotor(
+                    componentName, rpm, durationSeconds, reverseDirection);
+                SendJson(resp, 200, new { success = true, message = "齿轮旋转马达已创建", result });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] 创建齿轮马达失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = ex.Message });
+            }
+        }
+
+        private static void HandlePlayMotionStudy(HttpListenerResponse resp)
+        {
+            try
+            {
+                var result = _commands.PlayMotionStudy();
+                SendJson(resp, 200, new { success = true, message = "Motion Study 已开始播放", result });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] 播放 Motion Study 失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = ex.Message });
+            }
+        }
+
+        private static void HandleStopMotionStudy(HttpListenerResponse resp)
+        {
+            try
+            {
+                var result = _commands.StopMotionStudy();
+                SendJson(resp, 200, new { success = true, message = "Motion Study 已停止", result });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] 停止 Motion Study 失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = ex.Message });
+            }
+        }
+
+        private static void HandleMotionStudyStatus(HttpListenerResponse resp)
+        {
+            try
+            {
+                var result = _commands.GetMotionStudyStatus();
+                SendJson(resp, 200, new { success = true, message = "OK", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = ex.Message });
+            }
+        }
+
         private static void HandleUnfixComponent(HttpListenerRequest req, HttpListenerResponse resp)
         {
             try
@@ -1530,6 +1620,17 @@ namespace Chapter1.ConnectToSw
                 return defaultValue;
 
             return Convert.ToInt32(body[key]);
+        }
+
+        /// <summary>
+        /// 从字典中获取 bool 值，找不到则返回默认值。
+        /// </summary>
+        private static bool GetBoolOrDefault(Dictionary<string, object> body, string key, bool defaultValue)
+        {
+            if (!body.ContainsKey(key))
+                return defaultValue;
+
+            return Convert.ToBoolean(body[key]);
         }
 
         /// <summary>

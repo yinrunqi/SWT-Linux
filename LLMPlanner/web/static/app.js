@@ -17,6 +17,13 @@ const baseUrlEl = document.getElementById("base-url");
 const visionModelEl = document.getElementById("vision-model-select");
 const planModelEl = document.getElementById("plan-model-select");
 
+// 齿轮 Motion Study 控件
+const gearLoadBtn = document.getElementById("gear-load-btn");
+const gearPlayBtn = document.getElementById("gear-play-btn");
+const gearStopBtn = document.getElementById("gear-stop-btn");
+const gearAnimationStatus = document.getElementById("gear-animation-status");
+let gearStatusTimer = null;
+
 // 图片上传相关
 const fileInputEl = document.getElementById("file-input");
 const attachBtn = document.getElementById("attach-btn");
@@ -83,6 +90,82 @@ async function init() {
     }
   } catch {
     statusText.textContent = "后端未启动";
+  }
+}
+
+function setGearAnimationStatus(text, state = "") {
+  gearAnimationStatus.textContent = text;
+  gearAnimationStatus.classList.remove("ok", "fail");
+  if (state) gearAnimationStatus.classList.add(state);
+}
+
+async function callGearAnimation(path) {
+  const response = await fetch(`${API}/api/gear-animation/${path}`, {
+    method: path === "status" ? "GET" : "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = await response.json();
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || data.message || `HTTP ${response.status}`);
+  }
+  return data;
+}
+
+async function loadGearAnimation() {
+  gearLoadBtn.disabled = true;
+  setGearAnimationStatus("正在打开装配体并创建旋转马达…");
+  try {
+    const data = await callGearAnimation("load");
+    gearPlayBtn.disabled = false;
+    gearStopBtn.disabled = false;
+    setGearAnimationStatus(data.message || "齿轮动画已就绪", "ok");
+  } catch (error) {
+    gearLoadBtn.disabled = false;
+    setGearAnimationStatus(`加载失败：${error.message}`, "fail");
+  }
+}
+
+async function refreshGearAnimationStatus() {
+  try {
+    const data = await callGearAnimation("status");
+    const result = data.result || {};
+    const time = Number(result.currentTime || 0).toFixed(2);
+    const duration = Number(result.duration || 0).toFixed(2);
+    if (result.isPlaying) {
+      setGearAnimationStatus(`正在播放：${time}s / ${duration}s`, "ok");
+      return;
+    }
+    setGearAnimationStatus(`已停止：${time}s / ${duration}s`, "ok");
+    if (gearStatusTimer) {
+      clearInterval(gearStatusTimer);
+      gearStatusTimer = null;
+    }
+  } catch (error) {
+    setGearAnimationStatus(`状态读取失败：${error.message}`, "fail");
+  }
+}
+
+async function playGearAnimation() {
+  gearPlayBtn.disabled = true;
+  setGearAnimationStatus("正在启动 Motion Study…");
+  try {
+    await callGearAnimation("play");
+    setGearAnimationStatus("正在播放齿轮联动动画…", "ok");
+    if (gearStatusTimer) clearInterval(gearStatusTimer);
+    gearStatusTimer = setInterval(refreshGearAnimationStatus, 400);
+  } catch (error) {
+    setGearAnimationStatus(`播放失败：${error.message}`, "fail");
+  } finally {
+    gearPlayBtn.disabled = false;
+  }
+}
+
+async function stopGearAnimation() {
+  try {
+    await callGearAnimation("stop");
+    await refreshGearAnimationStatus();
+  } catch (error) {
+    setGearAnimationStatus(`停止失败：${error.message}`, "fail");
   }
 }
 
@@ -653,6 +736,9 @@ async function renderThreeViewButtons() {
 
 // ---- 事件绑定 ----
 sendBtn.addEventListener("click", send);
+gearLoadBtn.addEventListener("click", loadGearAnimation);
+gearPlayBtn.addEventListener("click", playGearAnimation);
+gearStopBtn.addEventListener("click", stopGearAnimation);
 inputEl.addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
 });

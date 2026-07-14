@@ -135,6 +135,81 @@ def ping():
     return jsonify({"success": True, "sw_connected": sw_ok})
 
 
+def _call_sw(path: str, method: str = "POST", body: dict | None = None) -> dict:
+    """调用本机 C# SolidWorks 服务并统一处理错误。"""
+    if executor is None:
+        raise RuntimeError("SolidWorks 执行器尚未初始化")
+    url = f"{executor.base_url}{path}"
+    if method == "GET":
+        response = executor.session.get(url, timeout=30)
+    else:
+        response = executor.session.post(url, json=body or {}, timeout=90)
+    data = response.json()
+    if not response.ok or not data.get("success"):
+        raise RuntimeError(data.get("message") or f"SolidWorks API 请求失败: HTTP {response.status_code}")
+    return data
+
+
+@app.route("/api/gear-animation/load", methods=["POST"])
+def load_gear_animation():
+    """打开预置齿轮装配体，浮动主动轮并创建 5 秒恒速旋转马达。"""
+    try:
+        assembly_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "assembly_smoke",
+            "gear_pair_assembly_v3.SLDASM",
+        )
+        if not os.path.exists(assembly_path):
+            raise FileNotFoundError(f"预置齿轮装配体不存在: {assembly_path}")
+
+        _call_sw("/api/assembly/open", body={"assemblyPath": assembly_path})
+        _call_sw("/api/assembly/unfix-component", body={"componentName": "gear_small-1"})
+        motor = _call_sw(
+            "/api/assembly/motion/create-gear-motor",
+            body={
+                "componentName": "gear_small-1",
+                "rpm": 60,
+                "durationSeconds": 5,
+                "reverseDirection": False,
+            },
+        )
+        return jsonify({
+            "success": True,
+            "message": "齿轮装配体与旋转马达已就绪",
+            "result": motor.get("result", {}),
+        })
+    except Exception as exc:
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(exc)}), 500
+
+
+@app.route("/api/gear-animation/play", methods=["POST"])
+def play_gear_animation():
+    try:
+        data = _call_sw("/api/assembly/motion/play")
+        return jsonify(data)
+    except Exception as exc:
+        return jsonify({"success": False, "error": str(exc)}), 500
+
+
+@app.route("/api/gear-animation/stop", methods=["POST"])
+def stop_gear_animation():
+    try:
+        data = _call_sw("/api/assembly/motion/stop")
+        return jsonify(data)
+    except Exception as exc:
+        return jsonify({"success": False, "error": str(exc)}), 500
+
+
+@app.route("/api/gear-animation/status", methods=["GET"])
+def gear_animation_status():
+    try:
+        data = _call_sw("/api/assembly/motion/status", method="GET")
+        return jsonify(data)
+    except Exception as exc:
+        return jsonify({"success": False, "error": str(exc)}), 500
+
+
 @app.route("/api/run", methods=["POST"])
 def run():
     """
