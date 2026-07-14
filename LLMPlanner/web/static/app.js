@@ -24,6 +24,13 @@ const gearStopBtn = document.getElementById("gear-stop-btn");
 const gearAnimationStatus = document.getElementById("gear-animation-status");
 let gearStatusTimer = null;
 
+// 连续编辑测试控件
+const editSection = document.getElementById("edit-section");
+const editStartBtn = document.getElementById("edit-start-btn");
+const editContinueBtn = document.getElementById("edit-continue-btn");
+const editResetBtn = document.getElementById("edit-reset-btn");
+const editWorkflowStatus = document.getElementById("edit-workflow-status");
+
 // 图片上传相关
 const fileInputEl = document.getElementById("file-input");
 const attachBtn = document.getElementById("attach-btn");
@@ -171,10 +178,54 @@ async function stopGearAnimation() {
   }
 }
 
+function setEditWorkflowStatus(text, state = "") {
+  editWorkflowStatus.textContent = text;
+  editWorkflowStatus.classList.remove("ok", "fail");
+  if (state) editWorkflowStatus.classList.add(state);
+}
+
+function resetEditWorkflow() {
+  editContinueBtn.disabled = true;
+  setEditWorkflowStatus("请先执行第 1 步；成功后将自动解锁第 2 步。");
+}
+
+function fillEditStep(step) {
+  if (step === "base") {
+    useExample(EDIT_BASE_PROMPT);
+    setEditWorkflowStatus("第 1 步已填入输入框，请发送并等待执行成功。");
+  } else {
+    useExample(EDIT_CONTINUE_PROMPT);
+    setEditWorkflowStatus("第 2 步已填入输入框，请发送以编辑当前活动零件。");
+  }
+}
+
+function updateEditWorkflowAfterRun(step, succeeded) {
+  if (!step) return;
+  if (step === "base") {
+    editContinueBtn.disabled = !succeeded;
+    setEditWorkflowStatus(
+      succeeded
+        ? "第 1 步成功：当前活动零件已创建，可以执行第 2 步。"
+        : "第 1 步失败：请修正后重试，第 2 步仍保持锁定。",
+      succeeded ? "ok" : "fail"
+    );
+    return;
+  }
+  setEditWorkflowStatus(
+    succeeded
+      ? "Edit 流程完成：已在当前活动零件上继续拉伸 50mm。"
+      : "第 2 步失败：当前零件未完成续拉伸，请检查执行结果。",
+    succeeded ? "ok" : "fail"
+  );
+}
+
 // ---- 发送指令 ----
 async function send() {
   const text = inputEl.value.trim();
   const hasImage = currentImage !== null;
+  const editStep = text === EDIT_BASE_PROMPT
+    ? "base"
+    : text === EDIT_CONTINUE_PROMPT ? "continue" : null;
   // 文字与图片至少要有一个
   if (!text && !hasImage) return;
   if (busy) return;
@@ -194,7 +245,13 @@ async function send() {
 
   // 移除欢迎区
   const welcome = document.querySelector(".welcome");
-  if (welcome) welcome.remove();
+  if (welcome) {
+    // Edit 是跨请求流程，首条消息发送后仍需保留操作区。
+    if (editSection && welcome.contains(editSection)) {
+      chatEl.insertBefore(editSection, welcome.nextSibling);
+    }
+    welcome.remove();
+  }
 
   // 用户消息（含图片则一并展示）
   appendUser(text, hasImage ? currentImage.dataUri : null);
@@ -224,12 +281,15 @@ async function send() {
 
     if (data.success) {
       appendAIResponse(data.plan, data.results, data.summary);
+      updateEditWorkflowAfterRun(editStep, Boolean(data.summary?.all_ok));
     } else {
       appendError(data.error || "未知错误");
+      updateEditWorkflowAfterRun(editStep, false);
     }
   } catch (e) {
     removeLoading(loadingId);
     appendError("请求失败: " + e.message);
+    updateEditWorkflowAfterRun(editStep, false);
   }
 
   busy = false;
@@ -601,6 +661,9 @@ async function renderThreeViewButtons() {
 
 // ---- 事件绑定 ----
 sendBtn.addEventListener("click", send);
+editStartBtn.addEventListener("click", () => fillEditStep("base"));
+editContinueBtn.addEventListener("click", () => fillEditStep("continue"));
+editResetBtn.addEventListener("click", resetEditWorkflow);
 gearLoadBtn.addEventListener("click", loadGearAnimation);
 gearPlayBtn.addEventListener("click", playGearAnimation);
 gearStopBtn.addEventListener("click", stopGearAnimation);

@@ -18,6 +18,12 @@ const STORAGE_BOX_PROMPT =
   "盒壁厚度 8mm，盒子内部是一个开口向上的空腔（顶部敞开），" +
   "底部厚度也是 8mm。最后对盒子顶部开口的四条边做 R3mm 圆角。";
 
+const EDIT_BASE_PROMPT =
+  "创建一个凸台，底面是长为 100mm、宽为 50mm 的长方形，拉伸 30mm";
+
+const EDIT_CONTINUE_PROMPT =
+  "将凸台再向上拉伸 50mm";
+
 const HEX_NUT_PROMPT =
   "创建一个 M20 六角螺母：正六边形外形（对边距 30mm，即两条平行边之间的距离为 30mm），" +
   "厚度 8mm，中心有一个直径 10mm 的贯穿圆孔。螺母沿厚度方向以原点居中。";
@@ -139,8 +145,6 @@ const BASIC_PROMPTS = [
   // §一 基础用法
   { label: "📦 长方体 100×50×30", test: "§一 dry-run / test_create_box", prompt: "创建一个 100mm x 50mm x 30mm 的长方体" },
   { label: "📦 方块", test: "§一 planner.main", prompt: "创建一个方块，长为 100mm，宽为 50mm，高为 30mm" },
-  { label: "📦 凸台拉伸", test: "§一 planner.main", prompt: "创建一个凸台，底面是长为 100mm、宽为 50mm 的长方形，拉伸 30mm" },
-  { label: "📦 续拉伸 +50mm", test: "§一 planner.main", prompt: "将凸台再向上拉伸 50mm", title: "需先在同一零件上建好凸台" },
 
   // §三 切除拉伸
   { label: "🕳️ 盲孔", test: "test_cut_extrusion blind", prompt: "新建零件，前视面画 100×50mm 矩形拉伸 30mm，上表面中心打 ⌀20mm、深 20mm 盲孔" },

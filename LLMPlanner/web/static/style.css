@@ -188,6 +188,24 @@ body {
   transition: border-color .2s;
 }
 .examples button:hover { border-color: var(--accent); }
+.examples button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  border-color: var(--border);
+}
+
+.edit-section {
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto 16px;
+}
+.edit-workflow-status {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.edit-workflow-status.ok { color: var(--success); }
+.edit-workflow-status.fail { color: var(--error); }
 
 .gear-animation-panel {
   padding: 12px 14px;
