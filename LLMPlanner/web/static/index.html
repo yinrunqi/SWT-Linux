@@ -56,33 +56,37 @@
   <div class="chat" id="chat">
     <div class="welcome">
       <h2>SolidWorks 自然语言建模助手</h2>
-      <p>输入自然语言指令，AI 自动规划并执行 SolidWorks 建模操作</p>
-      <div class="examples">
-        <button onclick="useExample('创建一个 100mm x 50mm x 30mm 的长方体')">📦 长方体</button>
-        <button onclick="useExample('画一个半径 20mm、高 50mm 的圆柱')">🔵 圆柱</button>
-        <button onclick="useExample('创建一个边长 40mm 的正方体')">⬜ 正方体</button>
-        <button onclick="useExample('在上表面画一个直径 15mm 的圆，向下切除 10mm')">🕳️ 挖孔</button>
-        <button onclick="fillStorageBoxPrompt()">📦 收纳盒</button>
-        <button onclick="fillDicePrompt()">🎲 标准骰子</button>
-        <button onclick="fillHexNutPrompt()">🔩 六角螺母</button>
-        <button onclick="fillMugPrompt()">☕ 马克杯</button>
-        <button onclick="fillWrenchPrompt()">🔧 扳手</button>
-        <button onclick="fillVasePrompt()">🏺 花瓶</button>
-        <button onclick="fillKeyPrompt()">🔑 钥匙</button>
-        <button onclick="fillGearPrompt()">⚙️ 齿轮</button>
+      <p>点击下方按钮一键填入 TEST.md 测例 prompt，或自行输入指令后发送</p>
+
+      <div class="prompt-section">
+        <div class="prompt-section-title">1. 基础测试</div>
+        <p class="prompt-section-desc">§一 基础用法 · §三 切除 · §四 旋转 API · §六 圆角倒角 · §七 板凳 API</p>
+        <div class="examples" id="basic-buttons"></div>
       </div>
-      <p class="examples-subtitle">🖼️ 多模态：从三视图图纸建模</p>
-      <div class="examples" id="three-view-buttons">
-        <!-- 由 app.js 的 renderThreeViewButtons() 根据 THREE_VIEW_SAMPLES 自动填充 -->
+
+      <div class="prompt-section">
+        <div class="prompt-section-title">2. 由文本生成</div>
+        <p class="prompt-section-desc">§五 旋转 LLM · §八 板凳 LLM · §九 日常物体</p>
+        <div class="examples" id="text-buttons"></div>
       </div>
-      <div class="gear-animation-panel">
-        <div class="gear-animation-title">⚙️ Motion Study：齿轮联动动画</div>
-        <div class="gear-animation-actions">
-          <button id="gear-load-btn">加载装配体</button>
-          <button id="gear-play-btn" disabled>▶ 播放 5 圈</button>
-          <button id="gear-stop-btn" disabled>■ 停止</button>
+
+      <div class="prompt-section">
+        <div class="prompt-section-title">3. 由三视图生成</div>
+        <p class="prompt-section-desc">§十二 多模态样例 — 点击按钮自动填入 prompt 并加载图纸（也可 📎 上传）</p>
+        <div class="examples" id="three-view-buttons"></div>
+      </div>
+
+      <div class="prompt-section">
+        <div class="prompt-section-title">4. 装配体相关</div>
+        <p class="prompt-section-desc">§十三 Motion Study — 打开预置齿轮装配体并播放联动动画</p>
+        <div class="gear-animation-panel">
+          <div class="gear-animation-actions">
+            <button id="gear-load-btn">加载装配体</button>
+            <button id="gear-play-btn" disabled>▶ 播放 5 圈</button>
+            <button id="gear-stop-btn" disabled>■ 停止</button>
+          </div>
+          <div id="gear-animation-status" class="gear-animation-status">尚未加载</div>
         </div>
-        <div id="gear-animation-status" class="gear-animation-status">尚未加载</div>
       </div>
     </div>
   </div>
@@ -119,6 +123,7 @@
     </div>
   </div>
 
+  <script src="prompt-catalog.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

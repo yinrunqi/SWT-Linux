@@ -142,23 +142,40 @@ body {
 /* Welcome */
 .welcome {
   text-align: center;
-  padding: 48px 0 24px;
+  padding: 24px 16px 32px;
   color: var(--text-dim);
+  max-width: 920px;
+  margin: 0 auto;
+  width: 100%;
 }
 .welcome h2 { font-size: 20px; color: var(--text); margin-bottom: 8px; }
-.welcome p { font-size: 14px; margin-bottom: 16px; }
+.welcome > p { font-size: 14px; margin-bottom: 20px; }
+
+.prompt-section {
+  text-align: left;
+  margin-bottom: 22px;
+  padding: 14px 16px;
+  background: rgba(31, 41, 64, 0.45);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.prompt-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.prompt-section-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
 .examples {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   gap: 8px;
-}
-.examples-subtitle {
-  margin-top: 18px;
-  margin-bottom: 6px;
-  font-size: 13px;
-  color: var(--text-dim);
-  letter-spacing: 0.3px;
 }
 .examples button {
   background: var(--bg-card);
@@ -173,18 +190,10 @@ body {
 .examples button:hover { border-color: var(--accent); }
 
 .gear-animation-panel {
-  max-width: 520px;
-  margin: 24px auto 0;
-  padding: 14px 16px;
+  padding: 12px 14px;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-.gear-animation-title {
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 10px;
+  border-radius: 8px;
 }
 .gear-animation-actions {
   display: flex;
