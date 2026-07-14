@@ -163,10 +163,6 @@ const BASIC_PROMPTS = [
 ];
 
 const TEXT_PROMPTS = [
-  // §五 旋转 LLM
-  { label: "🔄 旋转圆柱 ⌀40×80", test: "test_revolve_llm cylinder", prompt: "用旋转法创建一个直径 40mm、高度 80mm 的圆柱体" },
-  { label: "⚪ 旋转球体 ⌀50", test: "test_revolve_llm sphere", prompt: "用旋转法创建一个直径 50mm 的球体" },
-
   // §八 板凳 LLM
   { label: "🪑 四脚板凳", test: "test_stool_llm stool", prompt: "创建一个四脚板凳：凳面为 200mm×200mm×20mm 的方形平板，在凳面底部四角各有一条圆柱形凳腿（直径 20mm，长 150mm），腿的圆心距凳面边缘 30mm。" },
   { label: "🪑 圆角板凳", test: "test_stool_llm stool_fillet", prompt: "创建一个四脚板凳并对凳面做圆角处理：凳面为 200mm×200mm×20mm 的方形平板，在凳面底部四角各有一条圆柱形凳腿（直径 20mm，长 150mm），腿的圆心距凳面边缘 30mm。最后对凳面顶部的 4 条边做 R5mm 圆角。" },
