@@ -1,5 +1,7 @@
 # SolidWorksCopilot — 基于 LLM 的 SolidWorks 自然语言自动建模
 
+> **📖 项目交接**：如果你是接手这个项目的开发者，请先读 [`docs/HANDOVER.md`](./docs/HANDOVER.md) — 里面有项目全景、已踩过的 60+ 个坑、未完成功能清单和上手 30 分钟验证流程。
+
 ## 一、项目背景
 
 本项目是一个 **SolidWorks 二次开发 + LLM Agent** 的探索性工程，目标是让用户用**自然语言**驱动 SolidWorks 完成参数化建模。

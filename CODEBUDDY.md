@@ -1,5 +1,7 @@
 # CODEBUDDY.md This file provides guidance to CodeBuddy when working with code in this repository.
 
+> **📖 完整交接文档**：详见 [`docs/HANDOVER.md`](./docs/HANDOVER.md)。CODEBUDDY.md 是简化的项目速查，HANDOVER.md 是给新接手开发者的全景文档（含 60+ 个已知坑、未完成清单、上手 30 分钟验证流程）。
+
 ## 项目简介
 
 SolidWorks 二次开发项目，使用 C# 通过 Xarial.XCad 封装层和 SolidWorks COM Interop 与 SolidWorks 进行交互。Chapter1 已改造为 HTTP API 服务，外部程序（Python/LLM Agent）可通过 HTTP 请求远程控制 SolidWorks 自动化建模。
