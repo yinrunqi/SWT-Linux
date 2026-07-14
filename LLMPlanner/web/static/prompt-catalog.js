@@ -153,7 +153,6 @@ const BASIC_PROMPTS = [
 
   // §四 旋转特征 API
   { label: "🔄 旋转圆柱 ⌀40×80", test: "test_revolve cylinder", prompt: "用旋转法创建一个直径 40mm、高度 80mm 的圆柱体（在前视基准面画矩形截面 + 中心线，旋转 360°）" },
-  { label: "🔄 旋转圆柱 ⌀30×60", test: "test_revolve cylinder2", prompt: "用旋转法创建一个直径 30mm、高度 60mm 的圆柱体（线段截面 + 中心线，旋转 360°）" },
   { label: "⚪ 旋转球体 ⌀40", test: "test_revolve sphere", prompt: "用旋转法创建一个直径 40mm 的球体（圆弧截面 + 中心线，旋转 360°）" },
 
   // §六 圆角 / 倒角
