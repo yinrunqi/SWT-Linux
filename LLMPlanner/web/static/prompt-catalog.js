@@ -145,6 +145,7 @@ const BASIC_PROMPTS = [
   // §一 基础用法
   { label: "📦 长方体 100×50×30", test: "§一 dry-run / test_create_box", prompt: "创建一个 100mm x 50mm x 30mm 的长方体" },
   { label: "📦 方块", test: "§一 planner.main", prompt: "创建一个方块，长为 100mm，宽为 50mm，高为 30mm" },
+  { label: "📦 创建凸台", test: "§一 planner.main", prompt: EDIT_BASE_PROMPT },
 
   // §三 切除拉伸
   { label: "🕳️ 盲孔", test: "test_cut_extrusion blind", prompt: "新建零件，前视面画 100×50mm 矩形拉伸 30mm，上表面中心打 ⌀20mm、深 20mm 盲孔" },
