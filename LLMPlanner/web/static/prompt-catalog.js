@@ -158,10 +158,8 @@ const BASIC_PROMPTS = [
   { label: "📐 不等距倒角", test: "test_fillet_chamfer chamfer_dd", prompt: "新建 60×60×30mm 长方体，射线选顶边做 2mm×4mm 不等距倒角" },
   { label: "📐 圆角+倒角组合", test: "test_fillet_chamfer combo", prompt: "新建 100×80×50mm 长方体，底部前边 R5mm 圆角 + 顶部前边 C3mm 倒角" },
 
-  // §七 板凳 API
+  // §七 板凳 API（Web demo 走 LLM，四脚/圆角板凳见 TEXT_PROMPTS §八）
   { label: "⬇️ 反向拉伸", test: "test_stool flip", prompt: "在上视基准面画 50×50mm 矩形，使用 flipDirection=true 向下拉伸 30mm" },
-  { label: "🪑 四脚板凳", test: "test_stool stool", prompt: "创建一个四脚板凳：凳面为 200mm×200mm×20mm 的方形平板，在凳面底部四角各有一条圆柱形凳腿（直径 20mm，长 150mm），腿的圆心距凳面边缘 30mm。" },
-  { label: "🪑 圆角板凳", test: "test_stool stool_fillet", prompt: "创建一个四脚板凳并对凳面做圆角处理：凳面为 200mm×200mm×20mm 的方形平板，在凳面底部四角各有一条圆柱形凳腿（直径 20mm，长 150mm），腿的圆心距凳面边缘 30mm。最后对凳面顶部的 4 条边做 R5mm 圆角。" },
 ];
 
 const TEXT_PROMPTS = [
