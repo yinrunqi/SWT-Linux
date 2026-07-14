@@ -30,6 +30,7 @@ const editStartBtn = document.getElementById("edit-start-btn");
 const editContinueBtn = document.getElementById("edit-continue-btn");
 const editResetBtn = document.getElementById("edit-reset-btn");
 const editWorkflowStatus = document.getElementById("edit-workflow-status");
+let pendingEditStep = null;
 
 // 图片上传相关
 const fileInputEl = document.getElementById("file-input");
@@ -185,16 +186,17 @@ function setEditWorkflowStatus(text, state = "") {
 }
 
 function resetEditWorkflow() {
+  pendingEditStep = null;
   editContinueBtn.disabled = true;
   setEditWorkflowStatus("请先执行第 1 步；成功后将自动解锁第 2 步。");
 }
 
 function fillEditStep(step) {
   if (step === "base") {
-    useExample(EDIT_BASE_PROMPT);
+    useExample(EDIT_BASE_PROMPT, { editStep: step });
     setEditWorkflowStatus("第 1 步已填入输入框，请发送并等待执行成功。");
   } else {
-    useExample(EDIT_CONTINUE_PROMPT);
+    useExample(EDIT_CONTINUE_PROMPT, { editStep: step });
     setEditWorkflowStatus("第 2 步已填入输入框，请发送以编辑当前活动零件。");
   }
 }
@@ -223,9 +225,7 @@ function updateEditWorkflowAfterRun(step, succeeded) {
 async function send() {
   const text = inputEl.value.trim();
   const hasImage = currentImage !== null;
-  const editStep = text === EDIT_BASE_PROMPT
-    ? "base"
-    : text === EDIT_CONTINUE_PROMPT ? "continue" : null;
+  const editStep = pendingEditStep;
   // 文字与图片至少要有一个
   if (!text && !hasImage) return;
   if (busy) return;
@@ -240,14 +240,15 @@ async function send() {
   }
 
   busy = true;
+  pendingEditStep = null;
   sendBtn.disabled = true;
   inputEl.value = "";
 
   // 移除欢迎区
   const welcome = document.querySelector(".welcome");
   if (welcome) {
-    // Edit 是跨请求流程，首条消息发送后仍需保留操作区。
-    if (editSection && welcome.contains(editSection)) {
+    // 只有从 Edit 控件发起请求时才保留跨请求操作区。
+    if (editStep && editSection && welcome.contains(editSection)) {
       chatEl.insertBefore(editSection, welcome.nextSibling);
     }
     welcome.remove();
@@ -408,7 +409,8 @@ function scrollBottom() {
   requestAnimationFrame(() => chatEl.scrollTop = chatEl.scrollHeight);
 }
 
-function useExample(text) {
+function useExample(text, { editStep = null } = {}) {
+  pendingEditStep = editStep;
   inputEl.value = text;
   inputEl.focus();
 }
@@ -669,6 +671,12 @@ gearPlayBtn.addEventListener("click", playGearAnimation);
 gearStopBtn.addEventListener("click", stopGearAnimation);
 inputEl.addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+});
+inputEl.addEventListener("input", () => {
+  const expected = pendingEditStep === "base"
+    ? EDIT_BASE_PROMPT
+    : pendingEditStep === "continue" ? EDIT_CONTINUE_PROMPT : null;
+  if (expected !== null && inputEl.value !== expected) pendingEditStep = null;
 });
 
 init();
