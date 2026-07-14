@@ -9,6 +9,8 @@ import requests
 
 
 BASE_URL = "http://localhost:5100"
+SMALL_COMPONENT = "gear_small-1"
+BIG_COMPONENT = "gear_big_phased-1"
 ASSEMBLY_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "gear_pair_assembly_v3.SLDASM",
@@ -27,12 +29,11 @@ def post(path: str, body: dict | None = None) -> dict:
     return data
 
 
-def get_transform(component_name: str) -> list[float]:
-    data = post(
+def get_component_state(component_name: str) -> dict:
+    return post(
         "/api/assembly/get-component-transform",
         {"componentName": component_name},
-    )
-    return data["result"]["rotationMatrix3x3"]
+    )["result"]
 
 
 def matrix_delta(before: list[float], after: list[float]) -> float:
@@ -48,7 +49,7 @@ def main() -> None:
     print("=" * 64)
 
     post("/api/assembly/open", {"assemblyPath": ASSEMBLY_PATH})
-    post("/api/assembly/unfix-component", {"componentName": "gear_small-1"})
+    post("/api/assembly/unfix-component", {"componentName": SMALL_COMPONENT})
 
     probe = post("/api/assembly/motion/probe")["result"]
     assert probe["managerAvailable"]
@@ -61,7 +62,7 @@ def main() -> None:
     motor = post(
         "/api/assembly/motion/create-gear-motor",
         {
-            "componentName": "gear_small-1",
+            "componentName": SMALL_COMPONENT,
             "rpm": 30,
             "durationSeconds": 4,
             "reverseDirection": False,
@@ -69,17 +70,27 @@ def main() -> None:
     )["result"]
     print(f"✅ 旋转马达已就绪: {motor['motorFeatureName']}")
 
+    small_state = get_component_state(SMALL_COMPONENT)
+    big_state = get_component_state(BIG_COMPONENT)
+    center_distance = abs(
+        big_state["translationXYZ"][0] - small_state["translationXYZ"][0]
+    )
+    assert abs(center_distance - 0.064) < 1e-6, (
+        f"齿轮中心距应为 64mm，实际为 {center_distance * 1000:.3f}mm"
+    )
+    print(f"✅ 齿轮啮合中心距: {center_distance * 1000:.3f}mm")
+
     post("/api/assembly/motion/play")
     try:
-        small_before = get_transform("gear_small-1")
-        big_before = get_transform("gear_big-1")
+        small_before = get_component_state(SMALL_COMPONENT)["rotationMatrix3x3"]
+        big_before = get_component_state(BIG_COMPONENT)["rotationMatrix3x3"]
         time.sleep(1.0)
         status = requests.get(
             f"{BASE_URL}/api/assembly/motion/status",
             timeout=15,
         ).json()["result"]
-        small_after = get_transform("gear_small-1")
-        big_after = get_transform("gear_big-1")
+        small_after = get_component_state(SMALL_COMPONENT)["rotationMatrix3x3"]
+        big_after = get_component_state(BIG_COMPONENT)["rotationMatrix3x3"]
     finally:
         post("/api/assembly/motion/stop")
 

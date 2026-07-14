@@ -669,13 +669,13 @@ C3: 这是一张齿轮啮合组的三视图, 由两个平行放置的直齿圆�
 
 ## 十三、Motion Study 齿轮动画测试
 
-该测试不调用 LLM，打开预置 `gear_pair_assembly_v3.SLDASM`，创建恒速旋转马达并播放，验证 Motion timebar 推进以及小/大齿轮 Transform 均发生变化。
+该测试不调用 LLM，打开预置 `gear_pair_assembly_v3.SLDASM`，先验证双齿轮中心距为 64mm，再创建恒速旋转马达并播放，验证 Motion timebar 推进以及小/大齿轮 Transform 均发生变化。装配体中的大齿轮预先错相 9°（20 齿的半个齿距），保证矩形齿顶对准小齿轮齿槽。
 
 ```cmd
 cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
 venv\Scripts\python.exe -X utf8 assembly_smoke\test_motion_study.py > log\test_motion_study.log 2>&1
 ```
 
-实测：Motion timebar=1.250s，主动小齿轮矩阵变化 1.325782，从动大齿轮矩阵变化 0.693351，Gear Mate 联动通过。
+实测：中心距=64.000mm，Motion timebar=1.125s，主动小齿轮矩阵变化 1.800802，从动大齿轮矩阵变化 1.325782，Gear Mate 联动通过。
 
 ---

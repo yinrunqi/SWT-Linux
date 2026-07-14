@@ -7,16 +7,16 @@
 | 文件 | 用途 |
 |---|---|
 | `gear_small.SLDPRT` | 小齿轮零件（分度圆 ⌀40mm × 厚 15mm，10 个矩形齿）— 由 phase1 脚本 + 手动 SaveAs 生成 |
-| `gear_big.SLDPRT` | 大齿轮零件（分度圆 ⌀80mm × 厚 15mm，20 个矩形齿）— 同上 |
-| `gear_pair_assembly_v3.SLDASM` | 齿轮啮合装配体（Gear Mate 齿数比 20:10）— 由 phase3 脚本生成，**手动拖动小齿轮时大齿轮会按 2:1 反向联动** ✅ |
+| `gear_big_phased.SLDPRT` | 大齿轮零件（分度圆 ⌀80mm × 厚 15mm，20 个矩形齿，齿形相位 +9°）— 相位直接建入零件，避免装配体 Transform 静默失效 |
+| `gear_pair_assembly_v3.SLDASM` | 齿轮啮合装配体（64mm 中心距、20:10 Gear Mate）— 由 phase3 脚本生成，**手动拖动小齿轮时大齿轮会按 2:1 反向联动** ✅ |
 | `gear_pair_no_mate.SLDASM` | 无 Mate 的对照样本（用于验证"完全没有 Mate 时 Transform2 是否生效"）|
 | `phase1_build_two_gears.py` | 用现有零件建模 HTTP API 建两个齿轮零件（用户需手动 SaveAs 保存为 .SLDPRT）|
-| `phase3_via_csharp_api.py` | 用装配体 API 端到端搭齿轮啮合组（新建装配体 + AddComponent × 2 + Coincident Mate + Gear Mate + Save）|
+| `phase3_via_csharp_api.py` | 用装配体 API 端到端搭齿轮啮合组（64mm 中心距 + 大齿轮 9° 错相 + Coincident/Gear Mate + Save）|
 | `test_motion_study.py` | Motion Study 旋转马达端到端测试：播放、timebar 推进、主动/从动齿轮 Transform 变化 |
 
 ## 快速验证：从头搭一个齿轮啮合组
 
-前置：SolidWorks 已启动、C# 服务运行中（`run_service.bat`）、`gear_small.SLDPRT` + `gear_big.SLDPRT` 已存在（否则用 phase1 重建）。
+前置：SolidWorks 已启动、C# 服务运行中（`run_service.bat`）、`gear_small.SLDPRT` + `gear_big_phased.SLDPRT` 已存在（否则用 phase1 重建）。
 
 ```bash
 cd LLMPlanner
@@ -27,13 +27,13 @@ venv\Scripts\python.exe -X utf8 assembly_smoke\phase3_via_csharp_api.py
 ```
 ✅ POST /api/assembly/new           → 新建装配体
 ✅ POST /api/assembly/add-component → gear_small-1
-✅ POST /api/assembly/add-component → gear_big-1
+✅ POST /api/assembly/add-component → gear_big_phased-1
 ✅ POST /api/assembly/mate-coincident → Coincident Mate 完成
 ✅ POST /api/assembly/mate-gear     → Gear Mate 完成 (比 20:10)
 ✅ POST /api/assembly/save          → 装配体已保存
 ```
 
-之后在 SolidWorks 里打开 `gear_pair_assembly_v3.SLDASM`，用**装配体 → 移动零部件**拖动小齿轮，大齿轮会按 2:1 反向联动旋转。
+64mm 来自简化齿形的接触条件：小齿轮齿顶半径 24mm + 大齿轮圆盘半径 40mm。大齿轮再错相半个齿距（`360° / 20 / 2 = 9°`），使齿顶对准另一齿轮的齿槽。之后在 SolidWorks 里打开 `gear_pair_assembly_v3.SLDASM`，用**装配体 → 移动零部件**拖动小齿轮，大齿轮会按 2:1 反向联动旋转。
 
 ## ✅ Motion Study 编程驱动齿轮旋转
 
@@ -43,6 +43,7 @@ venv\Scripts\python.exe -X utf8 assembly_smoke\phase3_via_csharp_api.py
 - `swFmAEMRotationalMotor` + `ISimulationMotorFeatureData.ConstantSpeedMotor()` 创建旋转马达；
 - `IMotionStudy.PlayFromStart()` / `Stop()` 控制播放；
 - 小齿轮由马达驱动，大齿轮通过 Gear Mate 按 2:1 联动；
+- 自动检查双齿轮中心距为 64mm，避免旧版 70mm 中心距造成齿顶悬空；
 - Web demo 提供“加载装配体 / 播放 5 圈 / 停止”控件。
 
 自动验证：

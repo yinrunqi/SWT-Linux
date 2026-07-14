@@ -5,11 +5,14 @@
 后续 phase2 用 pywin32 打开这两个 .sldprt 建装配体.
 
 小齿轮: ⌀40mm 分度圆 + 10 齿, 厚 15mm, 独立文件 gear_small.sldprt
-大齿轮: ⌀80mm 分度圆 + 20 齿, 厚 15mm, 独立文件 gear_big.sldprt
+大齿轮: ⌀80mm 分度圆 + 20 齿, 厚 15mm, 齿形错相 9°, 独立文件 gear_big_phased.sldprt
 
 每个齿轮独立居中在原点 (X=0, Y=0), 便于装配时用 Concentric mate 对准.
 """
-import requests, time, os
+import math
+import os
+
+import requests
 
 BASE = "http://localhost:5100"
 SMOKE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -22,7 +25,15 @@ def call(path, body=None):
     return d
 
 
-def build_gear(radius_m: float, tooth_count: int, tooth_h_m: float, tooth_w_m: float, thickness_m: float):
+def build_gear(
+    radius_m: float,
+    tooth_count: int,
+    tooth_h_m: float,
+    tooth_w_m: float,
+    thickness_m: float,
+    phase_angle_deg: float = 0,
+    tooth_root_overlap_m: float = 0.0005,
+):
     """建一个独立居中在原点的齿轮零件, 步骤和 C3 v7 完全一致."""
     # 1. new_part → 前视基准面 → 分度圆 → 拉伸厚度
     call("/api/new-part")
@@ -30,12 +41,27 @@ def build_gear(radius_m: float, tooth_count: int, tooth_h_m: float, tooth_w_m: f
     call("/api/sketch/circle", {"cx": 0, "cy": 0, "radius": radius_m})
     call("/api/feature/extrusion", {"depth": thickness_m})
 
-    # 2. 种子齿: 位于圆心正右侧 (齿从 R 到 R+齿高, Y 跨齿宽)
+    # 2. 种子齿：先构造 +X 方向矩形，再按 phase_angle_deg 绕原点旋转。
+    # 用四条线而不是 sketch/rectangle，避免依赖失效的装配体 Transform 来错相。
     call("/api/select-plane", {"index": 0})
-    call("/api/sketch/rectangle", {
-        "x1": radius_m,               "y1": -tooth_w_m / 2,
-        "x2": radius_m + tooth_h_m,   "y2":  tooth_w_m / 2,
-    })
+    angle = math.radians(phase_angle_deg)
+    cos_a = math.cos(angle)
+    sin_a = math.sin(angle)
+    unrotated_corners = [
+        (radius_m - tooth_root_overlap_m, -tooth_w_m / 2),
+        (radius_m + tooth_h_m, -tooth_w_m / 2),
+        (radius_m + tooth_h_m, tooth_w_m / 2),
+        (radius_m - tooth_root_overlap_m, tooth_w_m / 2),
+    ]
+    corners = [
+        (x * cos_a - y * sin_a, x * sin_a + y * cos_a)
+        for x, y in unrotated_corners
+    ]
+    for start, end in zip(corners, corners[1:] + corners[:1]):
+        call("/api/sketch/line", {
+            "x1": start[0], "y1": start[1],
+            "x2": end[0], "y2": end[1],
+        })
     call("/api/feature/extrusion", {"depth": thickness_m})
 
     # 3. 圆周阵列出全部齿
@@ -65,14 +91,21 @@ if __name__ == "__main__":
 
     # ===== 建大齿轮 (⌀80mm 20 齿) =====
     print("\n" + "=" * 60)
-    print("Step 2: 建大齿轮 (分度圆 ⌀80mm, 20 齿, 厚 15mm)")
+    print("Step 2: 建大齿轮 (分度圆 ⌀80mm, 20 齿, 厚 15mm, 相位 +9°)")
     print("=" * 60)
-    build_gear(radius_m=0.040, tooth_count=20, tooth_h_m=0.004, tooth_w_m=0.005, thickness_m=0.015)
+    build_gear(
+        radius_m=0.040,
+        tooth_count=20,
+        tooth_h_m=0.004,
+        tooth_w_m=0.005,
+        thickness_m=0.015,
+        phase_angle_deg=9.0,
+    )
     bb = requests.get(f"{BASE}/api/body-bounding-box", timeout=15).json()["boundingBox"]
     print(f"大齿轮包围盒: sizeX={bb['sizeX']*1000:.1f}mm, sizeY={bb['sizeY']*1000:.1f}mm, sizeZ={bb['sizeZ']*1000:.1f}mm")
     print(f"    (期望: 88×88×15mm, 齿顶圆 ⌀88)")
 
-    big_path = os.path.join(SMOKE_DIR, "gear_big.sldprt")
+    big_path = os.path.join(SMOKE_DIR, "gear_big_phased.sldprt")
     print(f"\n[⚠️ 手动步骤] 请在 SolidWorks 里 File → Save As → 保存为:")
     print(f"    {big_path}")
     print(f"    保存后按回车继续...")

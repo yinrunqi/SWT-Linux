@@ -171,7 +171,7 @@ c:\codes\sw\SolidWorksTutorial\
 │   │   ├── phase1_build_two_gears.py  # 用 API 建齿轮零件
 │   │   ├── phase3_via_csharp_api.py   # 端到端搭齿轮啮合装配体
 │   │   ├── gear_small.SLDPRT    # 已建好的小齿轮（10 齿）
-│   │   ├── gear_big.SLDPRT      # 已建好的大齿轮（20 齿）
+│   │   ├── gear_big_phased.SLDPRT # 已建好的大齿轮（20 齿，齿形相位 +9°）
 │   │   └── gear_pair_assembly_v3.SLDASM  # 已建好的啮合装配体（含 Gear Mate）
 │   │
 │   └── log/                     # 测试日志（不入库）
