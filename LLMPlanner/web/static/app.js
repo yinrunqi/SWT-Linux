@@ -13,6 +13,9 @@ const statusText = document.getElementById("status-text");
 const settingsEl = document.getElementById("settings");
 const settingsToggle = document.getElementById("settings-toggle");
 const providerEl = document.getElementById("provider-select");
+const modeEl = document.getElementById("mode-select");
+const maxTurnsEl = document.getElementById("max-turns");
+const maxTurnsRow = document.getElementById("max-turns-row");
 const apiKeyEl = document.getElementById("api-key");
 const baseUrlEl = document.getElementById("base-url");
 const visionModelEl = document.getElementById("vision-model-select");
@@ -81,6 +84,8 @@ function loadSettings() {
     localStorage.setItem("sw_settings_version", settingsVersion);
   }
   providerEl.value = localStorage.getItem("sw_provider") || "aiping";
+  modeEl.value = localStorage.getItem("sw_mode") || "single_turn";
+  maxTurnsEl.value = localStorage.getItem("sw_max_turns") || "8";
   apiKeyEl.value = localStorage.getItem("sw_api_key") || "";
   // base_url 用 HTML value 的 AI Ping 默认值作为空值时的兜底
   const savedBase = localStorage.getItem("sw_base_url");
@@ -90,9 +95,12 @@ function loadSettings() {
   if (savedVision) visionModelEl.value = savedVision;
   const savedPlan = localStorage.getItem("sw_plan_model");
   if (savedPlan) planModelEl.value = savedPlan;
+  updateModeUI();
 }
 function saveSettings() {
   localStorage.setItem("sw_provider", providerEl.value);
+  localStorage.setItem("sw_mode", modeEl.value);
+  localStorage.setItem("sw_max_turns", maxTurnsEl.value);
   localStorage.setItem("sw_api_key", apiKeyEl.value);
   localStorage.setItem(`sw_api_key_${providerEl.value}`, apiKeyEl.value);
   localStorage.setItem("sw_base_url", baseUrlEl.value);
@@ -109,7 +117,21 @@ function switchProvider() {
   }
   saveSettings();
 }
+function updateModeUI() {
+  const isMultiTurn = modeEl.value === "multi_turn";
+  maxTurnsRow.hidden = !isMultiTurn;
+  attachBtn.disabled = isMultiTurn;
+  attachBtn.title = isMultiTurn
+    ? "Multi-turn MVP 暂只支持纯文本"
+    : "上传三视图或参考图片";
+  if (isMultiTurn && currentImage) clearImage();
+}
 providerEl.addEventListener("change", switchProvider);
+modeEl.addEventListener("change", () => {
+  updateModeUI();
+  saveSettings();
+});
+maxTurnsEl.addEventListener("change", saveSettings);
 apiKeyEl.addEventListener("input", saveSettings);
 baseUrlEl.addEventListener("input", saveSettings);
 visionModelEl.addEventListener("change", saveSettings);
@@ -287,7 +309,12 @@ async function send() {
   if (hasImage) clearImage();
 
   // Loading
-  const loadingId = appendLoading(imageToSend ? "正在识别图纸并规划建模 …" : "正在思考并执行中 …");
+  const loadingHint = modeEl.value === "multi_turn"
+    ? "Multi-turn Agent 正在反复检查并调整模型 …"
+    : imageToSend
+      ? "正在识别图纸并规划建模 …"
+      : "正在思考并执行中 …";
+  const loadingId = appendLoading(loadingHint);
 
   try {
     const res = await fetch(`${API}/api/run`, {
@@ -296,6 +323,8 @@ async function send() {
       body: JSON.stringify({
         instruction: text,
         image: imageToSend,
+        mode: modeEl.value,
+        max_turns: Number(maxTurnsEl.value) || 8,
         provider: providerEl.value,
         api_key: apiKey,
         base_url: baseUrlEl.value.trim(),
@@ -307,7 +336,11 @@ async function send() {
     removeLoading(loadingId);
 
     if (data.success) {
-      appendAIResponse(data.plan, data.results, data.summary);
+      if (data.mode === "multi_turn") {
+        appendMultiTurnResponse(data.multi_turn, data.summary);
+      } else {
+        appendAIResponse(data.plan, data.results, data.summary);
+      }
       updateEditWorkflowAfterRun(editStep, Boolean(data.summary?.all_ok));
     } else {
       appendError(data.error || "未知错误");
@@ -405,6 +438,67 @@ function appendAIResponse(plan, results, summary) {
     <div class="summary ${sumClass}">${sumIcon} 完成: ${summary.succeeded}/${summary.total} 步骤成功</div>
   </div>`;
 
+  chatEl.appendChild(div);
+  scrollBottom();
+}
+
+function observationHtml(observation) {
+  if (!observation) return "<span class='muted'>无状态快照</span>";
+  const bbox = observation.bounding_box_mm;
+  const bboxText = bbox
+    ? `${Number(bbox.sizeX || 0).toFixed(2)} × ${Number(bbox.sizeY || 0).toFixed(2)} × ${Number(bbox.sizeZ || 0).toFixed(2)} mm`
+    : "无有效包围盒";
+  const volumeText = observation.volume_mm3 == null
+    ? "N/A"
+    : `${Number(observation.volume_mm3).toFixed(2)} mm³`;
+  const errorText = observation.errors && Object.keys(observation.errors).length
+    ? `<div class="agent-errors">${esc(JSON.stringify(observation.errors))}</div>`
+    : "";
+  return `<div>特征 ${observation.features?.length || 0} 个；包围盒 ${esc(bboxText)}；体积 ${esc(volumeText)}</div>${errorText}`;
+}
+
+function appendMultiTurnResponse(result, summary) {
+  const div = document.createElement("div");
+  div.className = "msg";
+
+  const turnsHtml = (result.turns || []).map(turn => {
+    const decision = turn.decision || {};
+    const actions = (decision.actions || []).map((action, index) => {
+      const params = action.params && Object.keys(action.params).length
+        ? ` ${esc(JSON.stringify(action.params))}`
+        : "";
+      return `<li><span class="step-num">${index + 1}</span><span class="step-desc"><span class="step-op">${esc(action.operation)}</span>${params}${action.description ? " — " + esc(action.description) : ""}</span></li>`;
+    }).join("") || "<li>本轮没有建模操作</li>";
+    const executions = (turn.execution_results || []).map(item => {
+      const ok = Boolean(item.success);
+      return `<li><span class="icon">${ok ? "✅" : "❌"}</span>${esc(item.operation || "")} — ${esc(item.message || "")}</li>`;
+    }).join("") || "<li>无执行结果</li>";
+    const after = turn.observation_after || turn.observation_before;
+    return `<div class="phase agent-turn">
+      <div class="phase-header" onclick="togglePhase(this)">第 ${turn.turn} 轮 — ${esc(decision.decision || "")}: ${esc(decision.progress_summary || "")}</div>
+      <div class="phase-body">
+        <div class="agent-stage"><strong>Observe</strong>${observationHtml(turn.observation_before)}</div>
+        <div class="agent-stage"><strong>Action</strong><ol class="step-list">${actions}</ol></div>
+        <div class="agent-stage"><strong>Result</strong><ul class="exec-list">${executions}</ul></div>
+        <div class="agent-stage"><strong>Check</strong>
+          <div>${esc(decision.check_summary || "等待下一轮检查")}</div>
+          ${observationHtml(after)}
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+
+  const completed = result.status === "completed";
+  div.innerHTML = `<div class="msg-ai">
+    <div class="multi-turn-title">Multi-turn Agent：${esc(result.user_goal || "")}</div>
+    ${turnsHtml}
+    <div class="summary ${completed ? "ok" : "fail"}">
+      ${completed ? "✅" : "⚠️"} 状态: ${esc(result.status)}；
+      ${summary.succeeded}/${summary.total} 个操作成功；
+      ${summary.turn_count} 轮，${summary.llm_calls} 次 LLM 调用
+      ${result.message ? " — " + esc(result.message) : ""}
+    </div>
+  </div>`;
   chatEl.appendChild(div);
   scrollBottom();
 }

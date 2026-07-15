@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import sys
 import os
+import threading
 import traceback
 
 # 将 LLMPlanner 目录加入 sys.path，以便导入 planner 模块
@@ -19,6 +20,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 from load_env import ensure_test_env_loaded
+from planner.agent_loop import MultiTurnAgent
 from planner.llm_client import SwLLMClient
 from planner.executor import SwExecutor
 
@@ -33,6 +35,7 @@ CORS(app)
 
 # 全局实例
 executor: SwExecutor | None = None
+_sw_execution_lock = threading.Lock()
 
 # 缓存的 LLM 客户端（按 api_key+base_url+model 缓存，避免重复创建）
 _llm_cache: dict[str, SwLLMClient] = {}
@@ -43,12 +46,25 @@ def _get_llm_client(
     base_url: str,
     vision_model: str,
     plan_model: str,
+    *,
+    use_cache: bool = True,
 ) -> SwLLMClient:
     """获取或创建 LLM 客户端，相同配置复用实例。
 
     Vision 和 Plan 可分别配不同模型（例如 Vision 用便宜多模态 + Plan 用强规划）。
     若两者相同，SwLLMClient 会在启动日志里打印"Vision + Plan 同"提示。
     """
+    if not use_cache:
+        os.environ["OPENAI_API_KEY"] = api_key
+        if base_url:
+            os.environ["OPENAI_BASE_URL"] = base_url
+        return SwLLMClient(
+            vision_model=vision_model,
+            plan_model=plan_model,
+            use_cache=False,
+            skill_mode="routed",
+        )
+
     cache_key = f"{api_key}|{base_url}|{vision_model}|{plan_model}"
     if cache_key not in _llm_cache:
         # 临时设置环境变量供 SwLLMClient 读取
@@ -220,7 +236,7 @@ def gear_animation_status():
 @app.route("/api/run", methods=["POST"])
 def run():
     """
-    一次性执行完整流程：LLM 规划 + SolidWorks 执行。
+    执行建模流程。mode 缺省为 single_turn，保持原有协议。
 
     请求体: {
       "instruction": "创建一个100mm的正方体",
@@ -229,6 +245,8 @@ def run():
       "vision_model": "basic/claude-sonnet-5",  (可选，Vision 阶段模型)
       "plan_model":   "basic/claude-sonnet-5",  (可选，Plan 阶段模型)
       "model": "gpt-4o",           (旧协议兼容，Vision + Plan 共用此模型)
+      "mode": "single_turn",       (可选: single_turn / multi_turn)
+      "max_turns": 8,              (multi_turn 可选)
       "dry_run": false
     }
     """
@@ -250,6 +268,14 @@ def run():
         vision_model = legacy_model or os.getenv("VISION_MODEL", "gpt-4o")
     if not plan_model:
         plan_model = legacy_model or os.getenv("PLAN_MODEL", "gpt-4o")
+    mode = data.get("mode", "single_turn").strip().lower()
+    if mode not in ("single_turn", "multi_turn"):
+        return jsonify({"success": False, "error": f"未知 mode: {mode}"}), 400
+    max_turns = data.get("max_turns", 8)
+    try:
+        max_turns = max(1, min(int(max_turns), 20))
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "error": "max_turns 必须是整数"}), 400
     dry_run = data.get("dry_run", False)
     # 多模态：可选图片（base64，可含或不含 data URI 前缀；不含时按 JPEG 处理）
     image_raw = data.get("image", "") or ""
@@ -263,35 +289,85 @@ def run():
         return jsonify({"success": False, "error": "指令与图片不能同时为空"}), 400
     if not api_key:
         return jsonify({"success": False, "error": "请填写 API Key"}), 400
+    if executor is None:
+        return jsonify({"success": False, "error": "SolidWorks Executor 尚未初始化"}), 503
+    if mode == "multi_turn" and image_b64:
+        return jsonify({
+            "success": False,
+            "error": "Multi-turn MVP 暂只支持纯文本任务",
+        }), 400
+    if mode == "multi_turn" and dry_run:
+        return jsonify({
+            "success": False,
+            "error": "Multi-turn MVP 不支持 dry_run",
+        }), 400
 
     try:
-        # 获取 LLM 客户端（Vision / Plan 可为不同模型）
-        llm_client = _get_llm_client(api_key, base_url, vision_model, plan_model)
+        with _sw_execution_lock:
+            if mode == "multi_turn":
+                llm_client = _get_llm_client(
+                    api_key,
+                    base_url,
+                    vision_model,
+                    plan_model,
+                    use_cache=False,
+                )
+                try:
+                    result = MultiTurnAgent(
+                        llm_client,
+                        executor,
+                        max_turns=max_turns,
+                    ).run(instruction)
+                finally:
+                    llm_client.close()
+                result_dict = result.model_dump(mode="json")
+                return jsonify({
+                    "success": True,
+                    "mode": "multi_turn",
+                    "multi_turn": result_dict,
+                    "turns": result_dict["turns"],
+                    "final_observation": result_dict["final_observation"],
+                    "summary": {
+                        "total": result.total_actions,
+                        "succeeded": result.successful_actions,
+                        "all_ok": result.status == "completed",
+                        "status": result.status,
+                        "llm_calls": result.llm_calls,
+                        "turn_count": len(result.turns),
+                    },
+                })
 
-        # 1. LLM 规划（有图走多模态两阶段；无图走纯文本）
-        plan = llm_client.plan(instruction, image_base64=image_b64 or None)
-        plan_dict = plan.model_dump()
-
-        # 2. 执行
-        results = executor.execute_plan(plan, dry_run=dry_run)
-
-        # 清理 _raw_features（不需要发给前端）
-        for r in results:
-            r.pop("_raw_features", None)
-
-        success_count = sum(1 for r in results if r.get("success") or r.get("status") == "dry_run")
-        all_ok = success_count == len(plan.steps)
-
-        return jsonify({
-            "success": True,
-            "plan": plan_dict,
-            "results": results,
-            "summary": {
-                "total": len(plan.steps),
-                "succeeded": success_count,
-                "all_ok": all_ok,
-            },
-        })
+            # Single-turn 原路径：保持响应结构与默认行为不变。
+            llm_client = _get_llm_client(
+                api_key,
+                base_url,
+                vision_model,
+                plan_model,
+            )
+            plan = llm_client.plan(
+                instruction,
+                image_base64=image_b64 or None,
+            )
+            plan_dict = plan.model_dump()
+            results = executor.execute_plan(plan, dry_run=dry_run)
+            for result in results:
+                result.pop("_raw_features", None)
+            success_count = sum(
+                1
+                for result in results
+                if result.get("success") or result.get("status") == "dry_run"
+            )
+            all_ok = success_count == len(plan.steps)
+            return jsonify({
+                "success": True,
+                "plan": plan_dict,
+                "results": results,
+                "summary": {
+                    "total": len(plan.steps),
+                    "succeeded": success_count,
+                    "all_ok": all_ok,
+                },
+            })
 
     except Exception as e:
         traceback.print_exc()

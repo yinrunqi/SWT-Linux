@@ -1,0 +1,84 @@
+{
+  "version": "1.0-mvp",
+  "description": "Multi-turn MVP golden replay scenarios derived from the original design draft.",
+  "sessions": [
+    {
+      "id": "auto_fix_wrong_size",
+      "goal": "创建一个边长 100mm 的立方体",
+      "turns": [
+        {
+          "decision": "act",
+          "actions": ["new_part", "select_plane", "sketch_rectangle", "feature_extrusion"]
+        },
+        {
+          "feedback": {
+            "bounding_box_mm": {"sizeX": 10, "sizeY": 10, "sizeZ": 10},
+            "mismatch": true
+          }
+        },
+        {
+          "decision": "act",
+          "expected_strategy": "modify_dimension_or_rebuild_with_correct_dimensions"
+        },
+        {
+          "feedback": {
+            "bounding_box_mm": {"sizeX": 100, "sizeY": 100, "sizeZ": 100},
+            "mismatch": false
+          }
+        },
+        {"decision": "finish"}
+      ]
+    },
+    {
+      "id": "step_by_step_feature_add",
+      "goal": "创建 60×40×20mm 底板，然后添加中心通孔和圆角",
+      "turns": [
+        {
+          "decision": "act",
+          "milestone": "base_plate"
+        },
+        {
+          "feedback": {
+            "bounding_box_mm": {"sizeX": 60, "sizeY": 20, "sizeZ": 40}
+          }
+        },
+        {
+          "decision": "act",
+          "milestone": "through_hole"
+        },
+        {
+          "decision": "act",
+          "milestone": "fillet"
+        },
+        {"decision": "finish"}
+      ]
+    },
+    {
+      "id": "execution_failure_retry",
+      "goal": "创建直径 50mm、高 30mm 的圆柱，顶部边缘做 C1 倒角",
+      "turns": [
+        {
+          "decision": "act",
+          "failed_action": {
+            "operation": "feature_chamfer",
+            "edgeSelection": "top_front"
+          }
+        },
+        {
+          "feedback": {
+            "success": false,
+            "message": "圆柱局部边不能使用方盒语义名"
+          }
+        },
+        {
+          "decision": "act",
+          "expected_action": {
+            "operation": "feature_chamfer",
+            "edgeSelection": "ray"
+          }
+        },
+        {"decision": "finish"}
+      ]
+    }
+  ]
+}

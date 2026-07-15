@@ -313,10 +313,40 @@ class SwExecutor:
             print(f"备注: {plan.notes}")
         print(f"{'='*60}\n")
 
-        results = []
+        results = self.execute_operations(
+            plan.steps,
+            dry_run=dry_run,
+            step_offset=0,
+            total_steps=len(plan.steps),
+        )
 
-        for i, step in enumerate(plan.steps, 1):
-            print(f"[步骤 {i}/{len(plan.steps)}] {step.operation.value}", end="")
+        print(f"\n{'='*60}")
+        success_count = sum(
+            1
+            for result in results
+            if result.get("success", False) or result.get("status") == "dry_run"
+        )
+        print(f"执行完成: {success_count}/{len(plan.steps)} 个步骤成功")
+        print(f"{'='*60}\n")
+
+        return results
+
+    def execute_operations(
+        self,
+        operations: list[SwOperation],
+        *,
+        dry_run: bool = False,
+        step_offset: int = 0,
+        total_steps: int | None = None,
+        include_turn_step: bool = False,
+    ) -> list[dict]:
+        """执行一小批增量操作，供 single-turn 和 multi-turn 共用。"""
+        results: list[dict] = []
+        display_total = total_steps or step_offset + len(operations)
+
+        for local_index, step in enumerate(operations, 1):
+            step_index = step_offset + local_index
+            print(f"[步骤 {step_index}/{display_total}] {step.operation.value}", end="")
             if step.description:
                 print(f" — {step.description}", end="")
             if step.params:
@@ -324,12 +354,15 @@ class SwExecutor:
             print()
 
             if dry_run:
-                results.append({
-                    "step": i,
+                dry_run_result = {
+                    "step": step_index,
                     "operation": step.operation.value,
                     "status": "dry_run",
                     "message": "模拟执行（未实际调用）",
-                })
+                }
+                if include_turn_step:
+                    dry_run_result["turn_step"] = local_index
+                results.append(dry_run_result)
                 continue
 
             # ---- 执行前：智能修正参数 ----
@@ -350,23 +383,24 @@ class SwExecutor:
             if step.operation == OperationType.FEATURE_TREE and result.get("success"):
                 self._on_feature_tree_result(result)
 
-            results.append({
-                "step": i,
+            execution_result = {
+                "step": step_index,
                 "operation": step.operation.value,
                 **result,
-            })
+            }
+            if include_turn_step:
+                execution_result["turn_step"] = local_index
+            results.append(execution_result)
 
             if not result.get("success", False):
-                print(f"[Executor] ❌ 步骤 {i} 执行失败: {result.get('message', '未知错误')}")
+                print(
+                    f"[Executor] ❌ 步骤 {step_index} 执行失败: "
+                    f"{result.get('message', '未知错误')}"
+                )
                 print("[Executor] 中止后续步骤")
                 break
             else:
                 print(f"  ✅ {result.get('message', 'OK')}")
-
-        print(f"\n{'='*60}")
-        success_count = sum(1 for r in results if r.get("success", False) or r.get("status") == "dry_run")
-        print(f"执行完成: {success_count}/{len(plan.steps)} 个步骤成功")
-        print(f"{'='*60}\n")
 
         return results
 

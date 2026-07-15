@@ -160,6 +160,81 @@ class SwModelingPlan(BaseModel):
     )
 
 
+class ModelingMode(str, Enum):
+    """建模执行模式。"""
+
+    SINGLE_TURN = "single_turn"
+    MULTI_TURN = "multi_turn"
+
+
+class AgentDecision(str, Enum):
+    """Multi-turn 每轮的下一步决策。"""
+
+    ACT = "act"
+    FINISH = "finish"
+    BLOCKED = "blocked"
+
+
+class ModelObservation(BaseModel):
+    """一次 SolidWorks 状态快照。"""
+
+    features: list[dict] = Field(default_factory=list)
+    bounding_box_mm: Optional[dict] = None
+    volume_mm3: Optional[float] = None
+    last_execution: list[dict] = Field(default_factory=list)
+    errors: dict[str, str] = Field(default_factory=dict)
+    state_fingerprint: str = ""
+
+
+class AgentTurn(BaseModel):
+    """LLM 在 Multi-turn 中输出的一轮增量决策。"""
+
+    decision: AgentDecision
+    progress_summary: str = ""
+    actions: list[SwOperation] = Field(default_factory=list, max_length=5)
+    check_summary: str = ""
+    next_milestone: str = ""
+
+    @field_validator("actions")
+    @classmethod
+    def validate_actions_for_decision(
+        cls,
+        actions: list[SwOperation],
+        info,
+    ) -> list[SwOperation]:
+        decision = info.data.get("decision")
+        if decision == AgentDecision.ACT and not actions:
+            raise ValueError("decision=act 时 actions 不能为空")
+        if decision != AgentDecision.ACT and actions:
+            raise ValueError("只有 decision=act 时才允许 actions")
+        return actions
+
+
+class MultiTurnRecord(BaseModel):
+    """一次 Observe → Decide → Act → Check 的完整记录。"""
+
+    turn: int
+    observation_before: ModelObservation
+    decision: AgentTurn
+    execution_results: list[dict] = Field(default_factory=list)
+    observation_after: Optional[ModelObservation] = None
+
+
+class MultiTurnResult(BaseModel):
+    """Multi-turn Agent 的最终结果。"""
+
+    mode: ModelingMode = ModelingMode.MULTI_TURN
+    status: str
+    user_goal: str
+    turns: list[MultiTurnRecord] = Field(default_factory=list)
+    final_observation: ModelObservation
+    total_actions: int = 0
+    successful_actions: int = 0
+    llm_calls: int = 0
+    duration_seconds: float = 0.0
+    message: str = ""
+
+
 # ============================================================
 # 三视图中间表示（IR）—— 多模态建模第一阶段的结构化输出
 # ============================================================

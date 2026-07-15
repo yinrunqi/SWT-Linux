@@ -21,7 +21,13 @@ import diskcache
 from openai import OpenAI, BadRequestError
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
-from .schemas import SwModelingPlan, ThreeViewIR
+from .schemas import (
+    AgentDecision,
+    AgentTurn,
+    ModelObservation,
+    SwModelingPlan,
+    ThreeViewIR,
+)
 from .skill_registry import SkillRegistry, SkillSelector, build_system_prompt, default_registry
 
 # ============================================================
@@ -105,6 +111,23 @@ def _extract_first_json_block(text: str) -> Optional[str]:
             if depth == 0:
                 return text[start:i + 1]
     return None  # 没匹配到完整闭合
+
+
+def _normalize_agent_decision_payload(payload: dict) -> dict:
+    """Normalize unambiguous enum aliases emitted by compatible providers."""
+    decision_aliases = {
+        "continue": AgentDecision.ACT.value,
+        "action": AgentDecision.ACT.value,
+        "done": AgentDecision.FINISH.value,
+        "complete": AgentDecision.FINISH.value,
+        "stop": AgentDecision.BLOCKED.value,
+    }
+    normalized = dict(payload)
+    raw_decision = str(normalized.get("decision", "")).lower()
+    if raw_decision in decision_aliases:
+        normalized["decision"] = decision_aliases[raw_decision]
+    return normalized
+
 
 # 缓存目录：planner 同级的 .llm_cache 文件夹
 CACHE_DIR = Path(__file__).resolve().parent / ".llm_cache"
@@ -600,6 +623,94 @@ class SwLLMClient:
             + "严格按 IR 中的 overall_size_mm 和 dimensions 换算成米制，"
             + "按 base_view 决定 select_plane index (front→0, top→1, right→2)。"
             + "features 里的每一个孔/圆角/倒角都要有对应的 operation 步骤。"
+        )
+
+    def decide_agent_turn(
+        self,
+        user_goal: str,
+        observation: ModelObservation,
+        recent_turns: list[dict],
+        turn_number: int,
+    ) -> AgentTurn:
+        """根据真实模型状态生成下一小批增量操作；Multi-turn 不使用计划缓存。"""
+        # 从与 single-turn 相同的基础 prompt 开始，再单独追加 Agent 规则；
+        # agent skill 不进入 SkillRegistry，避免改变任何既有 single-turn prompt/cache key。
+        system_prompt = self._assemble_system_prompt(user_goal, input_mode="text")
+        agent_skill_path = (
+            Path(__file__).resolve().parent
+            / "skills"
+            / "agent"
+            / "05_agent_loop.md"
+        )
+        system_prompt += "\n\n" + agent_skill_path.read_text(encoding="utf-8")
+        payload = {
+            "user_goal": user_goal,
+            "turn_number": turn_number,
+            "current_observation": observation.model_dump(),
+            "recent_turns": recent_turns[-3:],
+        }
+        user_prompt = (
+            "你正在执行 Multi-turn SolidWorks 建模。根据下面 JSON 决定下一轮。\n"
+            "每轮只能完成一个可检查的里程碑，actions 最多 5 个原子操作；"
+            "不要一次输出整个任务的全部步骤。\n"
+            "如果上轮失败，必须根据错误和当前特征改变策略，不能原样重试。\n"
+            "只有真实特征树、包围盒和体积足以证明用户目标已经完成时，"
+            "才允许 decision=finish。无法继续时使用 blocked。\n"
+            f"{json.dumps(payload, ensure_ascii=False, separators=(',', ':'))}"
+        )
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+
+        raw_schema = AgentTurn.model_json_schema()
+        patched_schema = self._patch_schema_additional_properties(raw_schema)
+        try:
+            completion = self.client.chat.completions.create(
+                model=self.plan_model,
+                messages=messages,
+                temperature=0,
+                max_tokens=4000,
+                response_format={
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "AgentTurn",
+                        "strict": False,
+                        "schema": patched_schema,
+                    },
+                },
+            )
+        except BadRequestError:
+            completion = self.client.chat.completions.create(
+                model=self.plan_model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            system_prompt
+                            + "\n只返回符合 AgentTurn schema 的 JSON 对象，不要 markdown。"
+                        ),
+                    },
+                    {"role": "user", "content": user_prompt},
+                ],
+                temperature=0,
+                max_tokens=4000,
+                response_format={"type": "json_object"},
+            )
+
+        content = completion.choices[0].message.content
+        if not content:
+            raise ValueError("Multi-turn LLM 未返回决策")
+        content = _strip_markdown_fence(content)
+        extracted = _extract_first_json_block(content) or content
+        try:
+            decision_payload = json.loads(extracted)
+        except json.JSONDecodeError as exc:
+            raise ValueError("Multi-turn LLM 返回了无效 JSON") from exc
+        # 部分 OpenAI 兼容中转站不严格执行 enum。只归一化无歧义的常见别名，
+        # 最终仍交给 Pydantic 校验操作和动作预算。
+        return AgentTurn.model_validate(
+            _normalize_agent_decision_payload(decision_payload)
         )
 
     @retry(

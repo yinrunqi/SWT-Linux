@@ -158,6 +158,28 @@ python -m web.app --model gpt-4o
 
 打开浏览器访问 `http://localhost:5000`，在输入框输入自然语言建模指令即可。
 
+### Single-turn / Multi-turn
+
+- `single_turn` 是缺省模式，保持原有协议：LLM 一次生成完整计划后顺序执行。
+- `multi_turn` 每轮最多执行 5 个操作，随后读取特征树、包围盒和体积，再决定继续、
+  调整、完成或阻塞；缺省最多 8 轮。
+- Web Demo 的设置面板可以切换模式并调整最大轮数。
+- Multi-turn MVP 目前仅支持纯文本，不支持图片、SSE 实时流、持久会话、截图和回滚。
+- SolidWorks 是单实例执行器，Web 后端会串行执行并发建模请求。
+
+`/api/run` 不传 `mode` 时响应结构与原 single-turn 完全一致。启用 Multi-turn：
+
+```json
+{
+  "instruction": "创建一个 20mm 立方体并对所有边做 R2mm 圆角",
+  "mode": "multi_turn",
+  "max_turns": 8
+}
+```
+
+响应包含 `multi_turn.turns`（每轮 Observe / Action / Result / Check）、
+`final_observation` 以及 LLM 调用数和操作统计。
+
 ### Web Demo 文件结构
 
 ```
@@ -186,6 +208,8 @@ planner/skills/
 │   ├── 02_units.md               # 单位换算（mm↔m）
 │   ├── 03_rules.md               # 拉伸方向/坐标映射/多轮廓约束等核心规则 + 板凳/骰子等示例
 │   └── 04_editing.md             # 编辑已有模型（modify_dimension / 面上加特征）
+├── agent/
+│   └── 05_agent_loop.md          # 仅 Multi-turn 动态追加，不改变 single-turn prompt
 ├── recipes/                      # 按用户指令关键词命中注入（当前示例都在 03_rules.md 内嵌）
 └── input_modes/                  # 按输入模态命中注入
     └── three_view.md             # 三视图建模规则（视图↔基准面/枚举尺寸/L 形正确画法等）

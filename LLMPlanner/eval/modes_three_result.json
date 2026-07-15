@@ -1,0 +1,304 @@
+{
+  "evaluation_version": 2,
+  "run_at": "2026-07-15T22:32:33+08:00",
+  "provider": "AI Ping",
+  "plan_model": "Qwen3.5-397B-A17B",
+  "max_turns": 8,
+  "cases": [
+    {
+      "name": "简化骰子",
+      "prompt": "创建一个骰子的基础外形：先做一个边长 20mm 的正方体，然后对正方体的所有 12 条棱边做 R2mm 的圆角，使其成为一个边角圆润的立方块。",
+      "expected_dimensions_mm": [
+        20,
+        20,
+        20
+      ],
+      "feature_checks": [
+        [
+          "extr",
+          1
+        ],
+        [
+          "fillet",
+          1
+        ]
+      ],
+      "tolerance_mm": 3.0
+    },
+    {
+      "name": "标准骰子",
+      "prompt": "请帮我建模一颗标准的六面骰子（色子），要求如下：\n1. 骰子主体是一个边长 20mm 的正方体；\n2. 正方体的 12 条棱边都做 R1.5mm 的圆角，让边角圆润；\n3. 六个面上分别有 1、2、3、4、5、6 个圆形点数；每个点数是一个直径约 3mm、深约 1.5mm 的圆形凹坑（向内凹陷，不是凸起）；\n4. 遵循标准骰子规则：相对的两个面点数之和为 7（即 1 对 6、2 对 5、3 对 4）；\n5. 各面点数按常规排布。请自行计算各面和凹点位置，完成完整建模。",
+      "expected_dimensions_mm": [
+        20,
+        20,
+        20
+      ],
+      "feature_checks": [
+        [
+          "extr",
+          1
+        ],
+        [
+          "fillet",
+          1
+        ],
+        [
+          "ice",
+          6
+        ]
+      ],
+      "tolerance_mm": 3.0
+    },
+    {
+      "name": "收纳盒",
+      "prompt": "创建一个长方形收纳盒：外部尺寸为长 120mm、宽 80mm、高 50mm，盒壁厚度 8mm，盒子内部是一个开口向上的空腔（顶部敞开），底部厚度也是 8mm。最后对盒子顶部开口的四条边做 R3mm 圆角。",
+      "expected_dimensions_mm": [
+        50,
+        80,
+        120
+      ],
+      "feature_checks": [
+        [
+          "extr",
+          1
+        ],
+        [
+          "ice",
+          1
+        ],
+        [
+          "fillet",
+          1
+        ]
+      ],
+      "tolerance_mm": 3.0
+    }
+  ],
+  "results": [
+    {
+      "case": "简化骰子",
+      "mode": "single_turn",
+      "status": "completed",
+      "all_ok": true,
+      "duration_seconds": 6.14,
+      "turns": 1,
+      "llm_calls": 1,
+      "total_actions": 5,
+      "successful_actions": 5,
+      "bbox_mm": {
+        "minX": -10.0,
+        "minY": -10.0,
+        "minZ": -10.0,
+        "maxX": 10.0,
+        "maxY": 10.0,
+        "maxZ": 10.0,
+        "sizeX": 20.0,
+        "sizeY": 20.0,
+        "sizeZ": 20.0
+      },
+      "dimensions_ok": true,
+      "feature_counts": {
+        "extr": 1,
+        "fillet": 1
+      },
+      "feature_checks_ok": {
+        "extr": true,
+        "fillet": true
+      },
+      "acceptance_ok": true,
+      "failed_actions": [],
+      "error": null
+    },
+    {
+      "case": "简化骰子",
+      "mode": "multi_turn",
+      "status": "completed",
+      "all_ok": true,
+      "duration_seconds": 40.61,
+      "turns": 2,
+      "llm_calls": 2,
+      "total_actions": 5,
+      "successful_actions": 5,
+      "bbox_mm": {
+        "maxX": 10.0,
+        "maxY": 10.0,
+        "maxZ": 10.0,
+        "minX": -10.0,
+        "minY": -10.0,
+        "minZ": -10.0,
+        "sizeX": 20.0,
+        "sizeY": 20.0,
+        "sizeZ": 20.0
+      },
+      "dimensions_ok": true,
+      "feature_counts": {
+        "extr": 1,
+        "fillet": 1
+      },
+      "feature_checks_ok": {
+        "extr": true,
+        "fillet": true
+      },
+      "acceptance_ok": true,
+      "failed_actions": [],
+      "error": null
+    },
+    {
+      "case": "标准骰子",
+      "mode": "single_turn",
+      "status": "completed",
+      "all_ok": true,
+      "duration_seconds": 29.96,
+      "turns": 1,
+      "llm_calls": 1,
+      "total_actions": 38,
+      "successful_actions": 38,
+      "bbox_mm": {
+        "minX": -10.0,
+        "minY": -10.0,
+        "minZ": -10.0,
+        "maxX": 10.0,
+        "maxY": 10.0,
+        "maxZ": 10.0,
+        "sizeX": 20.0,
+        "sizeY": 20.0,
+        "sizeZ": 20.0
+      },
+      "dimensions_ok": true,
+      "feature_counts": {
+        "extr": 1,
+        "fillet": 1,
+        "ice": 6
+      },
+      "feature_checks_ok": {
+        "extr": true,
+        "fillet": true,
+        "ice": true
+      },
+      "acceptance_ok": true,
+      "failed_actions": [],
+      "error": null
+    },
+    {
+      "case": "标准骰子",
+      "mode": "multi_turn",
+      "status": "blocked",
+      "all_ok": false,
+      "duration_seconds": 84.49,
+      "turns": 8,
+      "llm_calls": 8,
+      "total_actions": 26,
+      "successful_actions": 23,
+      "bbox_mm": {
+        "maxX": 10.0,
+        "maxY": 10.0,
+        "maxZ": 10.0,
+        "minX": -10.0,
+        "minY": -10.0,
+        "minZ": -10.0,
+        "sizeX": 20.0,
+        "sizeY": 20.0,
+        "sizeZ": 20.0
+      },
+      "dimensions_ok": true,
+      "feature_counts": {
+        "extr": 1,
+        "fillet": 1,
+        "ice": 1
+      },
+      "feature_checks_ok": {
+        "extr": true,
+        "fillet": true,
+        "ice": false
+      },
+      "acceptance_ok": false,
+      "failed_actions": [
+        {
+          "operation": "feature_fillet",
+          "message": "创建圆角失败，请确保选中了有效的边"
+        },
+        {
+          "operation": "feature_fillet",
+          "message": "创建圆角失败，请确保选中了有效的边"
+        },
+        {
+          "operation": "feature_fillet",
+          "message": "创建圆角失败，请确保选中了有效的边"
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "收纳盒",
+      "mode": "single_turn",
+      "status": "completed",
+      "all_ok": true,
+      "duration_seconds": 8.88,
+      "turns": 1,
+      "llm_calls": 1,
+      "total_actions": 11,
+      "successful_actions": 11,
+      "bbox_mm": {
+        "minX": -60.0,
+        "minY": 0.0,
+        "minZ": -40.0,
+        "maxX": 60.0,
+        "maxY": 50.0,
+        "maxZ": 40.0,
+        "sizeX": 120.0,
+        "sizeY": 50.0,
+        "sizeZ": 80.0
+      },
+      "dimensions_ok": true,
+      "feature_counts": {
+        "extr": 1,
+        "ice": 1,
+        "fillet": 4
+      },
+      "feature_checks_ok": {
+        "extr": true,
+        "ice": true,
+        "fillet": true
+      },
+      "acceptance_ok": true,
+      "failed_actions": [],
+      "error": null
+    },
+    {
+      "case": "收纳盒",
+      "mode": "multi_turn",
+      "status": "completed",
+      "all_ok": true,
+      "duration_seconds": 37.5,
+      "turns": 4,
+      "llm_calls": 4,
+      "total_actions": 11,
+      "successful_actions": 11,
+      "bbox_mm": {
+        "maxX": 60.0,
+        "maxY": 50.0,
+        "maxZ": 40.0,
+        "minX": -60.0,
+        "minY": 0.0,
+        "minZ": -40.0,
+        "sizeX": 120.0,
+        "sizeY": 50.0,
+        "sizeZ": 80.0
+      },
+      "dimensions_ok": true,
+      "feature_counts": {
+        "extr": 1,
+        "ice": 1,
+        "fillet": 4
+      },
+      "feature_checks_ok": {
+        "extr": true,
+        "ice": true,
+        "fillet": true
+      },
+      "acceptance_ok": true,
+      "failed_actions": [],
+      "error": null
+    }
+  ]
+}

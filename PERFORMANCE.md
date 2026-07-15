@@ -67,3 +67,45 @@
   导致后续点数凹坑完全未执行。
 - 收纳盒需要进一步确认 `feature_cut_extrusion` 返回成功但特征树未出现 `Cut` 的原因，
   可能是特征类型命名差异，也可能是执行结果验证不充分。
+
+## 2026-07-15：Single-turn / Multi-turn MVP 双模式对比
+
+### 配置与验收
+
+- 测例：简化骰子、标准骰子、收纳盒。
+- API：AI Ping；规划模型 `Qwen3.5-397B-A17B`。
+- 两种模式都通过 Web Demo `POST /api/run` 驱动真实 SolidWorks。
+- Multi-turn 禁用 LLM 缓存，每轮最多 5 个操作，最多 8 轮。
+- 验收同时检查执行状态、包围盒及必需特征。SolidWorks 将切除拉伸的
+  `Feature.GetTypeName2()` 报告为 `ICE`，因此这里用 `ICE` 统计切除特征；
+  这也解释了上一轮报告中“执行成功但未检出 Cut”的误判。
+- 可复现脚本：`LLMPlanner/eval/eval_modes_three.py`。
+- 原始报告：`LLMPlanner/eval/modes_three_result.json`。
+
+### 结果
+
+1. **简化骰子**
+   - Single-turn：通过，5/5 操作，1 次 LLM 调用，6.14 秒。
+   - Multi-turn：通过，5/5 操作，2 轮/2 次 LLM 调用，40.61 秒。
+   - 两者均得到 20×20×20mm，且包含 `Extrusion` 和 `Fillet`。
+
+2. **标准骰子**
+   - Single-turn：通过，38/38 操作，1 次 LLM 调用，29.96 秒；
+     包含 1 个 `Extrusion`、1 个 `Fillet` 和 6 个 `ICE` 切除特征。
+   - Multi-turn：未通过，在第 8 轮达到预算后返回 `blocked`；
+     26 个操作中成功 23 个，耗时 84.49 秒。主体尺寸正确，但只完成 1 个
+     `ICE` 切除特征，并出现 3 次圆角选边失败。
+
+3. **收纳盒**
+   - Single-turn：通过，11/11 操作，1 次 LLM 调用，8.88 秒。
+   - Multi-turn：通过，11/11 操作，4 轮/4 次 LLM 调用，37.50 秒。
+   - 两者均得到 120×50×80mm，并包含拉伸、空腔切除和顶部圆角。
+
+### 结论
+
+- Single-turn 本轮 3/3 通过；Multi-turn 2/3 通过。
+- Multi-turn 已形成真实的“执行 → 观察 → 再决策”闭环，但简单任务会因额外
+  LLM 调用显著变慢。
+- 标准骰子暴露了 MVP 的预算和细粒度操作限制：六个面的多圆草图需要大量原子操作，
+  8 轮不足，同时模型在圆角失败后仍消耗了多轮。下一步应增加批量圆草图操作或按目标
+  动态设置轮数，并增强重复失败策略约束。
