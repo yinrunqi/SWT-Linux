@@ -18,8 +18,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
+from load_env import ensure_test_env_loaded
 from planner.llm_client import SwLLMClient
 from planner.executor import SwExecutor
+
+ensure_test_env_loaded()
 
 # ============================================================
 # Flask App
@@ -231,8 +234,12 @@ def run():
     """
     data = request.get_json(force=True)
     instruction = data.get("instruction", "").strip()
-    api_key = data.get("api_key", "").strip()
-    base_url = data.get("base_url", "").strip()
+    provider = data.get("provider", "aiping").strip()
+    key_env = "JUHEAI_API_KEY" if provider == "juheai" else "OPENAI_API_KEY"
+    url_env = "JUHEAI_BASE_URL" if provider == "juheai" else "OPENAI_BASE_URL"
+    # 浏览器可覆盖服务端配置；留空时使用 LLMPlanner/.env，避免把 Key 存入浏览器。
+    api_key = data.get("api_key", "").strip() or os.getenv(key_env, "")
+    base_url = data.get("base_url", "").strip() or os.getenv(url_env, "")
     # 兼容两种协议:
     #   新协议 (推荐): vision_model + plan_model 分别指定
     #   旧协议 (兼容): 单一 model 字段, Vision 和 Plan 都用它
@@ -240,9 +247,9 @@ def run():
     plan_model = data.get("plan_model", "").strip()
     legacy_model = data.get("model", "").strip()
     if not vision_model:
-        vision_model = legacy_model or "gpt-4o"
+        vision_model = legacy_model or os.getenv("VISION_MODEL", "gpt-4o")
     if not plan_model:
-        plan_model = legacy_model or "gpt-4o"
+        plan_model = legacy_model or os.getenv("PLAN_MODEL", "gpt-4o")
     dry_run = data.get("dry_run", False)
     # 多模态：可选图片（base64，可含或不含 data URI 前缀；不含时按 JPEG 处理）
     image_raw = data.get("image", "") or ""
@@ -307,7 +314,7 @@ def main():
 
     print(f"\n🌐 Web Demo 启动: http://localhost:{args.port}")
     print(f"   SolidWorks 服务: {args.sw_url}")
-    print(f"   API Key 和模型在网页端配置")
+    print("   API Key 和模型使用 .env 默认值，也可在网页端覆盖")
     print(f"   按 Ctrl+C 停止\n")
 
     app.run(host="0.0.0.0", port=args.port, debug=False)

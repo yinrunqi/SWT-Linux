@@ -23,31 +23,41 @@
   <!-- Settings Panel -->
   <div class="settings" id="settings">
     <div class="settings-row">
-      <label for="api-key">API Key</label>
-      <input id="api-key" type="password" placeholder="sk-..." autocomplete="off">
+      <label for="provider-select">API 服务</label>
+      <select id="provider-select">
+        <option value="aiping" selected>AI Ping（当前）</option>
+        <option value="juheai">juheai（备用）</option>
+        <option value="custom">自定义 OpenAI 兼容接口</option>
+      </select>
     </div>
     <div class="settings-row">
-      <label for="base-url">Base URL <span class="hint">（可选，中转站选 Claude/GPT-5 系列必填）</span></label>
-      <input id="base-url" type="text" value="https://api.juheai.top/v1" placeholder="https://api.openai.com/v1">
+      <label for="api-key">API Key <span class="hint">（可选；留空使用服务端 .env）</span></label>
+      <input id="api-key" type="password" placeholder="留空使用服务端配置" autocomplete="off">
+    </div>
+    <div class="settings-row">
+      <label for="base-url">Base URL <span class="hint">（可选；留空使用服务端 .env）</span></label>
+      <input id="base-url" type="text" value="https://aiping.cn/api/v1" placeholder="https://api.openai.com/v1">
     </div>
     <div class="settings-row">
       <label for="vision-model-select">视觉模型 <span class="hint">（识别三视图/图片）</span></label>
       <select id="vision-model-select">
-        <option value="basic/claude-sonnet-5" selected>claude-sonnet-5（C1 键盘实测，Vision 最强）</option>
+        <option value="GLM-4.6V" selected>GLM-4.6V（AI Ping，本次选择，待项目实测）</option>
+        <option value="basic/claude-sonnet-5">claude-sonnet-5（juheai，C1 键盘实测）</option>
         <option value="gpt-4o">gpt-4o（B01~B22 实测，简单零件够用）</option>
       </select>
     </div>
     <div class="settings-row">
       <label for="plan-model-select">规划模型 <span class="hint">（生成建模步骤）</span></label>
       <select id="plan-model-select">
-        <option value="basic/claude-sonnet-5" selected>claude-sonnet-5（C1 键盘实测，复合规划最强）</option>
+        <option value="Qwen3.5-397B-A17B" selected>Qwen3.5-397B-A17B（AI Ping，本次选择，待项目实测）</option>
+        <option value="basic/claude-sonnet-5">claude-sonnet-5（juheai，复合规划已实测）</option>
         <option value="gpt-4o">gpt-4o（B01~B22 实测，简单零件够用）</option>
       </select>
     </div>
     <div class="settings-row">
       <p class="hint" style="margin: 4px 0 0 0; font-size: 12px; color: #888;">
-        💡 提示：两阶段可独立选模型。默认都用 <b>claude-sonnet-5</b>（C1 键盘 65 键 2D 阵列打通用的就是这个）。
-        当前列表只列<b>已实测过</b>的模型。
+        💡 当前默认使用 AI Ping：Vision 为 <b>GLM-4.6V</b>，Plan 为 <b>Qwen3.5-397B-A17B</b>。
+        原 juheai 可通过“API 服务”一键切回；API Key 留空时使用服务端 .env 中对应配置。
       </p>
     </div>
   </div>

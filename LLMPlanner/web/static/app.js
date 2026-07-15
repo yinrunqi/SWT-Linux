@@ -12,10 +12,23 @@ const statusText = document.getElementById("status-text");
 // 设置面板
 const settingsEl = document.getElementById("settings");
 const settingsToggle = document.getElementById("settings-toggle");
+const providerEl = document.getElementById("provider-select");
 const apiKeyEl = document.getElementById("api-key");
 const baseUrlEl = document.getElementById("base-url");
 const visionModelEl = document.getElementById("vision-model-select");
 const planModelEl = document.getElementById("plan-model-select");
+const PROVIDER_DEFAULTS = {
+  aiping: {
+    baseUrl: "https://aiping.cn/api/v1",
+    visionModel: "GLM-4.6V",
+    planModel: "Qwen3.5-397B-A17B",
+  },
+  juheai: {
+    baseUrl: "https://api.juheai.top/v1",
+    visionModel: "basic/claude-sonnet-5",
+    planModel: "basic/claude-sonnet-5",
+  },
+};
 
 // 齿轮 Motion Study 控件
 const gearLoadBtn = document.getElementById("gear-load-btn");
@@ -57,27 +70,46 @@ settingsToggle.addEventListener("click", () => {
 
 // ---- localStorage 持久化设置 ----
 function loadSettings() {
+  // 首次切换到 AI Ping 时备份旧浏览器配置，并采用新的 HTML 默认值。
+  const settingsVersion = "aiping-v1";
+  if (localStorage.getItem("sw_settings_version") !== settingsVersion) {
+    for (const key of ["sw_api_key", "sw_base_url", "sw_vision_model", "sw_plan_model"]) {
+      const oldValue = localStorage.getItem(key);
+      if (oldValue !== null) localStorage.setItem(`legacy_${key}`, oldValue);
+      localStorage.removeItem(key);
+    }
+    localStorage.setItem("sw_settings_version", settingsVersion);
+  }
+  providerEl.value = localStorage.getItem("sw_provider") || "aiping";
   apiKeyEl.value = localStorage.getItem("sw_api_key") || "";
-  // base_url 用 HTML value 的默认（juheai 中转站）作为空值时的兜底
+  // base_url 用 HTML value 的 AI Ping 默认值作为空值时的兜底
   const savedBase = localStorage.getItem("sw_base_url");
   if (savedBase !== null) baseUrlEl.value = savedBase;
-  // Vision/Plan 模型独立记忆，缺省都用 HTML 里已 selected 的 claude-sonnet-5
+  // Vision/Plan 模型独立记忆，缺省采用 HTML 中选定的 AI Ping 模型。
   const savedVision = localStorage.getItem("sw_vision_model");
   if (savedVision) visionModelEl.value = savedVision;
   const savedPlan = localStorage.getItem("sw_plan_model");
   if (savedPlan) planModelEl.value = savedPlan;
-  // 如果还没填 key，默认展开设置面板
-  if (!apiKeyEl.value) {
-    settingsEl.classList.add("open");
-    settingsToggle.classList.add("active");
-  }
 }
 function saveSettings() {
+  localStorage.setItem("sw_provider", providerEl.value);
   localStorage.setItem("sw_api_key", apiKeyEl.value);
+  localStorage.setItem(`sw_api_key_${providerEl.value}`, apiKeyEl.value);
   localStorage.setItem("sw_base_url", baseUrlEl.value);
   localStorage.setItem("sw_vision_model", visionModelEl.value);
   localStorage.setItem("sw_plan_model", planModelEl.value);
 }
+function switchProvider() {
+  const defaults = PROVIDER_DEFAULTS[providerEl.value];
+  apiKeyEl.value = localStorage.getItem(`sw_api_key_${providerEl.value}`) || "";
+  if (defaults) {
+    baseUrlEl.value = defaults.baseUrl;
+    visionModelEl.value = defaults.visionModel;
+    planModelEl.value = defaults.planModel;
+  }
+  saveSettings();
+}
+providerEl.addEventListener("change", switchProvider);
 apiKeyEl.addEventListener("input", saveSettings);
 baseUrlEl.addEventListener("input", saveSettings);
 visionModelEl.addEventListener("change", saveSettings);
@@ -231,13 +263,6 @@ async function send() {
   if (busy) return;
 
   const apiKey = apiKeyEl.value.trim();
-  if (!apiKey) {
-    appendError("请先在顶部设置面板中填写 API Key");
-    settingsEl.classList.add("open");
-    settingsToggle.classList.add("active");
-    apiKeyEl.focus();
-    return;
-  }
 
   busy = true;
   pendingEditStep = null;
@@ -271,6 +296,7 @@ async function send() {
       body: JSON.stringify({
         instruction: text,
         image: imageToSend,
+        provider: providerEl.value,
         api_key: apiKey,
         base_url: baseUrlEl.value.trim(),
         vision_model: visionModelEl.value,

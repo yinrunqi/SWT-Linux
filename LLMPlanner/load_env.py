@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parent
@@ -13,6 +14,10 @@ ENV_FILE = ROOT_DIR / ".env"
 KNOWN_KEYS = frozenset({
     "OPENAI_API_KEY",
     "OPENAI_BASE_URL",
+    "JUHEAI_API_KEY",
+    "JUHEAI_BASE_URL",
+    "VISION_MODEL",
+    "PLAN_MODEL",
     "SW_API_URL",
     "PYTHONUTF8",
     "PYTHONIOENCODING",
@@ -60,6 +65,11 @@ def apply_env(
             os.environ.setdefault(key, value)
     os.environ.setdefault("PYTHONUTF8", "1")
     os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+    # 上述变量只影响子进程；当前 Windows 进程仍可能是 GBK，打印 emoji 会抛异常。
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8", errors="backslashreplace")
 
 
 def ensure_test_env_loaded() -> bool:
