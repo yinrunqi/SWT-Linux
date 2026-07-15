@@ -1,0 +1,180 @@
+{
+  "run_at": "2026-07-15T16:04:10+08:00",
+  "provider": "AI Ping",
+  "base_url": "https://aiping.cn/api/v1",
+  "vision_model": "GLM-4.6V",
+  "plan_model": "Qwen3.5-397B-A17B",
+  "score": 83.47,
+  "max_score": 100,
+  "cases": [
+    {
+      "name": "四脚板凳",
+      "score": 16.0,
+      "duration_seconds": 34.28,
+      "plan_steps": 10,
+      "successful_steps": 10,
+      "unexecuted_steps": 0,
+      "failed_steps": [],
+      "required_operations": {
+        "new_part": true,
+        "feature_extrusion": true
+      },
+      "bbox_mm": {
+        "sizeX": 200.0,
+        "sizeY": 170.0,
+        "sizeZ": 200.0
+      },
+      "bbox_axes_ok": {
+        "sizeX": true,
+        "sizeY": true,
+        "sizeZ": true
+      },
+      "feature_counts": {
+        "Extrusion": 1
+      },
+      "feature_checks_ok": {
+        "Extrusion": false
+      },
+      "error": null
+    },
+    {
+      "name": "圆角板凳",
+      "score": 18.0,
+      "duration_seconds": 39.17,
+      "plan_steps": 14,
+      "successful_steps": 14,
+      "unexecuted_steps": 0,
+      "failed_steps": [],
+      "required_operations": {
+        "new_part": true,
+        "feature_extrusion": true,
+        "feature_fillet": true
+      },
+      "bbox_mm": {
+        "sizeX": 200.0,
+        "sizeY": 170.0,
+        "sizeZ": 200.0
+      },
+      "bbox_axes_ok": {
+        "sizeX": true,
+        "sizeY": true,
+        "sizeZ": true
+      },
+      "feature_counts": {
+        "Extrusion": 1,
+        "Fillet": 4
+      },
+      "feature_checks_ok": {
+        "Extrusion": false,
+        "Fillet": true
+      },
+      "error": null
+    },
+    {
+      "name": "收纳盒",
+      "score": 18.0,
+      "duration_seconds": 42.02,
+      "plan_steps": 11,
+      "successful_steps": 11,
+      "unexecuted_steps": 0,
+      "failed_steps": [],
+      "required_operations": {
+        "new_part": true,
+        "feature_extrusion": true,
+        "feature_cut_extrusion": true
+      },
+      "bbox_mm": {
+        "sizeX": 120.0,
+        "sizeY": 50.0,
+        "sizeZ": 80.0
+      },
+      "bbox_axes_ok": {
+        "sizeX": true,
+        "sizeY": true,
+        "sizeZ": true
+      },
+      "feature_counts": {
+        "Extrusion": 1,
+        "Cut": 0
+      },
+      "feature_checks_ok": {
+        "Extrusion": true,
+        "Cut": false
+      },
+      "error": null
+    },
+    {
+      "name": "简化骰子",
+      "score": 20.0,
+      "duration_seconds": 26.39,
+      "plan_steps": 5,
+      "successful_steps": 5,
+      "unexecuted_steps": 0,
+      "failed_steps": [],
+      "required_operations": {
+        "new_part": true,
+        "feature_extrusion": true,
+        "feature_fillet": true
+      },
+      "bbox_mm": {
+        "sizeX": 20.0,
+        "sizeY": 20.0,
+        "sizeZ": 20.0
+      },
+      "bbox_axes_ok": {
+        "sizeX": true,
+        "sizeY": true,
+        "sizeZ": true
+      },
+      "feature_counts": {
+        "Extrusion": 1,
+        "Fillet": 1
+      },
+      "feature_checks_ok": {
+        "Extrusion": true,
+        "Fillet": true
+      },
+      "error": null
+    },
+    {
+      "name": "标准骰子",
+      "score": 11.47,
+      "duration_seconds": 134.74,
+      "plan_steps": 49,
+      "successful_steps": 9,
+      "unexecuted_steps": 39,
+      "failed_steps": [
+        {
+          "step": 10,
+          "operation": "feature_fillet",
+          "message": "创建圆角失败，请确保选择了有效的边"
+        }
+      ],
+      "required_operations": {
+        "new_part": true,
+        "feature_extrusion": true,
+        "feature_fillet": true,
+        "feature_cut_extrusion": true
+      },
+      "bbox_mm": {
+        "sizeX": 20.0,
+        "sizeY": 20.0,
+        "sizeZ": 20.0
+      },
+      "bbox_axes_ok": {
+        "sizeX": true,
+        "sizeY": true,
+        "sizeZ": true
+      },
+      "feature_counts": {
+        "Fillet": 5,
+        "Cut": 0
+      },
+      "feature_checks_ok": {
+        "Fillet": true,
+        "Cut": false
+      },
+      "error": null
+    }
+  ]
+}
