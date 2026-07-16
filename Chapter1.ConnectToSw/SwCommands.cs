@@ -38,6 +38,11 @@ namespace Chapter1.ConnectToSw
         /// 导致用 20×20 全截面切除而非小圆点）。
         /// </summary>
         private string _activeSketchName = null;
+        private string _activeFaceKey = null;
+        private readonly Dictionary<string, Dictionary<string, object>> _sketchMetadata =
+            new Dictionary<string, Dictionary<string, object>>();
+        private readonly List<Dictionary<string, object>> _featureSketchLinks =
+            new List<Dictionary<string, object>>();
 
         // ============================================================
         // 装配体状态字段（Stage B: 装配体 API 扩展）
@@ -379,6 +384,72 @@ namespace Chapter1.ConnectToSw
                 $"捕获当前草图 = \"{_activeSketchName}\"");
         }
 
+        private void RegisterActiveSketch(string faceKey)
+        {
+            _activeFaceKey = faceKey;
+            if (string.IsNullOrEmpty(_activeSketchName))
+                return;
+            _sketchMetadata[_activeSketchName] = new Dictionary<string, object>
+            {
+                { "name", _activeSketchName },
+                { "faceKey", faceKey ?? "" },
+                { "circles", new List<Dictionary<string, double>>() },
+            };
+        }
+
+        private void RecordSketchCircle(
+            double cx, double cy, double cz, double radius)
+        {
+            if (string.IsNullOrEmpty(_activeSketchName))
+                return;
+            Dictionary<string, object> metadata;
+            if (!_sketchMetadata.TryGetValue(_activeSketchName, out metadata))
+            {
+                RegisterActiveSketch(_activeFaceKey);
+                metadata = _sketchMetadata[_activeSketchName];
+            }
+            var circles = metadata["circles"] as List<Dictionary<string, double>>;
+            circles.Add(new Dictionary<string, double>
+            {
+                { "cx", cx }, { "cy", cy }, { "cz", cz }, { "radius", radius },
+            });
+        }
+
+        private void RecordFeatureSketchLink(
+            string featureName,
+            string featureType,
+            double depth = 0)
+        {
+            if (string.IsNullOrEmpty(featureName))
+                return;
+            _featureSketchLinks.Add(new Dictionary<string, object>
+            {
+                { "featureName", featureName },
+                { "featureType", featureType },
+                { "sketchName", _activeSketchName ?? "" },
+                { "faceKey", _activeFaceKey ?? "" },
+                { "depth", depth },
+            });
+        }
+
+        private static string GetAxisFaceKey(
+            double[] point,
+            double[] normal,
+            Dictionary<string, double> bbox)
+        {
+            double ax = Math.Abs(normal[0]);
+            double ay = Math.Abs(normal[1]);
+            double az = Math.Abs(normal[2]);
+            int axis = ax >= ay && ax >= az ? 0 : (ay >= az ? 1 : 2);
+            string axisName = axis == 0 ? "X" : (axis == 1 ? "Y" : "Z");
+            double center = axis == 0
+                ? (bbox["minX"] + bbox["maxX"]) / 2
+                : axis == 1
+                    ? (bbox["minY"] + bbox["maxY"]) / 2
+                    : (bbox["minZ"] + bbox["maxZ"]) / 2;
+            return (point[axis] >= center ? "+" : "-") + axisName;
+        }
+
         /// <summary>
         /// 显式选中最近创建的草图。
         /// SelectByID2 在圆周阵列创建参考轴后可能无法按本地化名称选中后续草图，
@@ -598,6 +669,131 @@ namespace Chapter1.ConnectToSw
             return totalVolume;
         }
 
+        public List<Dictionary<string, object>> GetBodyFaces(int maxFaces = 200)
+        {
+            EnsureActiveDoc();
+            var partDoc = ActiveDoc as IPartDoc;
+            if (partDoc == null)
+                throw new InvalidOperationException("当前文档不是零件文档");
+            var bodies = partDoc.GetBodies2(
+                (int)swBodyType_e.swSolidBody, true) as object[];
+            if (bodies == null || bodies.Length == 0)
+                return new List<Dictionary<string, object>>();
+
+            var bbox = GetBodyBoundingBox();
+            var result = new List<Dictionary<string, object>>();
+            foreach (object bodyObj in bodies)
+            {
+                var body = bodyObj as IBody2;
+                var faces = body == null ? null : body.GetFaces() as object[];
+                if (faces == null) continue;
+                foreach (object faceObj in faces)
+                {
+                    if (result.Count >= maxFaces) return result;
+                    var face = faceObj as IFace2;
+                    if (face == null) continue;
+                    var surface = face.IGetSurface();
+                    bool planar = surface != null && surface.IsPlane();
+                    string surfaceType = planar ? "plane" :
+                        (surface != null && surface.IsCylinder() ? "cylinder" : "other");
+                    double[] faceBox = null;
+                    double area = 0;
+                    try { faceBox = ((dynamic)face).GetBox() as double[]; }
+                    catch { }
+                    try { area = Convert.ToDouble(((dynamic)face).GetArea()); }
+                    catch { }
+                    if (faceBox == null || faceBox.Length < 6)
+                        continue;
+                    var center = new double[]
+                    {
+                        (faceBox[0] + faceBox[3]) / 2,
+                        (faceBox[1] + faceBox[4]) / 2,
+                        (faceBox[2] + faceBox[5]) / 2,
+                    };
+                    var normal = new double[] { 0, 0, 0 };
+                    if (planar)
+                    {
+                        var pp = (double[])surface.PlaneParams;
+                        normal = new double[] { pp[0], pp[1], pp[2] };
+                    }
+                    string faceKey = planar
+                        ? GetAxisFaceKey(center, normal, bbox)
+                        : "";
+                    var item = new Dictionary<string, object>
+                    {
+                        { "index", result.Count },
+                        { "faceKey", faceKey },
+                        { "surfaceType", surfaceType },
+                        { "center", new Dictionary<string, double> {
+                            { "x", center[0] }, { "y", center[1] }, { "z", center[2] }
+                        }},
+                        { "normal", new Dictionary<string, double> {
+                            { "x", normal[0] }, { "y", normal[1] }, { "z", normal[2] }
+                        }},
+                        { "area", area },
+                        { "geometricSignature",
+                            $"{surfaceType}:{center[0]:F6}:{center[1]:F6}:{center[2]:F6}:{area:F9}" },
+                    };
+                    try
+                    {
+                        var persist = ActiveDoc.Extension.GetPersistReference3(face) as byte[];
+                        if (persist != null)
+                            item["persistRef"] = Convert.ToBase64String(persist);
+                    }
+                    catch { }
+                    result.Add(item);
+                }
+            }
+            return result;
+        }
+
+        public List<Dictionary<string, object>> GetSketchSummaries()
+        {
+            var result = new List<Dictionary<string, object>>();
+            foreach (var pair in _sketchMetadata)
+            {
+                var source = pair.Value;
+                var circles = source["circles"] as List<Dictionary<string, double>>;
+                result.Add(new Dictionary<string, object>
+                {
+                    { "name", pair.Key },
+                    { "faceKey", source["faceKey"] },
+                    { "circleCount", circles == null ? 0 : circles.Count },
+                    { "circles", circles ?? new List<Dictionary<string, double>>() },
+                });
+            }
+            return result;
+        }
+
+        public Dictionary<string, object> GetModelObservation()
+        {
+            EnsureActiveDoc();
+            var features = GetFeatureTree();
+            Dictionary<string, double> bbox = null;
+            double? volumeMm3 = null;
+            var faces = new List<Dictionary<string, object>>();
+            try
+            {
+                bbox = GetBodyBoundingBox();
+                volumeMm3 = GetBodyVolume() * 1e9;
+                faces = GetBodyFaces();
+            }
+            catch (InvalidOperationException ex)
+            {
+                // New parts have no solid body yet; still return sketch/feature ledger state.
+                Console.WriteLine($"[SwCommands] model-observation 无实体: {ex.Message}");
+            }
+            return new Dictionary<string, object>
+            {
+                { "features", features },
+                { "boundingBox", bbox },
+                { "volumeMm3", volumeMm3 },
+                { "faces", faces },
+                { "sketches", GetSketchSummaries() },
+                { "featureSketchLinks", _featureSketchLinks.ToList() },
+            };
+        }
+
         #endregion
 
         #region 原子操作 — 面选择
@@ -744,6 +940,18 @@ namespace Chapter1.ConnectToSw
             ActiveDoc.SketchManager.InsertSketch(true);
             _sketchOnRefPlane = false;  // 标记：草图在实体面上，需要变换坐标
             CaptureActiveSketchName();  // 捕获刚新建的草图名，供切除时显式选中
+            double[] faceNormal = new double[] { 0, 0, 0 };
+            string faceKey = "";
+            if (hitSurface.IsPlane())
+            {
+                var pp = (double[])hitSurface.PlaneParams;
+                faceNormal = new double[] { pp[0], pp[1], pp[2] };
+                faceKey = GetAxisFaceKey(
+                    bestHitPt,
+                    faceNormal,
+                    GetBodyBoundingBox());
+            }
+            RegisterActiveSketch(faceKey);
 
             // 获取草图坐标变换信息
             var activeSketch = ActiveDoc.SketchManager.ActiveSketch;
@@ -773,7 +981,22 @@ namespace Chapter1.ConnectToSw
                     { "x", bestHitPt[0] }, { "y", bestHitPt[1] }, { "z", bestHitPt[2] }
                 }},
                 { "message", $"已选中{faceType}并进入草图编辑" },
+                { "sketchName", _activeSketchName ?? "" },
+                { "faceKey", faceKey },
+                { "normal", new Dictionary<string, double> {
+                    { "x", faceNormal[0] }, { "y", faceNormal[1] }, { "z", faceNormal[2] }
+                }},
             };
+            try
+            {
+                var persist = ActiveDoc.Extension.GetPersistReference3(bestFace) as byte[];
+                if (persist != null)
+                    result["persistRef"] = Convert.ToBase64String(persist);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SwCommands] 获取面持久引用失败（使用几何签名回退）: {ex.Message}");
+            }
 
             // 返回草图变换矩阵，让调用方可以正确计算草图坐标
             if (xformData != null)
@@ -812,6 +1035,10 @@ namespace Chapter1.ConnectToSw
                 throw new InvalidOperationException("创建的文档不是零件类型");
 
             ActiveDoc = doc;
+            _activeSketchName = null;
+            _activeFaceKey = null;
+            _sketchMetadata.Clear();
+            _featureSketchLinks.Clear();
             Console.WriteLine("[SwCommands] 新建零件文档成功");
         }
 
@@ -823,7 +1050,7 @@ namespace Chapter1.ConnectToSw
         /// 选择指定索引的基准面并进入草图编辑模式。
         /// index: 0=前视基准面, 1=上视基准面, 2=右视基准面
         /// </summary>
-        public void SelectPlaneAndStartSketch(int planeIndex)
+        public string SelectPlaneAndStartSketch(int planeIndex)
         {
             EnsureActiveDoc();
 
@@ -838,7 +1065,9 @@ namespace Chapter1.ConnectToSw
             ActiveDoc.SketchManager.InsertSketch(true);
             _sketchOnRefPlane = true;  // 标记：草图在基准面上
             CaptureActiveSketchName();  // 捕获刚新建的草图名，供切除时显式选中
+            RegisterActiveSketch($"PLANE:{planeIndex}");
             Console.WriteLine($"[SwCommands] 已选择基准面 [{planeIndex}] 并进入草图编辑");
+            return _activeSketchName;
         }
 
         /// <summary>
@@ -907,7 +1136,32 @@ namespace Chapter1.ConnectToSw
             double sketchRadius = radius;
 
             ActiveDoc.SketchManager.CreateCircle(sx, sy, 0, sx + sketchRadius, sy, 0);
+            RecordSketchCircle(cx, cy, cz, radius);
             Console.WriteLine($"[SwCommands] 绘制圆: 模型圆心({cx},{cy},{cz}), 半径 {radius}，草图圆心({sx:F4},{sy:F4}), 草图半径 {sketchRadius:F4}");
+        }
+
+        public Dictionary<string, object> SketchCircles(
+            List<Dictionary<string, object>> circles)
+        {
+            if (circles == null || circles.Count == 0)
+                throw new ArgumentException("circles 至少包含一个圆");
+            foreach (var circle in circles)
+            {
+                double cx = Convert.ToDouble(circle["cx"]);
+                double cy = Convert.ToDouble(circle["cy"]);
+                double cz = circle.ContainsKey("cz")
+                    ? Convert.ToDouble(circle["cz"]) : 0;
+                double radius = Convert.ToDouble(circle["radius"]);
+                if (radius <= 0)
+                    throw new ArgumentOutOfRangeException("radius", "半径必须为正数");
+                SketchCircle(cx, cy, radius, cz);
+            }
+            return new Dictionary<string, object>
+            {
+                { "sketchName", _activeSketchName ?? "" },
+                { "faceKey", _activeFaceKey ?? "" },
+                { "circleCount", circles.Count },
+            };
         }
 
         /// <summary>
@@ -1107,7 +1361,7 @@ namespace Chapter1.ConnectToSw
         /// draftOutward: 拔模方向。false（默认）=向内收窄（顶面小于底面，常见如键帽/花盆）；
         ///               true=向外扩张（顶面大于底面，常见如漏斗）。
         /// </summary>
-        public void Extrusion(
+        public string Extrusion(
             double depth,
             bool flipDirection = false,
             bool midPlane = false,
@@ -1211,6 +1465,7 @@ namespace Chapter1.ConnectToSw
 
             if (feat == null)
                 throw new InvalidOperationException("拉伸失败，请确保草图中有封闭的轮廓");
+            RecordFeatureSketchLink(feat.Name, feat.GetTypeName2(), depth);
 
             // 缩放到合适视图
             mdoc.ViewZoomtofit2();
@@ -1218,6 +1473,7 @@ namespace Chapter1.ConnectToSw
             Console.WriteLine(
                 $"[SwCommands] 拉伸完成，深度: {depth} 米, 方向翻转: {flipDirection}, " +
                 $"中间面: {midPlane}, 拔模: {draftAngleDeg}° {(draftOutward ? "外扩" : "内收")}");
+            return feat.Name;
         }
 
         /// <summary>
@@ -1284,7 +1540,7 @@ namespace Chapter1.ConnectToSw
         /// endCondition: "blind"(盲孔), "through_all"(贯穿), "mid_plane"(中间面), "up_to_next"(到下一面)
         /// flipDirection: 是否反转切除方向
         /// </summary>
-        public void CutExtrusion(double depth, string endCondition = "blind", bool flipDirection = false)
+        public string CutExtrusion(double depth, string endCondition = "blind", bool flipDirection = false)
         {
             EnsureActiveDoc();
 
@@ -1436,11 +1692,13 @@ namespace Chapter1.ConnectToSw
             // 安全校验：确认生成的特征确实是"切除"而非"凸台"（防御性检查）
             string featTypeName = feat.GetTypeName2();
             Console.WriteLine($"[SwCommands] 切除特征类型校验: {featTypeName}");
+            RecordFeatureSketchLink(feat.Name, featTypeName, depth);
 
             // 缩放到合适视图
             ((ModelDoc2)ActiveDoc).ViewZoomtofit2();
 
             Console.WriteLine($"[SwCommands] 切除拉伸完成，深度: {depth} 米, 终止条件: {endCondition}");
+            return feat.Name;
         }
 
         /// <summary>

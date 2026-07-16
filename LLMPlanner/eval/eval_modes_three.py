@@ -87,7 +87,6 @@ def evaluate(
             json={
                 "instruction": case.prompt,
                 "mode": mode,
-                "max_turns": 8,
                 "plan_model": plan_model,
                 "vision_model": "GLM-4.6V",
             },
@@ -110,6 +109,11 @@ def evaluate(
                 for item in turn["execution_results"]
                 if not item.get("success")
             ]
+            validations = [
+                turn.get("validation")
+                for turn in run["turns"]
+                if turn.get("validation") is not None
+            ]
         else:
             observation = observer.collect().model_dump(mode="json")
             turns = 1
@@ -118,6 +122,7 @@ def evaluate(
             failed = [
                 item for item in payload["results"] if not item.get("success")
             ]
+            validations = []
 
         bbox = observation.get("bounding_box_mm")
         actual_dimensions = (
@@ -139,6 +144,55 @@ def evaluate(
             keyword: counts[keyword] >= minimum
             for keyword, minimum in case.feature_checks
         }
+        strict_dice = None
+        if case.name == "标准骰子" and mode == "multi_turn":
+            sketches = observation.get("sketches") or []
+            links = observation.get("feature_sketch_links") or []
+            machined = [
+                sketch
+                for sketch in sketches
+                if any(
+                    link.get("sketchName") == sketch.get("name")
+                    and str(link.get("featureType", "")).upper() == "ICE"
+                    for link in links
+                )
+            ]
+            # Intermediate recovery turns may fail validation before the
+            # same milestone later passes; only the final geometry evidence
+            # and completed Agent status matter for acceptance.
+            passed_validations = [
+                item for item in validations if item.get("passed")
+            ]
+            strict_dice = {
+                "distinct_face_keys": sorted({
+                    sketch.get("faceKey")
+                    for sketch in machined
+                    if sketch.get("faceKey")
+                }),
+                "circle_count_set": sorted({
+                    int(sketch.get("circleCount", 0))
+                    for sketch in machined
+                }),
+                "cut_depths_mm": sorted(
+                    round(float(link.get("depth", 0)) * 1000, 3)
+                    for link in links
+                    if str(link.get("featureType", "")).upper() == "ICE"
+                ),
+                "passed_validation_count": len(passed_validations),
+            }
+            strict_dice["passed"] = (
+                status == "completed"
+                and strict_dice["distinct_face_keys"]
+                == ["+X", "+Y", "+Z", "-X", "-Y", "-Z"]
+                and strict_dice["circle_count_set"] == [1, 2, 3, 4, 5, 6]
+                and len(strict_dice["cut_depths_mm"]) == 6
+                and all(
+                    abs(depth - 1.5) <= 0.2
+                    for depth in strict_dice["cut_depths_mm"]
+                )
+                and strict_dice["passed_validation_count"] >= 8
+                and not failed
+            )
         return {
             "case": case.name,
             "mode": mode,
@@ -153,10 +207,13 @@ def evaluate(
             "dimensions_ok": dimensions_ok,
             "feature_counts": counts,
             "feature_checks_ok": checks,
+            "milestone_validations": validations,
+            "strict_dice": strict_dice,
             "acceptance_ok": (
                 status == "completed"
                 and dimensions_ok
                 and all(checks.values())
+                and (strict_dice is None or strict_dice["passed"])
             ),
             "failed_actions": [
                 {
@@ -191,11 +248,11 @@ def main() -> int:
     args = parser.parse_args()
     observer = SwObserver(args.sw_url.rstrip("/"))
     report = {
-        "evaluation_version": 2,
+        "evaluation_version": 3,
         "run_at": datetime.now().astimezone().isoformat(timespec="seconds"),
         "provider": "AI Ping",
         "plan_model": args.plan_model,
-        "max_turns": 8,
+        "max_turns": "dynamic",
         "cases": [asdict(case) for case in CASES],
         "results": [],
     }

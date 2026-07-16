@@ -15,9 +15,12 @@ from planner.schemas import (
     AgentDecision,
     AgentTurn,
     ModelObservation,
+    Milestone,
     OperationType,
+    PostconditionSpec,
     SwModelingPlan,
     SwOperation,
+    TaskPlan,
 )
 
 
@@ -30,12 +33,34 @@ class FakeLLM:
         self.decisions = decisions
         self.calls: list[dict] = []
 
-    def decide_agent_turn(self, goal, observation, recent_turns, turn_number):
+    def decompose_task(self, goal):
+        keyword = "chamfer" if "倒角" in goal else "fillet"
+        return TaskPlan(
+            user_goal=goal,
+            milestones=[Milestone(
+                id="target_feature",
+                title=goal,
+                postconditions=[PostconditionSpec(
+                    kind="feature_count",
+                    params={"keyword": keyword, "minimum": 1},
+                )],
+            )],
+        )
+
+    def decide_agent_turn(
+        self,
+        goal,
+        observation,
+        recent_turns,
+        turn_number,
+        current_milestone=None,
+    ):
         self.calls.append({
             "goal": goal,
             "fingerprint": observation.state_fingerprint,
             "recent_turns": recent_turns,
             "turn": turn_number,
+            "milestone": current_milestone.id,
         })
         return self.decisions[len(self.calls) - 1]
 
@@ -78,9 +103,21 @@ class FakeObserver:
         return observation.model_copy(update={"last_execution": last_execution or []})
 
 
-def valid_observation(fingerprint: str) -> ModelObservation:
+def valid_observation(
+    fingerprint: str,
+    extra_feature: str | None = None,
+) -> ModelObservation:
+    features = [
+        {"index": 1, "name": "Boss-Extrude1", "type": "Extrusion"},
+    ]
+    if extra_feature:
+        features.append({
+            "index": 2,
+            "name": f"{extra_feature}1",
+            "type": extra_feature,
+        })
     return ModelObservation(
-        features=[{"index": 1, "name": "Boss-Extrude1", "type": "Extrusion"}],
+        features=features,
         bounding_box_mm={"sizeX": 50.0, "sizeY": 30.0, "sizeZ": 50.0},
         volume_mm3=58000.0,
         state_fingerprint=fingerprint,
@@ -128,7 +165,7 @@ def test_failure_observe_adjust_finish() -> None:
     executor = FakeExecutor(failures={0: 5})
     observer = FakeObserver([
         valid_observation("after-failure"),
-        valid_observation("after-correction"),
+        valid_observation("after-correction", "Chamfer"),
     ])
 
     result = MultiTurnAgent(
@@ -139,12 +176,13 @@ def test_failure_observe_adjust_finish() -> None:
     ).run("创建圆柱并在顶部做 C1 倒角")
 
     assert result.status == "completed"
-    assert len(result.turns) == 3
-    assert result.llm_calls == 3
+    assert len(result.turns) == 2
+    assert result.llm_calls == 2
     assert executor.calls[0][0].operation == OperationType.NEW_PART
     assert executor.calls[1][0].params["edgeSelection"] == "ray"
     assert llm.calls[1]["fingerprint"] == "after-failure"
-    print("[PASS] failure → observe → adjusted action → finish")
+    assert result.turns[-1].validation.passed
+    print("[PASS] failure → observe → adjusted action → ledger completion")
 
 
 def test_reject_finish_without_observation() -> None:
@@ -156,10 +194,12 @@ def test_reject_finish_without_observation() -> None:
         llm,
         FakeExecutor(),
         FakeObserver([valid_observation("unused")]),
+        max_turns=1,
     ).run("创建立方体")
     assert result.status == "blocked"
-    assert "拒绝提前完成" in result.message
-    print("[PASS] finish requires a real post-execution observation")
+    assert result.turns[0].validation is not None
+    assert not result.turns[0].validation.passed
+    print("[PASS] finish cannot bypass an incomplete ledger")
 
 
 def test_repeated_actions_are_bounded() -> None:
@@ -178,8 +218,8 @@ def test_repeated_actions_are_bounded() -> None:
     ).run("创建圆角")
     assert result.status == "blocked"
     assert len(executor.calls) == 3
-    assert "重复" in result.message
-    print("[PASS] repeated action loop is stopped")
+    assert "失败" in result.message or "重复" in result.message
+    print("[PASS] repeated no-progress action loop is stopped")
 
 
 def test_execute_plan_remains_compatible() -> None:

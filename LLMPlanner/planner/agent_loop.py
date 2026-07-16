@@ -1,26 +1,32 @@
-"""Bounded Observe → Decide → Act → Check loop for Multi-turn modeling."""
+"""Ledger-driven Observe → Decide → Act → Validate loop."""
 
 from __future__ import annotations
 
-import json
 import time
 
+from .compressed_memory import CompressedMemory
 from .executor import SwExecutor
+from .idempotency import IdempotencyGuard
 from .llm_client import SwLLMClient
+from .milestone_ledger import MilestoneLedger
 from .observer import SwObserver
 from .schemas import (
     AgentDecision,
     AgentTurn,
+    Milestone,
     ModelObservation,
     MultiTurnRecord,
     MultiTurnResult,
     OperationType,
     SwOperation,
+    ValidationResult,
 )
+from .task_decomposer import TaskDecomposer
+from .validators import ValidatorRegistry
 
 
 class MultiTurnAgent:
-    """Run a synchronous, bounded multi-turn modeling session."""
+    """Execute exactly one machine-verifiable milestone at a time."""
 
     def __init__(
         self,
@@ -28,9 +34,10 @@ class MultiTurnAgent:
         executor: SwExecutor,
         observer: SwObserver | None = None,
         *,
-        max_turns: int = 8,
+        max_turns: int | None = None,
         max_actions_per_turn: int = 5,
         repeated_action_limit: int = 2,
+        task_decomposer: TaskDecomposer | None = None,
     ):
         self.llm_client = llm_client
         self.executor = executor
@@ -38,63 +45,14 @@ class MultiTurnAgent:
             executor.base_url,
             session=executor.session,
         )
-        self.max_turns = max(1, min(max_turns, 20))
+        self.user_max_turns = (
+            None if max_turns is None else max(1, min(max_turns, 100))
+        )
         self.max_actions_per_turn = max(1, min(max_actions_per_turn, 5))
         self.repeated_action_limit = max(1, repeated_action_limit)
-
-    @staticmethod
-    def _action_signature(turn: AgentTurn) -> str:
-        return json.dumps(
-            [action.model_dump(mode="json") for action in turn.actions],
-            ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        )
-
-    @staticmethod
-    def _compact_turn(record: MultiTurnRecord) -> dict:
-        after = record.observation_after
-        return {
-            "turn": record.turn,
-            "decision": record.decision.decision.value,
-            "progress_summary": record.decision.progress_summary,
-            "actions": [
-                action.model_dump(mode="json")
-                for action in record.decision.actions
-            ],
-            "execution_results": record.execution_results,
-            "state_after": None if after is None else {
-                "feature_types": [
-                    feature.get("type", "")
-                    for feature in after.features
-                ],
-                "bounding_box_mm": after.bounding_box_mm,
-                "volume_mm3": after.volume_mm3,
-                "errors": after.errors,
-                "state_fingerprint": after.state_fingerprint,
-            },
-        }
-
-    @staticmethod
-    def _can_finish(
-        observation: ModelObservation,
-        records: list[MultiTurnRecord],
-    ) -> tuple[bool, str]:
-        if not records:
-            return False, "尚未执行任何建模操作"
-        if observation.errors:
-            return False, f"状态查询仍有错误: {observation.errors}"
-        if not observation.features or observation.bounding_box_mm is None:
-            return False, "缺少有效实体或包围盒"
-        if observation.volume_mm3 is None or observation.volume_mm3 <= 0:
-            return False, "实体体积无效"
-        last_results = records[-1].execution_results
-        if any(not result.get("success", False) for result in last_results):
-            return False, "最近一轮仍有未处理的执行失败"
-        return True, ""
+        self.task_decomposer = task_decomposer or TaskDecomposer(llm_client)
 
     def _normalize_first_turn(self, turn: AgentTurn) -> AgentTurn:
-        """A fresh MVP session always starts from a deterministic new part."""
         if turn.decision != AgentDecision.ACT:
             return turn
         if turn.actions and turn.actions[0].operation == OperationType.NEW_PART:
@@ -108,6 +66,14 @@ class MultiTurnAgent:
         ]
         return turn.model_copy(update={"actions": actions})
 
+    @staticmethod
+    def _valid_finish_state(observation: ModelObservation) -> bool:
+        return (
+            not observation.errors
+            and observation.bounding_box_mm is not None
+            and (observation.volume_mm3 or 0) > 0
+        )
+
     def _result(
         self,
         *,
@@ -118,6 +84,7 @@ class MultiTurnAgent:
         started: float,
         llm_calls: int,
         message: str,
+        ledger: MilestoneLedger,
     ) -> MultiTurnResult:
         results = [
             result
@@ -128,6 +95,7 @@ class MultiTurnAgent:
             status=status,
             user_goal=user_goal,
             turns=records,
+            milestones=ledger.summary(),
             final_observation=observation,
             total_actions=len(results),
             successful_actions=sum(
@@ -139,63 +107,110 @@ class MultiTurnAgent:
             message=message,
         )
 
+    @staticmethod
+    def _rejected_record(
+        turn_number: int,
+        observation: ModelObservation,
+        decision: AgentTurn,
+        validation: ValidationResult,
+    ) -> MultiTurnRecord:
+        return MultiTurnRecord(
+            turn=turn_number,
+            observation_before=observation,
+            decision=decision,
+            observation_after=observation,
+            validation=validation,
+        )
+
     def run(self, user_goal: str) -> MultiTurnResult:
         started = time.perf_counter()
+        task_plan = self.task_decomposer.decompose(user_goal)
+        ledger = MilestoneLedger(task_plan)
+        memory = CompressedMemory(user_goal, task_plan)
+        guard = IdempotencyGuard(self.repeated_action_limit)
+        dynamic_turns = max(
+            8,
+            len(task_plan.milestones) + task_plan.recovery_buffer,
+        )
+        # When omitted, use the dynamic budget. An explicit user value is a hard ceiling.
+        if self.user_max_turns is None:
+            max_turns = min(dynamic_turns, 100)
+        else:
+            max_turns = min(self.user_max_turns, 100)
+
         records: list[MultiTurnRecord] = []
         observation = ModelObservation(
             errors={"session": "新任务尚未创建零件"},
         )
-        signature_counts: dict[str, int] = {}
         llm_calls = 0
         step_offset = 0
 
-        for turn_number in range(1, self.max_turns + 1):
-            recent_turns = [
-                self._compact_turn(record)
-                for record in records[-3:]
-            ]
+        for turn_number in range(1, max_turns + 1):
+            milestone: Milestone | None = ledger.current()
+            if milestone is None:
+                status = "completed" if ledger.is_complete() else "blocked"
+                return self._result(
+                    status=status,
+                    user_goal=user_goal,
+                    records=records,
+                    observation=observation,
+                    started=started,
+                    llm_calls=llm_calls,
+                    message=(
+                        "全部里程碑通过机器验收"
+                        if status == "completed"
+                        else "没有可继续执行的里程碑"
+                    ),
+                    ledger=ledger,
+                )
+
+            context = memory.to_payload(ledger)
             decision = self.llm_client.decide_agent_turn(
                 user_goal,
                 observation,
-                recent_turns,
+                context,
                 turn_number,
+                current_milestone=milestone,
             )
             llm_calls += 1
+            decision = decision.model_copy(
+                update={"milestone_id": milestone.id}
+            )
             if turn_number == 1:
                 decision = self._normalize_first_turn(decision)
 
             if decision.decision == AgentDecision.FINISH:
-                can_finish, reason = self._can_finish(observation, records)
-                if can_finish:
-                    records.append(MultiTurnRecord(
-                        turn=turn_number,
-                        observation_before=observation,
-                        decision=decision,
-                        observation_after=observation,
-                    ))
-                    return self._result(
-                        status="completed",
-                        user_goal=user_goal,
-                        records=records,
-                        observation=observation,
-                        started=started,
-                        llm_calls=llm_calls,
-                        message=decision.check_summary or "建模目标已完成",
-                    )
-                decision = AgentTurn(
-                    decision=AgentDecision.BLOCKED,
-                    progress_summary=decision.progress_summary,
-                    check_summary=f"拒绝提前完成: {reason}",
-                    next_milestone="需要继续检查或修正模型",
+                validation = ValidatorRegistry.validate(
+                    milestone.postconditions,
+                    observation,
                 )
+                rejected = decision.model_copy(update={
+                    "check_summary": (
+                        "拒绝由 LLM 提前完成；账本仍有待办里程碑"
+                    ),
+                })
+                record = self._rejected_record(
+                    turn_number,
+                    observation,
+                    rejected,
+                    validation,
+                )
+                records.append(record)
+                memory.update(record, ledger)
+                continue
 
             if decision.decision == AgentDecision.BLOCKED:
-                records.append(MultiTurnRecord(
+                ledger.mark_failed(
+                    milestone.id,
+                    decision.check_summary or decision.progress_summary,
+                )
+                record = MultiTurnRecord(
                     turn=turn_number,
                     observation_before=observation,
                     decision=decision,
                     observation_after=observation,
-                ))
+                )
+                records.append(record)
                 return self._result(
                     status="blocked",
                     user_goal=user_goal,
@@ -204,34 +219,41 @@ class MultiTurnAgent:
                     started=started,
                     llm_calls=llm_calls,
                     message=decision.check_summary or decision.progress_summary,
+                    ledger=ledger,
                 )
 
-            actions = decision.actions[: self.max_actions_per_turn]
+            actions = decision.actions[
+                : min(self.max_actions_per_turn, milestone.max_actions)
+            ]
             decision = decision.model_copy(update={"actions": actions})
-            signature = self._action_signature(decision)
-            signature_counts[signature] = signature_counts.get(signature, 0) + 1
-            if signature_counts[signature] > self.repeated_action_limit:
-                blocked = AgentTurn(
+            allowed, reason = guard.check_before(milestone.id, actions)
+            if not allowed:
+                validation = ValidationResult(
+                    passed=False,
+                    message=reason,
+                    details={"idempotency": reason},
+                )
+                rejected = AgentTurn(
                     decision=AgentDecision.BLOCKED,
-                    progress_summary="检测到重复操作循环",
-                    check_summary="相同操作批次已重复，已停止以避免无限循环",
+                    milestone_id=milestone.id,
+                    progress_summary="幂等守卫拒绝重复动作",
+                    check_summary=reason,
                 )
-                records.append(MultiTurnRecord(
-                    turn=turn_number,
-                    observation_before=observation,
-                    decision=blocked,
-                    observation_after=observation,
-                ))
-                return self._result(
-                    status="blocked",
-                    user_goal=user_goal,
-                    records=records,
-                    observation=observation,
-                    started=started,
-                    llm_calls=llm_calls,
-                    message=blocked.check_summary,
+                record = self._rejected_record(
+                    turn_number,
+                    observation,
+                    rejected,
+                    validation,
                 )
+                records.append(record)
+                memory.forbid({
+                    "milestone_id": milestone.id,
+                    "reason": reason,
+                })
+                memory.update(record, ledger)
+                continue
 
+            before_fingerprint = observation.state_fingerprint
             execution_results = self.executor.execute_operations(
                 actions,
                 step_offset=step_offset,
@@ -239,14 +261,79 @@ class MultiTurnAgent:
             )
             step_offset += len(execution_results)
             after = self.observer.collect(execution_results)
-            records.append(MultiTurnRecord(
+            validation = ValidatorRegistry.validate(
+                milestone.postconditions,
+                after,
+            )
+            if any(
+                not result.get("success", False)
+                for result in execution_results
+            ):
+                validation = validation.model_copy(update={
+                    "passed": False,
+                    "message": "执行存在失败，里程碑不能完成",
+                })
+            ledger.mark_from_validation(milestone.id, validation)
+            record = MultiTurnRecord(
                 turn=turn_number,
                 observation_before=observation,
                 decision=decision,
                 execution_results=execution_results,
                 observation_after=after,
-            ))
+                validation=validation,
+            )
+            records.append(record)
+            memory.update(record, ledger)
+            forbidden = guard.record_after(
+                milestone.id,
+                actions,
+                execution_results,
+                before_fingerprint,
+                after.state_fingerprint,
+                validation.passed,
+            )
+            if forbidden is not None:
+                memory.forbid(forbidden)
             observation = after
+
+            if validation.passed and ledger.is_complete():
+                if not self._valid_finish_state(observation):
+                    return self._result(
+                        status="blocked",
+                        user_goal=user_goal,
+                        records=records,
+                        observation=observation,
+                        started=started,
+                        llm_calls=llm_calls,
+                        message="账本已完成，但最终实体状态无效",
+                        ledger=ledger,
+                    )
+                return self._result(
+                    status="completed",
+                    user_goal=user_goal,
+                    records=records,
+                    observation=observation,
+                    started=started,
+                    llm_calls=llm_calls,
+                    message="全部里程碑通过机器验收",
+                    ledger=ledger,
+                )
+
+            if milestone.failure_count >= 3:
+                ledger.mark_failed(
+                    milestone.id,
+                    "同一里程碑连续三轮未通过机器验收",
+                )
+                return self._result(
+                    status="blocked",
+                    user_goal=user_goal,
+                    records=records,
+                    observation=observation,
+                    started=started,
+                    llm_calls=llm_calls,
+                    message=f"里程碑 {milestone.id} 连续失败",
+                    ledger=ledger,
+                )
 
         return self._result(
             status="blocked",
@@ -255,5 +342,7 @@ class MultiTurnAgent:
             observation=observation,
             started=started,
             llm_calls=llm_calls,
-            message=f"达到最大轮数 {self.max_turns}，任务尚未完成",
+            message=f"达到最大轮数 {max_turns}，任务尚未完成",
+            ledger=ledger,
         )
+

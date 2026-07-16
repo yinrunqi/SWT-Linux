@@ -1,9 +1,9 @@
 {
-  "evaluation_version": 2,
-  "run_at": "2026-07-15T22:32:33+08:00",
+  "evaluation_version": 3,
+  "run_at": "2026-07-16T20:15:13+08:00",
   "provider": "AI Ping",
   "plan_model": "Qwen3.5-397B-A17B",
-  "max_turns": 8,
+  "max_turns": "dynamic",
   "cases": [
     {
       "name": "简化骰子",
@@ -80,7 +80,7 @@
       "mode": "single_turn",
       "status": "completed",
       "all_ok": true,
-      "duration_seconds": 6.14,
+      "duration_seconds": 4.06,
       "turns": 1,
       "llm_calls": 1,
       "total_actions": 5,
@@ -105,6 +105,8 @@
         "extr": true,
         "fillet": true
       },
+      "milestone_validations": [],
+      "strict_dice": null,
       "acceptance_ok": true,
       "failed_actions": [],
       "error": null
@@ -114,7 +116,7 @@
       "mode": "multi_turn",
       "status": "completed",
       "all_ok": true,
-      "duration_seconds": 40.61,
+      "duration_seconds": 41.07,
       "turns": 2,
       "llm_calls": 2,
       "total_actions": 5,
@@ -139,6 +141,53 @@
         "extr": true,
         "fillet": true
       },
+      "milestone_validations": [
+        {
+          "checks": {
+            "0:bbox_axes": true,
+            "1:feature_count": true
+          },
+          "details": {
+            "0:bbox_axes": {
+              "actual_mm": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "expected_mm": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "tolerance_mm": 1.0
+            },
+            "1:feature_count": {
+              "actual": 1,
+              "keyword": "extr",
+              "minimum": 1
+            }
+          },
+          "message": "全部后置条件通过",
+          "passed": true
+        },
+        {
+          "checks": {
+            "0:fillet_radius": true
+          },
+          "details": {
+            "0:fillet_radius": {
+              "all_edges_in_one_operation": true,
+              "matching_features": [
+                "圆角1"
+              ],
+              "target_radius_mm": 2.0
+            }
+          },
+          "message": "全部后置条件通过",
+          "passed": true
+        }
+      ],
+      "strict_dice": null,
       "acceptance_ok": true,
       "failed_actions": [],
       "error": null
@@ -148,7 +197,7 @@
       "mode": "single_turn",
       "status": "completed",
       "all_ok": true,
-      "duration_seconds": 29.96,
+      "duration_seconds": 10.22,
       "turns": 1,
       "llm_calls": 1,
       "total_actions": 38,
@@ -175,6 +224,8 @@
         "fillet": true,
         "ice": true
       },
+      "milestone_validations": [],
+      "strict_dice": null,
       "acceptance_ok": true,
       "failed_actions": [],
       "error": null
@@ -182,13 +233,13 @@
     {
       "case": "标准骰子",
       "mode": "multi_turn",
-      "status": "blocked",
-      "all_ok": false,
-      "duration_seconds": 84.49,
-      "turns": 8,
-      "llm_calls": 8,
-      "total_actions": 26,
-      "successful_actions": 23,
+      "status": "completed",
+      "all_ok": true,
+      "duration_seconds": 171.51,
+      "turns": 11,
+      "llm_calls": 11,
+      "total_actions": 38,
+      "successful_actions": 38,
       "bbox_mm": {
         "maxX": 10.0,
         "maxY": 10.0,
@@ -204,28 +255,258 @@
       "feature_counts": {
         "extr": 1,
         "fillet": 1,
-        "ice": 1
+        "ice": 6
       },
       "feature_checks_ok": {
         "extr": true,
         "fillet": true,
-        "ice": false
+        "ice": true
       },
-      "acceptance_ok": false,
-      "failed_actions": [
+      "milestone_validations": [
         {
-          "operation": "feature_fillet",
-          "message": "创建圆角失败，请确保选中了有效的边"
+          "checks": {
+            "0:bbox_axes": true,
+            "1:feature_count": true
+          },
+          "details": {
+            "0:bbox_axes": {
+              "actual_mm": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "expected_mm": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "tolerance_mm": 1.0
+            },
+            "1:feature_count": {
+              "actual": 1,
+              "keyword": "extr",
+              "minimum": 1
+            }
+          },
+          "message": "全部后置条件通过",
+          "passed": true
         },
         {
-          "operation": "feature_fillet",
-          "message": "创建圆角失败，请确保选中了有效的边"
+          "checks": {
+            "0:fillet_radius": true
+          },
+          "details": {
+            "0:fillet_radius": {
+              "all_edges_in_one_operation": true,
+              "edge_count": 12,
+              "matching_features": [
+                "圆角1"
+              ],
+              "target_radius_mm": 1.5
+            }
+          },
+          "message": "全部后置条件通过",
+          "passed": true
         },
         {
-          "operation": "feature_fillet",
-          "message": "创建圆角失败，请确保选中了有效的边"
+          "checks": {
+            "0:face_pips": true
+          },
+          "details": {
+            "0:face_pips": {
+              "cut_features": [
+                "切除-拉伸1"
+              ],
+              "expected_circle_count": 1,
+              "face_key": "+Y",
+              "ice_count": 1,
+              "matching_sketches": [
+                "草图2"
+              ]
+            }
+          },
+          "message": "全部后置条件通过",
+          "passed": true
+        },
+        {
+          "checks": {
+            "0:face_pips": false
+          },
+          "details": {
+            "0:face_pips": {
+              "cut_features": [],
+              "expected_circle_count": 6,
+              "face_key": "-Y",
+              "ice_count": 1,
+              "matching_sketches": []
+            }
+          },
+          "message": "仍有后置条件未通过",
+          "passed": false
+        },
+        {
+          "checks": {
+            "0:face_pips": true
+          },
+          "details": {
+            "0:face_pips": {
+              "cut_features": [
+                "切除-拉伸2"
+              ],
+              "expected_circle_count": 6,
+              "face_key": "-Y",
+              "ice_count": 2,
+              "matching_sketches": [
+                "草图3"
+              ]
+            }
+          },
+          "message": "全部后置条件通过",
+          "passed": true
+        },
+        {
+          "checks": {
+            "0:face_pips": true
+          },
+          "details": {
+            "0:face_pips": {
+              "cut_features": [
+                "切除-拉伸3"
+              ],
+              "expected_circle_count": 2,
+              "face_key": "+Z",
+              "ice_count": 3,
+              "matching_sketches": [
+                "草图4"
+              ]
+            }
+          },
+          "message": "全部后置条件通过",
+          "passed": true
+        },
+        {
+          "checks": {
+            "0:face_pips": false
+          },
+          "details": {
+            "0:face_pips": {
+              "cut_features": [],
+              "expected_circle_count": 5,
+              "face_key": "-Z",
+              "ice_count": 3,
+              "matching_sketches": []
+            }
+          },
+          "message": "仍有后置条件未通过",
+          "passed": false
+        },
+        {
+          "checks": {
+            "0:face_pips": true
+          },
+          "details": {
+            "0:face_pips": {
+              "cut_features": [
+                "切除-拉伸4"
+              ],
+              "expected_circle_count": 5,
+              "face_key": "-Z",
+              "ice_count": 4,
+              "matching_sketches": [
+                "草图5"
+              ]
+            }
+          },
+          "message": "全部后置条件通过",
+          "passed": true
+        },
+        {
+          "checks": {
+            "0:face_pips": true
+          },
+          "details": {
+            "0:face_pips": {
+              "cut_features": [
+                "切除-拉伸5"
+              ],
+              "expected_circle_count": 3,
+              "face_key": "+X",
+              "ice_count": 5,
+              "matching_sketches": [
+                "草图6"
+              ]
+            }
+          },
+          "message": "全部后置条件通过",
+          "passed": true
+        },
+        {
+          "checks": {
+            "0:face_pips": false
+          },
+          "details": {
+            "0:face_pips": {
+              "cut_features": [],
+              "expected_circle_count": 4,
+              "face_key": "-X",
+              "ice_count": 5,
+              "matching_sketches": []
+            }
+          },
+          "message": "仍有后置条件未通过",
+          "passed": false
+        },
+        {
+          "checks": {
+            "0:face_pips": true
+          },
+          "details": {
+            "0:face_pips": {
+              "cut_features": [
+                "切除-拉伸6"
+              ],
+              "expected_circle_count": 4,
+              "face_key": "-X",
+              "ice_count": 6,
+              "matching_sketches": [
+                "草图7"
+              ]
+            }
+          },
+          "message": "全部后置条件通过",
+          "passed": true
         }
       ],
+      "strict_dice": {
+        "distinct_face_keys": [
+          "+X",
+          "+Y",
+          "+Z",
+          "-X",
+          "-Y",
+          "-Z"
+        ],
+        "circle_count_set": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "cut_depths_mm": [
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5
+        ],
+        "passed": true,
+        "passed_validation_count": 8
+      },
+      "acceptance_ok": true,
+      "failed_actions": [],
       "error": null
     },
     {
@@ -233,7 +514,7 @@
       "mode": "single_turn",
       "status": "completed",
       "all_ok": true,
-      "duration_seconds": 8.88,
+      "duration_seconds": 5.0,
       "turns": 1,
       "llm_calls": 1,
       "total_actions": 11,
@@ -260,6 +541,8 @@
         "ice": true,
         "fillet": true
       },
+      "milestone_validations": [],
+      "strict_dice": null,
       "acceptance_ok": true,
       "failed_actions": [],
       "error": null
@@ -269,9 +552,9 @@
       "mode": "multi_turn",
       "status": "completed",
       "all_ok": true,
-      "duration_seconds": 37.5,
-      "turns": 4,
-      "llm_calls": 4,
+      "duration_seconds": 32.82,
+      "turns": 3,
+      "llm_calls": 3,
       "total_actions": 11,
       "successful_actions": 11,
       "bbox_mm": {
@@ -296,9 +579,89 @@
         "ice": true,
         "fillet": true
       },
+      "milestone_validations": [
+        {
+          "checks": {
+            "0:bbox_axes": true,
+            "1:feature_count": true
+          },
+          "details": {
+            "0:bbox_axes": {
+              "actual_mm": [
+                50.0,
+                80.0,
+                120.0
+              ],
+              "expected_mm": [
+                50.0,
+                80.0,
+                120.0
+              ],
+              "tolerance_mm": 2.0
+            },
+            "1:feature_count": {
+              "actual": 1,
+              "keyword": "extr",
+              "minimum": 1
+            }
+          },
+          "message": "全部后置条件通过",
+          "passed": true
+        },
+        {
+          "checks": {
+            "0:feature_count": true,
+            "1:bbox_axes": true
+          },
+          "details": {
+            "0:feature_count": {
+              "actual": 1,
+              "keyword": "ice",
+              "minimum": 1
+            },
+            "1:bbox_axes": {
+              "actual_mm": [
+                50.0,
+                80.0,
+                120.0
+              ],
+              "expected_mm": [
+                50.0,
+                80.0,
+                120.0
+              ],
+              "tolerance_mm": 2.0
+            }
+          },
+          "message": "全部后置条件通过",
+          "passed": true
+        },
+        {
+          "checks": {
+            "0:fillet_radius": true
+          },
+          "details": {
+            "0:fillet_radius": {
+              "all_edges_in_one_operation": false,
+              "edge_count": 1,
+              "matching_features": [
+                "圆角1",
+                "圆角2",
+                "圆角3",
+                "圆角4"
+              ],
+              "target_radius_mm": 3.0
+            }
+          },
+          "message": "全部后置条件通过",
+          "passed": true
+        }
+      ],
+      "strict_dice": null,
       "acceptance_ok": true,
       "failed_actions": [],
       "error": null
     }
-  ]
+  ],
+  "resumed_from": "2026-07-16T20:11:23+08:00"
 }

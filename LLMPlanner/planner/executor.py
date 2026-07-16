@@ -25,6 +25,7 @@ OPERATION_ENDPOINT_MAP: dict[OperationType, tuple[str, str]] = {
     OperationType.SKETCH_LINE:        ("POST", "/api/sketch/line"),
     OperationType.SKETCH_RECTANGLE:   ("POST", "/api/sketch/rectangle"),
     OperationType.SKETCH_CIRCLE:      ("POST", "/api/sketch/circle"),
+    OperationType.SKETCH_CIRCLES:     ("POST", "/api/sketch/circles"),
     OperationType.SKETCH_CENTERLINE:  ("POST", "/api/sketch/centerline"),
     OperationType.SKETCH_ARC:         ("POST", "/api/sketch/arc"),
     OperationType.SKETCH_ELLIPSE:     ("POST", "/api/sketch/ellipse"),
@@ -378,6 +379,7 @@ class SwExecutor:
                     self._resolve_delta(step)
 
             result = self._execute_step(step)
+            response_metadata = result.pop("_response_metadata", {})
 
             # ---- 执行后：处理返回数据 ----
             if step.operation == OperationType.FEATURE_TREE and result.get("success"):
@@ -387,6 +389,7 @@ class SwExecutor:
                 "step": step_index,
                 "operation": step.operation.value,
                 **result,
+                **response_metadata,
             }
             if include_turn_step:
                 execution_result["turn_step"] = local_index
@@ -470,6 +473,11 @@ class SwExecutor:
             result = {
                 "success": data.get("success", False),
                 "message": data.get("message", ""),
+                "_response_metadata": {
+                    key: value
+                    for key, value in data.items()
+                    if key not in ("success", "message")
+                },
             }
 
             # 对 feature_tree 特殊处理：保存原始 features 数据供后续修正使用

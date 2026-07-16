@@ -1,111 +1,32 @@
-# Web Demo LLM 性能评测
+# Multi-turn 账本 / Observer 评测记录
 
-## 2026-07-15：由文本生成前 5 个测例
+评测脚本：`LLMPlanner/eval/eval_modes_three.py`（`evaluation_version: 3`）  
+结果文件：`LLMPlanner/eval/modes_three_result.json`  
+Provider：AI Ping · 模型：`Qwen3.5-397B-A17B` · SolidWorks HTTP API：`localhost:5100`
 
-### 配置
+## 结果摘要（2026-07-16）
 
-- 调用路径：Web Demo `POST /api/run`，实际执行 SolidWorks 建模，不是 dry-run
-- API 服务：AI Ping，`https://aiping.cn/api/v1`
-- 规划模型：`Qwen3.5-397B-A17B`
-- 视觉模型：`GLM-4.6V`（本组为纯文本测例，未实际使用 Vision 阶段）
-- Skill 模式：Web Demo 默认的 `routed`
-- 总耗时：约 277.74 秒
-- 本轮 API 消耗：约 11.80224 分，即 ¥0.118022（评测前后 Key 的 `consumed` 差值）
-- 评测后 Key 剩余额度：约 ¥499.791039
+| Case | Mode | Acceptance | Turns | LLM calls | Actions (ok) | Duration |
+|------|------|------------|-------|-----------|--------------|----------|
+| 简化骰子 | single_turn | ✅ | 1 | 1 | 11/11 | 4.1s |
+| 简化骰子 | multi_turn | ✅ | 2 | 2 | — | 41.1s |
+| 标准骰子 | single_turn | ✅ | 1 | 1 | — | 10.2s |
+| 标准骰子 | multi_turn | ✅ | 11 | 11 | 38/38 | 171.5s |
+| 收纳盒 | single_turn | ✅ | 1 | 1 | 11/11 | 5.0s |
+| 收纳盒 | multi_turn | ✅ | 3 | 3 | — | 32.8s |
 
-### 评分规则
+## 标准骰子 Multi-turn 硬验收
 
-仓库此前只有各测例的通过/失败验证，没有统一计分脚本。本次新增
-`LLMPlanner/eval/eval_text_first5.py`，总分 100，每例 20 分：
+- Agent `status=completed`（由里程碑账本 + 确定性验收器裁定，非 LLM `finish`）
+- 包围盒 20×20×20mm；主体拉伸 + 12 边 R1.5 圆角
+- 六个语义面 `{+Y,-Y,+Z,-Z,+X,-X}`，圆数量集合恰为 `{1,2,3,4,5,6}`
+- 六次切除深度均为 1.5mm；`ICE >= 6`；无失败操作
+- 中间轮次允许对同一里程碑失败后换策略；最终 8 个里程碑验收均通过
 
-- 必需规划操作：4 分
-- 成功执行步骤：8 分，按“成功步骤数 / 完整计划步骤数”计分
-- 包围盒三轴：4 分
-- 特征树检查：4 分
+## 实现要点
 
-原始机器可读报告：
-`LLMPlanner/eval/text_first5_result.json`。
-
-### 结果
-
-总分：**83.47 / 100**
-
-1. **四脚板凳：16.00 / 20**
-   - 10/10 步成功，耗时 34.28 秒。
-   - 包围盒 200×170×200mm，三轴全部通过。
-   - 特征树只有 1 个 `Extrusion`，低于旧测例预期的 5 个，因此扣 4 分。
-   - 模型将 4 条腿合并在同一草图/拉伸中，几何尺寸正确，但不满足旧脚本的特征数量判据。
-
-2. **圆角板凳：18.00 / 20**
-   - 14/14 步成功，耗时 39.17 秒。
-   - 包围盒 200×170×200mm，三轴全部通过。
-   - 检出 4 个 `Fillet`；`Extrusion` 只有 1 个，低于预期 5 个，特征项扣 2 分。
-
-3. **收纳盒：18.00 / 20**
-   - 11/11 步成功，耗时 42.02 秒。
-   - 包围盒 120×50×80mm，三轴全部通过。
-   - 检出 1 个 `Extrusion`，但特征树未检出 `Cut`，特征项扣 2 分。
-
-4. **简化骰子：20.00 / 20**
-   - 5/5 步成功，耗时 26.39 秒。
-   - 包围盒 20×20×20mm，三轴全部通过。
-   - `Extrusion` 和 `Fillet` 特征检查全部通过。
-
-5. **标准骰子：11.47 / 20**
-   - LLM 生成 49 步计划；成功执行前 9 步，第 10 步 `feature_fillet` 因选边无效失败，
-     Executor 随即停止，后续 39 步未执行。
-   - 包围盒仍为 20×20×20mm，但只代表骰子主体尺寸正确，不代表 21 个点数凹坑已完成。
-   - 检出 5 个 `Fillet`，未检出 `Cut`。
-   - 耗时 134.74 秒。
-
-### 结论
-
-- 4/5 个测例完成全部执行步骤；简化骰子获得满分。
-- 两个板凳的实体尺寸正确，扣分主要来自 LLM 使用了更少、更合并的拉伸特征，与旧测试脚本
-  “至少 5 个拉伸”的实现方式假设不一致。
-- 当前主要能力缺口是标准骰子的复杂选边稳定性：计划包含完整操作类型，但在第 10 步圆角选边失败，
-  导致后续点数凹坑完全未执行。
-- 收纳盒需要进一步确认 `feature_cut_extrusion` 返回成功但特征树未出现 `Cut` 的原因，
-  可能是特征类型命名差异，也可能是执行结果验证不充分。
-
-## 2026-07-15：Single-turn / Multi-turn MVP 双模式对比
-
-### 配置与验收
-
-- 测例：简化骰子、标准骰子、收纳盒。
-- API：AI Ping；规划模型 `Qwen3.5-397B-A17B`。
-- 两种模式都通过 Web Demo `POST /api/run` 驱动真实 SolidWorks。
-- Multi-turn 禁用 LLM 缓存，每轮最多 5 个操作，最多 8 轮。
-- 验收同时检查执行状态、包围盒及必需特征。SolidWorks 将切除拉伸的
-  `Feature.GetTypeName2()` 报告为 `ICE`，因此这里用 `ICE` 统计切除特征；
-  这也解释了上一轮报告中“执行成功但未检出 Cut”的误判。
-- 可复现脚本：`LLMPlanner/eval/eval_modes_three.py`。
-- 原始报告：`LLMPlanner/eval/modes_three_result.json`。
-
-### 结果
-
-1. **简化骰子**
-   - Single-turn：通过，5/5 操作，1 次 LLM 调用，6.14 秒。
-   - Multi-turn：通过，5/5 操作，2 轮/2 次 LLM 调用，40.61 秒。
-   - 两者均得到 20×20×20mm，且包含 `Extrusion` 和 `Fillet`。
-
-2. **标准骰子**
-   - Single-turn：通过，38/38 操作，1 次 LLM 调用，29.96 秒；
-     包含 1 个 `Extrusion`、1 个 `Fillet` 和 6 个 `ICE` 切除特征。
-   - Multi-turn：未通过，在第 8 轮达到预算后返回 `blocked`；
-     26 个操作中成功 23 个，耗时 84.49 秒。主体尺寸正确，但只完成 1 个
-     `ICE` 切除特征，并出现 3 次圆角选边失败。
-
-3. **收纳盒**
-   - Single-turn：通过，11/11 操作，1 次 LLM 调用，8.88 秒。
-   - Multi-turn：通过，11/11 操作，4 轮/4 次 LLM 调用，37.50 秒。
-   - 两者均得到 120×50×80mm，并包含拉伸、空腔切除和顶部圆角。
-
-### 结论
-
-- Single-turn 本轮 3/3 通过；Multi-turn 2/3 通过。
-- Multi-turn 已形成真实的“执行 → 观察 → 再决策”闭环，但简单任务会因额外
-  LLM 调用显著变慢。
-- 标准骰子暴露了 MVP 的预算和细粒度操作限制：六个面的多圆草图需要大量原子操作，
-  8 轮不足，同时模型在圆角失败后仍消耗了多轮。下一步应增加批量圆草图操作或按目标
-  动态设置轮数，并增强重复失败策略约束。
+- 结构化观察：`GET /api/model-observation`（面 / 草图 / 特征关联 / fingerprint）
+- 批量圆：`POST /api/sketch/circles`（`sketch_circles`）
+- 账本：`milestone_ledger` + `compressed_memory` + `idempotency`
+- Recipe：`planner/skills/agent/dice_multiturn.md`（不进入 SkillRegistry，避免污染 single-turn cache）
+- Single-turn skill regression cache key 保持稳定（`20a0c35b…`）

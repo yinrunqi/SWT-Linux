@@ -196,6 +196,10 @@ namespace Chapter1.ConnectToSw
                     RequirePost(method, resp, () => HandleSketchCircle(req, resp));
                     break;
 
+                case "/api/sketch/circles":
+                    RequirePost(method, resp, () => HandleSketchCircles(req, resp));
+                    break;
+
                 case "/api/sketch/centerline":
                     RequirePost(method, resp, () => HandleSketchCenterLine(req, resp));
                     break;
@@ -246,6 +250,10 @@ namespace Chapter1.ConnectToSw
 
                 case "/api/feature-tree":
                     HandleFeatureTree(resp);
+                    break;
+
+                case "/api/model-observation":
+                    HandleModelObservation(resp);
                     break;
 
                 case "/api/body-bounding-box":
@@ -394,8 +402,13 @@ namespace Chapter1.ConnectToSw
                 var body = ReadJsonBody(req);
                 int index = GetInt(body, "index", 0);
 
-                _commands.SelectPlaneAndStartSketch(index);
-                SendJson(resp, 200, new { success = true, message = $"已选择基准面 [{index}] 并进入草图编辑" });
+                string sketchName = _commands.SelectPlaneAndStartSketch(index);
+                SendJson(resp, 200, new {
+                    success = true,
+                    message = $"已选择基准面 [{index}] 并进入草图编辑",
+                    sketchName = sketchName,
+                    faceKey = $"PLANE:{index}",
+                });
             }
             catch (ArgumentOutOfRangeException ex)
             {
@@ -503,6 +516,35 @@ namespace Chapter1.ConnectToSw
             }
         }
 
+        private static void HandleSketchCircles(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                if (!body.ContainsKey("circles"))
+                    throw new KeyNotFoundException("缺少必填字段: circles");
+                var raw = body["circles"] as System.Collections.IEnumerable;
+                if (raw == null)
+                    throw new ArgumentException("circles 必须是数组");
+                var circles = new List<Dictionary<string, object>>();
+                foreach (object item in raw)
+                {
+                    var circle = item as Dictionary<string, object>;
+                    if (circle == null)
+                        throw new ArgumentException("circles 中每项必须是对象");
+                    circles.Add(circle);
+                }
+                var result = _commands.SketchCircles(circles);
+                result["success"] = true;
+                result["message"] = $"批量绘制 {circles.Count} 个圆";
+                SendJson(resp, 200, result);
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+        }
+
         private static void HandleExtrusion(HttpListenerRequest req, HttpListenerResponse resp)
         {
             try
@@ -523,8 +565,13 @@ namespace Chapter1.ConnectToSw
                 if (body.ContainsKey("draftOutward"))
                     draftOutward = Convert.ToBoolean(body["draftOutward"]);
 
-                _commands.Extrusion(depth, flipDirection, midPlane, draftAngleDeg, draftOutward);
-                SendJson(resp, 200, new { success = true, message = $"拉伸完成，深度: {depth} 米, 方向翻转: {flipDirection}, 中间面: {midPlane}, 拔模: {draftAngleDeg}° {(draftOutward ? "外扩" : "内收")}" });
+                string featureName = _commands.Extrusion(
+                    depth, flipDirection, midPlane, draftAngleDeg, draftOutward);
+                SendJson(resp, 200, new {
+                    success = true,
+                    message = $"拉伸完成，深度: {depth} 米, 方向翻转: {flipDirection}, 中间面: {midPlane}, 拔模: {draftAngleDeg}° {(draftOutward ? "外扩" : "内收")}",
+                    featureName = featureName,
+                });
             }
             catch (KeyNotFoundException ex)
             {
@@ -856,8 +903,13 @@ namespace Chapter1.ConnectToSw
                 if (body.ContainsKey("flipDirection"))
                     flipDirection = Convert.ToBoolean(body["flipDirection"]);
 
-                _commands.CutExtrusion(depth, endCondition, flipDirection);
-                SendJson(resp, 200, new { success = true, message = $"切除拉伸完成，深度: {depth} 米, 终止条件: {endCondition}" });
+                string featureName = _commands.CutExtrusion(
+                    depth, endCondition, flipDirection);
+                SendJson(resp, 200, new {
+                    success = true,
+                    message = $"切除拉伸完成，深度: {depth} 米, 终止条件: {endCondition}",
+                    featureName = featureName,
+                });
             }
             catch (KeyNotFoundException ex)
             {
@@ -937,6 +989,27 @@ namespace Chapter1.ConnectToSw
             }
         }
 
+        private static void HandleModelObservation(HttpListenerResponse resp)
+        {
+            try
+            {
+                var snapshot = _commands.GetModelObservation();
+                snapshot["success"] = true;
+                SendJson(resp, 200, snapshot);
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new {
+                    success = false,
+                    message = $"获取模型观察失败: {ex.Message}",
+                });
+            }
+        }
+
         private static void HandleBodyVolume(HttpListenerResponse resp)
         {
             try
@@ -996,6 +1069,14 @@ namespace Chapter1.ConnectToSw
                     respData["hitPoint"] = result["hitPoint"];
                 if (result.ContainsKey("sketchTransform"))
                     respData["sketchTransform"] = result["sketchTransform"];
+                if (result.ContainsKey("sketchName"))
+                    respData["sketchName"] = result["sketchName"];
+                if (result.ContainsKey("faceKey"))
+                    respData["faceKey"] = result["faceKey"];
+                if (result.ContainsKey("normal"))
+                    respData["normal"] = result["normal"];
+                if (result.ContainsKey("persistRef"))
+                    respData["persistRef"] = result["persistRef"];
                 SendJson(resp, 200, respData);
             }
             catch (KeyNotFoundException ex)

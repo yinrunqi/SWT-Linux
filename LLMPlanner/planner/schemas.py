@@ -20,6 +20,7 @@ class OperationType(str, Enum):
     SKETCH_LINE = "sketch_line"
     SKETCH_RECTANGLE = "sketch_rectangle"
     SKETCH_CIRCLE = "sketch_circle"
+    SKETCH_CIRCLES = "sketch_circles"
     SKETCH_CENTERLINE = "sketch_centerline"
     SKETCH_ARC = "sketch_arc"
     SKETCH_ELLIPSE = "sketch_ellipse"
@@ -64,6 +65,8 @@ class SwOperation(BaseModel):
             "在基准面上画圆时用 2D (cx,cy)；在实体面上画圆时**必须用 3D 模型坐标 (cx,cy,cz)**。"
             "⚠️ 例如在 Y=0 底面画圆：cy 必须=0（面的Y坐标），Z方向偏移放 cz（不能放 cy）！"
             "坐标为模型空间坐标（米），C# 端自动转换为草图坐标。radius 控制圆的半径（米），即孔径=radius×2\n"
+            "- sketch_circles: {circles: [{cx, cy, cz, radius}, ...]} — "
+            "在当前草图中批量绘制多个圆；一个骰子面或孔阵列应优先使用此操作，整批只计一个 Agent action\n"
             "- sketch_centerline: {x1, y1, x2, y2: float} — 中心线（构造线）起点终点坐标（米），"
             "用于旋转特征的旋转轴\n"
             "- sketch_arc: {cx, cy, startX, startY, endX, endY: float, direction: int} — "
@@ -175,10 +178,61 @@ class AgentDecision(str, Enum):
     BLOCKED = "blocked"
 
 
+class MilestoneStatus(str, Enum):
+    """A deterministic unit of progress in a multi-turn task."""
+
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    DONE = "done"
+    FAILED = "failed"
+    SKIPPED = "skipped"
+
+
+class PostconditionSpec(BaseModel):
+    """Machine-checkable condition for a milestone."""
+
+    kind: str
+    params: dict = Field(default_factory=dict)
+
+
+class Milestone(BaseModel):
+    """One dependency-ordered modeling milestone."""
+
+    id: str
+    title: str
+    depends_on: list[str] = Field(default_factory=list)
+    postconditions: list[PostconditionSpec] = Field(default_factory=list)
+    max_actions: int = Field(default=5, ge=1, le=5)
+    status: MilestoneStatus = MilestoneStatus.PENDING
+    evidence: dict = Field(default_factory=dict)
+    failure_count: int = 0
+
+
+class TaskPlan(BaseModel):
+    """Multi-turn task decomposition; never used by single-turn."""
+
+    user_goal: str
+    milestones: list[Milestone]
+    notes: str = ""
+    recovery_buffer: int = Field(default=4, ge=0, le=20)
+
+
+class ValidationResult(BaseModel):
+    """Deterministic postcondition evaluation result."""
+
+    passed: bool
+    checks: dict[str, bool] = Field(default_factory=dict)
+    details: dict = Field(default_factory=dict)
+    message: str = ""
+
+
 class ModelObservation(BaseModel):
     """一次 SolidWorks 状态快照。"""
 
     features: list[dict] = Field(default_factory=list)
+    faces: list[dict] = Field(default_factory=list)
+    sketches: list[dict] = Field(default_factory=list)
+    feature_sketch_links: list[dict] = Field(default_factory=list)
     bounding_box_mm: Optional[dict] = None
     volume_mm3: Optional[float] = None
     last_execution: list[dict] = Field(default_factory=list)
@@ -190,6 +244,7 @@ class AgentTurn(BaseModel):
     """LLM 在 Multi-turn 中输出的一轮增量决策。"""
 
     decision: AgentDecision
+    milestone_id: str = ""
     progress_summary: str = ""
     actions: list[SwOperation] = Field(default_factory=list, max_length=5)
     check_summary: str = ""
@@ -218,6 +273,7 @@ class MultiTurnRecord(BaseModel):
     decision: AgentTurn
     execution_results: list[dict] = Field(default_factory=list)
     observation_after: Optional[ModelObservation] = None
+    validation: Optional[ValidationResult] = None
 
 
 class MultiTurnResult(BaseModel):
@@ -227,6 +283,7 @@ class MultiTurnResult(BaseModel):
     status: str
     user_goal: str
     turns: list[MultiTurnRecord] = Field(default_factory=list)
+    milestones: list[dict] = Field(default_factory=list)
     final_observation: ModelObservation
     total_actions: int = 0
     successful_actions: int = 0

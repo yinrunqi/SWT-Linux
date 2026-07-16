@@ -24,8 +24,10 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 from .schemas import (
     AgentDecision,
     AgentTurn,
+    Milestone,
     ModelObservation,
     SwModelingPlan,
+    TaskPlan,
     ThreeViewIR,
 )
 from .skill_registry import SkillRegistry, SkillSelector, build_system_prompt, default_registry
@@ -625,12 +627,61 @@ class SwLLMClient:
             + "features 里的每一个孔/圆角/倒角都要有对应的 operation 步骤。"
         )
 
+    def decompose_task(self, user_goal: str) -> TaskPlan:
+        """Decompose an unknown multi-turn goal into verifiable milestones."""
+        schema = self._patch_schema_additional_properties(
+            TaskPlan.model_json_schema()
+        )
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "把 SolidWorks 建模目标拆成依赖有序、可机器验收的里程碑。"
+                    "每个里程碑最多 5 个高层操作。postconditions.kind 只允许 "
+                    "valid_entity、bbox_axes、feature_count、volume_range、"
+                    "fillet_radius、face_pips。未知尺寸时使用 feature_count 或 "
+                    "valid_entity。只返回 JSON。"
+                ),
+            },
+            {"role": "user", "content": user_goal},
+        ]
+        try:
+            completion = self.client.chat.completions.create(
+                model=self.plan_model,
+                messages=messages,
+                temperature=0,
+                max_tokens=4000,
+                response_format={
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "TaskPlan",
+                        "strict": False,
+                        "schema": schema,
+                    },
+                },
+            )
+        except BadRequestError:
+            completion = self.client.chat.completions.create(
+                model=self.plan_model,
+                messages=messages,
+                temperature=0,
+                max_tokens=4000,
+                response_format={"type": "json_object"},
+            )
+        content = completion.choices[0].message.content
+        if not content:
+            raise ValueError("Multi-turn 任务分解未返回内容")
+        extracted = _extract_first_json_block(content) or content
+        plan = TaskPlan.model_validate_json(extracted)
+        return plan.model_copy(update={"user_goal": user_goal})
+
     def decide_agent_turn(
         self,
         user_goal: str,
         observation: ModelObservation,
-        recent_turns: list[dict],
+        recent_turns: list[dict] | dict,
         turn_number: int,
+        current_milestone: Milestone | None = None,
     ) -> AgentTurn:
         """根据真实模型状态生成下一小批增量操作；Multi-turn 不使用计划缓存。"""
         # 从与 single-turn 相同的基础 prompt 开始，再单独追加 Agent 规则；
@@ -643,17 +694,45 @@ class SwLLMClient:
             / "05_agent_loop.md"
         )
         system_prompt += "\n\n" + agent_skill_path.read_text(encoding="utf-8")
+        normalized_goal = user_goal.lower()
+        if (
+            any(keyword in normalized_goal for keyword in ("骰子", "色子", "dice"))
+            and any(
+                keyword in normalized_goal
+                for keyword in ("标准", "点数", "凹坑", "1、2、3、4、5、6")
+            )
+        ):
+            dice_skill_path = (
+                Path(__file__).resolve().parent
+                / "skills"
+                / "agent"
+                / "dice_multiturn.md"
+            )
+            system_prompt += "\n\n" + dice_skill_path.read_text(
+                encoding="utf-8"
+            )
         payload = {
             "user_goal": user_goal,
             "turn_number": turn_number,
             "current_observation": observation.model_dump(),
-            "recent_turns": recent_turns[-3:],
+            "agent_context": (
+                recent_turns[-3:]
+                if isinstance(recent_turns, list)
+                else recent_turns
+            ),
+            "current_milestone": (
+                None
+                if current_milestone is None
+                else current_milestone.model_dump(mode="json")
+            ),
         }
         user_prompt = (
             "你正在执行 Multi-turn SolidWorks 建模。根据下面 JSON 决定下一轮。\n"
             "每轮只能完成一个可检查的里程碑，actions 最多 5 个原子操作；"
             "不要一次输出整个任务的全部步骤。\n"
             "如果上轮失败，必须根据错误和当前特征改变策略，不能原样重试。\n"
+            "如果提供 current_milestone，milestone_id 必须与其 id 完全一致，"
+            "本轮只能服务这个里程碑，禁止重做 ledger 中已完成的面或特征。\n"
             "只有真实特征树、包围盒和体积足以证明用户目标已经完成时，"
             "才允许 decision=finish。无法继续时使用 blocked。\n"
             f"{json.dumps(payload, ensure_ascii=False, separators=(',', ':'))}"

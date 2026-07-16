@@ -271,11 +271,13 @@ def run():
     mode = data.get("mode", "single_turn").strip().lower()
     if mode not in ("single_turn", "multi_turn"):
         return jsonify({"success": False, "error": f"未知 mode: {mode}"}), 400
-    max_turns = data.get("max_turns", 8)
-    try:
-        max_turns = max(1, min(int(max_turns), 20))
-    except (TypeError, ValueError):
-        return jsonify({"success": False, "error": "max_turns 必须是整数"}), 400
+    raw_max_turns = data.get("max_turns")
+    max_turns = None
+    if raw_max_turns not in (None, ""):
+        try:
+            max_turns = max(1, min(int(raw_max_turns), 100))
+        except (TypeError, ValueError):
+            return jsonify({"success": False, "error": "max_turns 必须是整数"}), 400
     dry_run = data.get("dry_run", False)
     # 多模态：可选图片（base64，可含或不含 data URI 前缀；不含时按 JPEG 处理）
     image_raw = data.get("image", "") or ""

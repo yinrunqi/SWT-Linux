@@ -299,6 +299,24 @@ body {
   color: var(--error);
   overflow-wrap: anywhere;
 }
+.agent-validation {
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-left: 3px solid var(--border);
+  overflow-wrap: anywhere;
+}
+.agent-validation.ok { border-left-color: var(--success); }
+.agent-validation.fail { border-left-color: var(--error); }
+.agent-ledger {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.agent-ledger ul {
+  list-style: none;
+  margin-top: 6px;
+}
+.agent-ledger li { padding: 2px 0; }
 .muted { color: var(--text-dim); }
 
 /* Plan Steps */

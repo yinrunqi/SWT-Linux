@@ -160,11 +160,12 @@ python -m web.app --model gpt-4o
 
 ### Single-turn / Multi-turn
 
-- `single_turn` 是缺省模式，保持原有协议：LLM 一次生成完整计划后顺序执行。
-- `multi_turn` 每轮最多执行 5 个操作，随后读取特征树、包围盒和体积，再决定继续、
-  调整、完成或阻塞；缺省最多 8 轮。
-- Web Demo 的设置面板可以切换模式并调整最大轮数。
-- Multi-turn MVP 目前仅支持纯文本，不支持图片、SSE 实时流、持久会话、截图和回滚。
+- `single_turn` 是缺省模式，保持原有协议：LLM 一次生成完整计划后顺序执行；不加载 Agent Skill，不改变 cache key / 请求 / 响应结构。
+- `multi_turn` 为账本驱动：任务分解为里程碑 → 每轮只推进当前唯一待办里程碑 → 执行后用确定性后置条件验收 → 全部里程碑通过才返回 `completed`。
+- 观察源优先使用聚合 `GET /api/model-observation`（面拓扑、草图摘要、特征-草图关联）；失败时回退到 feature-tree / bbox / volume。
+- 轮数缺省为 `max(8, milestone_count + recovery_buffer)`；请求里传 `max_turns` 时作为硬上限。
+- Web Demo 时间线展示里程碑状态、机器验收证据和失败后换策略；Single-turn UI 不变。
+- Multi-turn 目前仅支持纯文本，不支持图片、SSE 实时流、持久会话、截图和回滚。
 - SolidWorks 是单实例执行器，Web 后端会串行执行并发建模请求。
 
 `/api/run` 不传 `mode` 时响应结构与原 single-turn 完全一致。启用 Multi-turn：
@@ -172,13 +173,12 @@ python -m web.app --model gpt-4o
 ```json
 {
   "instruction": "创建一个 20mm 立方体并对所有边做 R2mm 圆角",
-  "mode": "multi_turn",
-  "max_turns": 8
+  "mode": "multi_turn"
 }
 ```
 
 响应包含 `multi_turn.turns`（每轮 Observe / Action / Result / Check）、
-`final_observation` 以及 LLM 调用数和操作统计。
+`multi_turn.milestones`（账本与验收证据）、`final_observation` 以及 LLM 调用数和操作统计。
 
 ### Web Demo 文件结构
 

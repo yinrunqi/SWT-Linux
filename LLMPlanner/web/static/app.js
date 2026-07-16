@@ -83,9 +83,14 @@ function loadSettings() {
     }
     localStorage.setItem("sw_settings_version", settingsVersion);
   }
+  const agentSettingsVersion = "ledger-v2";
+  if (localStorage.getItem("sw_agent_settings_version") !== agentSettingsVersion) {
+    localStorage.removeItem("sw_max_turns");
+    localStorage.setItem("sw_agent_settings_version", agentSettingsVersion);
+  }
   providerEl.value = localStorage.getItem("sw_provider") || "aiping";
   modeEl.value = localStorage.getItem("sw_mode") || "single_turn";
-  maxTurnsEl.value = localStorage.getItem("sw_max_turns") || "8";
+  maxTurnsEl.value = localStorage.getItem("sw_max_turns") || "";
   apiKeyEl.value = localStorage.getItem("sw_api_key") || "";
   // base_url 用 HTML value 的 AI Ping 默认值作为空值时的兜底
   const savedBase = localStorage.getItem("sw_base_url");
@@ -324,7 +329,7 @@ async function send() {
         instruction: text,
         image: imageToSend,
         mode: modeEl.value,
-        max_turns: Number(maxTurnsEl.value) || 8,
+        max_turns: maxTurnsEl.value ? Number(maxTurnsEl.value) : null,
         provider: providerEl.value,
         api_key: apiKey,
         base_url: baseUrlEl.value.trim(),
@@ -460,6 +465,12 @@ function observationHtml(observation) {
 function appendMultiTurnResponse(result, summary) {
   const div = document.createElement("div");
   div.className = "msg";
+  const milestonesHtml = (result.milestones || []).map(item =>
+    `<li class="${item.status === "done" ? "ok" : item.status === "failed" ? "fail" : ""}">
+      ${esc(item.id)} · ${esc(item.title)} — ${esc(item.status)}
+      ${item.failure_count ? `（失败 ${item.failure_count} 次）` : ""}
+    </li>`
+  ).join("");
 
   const turnsHtml = (result.turns || []).map(turn => {
     const decision = turn.decision || {};
@@ -474,8 +485,16 @@ function appendMultiTurnResponse(result, summary) {
       return `<li><span class="icon">${ok ? "✅" : "❌"}</span>${esc(item.operation || "")} — ${esc(item.message || "")}</li>`;
     }).join("") || "<li>无执行结果</li>";
     const after = turn.observation_after || turn.observation_before;
+    const validation = turn.validation;
+    const validationHtml = validation
+      ? `<div class="agent-validation ${validation.passed ? "ok" : "fail"}">
+          机器验收：${validation.passed ? "通过" : "未通过"} —
+          ${esc(validation.message || "")}
+          <div>${esc(JSON.stringify(validation.details || {}))}</div>
+        </div>`
+      : "";
     return `<div class="phase agent-turn">
-      <div class="phase-header" onclick="togglePhase(this)">第 ${turn.turn} 轮 — ${esc(decision.decision || "")}: ${esc(decision.progress_summary || "")}</div>
+      <div class="phase-header" onclick="togglePhase(this)">第 ${turn.turn} 轮 · ${esc(decision.milestone_id || "未指定里程碑")} — ${esc(decision.decision || "")}: ${esc(decision.progress_summary || "")}</div>
       <div class="phase-body">
         <div class="agent-stage"><strong>Observe</strong>${observationHtml(turn.observation_before)}</div>
         <div class="agent-stage"><strong>Action</strong><ol class="step-list">${actions}</ol></div>
@@ -483,6 +502,7 @@ function appendMultiTurnResponse(result, summary) {
         <div class="agent-stage"><strong>Check</strong>
           <div>${esc(decision.check_summary || "等待下一轮检查")}</div>
           ${observationHtml(after)}
+          ${validationHtml}
         </div>
       </div>
     </div>`;
@@ -491,6 +511,7 @@ function appendMultiTurnResponse(result, summary) {
   const completed = result.status === "completed";
   div.innerHTML = `<div class="msg-ai">
     <div class="multi-turn-title">Multi-turn Agent：${esc(result.user_goal || "")}</div>
+    ${milestonesHtml ? `<div class="agent-ledger"><strong>里程碑账本</strong><ul>${milestonesHtml}</ul></div>` : ""}
     ${turnsHtml}
     <div class="summary ${completed ? "ok" : "fail"}">
       ${completed ? "✅" : "⚠️"} 状态: ${esc(result.status)}；

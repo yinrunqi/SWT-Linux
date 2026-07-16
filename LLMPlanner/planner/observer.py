@@ -67,6 +67,30 @@ class SwObserver:
         return result or None
 
     def collect(self, last_execution: list[dict] | None = None) -> ModelObservation:
+        snapshot, snapshot_error = self._get("/api/model-observation")
+        if snapshot is not None:
+            features = self._compact_features(snapshot)
+            bounding_box_mm = self._bbox_mm(snapshot)
+            raw_volume = snapshot.get("volumeMm3")
+            volume_mm3 = (
+                round(float(raw_volume), 6)
+                if isinstance(raw_volume, (int, float))
+                else None
+            )
+            return self._build_observation(
+                features=features,
+                faces=snapshot.get("faces", []),
+                sketches=snapshot.get("sketches", []),
+                feature_sketch_links=snapshot.get(
+                    "featureSketchLinks",
+                    [],
+                ),
+                bounding_box_mm=bounding_box_mm,
+                volume_mm3=volume_mm3,
+                last_execution=last_execution or [],
+                errors={},
+            )
+
         feature_payload, feature_error = self._get("/api/feature-tree")
         bbox_payload, bbox_error = self._get("/api/body-bounding-box")
         volume_payload, volume_error = self._get("/api/body-volume")
@@ -88,8 +112,36 @@ class SwObserver:
             if isinstance(raw_volume, (int, float)):
                 volume_mm3 = round(float(raw_volume), 6)
 
+        if snapshot_error and "404" not in snapshot_error:
+            errors["model_observation"] = snapshot_error
+        return self._build_observation(
+            features=features,
+            faces=[],
+            sketches=[],
+            feature_sketch_links=[],
+            bounding_box_mm=bounding_box_mm,
+            volume_mm3=volume_mm3,
+            last_execution=last_execution or [],
+            errors=errors,
+        )
+
+    @staticmethod
+    def _build_observation(
+        *,
+        features: list[dict],
+        faces: list[dict],
+        sketches: list[dict],
+        feature_sketch_links: list[dict],
+        bounding_box_mm: dict | None,
+        volume_mm3: float | None,
+        last_execution: list[dict],
+        errors: dict[str, str],
+    ) -> ModelObservation:
         fingerprint_payload = {
             "features": features,
+            "faces": faces,
+            "sketches": sketches,
+            "feature_sketch_links": feature_sketch_links,
             "bounding_box_mm": bounding_box_mm,
             "volume_mm3": volume_mm3,
             "errors": errors,
@@ -105,9 +157,12 @@ class SwObserver:
 
         return ModelObservation(
             features=features,
+            faces=faces,
+            sketches=sketches,
+            feature_sketch_links=feature_sketch_links,
             bounding_box_mm=bounding_box_mm,
             volume_mm3=volume_mm3,
-            last_execution=last_execution or [],
+            last_execution=last_execution,
             errors=errors,
             state_fingerprint=fingerprint,
         )
