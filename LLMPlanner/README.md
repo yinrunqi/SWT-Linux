@@ -174,6 +174,8 @@ python -m web.app --model gpt-4o
   零件窗口；用例之间仍使用 `/api/close-all-documents` 清场。
 - Web Demo“装配体相关”区域提供“Multi-turn 构建双级减速箱”一键入口：首次运行
   生成并缓存决策，重复运行按完整状态命中缓存，同时重新执行装配和最终验收。
+- 已生成的双级减速箱可从四个齿轮中选择任意一个作为 Motion Study 马达输入，
+  再播放或停止 5 圈联动；这条演示路径只调用确定性的 SolidWorks API，不调用 LLM。
 - 轮数缺省按蓝图阶段和每阶段恢复预算动态计算；请求里传 `max_turns` 时作为硬上限。
 - Web Demo 时间线展示里程碑状态、机器验收证据和失败后换策略；Single-turn UI 不变。
 - Multi-turn 支持纯文本；带三视图图片时先走 Vision 抽 IR，再生成全局蓝图并进入同一套执行/检查/修复循环。暂不支持 SSE 实时流、持久会话、截图和回滚。

@@ -40,7 +40,12 @@ const gearStopBtn = document.getElementById("gear-stop-btn");
 const gearAnimationStatus = document.getElementById("gear-animation-status");
 const gearboxRunBtn = document.getElementById("gearbox-run-btn");
 const gearboxRunStatus = document.getElementById("gearbox-run-status");
+const gearboxGearSelect = document.getElementById("gearbox-gear-select");
+const gearboxMotionLoadBtn = document.getElementById("gearbox-motion-load-btn");
+const gearboxMotionPlayBtn = document.getElementById("gearbox-motion-play-btn");
+const gearboxMotionStopBtn = document.getElementById("gearbox-motion-stop-btn");
 let gearStatusTimer = null;
+let gearboxMotionTimer = null;
 
 // 连续编辑测试控件
 const editSection = document.getElementById("edit-section");
@@ -301,6 +306,89 @@ async function runTwoStageGearbox() {
     busy = false;
     gearboxRunBtn.disabled = false;
     sendBtn.disabled = false;
+  }
+}
+
+async function loadGearboxMotion() {
+  gearboxMotionLoadBtn.disabled = true;
+  gearboxMotionPlayBtn.disabled = true;
+  gearboxMotionStopBtn.disabled = true;
+  gearboxRunStatus.textContent =
+    "正在打开双级减速箱并为所选齿轮创建确定性旋转马达…";
+  gearboxRunStatus.classList.remove("ok", "fail");
+  try {
+    const response = await fetch(`${API}/api/gearbox-animation/load`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        gear_role: gearboxGearSelect.value,
+        rpm: 60,
+        turns: 5,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+    gearboxMotionPlayBtn.disabled = false;
+    gearboxMotionStopBtn.disabled = false;
+    gearboxRunStatus.textContent =
+      `${data.message}；该过程不调用 LLM`;
+    gearboxRunStatus.classList.add("ok");
+  } catch (error) {
+    gearboxRunStatus.textContent = `加载旋转马达失败：${error.message}`;
+    gearboxRunStatus.classList.add("fail");
+  } finally {
+    gearboxMotionLoadBtn.disabled = false;
+  }
+}
+
+async function refreshGearboxMotionStatus() {
+  try {
+    const data = await callGearAnimation("status");
+    const result = data.result || {};
+    const time = Number(result.currentTime || 0).toFixed(2);
+    const duration = Number(result.duration || 0).toFixed(2);
+    if (result.isPlaying) {
+      gearboxRunStatus.textContent =
+        `所选齿轮正在旋转：${time}s / ${duration}s（纯 SW API）`;
+      return;
+    }
+    gearboxRunStatus.textContent =
+      `旋转已停止：${time}s / ${duration}s（纯 SW API）`;
+    if (gearboxMotionTimer) {
+      clearInterval(gearboxMotionTimer);
+      gearboxMotionTimer = null;
+    }
+  } catch (error) {
+    gearboxRunStatus.textContent = `旋转状态读取失败：${error.message}`;
+    gearboxRunStatus.classList.add("fail");
+  }
+}
+
+async function playGearboxMotion() {
+  gearboxMotionPlayBtn.disabled = true;
+  try {
+    await callGearAnimation("play");
+    gearboxRunStatus.textContent = "正在旋转所选齿轮并通过配合联动其余齿轮…";
+    gearboxRunStatus.classList.add("ok");
+    if (gearboxMotionTimer) clearInterval(gearboxMotionTimer);
+    gearboxMotionTimer = setInterval(refreshGearboxMotionStatus, 400);
+  } catch (error) {
+    gearboxRunStatus.textContent = `旋转失败：${error.message}`;
+    gearboxRunStatus.classList.add("fail");
+  } finally {
+    gearboxMotionPlayBtn.disabled = false;
+  }
+}
+
+async function stopGearboxMotion() {
+  try {
+    await callGearAnimation("stop");
+    await refreshGearboxMotionStatus();
+  } catch (error) {
+    gearboxRunStatus.textContent = `停止失败：${error.message}`;
+    gearboxRunStatus.classList.add("fail");
   }
 }
 
@@ -881,6 +969,15 @@ gearLoadBtn.addEventListener("click", loadGearAnimation);
 gearPlayBtn.addEventListener("click", playGearAnimation);
 gearStopBtn.addEventListener("click", stopGearAnimation);
 gearboxRunBtn.addEventListener("click", runTwoStageGearbox);
+gearboxMotionLoadBtn.addEventListener("click", loadGearboxMotion);
+gearboxMotionPlayBtn.addEventListener("click", playGearboxMotion);
+gearboxMotionStopBtn.addEventListener("click", stopGearboxMotion);
+gearboxGearSelect.addEventListener("change", () => {
+  gearboxMotionPlayBtn.disabled = true;
+  gearboxMotionStopBtn.disabled = true;
+  gearboxRunStatus.textContent = "齿轮选择已改变，请重新加载旋转马达";
+  gearboxRunStatus.classList.remove("ok", "fail");
+});
 inputEl.addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
 });

@@ -747,6 +747,10 @@ LLM；再次以相同模型和任务运行时，Vision/蓝图/完整状态 Agent
 缓存只跳过 LLM 请求，零件准备、SolidWorks 装配操作、observation 与确定性验收仍会
 重新执行。页面会显示本次新增 token；全部决策命中时应为 `0`。
 
+装配体生成后，可在同一区域选择输入轴、中间轴任一齿轮或输出轴齿轮，点击
+“选中并加载马达”后播放 5 圈。该路径不调用 LLM。实测选择输入轴后 Motion Study
+从 0s 推进至 5s，四个齿轮的 Transform 均发生变化。
+
 验收项：5 个组件原点位置 ±1mm；3 个未压制 Gear Mate，归一化比值恰为
 `{1,2,3}`；2 个 Coincident Mate；原生干涉数 0；`.SLDASM` 已保存。
 每次零件生成后调用 `/api/close-all-documents`；装配完成后调用

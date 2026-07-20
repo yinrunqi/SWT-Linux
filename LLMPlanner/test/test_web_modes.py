@@ -182,8 +182,25 @@ def run_tests() -> None:
         page = client.get("/").get_data(as_text=True)
         script = client.get("/app.js").get_data(as_text=True)
         assert 'id="gearbox-run-btn"' in page
+        assert 'id="gearbox-gear-select"' in page
+        assert 'id="gearbox-motion-play-btn"' in page
         assert "/api/assembly-examples/two-stage-gearbox/run" in script
+        assert "/api/gearbox-animation/load" in script
         print("[PASS] gearbox multi-turn demo is exposed in assembly UI")
+
+        component = web_app._resolve_gearbox_component(
+            {
+                "result": {
+                    "components": [{
+                        "name": "input_pinion_z12-1",
+                        "path": r"C:\parts\input_pinion_z12.SLDPRT",
+                    }]
+                }
+            },
+            "input",
+        )
+        assert component == "input_pinion_z12-1"
+        print("[PASS] gearbox gear roles resolve to observed instances")
     finally:
         web_app.executor = original_executor
         web_app._get_llm_client = original_get_client

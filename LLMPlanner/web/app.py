@@ -241,6 +241,100 @@ def gear_animation_status():
         return jsonify({"success": False, "error": str(exc)}), 500
 
 
+_GEARBOX_GEAR_TOKENS = {
+    "input": "input_pinion_z12",
+    "intermediate_wheel": "intermediate_wheel_z24",
+    "intermediate_pinion": "intermediate_pinion_z12",
+    "output": "output_wheel_z36",
+}
+
+
+def _resolve_gearbox_component(
+    observation: dict,
+    role: str,
+) -> str:
+    """Resolve a stable UI role to the actual SolidWorks instance name."""
+    token = _GEARBOX_GEAR_TOKENS.get(role)
+    if token is None:
+        raise ValueError(f"未知齿轮角色: {role}")
+    result = observation.get("result", {})
+    for component in result.get("components", []):
+        name = str(component.get("name", ""))
+        path = str(component.get("path", ""))
+        if token.lower() in f"{name}|{path}".lower():
+            return name
+    raise RuntimeError(f"装配体中找不到齿轮组件: {token}")
+
+
+@app.route("/api/gearbox-animation/load", methods=["POST"])
+def load_gearbox_animation():
+    """Open the generated gearbox and drive the selected gear via SW API."""
+    data = request.get_json(force=True) or {}
+    role = str(data.get("gear_role", "input")).strip()
+    try:
+        rpm = max(1.0, min(float(data.get("rpm", 60)), 600.0))
+        turns = max(0.25, min(float(data.get("turns", 5)), 50.0))
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "error": "rpm 和 turns 必须是数字",
+        }), 400
+    assembly_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "eval",
+        "artifacts",
+        "two_stage_gearbox",
+        "two_stage_gearbox.SLDASM",
+    )
+    try:
+        if not os.path.exists(assembly_path):
+            raise FileNotFoundError(
+                "双级减速箱尚未生成，请先点击“Multi-turn 构建双级减速箱”"
+            )
+        with _sw_execution_lock:
+            _call_sw(
+                "/api/assembly/open",
+                body={"assemblyPath": assembly_path},
+            )
+            observation = _call_sw(
+                "/api/assembly/observation",
+                method="GET",
+            )
+            component_name = _resolve_gearbox_component(
+                observation,
+                role,
+            )
+            _call_sw(
+                "/api/assembly/unfix-component",
+                body={"componentName": component_name},
+            )
+            duration_seconds = turns * 60.0 / rpm
+            motor = _call_sw(
+                "/api/assembly/motion/create-gear-motor",
+                body={
+                    "componentName": component_name,
+                    "rpm": rpm,
+                    "durationSeconds": duration_seconds,
+                    "reverseDirection": bool(
+                        data.get("reverse_direction", False)
+                    ),
+                },
+            )
+            _call_sw("/api/close-inactive-documents")
+        return jsonify({
+            "success": True,
+            "message": (
+                f"已选中 {component_name}，准备旋转 {turns:g} 圈"
+            ),
+            "selected_component": component_name,
+            "gear_role": role,
+            "result": motor.get("result", {}),
+        })
+    except Exception as exc:
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(exc)}), 500
+
+
 @app.route(
     "/api/assembly-examples/two-stage-gearbox/run",
     methods=["POST"],

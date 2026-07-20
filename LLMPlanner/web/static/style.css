@@ -217,14 +217,22 @@ body {
 .gear-animation-actions {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 8px;
 }
+.gearbox-motion-actions { margin-top: 10px; }
+.gear-animation-actions select,
 .gear-animation-actions button {
   background: var(--bg-input);
   border: 1px solid var(--border);
   color: var(--text);
   padding: 8px 14px;
   border-radius: 8px;
+}
+.gear-animation-actions select {
+  cursor: pointer;
+}
+.gear-animation-actions button {
   cursor: pointer;
 }
 .gear-animation-actions button:hover:not(:disabled) { border-color: var(--accent); }
