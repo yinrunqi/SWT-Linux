@@ -10,7 +10,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ.setdefault("OPENAI_API_KEY", "test-key")
 
 import web.app as web_app
-from planner.schemas import ModelObservation, MultiTurnResult, SwModelingPlan, SwOperation
+from planner.schemas import (
+    ModelObservation,
+    MultiTurnResult,
+    SwModelingPlan,
+    SwOperation,
+    ThreeViewIR,
+)
 
 
 class FakeClient:
@@ -19,6 +25,30 @@ class FakeClient:
             user_intent=instruction,
             steps=[SwOperation(operation="new_part")],
         )
+
+    def _extract_three_view_ir(self, instruction, image_b64):
+        return ThreeViewIR(
+            part_type="test",
+            overall_size_mm={"length": 20, "height": 20, "depth": 20},
+        )
+
+    def compose_multiturn_three_view_goal(self, instruction, _ir):
+        return instruction
+
+    def _compose_stage_b_prompt(self, instruction, _ir):
+        return instruction
+
+    def _plan_text(self, instruction, input_mode="text"):
+        return self.plan(instruction)
+
+    def usage_snapshot(self):
+        return {
+            "prompt_tokens": 10,
+            "completion_tokens": 5,
+            "total_tokens": 15,
+            "calls": 2,
+            "by_model": {},
+        }
 
     def close(self):
         return None
@@ -54,6 +84,11 @@ class FakeMultiTurnAgent:
             llm_calls=2,
             duration_seconds=1.0,
             message="done",
+        )
+
+    def run_blueprint(self, instruction, task_plan, batches, llm_calls=0):
+        return self.run(instruction).model_copy(
+            update={"llm_calls": llm_calls}
         )
 
 
@@ -102,8 +137,9 @@ def run_tests() -> None:
             "/api/run",
             json={**base_request, "mode": "multi_turn", "image": "abc"},
         )
-        assert response.status_code == 400
-        print("[PASS] MVP rejects unsupported multi-turn image input")
+        assert response.status_code == 200
+        assert response.get_json()["vision_ir"]["part_type"] == "test"
+        print("[PASS] multi-turn accepts three-view image input")
 
         assert hasattr(web_app._sw_execution_lock, "acquire")
         print("[PASS] shared SolidWorks execution lock is configured")

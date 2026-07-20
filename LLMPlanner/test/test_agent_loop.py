@@ -54,6 +54,7 @@ class FakeLLM:
         recent_turns,
         turn_number,
         current_milestone=None,
+        repair_required=False,
     ):
         self.calls.append({
             "goal": goal,
@@ -61,6 +62,7 @@ class FakeLLM:
             "recent_turns": recent_turns,
             "turn": turn_number,
             "milestone": current_milestone.id,
+            "repair_required": repair_required,
         })
         return self.decisions[len(self.calls) - 1]
 
@@ -183,6 +185,70 @@ def test_failure_observe_adjust_finish() -> None:
     assert llm.calls[1]["fingerprint"] == "after-failure"
     assert result.turns[-1].validation.passed
     print("[PASS] failure → observe → adjusted action → ledger completion")
+
+
+def test_blueprint_failure_is_repaired_in_place() -> None:
+    repair = AgentTurn(
+        decision=AgentDecision.ACT,
+        progress_summary="保留现有实体，改用 ray 重新倒角",
+        actions=[operation(
+            OperationType.FEATURE_CHAMFER,
+            type="equal_distance",
+            distance1=0.001,
+            edgeSelection="ray",
+            rx=0.035,
+            ry=0.031,
+            rz=0,
+            dx=-1,
+            dy=-1,
+            dz=0,
+        )],
+    )
+    task_plan = TaskPlan(
+        user_goal="创建圆柱并倒角",
+        milestones=[Milestone(
+            id="blueprint_01",
+            title="创建实体并完成倒角",
+            postconditions=[PostconditionSpec(
+                kind="feature_count",
+                params={"keyword": "chamfer", "minimum": 1},
+            )],
+        )],
+    )
+    blueprint = [[
+        operation(OperationType.NEW_PART),
+        operation(
+            OperationType.FEATURE_CHAMFER,
+            type="equal_distance",
+            distance1=0.001,
+            edgeSelection="top_front",
+        ),
+    ]]
+    executor = FakeExecutor(failures={0: 2})
+    result = MultiTurnAgent(
+        FakeLLM([repair]),
+        executor,
+        FakeObserver([
+            valid_observation("after-blueprint-failure"),
+            valid_observation("after-repair", "Chamfer"),
+        ]),
+    ).run_blueprint(
+        "创建圆柱并倒角",
+        task_plan,
+        blueprint,
+        llm_calls=1,
+    )
+
+    assert result.status == "completed"
+    assert len(result.turns) == 2
+    assert result.llm_calls == 2
+    assert len(executor.calls) == 2
+    assert executor.calls[1][0].params["edgeSelection"] == "ray"
+    assert result.turns[1].decision.progress_summary.startswith("保留现有实体")
+    assert all(
+        action.operation != OperationType.NEW_PART
+        for action in executor.calls[1]
+    )
 
 
 def test_reject_finish_without_observation() -> None:

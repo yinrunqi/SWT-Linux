@@ -356,46 +356,43 @@ class MultiTurnAgent:
         self,
         user_goal: str,
         task_plan: TaskPlan,
-        actions: list[SwOperation],
+        batches: list[list[SwOperation]],
         *,
         llm_calls: int = 0,
+        max_repair_turns_per_milestone: int = 3,
     ) -> MultiTurnResult:
-        """Execute a Vision-derived plan in observed, validated turn chunks.
-
-        Three-view input already needs a dedicated Vision + planning pass.
-        Re-asking an Agent LLM to rediscover those exact operations each turn
-        is both expensive and error-prone. This path preserves Multi-turn's
-        bounded Act → Observe → Validate protocol while treating the generated
-        operation sequence as the executable blueprint.
-        """
+        """Execute a global blueprint, then repair failed milestones in-place."""
         started = time.perf_counter()
         ledger = MilestoneLedger(task_plan)
+        memory = CompressedMemory(user_goal, task_plan)
+        guard = IdempotencyGuard(self.repeated_action_limit)
         records: list[MultiTurnRecord] = []
         observation = ModelObservation(
             errors={"session": "新任务尚未创建零件"},
         )
         step_offset = 0
+        turn_number = 0
+        dynamic_turns = min(
+            100,
+            len(batches) * (1 + max_repair_turns_per_milestone),
+        )
+        max_turns = self.user_max_turns or dynamic_turns
 
-        chunks = [
-            actions[index:index + self.max_actions_per_turn]
-            for index in range(0, len(actions), self.max_actions_per_turn)
-        ]
-        for turn_number, chunk in enumerate(chunks, 1):
-            milestone = ledger.current()
-            if milestone is None:
-                break
-            decision = AgentTurn(
-                decision=AgentDecision.ACT,
-                milestone_id=milestone.id,
-                progress_summary=(
-                    f"执行三视图蓝图第 {turn_number}/{len(chunks)} 批"
-                ),
-                actions=chunk,
-                check_summary="执行后读取结构化模型并验收当前里程碑",
+        if len(batches) != len(task_plan.milestones):
+            raise ValueError(
+                "蓝图批次数必须与里程碑数一致: "
+                f"{len(batches)} != {len(task_plan.milestones)}"
             )
+
+        def execute_turn(
+            decision: AgentTurn,
+            milestone: Milestone,
+        ) -> ValidationResult:
+            nonlocal observation, step_offset, turn_number
+            turn_number += 1
             before = observation
             execution_results = self.executor.execute_operations(
-                chunk,
+                decision.actions,
                 step_offset=step_offset,
                 include_turn_step=True,
             )
@@ -411,21 +408,31 @@ class MultiTurnAgent:
             ):
                 validation = validation.model_copy(update={
                     "passed": False,
-                    "message": "蓝图执行存在失败，里程碑不能完成",
+                    "message": "执行存在失败，里程碑不能完成",
                 })
             ledger.mark_from_validation(milestone.id, validation)
-            records.append(MultiTurnRecord(
+            record = MultiTurnRecord(
                 turn=turn_number,
                 observation_before=before,
                 decision=decision,
                 execution_results=execution_results,
                 observation_after=observation,
                 validation=validation,
-            ))
-            if any(
-                not result.get("success", False)
-                for result in execution_results
-            ):
+            )
+            records.append(record)
+            memory.update(record, ledger)
+            guard.record_after(
+                milestone.id,
+                decision.actions,
+                execution_results,
+                before.state_fingerprint,
+                observation.state_fingerprint,
+                validation.passed,
+            )
+            return validation
+
+        for batch_index, batch in enumerate(batches, 1):
+            if turn_number >= max_turns:
                 return self._result(
                     status="blocked",
                     user_goal=user_goal,
@@ -433,7 +440,100 @@ class MultiTurnAgent:
                     observation=observation,
                     started=started,
                     llm_calls=llm_calls,
-                    message="三视图操作蓝图执行失败",
+                    message=f"达到用户最大轮数 {max_turns}",
+                    ledger=ledger,
+                )
+            milestone = ledger.current()
+            if milestone is None:
+                break
+            if len(batch) > min(self.max_actions_per_turn, milestone.max_actions):
+                raise ValueError(
+                    f"里程碑 {milestone.id} 蓝图批次超过 5 个高层操作"
+                )
+            decision = AgentTurn(
+                decision=AgentDecision.ACT,
+                milestone_id=milestone.id,
+                progress_summary=(
+                    f"执行全局蓝图阶段 {batch_index}/{len(batches)}"
+                ),
+                actions=batch,
+                check_summary="执行后读取结构化模型并验收当前里程碑",
+            )
+            validation = execute_turn(decision, milestone)
+            if validation.passed:
+                continue
+
+            repaired = False
+            for _repair_attempt in range(max_repair_turns_per_milestone):
+                if turn_number >= max_turns:
+                    break
+                repair = self.llm_client.decide_agent_turn(
+                    user_goal,
+                    observation,
+                    memory.to_payload(ledger),
+                    turn_number + 1,
+                    current_milestone=milestone,
+                    repair_required=True,
+                )
+                llm_calls += 1
+                repair = repair.model_copy(
+                    update={"milestone_id": milestone.id}
+                )
+                if repair.decision != AgentDecision.ACT:
+                    rejected_validation = ValidatorRegistry.validate(
+                        milestone.postconditions,
+                        observation,
+                    )
+                    rejected = self._rejected_record(
+                        turn_number + 1,
+                        observation,
+                        repair.model_copy(update={
+                            "check_summary": (
+                                "机器验收未通过，拒绝结束；请提出修复动作"
+                            ),
+                        }),
+                        rejected_validation,
+                    )
+                    turn_number += 1
+                    records.append(rejected)
+                    memory.update(rejected, ledger)
+                    continue
+
+                repair_actions = repair.actions[
+                    : min(self.max_actions_per_turn, milestone.max_actions)
+                ]
+                if self._valid_finish_state(observation):
+                    repair_actions = [
+                        action for action in repair_actions
+                        if action.operation != OperationType.NEW_PART
+                    ]
+                if not repair_actions:
+                    continue
+                allowed, reason = guard.check_before(
+                    milestone.id,
+                    repair_actions,
+                )
+                if not allowed:
+                    memory.forbid({
+                        "milestone_id": milestone.id,
+                        "reason": reason,
+                    })
+                    continue
+                repair = repair.model_copy(update={"actions": repair_actions})
+                validation = execute_turn(repair, milestone)
+                if validation.passed:
+                    repaired = True
+                    break
+
+            if not repaired:
+                return self._result(
+                    status="blocked",
+                    user_goal=user_goal,
+                    records=records,
+                    observation=observation,
+                    started=started,
+                    llm_calls=llm_calls,
+                    message=f"里程碑 {milestone.id} 蓝图执行及原位修复均失败",
                     ledger=ledger,
                 )
 
@@ -446,9 +546,9 @@ class MultiTurnAgent:
             started=started,
             llm_calls=llm_calls,
             message=(
-                "三视图蓝图全部里程碑通过机器验收"
+                "全局蓝图全部里程碑通过机器验收"
                 if status == "completed"
-                else "三视图蓝图执行完毕，但机器验收未全部通过"
+                else "全局蓝图执行完毕，但机器验收未全部通过"
             ),
             ledger=ledger,
         )

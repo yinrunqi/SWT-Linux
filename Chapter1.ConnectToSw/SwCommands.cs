@@ -1101,6 +1101,68 @@ namespace Chapter1.ConnectToSw
         }
 
         /// <summary>
+        /// 在当前草图中批量绘制连续折线，可选自动闭合。
+        /// 单次提交整个复杂轮廓，避免 Multi-turn 在半成品草图处切轮。
+        /// </summary>
+        public Dictionary<string, object> SketchPolyline(
+            List<Dictionary<string, object>> points,
+            bool closed = true)
+        {
+            EnsureActiveDoc();
+            if (points == null || points.Count < 2)
+                throw new ArgumentException("points 至少包含两个点");
+
+            var transformed = new List<double[]>();
+            foreach (var point in points)
+            {
+                if (!point.ContainsKey("x") || !point.ContainsKey("y"))
+                    throw new ArgumentException("points 中每项必须包含 x 和 y");
+                double x = Convert.ToDouble(point["x"]);
+                double y = Convert.ToDouble(point["y"]);
+                double z = point.ContainsKey("z")
+                    ? Convert.ToDouble(point["z"]) : 0;
+                double sx, sy;
+                ModelToSketchPoint(x, y, z, out sx, out sy);
+                transformed.Add(new[] { sx, sy });
+            }
+
+            var sketchManager = ActiveDoc.SketchManager;
+            bool previousAddToDb = sketchManager.AddToDB;
+            bool previousDisplayWhenAdded = sketchManager.DisplayWhenAdded;
+            int segmentCount = closed ? points.Count : points.Count - 1;
+            try
+            {
+                sketchManager.AddToDB = true;
+                sketchManager.DisplayWhenAdded = false;
+                for (int i = 0; i < segmentCount; i++)
+                {
+                    double[] start = transformed[i];
+                    double[] end = transformed[(i + 1) % transformed.Count];
+                    sketchManager.CreateLine(
+                        start[0], start[1], 0,
+                        end[0], end[1], 0);
+                }
+            }
+            finally
+            {
+                sketchManager.AddToDB = previousAddToDb;
+                sketchManager.DisplayWhenAdded = previousDisplayWhenAdded;
+            }
+
+            Console.WriteLine(
+                $"[SwCommands] 批量绘制折线: {points.Count} 点, " +
+                $"{segmentCount} 段, closed={closed}");
+            return new Dictionary<string, object>
+            {
+                { "sketchName", _activeSketchName ?? "" },
+                { "faceKey", _activeFaceKey ?? "" },
+                { "pointCount", points.Count },
+                { "segmentCount", segmentCount },
+                { "closed", closed },
+            };
+        }
+
+        /// <summary>
         /// 在当前草图中绘制一个矩形（对角线两点）。
         /// 坐标为模型空间 3D 坐标（单位：米），自动变换到草图坐标系。
         /// z1, z2 可选。

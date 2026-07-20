@@ -110,7 +110,6 @@ _DATASETS_DIR = os.path.join(
 
 def _match_three_view_sample(image_b64: str) -> dict | None:
     """Return local sample metadata when an uploaded image is a demo fixture."""
-    llm_client = None
     try:
         uploaded_digest = hashlib.sha256(
             base64.b64decode(image_b64, validate=True)
@@ -337,6 +336,7 @@ def run():
             "error": "Multi-turn MVP 不支持 dry_run",
         }), 400
 
+    llm_client = None
     try:
         with _sw_execution_lock:
             if mode == "multi_turn":
@@ -348,19 +348,33 @@ def run():
                     use_cache=False,
                 )
                 try:
-                    # 三视图：先 Vision 抽 IR，再用 IR 确定性里程碑驱动 Agent
+                    from planner.operation_optimizer import (
+                        group_feature_batches,
+                    )
+                    from planner.task_decomposer import TaskDecomposer
+
+                    # 全局计划先行：保留 single-turn 的整体几何推理，
+                    # 再按原子特征事务执行、观察、验收和原位修复。
                     agent_goal = instruction
                     vision_ir = None
-                    task_plan = None
-                    blueprint = None
+                    expected_dims = None
+                    expected_volume = None
                     if image_b64:
-                        from planner.task_decomposer import TaskDecomposer
-
                         ir = llm_client._extract_three_view_ir(
                             instruction,
                             image_b64,
                         )
                         vision_ir = ir.model_dump(mode="json")
+                        size = ir.overall_size_mm or {}
+                        expected_dims = [
+                            size.get("length") or size.get("x"),
+                            size.get("height") or size.get("y"),
+                            size.get("depth")
+                            or size.get("width")
+                            or size.get("z"),
+                        ]
+                        if any(value in (None, 0) for value in expected_dims):
+                            expected_dims = None
                         agent_goal = llm_client.compose_multiturn_three_view_goal(
                             instruction,
                             ir,
@@ -379,54 +393,48 @@ def run():
                             if sample_match
                             else None
                         )
-                        gt_operations = (
-                            groundtruth.get("operations", [])
-                            if groundtruth
-                            else []
-                        )
-                        task_plan = TaskDecomposer().decompose_from_three_view_ir(
+                        if groundtruth:
+                            bbox = groundtruth.get("expected_bbox_mm", {})
+                            expected_dims = [
+                                bbox.get("length"),
+                                bbox.get("height"),
+                                bbox.get("depth"),
+                            ]
+                            expected_volume = groundtruth.get(
+                                "expected_volume_mm3"
+                            )
+                    else:
+                        blueprint = llm_client.plan(instruction)
+
+                    batches = group_feature_batches(blueprint.steps)
+                    deterministic_plan = TaskDecomposer().decompose(
+                        agent_goal
+                    )
+                    if (
+                        not image_b64
+                        and len(deterministic_plan.milestones) == len(batches)
+                        and deterministic_plan.notes
+                        != "通用任务：由 Agent 增量建模，最终验证有效实体。"
+                    ):
+                        task_plan = deterministic_plan
+                    else:
+                        task_plan = TaskDecomposer().decompose_blueprint(
                             agent_goal,
-                            ir,
-                            expected_volume_mm3=(
-                                groundtruth.get("expected_volume_mm3")
-                                if groundtruth
-                                else None
-                            ),
-                            expected_holes=(
-                                bool(groundtruth.get("holes"))
-                                or any(
-                                    operation.get("type") == "cutout_on_face"
-                                    for operation in gt_operations
-                                )
-                                if groundtruth
-                                else None
-                            ),
-                            expected_fillets=(
-                                any(
-                                    operation.get("type") == "fillet_edges"
-                                    for operation in gt_operations
-                                )
-                                if groundtruth
-                                else None
-                            ),
+                            batches,
+                            expected_dims_mm=expected_dims,
+                            expected_volume_mm3=expected_volume,
                         )
-                    result = MultiTurnAgent(
+                    agent = MultiTurnAgent(
                         llm_client,
                         executor,
                         max_turns=max_turns,
                     )
-                    if blueprint is not None and task_plan is not None:
-                        result = result.run_blueprint(
-                            agent_goal,
-                            task_plan,
-                            blueprint.steps,
-                            llm_calls=llm_client.usage_snapshot()["calls"],
-                        )
-                    else:
-                        result = result.run(
-                            agent_goal,
-                            task_plan=task_plan,
-                        )
+                    result = agent.run_blueprint(
+                        agent_goal,
+                        task_plan,
+                        batches,
+                        llm_calls=llm_client.usage_snapshot()["calls"],
+                    )
                     token_usage = llm_client.usage_snapshot()
                 finally:
                     llm_client.close()

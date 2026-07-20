@@ -79,7 +79,6 @@ class CompressedMemory:
             for item in self._turns[:-3]
         ]
         return {
-            "goal": self.user_goal,
             "milestones": ledger.summary(),
             "older_turns_compact": older,
             "last_3_turns": self._turns[-3:],

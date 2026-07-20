@@ -64,6 +64,25 @@ class ValidatorRegistry:
         }
 
     @staticmethod
+    def _check_last_execution_success(observation, _params):
+        results = observation.last_execution
+        passed = bool(results) and all(
+            bool(result.get("success", False))
+            for result in results
+        )
+        return passed, {
+            "operation_count": len(results),
+            "failed": [
+                {
+                    "operation": result.get("operation"),
+                    "message": result.get("message"),
+                }
+                for result in results
+                if not result.get("success", False)
+            ],
+        }
+
+    @staticmethod
     def _check_bbox_axes(observation, params):
         bbox = observation.bounding_box_mm or {}
         actual = sorted(

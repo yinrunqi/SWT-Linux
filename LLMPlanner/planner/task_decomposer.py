@@ -4,7 +4,14 @@ from __future__ import annotations
 
 from typing import Any
 
-from .schemas import Milestone, PostconditionSpec, TaskPlan, ThreeViewIR
+from .schemas import (
+    Milestone,
+    OperationType,
+    PostconditionSpec,
+    SwOperation,
+    TaskPlan,
+    ThreeViewIR,
+)
 
 
 def _ir_overall_dims_mm(ir: ThreeViewIR) -> list[float]:
@@ -303,6 +310,92 @@ class TaskDecomposer:
                 f"base_view={ir.base_view}, dims_mm={dims}"
             ),
             recovery_buffer=max(4, len(milestones) + 2),
+        )
+
+    def decompose_blueprint(
+        self,
+        user_goal: str,
+        batches: list[list[SwOperation]],
+        *,
+        expected_dims_mm: list[float] | None = None,
+        expected_volume_mm3: float | None = None,
+    ) -> TaskPlan:
+        """Create one verifiable milestone per atomic feature batch."""
+        feature_keywords = {
+            OperationType.FEATURE_EXTRUSION: "extr",
+            OperationType.FEATURE_CUT_EXTRUSION: "ice",
+            OperationType.FEATURE_REVOLVE: "revol",
+            OperationType.FEATURE_FILLET: "fillet",
+            OperationType.FEATURE_CHAMFER: "chamfer",
+            OperationType.FEATURE_CIRCULAR_PATTERN: "pattern",
+            OperationType.FEATURE_LINEAR_PATTERN: "pattern",
+        }
+        cumulative: dict[str, int] = {}
+        milestones: list[Milestone] = []
+        previous: str | None = None
+        for index, batch in enumerate(batches, 1):
+            postconditions: list[PostconditionSpec] = []
+            labels: list[str] = []
+            for action in batch:
+                labels.append(action.description or action.operation.value)
+                keyword = feature_keywords.get(action.operation)
+                if keyword is None:
+                    continue
+                cumulative[keyword] = cumulative.get(keyword, 0) + 1
+                postconditions.append(PostconditionSpec(
+                    kind="feature_count",
+                    params={
+                        "keyword": keyword,
+                        "minimum": cumulative[keyword],
+                    },
+                ))
+            if not postconditions:
+                postconditions.append(PostconditionSpec(
+                    kind="last_execution_success",
+                ))
+            milestone_id = f"blueprint_{index:02d}"
+            milestones.append(Milestone(
+                id=milestone_id,
+                title=(
+                    f"执行全局蓝图阶段 {index}/{len(batches)}："
+                    + "；".join(labels)
+                ),
+                depends_on=[] if previous is None else [previous],
+                postconditions=postconditions,
+                max_actions=min(5, max(1, len(batch))),
+            ))
+            previous = milestone_id
+
+        if not milestones:
+            milestones.append(Milestone(
+                id="blueprint_01",
+                title="完成全局建模蓝图",
+                postconditions=[PostconditionSpec(kind="valid_entity")],
+            ))
+
+        final = milestones[-1]
+        final.postconditions.append(PostconditionSpec(kind="valid_entity"))
+        if expected_dims_mm:
+            final.postconditions.append(PostconditionSpec(
+                kind="bbox_axes",
+                params={
+                    "expected": expected_dims_mm,
+                    "tolerance": 3.0,
+                },
+            ))
+        if expected_volume_mm3 and expected_volume_mm3 > 0:
+            final.postconditions.append(PostconditionSpec(
+                kind="volume_range",
+                params={
+                    "minimum": expected_volume_mm3 * 0.95,
+                    "maximum": expected_volume_mm3 * 1.05,
+                },
+            ))
+        return TaskPlan(
+            user_goal=user_goal,
+            milestones=milestones,
+            notes="全局计划先行；每个特征事务执行后观察并验收，失败时原位修复。",
+            recovery_buffer=max(6, len(milestones) * 2),
         )
 
     def decompose(self, user_goal: str) -> TaskPlan:

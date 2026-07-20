@@ -18,6 +18,7 @@ class OperationType(str, Enum):
     NEW_PART = "new_part"
     SELECT_PLANE = "select_plane"
     SKETCH_LINE = "sketch_line"
+    SKETCH_POLYLINE = "sketch_polyline"
     SKETCH_RECTANGLE = "sketch_rectangle"
     SKETCH_CIRCLE = "sketch_circle"
     SKETCH_CIRCLES = "sketch_circles"
@@ -58,6 +59,8 @@ class SwOperation(BaseModel):
             "- new_part: 无参数\n"
             "- select_plane: {index: int} — 0=前视面, 1=上视面, 2=右视面\n"
             "- sketch_line: {x1, y1, x2, y2: float} — 起点终点坐标（米）\n"
+            "- sketch_polyline: {points: [{x,y,z?}, ...], closed: bool} — "
+            "批量绘制连续折线；复杂 L/T/H 形闭合轮廓应在一个操作中提交，避免跨轮留下半成品草图\n"
             "- sketch_rectangle: {x1, y1, x2, y2: float} 或 {x1, y1, z1, x2, y2, z2: float} — "
             "对角线两点坐标（米）。在基准面上画矩形用 2D (x,y)；在实体面上画矩形时**必须传 3D 模型坐标**。"
             "⚠️ 例如在 Y=0.05 顶面画矩形：y1=y2=0.05（面的Y坐标），Z方向偏移放 z1/z2（不能放 y）！\n"
@@ -388,6 +391,18 @@ class ThreeViewIR(BaseModel):
         description="若图纸上某些尺寸未标注/看不清，此处说明所做的合理假设"
                     "（如'厚度未标注，假设为 10mm；孔位对称假设'）"
     )
+
+    @field_validator("overall_size_mm", mode="before")
+    @classmethod
+    def _coerce_overall_size_to_dict(cls, value):
+        """Accept common Vision shorthand [length, height, depth]."""
+        if isinstance(value, (list, tuple)) and len(value) >= 3:
+            return {
+                "length": value[0],
+                "height": value[1],
+                "depth": value[2],
+            }
+        return value
 
     @field_validator("assumptions", mode="before")
     @classmethod

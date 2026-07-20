@@ -75,6 +75,7 @@ namespace Chapter1.ConnectToSw
             Console.WriteLine("  POST /api/new-part                - 新建零件文档");
             Console.WriteLine("  POST /api/select-plane            - 选择基准面并进入草图");
             Console.WriteLine("  POST /api/sketch/line             - 画直线");
+            Console.WriteLine("  POST /api/sketch/polyline         - 批量画连续折线/闭合轮廓");
             Console.WriteLine("  POST /api/sketch/rectangle        - 画矩形");
             Console.WriteLine("  POST /api/sketch/circle           - 画圆");
             Console.WriteLine("  POST /api/sketch/centerline       - 画中心线（旋转轴）");
@@ -186,6 +187,10 @@ namespace Chapter1.ConnectToSw
 
                 case "/api/sketch/line":
                     RequirePost(method, resp, () => HandleSketchLine(req, resp));
+                    break;
+
+                case "/api/sketch/polyline":
+                    RequirePost(method, resp, () => HandleSketchPolyline(req, resp));
                     break;
 
                 case "/api/sketch/rectangle":
@@ -450,6 +455,42 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"绘制直线失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSketchPolyline(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                if (!body.ContainsKey("points"))
+                    throw new KeyNotFoundException("缺少必填字段: points");
+                var raw = body["points"] as System.Collections.IEnumerable;
+                if (raw == null)
+                    throw new ArgumentException("points 必须是数组");
+                var points = new List<Dictionary<string, object>>();
+                foreach (object item in raw)
+                {
+                    var point = item as Dictionary<string, object>;
+                    if (point == null)
+                        throw new ArgumentException("points 中每项必须是对象");
+                    points.Add(point);
+                }
+                bool closed = !body.ContainsKey("closed")
+                    || Convert.ToBoolean(body["closed"]);
+                var result = _commands.SketchPolyline(points, closed);
+                result["success"] = true;
+                result["message"] =
+                    $"批量绘制 {points.Count} 点折线，closed={closed}";
+                SendJson(resp, 200, result);
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 400, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
             }
         }
 

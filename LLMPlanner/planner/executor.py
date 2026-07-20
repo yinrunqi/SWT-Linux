@@ -23,6 +23,7 @@ OPERATION_ENDPOINT_MAP: dict[OperationType, tuple[str, str]] = {
     OperationType.NEW_PART:           ("POST", "/api/new-part"),
     OperationType.SELECT_PLANE:       ("POST", "/api/select-plane"),
     OperationType.SKETCH_LINE:        ("POST", "/api/sketch/line"),
+    OperationType.SKETCH_POLYLINE:    ("POST", "/api/sketch/polyline"),
     OperationType.SKETCH_RECTANGLE:   ("POST", "/api/sketch/rectangle"),
     OperationType.SKETCH_CIRCLE:      ("POST", "/api/sketch/circle"),
     OperationType.SKETCH_CIRCLES:     ("POST", "/api/sketch/circles"),

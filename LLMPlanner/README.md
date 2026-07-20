@@ -161,11 +161,12 @@ python -m web.app --model gpt-4o
 ### Single-turn / Multi-turn
 
 - `single_turn` 是缺省模式，保持原有协议：LLM 一次生成完整计划后顺序执行；不加载 Agent Skill，不改变 cache key / 请求 / 响应结构。
-- `multi_turn` 为账本驱动：任务分解为里程碑 → 每轮只推进当前唯一待办里程碑 → 执行后用确定性后置条件验收 → 全部里程碑通过才返回 `completed`。
+- `multi_turn` 采用“全局计划 + 迭代执行”架构：先生成与 Single-turn 同等完整的全局蓝图，再按选择/草图/特征原子事务拆成里程碑；每轮执行后观察并做确定性验收，失败时保留现有模型并由 Agent 原位修改，全部通过才返回 `completed`。
+- 连续 `sketch_line` / `sketch_circle` 会自动压缩成 `sketch_polyline` / `sketch_circles`，避免 5-action 轮次边界留下未闭合草图。
 - 观察源优先使用聚合 `GET /api/model-observation`（面拓扑、草图摘要、特征-草图关联）；失败时回退到 feature-tree / bbox / volume。
-- 轮数缺省为 `max(8, milestone_count + recovery_buffer)`；请求里传 `max_turns` 时作为硬上限。
+- 轮数缺省按蓝图阶段和每阶段恢复预算动态计算；请求里传 `max_turns` 时作为硬上限。
 - Web Demo 时间线展示里程碑状态、机器验收证据和失败后换策略；Single-turn UI 不变。
-- Multi-turn 支持纯文本；带三视图图片时先走 Vision 抽 IR，再进入账本 Agent。暂不支持 SSE 实时流、持久会话、截图和回滚。
+- Multi-turn 支持纯文本；带三视图图片时先走 Vision 抽 IR，再生成全局蓝图并进入同一套执行/检查/修复循环。暂不支持 SSE 实时流、持久会话、截图和回滚。
 - SolidWorks 是单实例执行器，Web 后端会串行执行并发建模请求。
 
 `/api/run` 不传 `mode` 时响应结构与原 single-turn 完全一致。启用 Multi-turn：

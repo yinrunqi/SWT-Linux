@@ -84,22 +84,26 @@ applies_to: [three_view]
 
 以下几条**在两阶段管线的阶段 B（IR → SwModelingPlan）中格外重要**：
 
+0. **复杂连续轮廓优先用 `sketch_polyline` 一次提交**：
+   参数为 `{"points":[{"x":...,"y":...}, ...], "closed":true}`，点按 CW 或 CCW
+   顺序排列且不要重复首点。该操作把整条 L/T/H/十字形轮廓作为一个高层动作，
+   能保证 Multi-turn 不会在未闭合草图中间切轮。只有开放轮廓才用 `closed=false`。
+
 1. **L 形 / 带缺口的凹形轮廓 —— 严禁在同一草图里画外接矩形 + 缺口矩形**！
    两个矩形相交但不嵌套会触发 core/03_rules 中的"同一草图轮廓合法性约束"错误
    （SolidWorks 会报"草图轮廓无效/未闭合"）。**必须**采用以下两种正确画法之一：
 
-   ⭐ **方案 A（强烈推荐，一次拉伸最省事）**：用 `sketch_line` 逐段画出 L 形闭合轮廓的每一条边线，
-   再一次 `feature_extrusion`。**共 8 个步骤**，示例（外接 60×40mm，右上角切除 30×20mm，深度 20mm）：
+   ⭐ **方案 A（强烈推荐）**：用一次 `sketch_polyline` 提交 L 形闭合轮廓，
+   再一次 `feature_extrusion`。示例（外接 60×40mm，右上角切除 30×20mm，深度 20mm）：
    ```
    1. new_part {}
    2. select_plane {index: 0}                                            ← 前视基准面
-   3. sketch_line {x1:0,    y1:0,    x2:0.06, y2:0}                      ← 底边
-   4. sketch_line {x1:0.06, y1:0,    x2:0.06, y2:0.02}                   ← 右下短竖(高 20mm=0.02)
-   5. sketch_line {x1:0.06, y1:0.02, x2:0.03, y2:0.02}                   ← 缺口底
-   6. sketch_line {x1:0.03, y1:0.02, x2:0.03, y2:0.04}                   ← 缺口左竖(长 20mm=0.02)
-   7. sketch_line {x1:0.03, y1:0.04, x2:0,    y2:0.04}                   ← 顶边(长 30mm=0.03)
-   8. sketch_line {x1:0,    y1:0.04, x2:0,    y2:0}                      ← 左边(高 40mm=0.04)
-   9. feature_extrusion {depth: 0.02}                                    ← 一次拉伸 20mm
+   3. sketch_polyline {
+        points: [{x:0,y:0},{x:0.06,y:0},{x:0.06,y:0.02},
+                 {x:0.03,y:0.02},{x:0.03,y:0.04},{x:0,y:0.04}],
+        closed: true
+      }
+   4. feature_extrusion {depth: 0.02}                                    ← 一次拉伸 20mm
    ```
 
    ⭐ **方案 B（先加料再切除，共 8 步）**：完整步骤**一步不能省**：

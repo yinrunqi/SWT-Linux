@@ -810,6 +810,7 @@ class SwLLMClient:
         recent_turns: list[dict] | dict,
         turn_number: int,
         current_milestone: Milestone | None = None,
+        repair_required: bool = False,
     ) -> AgentTurn:
         """根据真实模型状态生成下一小批增量操作；Multi-turn 不使用计划缓存。"""
         # 从与 single-turn 相同的基础 prompt 开始，再单独追加 Agent 规则；
@@ -872,7 +873,15 @@ class SwLLMClient:
             "本轮只能服务这个里程碑，禁止重做 ledger 中已完成的面或特征。\n"
             "只有真实特征树、包围盒和体积足以证明用户目标已经完成时，"
             "才允许 decision=finish。无法继续时使用 blocked。\n"
-            f"{json.dumps(payload, ensure_ascii=False, separators=(',', ':'))}"
+            + (
+                "【强制修复模式】当前里程碑刚刚未通过机器验收。"
+                "本轮 decision 必须是 act，并输出 1~5 个能改变当前模型的修复操作；"
+                "禁止 finish、blocked，已有有效实体时禁止 new_part。"
+                "优先使用 modify_dimension，或在现有面上新增切除/凸台修正几何。"
+                "current_milestone.evidence 是实际值与目标值的差异。\n"
+                if repair_required
+                else ""
+            ) + f"{json.dumps(payload, ensure_ascii=False, separators=(',', ':'))}"
         )
         messages = [
             {"role": "system", "content": system_prompt},
