@@ -128,6 +128,11 @@ def _normalize_agent_decision_payload(payload: dict) -> dict:
     raw_decision = str(normalized.get("decision", "")).lower()
     if raw_decision in decision_aliases:
         normalized["decision"] = decision_aliases[raw_decision]
+    # Some compatible providers emit a contradictory "finish/blocked" value
+    # while also returning concrete actions. Actions are unambiguous evidence
+    # that this is an act turn; normalize before Pydantic cross-field checks.
+    if normalized.get("actions"):
+        normalized["decision"] = AgentDecision.ACT.value
     return normalized
 
 
@@ -299,6 +304,62 @@ class SwLLMClient:
         else:
             self.cache = None
             print("[LLM] 缓存已禁用")
+
+        # 累计本客户端生命周期内的 token 用量（含 Vision / Plan / Agent）
+        self.token_usage: dict = {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+            "calls": 0,
+            "by_model": {},
+        }
+        self._install_usage_tracker()
+
+    def _install_usage_tracker(self) -> None:
+        """Wrap chat.completions.create so every call records usage."""
+        completions = self.client.chat.completions
+        original_create = completions.create
+
+        def tracked_create(*args, **kwargs):
+            completion = original_create(*args, **kwargs)
+            self._record_usage(completion, kwargs.get("model"))
+            return completion
+
+        completions.create = tracked_create  # type: ignore[method-assign]
+
+    def _record_usage(self, completion, model: Optional[str] = None) -> None:
+        usage = getattr(completion, "usage", None)
+        if usage is None:
+            return
+        prompt = int(getattr(usage, "prompt_tokens", 0) or 0)
+        completion_tokens = int(getattr(usage, "completion_tokens", 0) or 0)
+        total = int(getattr(usage, "total_tokens", 0) or (prompt + completion_tokens))
+        self.token_usage["prompt_tokens"] += prompt
+        self.token_usage["completion_tokens"] += completion_tokens
+        self.token_usage["total_tokens"] += total
+        self.token_usage["calls"] += 1
+        model_key = model or self.plan_model or "unknown"
+        bucket = self.token_usage["by_model"].setdefault(
+            model_key,
+            {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "calls": 0},
+        )
+        bucket["prompt_tokens"] += prompt
+        bucket["completion_tokens"] += completion_tokens
+        bucket["total_tokens"] += total
+        bucket["calls"] += 1
+
+    def usage_snapshot(self) -> dict:
+        """Return a JSON-serializable copy of accumulated token usage."""
+        return {
+            "prompt_tokens": self.token_usage["prompt_tokens"],
+            "completion_tokens": self.token_usage["completion_tokens"],
+            "total_tokens": self.token_usage["total_tokens"],
+            "calls": self.token_usage["calls"],
+            "by_model": {
+                name: dict(stats)
+                for name, stats in self.token_usage["by_model"].items()
+            },
+        }
 
     def _assemble_system_prompt(self, user_instruction: str, input_mode: str = "text") -> str:
         """
@@ -627,6 +688,23 @@ class SwLLMClient:
             + "features 里的每一个孔/圆角/倒角都要有对应的 operation 步骤。"
         )
 
+    def compose_multiturn_three_view_goal(
+        self,
+        user_instruction: str,
+        ir: ThreeViewIR,
+    ) -> str:
+        """Turn Vision IR into a text goal for the multi-turn agent."""
+        base = self._compose_stage_b_prompt(user_instruction, ir)
+        return (
+            base.replace(
+                "你现在的任务是**根据 IR 精确生成 SwModelingPlan**。",
+                "你现在的任务是**根据 IR，用 Multi-turn 里程碑逐步精确建模**"
+                "（每轮最多 5 个高层操作，完成后由机器验收）。",
+            )
+            + "\n完成判据：包围盒与 IR.overall_size_mm 吻合（±3mm），"
+            + "features 中的孔/圆角/倒角均已落实。"
+        )
+
     def decompose_task(self, user_goal: str) -> TaskPlan:
         """Decompose an unknown multi-turn goal into verifiable milestones."""
         schema = self._patch_schema_additional_properties(
@@ -672,8 +750,58 @@ class SwLLMClient:
         if not content:
             raise ValueError("Multi-turn 任务分解未返回内容")
         extracted = _extract_first_json_block(content) or content
-        plan = TaskPlan.model_validate_json(extracted)
+        try:
+            payload = json.loads(extracted)
+        except json.JSONDecodeError as exc:
+            raise ValueError("Multi-turn 任务分解返回了无效 JSON") from exc
+        plan = self._normalize_task_plan_payload(payload, user_goal)
         return plan.model_copy(update={"user_goal": user_goal})
+
+    @staticmethod
+    def _normalize_task_plan_payload(payload: dict, user_goal: str) -> TaskPlan:
+        """Tolerate common LLM shape mistakes for TaskPlan."""
+        if "milestones" not in payload and "id" in payload:
+            payload = {"user_goal": user_goal, "milestones": [payload]}
+        payload.setdefault("user_goal", user_goal)
+        milestones = payload.get("milestones") or []
+        normalized = []
+        for index, item in enumerate(milestones, 1):
+            if not isinstance(item, dict):
+                continue
+            milestone = dict(item)
+            milestone.setdefault("id", f"m{index}")
+            milestone.setdefault(
+                "title",
+                milestone.get("name")
+                or milestone.get("description")
+                or milestone["id"],
+            )
+            posts = milestone.get("postconditions", [])
+            if isinstance(posts, dict):
+                posts = [posts]
+            fixed_posts = []
+            for post in posts or [{"kind": "valid_entity"}]:
+                if not isinstance(post, dict):
+                    continue
+                kind = post.get("kind") or "valid_entity"
+                params = post.get("params")
+                if params is None:
+                    params = {
+                        key: value
+                        for key, value in post.items()
+                        if key != "kind"
+                    }
+                fixed_posts.append({"kind": kind, "params": params or {}})
+            milestone["postconditions"] = fixed_posts
+            normalized.append(milestone)
+        if not normalized:
+            normalized = [{
+                "id": "model_goal",
+                "title": user_goal[:80] or "完成建模",
+                "postconditions": [{"kind": "valid_entity", "params": {}}],
+            }]
+        payload["milestones"] = normalized
+        return TaskPlan.model_validate(payload)
 
     def decide_agent_turn(
         self,
@@ -686,7 +814,16 @@ class SwLLMClient:
         """根据真实模型状态生成下一小批增量操作；Multi-turn 不使用计划缓存。"""
         # 从与 single-turn 相同的基础 prompt 开始，再单独追加 Agent 规则；
         # agent skill 不进入 SkillRegistry，避免改变任何既有 single-turn prompt/cache key。
-        system_prompt = self._assemble_system_prompt(user_goal, input_mode="text")
+        input_mode = (
+            "three_view"
+            if "ThreeViewIR" in user_goal
+            or "三视图确定性分解" in user_goal
+            else "text"
+        )
+        system_prompt = self._assemble_system_prompt(
+            user_goal,
+            input_mode=input_mode,
+        )
         agent_skill_path = (
             Path(__file__).resolve().parent
             / "skills"

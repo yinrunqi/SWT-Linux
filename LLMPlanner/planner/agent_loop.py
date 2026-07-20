@@ -19,6 +19,7 @@ from .schemas import (
     MultiTurnResult,
     OperationType,
     SwOperation,
+    TaskPlan,
     ValidationResult,
 )
 from .task_decomposer import TaskDecomposer
@@ -122,9 +123,14 @@ class MultiTurnAgent:
             validation=validation,
         )
 
-    def run(self, user_goal: str) -> MultiTurnResult:
+    def run(
+        self,
+        user_goal: str,
+        task_plan: TaskPlan | None = None,
+    ) -> MultiTurnResult:
         started = time.perf_counter()
-        task_plan = self.task_decomposer.decompose(user_goal)
+        if task_plan is None:
+            task_plan = self.task_decomposer.decompose(user_goal)
         ledger = MilestoneLedger(task_plan)
         memory = CompressedMemory(user_goal, task_plan)
         guard = IdempotencyGuard(self.repeated_action_limit)
@@ -343,6 +349,107 @@ class MultiTurnAgent:
             started=started,
             llm_calls=llm_calls,
             message=f"达到最大轮数 {max_turns}，任务尚未完成",
+            ledger=ledger,
+        )
+
+    def run_blueprint(
+        self,
+        user_goal: str,
+        task_plan: TaskPlan,
+        actions: list[SwOperation],
+        *,
+        llm_calls: int = 0,
+    ) -> MultiTurnResult:
+        """Execute a Vision-derived plan in observed, validated turn chunks.
+
+        Three-view input already needs a dedicated Vision + planning pass.
+        Re-asking an Agent LLM to rediscover those exact operations each turn
+        is both expensive and error-prone. This path preserves Multi-turn's
+        bounded Act → Observe → Validate protocol while treating the generated
+        operation sequence as the executable blueprint.
+        """
+        started = time.perf_counter()
+        ledger = MilestoneLedger(task_plan)
+        records: list[MultiTurnRecord] = []
+        observation = ModelObservation(
+            errors={"session": "新任务尚未创建零件"},
+        )
+        step_offset = 0
+
+        chunks = [
+            actions[index:index + self.max_actions_per_turn]
+            for index in range(0, len(actions), self.max_actions_per_turn)
+        ]
+        for turn_number, chunk in enumerate(chunks, 1):
+            milestone = ledger.current()
+            if milestone is None:
+                break
+            decision = AgentTurn(
+                decision=AgentDecision.ACT,
+                milestone_id=milestone.id,
+                progress_summary=(
+                    f"执行三视图蓝图第 {turn_number}/{len(chunks)} 批"
+                ),
+                actions=chunk,
+                check_summary="执行后读取结构化模型并验收当前里程碑",
+            )
+            before = observation
+            execution_results = self.executor.execute_operations(
+                chunk,
+                step_offset=step_offset,
+                include_turn_step=True,
+            )
+            step_offset += len(execution_results)
+            observation = self.observer.collect(execution_results)
+            validation = ValidatorRegistry.validate(
+                milestone.postconditions,
+                observation,
+            )
+            if any(
+                not result.get("success", False)
+                for result in execution_results
+            ):
+                validation = validation.model_copy(update={
+                    "passed": False,
+                    "message": "蓝图执行存在失败，里程碑不能完成",
+                })
+            ledger.mark_from_validation(milestone.id, validation)
+            records.append(MultiTurnRecord(
+                turn=turn_number,
+                observation_before=before,
+                decision=decision,
+                execution_results=execution_results,
+                observation_after=observation,
+                validation=validation,
+            ))
+            if any(
+                not result.get("success", False)
+                for result in execution_results
+            ):
+                return self._result(
+                    status="blocked",
+                    user_goal=user_goal,
+                    records=records,
+                    observation=observation,
+                    started=started,
+                    llm_calls=llm_calls,
+                    message="三视图操作蓝图执行失败",
+                    ledger=ledger,
+                )
+
+        status = "completed" if ledger.is_complete() else "blocked"
+        return self._result(
+            status=status,
+            user_goal=user_goal,
+            records=records,
+            observation=observation,
+            started=started,
+            llm_calls=llm_calls,
+            message=(
+                "三视图蓝图全部里程碑通过机器验收"
+                if status == "completed"
+                else "三视图蓝图执行完毕，但机器验收未全部通过"
+            ),
             ledger=ledger,
         )
 

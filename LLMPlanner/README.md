@@ -165,7 +165,7 @@ python -m web.app --model gpt-4o
 - 观察源优先使用聚合 `GET /api/model-observation`（面拓扑、草图摘要、特征-草图关联）；失败时回退到 feature-tree / bbox / volume。
 - 轮数缺省为 `max(8, milestone_count + recovery_buffer)`；请求里传 `max_turns` 时作为硬上限。
 - Web Demo 时间线展示里程碑状态、机器验收证据和失败后换策略；Single-turn UI 不变。
-- Multi-turn 目前仅支持纯文本，不支持图片、SSE 实时流、持久会话、截图和回滚。
+- Multi-turn 支持纯文本；带三视图图片时先走 Vision 抽 IR，再进入账本 Agent。暂不支持 SSE 实时流、持久会话、截图和回滚。
 - SolidWorks 是单实例执行器，Web 后端会串行执行并发建模请求。
 
 `/api/run` 不传 `mode` 时响应结构与原 single-turn 完全一致。启用 Multi-turn：

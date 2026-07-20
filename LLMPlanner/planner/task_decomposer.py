@@ -4,7 +4,39 @@ from __future__ import annotations
 
 from typing import Any
 
-from .schemas import Milestone, PostconditionSpec, TaskPlan
+from .schemas import Milestone, PostconditionSpec, TaskPlan, ThreeViewIR
+
+
+def _ir_overall_dims_mm(ir: ThreeViewIR) -> list[float]:
+    size = ir.overall_size_mm or {}
+    length = float(size.get("length") or size.get("x") or 0)
+    width = float(
+        size.get("width")
+        or size.get("depth")
+        or size.get("y")
+        or 0
+    )
+    height = float(size.get("height") or size.get("z") or 0)
+    dims = [value for value in (length, width, height) if value > 0]
+    if len(dims) >= 3:
+        return dims[:3]
+    # Fall back to numeric dimension annotations when IR size is incomplete.
+    from_dims = sorted(
+        {
+            float(item.value_mm)
+            for item in ir.dimensions
+            if float(item.value_mm) > 0
+        },
+        reverse=True,
+    )
+    for value in from_dims:
+        if len(dims) >= 3:
+            break
+        if value not in dims:
+            dims.append(value)
+    while len(dims) < 3:
+        dims.append(dims[-1] if dims else 10.0)
+    return dims[:3]
 
 
 def _dice_plan(user_goal: str) -> TaskPlan:
@@ -162,6 +194,116 @@ class TaskDecomposer:
 
     def __init__(self, llm_client: Any | None = None):
         self.llm_client = llm_client
+
+    def decompose_from_three_view_ir(
+        self,
+        user_goal: str,
+        ir: ThreeViewIR,
+        *,
+        expected_volume_mm3: float | None = None,
+        expected_holes: bool | None = None,
+        expected_fillets: bool | None = None,
+    ) -> TaskPlan:
+        """Build verifiable milestones directly from Vision IR (no LLM)."""
+        dims = _ir_overall_dims_mm(ir)
+        profile_summary = "；".join(
+            profile.outline_desc for profile in ir.profiles[:3]
+        )
+        holes = [
+            feature
+            for feature in ir.features
+            if str(feature.kind).lower() in {"hole", "slot", "pocket"}
+            or "孔" in str(feature.kind)
+        ]
+        fillets = [
+            feature
+            for feature in ir.features
+            if str(feature.kind).lower() in {"fillet", "chamfer"}
+            or "圆角" in str(feature.kind)
+            or "倒角" in str(feature.kind)
+        ]
+        has_holes = bool(holes) if expected_holes is None else expected_holes
+        has_fillets = (
+            bool(fillets)
+            if expected_fillets is None
+            else expected_fillets
+        )
+        body = Milestone(
+            id="tv_body",
+            title=(
+                "按 ThreeViewIR 精确创建主体轮廓并达到目标包围盒"
+                + (f"：{profile_summary}" if profile_summary else "")
+            ),
+            postconditions=[
+                PostconditionSpec(
+                    kind="feature_count",
+                    params={"keyword": "extr", "minimum": 1},
+                ),
+                PostconditionSpec(
+                    kind="bbox_axes",
+                    params={"expected": dims, "tolerance": 3.0},
+                ),
+                PostconditionSpec(kind="valid_entity"),
+            ],
+        )
+        milestones = [body]
+        detail_posts: list[PostconditionSpec] = [
+            PostconditionSpec(
+                kind="bbox_axes",
+                params={"expected": dims, "tolerance": 3.0},
+            ),
+        ]
+        # Multiple holes are often one cut-extrude (single ICE), so only require
+        # presence of the feature family rather than a 1:1 hole count.
+        if has_holes:
+            detail_posts.append(
+                PostconditionSpec(
+                    kind="feature_count",
+                    params={"keyword": "ice", "minimum": 1},
+                )
+            )
+        if has_fillets:
+            detail_posts.append(
+                PostconditionSpec(
+                    kind="feature_count",
+                    params={"keyword": "fillet", "minimum": 1},
+                )
+            )
+        volume_post = None
+        if expected_volume_mm3 and expected_volume_mm3 > 0:
+            volume_post = PostconditionSpec(
+                kind="volume_range",
+                params={
+                    "minimum": expected_volume_mm3 * 0.95,
+                    "maximum": expected_volume_mm3 * 1.05,
+                },
+            )
+        if has_holes or has_fillets:
+            if volume_post is not None:
+                detail_posts.append(volume_post)
+            milestones.append(
+                Milestone(
+                    id="tv_details",
+                    title=(
+                        f"按 IR 完成附加特征"
+                        f"（孔/槽 {'有' if has_holes else '无'}，"
+                        f"圆角/倒角 {'有' if has_fillets else '无'}）"
+                    ),
+                    depends_on=[body.id],
+                    postconditions=detail_posts,
+                )
+            )
+        elif volume_post is not None:
+            body.postconditions.append(volume_post)
+        return TaskPlan(
+            user_goal=user_goal,
+            milestones=milestones,
+            notes=(
+                f"三视图确定性分解：part_type={ir.part_type}, "
+                f"base_view={ir.base_view}, dims_mm={dims}"
+            ),
+            recovery_buffer=max(4, len(milestones) + 2),
+        )
 
     def decompose(self, user_goal: str) -> TaskPlan:
         normalized = user_goal.lower()

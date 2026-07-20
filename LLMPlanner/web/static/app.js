@@ -509,6 +509,10 @@ function appendMultiTurnResponse(result, summary) {
   }).join("");
 
   const completed = result.status === "completed";
+  const usage = summary.token_usage || {};
+  const tokenLine = usage.total_tokens
+    ? `；tokens ${usage.prompt_tokens || 0}+${usage.completion_tokens || 0}=${usage.total_tokens}`
+    : "";
   div.innerHTML = `<div class="msg-ai">
     <div class="multi-turn-title">Multi-turn Agent：${esc(result.user_goal || "")}</div>
     ${milestonesHtml ? `<div class="agent-ledger"><strong>里程碑账本</strong><ul>${milestonesHtml}</ul></div>` : ""}
@@ -516,7 +520,7 @@ function appendMultiTurnResponse(result, summary) {
     <div class="summary ${completed ? "ok" : "fail"}">
       ${completed ? "✅" : "⚠️"} 状态: ${esc(result.status)}；
       ${summary.succeeded}/${summary.total} 个操作成功；
-      ${summary.turn_count} 轮，${summary.llm_calls} 次 LLM 调用
+      ${summary.turn_count} 轮，${summary.llm_calls} 次 LLM 调用${tokenLine}
       ${result.message ? " — " + esc(result.message) : ""}
     </div>
   </div>`;

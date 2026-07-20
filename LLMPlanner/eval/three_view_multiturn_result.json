@@ -1,0 +1,246 @@
+{
+  "run_at": "2026-07-18T16:47:11+08:00",
+  "mode": "multi_turn",
+  "provider": "AI Ping",
+  "vision_model": "GLM-4.6V",
+  "plan_model": "Qwen3.5-397B-A17B",
+  "sample_ids": [
+    "B01",
+    "B02",
+    "B03",
+    "B06",
+    "B07"
+  ],
+  "passed": 2,
+  "total": 5,
+  "token_totals": {
+    "prompt_tokens": 408122,
+    "completion_tokens": 22507,
+    "total_tokens": 430629
+  },
+  "balance_before": {
+    "limit_cents": 50000,
+    "consumed_cents": 398.782516,
+    "remaining_cents": 49601.217484,
+    "limit_yuan": 500.0,
+    "consumed_yuan": 3.987825,
+    "remaining_yuan": 496.012175,
+    "monthly_reset": false,
+    "remark": "FSQ_V5"
+  },
+  "balance_after": {
+    "limit_cents": 50000,
+    "consumed_cents": 460.856276,
+    "remaining_cents": 49539.143724,
+    "limit_yuan": 500.0,
+    "consumed_yuan": 4.608563,
+    "remaining_yuan": 495.391437,
+    "monthly_reset": false,
+    "remark": "FSQ_V5"
+  },
+  "spent_yuan": 0.620738,
+  "results": [
+    {
+      "part_id": "B01",
+      "name": "B01 L 型支架",
+      "status": "blocked",
+      "acceptance_ok": false,
+      "dimensions_ok": false,
+      "volume_ok": false,
+      "bbox_mm": null,
+      "expected_bbox_mm": {
+        "length": 60,
+        "height": 40,
+        "depth": 20
+      },
+      "volume_mm3": null,
+      "expected_volume_mm3": 36000.0,
+      "turns": 1,
+      "llm_calls": 0,
+      "actions": "1/2",
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 6,
+            "completion_tokens": 6342,
+            "prompt_tokens": 164454,
+            "total_tokens": 170796
+          },
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 1582,
+            "prompt_tokens": 26496,
+            "total_tokens": 28078
+          }
+        },
+        "calls": 7,
+        "completion_tokens": 7924,
+        "prompt_tokens": 190950,
+        "total_tokens": 198874
+      },
+      "duration_seconds": 562.17,
+      "error": null
+    },
+    {
+      "part_id": "B02",
+      "name": "B02 带 2 孔平板",
+      "status": "completed",
+      "acceptance_ok": true,
+      "dimensions_ok": true,
+      "volume_ok": true,
+      "bbox_mm": {
+        "maxX": 40.0,
+        "maxY": 20.0,
+        "maxZ": 10.0,
+        "minX": -40.0,
+        "minY": -20.0,
+        "minZ": 0.0,
+        "sizeX": 80.0,
+        "sizeY": 40.0,
+        "sizeZ": 10.0
+      },
+      "expected_bbox_mm": {
+        "length": 80,
+        "height": 40,
+        "depth": 10
+      },
+      "volume_mm3": 30429.203673,
+      "expected_volume_mm3": 30429.204,
+      "turns": 2,
+      "llm_calls": 0,
+      "actions": "8/8",
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 1,
+            "completion_tokens": 985,
+            "prompt_tokens": 27325,
+            "total_tokens": 28310
+          },
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 1106,
+            "prompt_tokens": 26438,
+            "total_tokens": 27544
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 2091,
+        "prompt_tokens": 53763,
+        "total_tokens": 55854
+      },
+      "duration_seconds": 65.38,
+      "error": null
+    },
+    {
+      "part_id": "B03",
+      "name": "B03 T 型支架",
+      "status": "blocked",
+      "acceptance_ok": false,
+      "dimensions_ok": true,
+      "volume_ok": false,
+      "bbox_mm": {
+        "maxX": 60.0,
+        "maxY": 45.0,
+        "maxZ": 15.0,
+        "minX": 0.0,
+        "minY": 0.0,
+        "minZ": 0.0,
+        "sizeX": 60.0,
+        "sizeY": 45.0,
+        "sizeZ": 15.0
+      },
+      "expected_bbox_mm": {
+        "length": 60,
+        "height": 45,
+        "depth": 15
+      },
+      "volume_mm3": 31500.0,
+      "expected_volume_mm3": 22500.0,
+      "turns": 3,
+      "llm_calls": 0,
+      "actions": "11/11",
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 2,
+            "completion_tokens": 6879,
+            "prompt_tokens": 54852,
+            "total_tokens": 61731
+          },
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 1532,
+            "prompt_tokens": 26385,
+            "total_tokens": 27917
+          }
+        },
+        "calls": 3,
+        "completion_tokens": 8411,
+        "prompt_tokens": 81237,
+        "total_tokens": 89648
+      },
+      "duration_seconds": 258.69,
+      "error": null
+    },
+    {
+      "part_id": "B06",
+      "name": "B06 门锁扣板",
+      "status": "completed",
+      "acceptance_ok": true,
+      "dimensions_ok": true,
+      "volume_ok": true,
+      "bbox_mm": {
+        "maxX": 15.0,
+        "maxY": 40.0,
+        "maxZ": 3.0,
+        "minX": -15.0,
+        "minY": -40.0,
+        "minZ": 0.0,
+        "sizeX": 30.0,
+        "sizeY": 80.0,
+        "sizeZ": 3.0
+      },
+      "expected_bbox_mm": {
+        "length": 30,
+        "height": 80,
+        "depth": 3
+      },
+      "volume_mm3": 6173.163631,
+      "expected_volume_mm3": 6482.19,
+      "turns": 3,
+      "llm_calls": 0,
+      "actions": "13/13",
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 2,
+            "completion_tokens": 2257,
+            "prompt_tokens": 55294,
+            "total_tokens": 57551
+          },
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 1824,
+            "prompt_tokens": 26878,
+            "total_tokens": 28702
+          }
+        },
+        "calls": 3,
+        "completion_tokens": 4081,
+        "prompt_tokens": 82172,
+        "total_tokens": 86253
+      },
+      "duration_seconds": 230.14,
+      "error": null
+    },
+    {
+      "part_id": "B07",
+      "name": "B07 86 型开关面板",
+      "status": "error",
+      "acceptance_ok": false,
+      "error": "HTTP 500: RetryError[<Future at 0x1f31ad37a10 state=finished raised ValidationError>]",
+      "duration_seconds": 467.38
+    }
+  ]
+}

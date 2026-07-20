@@ -8,6 +8,9 @@ Flask 服务，为前端提供 API 接口，复用现有的 planner 模块。
 from __future__ import annotations
 
 import argparse
+import base64
+import hashlib
+import json
 import sys
 import os
 import threading
@@ -103,6 +106,41 @@ _DATASETS_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "datasets",
 )
+
+
+def _match_three_view_sample(image_b64: str) -> dict | None:
+    """Return local sample metadata when an uploaded image is a demo fixture."""
+    llm_client = None
+    try:
+        uploaded_digest = hashlib.sha256(
+            base64.b64decode(image_b64, validate=True)
+        ).digest()
+        root = os.path.join(_DATASETS_DIR, "manual_three_view")
+        samples_path = os.path.join(root, "samples.json")
+        samples = json.loads(
+            open(samples_path, encoding="utf-8").read()
+        )["samples"]
+        for sample in samples:
+            drawing = os.path.join(root, sample["subdir"], "drawing.png")
+            if not os.path.exists(drawing):
+                continue
+            with open(drawing, "rb") as stream:
+                if hashlib.sha256(stream.read()).digest() != uploaded_digest:
+                    continue
+            groundtruth_path = os.path.join(
+                root,
+                sample["subdir"],
+                "groundtruth.json",
+            )
+            groundtruth = (
+                json.loads(open(groundtruth_path, encoding="utf-8").read())
+                if os.path.exists(groundtruth_path)
+                else None
+            )
+            return {"sample": sample, "groundtruth": groundtruth}
+    except (OSError, ValueError, KeyError, json.JSONDecodeError):
+        return None
+    return None
 
 
 @app.route("/datasets/<path:subpath>")
@@ -293,11 +331,6 @@ def run():
         return jsonify({"success": False, "error": "请填写 API Key"}), 400
     if executor is None:
         return jsonify({"success": False, "error": "SolidWorks Executor 尚未初始化"}), 503
-    if mode == "multi_turn" and image_b64:
-        return jsonify({
-            "success": False,
-            "error": "Multi-turn MVP 暂只支持纯文本任务",
-        }), 400
     if mode == "multi_turn" and dry_run:
         return jsonify({
             "success": False,
@@ -315,11 +348,86 @@ def run():
                     use_cache=False,
                 )
                 try:
+                    # 三视图：先 Vision 抽 IR，再用 IR 确定性里程碑驱动 Agent
+                    agent_goal = instruction
+                    vision_ir = None
+                    task_plan = None
+                    blueprint = None
+                    if image_b64:
+                        from planner.task_decomposer import TaskDecomposer
+
+                        ir = llm_client._extract_three_view_ir(
+                            instruction,
+                            image_b64,
+                        )
+                        vision_ir = ir.model_dump(mode="json")
+                        agent_goal = llm_client.compose_multiturn_three_view_goal(
+                            instruction,
+                            ir,
+                        )
+                        stage_b_prompt = llm_client._compose_stage_b_prompt(
+                            instruction,
+                            ir,
+                        )
+                        blueprint = llm_client._plan_text(
+                            stage_b_prompt,
+                            input_mode="three_view",
+                        )
+                        sample_match = _match_three_view_sample(image_b64)
+                        groundtruth = (
+                            sample_match.get("groundtruth")
+                            if sample_match
+                            else None
+                        )
+                        gt_operations = (
+                            groundtruth.get("operations", [])
+                            if groundtruth
+                            else []
+                        )
+                        task_plan = TaskDecomposer().decompose_from_three_view_ir(
+                            agent_goal,
+                            ir,
+                            expected_volume_mm3=(
+                                groundtruth.get("expected_volume_mm3")
+                                if groundtruth
+                                else None
+                            ),
+                            expected_holes=(
+                                bool(groundtruth.get("holes"))
+                                or any(
+                                    operation.get("type") == "cutout_on_face"
+                                    for operation in gt_operations
+                                )
+                                if groundtruth
+                                else None
+                            ),
+                            expected_fillets=(
+                                any(
+                                    operation.get("type") == "fillet_edges"
+                                    for operation in gt_operations
+                                )
+                                if groundtruth
+                                else None
+                            ),
+                        )
                     result = MultiTurnAgent(
                         llm_client,
                         executor,
                         max_turns=max_turns,
-                    ).run(instruction)
+                    )
+                    if blueprint is not None and task_plan is not None:
+                        result = result.run_blueprint(
+                            agent_goal,
+                            task_plan,
+                            blueprint.steps,
+                            llm_calls=llm_client.usage_snapshot()["calls"],
+                        )
+                    else:
+                        result = result.run(
+                            agent_goal,
+                            task_plan=task_plan,
+                        )
+                    token_usage = llm_client.usage_snapshot()
                 finally:
                     llm_client.close()
                 result_dict = result.model_dump(mode="json")
@@ -329,6 +437,8 @@ def run():
                     "multi_turn": result_dict,
                     "turns": result_dict["turns"],
                     "final_observation": result_dict["final_observation"],
+                    "vision_ir": vision_ir,
+                    "token_usage": token_usage,
                     "summary": {
                         "total": result.total_actions,
                         "succeeded": result.successful_actions,
@@ -336,6 +446,7 @@ def run():
                         "status": result.status,
                         "llm_calls": result.llm_calls,
                         "turn_count": len(result.turns),
+                        "token_usage": token_usage,
                     },
                 })
 
@@ -373,7 +484,16 @@ def run():
 
     except Exception as e:
         traceback.print_exc()
-        return jsonify({"success": False, "error": str(e)}), 500
+        token_usage = (
+            llm_client.usage_snapshot()
+            if llm_client is not None
+            else None
+        )
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "token_usage": token_usage,
+        }), 500
 
 
 # ============================================================
