@@ -826,3 +826,31 @@ py eval\eval_film_projector_multiturn.py --validate-existing
 Web Demo 的装配体区域提供“Multi-turn 构建复古 16mm 放映机”按钮和
 0°–1440°拨盘滑块。滑块直接调用 SolidWorks API：180° 输入对应 45°输出且
 处于啮合，0°/60°/120°输出均为 0°停歇；不产生 LLM token。
+
+---
+
+## 十七、多模型复杂装配体统一评分
+
+批量运行器会从 AI Ping 实时模型列表验证模型是否可用，然后对减速箱、发动机、
+放映机依次执行冷缓存 Multi-turn 测试。质量分为静态装配 40、机构功能 40、
+执行可靠性 20；token 和耗时单独报告。
+
+```cmd
+cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
+
+py eval\eval_assembly_model_benchmark.py ^
+  --models Qwen3.5-397B-A17B GLM-5 MiniMax-M2.5 ^
+  --cases gearbox engine projector ^
+  --run-id my_three_model_run ^
+  --timeout-seconds 900
+```
+
+中断后可增加 `--resume`，已完成的组合不会重新产生 API 费用。原始响应、日志、
+单项分数和汇总保存在
+`eval/artifacts/assembly_model_benchmark/<run-id>/`，该目录被 Git 忽略。
+
+评分单测：
+
+```cmd
+py -m pytest test/test_assembly_model_benchmark.py -q
+```
