@@ -141,6 +141,9 @@ def run_tests() -> None:
         assert response.get_json()["vision_ir"]["part_type"] == "test"
         print("[PASS] multi-turn accepts three-view image input")
 
+        assert not hasattr(web_app, "_match_three_view_sample")
+        print("[PASS] runtime modeling does not inspect evaluation fixtures")
+
         assert hasattr(web_app._sw_execution_lock, "acquire")
         print("[PASS] shared SolidWorks execution lock is configured")
     finally:

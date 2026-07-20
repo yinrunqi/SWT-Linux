@@ -8,9 +8,6 @@ Flask 服务，为前端提供 API 接口，复用现有的 planner 模块。
 from __future__ import annotations
 
 import argparse
-import base64
-import hashlib
-import json
 import sys
 import os
 import threading
@@ -106,41 +103,6 @@ _DATASETS_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "datasets",
 )
-
-
-def _match_three_view_sample(image_b64: str) -> dict | None:
-    """Return local sample metadata when an uploaded image is a demo fixture."""
-    try:
-        uploaded_digest = hashlib.sha256(
-            base64.b64decode(image_b64, validate=True)
-        ).digest()
-        root = os.path.join(_DATASETS_DIR, "manual_three_view")
-        samples_path = os.path.join(root, "samples.json")
-        samples = json.loads(
-            open(samples_path, encoding="utf-8").read()
-        )["samples"]
-        for sample in samples:
-            drawing = os.path.join(root, sample["subdir"], "drawing.png")
-            if not os.path.exists(drawing):
-                continue
-            with open(drawing, "rb") as stream:
-                if hashlib.sha256(stream.read()).digest() != uploaded_digest:
-                    continue
-            groundtruth_path = os.path.join(
-                root,
-                sample["subdir"],
-                "groundtruth.json",
-            )
-            groundtruth = (
-                json.loads(open(groundtruth_path, encoding="utf-8").read())
-                if os.path.exists(groundtruth_path)
-                else None
-            )
-            return {"sample": sample, "groundtruth": groundtruth}
-    except (OSError, ValueError, KeyError, json.JSONDecodeError):
-        return None
-    return None
-
 
 @app.route("/datasets/<path:subpath>")
 def serve_dataset(subpath: str):
@@ -358,7 +320,6 @@ def run():
                     agent_goal = instruction
                     vision_ir = None
                     expected_dims = None
-                    expected_volume = None
                     if image_b64:
                         ir = llm_client._extract_three_view_ir(
                             instruction,
@@ -387,22 +348,6 @@ def run():
                             stage_b_prompt,
                             input_mode="three_view",
                         )
-                        sample_match = _match_three_view_sample(image_b64)
-                        groundtruth = (
-                            sample_match.get("groundtruth")
-                            if sample_match
-                            else None
-                        )
-                        if groundtruth:
-                            bbox = groundtruth.get("expected_bbox_mm", {})
-                            expected_dims = [
-                                bbox.get("length"),
-                                bbox.get("height"),
-                                bbox.get("depth"),
-                            ]
-                            expected_volume = groundtruth.get(
-                                "expected_volume_mm3"
-                            )
                     else:
                         blueprint = llm_client.plan(instruction)
 
@@ -422,7 +367,6 @@ def run():
                             agent_goal,
                             batches,
                             expected_dims_mm=expected_dims,
-                            expected_volume_mm3=expected_volume,
                         )
                     agent = MultiTurnAgent(
                         llm_client,

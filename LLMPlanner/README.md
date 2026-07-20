@@ -197,7 +197,16 @@ LLMPlanner/
 
 **问题**：过去 `SYSTEM_PROMPT` 直接硬编码在 `llm_client.py` 里（约 400 行）。每加一类物体（骰子/板凳/钥匙…）就往里塞一段"⭐ 完整示例"，改完还要清 diskcache——臃肿且难维护。
 
-**解决**：Prompt 拆分为**文件驱动的 Skill 体系**，加物件 = 新增一个 Markdown 文件，零 Python 改动。
+**解决**：Prompt 拆分为**文件驱动的 Skill 体系**，用于维护可迁移的建模知识、输入模态规则和 Agent 行为，而不是为每个物件保存标准答案。
+
+### Generalization-first 原则
+
+- 提升自动建模能力时，禁止把评测 case 的 ground truth、完整操作答案或只针对某个样例的步骤直接写进 Prompt / Skill / 路由代码。
+- 不让 LLM 按物体名称死记 recipe；优先增强通用几何推理、拓扑约束、操作语义、观察、机器验收、编辑和失败恢复能力。
+- 示例只能讲解可复用技术，不能复现待评测样例的答案；改动必须同时在失败样例、未见样例和回归集上验证迁移效果。
+- 评测器可以按 case 设计输入、ground truth、期望尺寸/体积/拓扑、操作检查和验收标准，以便精确定位能力缺口。
+- 运行时建模代码不得根据 sample ID、图片哈希、benchmark 名称或 fixture 专属信息改变策略；评测答案只能用于打分和诊断，不能作为隐藏提示回灌给 LLM 或 planner。
+- 如果现有原子操作难以稳定表达某类几何，应优先改进通用 API / 高层操作，而不是向 Prompt 填入完成模型的固定步骤。
 
 ### 目录结构
 
@@ -226,8 +235,8 @@ triggers: [板凳, 凳子, 桌子, stool]
 applies_to: [text, three_view]
 ---
 
-# 正文（会作为 System Prompt 的一部分喂给 LLM）
-...
+# 正文只描述可迁移能力，例如连续闭合轮廓、面上切除或失败恢复；
+# 不包含某个评测零件的完整答案步骤。
 ```
 
 frontmatter 极简 YAML 子集（**不引入 pyyaml 依赖**），支持 `key: value`、`key: [a, b, c]`、`key: true/false`。
@@ -245,10 +254,10 @@ frontmatter 极简 YAML 子集（**不引入 pyyaml 依赖**），支持 `key: v
 
 ### 新增建模知识的流程
 
-1. 在 `planner/skills/recipes/` 下新建 `my_part.md`
-2. 写好 frontmatter（关键：`triggers` 关键词、`applies_to`）
-3. 正文写建模步骤示例
-4. 完了。下一次 LLM 请求命中相关关键词时会自动注入，无需改任何 Python 代码。
+1. 先把失败归类为通用能力缺口，例如轮廓表达、坐标映射、选面、尺寸修改或恢复策略。
+2. 优先修改通用 operation、观察器、验收器或 Agent 控制循环；只有确属 Prompt 知识缺口时才增加 Skill。
+3. Skill 以能力命名并描述抽象方法，不以 benchmark 样例命名，不写入其完整答案。
+4. 使用至少一个未参与设计的 held-out case 和现有回归集验证，再记录整体通过率与代价。
 
 ## 多模态：从三视图图纸建模（第一期）
 
