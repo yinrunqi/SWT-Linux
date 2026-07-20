@@ -20,7 +20,11 @@ from planner.schemas import (
 
 
 class FakeClient:
+    def __init__(self):
+        self._calls = 0
+
     def plan(self, instruction, image_base64=None):
+        self._calls += 2
         return SwModelingPlan(
             user_intent=instruction,
             steps=[SwOperation(operation="new_part")],
@@ -43,12 +47,24 @@ class FakeClient:
 
     def usage_snapshot(self):
         return {
-            "prompt_tokens": 10,
-            "completion_tokens": 5,
-            "total_tokens": 15,
-            "calls": 2,
+            "prompt_tokens": 10 * self._calls,
+            "completion_tokens": 5 * self._calls,
+            "total_tokens": 15 * self._calls,
+            "calls": self._calls,
             "by_model": {},
         }
+
+    def usage_since(self, before):
+        now = self.usage_snapshot()
+        return {
+            key: now[key] - before[key]
+            for key in (
+                "prompt_tokens",
+                "completion_tokens",
+                "total_tokens",
+                "calls",
+            )
+        } | {"by_model": {}}
 
     def close(self):
         return None
@@ -162,6 +178,12 @@ def run_tests() -> None:
 
         assert hasattr(web_app._sw_execution_lock, "acquire")
         print("[PASS] shared SolidWorks execution lock is configured")
+
+        page = client.get("/").get_data(as_text=True)
+        script = client.get("/app.js").get_data(as_text=True)
+        assert 'id="gearbox-run-btn"' in page
+        assert "/api/assembly-examples/two-stage-gearbox/run" in script
+        print("[PASS] gearbox multi-turn demo is exposed in assembly UI")
     finally:
         web_app.executor = original_executor
         web_app._get_llm_client = original_get_client

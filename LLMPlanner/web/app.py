@@ -241,6 +241,133 @@ def gear_animation_status():
         return jsonify({"success": False, "error": str(exc)}), 500
 
 
+@app.route(
+    "/api/assembly-examples/two-stage-gearbox/run",
+    methods=["POST"],
+)
+def run_two_stage_gearbox():
+    """Run the parameterized multi-turn gearbox demo from a clean session."""
+    data = request.get_json(force=True) or {}
+    provider = data.get("provider", "aiping").strip()
+    key_env = (
+        "JUHEAI_API_KEY"
+        if provider == "juheai"
+        else "OPENAI_API_KEY"
+    )
+    url_env = (
+        "JUHEAI_BASE_URL"
+        if provider == "juheai"
+        else "OPENAI_BASE_URL"
+    )
+    api_key = data.get("api_key", "").strip() or os.getenv(key_env, "")
+    base_url = data.get("base_url", "").strip() or os.getenv(url_env, "")
+    plan_model = (
+        data.get("plan_model", "").strip()
+        or os.getenv("PLAN_MODEL", "gpt-4o")
+    )
+    vision_model = (
+        data.get("vision_model", "").strip()
+        or os.getenv("VISION_MODEL", plan_model)
+    )
+    try:
+        max_turns = max(1, min(int(data.get("max_turns") or 18), 100))
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "error": "max_turns 必须是整数",
+        }), 400
+    if not api_key:
+        return jsonify({"success": False, "error": "请填写 API Key"}), 400
+    if executor is None:
+        return jsonify({
+            "success": False,
+            "error": "SolidWorks Executor 尚未初始化",
+        }), 503
+
+    from eval.eval_two_stage_gearbox_multiturn import (
+        ARTIFACT_DIR,
+        SPEC_PATH,
+        SwApi,
+        _acceptance_specs,
+        _task_plan,
+        _user_goal,
+        prepare_parts,
+    )
+    from planner.validators import ValidatorRegistry
+    import json as _json
+
+    api = SwApi(executor.base_url)
+    try:
+        with _sw_execution_lock:
+            spec = _json.loads(SPEC_PATH.read_text(encoding="utf-8"))
+            paths, build_log = prepare_parts(
+                api,
+                spec,
+                ARTIFACT_DIR,
+                force=bool(data.get("force_parts", False)),
+            )
+            assembly_path = ARTIFACT_DIR / "two_stage_gearbox.SLDASM"
+            goal = _user_goal(paths, assembly_path)
+            task_plan = _task_plan(goal, assembly_path)
+            llm_client = _get_llm_client(
+                api_key,
+                base_url,
+                vision_model,
+                plan_model,
+                use_cache=True,
+            )
+            usage_before = llm_client.usage_snapshot()
+            agent = MultiTurnAgent(
+                llm_client,
+                executor,
+                max_turns=max_turns,
+            )
+            result = agent.run(goal, task_plan=task_plan)
+            token_usage = llm_client.usage_since(usage_before)
+            acceptance = ValidatorRegistry.validate(
+                _acceptance_specs(assembly_path),
+                result.final_observation,
+            )
+            cleanup = api.close_inactive()
+            result_dict = result.model_dump(mode="json")
+            passed = result.status == "completed" and acceptance.passed
+            return jsonify({
+                "success": True,
+                "mode": "multi_turn",
+                "example": "two_stage_gearbox",
+                "multi_turn": result_dict,
+                "turns": result_dict["turns"],
+                "final_observation": result_dict["final_observation"],
+                "task_plan": task_plan.model_dump(mode="json"),
+                "acceptance": acceptance.model_dump(mode="json"),
+                "build_log": build_log,
+                "window_cleanup": cleanup,
+                "cache_enabled": True,
+                "token_usage": token_usage,
+                "summary": {
+                    "total": result.total_actions,
+                    "succeeded": result.successful_actions,
+                    "all_ok": passed,
+                    "status": (
+                        "completed" if passed else result.status
+                    ),
+                    "llm_calls": result.llm_calls,
+                    "turn_count": len(result.turns),
+                    "token_usage": token_usage,
+                },
+            })
+    except Exception as exc:
+        traceback.print_exc()
+        try:
+            api.close_all()
+        except Exception:
+            pass
+        return jsonify({
+            "success": False,
+            "error": str(exc),
+        }), 500
+
+
 @app.route("/api/run", methods=["POST"])
 def run():
     """
@@ -316,84 +443,84 @@ def run():
                     base_url,
                     vision_model,
                     plan_model,
-                    use_cache=False,
+                    use_cache=True,
                 )
-                try:
-                    from planner.operation_optimizer import (
-                        group_feature_batches,
-                        stabilize_three_view_blueprint,
-                    )
-                    from planner.task_decomposer import TaskDecomposer
+                usage_before = llm_client.usage_snapshot()
+                from planner.operation_optimizer import (
+                    group_feature_batches,
+                    stabilize_three_view_blueprint,
+                )
+                from planner.task_decomposer import TaskDecomposer
 
-                    # 全局计划先行：保留 single-turn 的整体几何推理，
-                    # 再按原子特征事务执行、观察、验收和原位修复。
-                    agent_goal = instruction
-                    vision_ir = None
-                    expected_dims = None
-                    if image_b64:
-                        ir = llm_client._extract_three_view_ir(
-                            instruction,
-                            image_b64,
-                        )
-                        vision_ir = ir.model_dump(mode="json")
-                        size = ir.overall_size_mm or {}
-                        expected_dims = [
-                            size.get("length") or size.get("x"),
-                            size.get("height") or size.get("y"),
-                            size.get("depth")
-                            or size.get("width")
-                            or size.get("z"),
-                        ]
-                        if any(value in (None, 0) for value in expected_dims):
-                            expected_dims = None
-                        agent_goal = llm_client.compose_multiturn_three_view_goal(
-                            instruction,
-                            ir,
-                        )
-                        stage_b_prompt = llm_client._compose_stage_b_prompt(
-                            instruction,
-                            ir,
+                # 全局计划先行：稳定的 Vision IR / 初始蓝图允许命中缓存；
+                # 每轮 Agent 决策另按完整 observation + ledger 做状态缓存。
+                agent_goal = instruction
+                vision_ir = None
+                expected_dims = None
+                if image_b64:
+                    ir = llm_client._extract_three_view_ir(
+                        instruction,
+                        image_b64,
+                    )
+                    vision_ir = ir.model_dump(mode="json")
+                    size = ir.overall_size_mm or {}
+                    expected_dims = [
+                        size.get("length") or size.get("x"),
+                        size.get("height") or size.get("y"),
+                        size.get("depth")
+                        or size.get("width")
+                        or size.get("z"),
+                    ]
+                    if any(value in (None, 0) for value in expected_dims):
+                        expected_dims = None
+                    agent_goal = llm_client.compose_multiturn_three_view_goal(
+                        instruction,
+                        ir,
+                    )
+                    stage_b_prompt = llm_client._compose_stage_b_prompt(
+                        instruction,
+                        ir,
+                    )
+                    blueprint = stabilize_three_view_blueprint(
+                        SwModelingPlan(
+                            user_intent=agent_goal,
+                            steps=[],
+                            notes="",
+                        ),
+                        ir,
+                    )
+                    if not blueprint.steps:
+                        blueprint = llm_client._plan_text(
+                            stage_b_prompt,
+                            input_mode="three_view",
                         )
                         blueprint = stabilize_three_view_blueprint(
-                            SwModelingPlan(
-                                user_intent=agent_goal,
-                                steps=[],
-                                notes="",
-                            ),
+                            blueprint,
                             ir,
                         )
-                        if not blueprint.steps:
-                            blueprint = llm_client._plan_text(
-                                stage_b_prompt,
-                                input_mode="three_view",
-                            )
-                            blueprint = stabilize_three_view_blueprint(
-                                blueprint,
-                                ir,
-                            )
-                    else:
-                        blueprint = llm_client.plan(instruction)
+                else:
+                    blueprint = llm_client.plan(instruction)
 
-                    batches = group_feature_batches(blueprint.steps)
-                    task_plan = TaskDecomposer().decompose_blueprint(
-                        agent_goal,
-                        batches,
-                        expected_dims_mm=expected_dims,
-                    )
-                    agent = MultiTurnAgent(
-                        llm_client,
-                        executor,
-                        max_turns=max_turns,
-                    )
-                    result = agent.run_blueprint(
-                        agent_goal,
-                        task_plan,
-                        batches,
-                        llm_calls=llm_client.usage_snapshot()["calls"],
-                    )
-                    token_usage = llm_client.usage_snapshot()
-                finally:
-                    llm_client.close()
+                batches = group_feature_batches(blueprint.steps)
+                task_plan = TaskDecomposer().decompose_blueprint(
+                    agent_goal,
+                    batches,
+                    expected_dims_mm=expected_dims,
+                )
+                agent = MultiTurnAgent(
+                    llm_client,
+                    executor,
+                    max_turns=max_turns,
+                )
+                result = agent.run_blueprint(
+                    agent_goal,
+                    task_plan,
+                    batches,
+                    llm_calls=llm_client.usage_since(
+                        usage_before
+                    )["calls"],
+                )
+                token_usage = llm_client.usage_since(usage_before)
                 result_dict = result.model_dump(mode="json")
                 return jsonify({
                     "success": True,

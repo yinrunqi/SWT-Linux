@@ -213,6 +213,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 8px;
 }
+.gear-animation-panel + .gear-animation-panel { margin-top: 10px; }
 .gear-animation-actions {
   display: flex;
   justify-content: center;

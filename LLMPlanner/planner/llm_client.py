@@ -370,6 +370,41 @@ class SwLLMClient:
             },
         }
 
+    def usage_since(self, before: dict) -> dict:
+        """Return token usage added after a previous snapshot.
+
+        Cached clients are reused by the Web Demo, so request responses must
+        report a delta rather than the client's lifetime counters.
+        """
+        current = self.usage_snapshot()
+        by_model = {}
+        model_names = set(current["by_model"]) | set(
+            before.get("by_model", {})
+        )
+        for name in model_names:
+            now = current["by_model"].get(name, {})
+            old = before.get("by_model", {}).get(name, {})
+            delta = {
+                key: int(now.get(key, 0)) - int(old.get(key, 0))
+                for key in (
+                    "prompt_tokens",
+                    "completion_tokens",
+                    "total_tokens",
+                    "calls",
+                )
+            }
+            if any(delta.values()):
+                by_model[name] = delta
+        return {
+            key: int(current.get(key, 0)) - int(before.get(key, 0))
+            for key in (
+                "prompt_tokens",
+                "completion_tokens",
+                "total_tokens",
+                "calls",
+            )
+        } | {"by_model": by_model}
+
     def _assemble_system_prompt(self, user_instruction: str, input_mode: str = "text") -> str:
         """
         根据 skill_mode 组装本次调用的 System Prompt。
@@ -858,7 +893,7 @@ class SwLLMClient:
         current_milestone: Milestone | None = None,
         repair_required: bool = False,
     ) -> AgentTurn:
-        """根据真实模型状态生成下一小批增量操作；Multi-turn 不使用计划缓存。"""
+        """Generate the next increment, cached by the complete agent state."""
         # 从与 single-turn 相同的基础 prompt 开始，再单独追加 Agent 规则；
         # agent skill 不进入 SkillRegistry，避免改变任何既有 single-turn prompt/cache key。
         input_mode = (
@@ -920,6 +955,22 @@ class SwLLMClient:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ]
+        agent_cache_key = None
+        if self.use_cache and self.cache is not None:
+            agent_cache_key = _make_cache_key(
+                self.plan_model,
+                system_prompt + "\n[AGENT_TURN]",
+                user_prompt,
+            )
+            cached = self.cache.get(agent_cache_key)
+            if cached is not None:
+                try:
+                    print("[LLM] AgentTurn 命中状态缓存，跳过 API 调用")
+                    return AgentTurn.model_validate_json(cached)
+                except Exception:
+                    # Schema evolves with the agent protocol. Discard stale
+                    # entries instead of failing a new run.
+                    self.cache.delete(agent_cache_key)
 
         raw_schema = AgentTurn.model_json_schema()
         patched_schema = self._patch_schema_additional_properties(raw_schema)
@@ -967,9 +1018,17 @@ class SwLLMClient:
             raise ValueError("Multi-turn LLM 返回了无效 JSON") from exc
         # 部分 OpenAI 兼容中转站不严格执行 enum。只归一化无歧义的常见别名，
         # 最终仍交给 Pydantic 校验操作和动作预算。
-        return AgentTurn.model_validate(
+        turn = AgentTurn.model_validate(
             _normalize_agent_decision_payload(decision_payload)
         )
+        if (
+            self.use_cache
+            and self.cache is not None
+            and agent_cache_key is not None
+        ):
+            self.cache.set(agent_cache_key, turn.model_dump_json())
+            print("[LLM] AgentTurn 已写入状态缓存")
+        return turn
 
     @retry(
         stop=stop_after_attempt(3),

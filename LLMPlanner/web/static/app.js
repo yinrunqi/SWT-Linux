@@ -38,6 +38,8 @@ const gearLoadBtn = document.getElementById("gear-load-btn");
 const gearPlayBtn = document.getElementById("gear-play-btn");
 const gearStopBtn = document.getElementById("gear-stop-btn");
 const gearAnimationStatus = document.getElementById("gear-animation-status");
+const gearboxRunBtn = document.getElementById("gearbox-run-btn");
+const gearboxRunStatus = document.getElementById("gearbox-run-status");
 let gearStatusTimer = null;
 
 // 连续编辑测试控件
@@ -235,6 +237,70 @@ async function stopGearAnimation() {
     await refreshGearAnimationStatus();
   } catch (error) {
     setGearAnimationStatus(`停止失败：${error.message}`, "fail");
+  }
+}
+
+async function runTwoStageGearbox() {
+  if (busy) return;
+  busy = true;
+  gearboxRunBtn.disabled = true;
+  sendBtn.disabled = true;
+  gearboxRunStatus.textContent =
+    "正在准备参数化零件，并由 Multi-turn Agent 完成装配与机器验收…";
+  gearboxRunStatus.classList.remove("ok", "fail");
+  appendUser(
+    "装配参数化双级圆柱齿轮减速箱（5 个组件、两级传动、机器验收）",
+    null,
+  );
+  const loadingId = appendLoading(
+    "正在构建双级减速箱；首次运行会产生 LLM token，重复运行将优先命中状态缓存…",
+  );
+  try {
+    const response = await fetch(
+      `${API}/api/assembly-examples/two-stage-gearbox/run`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: providerEl.value,
+          api_key: apiKeyEl.value.trim(),
+          base_url: baseUrlEl.value.trim(),
+          vision_model: visionModelEl.value,
+          plan_model: planModelEl.value,
+          max_turns: maxTurnsEl.value
+            ? Number(maxTurnsEl.value)
+            : 18,
+        }),
+      },
+    );
+    const data = await response.json();
+    removeLoading(loadingId);
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+    appendMultiTurnResponse(data.multi_turn, data.summary);
+    const tokens = Number(data.token_usage?.total_tokens || 0);
+    const cacheText = tokens === 0
+      ? "本次 LLM 决策全部命中缓存，token 花费为 0"
+      : `本次新消耗 ${tokens} tokens，决策已写入缓存`;
+    const accepted = Boolean(data.summary?.all_ok);
+    gearboxRunStatus.textContent =
+      `${accepted ? "装配与验收成功" : "装配完成但验收未全部通过"}；${cacheText}`;
+    gearboxRunStatus.classList.add(accepted ? "ok" : "fail");
+    if (!accepted) {
+      appendError(
+        `减速箱最终验收未通过：${data.acceptance?.message || "请查看验收详情"}`,
+      );
+    }
+  } catch (error) {
+    removeLoading(loadingId);
+    gearboxRunStatus.textContent = `减速箱构建失败：${error.message}`;
+    gearboxRunStatus.classList.add("fail");
+    appendError(`减速箱构建失败：${error.message}`);
+  } finally {
+    busy = false;
+    gearboxRunBtn.disabled = false;
+    sendBtn.disabled = false;
   }
 }
 
@@ -814,6 +880,7 @@ editResetBtn.addEventListener("click", resetEditWorkflow);
 gearLoadBtn.addEventListener("click", loadGearAnimation);
 gearPlayBtn.addEventListener("click", playGearAnimation);
 gearStopBtn.addEventListener("click", stopGearAnimation);
+gearboxRunBtn.addEventListener("click", runTwoStageGearbox);
 inputEl.addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
 });

@@ -742,6 +742,11 @@ cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
 venv\Scripts\python.exe -X utf8 eval\eval_two_stage_gearbox_multiturn.py --max-turns 18
 ```
 
+Web Demo 可在“5. 装配体相关”中点击“Multi-turn 构建双级减速箱”。首次运行会调用
+LLM；再次以相同模型和任务运行时，Vision/蓝图/完整状态 Agent 决策可自然命中缓存。
+缓存只跳过 LLM 请求，零件准备、SolidWorks 装配操作、observation 与确定性验收仍会
+重新执行。页面会显示本次新增 token；全部决策命中时应为 `0`。
+
 验收项：5 个组件原点位置 ±1mm；3 个未压制 Gear Mate，归一化比值恰为
 `{1,2,3}`；2 个 Coincident Mate；原生干涉数 0；`.SLDASM` 已保存。
 每次零件生成后调用 `/api/close-all-documents`；装配完成后调用

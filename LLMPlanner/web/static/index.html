@@ -112,7 +112,15 @@
 
       <div class="prompt-section">
         <div class="prompt-section-title">5. 装配体相关</div>
-        <p class="prompt-section-desc">§十三 Motion Study — 打开预置齿轮装配体并播放联动动画</p>
+        <p class="prompt-section-desc">Multi-turn 参数化双级减速箱；§十三 Motion Study 双齿轮联动动画</p>
+        <div class="gear-animation-panel">
+          <div class="gear-animation-actions">
+            <button id="gearbox-run-btn">⚙ Multi-turn 构建双级减速箱</button>
+          </div>
+          <div id="gearbox-run-status" class="gear-animation-status">
+            首次运行调用 LLM；相同状态的后续运行复用分层缓存并重新执行机器验收
+          </div>
+        </div>
         <div class="gear-animation-panel">
           <div class="gear-animation-actions">
             <button id="gear-load-btn">加载装配体</button>
