@@ -62,6 +62,14 @@ OPERATION_ENDPOINT_MAP: dict[OperationType, tuple[str, str]] = {
         "POST",
         "/api/assembly/get-component-transform",
     ),
+    OperationType.ASSEMBLY_SET_COMPONENT_POSE: (
+        "POST",
+        "/api/assembly/set-component-pose",
+    ),
+    OperationType.ASSEMBLY_SET_CRANK_SLIDER_POSE: (
+        "POST",
+        "/api/assembly/mechanism/crank-slider-pose",
+    ),
 }
 
 # 常见的英文→中文特征类型名映射（SolidWorks 中文版）

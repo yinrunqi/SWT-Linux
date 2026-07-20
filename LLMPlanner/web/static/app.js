@@ -44,6 +44,11 @@ const gearboxGearSelect = document.getElementById("gearbox-gear-select");
 const gearboxMotionLoadBtn = document.getElementById("gearbox-motion-load-btn");
 const gearboxMotionPlayBtn = document.getElementById("gearbox-motion-play-btn");
 const gearboxMotionStopBtn = document.getElementById("gearbox-motion-stop-btn");
+const engineRunBtn = document.getElementById("engine-run-btn");
+const engineAngle = document.getElementById("engine-angle");
+const engineAngleValue = document.getElementById("engine-angle-value");
+const enginePoseBtn = document.getElementById("engine-pose-btn");
+const engineRunStatus = document.getElementById("engine-run-status");
 let gearStatusTimer = null;
 let gearboxMotionTimer = null;
 
@@ -389,6 +394,95 @@ async function stopGearboxMotion() {
   } catch (error) {
     gearboxRunStatus.textContent = `停止失败：${error.message}`;
     gearboxRunStatus.classList.add("fail");
+  }
+}
+
+async function runSingleCylinderEngine() {
+  if (busy) return;
+  busy = true;
+  engineRunBtn.disabled = true;
+  sendBtn.disabled = true;
+  engineRunStatus.textContent =
+    "正在准备 10 个参数化零件，并由 Multi-turn Agent 装配、检查正时和完整行程…";
+  engineRunStatus.classList.remove("ok", "fail");
+  appendUser(
+    "装配带 2:1 正时齿轮的单缸曲柄滑块发动机，并验收完整运动周期",
+    null,
+  );
+  const loadingId = appendLoading(
+    "正在构建复杂发动机机构；重复运行将复用成功的 Agent 状态缓存…",
+  );
+  try {
+    const response = await fetch(
+      `${API}/api/assembly-examples/single-cylinder-engine/run`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: providerEl.value,
+          api_key: apiKeyEl.value.trim(),
+          base_url: baseUrlEl.value.trim(),
+          vision_model: visionModelEl.value,
+          plan_model: planModelEl.value,
+          max_turns: maxTurnsEl.value
+            ? Number(maxTurnsEl.value)
+            : 24,
+        }),
+      },
+    );
+    const data = await response.json();
+    removeLoading(loadingId);
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+    appendMultiTurnResponse(data.multi_turn, data.summary);
+    const tokens = Number(data.token_usage?.total_tokens || 0);
+    const cacheText = tokens === 0
+      ? "Agent 决策全部命中缓存，token 花费为 0"
+      : `本次新消耗 ${tokens} tokens`;
+    const accepted = Boolean(data.summary?.all_ok);
+    const stroke = Number(
+      data.kinematic_acceptance?.actual_stroke_mm || 0,
+    ).toFixed(3);
+    engineRunStatus.textContent = accepted
+      ? `装配及五角度验收成功，实测行程 ${stroke} mm；${cacheText}`
+      : `装配或运动学验收未通过；${cacheText}`;
+    engineRunStatus.classList.add(accepted ? "ok" : "fail");
+  } catch (error) {
+    removeLoading(loadingId);
+    engineRunStatus.textContent = `发动机构建失败：${error.message}`;
+    engineRunStatus.classList.add("fail");
+    appendError(`发动机构建失败：${error.message}`);
+  } finally {
+    busy = false;
+    engineRunBtn.disabled = false;
+    sendBtn.disabled = false;
+  }
+}
+
+async function setEnginePose() {
+  enginePoseBtn.disabled = true;
+  engineRunStatus.textContent =
+    `正在通过确定性 SW API 设置 ${engineAngle.value}° 姿态…`;
+  engineRunStatus.classList.remove("ok", "fail");
+  try {
+    const response = await fetch(`${API}/api/engine-animation/pose`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ angle_deg: Number(engineAngle.value) }),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+    engineRunStatus.textContent =
+      `${data.message}，活塞销位置 ${Number(data.slider_mm).toFixed(3)} mm；该过程不调用 LLM`;
+    engineRunStatus.classList.add("ok");
+  } catch (error) {
+    engineRunStatus.textContent = `机构姿态设置失败：${error.message}`;
+    engineRunStatus.classList.add("fail");
+  } finally {
+    enginePoseBtn.disabled = false;
   }
 }
 
@@ -972,6 +1066,11 @@ gearboxRunBtn.addEventListener("click", runTwoStageGearbox);
 gearboxMotionLoadBtn.addEventListener("click", loadGearboxMotion);
 gearboxMotionPlayBtn.addEventListener("click", playGearboxMotion);
 gearboxMotionStopBtn.addEventListener("click", stopGearboxMotion);
+engineRunBtn.addEventListener("click", runSingleCylinderEngine);
+enginePoseBtn.addEventListener("click", setEnginePose);
+engineAngle.addEventListener("input", () => {
+  engineAngleValue.textContent = `${engineAngle.value}°`;
+});
 gearboxGearSelect.addEventListener("change", () => {
   gearboxMotionPlayBtn.disabled = true;
   gearboxMotionStopBtn.disabled = true;

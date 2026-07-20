@@ -33,6 +33,10 @@ def test_assembly_operations_have_http_endpoints():
         OperationType.ASSEMBLY_CHECK_INTERFERENCE:
             "/api/assembly/check-interference",
         OperationType.ASSEMBLY_SAVE: "/api/assembly/save",
+        OperationType.ASSEMBLY_SET_COMPONENT_POSE:
+            "/api/assembly/set-component-pose",
+        OperationType.ASSEMBLY_SET_CRANK_SLIDER_POSE:
+            "/api/assembly/mechanism/crank-slider-pose",
     }
     for operation, endpoint in expected.items():
         assert OPERATION_ENDPOINT_MAP[operation][1] == endpoint
@@ -253,3 +257,32 @@ def test_gear_mate_requires_ratio_but_not_rays():
         },
     })
     assert "rx1" not in gear.params
+
+
+def test_crank_slider_pose_contract_and_defaults():
+    operation = SwOperation.model_validate({
+        "operation": "assembly_set_crank_slider_pose",
+        "params": {
+            "crankComponent": "crank-1",
+            "rodComponent": "rod-1",
+            "sliderComponent": "piston-1",
+            "crankRadius": 0.025,
+            "rodLength": 0.09,
+            "angleDeg": 90,
+            "synchronizedComponents": [
+                {
+                    "name": "cam-1",
+                    "position": [0.072, 0, 0],
+                    "ratio": 2,
+                    "reverse": True,
+                },
+            ],
+        },
+    })
+    assert operation.params["crankRadius"] == 0.025
+    assert (
+        operation.params["synchronizedComponents"][0]["componentName"]
+        == "cam-1"
+    )
+    assert operation.params["synchronizedComponents"][0]["x"] == 0.072
+    assert operation.params["synchronizedComponents"][0]["ratio"] == 2

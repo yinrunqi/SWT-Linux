@@ -54,6 +54,8 @@ class OperationType(str, Enum):
     ASSEMBLY_SAVE = "assembly_save"
     ASSEMBLY_CHECK_INTERFERENCE = "assembly_check_interference"
     ASSEMBLY_GET_COMPONENT_TRANSFORM = "assembly_get_component_transform"
+    ASSEMBLY_SET_COMPONENT_POSE = "assembly_set_component_pose"
+    ASSEMBLY_SET_CRANK_SLIDER_POSE = "assembly_set_crank_slider_pose"
 
 
 class SwOperation(BaseModel):
@@ -163,7 +165,12 @@ class SwOperation(BaseModel):
             "- assembly_mate_gear: {component1,component2,gearRatioNumerator,"
             "gearRatioDenominator,reverse?}；中心孔圆柱面由 C# 自动解析，不要提供射线\n"
             "- assembly_rebuild / assembly_save / assembly_check_interference: 无参数\n"
-            "- assembly_get_component_transform: {componentName: str}"
+            "- assembly_get_component_transform: {componentName: str}\n"
+            "- assembly_set_component_pose: {componentName,x,y,z,axisX,axisY,axisZ,angleDeg}\n"
+            "- assembly_set_crank_slider_pose: {crankComponent,rodComponent,sliderComponent,"
+            "centerX,centerY,centerZ,crankRadius,rodLength,sliderAxisX,sliderAxisY,sliderAxisZ,"
+            "rotationAxisX,rotationAxisY,rotationAxisZ,angleDeg,synchronizedComponents?}；"
+            "长度单位米，synchronizedComponents 每项含 componentName,x,y,z,ratio,reverse?,phaseDeg?"
         )
     )
     description: str = Field(
@@ -309,6 +316,51 @@ class SwOperation(BaseModel):
                             if candidate in params:
                                 params[target] = params[candidate]
                                 break
+            if operation_value == "assembly_set_crank_slider_pose":
+                for target, candidates in {
+                    "crankComponent": ("crank", "crank_component"),
+                    "rodComponent": ("rod", "rod_component"),
+                    "sliderComponent": ("slider", "slider_component"),
+                    "crankRadius": ("crank_radius",),
+                    "rodLength": ("rod_length", "connectingRodLength"),
+                    "angleDeg": ("angle", "angle_deg"),
+                    "synchronizedComponents": (
+                        "synchronized_components",
+                        "synchronized",
+                    ),
+                }.items():
+                    if target not in params:
+                        for candidate in candidates:
+                            if candidate in params:
+                                params[target] = params[candidate]
+                                break
+                synchronized = params.get("synchronizedComponents")
+                if isinstance(synchronized, list):
+                    normalized_synchronized = []
+                    for raw_entry in synchronized:
+                        if not isinstance(raw_entry, dict):
+                            normalized_synchronized.append(raw_entry)
+                            continue
+                        entry = dict(raw_entry)
+                        if "componentName" not in entry:
+                            for candidate in ("name", "component"):
+                                if candidate in entry:
+                                    entry["componentName"] = entry[candidate]
+                                    break
+                        position = entry.get("position")
+                        if (
+                            isinstance(position, (list, tuple))
+                            and len(position) >= 3
+                        ):
+                            for key, coordinate in zip(
+                                ("x", "y", "z"),
+                                position[:3],
+                            ):
+                                entry.setdefault(key, coordinate)
+                        normalized_synchronized.append(entry)
+                    params["synchronizedComponents"] = (
+                        normalized_synchronized
+                    )
             if operation_value == "assembly_mate_coincident":
                 plane_aliases = {
                     "front": "前视基准面",
@@ -362,6 +414,24 @@ class SwOperation(BaseModel):
                 "component2",
                 "gearRatioNumerator",
                 "gearRatioDenominator",
+            ),
+            OperationType.ASSEMBLY_SET_COMPONENT_POSE: (
+                "componentName",
+                "x",
+                "y",
+                "z",
+                "axisX",
+                "axisY",
+                "axisZ",
+                "angleDeg",
+            ),
+            OperationType.ASSEMBLY_SET_CRANK_SLIDER_POSE: (
+                "crankComponent",
+                "rodComponent",
+                "sliderComponent",
+                "crankRadius",
+                "rodLength",
+                "angleDeg",
             ),
         }.get(self.operation, ())
         missing = [

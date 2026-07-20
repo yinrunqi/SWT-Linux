@@ -3049,6 +3049,321 @@ namespace Chapter1.ConnectToSw
         }
 
         /// <summary>
+        /// Set an absolute component pose from translation plus axis-angle rotation.
+        /// This is a general deterministic primitive for mechanism playback.
+        /// </summary>
+        public Dictionary<string, object> SetComponentPose(
+            string componentName,
+            double x,
+            double y,
+            double z,
+            double axisX,
+            double axisY,
+            double axisZ,
+            double angleDeg,
+            bool rebuildAndRedraw = true,
+            IComponent2 resolvedComponent = null)
+        {
+            EnsureActiveAssembly();
+            var component = resolvedComponent
+                ?? FindAssemblyComponent(componentName);
+            if (component.IsFixed())
+            {
+                ClearAssemblySelection();
+                component.Select4(false, null, false);
+                _activeAssembly.UnfixComponent();
+            }
+
+            double norm = Math.Sqrt(
+                axisX * axisX + axisY * axisY + axisZ * axisZ);
+            if (norm < 1e-12)
+                throw new ArgumentException("姿态旋转轴不能为零向量");
+            axisX /= norm;
+            axisY /= norm;
+            axisZ /= norm;
+            double angle = angleDeg * Math.PI / 180.0;
+            double c = Math.Cos(angle);
+            double s = Math.Sin(angle);
+            double t = 1.0 - c;
+            var values = new double[]
+            {
+                t*axisX*axisX+c,
+                t*axisX*axisY-axisZ*s,
+                t*axisX*axisZ+axisY*s,
+                t*axisX*axisY+axisZ*s,
+                t*axisY*axisY+c,
+                t*axisY*axisZ-axisX*s,
+                t*axisX*axisZ-axisY*s,
+                t*axisY*axisZ+axisX*s,
+                t*axisZ*axisZ+c,
+                x, y, z,
+                1, 0, 0, 0,
+            };
+            var mathUtility = _swApp.GetMathUtility() as IMathUtility;
+            var transform = mathUtility?.CreateTransform(values) as MathTransform;
+            if (transform == null)
+                throw new InvalidOperationException("创建组件姿态 Transform 失败");
+            component.Transform2 = transform;
+            if (rebuildAndRedraw)
+            {
+                ((IModelDoc2)_activeAssembly).Extension.Rebuild(
+                    (int)swRebuildOptions_e.swUpdateMates);
+                ((IModelDoc2)_activeAssembly).GraphicsRedraw2();
+            }
+            return new Dictionary<string, object>
+            {
+                ["componentName"] = componentName,
+                ["translationXYZ"] = new double[] { x, y, z },
+                ["axis"] = new double[] { axisX, axisY, axisZ },
+                ["angleDeg"] = angleDeg,
+            };
+        }
+
+        /// <summary>
+        /// Apply one analytically solved pose of a planar crank-slider mechanism.
+        /// The rod part's local +Y axis is assumed to run between its pin centers.
+        /// Optional synchronized components rotate at signed ratios of crank angle.
+        /// </summary>
+        public Dictionary<string, object> SetCrankSliderPose(
+            string crankComponent,
+            string rodComponent,
+            string sliderComponent,
+            double centerX,
+            double centerY,
+            double centerZ,
+            double crankRadius,
+            double rodLength,
+            double sliderAxisX,
+            double sliderAxisY,
+            double sliderAxisZ,
+            double rotationAxisX,
+            double rotationAxisY,
+            double rotationAxisZ,
+            double crankAxisOffset,
+            double rodAxisOffset,
+            double sliderAxisOffset,
+            double angleDeg,
+            List<Dictionary<string, object>> synchronizedComponents)
+        {
+            if (crankRadius <= 0 || rodLength <= crankRadius)
+                throw new ArgumentException("连杆长度必须大于正的曲柄半径");
+            EnsureActiveAssembly();
+            var componentLookup = new Dictionary<string, IComponent2>(
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var item in (_activeAssembly.GetComponents(false)
+                as object[]) ?? new object[0])
+            {
+                var component = item as IComponent2;
+                if (component != null)
+                    componentLookup[component.Name2] = component;
+            }
+            Func<string, IComponent2> resolve = name =>
+            {
+                IComponent2 component;
+                if (!componentLookup.TryGetValue(name, out component))
+                    throw new InvalidOperationException(
+                        $"装配体中找不到组件: {name}");
+                return component;
+            };
+
+            double sliderNorm = Math.Sqrt(
+                sliderAxisX * sliderAxisX +
+                sliderAxisY * sliderAxisY +
+                sliderAxisZ * sliderAxisZ);
+            double rotationNorm = Math.Sqrt(
+                rotationAxisX * rotationAxisX +
+                rotationAxisY * rotationAxisY +
+                rotationAxisZ * rotationAxisZ);
+            if (sliderNorm < 1e-12 || rotationNorm < 1e-12)
+                throw new ArgumentException("滑动轴和旋转轴不能为零向量");
+            sliderAxisX /= sliderNorm;
+            sliderAxisY /= sliderNorm;
+            sliderAxisZ /= sliderNorm;
+            rotationAxisX /= rotationNorm;
+            rotationAxisY /= rotationNorm;
+            rotationAxisZ /= rotationNorm;
+            Func<IComponent2, double[]> translationOf = component =>
+            {
+                var transform = component.Transform2 as MathTransform;
+                var values = transform?.ArrayData as double[];
+                if (values == null || values.Length < 12)
+                    throw new InvalidOperationException(
+                        $"无法读取组件姿态: {component.Name2}");
+                return new double[] { values[9], values[10], values[11] };
+            };
+            Func<string, double> inferAxisOffset = name =>
+            {
+                var translation = translationOf(resolve(name));
+                return (
+                    (translation[0] - centerX) * rotationAxisX +
+                    (translation[1] - centerY) * rotationAxisY +
+                    (translation[2] - centerZ) * rotationAxisZ);
+            };
+            if (double.IsNaN(crankAxisOffset))
+                crankAxisOffset = inferAxisOffset(crankComponent);
+            if (double.IsNaN(rodAxisOffset))
+                rodAxisOffset = inferAxisOffset(rodComponent);
+            if (double.IsNaN(sliderAxisOffset))
+                sliderAxisOffset = inferAxisOffset(sliderComponent);
+
+            // In-plane perpendicular = rotation axis cross slider axis.
+            double perpX =
+                rotationAxisY * sliderAxisZ -
+                rotationAxisZ * sliderAxisY;
+            double perpY =
+                rotationAxisZ * sliderAxisX -
+                rotationAxisX * sliderAxisZ;
+            double perpZ =
+                rotationAxisX * sliderAxisY -
+                rotationAxisY * sliderAxisX;
+            double perpNorm = Math.Sqrt(
+                perpX * perpX + perpY * perpY + perpZ * perpZ);
+            if (perpNorm < 1e-9)
+                throw new ArgumentException("滑动轴不能与旋转轴平行");
+            perpX /= perpNorm;
+            perpY /= perpNorm;
+            perpZ /= perpNorm;
+
+            double angle = angleDeg * Math.PI / 180.0;
+            double sin = Math.Sin(angle);
+            double cos = Math.Cos(angle);
+            double underRoot =
+                rodLength * rodLength -
+                crankRadius * crankRadius * sin * sin;
+            if (underRoot < 0)
+                throw new InvalidOperationException("曲柄滑块参数无实数解");
+            double sliderDistance =
+                crankRadius * cos + Math.Sqrt(underRoot);
+
+            double pinX = centerX +
+                sliderAxisX * crankRadius * cos +
+                perpX * crankRadius * sin;
+            double pinY = centerY +
+                sliderAxisY * crankRadius * cos +
+                perpY * crankRadius * sin;
+            double pinZ = centerZ +
+                sliderAxisZ * crankRadius * cos +
+                perpZ * crankRadius * sin;
+            double sliderX = centerX + sliderAxisX * sliderDistance;
+            double sliderY = centerY + sliderAxisY * sliderDistance;
+            double sliderZ = centerZ + sliderAxisZ * sliderDistance;
+            double rodX = (pinX + sliderX) / 2.0;
+            double rodY = (pinY + sliderY) / 2.0;
+            double rodZ = (pinZ + sliderZ) / 2.0;
+
+            double rodVectorX = sliderX - pinX;
+            double rodVectorY = sliderY - pinY;
+            double rodVectorZ = sliderZ - pinZ;
+            double alongSlider =
+                rodVectorX * sliderAxisX +
+                rodVectorY * sliderAxisY +
+                rodVectorZ * sliderAxisZ;
+            double alongPerp =
+                rodVectorX * perpX +
+                rodVectorY * perpY +
+                rodVectorZ * perpZ;
+            double rodAngleDeg =
+                Math.Atan2(alongPerp, alongSlider) * 180.0 / Math.PI;
+
+            var modelDoc = (IModelDoc2)_activeAssembly;
+            var modelView = modelDoc.ActiveView as IModelView;
+            var synchronizedResults =
+                new List<Dictionary<string, object>>();
+            try
+            {
+                _swApp.CommandInProgress = true;
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = false;
+            SetComponentPose(
+                crankComponent,
+                centerX + rotationAxisX * crankAxisOffset,
+                centerY + rotationAxisY * crankAxisOffset,
+                centerZ + rotationAxisZ * crankAxisOffset,
+                rotationAxisX, rotationAxisY, rotationAxisZ,
+                angleDeg,
+                false,
+                resolve(crankComponent));
+            SetComponentPose(
+                rodComponent,
+                rodX + rotationAxisX * rodAxisOffset,
+                rodY + rotationAxisY * rodAxisOffset,
+                rodZ + rotationAxisZ * rodAxisOffset,
+                rotationAxisX, rotationAxisY, rotationAxisZ,
+                rodAngleDeg,
+                false,
+                resolve(rodComponent));
+            SetComponentPose(
+                sliderComponent,
+                sliderX + rotationAxisX * sliderAxisOffset,
+                sliderY + rotationAxisY * sliderAxisOffset,
+                sliderZ + rotationAxisZ * sliderAxisOffset,
+                rotationAxisX, rotationAxisY, rotationAxisZ,
+                0.0,
+                false,
+                resolve(sliderComponent));
+
+            foreach (var item in synchronizedComponents
+                ?? new List<Dictionary<string, object>>())
+            {
+                object rawName;
+                if (!item.TryGetValue("componentName", out rawName)
+                    && !item.TryGetValue("name", out rawName))
+                    throw new ArgumentException(
+                        "同步组件缺少 componentName/name");
+                string name = Convert.ToString(rawName);
+                var currentTranslation = translationOf(resolve(name));
+                double ratio = item.ContainsKey("ratio")
+                    ? Convert.ToDouble(item["ratio"])
+                    : 1.0;
+                double phaseDeg = item.ContainsKey("phaseDeg")
+                    ? Convert.ToDouble(item["phaseDeg"])
+                    : 0.0;
+                bool reverse = item.ContainsKey("reverse")
+                    && Convert.ToBoolean(item["reverse"]);
+                if (Math.Abs(ratio) < 1e-12)
+                    throw new ArgumentException("同步组件 ratio 不能为零");
+                double synchronizedAngle =
+                    angleDeg / ratio * (reverse ? -1.0 : 1.0) + phaseDeg;
+                synchronizedResults.Add(SetComponentPose(
+                    name,
+                    item.ContainsKey("x")
+                        ? Convert.ToDouble(item["x"])
+                        : currentTranslation[0],
+                    item.ContainsKey("y")
+                        ? Convert.ToDouble(item["y"])
+                        : currentTranslation[1],
+                    item.ContainsKey("z")
+                        ? Convert.ToDouble(item["z"])
+                        : currentTranslation[2],
+                    rotationAxisX, rotationAxisY, rotationAxisZ,
+                    synchronizedAngle,
+                    false,
+                    resolve(name)));
+            }
+            }
+            finally
+            {
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = true;
+                _swApp.CommandInProgress = false;
+            }
+            // Transform2 updates are already committed. Rebuilding mates here is
+            // both unnecessary and extremely expensive for sampled playback.
+            modelDoc.GraphicsRedraw2();
+
+            return new Dictionary<string, object>
+            {
+                ["angleDeg"] = angleDeg,
+                ["crankPinXYZ"] = new double[] { pinX, pinY, pinZ },
+                ["sliderXYZ"] = new double[] { sliderX, sliderY, sliderZ },
+                ["sliderDistance"] = sliderDistance,
+                ["rodMidpointXYZ"] = new double[] { rodX, rodY, rodZ },
+                ["rodAngleDeg"] = rodAngleDeg,
+                ["synchronized"] = synchronizedResults.ToArray(),
+            };
+        }
+
+        /// <summary>
         /// 装配体上下文中的 SelectByID2 组件成员选择封装。
         ///   name 格式: "<成员名>@<组件名>@<装配体名>"
         ///   例如选组件 gear_small-1 的前视基准面: name="前视基准面@gear_small-1@gear_pair_assembly"

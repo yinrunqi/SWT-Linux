@@ -1,0 +1,87 @@
+{
+  "case_id": "single_cylinder_crank_slider_v1",
+  "description": "带 2:1 正时齿轮的单缸曲柄滑块发动机装配体",
+  "units": {
+    "length": "mm",
+    "angle": "deg"
+  },
+  "mechanism": {
+    "crank_center": [0.0, 0.0, 0.0],
+    "crank_radius": 25.0,
+    "connecting_rod_length": 90.0,
+    "slider_axis": [0.0, 1.0, 0.0],
+    "stroke": 50.0,
+    "sample_angles": [0.0, 90.0, 180.0, 270.0, 360.0]
+  },
+  "timing_drive": {
+    "module": 3.0,
+    "pressure_angle": 30.0,
+    "crank_gear_teeth": 16,
+    "cam_gear_teeth": 32,
+    "center_distance": 72.0,
+    "ratio": 2.0
+  },
+  "components": [
+    {
+      "role": "engine_base",
+      "kind": "mounting_plate",
+      "translation": [0.0, 50.0, -25.0]
+    },
+    {
+      "role": "cylinder_block",
+      "kind": "cylinder_guide",
+      "translation": [0.0, 105.0, 14.0]
+    },
+    {
+      "role": "piston",
+      "kind": "slider",
+      "translation": [0.0, 115.0, 14.0]
+    },
+    {
+      "role": "connecting_rod",
+      "kind": "rigid_link",
+      "translation": [0.0, 70.0, 7.0]
+    },
+    {
+      "role": "crank_disk",
+      "kind": "crank",
+      "translation": [0.0, 0.0, 0.0]
+    },
+    {
+      "role": "flywheel",
+      "kind": "flywheel",
+      "translation": [0.0, 0.0, -18.0]
+    },
+    {
+      "role": "crank_timing_gear",
+      "kind": "gear",
+      "teeth": 16,
+      "translation": [0.0, 0.0, 30.0]
+    },
+    {
+      "role": "cam_timing_gear",
+      "kind": "gear",
+      "teeth": 32,
+      "translation": [72.0, 0.0, 30.0]
+    },
+    {
+      "role": "camshaft",
+      "kind": "shaft",
+      "translation": [72.0, 0.0, 0.0]
+    },
+    {
+      "role": "cam_lobe",
+      "kind": "eccentric_cam",
+      "translation": [72.0, 0.0, -12.0]
+    }
+  ],
+  "acceptance": {
+    "component_count": 10,
+    "minimum_mate_count": 5,
+    "translation_tolerance_mm": 1.0,
+    "kinematic_tolerance_mm": 0.25,
+    "timing_ratio_tolerance": 0.000001,
+    "maximum_interference_count": 0,
+    "assembly_file_required": true
+  }
+}

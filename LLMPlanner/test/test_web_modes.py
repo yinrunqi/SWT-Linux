@@ -188,6 +188,16 @@ def run_tests() -> None:
         assert "/api/gearbox-animation/load" in script
         print("[PASS] gearbox multi-turn demo is exposed in assembly UI")
 
+        assert 'id="engine-run-btn"' in page
+        assert 'id="engine-angle"' in page
+        assert 'id="engine-pose-btn"' in page
+        assert (
+            "/api/assembly-examples/single-cylinder-engine/run"
+            in script
+        )
+        assert "/api/engine-animation/pose" in script
+        print("[PASS] crank-slider engine demo is exposed in assembly UI")
+
         component = web_app._resolve_gearbox_component(
             {
                 "result": {

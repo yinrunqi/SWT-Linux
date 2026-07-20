@@ -759,3 +759,36 @@ Gear Mate 由 C# 根据组件 Transform 自动选择中心孔圆柱面，不再�
 `{1,2,3}`；2 个 Coincident Mate；原生干涉数 0；`.SLDASM` 已保存。
 每次零件生成后调用 `/api/close-all-documents`；装配完成后调用
 `/api/close-inactive-documents`，关闭预加载零件窗口并保留最终装配体。
+
+---
+
+## 十五、单缸曲柄滑块正时发动机 Multi-turn 装配测试
+
+该测例确定性生成 10 个零件，再由 Multi-turn Agent 插入组件、建立 5 个传动
+关系、设置机构初始姿态并保存。最终机器验收额外采样完整曲柄周期，不依赖
+LLM 自报完成。
+
+```cmd
+cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
+
+REM 只生成零件；每个零件保存后自动关闭文档
+py eval\eval_single_cylinder_engine_multiturn.py --prepare-only --force-parts
+
+REM 完整 Multi-turn 运行；重复运行启用成功状态缓存
+py eval\eval_single_cylinder_engine_multiturn.py --use-cache --max-turns 24
+
+REM 对已保存装配体做 0-token 静态和五角度运动学复验
+py eval\eval_single_cylinder_engine_multiturn.py --validate-existing
+```
+
+验收项：
+
+- 10 个组件，原点位置容差 ±1mm。
+- 5 个 Gear Mate；归一化比值为 `[1,1,1,1,2]`。
+- 0°/90°/180°/270°/360° 五点的活塞解析位置误差不超过 0.25mm。
+- 行程为 50mm，360° 回到初始位置，凸轮系为曲柄反向半速。
+- `.SLDASM` 已保存；测试后只保留最终装配体窗口。
+
+Web Demo 在“5. 装配体相关”区域提供“Multi-turn 构建单缸正时发动机”按钮。
+生成后可用曲柄角滑块设置确定性姿态；姿态控制只调用 SolidWorks API，不调用
+LLM。实测完全缓存重建为 6 轮、20/20 操作、0 provider 调用和 0 tokens。

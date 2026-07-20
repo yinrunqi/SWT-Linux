@@ -134,6 +134,19 @@
         </div>
         <div class="gear-animation-panel">
           <div class="gear-animation-actions">
+            <button id="engine-run-btn">⚙ Multi-turn 构建单缸正时发动机</button>
+          </div>
+          <div class="gear-animation-actions gearbox-motion-actions">
+            <label for="engine-angle">曲柄角 <span id="engine-angle-value">0°</span></label>
+            <input id="engine-angle" type="range" min="0" max="360" step="15" value="0">
+            <button id="engine-pose-btn">设置机构姿态</button>
+          </div>
+          <div id="engine-run-status" class="gear-animation-status">
+            10 组件、2:1 正时齿轮；验收 5 个曲柄角、50 mm 行程和周期闭合
+          </div>
+        </div>
+        <div class="gear-animation-panel">
+          <div class="gear-animation-actions">
             <button id="gear-load-btn">加载装配体</button>
             <button id="gear-play-btn" disabled>▶ 播放 5 圈</button>
             <button id="gear-stop-btn" disabled>■ 停止</button>

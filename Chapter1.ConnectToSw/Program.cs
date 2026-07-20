@@ -343,6 +343,12 @@ namespace Chapter1.ConnectToSw
                 case "/api/assembly/get-component-transform":
                     RequirePost(method, resp, () => HandleGetComponentTransform(req, resp));
                     break;
+                case "/api/assembly/set-component-pose":
+                    RequirePost(method, resp, () => HandleSetComponentPose(req, resp));
+                    break;
+                case "/api/assembly/mechanism/crank-slider-pose":
+                    RequirePost(method, resp, () => HandleCrankSliderPose(req, resp));
+                    break;
                 case "/api/assembly/start-spin":
                     RequirePost(method, resp, () => HandleStartSpin(req, resp));
                     break;
@@ -1524,6 +1530,109 @@ namespace Chapter1.ConnectToSw
             {
                 Console.WriteLine($"[错误] GetComponentTransform 失败: {ex.Message}");
                 SendJson(resp, 500, new { success = false, message = ex.Message });
+            }
+        }
+
+        private static void HandleSetComponentPose(
+            HttpListenerRequest req,
+            HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.SetComponentPose(
+                    GetString(body, "componentName"),
+                    GetDouble(body, "x"),
+                    GetDouble(body, "y"),
+                    GetDouble(body, "z"),
+                    GetDoubleOrDefault(body, "axisX", 0),
+                    GetDoubleOrDefault(body, "axisY", 0),
+                    GetDoubleOrDefault(body, "axisZ", 1),
+                    GetDoubleOrDefault(body, "angleDeg", 0));
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = "组件姿态已更新",
+                    result,
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] SetComponentPose 失败: {ex.Message}");
+                SendJson(resp, 500, new
+                {
+                    success = false,
+                    message = $"设置组件姿态失败: {ex.Message}",
+                });
+            }
+        }
+
+        private static void HandleCrankSliderPose(
+            HttpListenerRequest req,
+            HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var synchronized =
+                    new List<Dictionary<string, object>>();
+                if (body.ContainsKey("synchronizedComponents"))
+                {
+                    var raw = body["synchronizedComponents"]
+                        as System.Collections.IEnumerable;
+                    if (raw == null)
+                        throw new ArgumentException(
+                            "synchronizedComponents 必须是数组");
+                    foreach (var item in raw)
+                    {
+                        var entry = item as Dictionary<string, object>;
+                        if (entry == null)
+                            throw new ArgumentException(
+                                "同步组件配置必须是对象");
+                        synchronized.Add(entry);
+                    }
+                }
+                var result = _commands.SetCrankSliderPose(
+                    GetString(body, "crankComponent"),
+                    GetString(body, "rodComponent"),
+                    GetString(body, "sliderComponent"),
+                    GetDoubleOrDefault(body, "centerX", 0),
+                    GetDoubleOrDefault(body, "centerY", 0),
+                    GetDoubleOrDefault(body, "centerZ", 0),
+                    GetDouble(body, "crankRadius"),
+                    GetDouble(body, "rodLength"),
+                    GetDoubleOrDefault(body, "sliderAxisX", 0),
+                    GetDoubleOrDefault(body, "sliderAxisY", 1),
+                    GetDoubleOrDefault(body, "sliderAxisZ", 0),
+                    GetDoubleOrDefault(body, "rotationAxisX", 0),
+                    GetDoubleOrDefault(body, "rotationAxisY", 0),
+                    GetDoubleOrDefault(body, "rotationAxisZ", 1),
+                    body.ContainsKey("crankAxisOffset")
+                        ? GetDouble(body, "crankAxisOffset")
+                        : double.NaN,
+                    body.ContainsKey("rodAxisOffset")
+                        ? GetDouble(body, "rodAxisOffset")
+                        : double.NaN,
+                    body.ContainsKey("sliderAxisOffset")
+                        ? GetDouble(body, "sliderAxisOffset")
+                        : double.NaN,
+                    GetDouble(body, "angleDeg"),
+                    synchronized);
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = "曲柄滑块姿态已更新",
+                    result,
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] CrankSliderPose 失败: {ex.Message}");
+                SendJson(resp, 500, new
+                {
+                    success = false,
+                    message = $"曲柄滑块姿态失败: {ex.Message}",
+                });
             }
         }
 
