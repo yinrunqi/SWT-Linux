@@ -220,7 +220,7 @@ planner/skills/
 │   └── 04_editing.md             # 编辑已有模型（modify_dimension / 面上加特征）
 ├── agent/
 │   └── 05_agent_loop.md          # 仅 Multi-turn 动态追加，不改变 single-turn prompt
-├── recipes/                      # 按用户指令关键词命中注入（当前示例都在 03_rules.md 内嵌）
+├── recipes/                      # 可复用能力模式，按能力关键词命中（不得存放物体答案）
 └── input_modes/                  # 按输入模态命中注入
     └── three_view.md             # 三视图建模规则（视图↔基准面/枚举尺寸/L 形正确画法等）
 ```
@@ -229,9 +229,9 @@ planner/skills/
 
 ```markdown
 ---
-name: stool
-description: 四脚板凳/桌子类 —— 凳面拉伸 + 四腿 + 圆角
-triggers: [板凳, 凳子, 桌子, stool]
+name: cavity_by_cut
+description: 无 Shell API 时用盲切形成参数化内腔
+triggers: [内腔, 壁厚, 顶部敞开, cavity]
 applies_to: [text, three_view]
 ---
 
@@ -247,8 +247,8 @@ frontmatter 极简 YAML 子集（**不引入 pyyaml 依赖**），支持 `key: v
 
 `SwLLMClient` 支持两种模式：
 
-- `skill_mode="full"`（默认）：注入全部 core + 全部 recipes/input_modes。**与迁移前的硬编码 SYSTEM_PROMPT 字节级等价**，保证零回归。
-- `skill_mode="routed"`：core 全量 + 仅命中 triggers 的 recipes/input_modes。省 token，多模态阶段 B 默认走此模式。
+- `skill_mode="routed"`（默认）：core 全量 + 仅命中当前输入模态和能力的 Skill。
+- `skill_mode="full"`：仅用于兼容性测试，注入全部 recipes/input_modes，不用于生产建模。
 
 **缓存自动失效**：`_make_cache_key(model, system_prompt, user_prompt, image?)` 依赖组装后的 prompt 内容；skill 变了缓存 key 自动变，无需手动 `clear-cache`。
 
@@ -333,7 +333,7 @@ venv\Scripts\python.exe -X utf8 test\test_three_view_e2e.py
 
 ## TODO List
 - [ ] 查看 json mode 是否报错
-- [ ] 从 core/03_rules.md 拆出独立的 stool/dice/hex_nut/mug/wrench/vase/key/gear recipes，让 routed 模式真正省 token
+- [ ] 按 held-out 失败类型补充参数化能力 Skill；禁止按物体名或 benchmark case 添加 recipe
 - [ ] 引入 TriView2CAD / CAD-VGDrawing 数据集脚本，跑 Tier S/A benchmark
 
 

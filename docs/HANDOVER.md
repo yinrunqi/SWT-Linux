@@ -373,9 +373,9 @@ Get-ItemProperty 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFl
 ```
 
 **关键点**：
-- 已经**预置** C3 v7 正确 plan 到端到端 cache（`planner/.llm_cache/`）
-- Web demo 点 C3 会看到日志：`⭐ 端到端缓存命中！跳过 Vision + Plan 两阶段, 零 API 花费`
-- 想让其他样例都秒回，可以手工写入端到端 cache
+- Cache 只用于复用同一用户输入自然产生的结果，不能手工预置 benchmark 的正确 plan。
+- 性能评测应区分冷启动与自然 cache 命中；不能把预置答案的命中计作建模能力。
+- Prompt/Skill 变化会进入 cache key，确保通用规则更新后不会命中过时计划。
 
 ---
 
@@ -479,8 +479,9 @@ CODEBUDDY.md 里的表格已注明"本地 SW 上 API 调用成功但几何未完
   5. samples.json 加 D 系列样例（装配体样例）
   6. Web demo 按钮自动出现（samples.json 驱动）
 
-### 10.5 🟢 三视图样例还需要预置端到端 cache
-只有 C3 预置了端到端 cache（`planner/.llm_cache/` 里）。其他 11 个样例（B01~B22, C1~C2）用户点样例时**仍然会真调 LLM**（虽然 Vision 阶段可能命中 cache）。建议：为每个已跑通的 test 提取正确 plan，写入端到端 cache。
+### 10.5 三视图 cache 与评测隔离
+禁止为三视图 benchmark 手工写入正确 plan。Web Demo 和评测应从空 cache 或自然请求 cache
+开始，并分别记录冷启动、自然命中和 token 成本。
 
 ### 10.6 🟢 手绘草图 / 效果图输入模式
 架构已预留 `skills/input_modes/` 扩展位，还未实现。可以先做 CAD-VGDrawing 数据集（SVG 直读，比 PNG OCR 简单）。
@@ -589,7 +590,7 @@ python -X utf8 -m web.app --port 5000
 ### 13.1 短期（1 周内可完成）
 - ✅ 熟悉代码，跑通 §12 全流程
 - ✅ Motion Study API 已打通，齿轮可由 Web 控制播放/停止
-- 为剩余 11 个三视图样例预置端到端 cache
+- 建立与生产 Skill 完全隔离的 held-out 三视图评测集
 
 ### 13.2 中期（2~4 周）
 - Planner 端支持装配体（§10.4）

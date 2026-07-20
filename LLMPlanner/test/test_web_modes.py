@@ -144,6 +144,22 @@ def run_tests() -> None:
         assert not hasattr(web_app, "_match_three_view_sample")
         print("[PASS] runtime modeling does not inspect evaluation fixtures")
 
+        samples_response = client.get("/api/three-view-samples")
+        assert samples_response.status_code == 200
+        samples = samples_response.get_json()["samples"]
+        forbidden_tokens = (
+            "sketch_",
+            "feature_",
+            "select_face_and_sketch",
+            "edgeSelection",
+        )
+        assert samples
+        assert all(
+            not any(token in sample["prompt"] for token in forbidden_tokens)
+            for sample in samples
+        )
+        print("[PASS] Web sample prompts contain no operation-level answers")
+
         assert hasattr(web_app._sw_execution_lock, "acquire")
         print("[PASS] shared SolidWorks execution lock is configured")
     finally:

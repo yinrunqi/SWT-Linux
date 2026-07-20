@@ -79,3 +79,42 @@ Web Demo 默认模型：Vision `GLM-4.6V`，Plan `Qwen3.5-397B-A17B`
 - 分项复测汇总：**5/5（100%）**，可核算 **471,247 tokens**。
 - B02 首次事务有 1 个操作失败，但随后原位修复并通过最终尺寸/体积验收，
   这是修复后 Multi-turn 相比纯顺序 Single-turn 的直接收益。
+
+## 通用化清理后的无答案 / 自然需求复测（2026-07-20）
+
+本轮移除了生产 Prompt、Skill 和运行时中的 benchmark 答案，并用两种输入政策区分
+“图纸本身足够”与“图纸未完整标注用户需求”的情况：
+
+- B01–B03：`minimal_generic_hint`，只要求读取三视图，没有物体级提示。
+- B04–B05：`natural_requirements_hint`，只提供用户可见的几何规格，不提供 API、
+  操作顺序、射线坐标或 golden steps。B04 的 14×14 内轮廓容易被 Vision 误认为孔；
+  B05 图中没有完整标注 12×12×3mm 盲槽，因此纯图片无法唯一确定 ground truth。
+- 所有调用禁用缓存；每个 case 前调用 `/api/close-all-documents`。
+- B02 验收新增切除草图圆数量检查，避免“错误方向的单孔恰好得到相同体积”误通过。
+
+| Case | 输入政策 | 结果 | 轮数 | LLM calls | 操作 | Tokens | Duration |
+|------|----------|------|------|-----------|------|--------|----------|
+| B01 L 型支架 | minimal | ✅ | 1 | 2 | 4/4 | 16,532 | 80.23s |
+| B02 带 2 孔平板 | minimal | ✅ | 2 | 3 | 7/7 | 21,554 | 155.47s |
+| B03 T 型支架 | minimal | ✅ | 1 | 2 | 4/4 | 18,551 | 88.15s |
+| B04 教学键帽 | natural requirements | ✅ | 1 | 2 | 4/4 | 16,293 | 84.17s |
+| B05 完整键帽 | natural requirements | ✅ | 6 | 1 | 11/11 | 5,465 | 68.42s |
+
+- 最终可复现结果：**5/5（100%）**，共 **78,395 tokens**，约 **¥0.116329**，
+  总耗时 **476.44s**。
+- B05 只调用一次 Vision；IR 已包含完整参数时，由通用 IR compiler 生成拔模棱柱、
+  盲槽和圆角事务，不再支付冗余 Plan 调用。
+- B01/B03 的 L/T 凹轮廓同样由尺寸关系生成连续 polyline；规则按几何类别参数化，
+  不含测例 ID、固定坐标或 ground truth 查询。
+
+迭代诊断期间，具有 usage 回执但未进入最终表格的失败/旧验收运行合计
+**390,942 tokens，约 ¥0.620345**；另有主动中止的长重试没有可靠 usage 回执，
+不计入该数字。主要浪费来自 Vision schema alias 重试、Vision/Plan 阶段 Prompt
+未隔离，以及 schema-valid 但空步骤的 Plan。对应修复为：
+
+- Vision 只接收图纸解析规则，不再注入 SolidWorks operation 手册。
+- 归一化 provider 常见的顶层、尺寸、视图、特征、位置和 operation aliases。
+- provider 一次不遵守 structured schema 后，本请求后续直接走 JSON mode。
+- `through_all` 自动补齐 C# 传输层仍要求的正 depth。
+- 对凹多边形、T 形轮廓和拔模棱柱使用 IR 参数化编译；无法确定的形状才调用
+  Stage B Plan LLM。

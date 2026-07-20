@@ -72,6 +72,7 @@ namespace Chapter1.ConnectToSw
             Console.WriteLine();
             Console.WriteLine("可用端点:");
             Console.WriteLine("  GET  /api/ping                    - 健康检查");
+            Console.WriteLine("  POST /api/close-all-documents     - 关闭全部测试文档（不保存）");
             Console.WriteLine("  POST /api/new-part                - 新建零件文档");
             Console.WriteLine("  POST /api/select-plane            - 选择基准面并进入草图");
             Console.WriteLine("  POST /api/sketch/line             - 画直线");
@@ -175,6 +176,10 @@ namespace Chapter1.ConnectToSw
             {
                 case "/api/ping":
                     HandlePing(resp);
+                    break;
+
+                case "/api/close-all-documents":
+                    RequirePost(method, resp, () => HandleCloseAllDocuments(resp));
                     break;
 
                 case "/api/new-part":
@@ -382,6 +387,30 @@ namespace Chapter1.ConnectToSw
         private static void HandlePing(HttpListenerResponse resp)
         {
             SendJson(resp, 200, new { success = true, message = "SolidWorks API 服务运行中" });
+        }
+
+        private static void HandleCloseAllDocuments(HttpListenerResponse resp)
+        {
+            try
+            {
+                var closed = _commands.CloseAllDocuments();
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    closedCount = closed.Count,
+                    closedDocuments = closed,
+                    message = $"已关闭 {closed.Count} 个测试文档"
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] 关闭文档失败: {ex}");
+                SendJson(resp, 500, new
+                {
+                    success = false,
+                    message = $"关闭文档失败: {ex.Message}"
+                });
+            }
         }
 
         private static void HandleNewPart(HttpListenerResponse resp)

@@ -23,6 +23,7 @@ from load_env import ensure_test_env_loaded
 from planner.agent_loop import MultiTurnAgent
 from planner.llm_client import SwLLMClient
 from planner.executor import SwExecutor
+from planner.schemas import SwModelingPlan
 
 ensure_test_env_loaded()
 
@@ -128,14 +129,22 @@ def api_three_view_samples():
     if not os.path.exists(samples_path):
         return jsonify({"samples": []})
     data = _json.loads(open(samples_path, encoding="utf-8").read())
-    # 只吐前端需要的字段（不暴露完整几何 groundtruth）
+    # Demo 只提供最小通用指令；详细 test.text_hint / ui.prompt 留在评测数据中，
+    # 禁止把 operation 级答案作为生产 Web 输入回灌给模型。
     ui_only = [
         {
             "part_id": s["part_id"],
             "subdir": s["subdir"],
             "name": s.get("name", s["part_id"]),
             "label": s.get("ui", {}).get("label", s["part_id"]),
-            "prompt": s.get("ui", {}).get("prompt", ""),
+            "prompt": (
+                s.get("test", {}).get("requirements")
+                or (
+                    "请仅根据这张三视图读取全部标注尺寸、轮廓和特征，"
+                    "选择合适的通用建模策略并精确建模；"
+                    "未标注的信息请明确说明假设。"
+                )
+            ),
         }
         for s in data.get("samples", [])
     ]
@@ -312,6 +321,7 @@ def run():
                 try:
                     from planner.operation_optimizer import (
                         group_feature_batches,
+                        stabilize_three_view_blueprint,
                     )
                     from planner.task_decomposer import TaskDecomposer
 
@@ -344,30 +354,32 @@ def run():
                             instruction,
                             ir,
                         )
-                        blueprint = llm_client._plan_text(
-                            stage_b_prompt,
-                            input_mode="three_view",
+                        blueprint = stabilize_three_view_blueprint(
+                            SwModelingPlan(
+                                user_intent=agent_goal,
+                                steps=[],
+                                notes="",
+                            ),
+                            ir,
                         )
+                        if not blueprint.steps:
+                            blueprint = llm_client._plan_text(
+                                stage_b_prompt,
+                                input_mode="three_view",
+                            )
+                            blueprint = stabilize_three_view_blueprint(
+                                blueprint,
+                                ir,
+                            )
                     else:
                         blueprint = llm_client.plan(instruction)
 
                     batches = group_feature_batches(blueprint.steps)
-                    deterministic_plan = TaskDecomposer().decompose(
-                        agent_goal
+                    task_plan = TaskDecomposer().decompose_blueprint(
+                        agent_goal,
+                        batches,
+                        expected_dims_mm=expected_dims,
                     )
-                    if (
-                        not image_b64
-                        and len(deterministic_plan.milestones) == len(batches)
-                        and deterministic_plan.notes
-                        != "通用任务：由 Agent 增量建模，最终验证有效实体。"
-                    ):
-                        task_plan = deterministic_plan
-                    else:
-                        task_plan = TaskDecomposer().decompose_blueprint(
-                            agent_goal,
-                            batches,
-                            expected_dims_mm=expected_dims,
-                        )
                     agent = MultiTurnAgent(
                         llm_client,
                         executor,
@@ -390,6 +402,8 @@ def run():
                     "turns": result_dict["turns"],
                     "final_observation": result_dict["final_observation"],
                     "vision_ir": vision_ir,
+                    "blueprint": blueprint.model_dump(mode="json"),
+                    "task_plan": task_plan.model_dump(mode="json"),
                     "token_usage": token_usage,
                     "summary": {
                         "total": result.total_actions,

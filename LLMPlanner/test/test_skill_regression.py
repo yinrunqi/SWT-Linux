@@ -3,9 +3,9 @@ test_skill_regression.py — Skill 重构零回归验证
 
 验证要点：
 1. SkillRegistry 能正确加载 planner/skills/ 下所有 md
-2. build_system_prompt(full mode) 组装出的 prompt 与 SYSTEM_PROMPT 字节级相同
-3. SwLLMClient(full mode) 组装的 system_prompt 与全局 SYSTEM_PROMPT 相同
-4. cache_key 计算逻辑不变 —— 同一 (model, instruction) 的 key 与迁移前完全一致
+2. routed 是生产默认值，文本输入不注入 three_view
+3. full mode 仅保留兼容性验证
+4. cache_key 对相同输入保持确定性
 
 运行方式（不需要 SolidWorks 或真实 API）：
     cd LLMPlanner
@@ -147,6 +147,14 @@ def test_routed_mode_text_excludes_three_view() -> None:
     print("[PASS] routed(text) = core-only (不误注入三视图 skill)")
 
 
+def test_default_mode_is_routed() -> None:
+    from planner.llm_client import SwLLMClient
+
+    client = SwLLMClient(use_cache=False)
+    assert client.skill_mode == "routed"
+    print("[PASS] production default skill mode is routed")
+
+
 def test_routed_mode_three_view_includes_skill() -> None:
     """routed 模式在 three_view 输入下应注入 three_view skill。"""
     from planner.llm_client import SwLLMClient
@@ -173,6 +181,7 @@ if __name__ == "__main__":
     test_client_assemble()
     test_cache_key_stable()
     test_routed_mode_text_excludes_three_view()
+    test_default_mode_is_routed()
     test_routed_mode_three_view_includes_skill()
     test_multimodal_message_shape()
     test_stage_b_prompt_composition()

@@ -1,466 +1,127 @@
 ---
 name: three_view
-description: 三视图输入模式 —— 从带尺寸标注的三视图图片提取结构化 IR
+description: 三视图输入模式：尺寸提取、视图融合和参数化建模
 triggers: [三视图, orthographic, three-view, front top right]
 applies_to: [three_view]
 ---
-## 三视图输入模式（Vision 阶段 A）
 
-用户上传的图片是一张**带尺寸标注的三视图工程图纸**。你的任务是**只做"看图 → 结构化 IR"**，
-输出严格符合 `ThreeViewIR` schema 的 JSON 结构。**不要**在此阶段排 SolidWorks 步骤——那是阶段 B 的工作。
+## 阶段 A：图纸到 ThreeViewIR
 
-### 一、视图↔基准面映射（重要约定）
+只做“看图 → 结构化几何”，不要在 Vision 阶段输出 SolidWorks 步骤。
 
-| 视图 | SolidWorks 基准面 | select_plane index |
+### 视图映射
+
+| view | 可见轴 | 默认基准面 |
 |---|---|---|
-| 主视图（front，看前面）  | 前视基准面 | 0 |
-| 俯视图（top，从上往下）  | 上视基准面 | 1 |
-| 侧视图（right，看右侧） | 右视基准面 | 2 |
-
-**深度维度取自相邻视图**：
-- 主视图给出零件的 **X（宽）** 和 **Y（高）**
-- 俯视图给出零件的 **X（宽）** 和 **Z（深）**  ← Z 是主视图看不到的深度
-- 侧视图给出零件的 **Z（深）** 和 **Y（高）**
-
-拿到"总长/总宽/总高"时按此映射填入 `overall_size_mm`。
-
-### 二、必须先逐条枚举全部尺寸
-
-在填充 `profiles` 和 `features` 之前，**先完整枚举** `dimensions` 数组——图纸上**每一个可读到的
-尺寸标注数字**都必须列出来（哪怕你觉得多余）。这是三视图能建对的**核心保障**。
-
-- 每条尺寸至少给 `label`（人类描述）和 `value_mm`（毫米数值）
-- 尽量补充 `applies_to`（如 `front.width` / `hole1.diameter` / `plate.thickness`），方便阶段 B 使用
-- 如果尺寸标注写的是 φ/⌀（直径符号），value_mm 填**直径值**，label 里写"孔径 xxmm"或"直径 xxmm"
-
-🚫 严禁遗漏尺寸；🚫 严禁把不同尺寸合并成一条。
-
-### 三、零件类型（part_type）判断
-
-看主视图轮廓与俯视图/侧视图深度即可决定：
-
-- **extrude_prism**：主视图是任意封闭多边形/带孔多边形，俯视图和侧视图都是简单矩形
-  （深度是常数）——最常见的 2.5D 拉伸件。
-- **revolve**：主视图是关于中心线对称的半截面，俯视图是一个（或几个同心）圆环。——轴对称件。
-- **plate_with_holes**：主视图为平板矩形，视图上分布多个圆（表示孔）。
-- **stepped_shaft**：主视图为多段矩形拼接（不同直径的圆柱），俯视图为同心圆环。
-- **l_bracket**：主视图为 L 型（一个矩形被切一个矩形缺口），俯视图/侧视图为矩形。
-- **flange**：主视图为圆盘，俯视图/侧视图上均匀分布若干圆孔。
-- 其它情况填 **other**。
-
-### 四、特征提取要点（features）
-
-- 每个圆（在主视图/俯视图/侧视图中）都可能是**孔**，都要提取为一个 `FeatureHint(kind='hole')`
-- 圆的位置用**该视图内的相对坐标**描述（如"距左边 10mm、距底边 8mm"）
-- 孔径写在 `size_desc`（如 `⌀5mm 贯穿` 或 `⌀5mm 深 10mm`）
-- 图上有 R 标注 → 圆角（`kind='fillet'`）；C 或 45° 标注 → 倒角（`kind='chamfer'`）
-- 长圆槽/腰形孔 → `kind='slot'`，标 length×width
-- 凹坑/沉孔 → `kind='pocket'`
-
-### 五、绝对尺寸恢复
-
-**优先使用图纸上直接标注的毫米数值**（若数字后有 mm、单位默认为 mm）。如果整张图纸完全没有
-尺寸标注（罕见），才把 `dimensions` 留空并在 `assumptions` 里注明"图纸未标注尺寸，需外部提示"。
-
-### 六、profiles 描述格式
-
-每个视图一条 `ViewProfile`：
-- `view_name`：`front`/`top`/`right`
-- `base_plane`：与 view_name 对应的 SolidWorks 基准面
-- `outline_desc`：用自然中文精确描述该视图的形状。示例：
-    - `"主视图轮廓：一个 60×40mm 的矩形，右上角切除一个 30×20mm 的小矩形形成 L 形"`
-    - `"俯视图轮廓：一个 60×30mm 的矩形，中间从上到下分布 3 个等距圆孔（每个 ⌀5mm）"`
-
-### 七、约束
-
-- 输出必须是符合 `ThreeViewIR` schema 的**纯 JSON**（不要 markdown 代码块包裹）
-- **不要**输出 SolidWorks 操作步骤——那是阶段 B 的事
-- **不要**编造图上没有的尺寸；未标注就在 `assumptions` 里说明
-- 若图片明显不是三视图（如照片/渲染图/单张视图），把 `part_type` 填 `other` 并在 `assumptions` 里说明识别到的情况
-
-阶段 B 会拿到这个 IR + core 里的所有建模规则/示例，把 IR 精确翻译为 `SwModelingPlan`。
-
-### 八、阶段 B 特别指引（防止典型错误）
-
-以下几条**在两阶段管线的阶段 B（IR → SwModelingPlan）中格外重要**：
-
-0. **复杂连续轮廓优先用 `sketch_polyline` 一次提交**：
-   参数为 `{"points":[{"x":...,"y":...}, ...], "closed":true}`，点按 CW 或 CCW
-   顺序排列且不要重复首点。该操作把整条 L/T/H/十字形轮廓作为一个高层动作，
-   能保证 Multi-turn 不会在未闭合草图中间切轮。只有开放轮廓才用 `closed=false`。
-
-1. **L 形 / 带缺口的凹形轮廓 —— 严禁在同一草图里画外接矩形 + 缺口矩形**！
-   两个矩形相交但不嵌套会触发 core/03_rules 中的"同一草图轮廓合法性约束"错误
-   （SolidWorks 会报"草图轮廓无效/未闭合"）。**必须**采用以下两种正确画法之一：
-
-   ⭐ **方案 A（强烈推荐）**：用一次 `sketch_polyline` 提交 L 形闭合轮廓，
-   再一次 `feature_extrusion`。示例（外接 60×40mm，右上角切除 30×20mm，深度 20mm）：
-   ```
-   1. new_part {}
-   2. select_plane {index: 0}                                            ← 前视基准面
-   3. sketch_polyline {
-        points: [{x:0,y:0},{x:0.06,y:0},{x:0.06,y:0.02},
-                 {x:0.03,y:0.02},{x:0.03,y:0.04},{x:0,y:0.04}],
-        closed: true
-      }
-   4. feature_extrusion {depth: 0.02}                                    ← 一次拉伸 20mm
-   ```
-
-   ⭐ **方案 B（先加料再切除，共 8 步）**：完整步骤**一步不能省**：
-   ```
-   1. new_part {}
-   2. select_plane {index: 0}                                            ← 前视基准面
-   3. sketch_rectangle {x1:0, y1:0, x2:0.06, y2:0.04}                    ← 外接矩形 60×40
-   4. feature_extrusion {depth: 0.02}                                    ← ⚠️必须先拉伸出实体!!
-   5. select_face_and_sketch {rx:0.045, ry:0.03, rz:0.01, dx:0, dy:0, dz:-1}  ← 选前面(Z=0 平面): 起点 Z=0.01, 方向 dz=-1 射向 Z=0 面
-   6. sketch_rectangle {x1:0.03, y1:0.02, z1:0, x2:0.06, y2:0.04, z2:0}  ← 在前面画缺口矩形 30×20 (⚠️ z1=z2=前面 Z 坐标=0)
-   7. feature_cut_extrusion {depth: 0.02, endCondition: "through_all"}   ← 贯穿切除
-   ```
-
-   🚫 **绝对禁止**：把 `feature_cut_extrusion` 放在 `feature_extrusion` 之前（空气里切不了东西）；
-       或者只写 `sketch_rectangle` 两个矩形就直接 `feature_extrusion`（会报"轮廓无效"）。
-
-1b. **T 形 / H 形 / 工字形 / 十字形等带多个凹角的复杂轮廓 —— 必须先在草稿纸上按 CCW 顺序推出所有顶点，再用 sketch_line 逐段画**。**严禁把每根"杆"当作独立矩形分别画**——多个矩形拼接会自相交/自重叠，SolidWorks 会报"草图轮廓无效"。
-
-   ⭐ **T 形正确画法（共 11 步）**：
-   例：外接 60mm(宽) × 45mm(高)，顶部横杆 60×15mm，底部竖杆 20×30mm 居中，拉伸深度 15mm。
-   坐标系：主视图 X 轴向右、Y 轴向上，原点在**竖杆左下角**。
-
-   T 形的 8 个顶点按 CCW（逆时针）顺序：
-   ```
-        ┌────────────────────────────────────────┐  ← y=45 (顶部)
-        │  (0,45) ← 顶点 6                        │
-        │                                        │
-        │                       (60,45) ← 顶点 5  │
-        │                                        │
-        │  (0,30) ← 顶点 7   (60,30) ← 顶点 4     │  ← y=30 横杆底面
-        │       ┌──────────────┐                 │
-        │       │              │                 │
-        │       │              │  (40,30) ← 顶点 3│
-        │       │              │                 │
-        │       │(20,30)← 顶点 8                  │
-        │       │              │                 │
-        │       │              │                 │
-        │       │              │                 │  ← y=0 底部
-        │       (20,0) ← 顶点 1  (40,0) ← 顶点 2  │
-   ```
-   步骤：
-   ```
-   1. new_part {}
-   2. select_plane {index: 0}
-   3. sketch_line {x1:0.02, y1:0,    x2:0.04, y2:0}       ← 竖杆底边（顶点1→2）
-   4. sketch_line {x1:0.04, y1:0,    x2:0.04, y2:0.03}    ← 竖杆右边（2→3）
-   5. sketch_line {x1:0.04, y1:0.03, x2:0.06, y2:0.03}    ← 横杆底右侧（3→4）
-   6. sketch_line {x1:0.06, y1:0.03, x2:0.06, y2:0.045}   ← 横杆右边（4→5）
-   7. sketch_line {x1:0.06, y1:0.045,x2:0,    y2:0.045}   ← 横杆顶边（5→6）
-   8. sketch_line {x1:0,    y1:0.045,x2:0,    y2:0.03}    ← 横杆左边（6→7）
-   9. sketch_line {x1:0,    y1:0.03, x2:0.02, y2:0.03}    ← 横杆底左侧（7→8）
-   10. sketch_line {x1:0.02,y1:0.03, x2:0.02, y2:0}       ← 竖杆左边（8→1，闭合）
-   11. feature_extrusion {depth: 0.015}
-   ```
-
-   🚫 **绝对禁止的 T 形画法**：
-   - 把竖杆画成一个矩形、横杆画成另一个矩形，两个矩形直接叠加 → **自相交轮廓**，拉伸失败
-   - 顶点顺序混乱（一会儿 CW 一会儿 CCW）→ 自相交轮廓
-   - 从 (0.6, 0) 拉一条线直接连到 (0, 0.15) → **穿过竖杆内部**，自相交
-
-   同类形状（H 形/工字形/十字形/E 形）都套用此方法：**先在坐标纸上定好所有顶点，再按 CCW 顺序逐段 sketch_line**。凹角数 = 顶点数 - 4（矩形有 0 个凹角、L 形有 1 个、T 形有 2 个、十字形有 4 个）。
-
-1c. **梯形/键帽/花盆/漏斗 — 顶面与底面尺寸不同的零件必须用拔模拉伸**！
-
-   识别信号（Vision 阶段 A 就要认出来）：
-   - 主视图轮廓是**梯形**（两侧斜边，不是直角矩形）
-   - 或者俯视图上出现"**外框实线 + 内框虚线/较小的方框**"—— 这就是键帽的经典画法：底面 18×18 外框 + 顶面 14×14 内框
-   - 侧视图也是梯形（宽面在下、窄面在上）
-
-   ⭐ **键帽正确画法（3 步，超简单）**：
-   ```
-   1. new_part {}
-   2. select_plane {index: 0}                                            ← 前视基准面
-   3. sketch_rectangle {x1:-0.009, y1:-0.009, x2:0.009, y2:0.009}        ← 只画**底面**轮廓 (18×18mm 居中)
-   4. feature_extrusion {                                                ← 一次拔模拉伸搞定
-        depth: 0.008,
-        draftAngleDeg: 14.04,   ← atan((18-14)/2 / 8) ≈ 14.04°
-        draftOutward: false     ← 顶面小于底面 → 内收
-      }
-   ```
-
-   拔模角计算：`draftAngleDeg = degrees(atan((底半宽 - 顶半宽) / 深度))`
-   - 键帽 底 18mm/顶 14mm/深 8mm → `atan(2/8)` ≈ **14.04°** 内收
-   - 花盆 底 40mm/口 60mm/高 30mm → `atan(10/30)` ≈ **18.43°** 外扩（draftOutward=true）
-   - 漏斗内壁 上口 50mm/下口 20mm/高 40mm → `atan(15/40)` ≈ **20.56°** 内收
-
-   🚫 **绝对禁止**：
-   - 只画底面矩形然后普通 `feature_extrusion depth=8`（结果会是 18×18×8 长方体，不是梯形键帽）
-   - 试图分别画底面和顶面然后 loft 放样（当前 API 不支持 loft；拔模拉伸是唯一正确路径）
-   - 把 draftAngleDeg 当作弧度传（**必须是度**！SolidWorks API 内部会自动转弧度）
-
-   **验证**：拔模后包围盒仍等于底面尺寸（因为底最大）；体积用棱台公式 `V = h/3·(A底+A顶+√(A底·A顶))` 而非 `A×h`。
-
-1d. **复合特征 — 底座之外的圆角/凹槽/面上多孔阵列（现代精巧件必备）**
-
-   真实的日常物件（开关面板、门锁扣板、键帽、遥控器…）几乎都是"底座拉伸 + 若干附加特征"的组合。识别这些附加特征并按**正确顺序**追加到 SwModelingPlan 就是阶段 B 的核心工作。
-
-   **A. 边圆角（feature_fillet）**：
-   识别信号：图纸上外轮廓的角是**弧线**而不是直角；或标注了 "R5"、"⌢R3" 等字样。
-   正确画法：先建好底座（拉伸完），**再**追加 `feature_fillet` 步骤。
-
-   ⚠️ **edgeSelection 只支持三种取值**（其他任何字符串都会 400）：
-   1. `"all"` — 圆角实体的所有边（会顺带把不想圆的边也圆角，需谨慎）
-   2. `"面1_面2"` — 由两个面名交出的一条边（**每次只圆角一条边**）
-      - 可用面名：`top` / `bottom` / `front` / `back` / `left` / `right`
-      - 示例：`top_front`（顶面与前面的交线）、`front_left`（前面与左面的交线）
-   3. `"ray"` — 用射线选一条边（需要 rx/ry/rz/dx/dy/dz 参数）
-
-   ⚠️ **语义面名的实际映射（关键，与直觉相反！）**：C# 服务端的实现是
-   - **top = +Y 面（Y=maxY），bottom = -Y 面** —— 不是"顶面"是 "+Y 侧"！
-   - **front = +Z 面（Z=maxZ）= 拉伸出的顶面！back = -Z 面 = 起始底面**
-   - **left = -X 面，right = +X 面**
-
-   所以**对于底座沿 Z 拉伸**的常见零件：
-   - `front_*` = **顶面周边的水平边**（+Z 面 × 其他面 交线）
-   - `back_*` = **底面周边的水平边**
-   - `top_*` / `bottom_*` = **±Y 侧面周边的边**（多是水平边）
-   - **没有直接的"竖直棱边"名字**（连接顶底的 Z 方向立柱边）。要圆角这类边**建议用 `"all"`**（如 B07 那样，会圆所有 12 条边，视觉效果通常等价"整体圆角"）。
-
-   ⚠️ **中央被挖穿会断掉部分边 → 圆角失败**：
-   例如 30×80×3 薄板中央挖了 20×10 腰形孔（长轴 X），那么 `back_left`（-Z 底面 × -X 左面 交线）这条边在 Y=0 位置被腰形孔切成两段——服务端射线打在 Y=0 处只能选到断裂后的一小段短边，FeatureFillet 拒绝创建，返回 400。**对策**：
-   - **减少要圆角的边数**：只圆角**未被中央孔断裂的边**（如上述 30×80 例：front_left/front_right 打的是顶面沿 Y 的长边，不被腰形孔挖穿）
-   - 或用 `"all"` 一次性圆角（SolidWorks 会自动跳过失败的边）
-   - **忌**：对薄板挖穿件盲目 4 次 fillet（会在断裂边上失败）
-
-   ⚠️ **绝对不能用**：`"vertical_corners"`、`"top_perimeter"`、`"all_perimeter"` — 这些语义名 **C# 服务不认识，会 400**！要圆多条边**必须拆成多次 feature_fillet 分别指定**。
-
-   **对应关系速查**（矩形板底座沿 Z 拉伸时）：
-   | 你想圆角的边 | 该边由哪两面相交 | edgeSelection |
-   |---|---|---|
-   | 顶面周边（4 条）| top-front / top-back / top-left / top-right | 拆成 4 次 fillet |
-   | 底面周边（4 条）| bottom-front / bottom-back / bottom-left / bottom-right | 拆成 4 次 fillet |
-   | 四竖直棱边（4 条，连接顶底的立柱边）| front-left / front-right / back-left / back-right | 拆成 4 次 fillet |
-   | 全部 12 条边 | 直接用 `"all"` | 一次 fillet |
-
-   示例（86 型面板的 4 竖直棱边 R3 圆角，必须 4 次）：
-   ```
-   feature_fillet {radius: 0.003, edgeSelection: "front_left"}
-   feature_fillet {radius: 0.003, edgeSelection: "front_right"}
-   feature_fillet {radius: 0.003, edgeSelection: "back_left"}
-   feature_fillet {radius: 0.003, edgeSelection: "back_right"}
-   ```
-
-   ⚠️ **顺序**：圆角必须在**所有拉伸/切除之后**执行，否则后续面上加特征时会因面变成曲面而失败。
-
-   **B. 面上凹槽（不贯穿的矩形/圆形/腰形切除）**：
-   识别信号：主视图或俯视图上出现"外框实线 + 内框实线"（不是虚线，因为凹槽底部可见）；侧视图上有"阶梯"轮廓。
-   正确画法：`select_face_and_sketch` 选中要凹陷的面 → `sketch_rectangle/circle/slot` → `feature_cut_extrusion` 指定深度（**不用 through_all**）。
-
-   ⚠️ **腰形孔（slot / 长圆孔）**：图纸上是"矩形两端加半圆"的形状，用 `sketch_slot {cx, cy, length, width}` 一次画好。`length` 是长轴总长（包含两端半圆的直径），必须 > `width`。**注意：当前本地 SolidWorks 上 sketch_slot 内部退化为中心矩形（直角而非圆角），功能上等价 —— 门锁扣板/钥匙孔/螺栓过孔用矩形完全可以，不影响体积正确性。**
-   ```
-   select_face_and_sketch {rx:0, ry:0, rz:0.011, dx:0, dy:0, dz:-1}   ← 选顶面（Z=10 上方射线向下）
-   sketch_rectangle {x1:-0.025, y1:-0.025, x2:0.025, y2:0.025}         ← 中央 50×50 凹槽
-   feature_cut_extrusion {depth: 0.003}                                ← 挖深 3mm
-   ```
-
-   **C. 面上多孔阵列（对称 N 孔）**：
-   识别信号：主视图或俯视图上有**多个相同尺寸的圆**（如 4 角螺丝孔、6 边法兰孔）。
-   正确画法：一次 `select_face_and_sketch` → 多次 `sketch_circle`（一个孔一个圆）→ 一次 `feature_cut_extrusion(through_all)` 一起切。
-   ```
-   select_face_and_sketch {rx:0, ry:0, rz:0.011, dx:0, dy:0, dz:-1}
-   sketch_circle {cx:0.04, cy:0.04, cz:0, radius:0.0015}   ← 右上 ⌀3
-   sketch_circle {cx:-0.04, cy:0.04, cz:0, radius:0.0015}  ← 左上
-   sketch_circle {cx:0.04, cy:-0.04, cz:0, radius:0.0015}  ← 右下
-   sketch_circle {cx:-0.04, cy:-0.04, cz:0, radius:0.0015} ← 左下
-   feature_cut_extrusion {depth: 0.01, endCondition: "through_all"}
-   ```
-   ⚠️ 4 个 sketch_circle **必须在同一次 select_face_and_sketch 之后连续画**，否则会退到不同草图导致 cut 只切中最后一个。
-
-   **D. 面选择的坐标系（重要）**：
-
-   🔴 **首要建议：底座一律用 `select_plane {index: 0}` 前视基准面**（XY 平面，沿 Z 方向拉伸），除非零件明显是"轴对称件"或有特殊理由。
-   为什么：所有已经打通的样例（B01~B22、B11）都是前视面沿 Z 拉伸；skill 里所有的射线选面/边圆角规则也都按 Z 是拉伸方向假设。**换成 index=1 上视面（沿 Y 拉伸）会让所有坐标系映射反转**——面内 sketch 的 y 变成模型的 -Z，选顶面的射线要用 dy 而不是 dz——极易出错。
-   若图纸的主视图 base_view=front 就更没理由用其他基准面；即便 base_view=top 也建议在头脑里把它旋转到"想象成 front"再统一用 index=0。
-
-   ⚠️ **黄金定律**：无论零件是"厚"还是"薄"，只要底座是在**前视基准面(XY)**画草图后沿 **Z 方向拉伸**（feature_extrusion depth=d），那么：
-   - **顶面永远 = Z=d 那个面**（拉伸方向的正端）
-   - **底面永远 = Z=0 那个面**（起始面）
-   - 无论 d 是 0.003（薄板 3mm）还是 0.1（10cm 厚），Z 方向就是深度方向！**Z 不是"竖直方向"，也不是"最短的方向"**！
-
-   🔴 **三视图语义 → 模型 XYZ 面 完整映射（极端重要，务必背熟）**：
-
-   底座在**前视基准面(XY)**画、沿 **Z 方向拉伸** 时：
-
-   | 三视图/日常语义 | 对应哪个模型面 | 射线选面参数 |
-   |---|---|---|
-   | **顶面**（从上往下看的面，主视图看到的"上边"） | **+Z 面**（Z=d）⚠️ 不是 +Y！ | rz=d+0.001, dz=-1 |
-   | **底面**（从下往上看的面，安装面） | **-Z 面**（Z=0） | rz=-0.001, dz=+1 |
-   | **前面**（主视图看着的墙面，最近的墙）| **+Y 面**（Y=max） ⚠️ 不是 +Z！ | ry=y_max+0.001, dy=-1 |
-   | **后面**（远离主视图的墙面）| **-Y 面**（Y=min） | ry=y_min-0.001, dy=+1 |
-   | **左面** | **-X 面**（X=min） | rx=x_min-0.001, dx=+1 |
-   | **右面** | **+X 面**（X=max） | rx=x_max+0.001, dx=-1 |
-
-   🚨 **易错点：轴承孔"沿 Z 贯穿前后壁"是什么意思？**
-   - 用户说"⌀25mm 轴承孔沿 Z 方向贯穿箱体前后壁" → **错误理解**：切除方向是 Z ❌
-   - **正确理解**：**"前后壁" = ±Y 面**（因为箱体是沿 Z 拉伸出来的，Z 方向只有顶/底面，没有前后墙！Y 方向才是"前后深度"）
-   - 所以**切除方向应该是 Y**（选 +Y 面画圆 → cut_extrusion through_all 沿 -Y 贯穿到 -Y 面）
-   - 关键判断法：**如果一个"孔"能"贯穿"某个方向，那这个方向必然与拉伸方向 Z **垂直**（因为 Z 方向厚度=depth，通常是最主要维度，"贯穿"通常指穿透侧壁）
-   - 有时用户会说"孔沿 X/Y/Z 方向"——这里的 X/Y/Z 是**孔的轴线方向**，不是"用户从哪个方向看着孔"。孔轴线 = Z 方向 → 切除方向就是 Z；孔轴线 = Y 方向 → 切除方向就是 Y。若用户不明确写轴线，需要根据几何常识判断（如"箱体前后壁上的孔"轴线通常穿过 Y 方向，垂直于前后壁）。
-
-   常见误区：LLM 看到扁平薄板（如 80×30×3mm，其中 Z=3mm 最薄）会误以为 Y 或 X 才是"高度/厚度"→ 用 ry 或 rx 做射线起点。**这是错的**！只要建模时 depth 用在 feature_extrusion 上，那个方向就是 Z、就是"厚度"、顶面就是 Z=depth 的面。
-
-   `select_face_and_sketch` 用**射线**选中面。射线起点（rx/ry/rz）必须在目标面**外侧**，方向（dx/dy/dz）指向实体内部。
-   - 顶面 (+Z 面, Z=depth)：起点 rz=depth+0.001, 方向 dz=-1
-   - 底面 (-Z 面, Z=0)：    起点 rz=-0.001,      方向 dz=+1
-   - 前面 (+Y 面, Y=max)：   起点 ry=max+0.001,   方向 dy=-1
-   - 后面 (-Y 面, Y=min)：   起点 ry=min-0.001,   方向 dy=+1
-   - 右面 (+X 面, X=max)：   起点 rx=max+0.001,   方向 dx=-1
-   - 左面 (-X 面, X=min)：   起点 rx=min-0.001,   方向 dx=+1
-   （即使方向搞反了，C# 服务会自动反转重试，但把起点放到面外侧不容易翻车。）
-
-   ⚠️ **射线水平位置 (rx, ry) 必须打在"面上有实体的地方"，不能打在中央！**
-
-   **黄金规则**：`select_face_and_sketch` 的 rx/ry 起点**绝不要用 (0, 0) 中央位置**，而应该**永远选在底座包围盒的角部**（例如底座 X_max × Y_max 的 60~80% 处）。
-
-   为什么：中央位置几乎肯定会被后续切除操作挖空（凹槽、孔常在中央），一旦挖空，后续再用 rx=0, ry=0 打射线就会**穿过空洞什么也没选中**，服务返回 400。而选角部则**永远打在实体上**，因为整个建模过程中角部区域基本不会被挖。
-
-   **通用配方**：
-   - 底座 X∈[-a/2, a/2], Y∈[-b/2, b/2]（居中）时 → 射线起点用 `rx=a*0.3, ry=b*0.3`
-   - 底座 X∈[0, a], Y∈[0, b]（左下角为原点）时 → 射线起点用 `rx=a*0.7, ry=b*0.7`
-
-   ⚠️ **硬性约束**：**|rx| 必须严格 < a/2, |ry| 必须严格 < b/2**（否则射线飞出底座边界，打不到顶面！）
-   - 反例：底座 X∈[-142.5, 142.5], Y∈[-47.5, 47.5]（即 285×95mm），射线用 `ry=0.05` → **ry=50mm > Y_max=47.5mm 越界！**
-     正确应该 `ry=0.02`（20mm）或更小，保证严格在 [-47.5, 47.5] 之内。
-   - **安全公式**：`|rx| ≤ a/2 - 5mm 且 |ry| ≤ b/2 - 5mm`（离边缘留 5mm 缓冲）
-   - **推荐做法**：直接用 `rx = a/4, ry = b/4`（即半宽的一半），绝对安全永不越界。
-
-   例如：
-   | 底座尺寸 | 半宽 | 射线起点安全位置（a/4, b/4） |
-   |---|---|---|
-   | 86×86 居中 → X∈[-43,43], Y∈[-43,43] | X:43 Y:43 | rx=0.021 (=21mm), ry=0.021 |
-   | 30×80 居中 → X∈[-15,15], Y∈[-40,40] | X:15 Y:40 | rx=0.007 (=7mm), ry=0.020 |
-   | 60×40 从原点 → X∈[0,60], Y∈[0,40] | X:30 Y:20 | rx=0.030, ry=0.015 |
-   | 285×95 居中 → X∈[-142.5,142.5], Y∈[-47.5,47.5] | X:142.5 Y:47.5 | rx=0.070, ry=0.020 |
-
-   失败信号：`未能通过射线选中实体面。射线起点(x,y,z)及其反方向均未命中` → 说明射线打空了。此时立刻改成角部位置重试。
-
-   **E. 面内草图坐标系**：进入面草图后，`sketch_*` 的 cx/cy 是**面内 2D 坐标**（不是模型 3D 坐标）。顶面/底面上，(cx, cy) 直接对应 (X, Y) 模型坐标；侧面上则映射到面所在平面。第一版建议只在顶面/底面加特征。
-
-   **F. 顺序总纲（Golden Order）**：
-   ```
-   1. new_part
-   2. select_plane + sketch_底面轮廓 + feature_extrusion (可选拔模)   ← 底座
-   3. 面上凹槽（若有）：select_face_and_sketch + sketch_* + feature_cut_extrusion(blind)
-   4. 面上通孔阵列（若有）：select_face_and_sketch + N×sketch_circle + feature_cut_extrusion(through_all)
-   5. 圆角（若有）：feature_fillet × N（对多条边**必须拆成多次**，每次用 `"面1_面2"`；或一次用 `"all"` 圆所有边）
-   ```
-   ⚠️ **圆角必须最后**！在有圆角边的面上再加特征会失败。
-
-   **G. 完整示例：86 型开关面板 (B07)** — **⚠️ 必须完全按此模板照抄坐标系！**
-
-   零件：86×86×10mm 底座（前视面拉伸），顶面中央 50×50×3mm 凹槽，四角 ⌀3 贯穿孔，四竖直边 R3 圆角。
-
-   **关键认知**：因为底座在**前视基准面（XY 平面）**画的、沿 **Z 方向拉伸**，所以：
-   - "顶面" = 拉伸出的 **+Z 面**（Z=depth=0.01m），**不是** +Y 面！
-   - "底面" = 起始面（Z=0）
-   - "侧面" = ±X 或 ±Y 面
-
-   因此选顶面的射线起点必须是 **rz=0.011（Z=10mm+ε）、方向 dz=-1**。**严禁**用 ry=0.011、dy=-1（那会选中 Y=+43 的侧面，不是顶面）！
-
-   完整 17 步 plan：
-   ```
-   1.  new_part {}
-   2.  select_plane {index:0}                                                     ← 前视面 XY
-   3.  sketch_rectangle {x1:-0.043, y1:-0.043, x2:0.043, y2:0.043}                ← 86×86 底座轮廓
-   4.  feature_extrusion {depth:0.01}                                             ← 沿 Z 拉伸 10mm → 顶面在 Z=10mm
-   5.  select_face_and_sketch {rx:0.03, ry:0.03, rz:0.011, dx:0, dy:0, dz:-1}    ← ⭐ 选顶面: 起点偏离中心(避免命中未来会被挖的中央凹槽), 打在角部实体上
-   6.  sketch_rectangle {x1:-0.025, y1:-0.025, x2:0.025, y2:0.025}                ← 面内 2D 坐标：中央 50×50 凹槽
-   7.  feature_cut_extrusion {depth:0.003}                                        ← 挖 3mm 深 (不 through_all)
-   8.  select_face_and_sketch {rx:0.03, ry:0.03, rz:0.011, dx:0, dy:0, dz:-1}    ← 再选一次顶面: 依然打在角部(中央已被挖 3mm 凹槽, 但角部顶面仍在 Z=10)
-   9.  sketch_circle {cx:0.035, cy:0.035, radius:0.0015}                          ← 右上角 ⌀3
-   10. sketch_circle {cx:-0.035, cy:0.035, radius:0.0015}                         ← 左上角
-   11. sketch_circle {cx:0.035, cy:-0.035, radius:0.0015}                         ← 右下角
-   12. sketch_circle {cx:-0.035, cy:-0.035, radius:0.0015}                        ← 左下角
-   13. feature_cut_extrusion {depth:0.01, endCondition:"through_all"}             ← 一次贯穿切 4 孔
-   14. feature_fillet {radius:0.003, edgeSelection:"front_left"}                  ← ⭐ 竖直棱边 1
-   15. feature_fillet {radius:0.003, edgeSelection:"front_right"}                 ← 竖直棱边 2
-   16. feature_fillet {radius:0.003, edgeSelection:"back_left"}                   ← 竖直棱边 3
-   17. feature_fillet {radius:0.003, edgeSelection:"back_right"}                  ← 竖直棱边 4
-   ```
-
-   **常见错误对比表**：
-   | 错误 | 后果 |
-   |---|---|
-   | `select_face_and_sketch {rx:0, ry:0.011, rz:0, dx:0, dy:-1, dz:0}` | 选中的是 +Y 面（86×10 侧面），不是顶面 |
-   | 在面上画 rectangle 时坐标写全局 3D 而不是 2D 面内 | 例如 y=0.01 想表示"在 Z=10mm 的顶面上"—— 是错的！面内 sketch_rectangle 只有 x1/y1/x2/y2 两维 |
-   | 4 个 sketch_circle 分散在多次 select_face_and_sketch 之间 | 每次 select 会创建新草图，导致最后一次 cut 只切最后一个圆 |
-   | 圆角放在切除之前 | 圆角改变了顶面拓扑，后续 select_face_and_sketch 可能失败 |
-   | `feature_fillet {edgeSelection: "vertical_corners"}` 或 `"top_perimeter"` | ❌ **C# 服务不认这些语义名，会 400**！必须拆成 `front_left` / `front_right` / `back_left` / `back_right` 四次 fillet |
-
-   **H. 完整示例：门锁扣板 (B06)** — 展示**薄底座 + 腰形孔 + 螺丝孔阵列 + 圆角**的组合：
-
-   零件：80(Y)×30(X)×3(Z)mm 薄板（居中），中央 20×10mm 腰形孔贯穿，两端 (0, ±32) 位置各一个 ⌀5 螺丝孔贯穿，4 竖直棱边 R5 圆角。
-
-   ⚠️ **薄板陷阱**：Z=3mm 是拉伸方向 = 顶面在 Z=3mm。**不要**因为 Z 最薄就把 X 或 Y 当作"高度"！
-
-   ```
-   1.  new_part {}
-   2.  select_plane {index:0}                                                     ← 前视面 XY
-   3.  sketch_rectangle {x1:-0.015, y1:-0.04, x2:0.015, y2:0.04}                  ← 30(X)×80(Y) 底座轮廓
-   4.  feature_extrusion {depth:0.003}                                            ← 沿 Z 拉伸 3mm → 顶面在 Z=3mm
-   5.  select_face_and_sketch {rx:0.01, ry:0.03, rz:0.004, dx:0, dy:0, dz:-1}     ← ⭐ 选顶面 (Z=3mm 那个薄面), 射线起点在角部
-   6.  sketch_slot {cx:0, cy:0, length:0.02, width:0.01}                          ← 中央 20×10 腰形孔 (长轴沿 X, 因为 length 参数=X 方向)
-   7.  feature_cut_extrusion {depth:0.003, endCondition:"through_all"}            ← 贯穿切除腰形孔
-   8.  select_face_and_sketch {rx:0.01, ry:0.03, rz:0.004, dx:0, dy:0, dz:-1}     ← 再选顶面(角部, 因为中央已被 slot 挖穿)
-   9.  sketch_circle {cx:0, cy:0.032, radius:0.0025}                              ← 上端 ⌀5 螺丝孔
-   10. sketch_circle {cx:0, cy:-0.032, radius:0.0025}                             ← 下端 ⌀5 螺丝孔
-   11. feature_cut_extrusion {depth:0.003, endCondition:"through_all"}            ← 贯穿切 2 孔
-   12. feature_fillet {radius:0.005, edgeSelection:"front_left"}                  ← 竖直棱边 1/4
-   13. feature_fillet {radius:0.005, edgeSelection:"front_right"}                 ← 2/4
-   14. feature_fillet {radius:0.005, edgeSelection:"back_left"}                   ← 3/4
-   15. feature_fillet {radius:0.005, edgeSelection:"back_right"}                  ← 4/4
-   ```
-
-   **I. 完整示例：齿轮箱外壳（法兰 + 箱体 + 侧壁轴承孔 + 安装孔阵列）** — 展示**多层堆叠 + 侧壁通孔 + LinearPattern 2×2**：
-
-   零件：200(X)×120(Y)×20(Z)mm 法兰底座 + 上部 160(X)×100(Y)×80(Z)mm 箱体（两者都在 XY 平面居中，箱体贴在法兰顶面上），箱体中空内腔 144×84×74mm（顶部敞开，壁厚 8mm 底厚 6mm），**箱体前后壁**中央各有一个 ⌀25mm 轴承孔（沿 Y 方向贯穿前后壁），法兰四角各有一个 ⌀8mm 安装孔（沿 Z 贯穿法兰）。
-
-   🔴 **关键认知**：**"箱体前后壁" = ±Y 面**，不是 ±Z 面！轴承孔轴线沿 Y 方向，切除方向也是 Y。整个零件在**前视面沿 Z 拉伸**，顶面永远是 +Z 面。
-
-   ```
-   1.  new_part {}
-   2.  select_plane {index:0}                                                     ← 前视面 XY
-   3.  sketch_rectangle {x1:-0.1, y1:-0.06, x2:0.1, y2:0.06}                      ← 法兰 200×120 底座轮廓
-   4.  feature_extrusion {depth:0.02}                                             ← 沿 Z 拉伸 20mm → 法兰顶面 Z=20mm
-   5.  select_face_and_sketch {rx:0.05, ry:0.03, rz:0.021, dx:0, dy:0, dz:-1}    ← 选法兰顶面 (+Z 面, 角部 a/4=50mm b/4=30mm)
-   6.  sketch_rectangle {x1:-0.08, y1:-0.05, x2:0.08, y2:0.05}                    ← 箱体底部轮廓 160×100 居中
-   7.  feature_extrusion {depth:0.08}                                             ← 沿 +Z 再拉伸 80mm → 箱体顶面 Z=100mm
-   8.  select_face_and_sketch {rx:0.04, ry:0.025, rz:0.101, dx:0, dy:0, dz:-1}   ← 选箱体顶面 (Z=100mm, 角部)
-   9.  sketch_rectangle {x1:-0.072, y1:-0.042, x2:0.072, y2:0.042}                ← 内腔轮廓 144×84 (壁厚 8mm)
-   10. feature_cut_extrusion {depth:0.074, endCondition:"blind"}                  ← 向下挖 74mm (底厚 6mm 剩余)
-   11. select_face_and_sketch {rx:0, ry:0.051, rz:0.06, dx:0, dy:-1, dz:0}       ← ⭐ 选**箱体前面** (+Y 面, Y=50mm), 射线从 Y=+51 起点向 -Y 射入. 起点在箱体前面的**几何中心** (X=0, Z=箱体中间 60mm)
-   12. sketch_circle {cx:0, cy:0.04, radius:0.0125}                               ← ⚠️ 面内 2D 坐标: cx 对应模型 X (前面上的水平轴), cy 对应模型 Z (前面上的垂直轴). 箱体前面 X∈[-80,80], Z∈[20,100]. 孔中心在前面几何中心 = (0, 60mm) 但面内坐标 = (0, 60-20=40mm)? **实际上面内坐标零点位置由 SolidWorks 决定, 一般对应模型原点在该面上的投影**. 保守做法: 在描述里明说"孔中心位于前面几何中心",服务端会尽力对齐. 若最终位置偏, 可改 cy 微调.
-   13. feature_cut_extrusion {depth:0.1, endCondition:"through_all"}              ← ⭐ 贯穿切除! 沿 -Y 从 +Y 面穿到 -Y 面, 一次切出前+后两个孔
-   14. select_face_and_sketch {rx:0.05, ry:0.03, rz:0.021, dx:0, dy:0, dz:-1}    ← 再选法兰顶面 (为画 4 安装孔)
-   15. sketch_circle {cx:0.085, cy:0.045, radius:0.004}                           ← 法兰右上角 ⌀8 种子孔 (距边缘 15mm: X=100-15=85, Y=60-15=45)
-   16. feature_cut_extrusion {depth:0.02, endCondition:"through_all"}             ← 贯穿法兰种子孔
-   17. feature_linear_pattern {num1:2, spacing1:0.17, dir1Axis:"x", num2:2, spacing2:0.09, dir2Axis:"y", flip1:true, flip2:true}
-                                                                                    ← ⭐ 2×2 阵列: X 方向 2 份间距 170mm (从 +85 反向到 -85), Y 方向 2 份间距 90mm (从 +45 反向到 -45)
-   ```
-
-   ⚠️ **本例的关键坑（务必吸收）**：
-   1. **"前后壁"就是 ±Y 面**——因为箱体是沿 Z 拉伸的，Z 方向没有"墙"，只有顶/底面。用户所说"前壁""后壁"永远指 ±Y。
-   2. **一次 through_all 就能切穿前+后两面**——不需要 select 前面切一次、再 select 后面切一次！through_all 会自动贯穿到对面。
-   3. **LinearPattern 沿 X 阵列时**：若种子在 +X 角、要复制到 -X 角，用 `flip1: true`（沿 -X 方向复制），或直接把种子放在 -X 角改用 flip1:false 顺 +X 复制——两者都行，选一个自洽即可。
-
-2. **拉伸方向 & 深度取自哪个视图**：
-   - 若 `base_view=front`（主视图对应前视基准面 index=0），拉伸深度取俯视图/侧视图的 Z 方向尺寸
-   - 若 `base_view=top` (index=1)，拉伸深度取主视图/侧视图的 Y 方向尺寸
-   - 若 `base_view=right` (index=2)，拉伸深度取主视图/俯视图的 X 方向尺寸
-
-3. **孔的位置换算**：IR 里 features 描述孔的位置常用"距底边 X mm、距左边 Y mm"，阶段 B 要把它换算成对应
-   基准面草图坐标（原点在草图中心或左下取决于是否用绝对坐标画的轮廓）。若外形矩形是从 (0,0) 画到 (W,H)，
-   那孔中心 = (距左边 mm/1000, 距底边 mm/1000)。
-
-4. **枚举完整**：IR 的 `features` 里有几个孔就要有几个 `sketch_circle + feature_cut_extrusion`（或一次
-   sketch 多个圆 + 一次 cut）。禁止合并、省略。
-
-5. **对称件优先 midPlane**：如 IR 中 `part_type` 是 revolve/hex_nut/dice 等对称件且未指定原点位置，
-   拉伸时加 `midPlane: true` 让零件在原点居中，后续选面坐标计算最简。
+| front | X / Y | front, index=0 |
+| top | X / Z | top, index=1 |
+| right | Z / Y | right, index=2 |
+
+- 总体 X/Y/Z 尺寸必须由相邻视图交叉确认，不要只看单个视图。
+- `base_view` 应选择轮廓信息最完整、最适合形成主体截面的视图。
+- 输出 `overall_size_mm` 时明确 length/height/depth 的对应关系。
+
+### 尺寸与特征提取
+
+1. 逐条读取所有可见尺寸，写入 `dimensions`；直径符号表示直径，不是半径。
+2. 每个尺寸的 `applies_to` 指明其作用对象，例如主体宽度、孔径、孔距、厚度或切深。
+3. 每个孔、槽、凹坑、凸台、圆角和倒角写入 `features`。重复特征必须填写准确
+   `count`，并将每个可读中心/边距写入 `locations_mm`；不能把“两孔”压缩成一个
+   无数量、无位置的泛化 `hole`。
+4. `profiles` 描述轮廓拓扑及尺寸关系；未标注尺寸写进 `assumptions`，禁止编造。
+5. 图片不是正交三视图时将 `part_type` 设为 `other` 并说明原因。
+
+### 轮廓分类
+
+- 常深度任意封闭轮廓：`extrude_prism`
+- 轴对称半截面：`revolve`
+- 薄板及多个孔：`plate_with_holes`
+- 多段直径：`stepped_shaft`
+- 带凹角的连续多边形：可用 `l_bracket` 或 `other`
+- 圆盘及圆周孔阵列：`flange`
+
+输出必须是符合 `ThreeViewIR` schema 的纯 JSON。
+
+## 阶段 B：IR 到参数化建模计划
+
+### 1. 先选择主体策略
+
+- 常深度轮廓：在 `base_view` 对应基准面画主体轮廓后拉伸。
+- 轴对称轮廓：画中心线和半截面后旋转。
+- 顶底相似且线性缩放：使用拔模拉伸。
+- 组合体：先创建提供主要包围盒的主体，再按依赖顺序添加凸台、切除、阵列和圆角。
+
+不要因为某个物体名称选择固定模板；策略必须由 IR 的轮廓、尺寸和特征关系决定。
+
+### 2. 参数化复杂轮廓
+
+对任意 L/T/H/十字形或其他凹多边形：
+
+1. 从 dimensions 和 profile 描述推导每个转折点 `(x_i,y_i)`。
+2. 按 CW 或 CCW 顺序排列顶点，检查相邻边连续且末点可闭合到首点。
+3. 使用一次：
+   `sketch_polyline {points:[{x:x0,y:y0},...],closed:true}`。
+4. 再执行拉伸或切除。
+
+禁止在同一草图中用多个相交矩形拼凹轮廓。若 IR 不足以唯一确定顶点，应在
+`assumptions` 中保留歧义，而不是套用某个已知样例坐标。
+
+### 3. 拔模角
+
+当底部半尺寸为 `b`、顶部半尺寸为 `t`、深度为 `d`：
+
+`draftAngleDeg = degrees(atan(abs(b-t)/d))`
+
+- 顶部更小：`draftOutward=false`
+- 顶部更大：`draftOutward=true`
+- 非对称变化无法由单一拔模角表达时，不应强行使用该操作。
+
+### 4. 面选择
+
+从实际建模轴和当前包围盒推导目标面：
+
+- 法向 +X：起点 `rx > maxX`，方向 `dx=-1`
+- 法向 -X：起点 `rx < minX`，方向 `dx=+1`
+- 法向 +Y/-Y、+Z/-Z 同理
+
+射线的两个面内坐标应位于实体材料区。若中央将被挖空，选择包围盒内的非中央候选点，
+并根据已有孔/槽避让；不要使用固定坐标。
+
+### 5. 复合特征顺序
+
+通用顺序：
+
+1. 主体
+2. 与主体合并的加料凸台
+3. 盲槽/内腔
+4. 贯穿孔及阵列
+5. 圆角/倒角
+
+这不是固定答案；若依赖关系不同，应按“后续操作所需的面在执行时仍存在”重新排序。
+
+### 6. 孔、槽和阵列
+
+- 同一面、同深度的多个圆优先一次 `sketch_circles` + 一次切除。
+- 规则线性分布优先创建一个种子并使用 `feature_linear_pattern`。
+- 规则圆周分布优先创建一个种子并使用 `feature_circular_pattern`。
+- 贯穿孔使用 `through_all`；盲孔和凹坑使用标注深度。
+- 孔中心从边距、中心距或节圆参数计算，不复制示例坐标。
+
+### 7. 圆角和倒角
+
+- 仅当 IR 中存在 R/C 标注或轮廓明确要求时创建。
+- 轴对齐方盒可使用两面交线语义边；圆柱/旋转体局部圆边使用 ray。
+- 多条边可以分多次处理，但每次选边必须由当前包围盒和目标面关系推导。
+- 通常在所有加料与切除后执行，避免破坏后续选面。
+
+### 8. 一致性自检
+
+生成计划前检查：
+
+- 主体理论包围盒与 `overall_size_mm` 的三个轴一致。
+- 草图轮廓面积和拉伸深度数量级合理。
+- 每个 `features` 项都有对应操作，且没有凭空增加特征。
+- 孔径使用半径参数时已除以 2。
+- 所有尺寸从 mm 转成 m。
+- 基准面、拉伸轴、面法向和草图面内轴相互一致。
+- 计划不包含 benchmark ID、fixture 名称或任何未出现在当前 IR/用户输入中的固定尺寸。

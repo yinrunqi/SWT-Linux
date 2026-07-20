@@ -13,7 +13,8 @@
 1. **编写测试脚本** `test/objects/test_<name>_llm.py`，跑通端到端 LLM 建模 + 几何断言（包围盒/体积/特征数至少一项自动校验）
 2. **执行测试并留存日志**：`> log\test_<name>.log 2>&1`，至少展示末尾"判定"行说明通过
 3. **更新 TEST.md**：（a）§十 分类表新增一行；（b）在合适章节写完整 `Prompt:` 原文
-4. **加到 Web demo**：`web/static/index.html` 欢迎区加一个示例按钮（`onclick="fill<Name>Prompt()"`），`app.js` 里加同名函数把 prompt 填入输入框
+4. 如需加到 Web Demo，只提供用户可见的自然语言几何规格；完整操作提示保留在 test/eval，
+   禁止把 benchmark 答案同步到生产 Prompt 或 Skill
 5. **git commit + push**，commit message 引用测试通过的关键指标
 
 ### 约定 B ｜ 三视图多模态样例（图纸 → CAD）

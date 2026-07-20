@@ -72,6 +72,39 @@ def _volume_ok(actual: float | None, expected: float, rel_tol: float = 0.05) -> 
     return abs(actual - expected) / expected <= rel_tol
 
 
+def _count_cut_circles(observation: dict) -> int:
+    sketches = {
+        sketch.get("name"): sketch
+        for sketch in observation.get("sketches", [])
+        if isinstance(sketch, dict)
+    }
+    total = 0
+    for link in observation.get("feature_sketch_links", []):
+        if not isinstance(link, dict):
+            continue
+        feature_type = str(link.get("featureType", "")).lower()
+        if "ice" not in feature_type and "cut" not in feature_type:
+            continue
+        sketch = sketches.get(link.get("sketchName"), {})
+        total += int(sketch.get("circleCount") or 0)
+    return total
+
+
+def _close_test_documents(sw_url: str) -> dict:
+    """Discard temporary documents before each isolated evaluation case."""
+    request = urllib.request.Request(
+        f"{sw_url.rstrip('/')}/api/close-all-documents",
+        data=b"{}",
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=60) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+    if not payload.get("success"):
+        raise RuntimeError(payload.get("message") or "document cleanup failed")
+    return payload
+
+
 def run_one(
     sample: dict,
     *,
@@ -79,12 +112,24 @@ def run_one(
     sw_url: str,
     vision_model: str,
     plan_model: str,
+    minimal_hint: bool = False,
+    requirements_hint: bool = False,
 ) -> dict:
     part_id = sample["part_id"]
     subdir = sample["subdir"]
-    prompt = sample.get("ui", {}).get("prompt") or sample.get("test", {}).get(
-        "text_hint", ""
-    )
+    if minimal_hint:
+        prompt = "请仅根据三视图读取全部标注尺寸、轮廓和特征并精确建模。"
+    elif requirements_hint:
+        prompt = (
+            sample.get("test", {}).get("requirements")
+            or sample.get("notes")
+            or "请根据三视图和用户几何规格精确建模。"
+        )
+    else:
+        prompt = (
+            sample.get("ui", {}).get("prompt")
+            or sample.get("test", {}).get("text_hint", "")
+        )
     drawing = DATASET / subdir / "drawing.png"
     gt_path = DATASET / subdir / "groundtruth.json"
     started = time.perf_counter()
@@ -95,6 +140,18 @@ def run_one(
             "acceptance_ok": False,
             "error": "missing drawing.png or groundtruth.json",
             "duration_seconds": 0,
+        }
+
+    try:
+        cleanup = _close_test_documents(sw_url)
+    except Exception as exc:
+        return {
+            "part_id": part_id,
+            "name": sample.get("name"),
+            "status": "error",
+            "acceptance_ok": False,
+            "error": f"pre-test document cleanup failed: {exc}",
+            "duration_seconds": round(time.perf_counter() - started, 2),
         }
 
     gt = json.loads(gt_path.read_text(encoding="utf-8"))
@@ -133,6 +190,7 @@ def run_one(
             "error": f"HTTP {exc.code}: {detail[:500]}",
             "token_usage": error_usage,
             "duration_seconds": round(time.perf_counter() - started, 2),
+            "cleanup_before": cleanup,
         }
     except Exception as exc:
         return {
@@ -142,6 +200,7 @@ def run_one(
             "acceptance_ok": False,
             "error": str(exc),
             "duration_seconds": round(time.perf_counter() - started, 2),
+            "cleanup_before": cleanup,
         }
 
     if not body.get("success"):
@@ -153,6 +212,7 @@ def run_one(
             "error": body.get("error"),
             "duration_seconds": round(time.perf_counter() - started, 2),
             "token_usage": body.get("token_usage"),
+            "cleanup_before": cleanup,
         }
 
     mt = body.get("multi_turn") or {}
@@ -191,12 +251,16 @@ def run_one(
 
     dims_ok = _bbox_ok(bbox, gt["expected_bbox_mm"])
     vol_ok = _volume_ok(volume, float(gt["expected_volume_mm3"]))
+    expected_holes = len(gt.get("holes") or [])
+    actual_holes = _count_cut_circles(final_obs)
+    holes_ok = expected_holes == 0 or actual_holes == expected_holes
     status = mt.get("status") or summary.get("status")
     acceptance = (
         status == "completed"
         and bool(summary.get("all_ok"))
         and dims_ok
         and vol_ok
+        and holes_ok
     )
     return {
         "part_id": part_id,
@@ -205,6 +269,9 @@ def run_one(
         "acceptance_ok": acceptance,
         "dimensions_ok": dims_ok,
         "volume_ok": vol_ok,
+        "holes_ok": holes_ok,
+        "actual_holes": actual_holes,
+        "expected_holes": expected_holes,
         "bbox_mm": bbox,
         "expected_bbox_mm": gt["expected_bbox_mm"],
         "volume_mm3": volume,
@@ -213,7 +280,12 @@ def run_one(
         "llm_calls": summary.get("llm_calls"),
         "actions": f"{summary.get('succeeded')}/{summary.get('total')}",
         "token_usage": body.get("token_usage") or summary.get("token_usage"),
+        "vision_ir": body.get("vision_ir"),
+        "blueprint": body.get("blueprint"),
+        "task_plan": body.get("task_plan"),
+        "turn_diagnostics": body.get("turns"),
         "duration_seconds": round(time.perf_counter() - started, 2),
+        "cleanup_before": cleanup,
         "error": None,
     }
 
@@ -231,11 +303,23 @@ def main() -> int:
     parser.add_argument("--vision-model", default="GLM-4.6V")
     parser.add_argument("--plan-model", default="Qwen3.5-397B-A17B")
     parser.add_argument(
+        "--minimal-hint",
+        action="store_true",
+        help="Use one generic instruction for every image; no case-specific hints",
+    )
+    parser.add_argument(
+        "--requirements-hint",
+        action="store_true",
+        help="Use case-specific natural geometry requirements without API steps",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=ROOT / "eval" / "three_view_multiturn_result.json",
     )
     args = parser.parse_args()
+    if args.minimal_hint and args.requirements_hint:
+        parser.error("--minimal-hint and --requirements-hint are mutually exclusive")
 
     env_path = ROOT / ".env"
     balance_before = _query_balance(env_path)
@@ -257,6 +341,8 @@ def main() -> int:
             sw_url=args.sw_url,
             vision_model=args.vision_model,
             plan_model=args.plan_model,
+            minimal_hint=args.minimal_hint,
+            requirements_hint=args.requirements_hint,
         )
         results.append(result)
         usage = result.get("token_usage") or {}
@@ -275,6 +361,15 @@ def main() -> int:
                     "provider": "AI Ping",
                     "vision_model": args.vision_model,
                     "plan_model": args.plan_model,
+                    "input_policy": (
+                        "minimal_generic_hint"
+                        if args.minimal_hint
+                        else (
+                            "natural_requirements_hint"
+                            if args.requirements_hint
+                            else "case_specific_hint"
+                        )
+                    ),
                     "balance_before": balance_before,
                     "results": results,
                 },
@@ -309,6 +404,15 @@ def main() -> int:
         "provider": "AI Ping",
         "vision_model": args.vision_model,
         "plan_model": args.plan_model,
+        "input_policy": (
+            "minimal_generic_hint"
+            if args.minimal_hint
+            else (
+                "natural_requirements_hint"
+                if args.requirements_hint
+                else "case_specific_hint"
+            )
+        ),
         "sample_ids": [s["part_id"] for s in samples],
         "passed": sum(1 for r in results if r.get("acceptance_ok")),
         "total": len(results),

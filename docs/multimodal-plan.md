@@ -15,7 +15,7 @@
 
 **当前方案（本文档）**：
 1. **多模态输入聚焦"带尺寸标注的三视图"**——它是三种输入里唯一"精度可控 + 与现有 sketch→extrude 管线天然同构"的形态；手绘草图、工程图暂不做，为它们在 skill 架构里预留 `input_modes/` 扩展位。
-2. **Prompt 架构升级为 Skill 动态加载**：把约 400 行 `SYSTEM_PROMPT` 拆成文件驱动的 `core` / `recipes` / `input_modes` 三类 Markdown skill，加物件 = 丢一个 md，零 Python 改动。
+2. **Prompt 架构升级为 Skill 动态加载**：`core` 只保留通用规则，`recipes` 只允许参数化能力模式，`input_modes` 描述输入解释方法；禁止按物体或 benchmark 保存答案。
 3. **测例采用金字塔结构（Tier S/A/B/C）**：Tier S 用公开数据集 **TriView2CAD**（20 万三视图 PNG + DXF + 尺寸标注 + STEP GT）做端到端评测主力；Tier A 用 **CAD-VGDrawing** 走 SVG 直读路径；Tier B/C 为自建手工/合成测例。
 
 ---
@@ -30,10 +30,10 @@
 
 ### 一、Skill 动态加载架构（Prompt 优雅化）
 
-- Prompt 拆分为 `core`（通用规则：操作清单/单位换算/坐标映射/全枚举约束）与 `recipes`（具体物件示例：板凳/收纳盒/圆柱/螺母等）两类 Skill 文件
+- Prompt 拆分为 `core`（操作、单位、坐标、拓扑约束）与 `recipes`（阵列、薄壁、旋转等可迁移能力模式）两类 Skill 文件
 - 每个 Skill 为带 YAML frontmatter 的 Markdown（name/description/triggers/applies_to + 正文）
 - 运行时按用户指令/图片元信息轻量路由，选出相关 Skill，动态拼装成最终 System Prompt
-- 加一个新物件 = 丢一个 md 文件，零 Python 改动；行为与现状保持一致（回归测试验证）
+- 新增知识前先归类通用能力缺口；Skill 不能包含评测 case 的完整步骤或固定答案
 
 ### 二、三视图多模态建模（第一期范围）
 
@@ -47,7 +47,7 @@
 ### 三、体验一致性
 
 - 三视图分析结果沿用现有「AI 计划卡片 + 执行步骤 + 完成摘要」展示流程
-- 每个 recipe / input_mode Skill 与 TEST.md 中的任务一一对应，便于复现
+- Skill 与 TEST.md case 必须解耦；回归 case 可具体设计，但答案不得进入生产 Skill
 
 ## 技术栈
 
@@ -134,18 +134,13 @@ sequenceDiagram
 ```
 LLMPlanner/
 ├── planner/
-│   ├── skills/                     # [NEW] Skill 文件根目录（文件驱动，加物件=加 md）
+│   ├── skills/                     # Skill 文件根目录（文件驱动，按通用能力扩展）
 │   │   ├── core/
 │   │   │   ├── 00_operations.md    # [NEW] 可用操作及参数（从 SYSTEM_PROMPT 搬运）
 │   │   │   ├── 01_units.md         # [NEW] 单位换算规则（搬运）
 │   │   │   ├── 02_rules.md         # [NEW] 重要规则/坐标映射/全枚举约束（搬运）
 │   │   │   └── 03_editing.md       # [NEW] 编辑已有模型规则/modify_dimension（搬运）
-│   │   ├── recipes/                # [NEW] 具体物件示例，每物件一个 md
-│   │   │   ├── stool.md            # [NEW] 板凳示例（从 SYSTEM_PROMPT 拆出）
-│   │   │   ├── box_shell.md        # [NEW] 收纳盒/抽壳替代法
-│   │   │   ├── revolve_parts.md    # [NEW] 圆柱/球/圆台旋转件
-│   │   │   ├── hex_nut.md          # [NEW] 六角螺母/圆盘中心孔
-│   │   │   └── key_gear.md         # [NEW] 钥匙/齿轮（多轮廓+齿槽经验）
+│   │   ├── recipes/                # 参数化能力模式，不存放物体答案
 │   │   └── input_modes/            # [NEW] 输入模态 Skill（预留 sketch/engineering 扩展位）
 │   │       └── three_view.md       # [NEW] 三视图建模：视图↔基准面映射、先枚举尺寸、深度取相邻视图、自校正
 │   ├── skill_registry.py           # [NEW] SkillRegistry：扫描 skills/ 解析 frontmatter+正文；SkillSelector.select() 路由；build_system_prompt(core+命中skills)
@@ -413,7 +408,7 @@ LLMPlanner/
 4. **Vision 兼容性**：GPT-4o 系列同时支持 Vision + Structured Outputs；用户若选纯文本模型上传图片，API 报错时前端如实展示即可。
 5. **测试运行环境**：`venv\Scripts\python.exe` 从 `LLMPlanner` 目录运行，设 `OPENAI_API_KEY`/`OPENAI_BASE_URL`、`PYTHONUTF8=1`、`PYTHONIOENCODING=utf-8`、`python -X utf8`，输出重定向到 `log` 文件再读（避免 GBK emoji 报错）。
 6. **前端图片体积控制**：发送前用 Canvas 缩放到最长边 ≤2048px、JPEG quality≈0.85，避免 base64 过大导致请求超时；原始 >20MB 前端提示过大。
-7. **Skill 与 TEST.md 对应**：每个 recipe / input_mode Skill 落地后，同步在 TEST.md 收录其任务 prompt 与验证点（项目硬约定）。
+7. **Skill 与评测隔离**：TEST.md 可记录具体 prompt 与验证点，但生产 Skill 只能包含可迁移规则；必须另设 held-out case 验证。
 
 ## 设计说明
 

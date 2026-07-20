@@ -1012,6 +1012,44 @@ namespace Chapter1.ConnectToSw
         #region 原子操作 — 文档
 
         /// <summary>
+        /// 关闭当前 SolidWorks 会话中的所有文档，不保存测试产生的临时修改。
+        /// 评测用例之间调用，避免零件/装配体窗口累积导致内存和 COM 负载持续增长。
+        /// </summary>
+        public List<string> CloseAllDocuments()
+        {
+            var titles = new List<string>();
+            var documents = _swApp.GetDocuments() as object[];
+            if (documents != null)
+            {
+                foreach (var item in documents)
+                {
+                    var document = item as IModelDoc2;
+                    var title = document?.GetTitle();
+                    if (!string.IsNullOrWhiteSpace(title))
+                        titles.Add(title);
+                }
+            }
+
+            foreach (var title in titles)
+                _swApp.CloseDoc(title);
+
+            ActiveDoc = null;
+            _activeAssembly = null;
+            _activeAssemblyPath = null;
+            _activeAssemblyName = null;
+            _activeMotionStudy = null;
+            _activeMotionMotor = null;
+            _activeSketchName = null;
+            _activeFaceKey = null;
+            _sketchOnRefPlane = false;
+            _sketchMetadata.Clear();
+            _featureSketchLinks.Clear();
+
+            Console.WriteLine($"[SwCommands] 已关闭 {titles.Count} 个文档");
+            return titles;
+        }
+
+        /// <summary>
         /// 新建一个零件文档，设为当前活动文档。
         /// </summary>
         public void NewPart()

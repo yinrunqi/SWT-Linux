@@ -3,21 +3,21 @@ skill_registry.py — 文件驱动的 Skill 动态加载
 
 设计目标：
 - Prompt 从 400 行硬编码 SYSTEM_PROMPT 拆分为 planner/skills/ 下的多个 Markdown 文件
-- 加一个物体的建模知识 = 新增一个 md，零 Python 改动
+- 新增可迁移的建模能力 = 新增或更新一个 md；禁止按 benchmark 物体保存答案
 - 每个 skill 用 YAML frontmatter 声明元数据（name/category/description/triggers/applies_to），正文是喂给 LLM 的内容
 
 目录约定：
     planner/skills/
         core/            # 稳定的通用手册（操作/单位/规则/编辑），恒定全量注入
-        recipes/         # 各物体的具体示例（板凳/骰子/钥匙/螺母…），按 triggers 关键词命中注入
+        recipes/         # 可复用能力模式（阵列/薄壁/旋转等），按能力 triggers 命中
         input_modes/     # 输入模态 skill（三视图/工程图/手绘草图），按 image_meta 命中注入
 
 Frontmatter 语法（极小 YAML 子集，无需 pyyaml 依赖）：
     ---
-    name: stool
+    name: cavity_by_cut
     category: recipe          # 可选，通常由所在目录推断
-    description: 四脚板凳/桌子 —— 凳面+四腿+圆角
-    triggers: [板凳, 凳子, 桌子, stool, 四脚]
+    description: 无 Shell API 时用盲切形成等壁厚内腔
+    triggers: [内腔, 壁厚, 顶部敞开, cavity]
     applies_to: [text, three_view]     # 可选，默认 [text]
     ---
     （正文……）

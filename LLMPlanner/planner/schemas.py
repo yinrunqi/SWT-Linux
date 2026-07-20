@@ -10,7 +10,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class OperationType(str, Enum):
@@ -69,7 +69,7 @@ class SwOperation(BaseModel):
             "⚠️ 例如在 Y=0 底面画圆：cy 必须=0（面的Y坐标），Z方向偏移放 cz（不能放 cy）！"
             "坐标为模型空间坐标（米），C# 端自动转换为草图坐标。radius 控制圆的半径（米），即孔径=radius×2\n"
             "- sketch_circles: {circles: [{cx, cy, cz, radius}, ...]} — "
-            "在当前草图中批量绘制多个圆；一个骰子面或孔阵列应优先使用此操作，整批只计一个 Agent action\n"
+            "在当前草图中批量绘制多个圆；重复孔或圆形阵列应优先使用此操作，整批只计一个 Agent action\n"
             "- sketch_centerline: {x1, y1, x2, y2: float} — 中心线（构造线）起点终点坐标（米），"
             "用于旋转特征的旋转轴\n"
             "- sketch_arc: {cx, cy, startX, startY, endX, endY: float, direction: int} — "
@@ -92,7 +92,7 @@ class SwOperation(BaseModel):
             "例如从底面(法向量-Y)拉伸默认就是向下——**不需要 flipDirection=true**！"
             "flipDirection=true 会反转方向导致向实体内部拉伸。"
             "midPlane=true 从草图面两侧各拉伸 depth/2。"
-            "**拔模拉伸**：draftAngleDeg>0 时启用梯形拉伸——draftOutward=false（默认）表示顶面小于底面（键盘键帽/花盆/漏斗内壁），"
+            "**拔模拉伸**：draftAngleDeg>0 时启用梯形拉伸——draftOutward=false（默认）表示顶面小于底面，"
             "draftOutward=true 表示顶面大于底面（漏斗外壁）。角度公式：atan((底半宽-顶半宽)/深度) 度。"
             "例如底 18×18mm、顶 14×14mm、深 8mm → draftAngleDeg=atan(2/8)≈14.04°、draftOutward=false。\n"
             "- feature_cut_extrusion: {depth: float, endCondition: str (可选, 默认blind), flipDirection: bool (可选)} — "
@@ -116,7 +116,7 @@ class SwOperation(BaseModel):
             "圆周阵列：对**最后一个创建的特征**（拉伸/切除/圆角等）围绕**指定圆柱轴**均匀复制 count 份（含源特征本身）。"
             "axis 可选 'x'/'y'/'z'。angleDeg 是阵列覆盖的总角度（默认 360°=整圆均分）。"
             "**多实体零件的关键参数** axisOriginX/Y/Z：显式指定要绕的轴心 3D 坐标（米）。"
-            "若零件里只有一个实体（如单个齿轮盘），不传即可（服务端自动找唯一的圆柱面）。"
+            "若零件里只有一个轴对称实体，不传即可（服务端自动找唯一的圆柱面）。"
             "若零件里有**多个实体**（如两个齿轮），**必须传 axisOriginX/Y/Z 显式指定绕哪个圆盘**——"
             "否则服务端会随便选一个圆柱面导致阵列绕错圆心！"
             "例：小齿轮中心在 (X=-35mm, Y=0, Z=0)，阵列小齿轮的齿时传 axisOriginX=-0.035, axisOriginY=0, axisOriginZ=0；"
@@ -147,6 +147,44 @@ class SwOperation(BaseModel):
         description="对该步骤的简要中文说明"
     )
 
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_provider_shape(cls, value):
+        if not isinstance(value, dict):
+            return value
+        item = dict(value)
+        operation = (
+            item.get("operation")
+            or item.get("action")
+            or item.get("type")
+            or item.get("name")
+            or item.get("op")
+            or item.get("operation_type")
+            or item.get("step_type")
+            or item.get("endpoint")
+        )
+        if isinstance(operation, dict):
+            operation = (
+                operation.get("operation")
+                or operation.get("type")
+                or operation.get("name")
+            )
+        if isinstance(operation, str):
+            operation = operation.strip().lower().replace("-", "_")
+            if operation.startswith("/api/"):
+                operation = operation[5:].replace("/", "_")
+            item.setdefault("operation", operation)
+        params = (
+            item.get("params")
+            or item.get("parameters")
+            or item.get("arguments")
+            or {}
+        )
+        item.setdefault("params", params)
+        if "description" not in item and item.get("comment"):
+            item["description"] = item["comment"]
+        return item
+
 
 class SwModelingPlan(BaseModel):
     """
@@ -164,6 +202,31 @@ class SwModelingPlan(BaseModel):
         default="",
         description="补充说明或注意事项（如尺寸假设、单位换算等）"
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_provider_shape(cls, value):
+        if not isinstance(value, dict):
+            return value
+        payload = dict(value)
+        intent = (
+            payload.get("user_intent")
+            or payload.get("intent")
+            or payload.get("description")
+            or payload.get("task")
+            or "根据当前输入完成 SolidWorks 建模"
+        )
+        steps = (
+            payload.get("steps")
+            or payload.get("operations")
+            or payload.get("actions")
+            or []
+        )
+        if isinstance(steps, dict):
+            steps = steps.get("steps") or steps.get("operations") or [steps]
+        payload.setdefault("user_intent", str(intent))
+        payload.setdefault("steps", steps)
+        return payload
 
 
 class ModelingMode(str, Enum):
@@ -344,6 +407,15 @@ class FeatureHint(BaseModel):
         default="",
         description="该特征的尺寸描述。示例：'⌀5mm 贯穿孔' / 'R3mm 圆角' / '10×5mm 长圆槽'"
     )
+    count: int = Field(
+        default=1,
+        ge=1,
+        description="图纸中属于这一组的相同特征数量；单个特征为 1"
+    )
+    locations_mm: list[dict] = Field(
+        default_factory=list,
+        description="可读到位置尺寸时，逐个记录视图内中心坐标或边距（毫米）"
+    )
 
 
 class ThreeViewIR(BaseModel):
@@ -392,6 +464,55 @@ class ThreeViewIR(BaseModel):
                     "（如'厚度未标注，假设为 10mm；孔位对称假设'）"
     )
 
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_top_level_aliases(cls, value):
+        if not isinstance(value, dict):
+            return value
+        payload = dict(value)
+        aliases = {
+            "part_type": ("type", "partType", "geometry_type"),
+            "base_view": ("baseView", "primary_view"),
+            "overall_size_mm": (
+                "overall_size",
+                "overall_dimensions",
+                "bounding_box_mm",
+            ),
+            "profiles": ("views", "view_profiles"),
+            "dimensions": ("measurements", "dimension_specs"),
+            "features": ("feature_hints",),
+        }
+        for target, candidates in aliases.items():
+            if target not in payload:
+                for candidate in candidates:
+                    if candidate in payload:
+                        payload[target] = payload[candidate]
+                        break
+        payload.setdefault("part_type", "other")
+        return payload
+
+    @field_validator("part_type", mode="before")
+    @classmethod
+    def _normalize_part_type(cls, value):
+        if isinstance(value, dict):
+            value = value.get("type") or value.get("name") or "other"
+        text = str(value or "other").strip().lower().replace("-", "_")
+        aliases = {
+            "l bracket": "l_bracket",
+            "l型支架": "l_bracket",
+            "l形支架": "l_bracket",
+            "extruded_prism": "extrude_prism",
+            "plate": "plate_with_holes",
+        }
+        return aliases.get(text, text)
+
+    @field_validator("base_view", mode="before")
+    @classmethod
+    def _normalize_base_view(cls, value):
+        if isinstance(value, dict):
+            value = value.get("view") or value.get("name") or value.get("base")
+        return str(value or "front").strip().lower()
+
     @field_validator("overall_size_mm", mode="before")
     @classmethod
     def _coerce_overall_size_to_dict(cls, value):
@@ -403,6 +524,179 @@ class ThreeViewIR(BaseModel):
                 "depth": value[2],
             }
         return value
+
+    @field_validator("profiles", mode="before")
+    @classmethod
+    def _normalize_profile_aliases(cls, value):
+        """Accept common provider aliases without spending retries."""
+        if isinstance(value, str):
+            value = [value]
+        if isinstance(value, dict):
+            value = [
+                {"view": key, **(item if isinstance(item, dict) else {
+                    "description": item,
+                })}
+                for key, item in value.items()
+            ]
+        if not isinstance(value, list):
+            return value
+        plane_by_view = {"front": "front", "top": "top", "right": "right"}
+        view_aliases = {
+            "主视图": "front",
+            "前视图": "front",
+            "front view": "front",
+            "俯视图": "top",
+            "top view": "top",
+            "侧视图": "right",
+            "右视图": "right",
+            "right view": "right",
+        }
+        normalized = []
+        view_order = ("front", "top", "right")
+        for index, item in enumerate(value):
+            if isinstance(item, str):
+                view = view_order[index] if index < len(view_order) else f"view_{index}"
+                item = {
+                    "view_name": view,
+                    "base_plane": plane_by_view.get(view, view),
+                    "outline_desc": item,
+                }
+            if not isinstance(item, dict):
+                normalized.append(item)
+                continue
+            item = dict(item)
+            view = (
+                item.get("view_name")
+                or item.get("view")
+                or item.get("name")
+                or (view_order[index] if index < len(view_order) else f"view_{index}")
+            )
+            view = view_aliases.get(str(view).strip().lower(), view)
+            item.setdefault("view_name", view)
+            item.setdefault("base_plane", plane_by_view.get(str(view), str(view)))
+            description = (
+                item.get("outline_desc")
+                or item.get("description")
+                or item.get("outline")
+                or item.get("type")
+                or item.get("shape")
+                or "轮廓描述未提供"
+            )
+            item.setdefault("outline_desc", description)
+            normalized.append(item)
+        return normalized
+
+    @field_validator("dimensions", mode="before")
+    @classmethod
+    def _normalize_dimension_aliases(cls, value):
+        if not isinstance(value, list):
+            return value
+        normalized = []
+        for index, item in enumerate(value):
+            if not isinstance(item, dict):
+                normalized.append(item)
+                continue
+            item = dict(item)
+            label = (
+                item.get("label")
+                or item.get("name")
+                or item.get("description")
+                or item.get("applies_to")
+                or f"dimension_{index + 1}"
+            )
+            number = (
+                item.get("value_mm")
+                if item.get("value_mm") is not None
+                else item.get("value")
+            )
+            if label is not None:
+                item.setdefault("label", label)
+            if number is not None:
+                item.setdefault("value_mm", number)
+            normalized.append(item)
+        return normalized
+
+    @field_validator("features", mode="before")
+    @classmethod
+    def _normalize_feature_aliases(cls, value):
+        if not isinstance(value, list):
+            return value
+        normalized = []
+        for item in value:
+            if not isinstance(item, dict):
+                normalized.append(item)
+                continue
+            item = dict(item)
+            kind = (
+                item.get("kind")
+                or item.get("type")
+                or item.get("name")
+                or "other"
+            )
+            location = (
+                item.get("location_desc")
+                or item.get("location")
+                or item.get("position")
+            )
+            size = (
+                item.get("size_desc")
+                or item.get("size")
+                or item.get("dimensions")
+            )
+            item.setdefault("kind", kind)
+            if location is not None:
+                item.setdefault("location_desc", str(location))
+            if size is not None:
+                item.setdefault("size_desc", str(size))
+            if "count" not in item and item.get("quantity") is not None:
+                item["count"] = item["quantity"]
+            if "locations_mm" not in item:
+                locations = (
+                    item.get("locations")
+                    or item.get("centers")
+                    or item.get("positions")
+                )
+                if isinstance(locations, list):
+                    item["locations_mm"] = locations
+            elif isinstance(item.get("locations_mm"), str):
+                item["locations_mm"] = [{
+                    "description": item["locations_mm"],
+                }]
+            elif isinstance(item.get("locations_mm"), list):
+                item["locations_mm"] = [
+                    (
+                        location
+                        if isinstance(location, dict)
+                        else {"description": str(location)}
+                    )
+                    for location in item["locations_mm"]
+                ]
+            elif isinstance(item.get("locations_mm"), dict):
+                location_map = item["locations_mm"]
+                if any(isinstance(v, list) for v in location_map.values()):
+                    length = max(
+                        (
+                            len(v)
+                            for v in location_map.values()
+                            if isinstance(v, list)
+                        ),
+                        default=0,
+                    )
+                    item["locations_mm"] = [
+                        {
+                            key: (
+                                values[index]
+                                if isinstance(values, list) and index < len(values)
+                                else values
+                            )
+                            for key, values in location_map.items()
+                        }
+                        for index in range(length)
+                    ]
+                else:
+                    item["locations_mm"] = [location_map]
+            normalized.append(item)
+        return normalized
 
     @field_validator("assumptions", mode="before")
     @classmethod

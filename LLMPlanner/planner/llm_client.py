@@ -144,7 +144,7 @@ CACHE_DIR = Path(__file__).resolve().parent / ".llm_cache"
 # ------------------------------------------------------------
 # 历史上这里是一个约 400 行的硬编码字符串。现在改为：
 # - core/*.md   恒定注入（操作清单/单位/规则/编辑，等价于原 SYSTEM_PROMPT）
-# - recipes/*.md   按用户指令 triggers 关键词命中注入（如板凳/骰子/齿轮）
+# - recipes/*.md   按用户指令 triggers 关键词命中注入参数化能力
 # - input_modes/*.md   按输入模态（text/three_view/…）注入
 #
 # 保留下面这个 SYSTEM_PROMPT 常量以维持向后兼容：它现在是"registry 全量注入模式"
@@ -227,7 +227,7 @@ class SwLLMClient:
         model: Optional[str] = None,
         cache_dir: Optional[str] = None,
         use_cache: bool = True,
-        skill_mode: str = "full",
+        skill_mode: str = "routed",
         registry: Optional[SkillRegistry] = None,
         vision_model: Optional[str] = None,
         plan_model: Optional[str] = None,
@@ -242,9 +242,8 @@ class SwLLMClient:
                 两阶段允许用不同模型：例如 Vision 用便宜多模态模型 (qwen-vl-plus)，
                 Plan 用强规划模型 (basic/claude-sonnet-5)。
             skill_mode: Skill 组装模式：
-                - "full"（默认）：注入所有 core + 全部 recipes/input_modes。与迁移前的
-                  硬编码 SYSTEM_PROMPT 逐字符等价，保证零回归。
-                - "routed"：core 全量 + 仅命中 triggers 的 recipes/input_modes。
+                - "routed"（默认）：core 全量 + 仅注入当前输入模态和能力所需的 Skill。
+                - "full"：仅用于兼容性测试，注入所有 recipes/input_modes。
             registry: 可选自定义 SkillRegistry；缺省用默认（planner/skills/）。
         """
         # 读取环境变量
@@ -283,6 +282,7 @@ class SwLLMClient:
 
         # 是否已检测到 API 不支持 Structured Outputs，自动降级
         self._use_structured_output = True
+        self._vision_use_structured_output = True
 
         # Skill 组装
         self.skill_mode = skill_mode
@@ -495,14 +495,19 @@ class SwLLMClient:
         image_base64: str,
     ) -> ThreeViewIR:
         """阶段 A：调 Vision 模型输出 ThreeViewIR。"""
-        # 系统 prompt：core + three_view input_mode（不注入所有 recipes，节省 token）
-        picked = self.selector.select(user_instruction, input_mode="three_view")
-        # 至少要有 three_view skill；若 selector 没命中，兜底手动加
-        if not any(s.name == "three_view" for s in picked):
-            tv = self.registry.get_by_name("three_view")
-            if tv is not None:
-                picked.append(tv)
-        system_prompt = build_system_prompt(self.registry, picked)
+        # Vision 只负责图纸→IR。不能注入 core 操作手册或阶段 B 建模指令，
+        # 否则视觉模型容易输出 operation 列表，并显著增加图像调用 token。
+        tv = self.registry.get_by_name("three_view")
+        if tv is None:
+            raise RuntimeError("缺少 three_view 输入 Skill")
+        stage_a_rules = tv.body.split("## 阶段 B", 1)[0].strip()
+        system_prompt = (
+            "你是三视图工程图解析器，只提取当前图片中的几何事实。"
+            "不要输出 SolidWorks 操作、建模计划或解释文字。\n\n"
+            + stage_a_rules
+            + "\n\nJSON 顶层字段必须是：part_type, base_view, "
+            "overall_size_mm, profiles, dimensions, features, assumptions。"
+        )
 
         text_hint = user_instruction or "请根据这张三视图图纸生成结构化 IR。"
         user_msg = self._build_user_message(text_hint, image_base64)
@@ -520,7 +525,9 @@ class SwLLMClient:
             cached = self.cache.get(cache_key)
             if cached is not None:
                 print("[LLM] 阶段 A 命中缓存，跳过 Vision 调用")
-                return ThreeViewIR.model_validate_json(cached)
+                return self._ensure_useful_three_view_ir(
+                    ThreeViewIR.model_validate_json(cached)
+                )
 
         ir = self._call_vision_ir(messages)
 
@@ -567,6 +574,20 @@ class SwLLMClient:
             ],
         }
 
+    @staticmethod
+    def _ensure_useful_three_view_ir(ir: ThreeViewIR) -> ThreeViewIR:
+        """Reject schema-valid but content-empty provider responses."""
+        size_values = [
+            value
+            for value in (ir.overall_size_mm or {}).values()
+            if isinstance(value, (int, float)) and value > 0
+        ]
+        if not size_values and not ir.dimensions and not ir.profiles:
+            raise ValueError("Vision 返回了空 ThreeViewIR，缺少尺寸和视图轮廓")
+        if not ir.profiles:
+            raise ValueError("Vision 未提取任何视图轮廓，拒绝进入建模阶段")
+        return ir
+
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=2, max=30),
@@ -586,32 +607,35 @@ class SwLLMClient:
         raw_schema = ThreeViewIR.model_json_schema()
         patched_schema = self._patch_schema_additional_properties(raw_schema)
 
-        try:
-            completion = self.client.chat.completions.create(
-                model=self.vision_model,
-                messages=messages,
-                temperature=0,
-                max_tokens=8000,
-                response_format={
-                    "type": "json_schema",
-                    "json_schema": {
-                        "name": "ThreeViewIR",
-                        "strict": False,
-                        "schema": patched_schema,
+        if self._vision_use_structured_output:
+            try:
+                completion = self.client.chat.completions.create(
+                    model=self.vision_model,
+                    messages=messages,
+                    temperature=0,
+                    max_tokens=8000,
+                    response_format={
+                        "type": "json_schema",
+                        "json_schema": {
+                            "name": "ThreeViewIR",
+                            "strict": False,
+                            "schema": patched_schema,
+                        },
                     },
-                },
-            )
-            content = completion.choices[0].message.content
-            if not content:
-                raise ValueError("Vision 未返回有效 IR")
-            # 某些中转站/Claude 系列即便走 json_schema 也可能返回 markdown 包裹的 JSON，先剥壳
-            content = _strip_markdown_fence(content)
-            return ThreeViewIR.model_validate_json(content)
-        except BadRequestError as e:
-            print(f"[LLM] 阶段 A Structured Outputs 不支持({str(e)[:100]}), 降级为 JSON mode")
-        except Exception as e:
-            # 例如 ValidationError: 返回不是有效 IR（可能被 markdown 包裹 / 加了额外字段）
-            print(f"[LLM] 阶段 A Structured Outputs 解析失败({type(e).__name__}: {str(e)[:100]}), 降级为 JSON mode")
+                )
+                content = completion.choices[0].message.content
+                if not content:
+                    raise ValueError("Vision 未返回有效 IR")
+                content = _strip_markdown_fence(content)
+                return self._ensure_useful_three_view_ir(
+                    ThreeViewIR.model_validate_json(content)
+                )
+            except BadRequestError as e:
+                self._vision_use_structured_output = False
+                print(f"[LLM] 阶段 A Structured Outputs 不支持({str(e)[:100]}), 降级为 JSON mode")
+            except Exception as e:
+                self._vision_use_structured_output = False
+                print(f"[LLM] 阶段 A Structured Outputs 解析失败({type(e).__name__}: {str(e)[:100]}), 降级为 JSON mode")
 
         # 降级：JSON mode
         json_hint = (
@@ -642,7 +666,9 @@ class SwLLMClient:
             raise ValueError("Vision 未返回任何内容")
         # 先尝试剥壳解析；失败则尝试从任意文本中提取第一个 JSON 块（应对 Claude 啰嗦倾向）
         try:
-            return ThreeViewIR.model_validate_json(_strip_markdown_fence(content))
+            return self._ensure_useful_three_view_ir(
+                ThreeViewIR.model_validate_json(_strip_markdown_fence(content))
+            )
         except Exception:
             extracted = _extract_first_json_block(content)
             if extracted is None:
@@ -650,7 +676,9 @@ class SwLLMClient:
                     f"Vision 未能返回可解析的 JSON。前 300 字符: {content[:300]!r}"
                 )
             print(f"[LLM] 从 Vision 回复中提取到 JSON 块 ({len(extracted)} 字符)")
-            return ThreeViewIR.model_validate_json(extracted)
+            return self._ensure_useful_three_view_ir(
+                ThreeViewIR.model_validate_json(extracted)
+            )
 
     @staticmethod
     def _compose_stage_b_prompt(user_instruction: str, ir: ThreeViewIR) -> str:
@@ -667,13 +695,12 @@ class SwLLMClient:
         if user_prefix:
             head += f"用户附加的文字说明：{user_prefix}\n\n"
 
-        # 根据 part_type 给出显式提醒（放在 user_prompt 头部，LLM 一定会看到）
+        # 只补充可迁移的拓扑约束；尺寸和顶点必须来自当前 IR。
         part_hints = {
             "l_bracket": (
-                "⚠️⚠️ 该零件是 **L 形（part_type=l_bracket）**！绝对禁止在同一草图里画"
-                "外接矩形 + 缺口矩形（相交但不嵌套会导致 SolidWorks 报'轮廓无效/未闭合'）。"
-                "必须**用 sketch_line 逐段画出 L 形闭合轮廓的每一条边**（6 段直线组成 L 形），"
-                "再一次 feature_extrusion。详见 three_view skill 的'阶段 B 特别指引' §1。\n\n"
+                "该轮廓包含凹角。请从当前 IR 尺寸推导有序顶点，使用一次 "
+                "sketch_polyline(closed=true) 创建无自交闭合轮廓，再执行拉伸；"
+                "禁止用相交矩形拼接，也禁止使用任何固定样例坐标。\n\n"
             ),
         }
         head += part_hints.get(ir.part_type, "")
@@ -685,7 +712,8 @@ class SwLLMClient:
             + "\n```\n\n"
             + "严格按 IR 中的 overall_size_mm 和 dimensions 换算成米制，"
             + "按 base_view 决定 select_plane index (front→0, top→1, right→2)。"
-            + "features 里的每一个孔/圆角/倒角都要有对应的 operation 步骤。"
+            + "features 里的每一个孔/圆角/倒角都要有对应的 operation 步骤；"
+            + "重复特征必须按 count 和 locations_mm 完整建出。"
         )
 
     def compose_multiturn_three_view_goal(
@@ -832,23 +860,6 @@ class SwLLMClient:
             / "05_agent_loop.md"
         )
         system_prompt += "\n\n" + agent_skill_path.read_text(encoding="utf-8")
-        normalized_goal = user_goal.lower()
-        if (
-            any(keyword in normalized_goal for keyword in ("骰子", "色子", "dice"))
-            and any(
-                keyword in normalized_goal
-                for keyword in ("标准", "点数", "凹坑", "1、2、3、4、5、6")
-            )
-        ):
-            dice_skill_path = (
-                Path(__file__).resolve().parent
-                / "skills"
-                / "agent"
-                / "dice_multiturn.md"
-            )
-            system_prompt += "\n\n" + dice_skill_path.read_text(
-                encoding="utf-8"
-            )
         payload = {
             "user_goal": user_goal,
             "turn_number": turn_number,
@@ -980,9 +991,9 @@ class SwLLMClient:
                 return self._call_json_mode(messages)
             except Exception as e:
                 # 其他错误：例如 pydantic ValidationError (返回被 markdown 包裹 / 结构不匹配)
-                # 常见于 Claude 系列通过中转站——不是 API 层面拒绝而是内容不合规。
-                # 单次调用降级到 JSON mode，但保留 _use_structured_output 允许下次再试
-                # (若发现连续多次都要降级，可考虑改为永久关闭)
+                # 兼容端点已返回不符合 schema 的内容；后续重试直接用 JSON mode，
+                # 避免重复支付一次注定无法解析的 structured 调用。
+                self._use_structured_output = False
                 error_msg = str(e)
                 print(f"[LLM] Structured Outputs 解析失败 ({type(e).__name__}: {error_msg[:100]})，本次降级为 JSON mode...")
                 return self._call_json_mode(messages)
@@ -1032,7 +1043,7 @@ class SwLLMClient:
             model=self.model,
             messages=messages,
             temperature=0,     # 建模是确定性任务，降到 0 提升稳定性，避免时而完整时而截断
-            max_tokens=16000,  # 复杂模型（如骰子 21 点≈50 步）计划较长，放大上限避免输出被截断
+            max_tokens=16000,  # 复杂模型计划较长，放大上限避免输出被截断
             response_format={
                 "type": "json_schema",
                 "json_schema": {

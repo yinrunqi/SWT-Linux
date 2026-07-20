@@ -26,18 +26,19 @@ from planner.task_decomposer import TaskDecomposer
 from planner.validators import ValidatorRegistry
 
 
-def test_dice_decomposition_and_dependency_order() -> None:
-    plan = TaskDecomposer().decompose("创建一个标准骰子")
+def test_unknown_goal_uses_generic_decomposition_without_recipe() -> None:
+    goal = "创建一个任意尺寸的带凹坑立方体"
+    plan = TaskDecomposer().decompose(goal)
     ledger = MilestoneLedger(plan)
-    assert len(plan.milestones) == 8
-    assert ledger.current().id == "dice_body"
+    assert len(plan.milestones) == 1
+    assert ledger.current().id == "model_goal"
+    assert ledger.current().title == goal
     ledger.mark_from_validation(
-        "dice_body",
-        ValidationResult(passed=True, details={"bbox": [20, 20, 20]}),
+        "model_goal",
+        ValidationResult(passed=True, details={"entity": "valid"}),
     )
-    assert ledger.current().id == "dice_fillet"
-    assert not ledger.is_complete()
-    print("[PASS] dice recipe has dependency-ordered milestones")
+    assert ledger.is_complete()
+    print("[PASS] generic goal decomposition has no object-specific recipe")
 
 
 def test_face_pips_validation_is_face_specific_and_idempotent() -> None:

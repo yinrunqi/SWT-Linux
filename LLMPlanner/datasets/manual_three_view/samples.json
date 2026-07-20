@@ -383,6 +383,7 @@
         "prompt": "这是一张键盘键帽（完整版）的三视图。键帽是**梯形拉伸**（拔模内收）+ **底面挖凹槽** + **顶面圆角**的组合。底座尺寸：底面 18×18mm、顶面 14×14mm、高度 8mm。底面中央有一个 12×12×3mm 的方形凹槽（键轴卡口，不贯穿）。顶面周边 4 条边 R1.5 圆角。请按顺序建模：(1) 前视基准面画 18×18 底面矩形沿原点居中；(2) feature_extrusion depth=0.008 且 draftAngleDeg=14.04, draftOutward=false（拔模内收）；(3) 选底面（rx=0.005,ry=0.005,rz=-0.001,dz=+1）画 12×12 矩形并 feature_cut_extrusion depth=0.003（不 through_all）；(4) 四次 feature_fillet edgeSelection=front_left / front_right / front_top / front_bottom，radius=0.0015（C# 里 front=+Z 顶面，这四个语义名对应顶面周边 4 条边）。"
       },
       "test": {
+        "requirements": "创建完整键盘键帽：底面18×18mm、顶面14×14mm、高8mm；底面中央有12×12×3mm方形盲槽；顶面周边四条边R1.5mm圆角。",
         "text_hint": "这是一张键盘键帽（完整版）的三视图。键帽是**梯形拉伸**（拔模内收）+ **底面挖凹槽** + **顶面圆角**的组合。底座尺寸：底面 18×18mm、顶面 14×14mm、高度 8mm。底面中央有一个 12×12×3mm 的方形凹槽（键轴卡口，不贯穿）。顶面周边 4 条边 R1.5 圆角。请按顺序建模：(1) 前视基准面画 18×18 底面矩形沿原点居中；(2) feature_extrusion depth=0.008 且 draftAngleDeg=14.04, draftOutward=false（拔模内收）；(3) 选底面（rx=0.005,ry=0.005,rz=-0.001,dz=+1）画 12×12 矩形并 feature_cut_extrusion depth=0.003（不 through_all）；(4) 四次 feature_fillet edgeSelection=front_left / front_right / front_top / front_bottom，radius=0.0015（C# 里 front=+Z 顶面，这四个语义名对应顶面周边 4 条边）。"
       }
     },
@@ -419,6 +420,7 @@
         "prompt": "这是一张键盘键帽的三视图。键帽是**梯形拉伸**（底面大、顶面小、四周斜面向内收），底面 18×18mm、顶面 14×14mm、高度 8mm。必须使用 feature_extrusion 的拔模参数（draftAngleDeg + draftOutward=false）一次成型，不要用两次拉伸拼接。请精确计算拔模角度并建模。"
       },
       "test": {
+        "requirements": "创建实心教学键帽：底面18×18mm、顶面14×14mm、高8mm，顶面相对底面均匀内收；不加工孔或凹槽。",
         "text_hint": "这是一张键盘键帽的三视图。键帽是**梯形拉伸**（底面大、顶面小、四周斜面向内收），底面 18×18mm、顶面 14×14mm、高度 8mm。必须使用 feature_extrusion 的拔模参数（draftAngleDeg + draftOutward=false）一次成型，不要用两次拉伸拼接。请精确计算拔模角度并建模。"
       }
     },
