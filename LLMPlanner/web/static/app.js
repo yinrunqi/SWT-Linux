@@ -49,6 +49,11 @@ const engineAngle = document.getElementById("engine-angle");
 const engineAngleValue = document.getElementById("engine-angle-value");
 const enginePoseBtn = document.getElementById("engine-pose-btn");
 const engineRunStatus = document.getElementById("engine-run-status");
+const projectorRunBtn = document.getElementById("projector-run-btn");
+const projectorAngle = document.getElementById("projector-angle");
+const projectorAngleValue = document.getElementById("projector-angle-value");
+const projectorPoseBtn = document.getElementById("projector-pose-btn");
+const projectorRunStatus = document.getElementById("projector-run-status");
 let gearStatusTimer = null;
 let gearboxMotionTimer = null;
 
@@ -483,6 +488,98 @@ async function setEnginePose() {
     engineRunStatus.classList.add("fail");
   } finally {
     enginePoseBtn.disabled = false;
+  }
+}
+
+async function runFilmProjector() {
+  if (busy) return;
+  busy = true;
+  projectorRunBtn.disabled = true;
+  sendBtn.disabled = true;
+  projectorRunStatus.textContent =
+    "正在准备 15 个精密零件，并由 Multi-turn Agent 装配放映、送片和快门机构…";
+  projectorRunStatus.classList.remove("ok", "fail");
+  appendUser(
+    "装配带四槽间歇送片和同步快门的复古 16mm 电影放映机",
+    null,
+  );
+  const loadingId = appendLoading(
+    "正在构建电影放映机；重复运行将复用成功的 Agent 状态缓存…",
+  );
+  try {
+    const response = await fetch(
+      `${API}/api/assembly-examples/film-projector/run`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: providerEl.value,
+          api_key: apiKeyEl.value.trim(),
+          base_url: baseUrlEl.value.trim(),
+          vision_model: visionModelEl.value,
+          plan_model: planModelEl.value,
+          max_turns: maxTurnsEl.value
+            ? Number(maxTurnsEl.value)
+            : 28,
+        }),
+      },
+    );
+    const data = await response.json();
+    removeLoading(loadingId);
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+    appendMultiTurnResponse(data.multi_turn, data.summary);
+    const tokens = Number(data.token_usage?.total_tokens || 0);
+    const cacheText = tokens === 0
+      ? "Agent 决策全部命中缓存，token 花费为 0"
+      : `本次新消耗 ${tokens} tokens`;
+    const accepted = Boolean(data.summary?.all_ok);
+    const output = Number(
+      data.indexing_acceptance?.four_input_cycles_output_deg || 0,
+    ).toFixed(3);
+    projectorRunStatus.textContent = accepted
+      ? `装配及间歇分度验收成功，四周期输出 ${output}°；${cacheText}`
+      : `装配或分度验收未通过；${cacheText}`;
+    projectorRunStatus.classList.add(accepted ? "ok" : "fail");
+  } catch (error) {
+    removeLoading(loadingId);
+    projectorRunStatus.textContent = `放映机构建失败：${error.message}`;
+    projectorRunStatus.classList.add("fail");
+    appendError(`放映机构建失败：${error.message}`);
+  } finally {
+    busy = false;
+    projectorRunBtn.disabled = false;
+    sendBtn.disabled = false;
+  }
+}
+
+async function setProjectorPose() {
+  projectorPoseBtn.disabled = true;
+  projectorRunStatus.textContent =
+    `正在通过确定性 SW API 设置 ${projectorAngle.value}° 输入姿态…`;
+  projectorRunStatus.classList.remove("ok", "fail");
+  try {
+    const response = await fetch(`${API}/api/projector-animation/pose`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        input_angle_deg: Number(projectorAngle.value),
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+    const state = data.engaged ? "驱动销啮合、正在分度" : "停歇锁止";
+    projectorRunStatus.textContent =
+      `${data.message}，输出轮 ${Number(data.output_angle_deg).toFixed(3)}°，${state}；不调用 LLM`;
+    projectorRunStatus.classList.add("ok");
+  } catch (error) {
+    projectorRunStatus.textContent = `分度姿态设置失败：${error.message}`;
+    projectorRunStatus.classList.add("fail");
+  } finally {
+    projectorPoseBtn.disabled = false;
   }
 }
 
@@ -1070,6 +1167,11 @@ engineRunBtn.addEventListener("click", runSingleCylinderEngine);
 enginePoseBtn.addEventListener("click", setEnginePose);
 engineAngle.addEventListener("input", () => {
   engineAngleValue.textContent = `${engineAngle.value}°`;
+});
+projectorRunBtn.addEventListener("click", runFilmProjector);
+projectorPoseBtn.addEventListener("click", setProjectorPose);
+projectorAngle.addEventListener("input", () => {
+  projectorAngleValue.textContent = `${projectorAngle.value}°`;
 });
 gearboxGearSelect.addEventListener("change", () => {
   gearboxMotionPlayBtn.disabled = true;

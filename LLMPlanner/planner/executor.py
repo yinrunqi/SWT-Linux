@@ -70,6 +70,10 @@ OPERATION_ENDPOINT_MAP: dict[OperationType, tuple[str, str]] = {
         "POST",
         "/api/assembly/mechanism/crank-slider-pose",
     ),
+    OperationType.ASSEMBLY_SET_INDEXED_ROTARY_POSE: (
+        "POST",
+        "/api/assembly/mechanism/indexed-rotary-pose",
+    ),
 }
 
 # 常见的英文→中文特征类型名映射（SolidWorks 中文版）

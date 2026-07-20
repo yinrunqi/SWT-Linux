@@ -792,3 +792,37 @@ py eval\eval_single_cylinder_engine_multiturn.py --validate-existing
 Web Demo 在“5. 装配体相关”区域提供“Multi-turn 构建单缸正时发动机”按钮。
 生成后可用曲柄角滑块设置确定性姿态；姿态控制只调用 SolidWorks API，不调用
 LLM。实测完全缓存重建为 6 轮、20/20 操作、0 provider 调用和 0 tokens。
+
+---
+
+## 十六、复古 16mm 电影放映机 Multi-turn 装配测试
+
+该测例包含机身、双卷盘、拨盘、四槽分度轮、送片轮、双叶快门、胶片门、
+镜头、灯箱和冷却风扇等 15 个组件。Multi-turn Agent 负责按语义装配并建立
+5 个传动关系；机器验收用通用间歇分度 API 复验四个输入周期。
+
+```cmd
+cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
+
+REM 确定性生成零件，保存后逐个关闭
+py eval\eval_film_projector_multiturn.py --prepare-only --force-parts
+
+REM Multi-turn 装配；相同任务复跑可命中成功状态缓存
+py eval\eval_film_projector_multiturn.py --use-cache --max-turns 28
+
+REM 对保存的装配体做 0-token 静态与分度复验
+py eval\eval_film_projector_multiturn.py --validate-existing
+```
+
+验收项：
+
+- 15 个组件，5 个未压制 Gear Mate，归一化齿比 `[1,1,2,4,4]`。
+- 输入相位 0°–120° 和 240°–360° 为停歇锁止区；120°–240° 平滑分度。
+- 每个输入周期输出 90°；四个输入周期输出 360°。
+- 双叶快门相对输入固定超前 90°；冷却风扇两倍速；送片轮跟随分度轮，
+  双卷盘以四分之一速度反向收放片。
+- `.SLDASM` 已保存，测试后关闭 15 个非活动零件窗口。
+
+Web Demo 的装配体区域提供“Multi-turn 构建复古 16mm 放映机”按钮和
+0°–1440°拨盘滑块。滑块直接调用 SolidWorks API：180° 输入对应 45°输出且
+处于啮合，0°/60°/120°输出均为 0°停歇；不产生 LLM token。

@@ -3364,6 +3364,236 @@ namespace Chapter1.ConnectToSw
         }
 
         /// <summary>
+        /// Apply a deterministic pose for a generic dwell/index rotary drive.
+        /// The input rotates continuously. During the engagement interval the
+        /// indexed output advances one slot with a smooth zero-velocity profile;
+        /// outside that interval it remains locked at the current index.
+        /// </summary>
+        public Dictionary<string, object> SetIndexedRotaryPose(
+            string driverComponent,
+            string indexedComponent,
+            double driverX,
+            double driverY,
+            double driverZ,
+            double indexedX,
+            double indexedY,
+            double indexedZ,
+            double axisX,
+            double axisY,
+            double axisZ,
+            double inputAngleDeg,
+            int slotCount,
+            double engagementStartDeg,
+            double engagementEndDeg,
+            bool reverseOutput,
+            List<Dictionary<string, object>> continuousComponents,
+            List<Dictionary<string, object>> indexedComponents)
+        {
+            if (slotCount < 2)
+                throw new ArgumentException("slotCount 必须至少为 2");
+            if (engagementStartDeg < 0
+                || engagementEndDeg > 360
+                || engagementStartDeg >= engagementEndDeg)
+                throw new ArgumentException(
+                    "啮合区间必须满足 0 <= start < end <= 360");
+
+            EnsureActiveAssembly();
+            var componentLookup = new Dictionary<string, IComponent2>(
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var item in (_activeAssembly.GetComponents(false)
+                as object[]) ?? new object[0])
+            {
+                var component = item as IComponent2;
+                if (component != null)
+                    componentLookup[component.Name2] = component;
+            }
+            Func<string, IComponent2> resolve = name =>
+            {
+                IComponent2 component;
+                if (!componentLookup.TryGetValue(name, out component))
+                    throw new InvalidOperationException(
+                        $"装配体中找不到组件: {name}");
+                return component;
+            };
+            Func<IComponent2, double[]> translationOf = component =>
+            {
+                var transform = component.Transform2 as MathTransform;
+                var values = transform?.ArrayData as double[];
+                if (values == null || values.Length < 12)
+                    throw new InvalidOperationException(
+                        $"无法读取组件姿态: {component.Name2}");
+                return new double[] { values[9], values[10], values[11] };
+            };
+            Func<Dictionary<string, object>, string> componentNameOf = item =>
+            {
+                object rawName;
+                if (!item.TryGetValue("componentName", out rawName)
+                    && !item.TryGetValue("name", out rawName))
+                    throw new ArgumentException(
+                        "同步组件缺少 componentName/name");
+                return Convert.ToString(rawName);
+            };
+            var currentDriver = translationOf(resolve(driverComponent));
+            var currentIndexed = translationOf(resolve(indexedComponent));
+            if (double.IsNaN(driverX)) driverX = currentDriver[0];
+            if (double.IsNaN(driverY)) driverY = currentDriver[1];
+            if (double.IsNaN(driverZ)) driverZ = currentDriver[2];
+            if (double.IsNaN(indexedX)) indexedX = currentIndexed[0];
+            if (double.IsNaN(indexedY)) indexedY = currentIndexed[1];
+            if (double.IsNaN(indexedZ)) indexedZ = currentIndexed[2];
+
+            double completedCycles = Math.Floor(inputAngleDeg / 360.0);
+            double phaseDeg = inputAngleDeg - completedCycles * 360.0;
+            double progress;
+            bool engaged;
+            if (phaseDeg <= engagementStartDeg)
+            {
+                progress = 0.0;
+                engaged = false;
+            }
+            else if (phaseDeg >= engagementEndDeg)
+            {
+                progress = 1.0;
+                engaged = false;
+            }
+            else
+            {
+                double normalized = (
+                    (phaseDeg - engagementStartDeg)
+                    / (engagementEndDeg - engagementStartDeg));
+                progress = normalized * normalized
+                    * (3.0 - 2.0 * normalized);
+                engaged = true;
+            }
+            double stepAngleDeg = 360.0 / slotCount;
+            double outputAngleDeg = (
+                (completedCycles + progress) * stepAngleDeg
+                * (reverseOutput ? -1.0 : 1.0));
+
+            var modelDoc = (IModelDoc2)_activeAssembly;
+            var modelView = modelDoc.ActiveView as IModelView;
+            var continuousResults =
+                new List<Dictionary<string, object>>();
+            var indexedResults =
+                new List<Dictionary<string, object>>();
+            try
+            {
+                _swApp.CommandInProgress = true;
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = false;
+
+                SetComponentPose(
+                    driverComponent,
+                    driverX, driverY, driverZ,
+                    axisX, axisY, axisZ,
+                    inputAngleDeg,
+                    false,
+                    resolve(driverComponent));
+                SetComponentPose(
+                    indexedComponent,
+                    indexedX, indexedY, indexedZ,
+                    axisX, axisY, axisZ,
+                    outputAngleDeg,
+                    false,
+                    resolve(indexedComponent));
+
+                foreach (var item in continuousComponents
+                    ?? new List<Dictionary<string, object>>())
+                {
+                    string name = componentNameOf(item);
+                    var current = translationOf(resolve(name));
+                    double ratio = item.ContainsKey("ratio")
+                        ? Convert.ToDouble(item["ratio"])
+                        : 1.0;
+                    if (Math.Abs(ratio) < 1e-12)
+                        throw new ArgumentException(
+                            "连续同步组件 ratio 不能为零");
+                    bool reverse = item.ContainsKey("reverse")
+                        && Convert.ToBoolean(item["reverse"]);
+                    double offset = item.ContainsKey("phaseDeg")
+                        ? Convert.ToDouble(item["phaseDeg"])
+                        : 0.0;
+                    double angle = (
+                        inputAngleDeg / ratio
+                        * (reverse ? -1.0 : 1.0)
+                        + offset);
+                    continuousResults.Add(SetComponentPose(
+                        name,
+                        item.ContainsKey("x")
+                            ? Convert.ToDouble(item["x"])
+                            : current[0],
+                        item.ContainsKey("y")
+                            ? Convert.ToDouble(item["y"])
+                            : current[1],
+                        item.ContainsKey("z")
+                            ? Convert.ToDouble(item["z"])
+                            : current[2],
+                        axisX, axisY, axisZ,
+                        angle,
+                        false,
+                        resolve(name)));
+                }
+
+                foreach (var item in indexedComponents
+                    ?? new List<Dictionary<string, object>>())
+                {
+                    string name = componentNameOf(item);
+                    var current = translationOf(resolve(name));
+                    double ratio = item.ContainsKey("ratio")
+                        ? Convert.ToDouble(item["ratio"])
+                        : 1.0;
+                    if (Math.Abs(ratio) < 1e-12)
+                        throw new ArgumentException(
+                            "分度同步组件 ratio 不能为零");
+                    bool reverse = item.ContainsKey("reverse")
+                        && Convert.ToBoolean(item["reverse"]);
+                    double offset = item.ContainsKey("phaseDeg")
+                        ? Convert.ToDouble(item["phaseDeg"])
+                        : 0.0;
+                    double angle = (
+                        outputAngleDeg / ratio
+                        * (reverse ? -1.0 : 1.0)
+                        + offset);
+                    indexedResults.Add(SetComponentPose(
+                        name,
+                        item.ContainsKey("x")
+                            ? Convert.ToDouble(item["x"])
+                            : current[0],
+                        item.ContainsKey("y")
+                            ? Convert.ToDouble(item["y"])
+                            : current[1],
+                        item.ContainsKey("z")
+                            ? Convert.ToDouble(item["z"])
+                            : current[2],
+                        axisX, axisY, axisZ,
+                        angle,
+                        false,
+                        resolve(name)));
+                }
+            }
+            finally
+            {
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = true;
+                _swApp.CommandInProgress = false;
+            }
+            modelDoc.GraphicsRedraw2();
+            return new Dictionary<string, object>
+            {
+                ["inputAngleDeg"] = inputAngleDeg,
+                ["phaseDeg"] = phaseDeg,
+                ["completedCycles"] = completedCycles,
+                ["engaged"] = engaged,
+                ["dwell"] = !engaged,
+                ["indexProgress"] = progress,
+                ["stepAngleDeg"] = stepAngleDeg,
+                ["outputAngleDeg"] = outputAngleDeg,
+                ["continuous"] = continuousResults.ToArray(),
+                ["indexed"] = indexedResults.ToArray(),
+            };
+        }
+
+        /// <summary>
         /// 装配体上下文中的 SelectByID2 组件成员选择封装。
         ///   name 格式: "<成员名>@<组件名>@<装配体名>"
         ///   例如选组件 gear_small-1 的前视基准面: name="前视基准面@gear_small-1@gear_pair_assembly"

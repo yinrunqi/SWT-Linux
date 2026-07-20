@@ -349,6 +349,9 @@ namespace Chapter1.ConnectToSw
                 case "/api/assembly/mechanism/crank-slider-pose":
                     RequirePost(method, resp, () => HandleCrankSliderPose(req, resp));
                     break;
+                case "/api/assembly/mechanism/indexed-rotary-pose":
+                    RequirePost(method, resp, () => HandleIndexedRotaryPose(req, resp));
+                    break;
                 case "/api/assembly/start-spin":
                     RequirePost(method, resp, () => HandleStartSpin(req, resp));
                     break;
@@ -1632,6 +1635,86 @@ namespace Chapter1.ConnectToSw
                 {
                     success = false,
                     message = $"曲柄滑块姿态失败: {ex.Message}",
+                });
+            }
+        }
+
+        private static void HandleIndexedRotaryPose(
+            HttpListenerRequest req,
+            HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                Func<string, List<Dictionary<string, object>>> readList =
+                    key =>
+                    {
+                        var entries =
+                            new List<Dictionary<string, object>>();
+                        if (!body.ContainsKey(key))
+                            return entries;
+                        var raw = body[key]
+                            as System.Collections.IEnumerable;
+                        if (raw == null)
+                            throw new ArgumentException(
+                                $"{key} 必须是数组");
+                        foreach (var item in raw)
+                        {
+                            var entry =
+                                item as Dictionary<string, object>;
+                            if (entry == null)
+                                throw new ArgumentException(
+                                    $"{key} 的每一项必须是对象");
+                            entries.Add(entry);
+                        }
+                        return entries;
+                    };
+                Func<string, double> optionalCoordinate = key =>
+                    body.ContainsKey(key)
+                        ? GetDouble(body, key)
+                        : double.NaN;
+                var result = _commands.SetIndexedRotaryPose(
+                    GetString(body, "driverComponent"),
+                    GetString(body, "indexedComponent"),
+                    optionalCoordinate("driverX"),
+                    optionalCoordinate("driverY"),
+                    optionalCoordinate("driverZ"),
+                    optionalCoordinate("indexedX"),
+                    optionalCoordinate("indexedY"),
+                    optionalCoordinate("indexedZ"),
+                    GetDoubleOrDefault(body, "axisX", 0),
+                    GetDoubleOrDefault(body, "axisY", 0),
+                    GetDoubleOrDefault(body, "axisZ", 1),
+                    GetDouble(body, "inputAngleDeg"),
+                    body.ContainsKey("slotCount")
+                        ? Convert.ToInt32(body["slotCount"])
+                        : 4,
+                    GetDoubleOrDefault(
+                        body,
+                        "engagementStartDeg",
+                        120),
+                    GetDoubleOrDefault(
+                        body,
+                        "engagementEndDeg",
+                        240),
+                    GetBoolOrDefault(body, "reverseOutput", false),
+                    readList("continuousComponents"),
+                    readList("indexedComponents"));
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = "间歇分度机构姿态已更新",
+                    result,
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"[错误] IndexedRotaryPose 失败: {ex.Message}");
+                SendJson(resp, 500, new
+                {
+                    success = false,
+                    message = $"间歇分度机构姿态失败: {ex.Message}",
                 });
             }
         }

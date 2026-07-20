@@ -37,6 +37,8 @@ def test_assembly_operations_have_http_endpoints():
             "/api/assembly/set-component-pose",
         OperationType.ASSEMBLY_SET_CRANK_SLIDER_POSE:
             "/api/assembly/mechanism/crank-slider-pose",
+        OperationType.ASSEMBLY_SET_INDEXED_ROTARY_POSE:
+            "/api/assembly/mechanism/indexed-rotary-pose",
     }
     for operation, endpoint in expected.items():
         assert OPERATION_ENDPOINT_MAP[operation][1] == endpoint
@@ -216,6 +218,17 @@ def test_flattened_component_arguments_are_nested():
         "partPath": "gear.SLDPRT",
     }
 
+    positioned = SwOperation.model_validate({
+        "operation": "assembly_add_component",
+        "params": {
+            "filePath": "plate.SLDPRT",
+            "position": [0.1, -0.2, 0.03],
+        },
+    })
+    assert positioned.params["x"] == 0.1
+    assert positioned.params["y"] == -0.2
+    assert positioned.params["z"] == 0.03
+
 
 def test_assembly_mate_parameter_shapes_are_normalized():
     gear = SwOperation.model_validate({
@@ -286,3 +299,44 @@ def test_crank_slider_pose_contract_and_defaults():
     )
     assert operation.params["synchronizedComponents"][0]["x"] == 0.072
     assert operation.params["synchronizedComponents"][0]["ratio"] == 2
+
+
+def test_indexed_rotary_pose_aliases_and_nested_components():
+    operation = SwOperation.model_validate({
+        "operation": "assembly_set_indexed_rotary_pose",
+        "params": {
+            "driver": "driver-1",
+            "outputComponent": "wheel-1",
+            "input_angle_deg": 180,
+            "slot_count": 4,
+            "continuous_components": [{
+                "name": "shutter-1",
+                "position": [0.04, 0, 0.02],
+                "phaseDeg": 90,
+            }],
+            "indexed_components": [{
+                "component": "reel-1",
+                "ratio": 4,
+            }],
+        },
+    })
+    assert operation.params["driverComponent"] == "driver-1"
+    assert operation.params["indexedComponent"] == "wheel-1"
+    assert operation.params["inputAngleDeg"] == 180
+    assert operation.params["slotCount"] == 4
+    continuous = operation.params["continuousComponents"][0]
+    assert continuous["componentName"] == "shutter-1"
+    assert continuous["x"] == 0.04
+    indexed = operation.params["indexedComponents"][0]
+    assert indexed["componentName"] == "reel-1"
+
+    named = SwOperation.model_validate({
+        "operation": "assembly_set_indexed_rotary_pose",
+        "params": {
+            "driver_component_name": "driver-1",
+            "indexed_component_name": "wheel-1",
+            "angle": 0,
+        },
+    })
+    assert named.params["driverComponent"] == "driver-1"
+    assert named.params["indexedComponent"] == "wheel-1"

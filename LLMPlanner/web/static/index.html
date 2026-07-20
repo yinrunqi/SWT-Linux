@@ -147,6 +147,19 @@
         </div>
         <div class="gear-animation-panel">
           <div class="gear-animation-actions">
+            <button id="projector-run-btn">🎞 Multi-turn 构建复古 16mm 放映机</button>
+          </div>
+          <div class="gear-animation-actions gearbox-motion-actions">
+            <label for="projector-angle">拨盘角 <span id="projector-angle-value">0°</span></label>
+            <input id="projector-angle" type="range" min="0" max="1440" step="30" value="0">
+            <button id="projector-pose-btn">设置分度姿态</button>
+          </div>
+          <div id="projector-run-status" class="gear-animation-status">
+            15 组件、四槽间歇送片；四个输入周期完成一圈并验证停歇锁止
+          </div>
+        </div>
+        <div class="gear-animation-panel">
+          <div class="gear-animation-actions">
             <button id="gear-load-btn">加载装配体</button>
             <button id="gear-play-btn" disabled>▶ 播放 5 圈</button>
             <button id="gear-stop-btn" disabled>■ 停止</button>

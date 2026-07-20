@@ -56,6 +56,9 @@ class OperationType(str, Enum):
     ASSEMBLY_GET_COMPONENT_TRANSFORM = "assembly_get_component_transform"
     ASSEMBLY_SET_COMPONENT_POSE = "assembly_set_component_pose"
     ASSEMBLY_SET_CRANK_SLIDER_POSE = "assembly_set_crank_slider_pose"
+    ASSEMBLY_SET_INDEXED_ROTARY_POSE = (
+        "assembly_set_indexed_rotary_pose"
+    )
 
 
 class SwOperation(BaseModel):
@@ -171,6 +174,10 @@ class SwOperation(BaseModel):
             "centerX,centerY,centerZ,crankRadius,rodLength,sliderAxisX,sliderAxisY,sliderAxisZ,"
             "rotationAxisX,rotationAxisY,rotationAxisZ,angleDeg,synchronizedComponents?}；"
             "长度单位米，synchronizedComponents 每项含 componentName,x,y,z,ratio,reverse?,phaseDeg?"
+            "\n- assembly_set_indexed_rotary_pose: {driverComponent,indexedComponent,inputAngleDeg,"
+            "slotCount?,engagementStartDeg?,engagementEndDeg?,reverseOutput?,"
+            "continuousComponents?,indexedComponents?}；连续输入在啮合区推动输出轮每周期"
+            "分度 360/slotCount，其余区间锁止；同步组件支持 ratio/reverse/phaseDeg"
         )
     )
     description: str = Field(
@@ -278,6 +285,21 @@ class SwOperation(BaseModel):
                         if candidate in params:
                             params[target] = params[candidate]
                             break
+            if operation_value == "assembly_add_component":
+                position = (
+                    params.get("position")
+                    or params.get("translation")
+                    or params.get("translation_m")
+                )
+                if (
+                    isinstance(position, (list, tuple))
+                    and len(position) >= 3
+                ):
+                    for key, coordinate in zip(
+                        ("x", "y", "z"),
+                        position[:3],
+                    ):
+                        params.setdefault(key, coordinate)
             if operation_value.startswith("assembly_mate_"):
                 for target, candidates in {
                     "component1": ("comp1", "component1Name"),
@@ -361,6 +383,133 @@ class SwOperation(BaseModel):
                     params["synchronizedComponents"] = (
                         normalized_synchronized
                     )
+            if operation_value == "assembly_set_indexed_rotary_pose":
+                for target, candidates in {
+                    "driverComponent": (
+                        "driver",
+                        "driver_component",
+                        "driverName",
+                        "driverComponentName",
+                        "driver_component_name",
+                        "drivingComponent",
+                        "input",
+                        "input_component",
+                        "inputComponent",
+                        "inputComponentName",
+                    ),
+                    "indexedComponent": (
+                        "indexed",
+                        "indexed_component",
+                        "indexedName",
+                        "indexedComponentName",
+                        "indexed_component_name",
+                        "drivenComponent",
+                        "output",
+                        "output_component",
+                        "outputComponent",
+                        "outputComponentName",
+                    ),
+                    "inputAngleDeg": (
+                        "input_angle_deg",
+                        "angleDeg",
+                        "angle",
+                    ),
+                    "slotCount": ("slot_count", "slots"),
+                    "engagementStartDeg": (
+                        "engagement_start_deg",
+                        "engageStartDeg",
+                    ),
+                    "engagementEndDeg": (
+                        "engagement_end_deg",
+                        "engageEndDeg",
+                    ),
+                    "continuousComponents": (
+                        "continuous_components",
+                        "continuous",
+                        "continuousSynchronized",
+                        "continuous_synchronized",
+                    ),
+                    "indexedComponents": (
+                        "indexed_components",
+                        "indexedSynchronized",
+                        "indexed_synchronized",
+                    ),
+                }.items():
+                    if target not in params:
+                        for candidate in candidates:
+                            if candidate in params:
+                                params[target] = params[candidate]
+                                break
+                components = params.get("components")
+                if isinstance(components, dict):
+                    for target, candidates in {
+                        "driverComponent": (
+                            "driver",
+                            "input",
+                            "driving",
+                        ),
+                        "indexedComponent": (
+                            "indexed",
+                            "output",
+                            "driven",
+                        ),
+                    }.items():
+                        if target in params:
+                            continue
+                        for candidate in candidates:
+                            value = components.get(candidate)
+                            if isinstance(value, str):
+                                params[target] = value
+                                break
+                            if isinstance(value, dict):
+                                name = (
+                                    value.get("componentName")
+                                    or value.get("name")
+                                    or value.get("component")
+                                )
+                                if name:
+                                    params[target] = name
+                                    break
+                for target in ("driverComponent", "indexedComponent"):
+                    value = params.get(target)
+                    if isinstance(value, dict):
+                        name = (
+                            value.get("componentName")
+                            or value.get("name")
+                            or value.get("component")
+                        )
+                        if name:
+                            params[target] = name
+                for list_key in (
+                    "continuousComponents",
+                    "indexedComponents",
+                ):
+                    raw_items = params.get(list_key)
+                    if not isinstance(raw_items, list):
+                        continue
+                    normalized_items = []
+                    for raw_entry in raw_items:
+                        if not isinstance(raw_entry, dict):
+                            normalized_items.append(raw_entry)
+                            continue
+                        entry = dict(raw_entry)
+                        if "componentName" not in entry:
+                            for candidate in ("name", "component"):
+                                if candidate in entry:
+                                    entry["componentName"] = entry[candidate]
+                                    break
+                        position = entry.get("position")
+                        if (
+                            isinstance(position, (list, tuple))
+                            and len(position) >= 3
+                        ):
+                            for key, coordinate in zip(
+                                ("x", "y", "z"),
+                                position[:3],
+                            ):
+                                entry.setdefault(key, coordinate)
+                        normalized_items.append(entry)
+                    params[list_key] = normalized_items
             if operation_value == "assembly_mate_coincident":
                 plane_aliases = {
                     "front": "前视基准面",
@@ -432,6 +581,11 @@ class SwOperation(BaseModel):
                 "crankRadius",
                 "rodLength",
                 "angleDeg",
+            ),
+            OperationType.ASSEMBLY_SET_INDEXED_ROTARY_POSE: (
+                "driverComponent",
+                "indexedComponent",
+                "inputAngleDeg",
             ),
         }.get(self.operation, ())
         missing = [

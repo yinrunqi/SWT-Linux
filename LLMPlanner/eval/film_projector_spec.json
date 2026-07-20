@@ -1,0 +1,119 @@
+{
+  "case_id": "vintage_16mm_film_projector_v1",
+  "description": "带四槽间歇分度送片与同步快门的复古 16mm 电影放映机",
+  "units": {
+    "length": "mm",
+    "angle": "deg"
+  },
+  "indexer": {
+    "slot_count": 4,
+    "engagement_start_deg": 120.0,
+    "engagement_end_deg": 240.0,
+    "step_angle_deg": 90.0,
+    "input_cycles_for_full_output_revolution": 4,
+    "sample_angles_deg": [
+      0.0,
+      60.0,
+      120.0,
+      180.0,
+      240.0,
+      300.0,
+      360.0,
+      720.0,
+      1080.0,
+      1440.0
+    ]
+  },
+  "film_transport": {
+    "film_width": 16.0,
+    "feed_sprocket_ratio": 1.0,
+    "reel_reduction_ratio": 4.0,
+    "shutter_ratio": 1.0,
+    "shutter_phase_deg": 90.0
+  },
+  "components": [
+    {
+      "role": "projector_base",
+      "kind": "mounting_plate",
+      "translation": [0.0, 0.0, -25.0]
+    },
+    {
+      "role": "projector_body",
+      "kind": "frame",
+      "translation": [0.0, 0.0, -14.0]
+    },
+    {
+      "role": "supply_reel",
+      "kind": "film_reel",
+      "translation": [-45.0, 55.0, 22.0]
+    },
+    {
+      "role": "takeup_reel",
+      "kind": "film_reel",
+      "translation": [-45.0, -55.0, 22.0]
+    },
+    {
+      "role": "intermittent_driver",
+      "kind": "drive_disc_with_pin",
+      "translation": [25.0, 0.0, 10.0]
+    },
+    {
+      "role": "geneva_wheel",
+      "kind": "four_slot_index_wheel",
+      "translation": [-5.0, 0.0, 10.0]
+    },
+    {
+      "role": "feed_sprocket",
+      "kind": "film_sprocket",
+      "translation": [-5.0, 0.0, 22.0]
+    },
+    {
+      "role": "two_blade_shutter",
+      "kind": "rotary_shutter",
+      "translation": [45.0, 0.0, 22.0]
+    },
+    {
+      "role": "film_gate",
+      "kind": "aperture_gate",
+      "translation": [18.0, 0.0, 30.0]
+    },
+    {
+      "role": "pressure_plate",
+      "kind": "film_pressure_plate",
+      "translation": [18.0, 0.0, 37.0]
+    },
+    {
+      "role": "lens_barrel",
+      "kind": "projection_lens",
+      "translation": [82.0, 0.0, 20.0]
+    },
+    {
+      "role": "focus_carriage",
+      "kind": "focus_slider",
+      "translation": [63.0, 0.0, 10.0]
+    },
+    {
+      "role": "lamp_housing",
+      "kind": "lamp_box",
+      "translation": [-82.0, 0.0, 0.0]
+    },
+    {
+      "role": "reflector",
+      "kind": "reflector_disc",
+      "translation": [-66.0, 0.0, 12.0]
+    },
+    {
+      "role": "cooling_fan",
+      "kind": "cooling_impeller",
+      "translation": [-82.0, 0.0, 20.0]
+    }
+  ],
+  "acceptance": {
+    "component_count": 15,
+    "minimum_gear_mate_count": 5,
+    "translation_tolerance_mm": 1.0,
+    "index_angle_tolerance_deg": 0.000001,
+    "dwell_tolerance_deg": 0.000001,
+    "assembly_file_required": true
+  }
+}

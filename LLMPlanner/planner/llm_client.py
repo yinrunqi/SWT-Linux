@@ -19,6 +19,7 @@ from typing import Optional
 
 import diskcache
 from openai import OpenAI, BadRequestError
+from pydantic import ValidationError
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 from .schemas import (
@@ -1137,9 +1138,47 @@ class SwLLMClient:
             raise ValueError("Multi-turn LLM 返回了无效 JSON") from exc
         # 部分 OpenAI 兼容中转站不严格执行 enum。只归一化无歧义的常见别名，
         # 最终仍交给 Pydantic 校验操作和动作预算。
-        turn = AgentTurn.model_validate(
-            _normalize_agent_decision_payload(decision_payload)
-        )
+        try:
+            turn = AgentTurn.model_validate(
+                _normalize_agent_decision_payload(decision_payload)
+            )
+        except ValidationError as validation_error:
+            # A blind temperature=0 retry usually reproduces the same malformed
+            # object. Give the provider its rejected JSON and exact contract
+            # errors so the paid retry can correct only the protocol shape.
+            correction = self.client.chat.completions.create(
+                model=self.plan_model,
+                messages=[
+                    *messages,
+                    {"role": "assistant", "content": extracted},
+                    {
+                        "role": "user",
+                        "content": (
+                            "上一个 JSON 未通过 AgentTurn 协议。只返回修正后的"
+                            "完整 JSON，不要解释。若 decision=act，actions 必须"
+                            "是非空数组且每项包含 operation 和 params。\n"
+                            f"校验错误：{validation_error}"
+                        ),
+                    },
+                ],
+                temperature=0,
+                max_tokens=8000,
+                response_format={"type": "json_object"},
+            )
+            corrected_content = correction.choices[0].message.content
+            if not corrected_content:
+                raise ValueError("Multi-turn LLM 协议修复未返回决策")
+            corrected_content = _strip_markdown_fence(
+                corrected_content
+            )
+            corrected_json = (
+                _extract_first_json_block(corrected_content)
+                or corrected_content
+            )
+            corrected_payload = json.loads(corrected_json)
+            turn = AgentTurn.model_validate(
+                _normalize_agent_decision_payload(corrected_payload)
+            )
         if self.use_cache and agent_cache_key is not None:
             self._active_agent_cache_key = agent_cache_key
             self._pending_agent_cache_value = turn.model_dump_json()
