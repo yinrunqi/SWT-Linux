@@ -73,6 +73,7 @@ namespace Chapter1.ConnectToSw
             Console.WriteLine("可用端点:");
             Console.WriteLine("  GET  /api/ping                    - 健康检查");
             Console.WriteLine("  POST /api/close-all-documents     - 关闭全部测试文档（不保存）");
+            Console.WriteLine("  POST /api/close-inactive-documents - 保留活动文档并关闭其余窗口");
             Console.WriteLine("  POST /api/new-part                - 新建零件文档");
             Console.WriteLine("  POST /api/select-plane            - 选择基准面并进入草图");
             Console.WriteLine("  POST /api/sketch/line             - 画直线");
@@ -180,6 +181,9 @@ namespace Chapter1.ConnectToSw
 
                 case "/api/close-all-documents":
                     RequirePost(method, resp, () => HandleCloseAllDocuments(resp));
+                    break;
+                case "/api/close-inactive-documents":
+                    RequirePost(method, resp, () => HandleCloseInactiveDocuments(resp));
                     break;
 
                 case "/api/new-part":
@@ -321,6 +325,12 @@ namespace Chapter1.ConnectToSw
                 case "/api/assembly/unfix-component":
                     RequirePost(method, resp, () => HandleUnfixComponent(req, resp));
                     break;
+                case "/api/assembly/fix-component":
+                    RequirePost(method, resp, () => HandleFixComponent(req, resp));
+                    break;
+                case "/api/assembly/observation":
+                    HandleAssemblyObservation(resp);
+                    break;
                 case "/api/assembly/rotate-component":
                     RequirePost(method, resp, () => HandleRotateComponent(req, resp));
                     break;
@@ -409,6 +419,30 @@ namespace Chapter1.ConnectToSw
                 {
                     success = false,
                     message = $"关闭文档失败: {ex.Message}"
+                });
+            }
+        }
+
+        private static void HandleCloseInactiveDocuments(HttpListenerResponse resp)
+        {
+            try
+            {
+                var closed = _commands.CloseInactiveDocuments();
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    closedCount = closed.Count,
+                    closedDocuments = closed,
+                    message = $"已关闭 {closed.Count} 个非活动文档"
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] 关闭非活动文档失败: {ex}");
+                SendJson(resp, 500, new
+                {
+                    success = false,
+                    message = $"关闭非活动文档失败: {ex.Message}"
                 });
             }
         }
@@ -1488,6 +1522,54 @@ namespace Chapter1.ConnectToSw
             {
                 Console.WriteLine($"[错误] GetComponentTransform 失败: {ex.Message}");
                 SendJson(resp, 500, new { success = false, message = ex.Message });
+            }
+        }
+
+        private static void HandleFixComponent(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                string comp = GetString(body, "componentName");
+                _commands.FixComponent(comp);
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = $"组件已固定: {comp}",
+                    componentName = comp,
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] FixComponent 失败: {ex.Message}");
+                SendJson(resp, 500, new
+                {
+                    success = false,
+                    message = $"固定组件失败: {ex.Message}",
+                });
+            }
+        }
+
+        private static void HandleAssemblyObservation(HttpListenerResponse resp)
+        {
+            try
+            {
+                var result = _commands.GetAssemblyObservation();
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = "装配体观察完成",
+                    result,
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] AssemblyObservation 失败: {ex.Message}");
+                SendJson(resp, 500, new
+                {
+                    success = false,
+                    message = $"装配体观察失败: {ex.Message}",
+                });
             }
         }
 

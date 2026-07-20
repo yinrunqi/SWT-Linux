@@ -118,3 +118,40 @@ Web Demo 默认模型：Vision `GLM-4.6V`，Plan `Qwen3.5-397B-A17B`
 - `through_all` 自动补齐 C# 传输层仍要求的正 depth。
 - 对凹多边形、T 形轮廓和拔模棱柱使用 IR 参数化编译；无法确定的形状才调用
   Stage B Plan LLM。
+
+## 参数化双级减速箱 Multi-turn 装配评测（2026-07-20）
+
+评测脚本：`LLMPlanner/eval/eval_two_stage_gearbox_multiturn.py`
+
+规格：`LLMPlanner/eval/two_stage_gearbox_spec.json`
+
+模型：`Qwen3.5-397B-A17B`，禁用缓存。
+
+对象由安装底板、输入 12 齿小齿轮、中间轴 24/12 齿复合齿轮和输出 36 齿
+大齿轮共 5 个组件组成。两级减速比为 2:1 和 3:1，中间轴两个独立组件用
+1:1 同向同步，总减速比 6:1。评测只把零件路径、装配位置和功能关系作为
+用户可见需求提供给 Agent，不提供隐藏 golden steps。
+
+| 运行 | 结果 | 可核算 Tokens | 主要发现 / 修复 |
+|------|------|---------------|-----------------|
+| 协议基线 | blocked | 34,800 | `act` 缺省 actions 被 Pydantic 默认值漏检 |
+| 严格协议重试 | error | 未可靠回执 | 模型长分析耗尽 4k 输出；固定 JSON 键顺序并限制摘要 |
+| 首次真实插入 | blocked | 50,992 | `filePath`/`partPath` 别名与 3 轮恢复预算不足 |
+| 精确位置前 | blocked | 79,382 | `AddComponent5` 坐标是包围盒近似值，误用重合配合修位置 |
+| Mate 类型验收 | blocked | 125,575 | 已有两级 Gear Mate，只缺中间轴 1:1 同步 |
+| 最终冷启动 | ✅ completed | 94,433 | 7 轮完成全部结构、传动和保存验收 |
+
+最终运行：
+
+- Prompt **90,469** + Completion **3,964** = **94,433 tokens**，7 次 LLM 调用。
+- Agent 用时 **128.4s**；含准备检查和窗口清理总耗时 **131.0s**。
+- 零件首次参数化生成耗时 **33.6s**，不调用 LLM；正式运行复用已生成零件。
+- 5/5 组件精确定位；3 个 Gear Mate 的归一化比值为 `{1, 2, 3}`；
+  2 个 Coincident Mate；原生干涉检测为 **0**。
+- 保存后重新打开 `.SLDASM` 冷后验：组件 5、配合 5，齿轮比分别
+  `12:24`、`12:36`、`1:1`，全部未压制。
+- 完成后 `/api/close-inactive-documents` 关闭 5 个预加载零件窗口，只保留最终
+  装配体，验证了测试期间不累积无用零件/装配窗口的稳定性原则。
+
+本轮可核算的失败迭代共 **290,749 tokens**；严格协议重试因旧评测脚本在异常时
+未保存 usage，不并入该数。后续脚本已保证 error 状态也写入 token_usage。

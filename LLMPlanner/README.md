@@ -164,6 +164,11 @@ python -m web.app --model gpt-4o
 - `multi_turn` 采用“全局计划 + 迭代执行”架构：先生成与 Single-turn 同等完整的全局蓝图，再按选择/草图/特征原子事务拆成里程碑；每轮执行后观察并做确定性验收，失败时保留现有模型并由 Agent 原位修改，全部通过才返回 `completed`。
 - 连续 `sketch_line` / `sketch_circle` 会自动压缩成 `sketch_polyline` / `sketch_circles`，避免 5-action 轮次边界留下未闭合草图。
 - 观察源优先使用聚合 `GET /api/model-observation`（面拓扑、草图摘要、特征-草图关联）；失败时回退到 feature-tree / bbox / volume。
+- 纯文本装配任务支持新建/打开装配体、精确插入组件、固定/浮动、重合/同心/
+  齿轮配合、重建、保存和干涉检查。`GET /api/assembly/observation` 返回组件路径、
+  Transform、固定/压制状态、Mate 类型和齿轮比，供里程碑确定性验收。
+- 装配测试完成后使用 `/api/close-inactive-documents` 保留最终装配体并关闭预加载
+  零件窗口；用例之间仍使用 `/api/close-all-documents` 清场。
 - 轮数缺省按蓝图阶段和每阶段恢复预算动态计算；请求里传 `max_turns` 时作为硬上限。
 - Web Demo 时间线展示里程碑状态、机器验收证据和失败后换策略；Single-turn UI 不变。
 - Multi-turn 支持纯文本；带三视图图片时先走 Vision 抽 IR，再生成全局蓝图并进入同一套执行/检查/修复循环。暂不支持 SSE 实时流、持久会话、截图和回滚。
@@ -214,9 +219,9 @@ LLMPlanner/
 planner/skills/
 ├── core/                         # 恒定注入：所有对话都会用到的通用规则
 │   ├── 00_header.md              # 系统开场白
-│   ├── 01_operations.md          # 21 个原子 operation 及其参数
+│   ├── 01_operations.md          # 零件原子 operation 及其参数
 │   ├── 02_units.md               # 单位换算（mm↔m）
-│   ├── 03_rules.md               # 拉伸方向/坐标映射/多轮廓约束等核心规则 + 板凳/骰子等示例
+│   ├── 03_rules.md               # 拉伸方向/坐标映射/多轮廓约束等通用规则
 │   └── 04_editing.md             # 编辑已有模型（modify_dimension / 面上加特征）
 ├── agent/
 │   └── 05_agent_loop.md          # 仅 Multi-turn 动态追加，不改变 single-turn prompt

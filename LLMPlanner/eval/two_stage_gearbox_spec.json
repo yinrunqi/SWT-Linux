@@ -1,0 +1,55 @@
+{
+  "case_id": "two_stage_gearbox_v1",
+  "description": "五组件参数化双级圆柱齿轮减速箱装配体",
+  "units": {
+    "length": "mm",
+    "angle": "deg"
+  },
+  "gear_standard": {
+    "module": 3.0,
+    "pressure_angle": 30.0,
+    "face_width": 12.0,
+    "bore_diameter": 10.0
+  },
+  "components": [
+    {
+      "role": "housing_base",
+      "kind": "mounting_plate",
+      "size": [230.0, 130.0, 10.0],
+      "translation": [0.0, 0.0, -20.0]
+    },
+    {
+      "role": "input_pinion",
+      "teeth": 12,
+      "translation": [-54.0, 0.0, 0.0]
+    },
+    {
+      "role": "intermediate_wheel",
+      "teeth": 24,
+      "translation": [0.0, 0.0, 0.0]
+    },
+    {
+      "role": "intermediate_pinion",
+      "teeth": 12,
+      "translation": [0.0, 0.0, 20.0]
+    },
+    {
+      "role": "output_wheel",
+      "teeth": 36,
+      "translation": [72.0, 0.0, 20.0]
+    }
+  ],
+  "kinematics": {
+    "stage_1_ratio": 2.0,
+    "stage_2_ratio": 3.0,
+    "overall_reduction": 6.0,
+    "expected_output_direction": "same_as_input"
+  },
+  "acceptance": {
+    "component_count": 5,
+    "minimum_mate_count": 5,
+    "translation_tolerance_mm": 1.0,
+    "maximum_interference_count": 0,
+    "assembly_file_required": true
+  }
+}

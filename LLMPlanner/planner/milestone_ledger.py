@@ -86,6 +86,7 @@ class MilestoneLedger:
                 "status": item.status.value,
                 "depends_on": item.depends_on,
                 "failure_count": item.failure_count,
+                "max_failures": item.max_failures,
                 "evidence": item.evidence,
             }
             for item in self.task_plan.milestones

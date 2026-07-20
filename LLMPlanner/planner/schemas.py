@@ -40,6 +40,20 @@ class OperationType(str, Enum):
     BODY_BOUNDING_BOX = "body_bounding_box"
     SELECT_FACE_AND_SKETCH = "select_face_and_sketch"
     MODIFY_DIMENSION = "modify_dimension"
+    # --- 文档持久化 & 装配体 ---
+    SAVE_PART_AS = "save_part_as"
+    ASSEMBLY_NEW = "assembly_new"
+    ASSEMBLY_OPEN = "assembly_open"
+    ASSEMBLY_ADD_COMPONENT = "assembly_add_component"
+    ASSEMBLY_FIX_COMPONENT = "assembly_fix_component"
+    ASSEMBLY_UNFIX_COMPONENT = "assembly_unfix_component"
+    ASSEMBLY_MATE_COINCIDENT = "assembly_mate_coincident"
+    ASSEMBLY_MATE_CONCENTRIC = "assembly_mate_concentric"
+    ASSEMBLY_MATE_GEAR = "assembly_mate_gear"
+    ASSEMBLY_REBUILD = "assembly_rebuild"
+    ASSEMBLY_SAVE = "assembly_save"
+    ASSEMBLY_CHECK_INTERFERENCE = "assembly_check_interference"
+    ASSEMBLY_GET_COMPONENT_TRANSFORM = "assembly_get_component_transform"
 
 
 class SwOperation(BaseModel):
@@ -139,7 +153,16 @@ class SwOperation(BaseModel):
             "- feature_tree: 无参数（查询操作，返回特征树含尺寸信息）\n"
             "- body_bounding_box: 无参数（查询操作，返回包围盒）\n"
             "- select_face_and_sketch: {rx, ry, rz, dx, dy, dz: float} — 射线起点和方向（米），用于选中实体面并进入草图编辑\n"
-            "- modify_dimension: {featureName: str, dimensionName: str (可选), newValue: float 或 delta: float} — 修改特征尺寸。newValue 设绝对值，delta 设增量（二选一）"
+            "- modify_dimension: {featureName: str, dimensionName: str (可选), newValue: float 或 delta: float} — 修改特征尺寸。newValue 设绝对值，delta 设增量（二选一）\n"
+            "- save_part_as: {savePath: str} — 把活动零件保存为绝对 .SLDPRT 路径\n"
+            "- assembly_new: {savePath: str}; assembly_open: {assemblyPath: str}\n"
+            "- assembly_add_component: {partPath: str, x,y,z: float} — 插入已保存零件，返回 componentName\n"
+            "- assembly_fix_component / assembly_unfix_component: {componentName: str}\n"
+            "- assembly_mate_coincident: {component1,plane1,component2,plane2: str}\n"
+            "- assembly_mate_concentric: {component1,rx1,ry1,rz1,dx1,dy1,dz1,component2,rx2,ry2,rz2,dx2,dy2,dz2}\n"
+            "- assembly_mate_gear: 同上射线参数，并含 gearRatioNumerator, gearRatioDenominator, reverse\n"
+            "- assembly_rebuild / assembly_save / assembly_check_interference: 无参数\n"
+            "- assembly_get_component_transform: {componentName: str}"
         )
     )
     description: str = Field(
@@ -180,7 +203,99 @@ class SwOperation(BaseModel):
             or item.get("arguments")
             or {}
         )
-        item.setdefault("params", params)
+        if isinstance(params, dict):
+            params = dict(params)
+            operation_value = (
+                operation.value
+                if isinstance(operation, OperationType)
+                else str(operation or "").strip().lower().replace("-", "_")
+            )
+            aliases_by_operation = {
+                "save_part_as": {
+                    "savePath": ("path", "filePath", "outputPath"),
+                },
+                "assembly_new": {
+                    "savePath": (
+                        "path",
+                        "filePath",
+                        "assemblyPath",
+                        "outputPath",
+                    ),
+                },
+                "assembly_open": {
+                    "assemblyPath": ("path", "filePath", "savePath"),
+                },
+                "assembly_add_component": {
+                    "partPath": ("path", "filePath", "componentPath"),
+                },
+                "assembly_fix_component": {
+                    "componentName": ("component", "name"),
+                },
+                "assembly_unfix_component": {
+                    "componentName": ("component", "name"),
+                },
+            }
+            for target, candidates in aliases_by_operation.get(
+                operation_value,
+                {},
+            ).items():
+                if target not in params:
+                    for candidate in candidates:
+                        if candidate in params:
+                            params[target] = params[candidate]
+                            break
+            if operation_value.startswith("assembly_mate_"):
+                for target, candidates in {
+                    "component1": ("comp1", "component1Name"),
+                    "component2": ("comp2", "component2Name"),
+                }.items():
+                    if target not in params:
+                        for candidate in candidates:
+                            if candidate in params:
+                                params[target] = params[candidate]
+                                break
+            if operation_value in {
+                "assembly_mate_concentric",
+                "assembly_mate_gear",
+            }:
+                for ray_index in (1, 2):
+                    ray = params.get(f"ray{ray_index}")
+                    if isinstance(ray, (list, tuple)) and len(ray) >= 6:
+                        for name, value in zip(
+                            ("rx", "ry", "rz", "dx", "dy", "dz"),
+                            ray[:6],
+                        ):
+                            params.setdefault(f"{name}{ray_index}", value)
+            if operation_value == "assembly_mate_gear":
+                for target, candidates in {
+                    "gearRatioNumerator": (
+                        "ratioNumerator",
+                        "numerator",
+                    ),
+                    "gearRatioDenominator": (
+                        "ratioDenominator",
+                        "denominator",
+                    ),
+                }.items():
+                    if target not in params:
+                        for candidate in candidates:
+                            if candidate in params:
+                                params[target] = params[candidate]
+                                break
+            if operation_value == "assembly_mate_coincident":
+                plane_aliases = {
+                    "front": "前视基准面",
+                    "front plane": "前视基准面",
+                    "top": "上视基准面",
+                    "top plane": "上视基准面",
+                    "right": "右视基准面",
+                    "right plane": "右视基准面",
+                }
+                for key in ("plane1", "plane2"):
+                    value = str(params.get(key, "")).strip().lower()
+                    if value in plane_aliases:
+                        params[key] = plane_aliases[value]
+        item["params"] = params
         if "description" not in item and item.get("comment"):
             item["description"] = item["comment"]
         return item
@@ -269,6 +384,7 @@ class Milestone(BaseModel):
     depends_on: list[str] = Field(default_factory=list)
     postconditions: list[PostconditionSpec] = Field(default_factory=list)
     max_actions: int = Field(default=5, ge=1, le=5)
+    max_failures: int = Field(default=3, ge=1, le=10)
     status: MilestoneStatus = MilestoneStatus.PENDING
     evidence: dict = Field(default_factory=dict)
     failure_count: int = 0
@@ -301,6 +417,11 @@ class ModelObservation(BaseModel):
     feature_sketch_links: list[dict] = Field(default_factory=list)
     bounding_box_mm: Optional[dict] = None
     volume_mm3: Optional[float] = None
+    document_type: str = "part"
+    assembly_path: str = ""
+    components: list[dict] = Field(default_factory=list)
+    mates: list[dict] = Field(default_factory=list)
+    interference_summary: Optional[dict] = None
     last_execution: list[dict] = Field(default_factory=list)
     errors: dict[str, str] = Field(default_factory=dict)
     state_fingerprint: str = ""
@@ -311,10 +432,10 @@ class AgentTurn(BaseModel):
 
     decision: AgentDecision
     milestone_id: str = ""
-    progress_summary: str = ""
+    progress_summary: str = Field(default="", max_length=500)
     actions: list[SwOperation] = Field(default_factory=list, max_length=5)
-    check_summary: str = ""
-    next_milestone: str = ""
+    check_summary: str = Field(default="", max_length=500)
+    next_milestone: str = Field(default="", max_length=200)
 
     @field_validator("actions")
     @classmethod
@@ -329,6 +450,15 @@ class AgentTurn(BaseModel):
         if decision != AgentDecision.ACT and actions:
             raise ValueError("只有 decision=act 时才允许 actions")
         return actions
+
+    @model_validator(mode="after")
+    def validate_decision_has_consistent_actions(self):
+        """Validate defaults too; field validators skip an omitted actions field."""
+        if self.decision == AgentDecision.ACT and not self.actions:
+            raise ValueError("decision=act 时 actions 不能为空")
+        if self.decision != AgentDecision.ACT and self.actions:
+            raise ValueError("只有 decision=act 时才允许 actions")
+        return self
 
 
 class MultiTurnRecord(BaseModel):

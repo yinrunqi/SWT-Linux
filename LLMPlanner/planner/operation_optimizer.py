@@ -109,6 +109,13 @@ _FEATURE_OPERATIONS = {
     OperationType.FEATURE_CIRCULAR_PATTERN,
     OperationType.FEATURE_LINEAR_PATTERN,
     OperationType.MODIFY_DIMENSION,
+    OperationType.ASSEMBLY_NEW,
+    OperationType.ASSEMBLY_MATE_COINCIDENT,
+    OperationType.ASSEMBLY_MATE_CONCENTRIC,
+    OperationType.ASSEMBLY_MATE_GEAR,
+    OperationType.ASSEMBLY_REBUILD,
+    OperationType.ASSEMBLY_CHECK_INTERFERENCE,
+    OperationType.ASSEMBLY_SAVE,
 }
 
 

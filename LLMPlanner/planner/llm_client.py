@@ -125,6 +125,15 @@ def _normalize_agent_decision_payload(payload: dict) -> dict:
         "stop": AgentDecision.BLOCKED.value,
     }
     normalized = dict(payload)
+    if not normalized.get("actions"):
+        for key in ("operations", "steps", "tool_calls", "action"):
+            candidate = normalized.get(key)
+            if isinstance(candidate, dict):
+                normalized["actions"] = [candidate]
+                break
+            if isinstance(candidate, list) and candidate:
+                normalized["actions"] = candidate
+                break
     raw_decision = str(normalized.get("decision", "")).lower()
     if raw_decision in decision_aliases:
         normalized["decision"] = decision_aliases[raw_decision]
@@ -831,6 +840,15 @@ class SwLLMClient:
         payload["milestones"] = normalized
         return TaskPlan.model_validate(payload)
 
+    @retry(
+        stop=stop_after_attempt(2),
+        wait=wait_exponential(multiplier=1, min=1, max=4),
+        retry=retry_if_exception_type((Exception,)),
+        before_sleep=lambda retry_state: print(
+            "[LLM] AgentTurn 不符合协议，重新请求一次: "
+            f"{retry_state.outcome.exception()}"
+        ),
+    )
     def decide_agent_turn(
         self,
         user_goal: str,
@@ -879,6 +897,10 @@ class SwLLMClient:
             "你正在执行 Multi-turn SolidWorks 建模。根据下面 JSON 决定下一轮。\n"
             "每轮只能完成一个可检查的里程碑，actions 最多 5 个原子操作；"
             "不要一次输出整个任务的全部步骤。\n"
+            "只输出 JSON，不要先分析或复述。act 决策必须按此键顺序输出："
+            '{"decision":"act","milestone_id":"当前ID","actions":[...],'
+            '"progress_summary":"不超过120字","check_summary":"","next_milestone":""}。'
+            "actions 必须紧跟 milestone_id，不能放到长篇说明之后。\n"
             "如果上轮失败，必须根据错误和当前特征改变策略，不能原样重试。\n"
             "如果提供 current_milestone，milestone_id 必须与其 id 完全一致，"
             "本轮只能服务这个里程碑，禁止重做 ledger 中已完成的面或特征。\n"
@@ -906,7 +928,7 @@ class SwLLMClient:
                 model=self.plan_model,
                 messages=messages,
                 temperature=0,
-                max_tokens=4000,
+                max_tokens=8000,
                 response_format={
                     "type": "json_schema",
                     "json_schema": {
@@ -930,7 +952,7 @@ class SwLLMClient:
                     {"role": "user", "content": user_prompt},
                 ],
                 temperature=0,
-                max_tokens=4000,
+                max_tokens=8000,
                 response_format={"type": "json_object"},
             )
 

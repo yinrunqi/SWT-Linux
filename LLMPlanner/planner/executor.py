@@ -45,6 +45,23 @@ OPERATION_ENDPOINT_MAP: dict[OperationType, tuple[str, str]] = {
     OperationType.BODY_BOUNDING_BOX:       ("GET",  "/api/body-bounding-box"),
     OperationType.SELECT_FACE_AND_SKETCH:  ("POST", "/api/select-face-and-sketch"),
     OperationType.MODIFY_DIMENSION:        ("POST", "/api/modify-dimension"),
+    # --- 文档持久化 & 装配体 ---
+    OperationType.SAVE_PART_AS:            ("POST", "/api/save-part-as"),
+    OperationType.ASSEMBLY_NEW:            ("POST", "/api/assembly/new"),
+    OperationType.ASSEMBLY_OPEN:           ("POST", "/api/assembly/open"),
+    OperationType.ASSEMBLY_ADD_COMPONENT:  ("POST", "/api/assembly/add-component"),
+    OperationType.ASSEMBLY_FIX_COMPONENT:  ("POST", "/api/assembly/fix-component"),
+    OperationType.ASSEMBLY_UNFIX_COMPONENT: ("POST", "/api/assembly/unfix-component"),
+    OperationType.ASSEMBLY_MATE_COINCIDENT: ("POST", "/api/assembly/mate-coincident"),
+    OperationType.ASSEMBLY_MATE_CONCENTRIC: ("POST", "/api/assembly/mate-concentric"),
+    OperationType.ASSEMBLY_MATE_GEAR:       ("POST", "/api/assembly/mate-gear"),
+    OperationType.ASSEMBLY_REBUILD:         ("POST", "/api/assembly/rebuild"),
+    OperationType.ASSEMBLY_SAVE:            ("POST", "/api/assembly/save"),
+    OperationType.ASSEMBLY_CHECK_INTERFERENCE: ("POST", "/api/assembly/check-interference"),
+    OperationType.ASSEMBLY_GET_COMPONENT_TRANSFORM: (
+        "POST",
+        "/api/assembly/get-component-transform",
+    ),
 }
 
 # 常见的英文→中文特征类型名映射（SolidWorks 中文版）

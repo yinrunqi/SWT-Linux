@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Callable
 
 from .schemas import ModelObservation, PostconditionSpec, ValidationResult
@@ -52,16 +53,164 @@ class ValidatorRegistry:
 
     @staticmethod
     def _check_valid_entity(observation, _params):
-        valid = (
-            not observation.errors
-            and observation.bounding_box_mm is not None
-            and (observation.volume_mm3 or 0) > 0
-        )
+        if observation.document_type == "assembly":
+            valid = not observation.errors and bool(observation.components)
+        else:
+            valid = (
+                not observation.errors
+                and observation.bounding_box_mm is not None
+                and (observation.volume_mm3 or 0) > 0
+            )
         return valid, {
+            "document_type": observation.document_type,
             "bbox": observation.bounding_box_mm,
             "volume_mm3": observation.volume_mm3,
+            "component_count": len(observation.components),
             "errors": observation.errors,
         }
+
+    @staticmethod
+    def _check_valid_assembly(observation, _params):
+        valid = (
+            observation.document_type == "assembly"
+            and not observation.errors
+            and bool(observation.components)
+        )
+        return valid, {
+            "document_type": observation.document_type,
+            "component_count": len(observation.components),
+            "mate_count": len(observation.mates),
+            "errors": observation.errors,
+        }
+
+    @staticmethod
+    def _check_component_count(observation, params):
+        actual = len(observation.components)
+        minimum = int(params.get("minimum", params.get("exact", 1)))
+        exact = params.get("exact")
+        passed = actual == int(exact) if exact is not None else actual >= minimum
+        return passed, {
+            "actual": actual,
+            "minimum": minimum,
+            "exact": exact,
+        }
+
+    @staticmethod
+    def _check_mate_count(observation, params):
+        actual = len(observation.mates)
+        minimum = int(params.get("minimum", 1))
+        return actual >= minimum, {
+            "actual": actual,
+            "minimum": minimum,
+            "mates": observation.mates,
+        }
+
+    @staticmethod
+    def _check_mate_type_count(observation, params):
+        keyword = str(params["keyword"]).lower()
+        matching = [
+            mate
+            for mate in observation.mates
+            if keyword in (
+                f"{mate.get('name', '')} {mate.get('type', '')}".lower()
+            )
+            and not bool(mate.get("suppressed", False))
+        ]
+        minimum = int(params.get("minimum", 1))
+        return len(matching) >= minimum, {
+            "keyword": keyword,
+            "actual": len(matching),
+            "minimum": minimum,
+            "matching": matching,
+        }
+
+    @staticmethod
+    def _check_gear_ratios(observation, params):
+        actual = []
+        for mate in observation.mates:
+            numerator = float(mate.get("gearRatioNumerator", 0) or 0)
+            denominator = float(mate.get("gearRatioDenominator", 0) or 0)
+            if numerator <= 0 or denominator <= 0:
+                continue
+            actual.append(max(numerator, denominator) / min(
+                numerator,
+                denominator,
+            ))
+        expected = [float(value) for value in params.get("expected", [])]
+        tolerance = float(params.get("tolerance", 1e-6))
+        actual.sort()
+        expected.sort()
+        passed = (
+            len(actual) == len(expected)
+            and all(
+                abs(value - target) <= tolerance
+                for value, target in zip(actual, expected)
+            )
+        )
+        return passed, {
+            "actual": actual,
+            "expected": expected,
+            "tolerance": tolerance,
+        }
+
+    @staticmethod
+    def _check_no_interference(observation, params):
+        summary = observation.interference_summary or {}
+        actual = int(summary.get("interferenceCount", -1))
+        maximum = int(params.get("maximum", 0))
+        return 0 <= actual <= maximum, {
+            "actual": actual,
+            "maximum": maximum,
+            "summary": summary,
+        }
+
+    @staticmethod
+    def _check_component_positions(observation, params):
+        expected = params.get("expected", [])
+        tolerance = float(params.get("tolerance_mm", 0.5))
+        checks = []
+        for target in expected:
+            needle = str(target.get("path_contains", "")).lower()
+            component = next(
+                (
+                    item for item in observation.components
+                    if needle in str(item.get("path", "")).lower()
+                ),
+                None,
+            )
+            actual = (
+                [float(value) * 1000 for value in component.get(
+                    "translationXYZ",
+                    [],
+                )]
+                if component
+                else []
+            )
+            wanted = [float(value) for value in target.get("translation_mm", [])]
+            passed = (
+                len(actual) == 3
+                and len(wanted) == 3
+                and all(
+                    abs(value - goal) <= tolerance
+                    for value, goal in zip(actual, wanted)
+                )
+            )
+            checks.append({
+                "path_contains": needle,
+                "actual_mm": actual,
+                "expected_mm": wanted,
+                "passed": passed,
+            })
+        return bool(checks) and all(item["passed"] for item in checks), {
+            "tolerance_mm": tolerance,
+            "checks": checks,
+        }
+
+    @staticmethod
+    def _check_assembly_saved(observation, params):
+        path = str(params.get("path") or observation.assembly_path)
+        passed = bool(path) and Path(path).is_file()
+        return passed, {"path": path, "exists": passed}
 
     @staticmethod
     def _check_last_execution_success(observation, _params):

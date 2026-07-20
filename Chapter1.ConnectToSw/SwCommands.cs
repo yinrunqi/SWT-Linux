@@ -1050,6 +1050,40 @@ namespace Chapter1.ConnectToSw
         }
 
         /// <summary>
+        /// 关闭除当前活动文档以外的窗口，不保存临时修改。
+        /// 装配完成后用于保留最终装配体，同时释放预加载零件窗口。
+        /// </summary>
+        public List<string> CloseInactiveDocuments()
+        {
+            var active = _swApp.IActiveDoc2;
+            var activeTitle = active?.GetTitle();
+            var titles = new List<string>();
+            var documents = _swApp.GetDocuments() as object[];
+            if (documents != null)
+            {
+                foreach (var item in documents)
+                {
+                    var document = item as IModelDoc2;
+                    var title = document?.GetTitle();
+                    if (!string.IsNullOrWhiteSpace(title)
+                        && !string.Equals(
+                            title,
+                            activeTitle,
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        titles.Add(title);
+                    }
+                }
+            }
+            foreach (var title in titles)
+                _swApp.CloseDoc(title);
+            Console.WriteLine(
+                $"[SwCommands] 已保留活动文档 '{activeTitle}'，" +
+                $"关闭 {titles.Count} 个非活动文档");
+            return titles;
+        }
+
+        /// <summary>
         /// 新建一个零件文档，设为当前活动文档。
         /// </summary>
         public void NewPart()
@@ -2965,9 +2999,53 @@ namespace Chapter1.ConnectToSw
             if (comp == null)
                 throw new InvalidOperationException($"AddComponent5 返回 null: partPath={partPath}");
 
+            // AddComponent5 的 X/Y/Z 是相对组件包围盒的近似插入点，不保证组件原点
+            // 落在目标坐标。统一用 Transform2 二次定位，让 HTTP API 的 x/y/z
+            // 对 Planner 和验收器具有精确、稳定的语义。
+            SetComponentTranslation(comp, x, y, z);
             var compName = comp.Name2;
             Console.WriteLine($"[SwCommands] 已加入组件: {compName} @ ({x*1000:F1},{y*1000:F1},{z*1000:F1}) mm");
             return compName;
+        }
+
+        private void SetComponentTranslation(
+            IComponent2 component,
+            double x,
+            double y,
+            double z)
+        {
+            bool wasFixed = component.IsFixed();
+            if (wasFixed)
+            {
+                ClearAssemblySelection();
+                component.Select4(false, null, false);
+                _activeAssembly.UnfixComponent();
+            }
+
+            var mathUtility = _swApp.GetMathUtility() as IMathUtility;
+            if (mathUtility == null)
+                throw new InvalidOperationException("无法获取 SolidWorks MathUtility");
+            var values = new double[]
+            {
+                1, 0, 0,
+                0, 1, 0,
+                0, 0, 1,
+                x, y, z,
+                1, 0, 0, 0,
+            };
+            var transform = mathUtility.CreateTransform(values) as MathTransform;
+            if (transform == null)
+                throw new InvalidOperationException("创建组件 Transform 失败");
+            component.Transform2 = transform;
+            ((IModelDoc2)_activeAssembly).Extension.Rebuild(
+                (int)swRebuildOptions_e.swUpdateMates);
+
+            if (wasFixed)
+            {
+                ClearAssemblySelection();
+                component.Select4(false, null, false);
+                _activeAssembly.FixComponent();
+            }
         }
 
         /// <summary>
@@ -3438,6 +3516,126 @@ namespace Chapter1.ConnectToSw
                 throw new InvalidOperationException($"选择组件失败: {fullName}");
             _activeAssembly.UnfixComponent();
             Console.WriteLine($"[SwCommands] 已浮动 (Float) 组件: {componentName}");
+        }
+
+        /// <summary>把指定顶层组件固定在当前装配位置。</summary>
+        public void FixComponent(string componentName)
+        {
+            EnsureActiveAssembly();
+            ClearAssemblySelection();
+            var ext = ((IModelDoc2)_activeAssembly).Extension;
+            var fullName = $"{componentName}@{_activeAssemblyName}";
+            bool ok = ext.SelectByID2(
+                fullName,
+                "COMPONENT",
+                0.0,
+                0.0,
+                0.0,
+                false,
+                0,
+                null,
+                0);
+            if (!ok)
+                throw new InvalidOperationException($"选择组件失败: {fullName}");
+            _activeAssembly.FixComponent();
+            Console.WriteLine($"[SwCommands] 已固定组件: {componentName}");
+        }
+
+        /// <summary>
+        /// 获取装配体的紧凑结构快照，供 Multi-turn Agent 机器验收。
+        /// </summary>
+        public Dictionary<string, object> GetAssemblyObservation()
+        {
+            EnsureActiveAssembly();
+            var components = new List<Dictionary<string, object>>();
+            var componentObjects = _activeAssembly.GetComponents(false) as object[];
+            if (componentObjects != null)
+            {
+                foreach (var item in componentObjects)
+                {
+                    var component = item as IComponent2;
+                    if (component == null) continue;
+
+                    var transformValues = new double[0];
+                    var translation = new double[] { 0.0, 0.0, 0.0 };
+                    var transform = component.Transform2 as IMathTransform;
+                    if (transform != null)
+                    {
+                        var values = transform.ArrayData as double[];
+                        if (values != null)
+                        {
+                            transformValues = values;
+                            if (values.Length >= 12)
+                            {
+                                translation = new double[]
+                                {
+                                    values[9],
+                                    values[10],
+                                    values[11],
+                                };
+                            }
+                        }
+                    }
+
+                    components.Add(new Dictionary<string, object>
+                    {
+                        ["name"] = component.Name2,
+                        ["path"] = component.GetPathName() ?? "",
+                        ["isFixed"] = component.IsFixed(),
+                        ["suppressionState"] = component.GetSuppression(),
+                        ["translationXYZ"] = translation,
+                        ["transform"] = transformValues,
+                    });
+                }
+            }
+
+            var mates = new List<Dictionary<string, object>>();
+            var feature = ((IModelDoc2)_activeAssembly).FirstFeature() as IFeature;
+            while (feature != null)
+            {
+                var subFeature = feature.GetFirstSubFeature() as IFeature;
+                while (subFeature != null)
+                {
+                    string typeName = subFeature.GetTypeName2() ?? "";
+                    var definition = subFeature.GetDefinition();
+                    if (typeName.IndexOf(
+                        "mate",
+                        StringComparison.OrdinalIgnoreCase) >= 0
+                        || definition is IMate2
+                        || definition is IGearMateFeatureData)
+                    {
+                        var mate = new Dictionary<string, object>
+                        {
+                            ["name"] = subFeature.Name,
+                            ["type"] = typeName,
+                            ["suppressed"] = subFeature.IsSuppressed(),
+                        };
+                        var gear = definition as IGearMateFeatureData;
+                        if (gear != null)
+                        {
+                            mate["gearRatioNumerator"] =
+                                gear.GearRatioNumerator;
+                            mate["gearRatioDenominator"] =
+                                gear.GearRatioDenominator;
+                            mate["reverse"] = gear.Reverse;
+                        }
+                        mates.Add(mate);
+                    }
+                    subFeature = subFeature.GetNextSubFeature() as IFeature;
+                }
+                feature = feature.GetNextFeature() as IFeature;
+            }
+
+            return new Dictionary<string, object>
+            {
+                ["documentType"] = "assembly",
+                ["assemblyName"] = _activeAssemblyName,
+                ["assemblyPath"] = _activeAssemblyPath,
+                ["componentCount"] = components.Count,
+                ["components"] = components.ToArray(),
+                ["mateCount"] = mates.Count,
+                ["mates"] = mates.ToArray(),
+            };
         }
 
         /// <summary>

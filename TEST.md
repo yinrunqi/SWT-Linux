@@ -731,3 +731,18 @@ venv\Scripts\python.exe -X utf8 assembly_smoke\capture_gear_animation.py
 实测：中心距=60.000mm，主动小齿轮转角 -64.458°、从动大齿轮 +32.229°，满足外啮合反向 `-2:1`；纯几何测试在完整齿周期内采样 73 帧，无边线交叉或包含型重叠；SolidWorks 原生干涉检测对导出的 25 帧全部返回零干涉。GIF 输出到 `log/gear_validation/gear_cycle.gif`。
 
 ---
+
+## 十四、参数化双级减速箱 Multi-turn 装配测试
+
+该测试先确定性生成 5 个参数化零件，再让 Multi-turn Agent 根据自然语言参数、
+零件路径和里程碑完成装配。运行时不读取评测 ground truth 或 golden operations。
+
+```cmd
+cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
+venv\Scripts\python.exe -X utf8 eval\eval_two_stage_gearbox_multiturn.py --max-turns 18
+```
+
+验收项：5 个组件原点位置 ±1mm；3 个未压制 Gear Mate，归一化比值恰为
+`{1,2,3}`；2 个 Coincident Mate；原生干涉数 0；`.SLDASM` 已保存。
+每次零件生成后调用 `/api/close-all-documents`；装配完成后调用
+`/api/close-inactive-documents`，关闭预加载零件窗口并保留最终装配体。

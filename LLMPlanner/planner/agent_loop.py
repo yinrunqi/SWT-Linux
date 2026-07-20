@@ -53,8 +53,15 @@ class MultiTurnAgent:
         self.repeated_action_limit = max(1, repeated_action_limit)
         self.task_decomposer = task_decomposer or TaskDecomposer(llm_client)
 
-    def _normalize_first_turn(self, turn: AgentTurn) -> AgentTurn:
+    def _normalize_first_turn(
+        self,
+        turn: AgentTurn,
+        *,
+        assembly_goal: bool = False,
+    ) -> AgentTurn:
         if turn.decision != AgentDecision.ACT:
+            return turn
+        if assembly_goal:
             return turn
         if turn.actions and turn.actions[0].operation == OperationType.NEW_PART:
             return turn
@@ -69,6 +76,8 @@ class MultiTurnAgent:
 
     @staticmethod
     def _valid_finish_state(observation: ModelObservation) -> bool:
+        if observation.document_type == "assembly":
+            return not observation.errors and bool(observation.components)
         return (
             not observation.errors
             and observation.bounding_box_mm is not None
@@ -145,8 +154,19 @@ class MultiTurnAgent:
             max_turns = min(self.user_max_turns, 100)
 
         records: list[MultiTurnRecord] = []
+        assembly_goal = any(
+            marker in user_goal.lower()
+            for marker in ("装配", "assembly", "mate", "配合")
+        )
         observation = ModelObservation(
-            errors={"session": "新任务尚未创建零件"},
+            document_type="assembly" if assembly_goal else "part",
+            errors={
+                "session": (
+                    "新任务尚未创建装配体"
+                    if assembly_goal
+                    else "新任务尚未创建零件"
+                )
+            },
         )
         llm_calls = 0
         step_offset = 0
@@ -183,7 +203,10 @@ class MultiTurnAgent:
                 update={"milestone_id": milestone.id}
             )
             if turn_number == 1:
-                decision = self._normalize_first_turn(decision)
+                decision = self._normalize_first_turn(
+                    decision,
+                    assembly_goal=assembly_goal,
+                )
 
             if decision.decision == AgentDecision.FINISH:
                 validation = ValidatorRegistry.validate(
@@ -325,10 +348,13 @@ class MultiTurnAgent:
                     ledger=ledger,
                 )
 
-            if milestone.failure_count >= 3:
+            if milestone.failure_count >= milestone.max_failures:
                 ledger.mark_failed(
                     milestone.id,
-                    "同一里程碑连续三轮未通过机器验收",
+                    (
+                        "同一里程碑连续 "
+                        f"{milestone.max_failures} 轮未通过机器验收"
+                    ),
                 )
                 return self._result(
                     status="blocked",

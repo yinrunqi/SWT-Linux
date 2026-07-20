@@ -183,12 +183,48 @@ class TaskDecomposer:
         cumulative: dict[str, int] = {}
         milestones: list[Milestone] = []
         previous: str | None = None
+        is_assembly = any(
+            action.operation.value.startswith("assembly_")
+            for batch in batches
+            for action in batch
+        )
+        component_total = 0
+        mate_total = 0
+        assembly_path = ""
         for index, batch in enumerate(batches, 1):
             postconditions: list[PostconditionSpec] = []
             labels: list[str] = []
             for action in batch:
                 labels.append(action.description or action.operation.value)
                 keyword = feature_keywords.get(action.operation)
+                if action.operation == OperationType.ASSEMBLY_ADD_COMPONENT:
+                    component_total += 1
+                    postconditions.append(PostconditionSpec(
+                        kind="component_count",
+                        params={"minimum": component_total},
+                    ))
+                elif action.operation in {
+                    OperationType.ASSEMBLY_MATE_COINCIDENT,
+                    OperationType.ASSEMBLY_MATE_CONCENTRIC,
+                    OperationType.ASSEMBLY_MATE_GEAR,
+                }:
+                    mate_total += 1
+                    postconditions.append(PostconditionSpec(
+                        kind="mate_count",
+                        params={"minimum": mate_total},
+                    ))
+                elif action.operation == OperationType.ASSEMBLY_CHECK_INTERFERENCE:
+                    postconditions.append(PostconditionSpec(
+                        kind="no_interference",
+                        params={"maximum": 0},
+                    ))
+                elif action.operation == OperationType.ASSEMBLY_NEW:
+                    assembly_path = str(action.params.get("savePath", ""))
+                elif action.operation == OperationType.ASSEMBLY_SAVE:
+                    postconditions.append(PostconditionSpec(
+                        kind="assembly_saved",
+                        params={"path": assembly_path},
+                    ))
                 if keyword is None:
                     continue
                 cumulative[keyword] = cumulative.get(keyword, 0) + 1
@@ -224,7 +260,9 @@ class TaskDecomposer:
             ))
 
         final = milestones[-1]
-        final.postconditions.append(PostconditionSpec(kind="valid_entity"))
+        final.postconditions.append(PostconditionSpec(
+            kind="valid_assembly" if is_assembly else "valid_entity"
+        ))
         if expected_dims_mm:
             final.postconditions.append(PostconditionSpec(
                 kind="bbox_axes",
