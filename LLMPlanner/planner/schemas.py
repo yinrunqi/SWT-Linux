@@ -160,7 +160,8 @@ class SwOperation(BaseModel):
             "- assembly_fix_component / assembly_unfix_component: {componentName: str}\n"
             "- assembly_mate_coincident: {component1,plane1,component2,plane2: str}\n"
             "- assembly_mate_concentric: {component1,rx1,ry1,rz1,dx1,dy1,dz1,component2,rx2,ry2,rz2,dx2,dy2,dz2}\n"
-            "- assembly_mate_gear: 同上射线参数，并含 gearRatioNumerator, gearRatioDenominator, reverse\n"
+            "- assembly_mate_gear: {component1,component2,gearRatioNumerator,"
+            "gearRatioDenominator,reverse?}；中心孔圆柱面由 C# 自动解析，不要提供射线\n"
             "- assembly_rebuild / assembly_save / assembly_check_interference: 无参数\n"
             "- assembly_get_component_transform: {componentName: str}"
         )
@@ -205,6 +206,26 @@ class SwOperation(BaseModel):
         )
         if isinstance(params, dict):
             params = dict(params)
+            reserved = {
+                "operation",
+                "action",
+                "type",
+                "name",
+                "op",
+                "operation_type",
+                "step_type",
+                "endpoint",
+                "params",
+                "parameters",
+                "arguments",
+                "description",
+                "comment",
+            }
+            # Some providers flatten operation arguments beside `op` instead
+            # of nesting them under `params`.
+            for key, flattened_value in item.items():
+                if key not in reserved:
+                    params.setdefault(key, flattened_value)
             operation_value = (
                 operation.value
                 if isinstance(operation, OperationType)
@@ -226,7 +247,13 @@ class SwOperation(BaseModel):
                     "assemblyPath": ("path", "filePath", "savePath"),
                 },
                 "assembly_add_component": {
-                    "partPath": ("path", "filePath", "componentPath"),
+                    "partPath": (
+                        "path",
+                        "file",
+                        "filePath",
+                        "part_file",
+                        "componentPath",
+                    ),
                 },
                 "assembly_fix_component": {
                     "componentName": ("component", "name"),
@@ -299,6 +326,57 @@ class SwOperation(BaseModel):
         if "description" not in item and item.get("comment"):
             item["description"] = item["comment"]
         return item
+
+    @model_validator(mode="after")
+    def _validate_operation_contract(self):
+        required = {
+            OperationType.ASSEMBLY_OPEN: ("assemblyPath",),
+            OperationType.ASSEMBLY_ADD_COMPONENT: (
+                "partPath",
+                "x",
+                "y",
+                "z",
+            ),
+            OperationType.ASSEMBLY_MATE_COINCIDENT: (
+                "component1",
+                "component2",
+            ),
+            OperationType.ASSEMBLY_MATE_CONCENTRIC: (
+                "component1",
+                "rx1",
+                "ry1",
+                "rz1",
+                "dx1",
+                "dy1",
+                "dz1",
+                "component2",
+                "rx2",
+                "ry2",
+                "rz2",
+                "dx2",
+                "dy2",
+                "dz2",
+            ),
+            OperationType.ASSEMBLY_MATE_GEAR: (
+                "component1",
+                "component2",
+                "gearRatioNumerator",
+                "gearRatioDenominator",
+            ),
+        }.get(self.operation, ())
+        missing = [
+            key
+            for key in required
+            if key not in self.params
+            or self.params[key] is None
+            or self.params[key] == ""
+        ]
+        if missing:
+            raise ValueError(
+                f"{self.operation.value} 缺少必要参数: "
+                + ", ".join(missing)
+            )
+        return self
 
 
 class SwModelingPlan(BaseModel):

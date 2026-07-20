@@ -58,11 +58,24 @@ class MultiTurnAgent:
         turn: AgentTurn,
         *,
         assembly_goal: bool = False,
+        assembly_save_path: str = "",
     ) -> AgentTurn:
         if turn.decision != AgentDecision.ACT:
             return turn
         if assembly_goal:
-            return turn
+            if not assembly_save_path:
+                return turn
+            normalized = []
+            for action in turn.actions:
+                if (
+                    action.operation == OperationType.ASSEMBLY_NEW
+                    and not action.params.get("savePath")
+                ):
+                    params = dict(action.params)
+                    params["savePath"] = assembly_save_path
+                    action = action.model_copy(update={"params": params})
+                normalized.append(action)
+            return turn.model_copy(update={"actions": normalized})
         if turn.actions and turn.actions[0].operation == OperationType.NEW_PART:
             return turn
         actions = [
@@ -117,6 +130,15 @@ class MultiTurnAgent:
             message=message,
         )
 
+    def _settle_agent_cache(self, execution_succeeded: bool) -> None:
+        settle = getattr(
+            self.llm_client,
+            "settle_agent_turn_cache",
+            None,
+        )
+        if callable(settle):
+            settle(execution_succeeded)
+
     @staticmethod
     def _rejected_record(
         turn_number: int,
@@ -158,6 +180,18 @@ class MultiTurnAgent:
             marker in user_goal.lower()
             for marker in ("装配", "assembly", "mate", "配合")
         )
+        assembly_save_path = ""
+        if assembly_goal:
+            for planned_milestone in task_plan.milestones:
+                for postcondition in planned_milestone.postconditions:
+                    if postcondition.kind == "assembly_saved":
+                        assembly_save_path = str(
+                            postcondition.params.get("path", "")
+                        )
+                        if assembly_save_path:
+                            break
+                if assembly_save_path:
+                    break
         observation = ModelObservation(
             document_type="assembly" if assembly_goal else "part",
             errors={
@@ -206,9 +240,11 @@ class MultiTurnAgent:
                 decision = self._normalize_first_turn(
                     decision,
                     assembly_goal=assembly_goal,
+                    assembly_save_path=assembly_save_path,
                 )
 
             if decision.decision == AgentDecision.FINISH:
+                self._settle_agent_cache(False)
                 validation = ValidatorRegistry.validate(
                     milestone.postconditions,
                     observation,
@@ -229,6 +265,7 @@ class MultiTurnAgent:
                 continue
 
             if decision.decision == AgentDecision.BLOCKED:
+                self._settle_agent_cache(False)
                 ledger.mark_failed(
                     milestone.id,
                     decision.check_summary or decision.progress_summary,
@@ -257,6 +294,7 @@ class MultiTurnAgent:
             decision = decision.model_copy(update={"actions": actions})
             allowed, reason = guard.check_before(milestone.id, actions)
             if not allowed:
+                self._settle_agent_cache(False)
                 validation = ValidationResult(
                     passed=False,
                     message=reason,
@@ -288,6 +326,11 @@ class MultiTurnAgent:
                 step_offset=step_offset,
                 include_turn_step=True,
             )
+            execution_succeeded = bool(execution_results) and all(
+                result.get("success", False)
+                for result in execution_results
+            )
+            self._settle_agent_cache(execution_succeeded)
             step_offset += len(execution_results)
             after = self.observer.collect(execution_results)
             validation = ValidatorRegistry.validate(
@@ -422,6 +465,11 @@ class MultiTurnAgent:
                 step_offset=step_offset,
                 include_turn_step=True,
             )
+            execution_succeeded = bool(execution_results) and all(
+                result.get("success", False)
+                for result in execution_results
+            )
+            self._settle_agent_cache(execution_succeeded)
             step_offset += len(execution_results)
             observation = self.observer.collect(execution_results)
             validation = ValidatorRegistry.validate(
@@ -506,6 +554,7 @@ class MultiTurnAgent:
                     update={"milestone_id": milestone.id}
                 )
                 if repair.decision != AgentDecision.ACT:
+                    self._settle_agent_cache(False)
                     rejected_validation = ValidatorRegistry.validate(
                         milestone.postconditions,
                         observation,
@@ -534,12 +583,14 @@ class MultiTurnAgent:
                         if action.operation != OperationType.NEW_PART
                     ]
                 if not repair_actions:
+                    self._settle_agent_cache(False)
                     continue
                 allowed, reason = guard.check_before(
                     milestone.id,
                     repair_actions,
                 )
                 if not allowed:
+                    self._settle_agent_cache(False)
                     memory.forbid({
                         "milestone_id": milestone.id,
                         "reason": reason,

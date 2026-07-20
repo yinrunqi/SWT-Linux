@@ -17,11 +17,13 @@ applies_to: [text]
 4. 使用 `assembly_mate_coincident` 对齐组件基准面。圆柱同轴关系用
    `assembly_mate_concentric`，射线起点应放在目标中心孔内部并沿径向指向孔壁。
 5. 齿轮传动用 `assembly_mate_gear`；分子、分母必须来自参数化传动比，
-   不要根据组件文件名臆测。多级传动要分别建立每一对啮合关系；同轴复合齿轮
+   只提供真实组件名、`gearRatioNumerator`、`gearRatioDenominator` 和可选
+   `reverse`；中心孔圆柱面由 C# 根据组件 Transform 自动解析，禁止提供或猜测
+   `rx/ry/rz/dx/dy/dz` 射线参数。多级传动要分别建立每一对啮合关系；同轴复合齿轮
    若由两个独立组件组成，除同轴定位外还必须建立 1:1 同向同步关系；当前通用
    API 用第三个 `assembly_mate_gear` 表达这一刚性旋转同步，不能只做 concentric。
 6. 结构变化后 `assembly_rebuild`，再检查 components、mates 和 transforms。
    完成前调用 `assembly_check_interference` 和 `assembly_save`。
 
-配合失败时先检查组件真实名称、射线是否命中目标圆柱面、组件是否被固定以及
-是否形成过定义；每次只改变一个可验证因素。
+配合失败时先检查组件真实名称、组件是否被固定以及是否形成过定义；每次只改变
+一个可验证因素。Gear Mate 不应通过修改射线重试。

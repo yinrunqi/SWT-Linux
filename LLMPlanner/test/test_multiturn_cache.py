@@ -7,7 +7,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from planner.llm_client import SwLLMClient
+from planner.llm_client import SwLLMClient, _semantic_agent_observation
 from planner.schemas import AgentTurn, ModelObservation
 
 
@@ -56,6 +56,8 @@ def test_agent_turn_cache_skips_provider_call() -> None:
 
     assert result.progress_summary == "cached"
     assert client.cache.requested_keys
+    client.settle_agent_turn_cache(False)
+    assert client.cache.value is None
 
 
 def test_usage_since_reports_request_delta() -> None:
@@ -103,3 +105,38 @@ def test_usage_since_reports_request_delta() -> None:
             }
         },
     }
+
+
+def test_semantic_assembly_state_ignores_matrix_noise_and_ratio_scale() -> None:
+    first = ModelObservation(
+        document_type="assembly",
+        components=[{
+            "name": "gear-1",
+            "path": "gear.SLDPRT",
+            "translationXYZ": [0.05, 0, 0],
+            "transform": [1.0, 0.0, 0.0, 0.0],
+        }],
+        mates=[{
+            "type": "MateGearDim",
+            "gearRatioNumerator": 1,
+            "gearRatioDenominator": 2,
+        }],
+    )
+    second = first.model_copy(update={
+        "components": [{
+            "name": "gear-1",
+            "path": "gear.SLDPRT",
+            "translationXYZ": [0.05000000001, 0, 0],
+            "transform": [0.9999999, 0.0001, 0.0, 0.0],
+        }],
+        "mates": [{
+            "type": "MateGearDim",
+            "gearRatioNumerator": 12,
+            "gearRatioDenominator": 24,
+        }],
+    })
+
+    assert (
+        _semantic_agent_observation(first)
+        == _semantic_agent_observation(second)
+    )

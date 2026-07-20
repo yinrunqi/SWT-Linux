@@ -1428,11 +1428,13 @@ namespace Chapter1.ConnectToSw
             {
                 var body = ReadJsonBody(req);
                 string comp1 = GetString(body, "component1");
-                double rx1 = GetDouble(body, "rx1"); double ry1 = GetDouble(body, "ry1"); double rz1 = GetDouble(body, "rz1");
-                double dx1 = GetDouble(body, "dx1"); double dy1 = GetDouble(body, "dy1"); double dz1 = GetDouble(body, "dz1");
+                // Legacy ray fields remain accepted for protocol compatibility,
+                // but SwCommands now resolves center-bore faces deterministically.
+                double rx1 = GetDoubleOrDefault(body, "rx1", 0); double ry1 = GetDoubleOrDefault(body, "ry1", 0); double rz1 = GetDoubleOrDefault(body, "rz1", 0);
+                double dx1 = GetDoubleOrDefault(body, "dx1", 0); double dy1 = GetDoubleOrDefault(body, "dy1", 0); double dz1 = GetDoubleOrDefault(body, "dz1", 0);
                 string comp2 = GetString(body, "component2");
-                double rx2 = GetDouble(body, "rx2"); double ry2 = GetDouble(body, "ry2"); double rz2 = GetDouble(body, "rz2");
-                double dx2 = GetDouble(body, "dx2"); double dy2 = GetDouble(body, "dy2"); double dz2 = GetDouble(body, "dz2");
+                double rx2 = GetDoubleOrDefault(body, "rx2", 0); double ry2 = GetDoubleOrDefault(body, "ry2", 0); double rz2 = GetDoubleOrDefault(body, "rz2", 0);
+                double dx2 = GetDoubleOrDefault(body, "dx2", 0); double dy2 = GetDoubleOrDefault(body, "dy2", 0); double dz2 = GetDoubleOrDefault(body, "dz2", 0);
                 double num = GetDouble(body, "gearRatioNumerator");
                 double den = GetDouble(body, "gearRatioDenominator");
                 bool reverse = body.ContainsKey("reverse") && Convert.ToBoolean(body["reverse"]);

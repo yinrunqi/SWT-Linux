@@ -215,6 +215,77 @@ def _make_cache_key(
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
 
+def _without_state_fingerprints(value):
+    if isinstance(value, dict):
+        return {
+            key: _without_state_fingerprints(item)
+            for key, item in value.items()
+            if key != "state_fingerprint"
+        }
+    if isinstance(value, list):
+        return [_without_state_fingerprints(item) for item in value]
+    return value
+
+
+def _semantic_agent_observation(
+    observation: ModelObservation,
+) -> dict:
+    """Keep machine-relevant state while dropping volatile COM matrices."""
+    data = observation.model_dump(mode="json")
+    components = []
+    for component in data.get("components", []):
+        translation = component.get("translationXYZ", [])
+        components.append({
+            "name": component.get("name", ""),
+            "path": component.get("path", ""),
+            "isFixed": bool(component.get("isFixed", False)),
+            "suppressionState": component.get("suppressionState"),
+            "translationXYZ": [
+                round(float(value), 8)
+                for value in translation
+                if isinstance(value, (int, float))
+            ],
+        })
+    components.sort(key=lambda item: (item["path"], item["name"]))
+
+    mates = []
+    for mate in data.get("mates", []):
+        numerator = mate.get("gearRatioNumerator")
+        denominator = mate.get("gearRatioDenominator")
+        normalized_ratio = None
+        if (
+            isinstance(numerator, (int, float))
+            and isinstance(denominator, (int, float))
+            and numerator
+            and denominator
+        ):
+            ratio = abs(float(numerator) / float(denominator))
+            normalized_ratio = round(max(ratio, 1.0 / ratio), 8)
+        mates.append({
+            "type": mate.get("type", ""),
+            "suppressed": bool(mate.get("suppressed", False)),
+            "reverse": bool(mate.get("reverse", False)),
+            "normalizedRatio": normalized_ratio,
+        })
+    mates.sort(key=lambda item: json.dumps(item, sort_keys=True))
+
+    interference = data.get("interference_summary") or {}
+    return {
+        "document_type": data.get("document_type", "part"),
+        "assembly_path": data.get("assembly_path", ""),
+        "features": data.get("features", []),
+        "faces": data.get("faces", []),
+        "sketches": data.get("sketches", []),
+        "feature_sketch_links": data.get("feature_sketch_links", []),
+        "bounding_box_mm": data.get("bounding_box_mm"),
+        "volume_mm3": data.get("volume_mm3"),
+        "components": components,
+        "mates": mates,
+        "interferenceCount": interference.get("interferenceCount"),
+        "errors": data.get("errors", {}),
+    }
+
+
 # ============================================================
 # SwLLMClient
 # ============================================================
@@ -313,6 +384,8 @@ class SwLLMClient:
         else:
             self.cache = None
             print("[LLM] 缓存已禁用")
+        self._active_agent_cache_key: str | None = None
+        self._pending_agent_cache_value: str | None = None
 
         # 累计本客户端生命周期内的 token 用量（含 Vision / Plan / Agent）
         self.token_usage: dict = {
@@ -404,6 +477,27 @@ class SwLLMClient:
                 "calls",
             )
         } | {"by_model": by_model}
+
+    def settle_agent_turn_cache(self, execution_succeeded: bool) -> None:
+        """Commit a generated AgentTurn only after its operations succeed.
+
+        A failed replay also evicts an existing entry because SolidWorks state
+        or the operation contract may have changed since it was cached.
+        """
+        key = self._active_agent_cache_key
+        value = self._pending_agent_cache_value
+        try:
+            if not self.use_cache or self.cache is None or key is None:
+                return
+            if execution_succeeded and value is not None:
+                self.cache.set(key, value)
+                print("[LLM] AgentTurn 执行成功，已写入状态缓存")
+            elif not execution_succeeded:
+                self.cache.delete(key)
+                print("[LLM] AgentTurn 执行失败，已丢弃状态缓存")
+        finally:
+            self._active_agent_cache_key = None
+            self._pending_agent_cache_value = None
 
     def _assemble_system_prompt(self, user_instruction: str, input_mode: str = "text") -> str:
         """
@@ -894,6 +988,8 @@ class SwLLMClient:
         repair_required: bool = False,
     ) -> AgentTurn:
         """Generate the next increment, cached by the complete agent state."""
+        self._active_agent_cache_key = None
+        self._pending_agent_cache_value = None
         # 从与 single-turn 相同的基础 prompt 开始，再单独追加 Agent 规则；
         # agent skill 不进入 SkillRegistry，避免改变任何既有 single-turn prompt/cache key。
         input_mode = (
@@ -928,7 +1024,7 @@ class SwLLMClient:
                 else current_milestone.model_dump(mode="json")
             ),
         }
-        user_prompt = (
+        agent_instructions = (
             "你正在执行 Multi-turn SolidWorks 建模。根据下面 JSON 决定下一轮。\n"
             "每轮只能完成一个可检查的里程碑，actions 最多 5 个原子操作；"
             "不要一次输出整个任务的全部步骤。\n"
@@ -949,7 +1045,15 @@ class SwLLMClient:
                 "current_milestone.evidence 是实际值与目标值的差异。\n"
                 if repair_required
                 else ""
-            ) + f"{json.dumps(payload, ensure_ascii=False, separators=(',', ':'))}"
+            )
+        )
+        user_prompt = (
+            agent_instructions
+            + json.dumps(
+                payload,
+                ensure_ascii=False,
+                separators=(",", ":"),
+            )
         )
         messages = [
             {"role": "system", "content": system_prompt},
@@ -959,13 +1063,28 @@ class SwLLMClient:
         if self.use_cache and self.cache is not None:
             agent_cache_key = _make_cache_key(
                 self.plan_model,
-                system_prompt + "\n[AGENT_TURN]",
-                user_prompt,
+                system_prompt + "\n[AGENT_TURN_V3_SEMANTIC_STATE]",
+                agent_instructions
+                + json.dumps(
+                    {
+                        **payload,
+                        "current_observation":
+                            _semantic_agent_observation(observation),
+                        "agent_context":
+                            _without_state_fingerprints(
+                                payload["agent_context"]
+                            ),
+                    },
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ),
             )
             cached = self.cache.get(agent_cache_key)
             if cached is not None:
                 try:
                     print("[LLM] AgentTurn 命中状态缓存，跳过 API 调用")
+                    self._active_agent_cache_key = agent_cache_key
                     return AgentTurn.model_validate_json(cached)
                 except Exception:
                     # Schema evolves with the agent protocol. Discard stale
@@ -1021,13 +1140,9 @@ class SwLLMClient:
         turn = AgentTurn.model_validate(
             _normalize_agent_decision_payload(decision_payload)
         )
-        if (
-            self.use_cache
-            and self.cache is not None
-            and agent_cache_key is not None
-        ):
-            self.cache.set(agent_cache_key, turn.model_dump_json())
-            print("[LLM] AgentTurn 已写入状态缓存")
+        if self.use_cache and agent_cache_key is not None:
+            self._active_agent_cache_key = agent_cache_key
+            self._pending_agent_cache_value = turn.model_dump_json()
         return turn
 
     @retry(

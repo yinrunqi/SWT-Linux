@@ -115,9 +115,10 @@ python -m planner.main --no-cache "创建一个长方体"
 - 缓存文件存放在 `planner/.llm_cache/` 目录
 - 对 (模型名, system_prompt, 用户指令) 进行 SHA256 哈希作为缓存 key
 - 相同指令不会重复调用 API，节省费用
-- Multi-turn 额外缓存 Vision IR、初始全局蓝图，以及由完整 observation、
-  里程碑账本、轮次和 Skill Prompt 确定的 Agent 决策。重复测例仍会重新执行
-  SolidWorks 操作和机器验收，只跳过状态完全相同时的 LLM API 调用。
+- Multi-turn 额外缓存 Vision IR、初始全局蓝图，以及由语义 observation、
+  里程碑账本、轮次和 Skill Prompt 确定的 Agent 决策。Agent 操作执行成功后
+  才提交缓存，失败会删除对应条目。重复测例仍会重新执行 SolidWorks 操作和
+  机器验收，只跳过状态语义等价时的 LLM API 调用。
 - 可通过 `--no-cache` 禁用，或在交互模式中输入 `clear-cache` 清空
 
 ## 模型选择
@@ -170,6 +171,8 @@ python -m web.app --model gpt-4o
 - 纯文本装配任务支持新建/打开装配体、精确插入组件、固定/浮动、重合/同心/
   齿轮配合、重建、保存和干涉检查。`GET /api/assembly/observation` 返回组件路径、
   Transform、固定/压制状态、Mate 类型和齿轮比，供里程碑确定性验收。
+- `assembly_mate_gear` 无需 LLM 提供射线；C# 根据组件 Transform 自动选择中心孔
+  圆柱面，避免复杂齿面上的射线误选和慢速遍历。
 - 装配测试完成后使用 `/api/close-inactive-documents` 保留最终装配体并关闭预加载
   零件窗口；用例之间仍使用 `/api/close-all-documents` 清场。
 - Web Demo“装配体相关”区域提供“Multi-turn 构建双级减速箱”一键入口：首次运行

@@ -42,12 +42,26 @@ def test_assembly_blueprint_gets_structural_postconditions(tmp_path: Path):
     assembly_path = tmp_path / "drive.SLDASM"
     steps = [
         op(OperationType.ASSEMBLY_NEW, savePath=str(assembly_path)),
-        op(OperationType.ASSEMBLY_ADD_COMPONENT, partPath="a.SLDPRT"),
-        op(OperationType.ASSEMBLY_ADD_COMPONENT, partPath="b.SLDPRT"),
+        op(
+            OperationType.ASSEMBLY_ADD_COMPONENT,
+            partPath="a.SLDPRT",
+            x=0,
+            y=0,
+            z=0,
+        ),
+        op(
+            OperationType.ASSEMBLY_ADD_COMPONENT,
+            partPath="b.SLDPRT",
+            x=0.05,
+            y=0,
+            z=0,
+        ),
         op(
             OperationType.ASSEMBLY_MATE_GEAR,
             component1="a-1",
             component2="b-1",
+            gearRatioNumerator=2,
+            gearRatioDenominator=1,
         ),
         op(OperationType.ASSEMBLY_CHECK_INTERFERENCE),
         op(OperationType.ASSEMBLY_SAVE),
@@ -133,6 +147,23 @@ def test_first_assembly_turn_does_not_inject_new_part():
     assert normalized.actions == turn.actions
 
 
+def test_first_assembly_turn_fills_planned_save_path():
+    turn = AgentTurn(
+        decision=AgentDecision.ACT,
+        actions=[SwOperation(operation=OperationType.ASSEMBLY_NEW)],
+    )
+    normalized = MultiTurnAgent._normalize_first_turn(
+        object(),
+        turn,
+        assembly_goal=True,
+        assembly_save_path=r"C:\artifacts\drive.SLDASM",
+    )
+    assert (
+        normalized.actions[0].params["savePath"]
+        == r"C:\artifacts\drive.SLDASM"
+    )
+
+
 def test_agent_decision_normalizes_operation_list_alias():
     payload = _normalize_agent_decision_payload({
         "decision": "continue",
@@ -165,6 +196,23 @@ def test_assembly_component_path_alias_is_normalized():
     assert operation.params["partPath"] == "gear.SLDPRT"
 
 
+def test_flattened_component_arguments_are_nested():
+    operation = SwOperation.model_validate({
+        "op": "assembly_add_component",
+        "file": "gear.SLDPRT",
+        "x": 0.1,
+        "y": 0,
+        "z": 0,
+    })
+    assert operation.params == {
+        "file": "gear.SLDPRT",
+        "x": 0.1,
+        "y": 0,
+        "z": 0,
+        "partPath": "gear.SLDPRT",
+    }
+
+
 def test_assembly_mate_parameter_shapes_are_normalized():
     gear = SwOperation.model_validate({
         "operation": "assembly_mate_gear",
@@ -192,3 +240,16 @@ def test_assembly_mate_parameter_shapes_are_normalized():
     })
     assert coincident.params["plane1"] == "前视基准面"
     assert coincident.params["plane2"] == "前视基准面"
+
+
+def test_gear_mate_requires_ratio_but_not_rays():
+    gear = SwOperation.model_validate({
+        "operation": "assembly_mate_gear",
+        "params": {
+            "component1": "a-1",
+            "component2": "b-1",
+            "gearRatioNumerator": 24,
+            "gearRatioDenominator": 12,
+        },
+    })
+    assert "rx1" not in gear.params

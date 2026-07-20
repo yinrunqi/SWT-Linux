@@ -3189,9 +3189,15 @@ namespace Chapter1.ConnectToSw
             if (gearRatioNumerator <= 0 || gearRatioDenominator <= 0)
                 throw new ArgumentException("齿数比必须为正数");
 
-            ClearAssemblySelection();
-            IFace2 face1 = SelectComponentFaceByRay(comp1Name, rx1, ry1, rz1, dx1, dy1, dz1, appendSelect: false, mark: 1);
-            IFace2 face2 = SelectComponentFaceByRay(comp2Name, rx2, ry2, rz2, dx2, dy2, dz2, appendSelect: true, mark: 1);
+            // Gear Mate only needs stable rotational references. Resolve each
+            // component's center-bore cylinder deterministically instead of
+            // asking callers/LLMs to guess fragile ray coordinates.
+            IFace2 face1 = FindMotorCylinderFace(
+                FindAssemblyComponent(comp1Name),
+                appendSelection: false);
+            IFace2 face2 = FindMotorCylinderFace(
+                FindAssemblyComponent(comp2Name),
+                appendSelection: true);
             if (face1 == null || face2 == null)
                 throw new InvalidOperationException($"Gear Mate 选面失败");
 
@@ -4114,25 +4120,31 @@ namespace Chapter1.ConnectToSw
         }
 
         /// <summary>寻找组件上轴线平行 Z 轴且半径最大的圆柱面，作为旋转马达方向参考。</summary>
-        private IFace2 FindMotorCylinderFace(IComponent2 component)
+        private IFace2 FindMotorCylinderFace(
+            IComponent2 component,
+            bool appendSelection = false)
         {
             // 渐开线齿轮有数百个平面齿面，但中心孔是唯一圆柱面。直接从组件轴心
             // 向 +X 射线拾取孔壁，避免逐面 COM 遍历导致创建马达超时。
+            var assemblyModel = (IModelDoc2)_activeAssembly;
+            if (!appendSelection)
+                assemblyModel.ClearSelection2(true);
             var componentTransform = component.Transform2 as MathTransform;
             var transformData = componentTransform?.ArrayData as double[];
             if (transformData != null && transformData.Length >= 12)
             {
-                var assemblyModel = (IModelDoc2)_activeAssembly;
-                assemblyModel.ClearSelection2(true);
                 bool selected = assemblyModel.Extension.SelectByRay(
-                    transformData[9], transformData[10], 0.0,
+                    transformData[9], transformData[10], transformData[11],
                     1.0, 0.0, 0.0, 0.0005,
                     (int)swSelectType_e.swSelFACES,
-                    false, 0, 0);
+                    appendSelection, 1, 0);
                 if (selected)
                 {
-                    var selectionManager = (ISelectionMgr)assemblyModel.SelectionManager;
-                    var selectedFace = selectionManager.GetSelectedObject6(1, -1) as IFace2;
+                    var raySelectionManager = (ISelectionMgr)assemblyModel.SelectionManager;
+                    int selectedCount = raySelectionManager.GetSelectedObjectCount2(-1);
+                    var selectedFace = raySelectionManager.GetSelectedObject6(
+                        selectedCount,
+                        -1) as IFace2;
                     var selectedSurface = selectedFace?.IGetSurface() as ISurface;
                     if (selectedFace != null && selectedSurface != null && selectedSurface.IsCylinder())
                     {
@@ -4181,6 +4193,14 @@ namespace Chapter1.ConnectToSw
             }
             if (bestFace == null)
                 throw new InvalidOperationException($"组件 \"{component.Name2}\" 上找不到 Z 轴向圆柱面");
+            var fallbackSelectionManager = (ISelectionMgr)assemblyModel.SelectionManager;
+            var selectData = fallbackSelectionManager.CreateSelectData();
+            selectData.Mark = 1;
+            var faceEntity = bestFace as IEntity;
+            if (faceEntity == null
+                || !faceEntity.Select4(appendSelection, selectData))
+                throw new InvalidOperationException(
+                    $"组件 \"{component.Name2}\" 的圆柱面选择失败");
             Console.WriteLine(
                 $"[SwCommands] Motion 马达方向面: component={component.Name2}, radius={bestRadius * 1000:F2}mm");
             return bestFace;
