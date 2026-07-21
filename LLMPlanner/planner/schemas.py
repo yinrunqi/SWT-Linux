@@ -39,6 +39,9 @@ class OperationType(str, Enum):
     FEATURE_TREE = "feature_tree"
     BODY_BOUNDING_BOX = "body_bounding_box"
     SELECT_FACE_AND_SKETCH = "select_face_and_sketch"
+    SELECT_OBSERVED_FACE_AND_SKETCH = (
+        "select_observed_face_and_sketch"
+    )
     MODIFY_DIMENSION = "modify_dimension"
     # --- 文档持久化 & 装配体 ---
     SAVE_PART_AS = "save_part_as"
@@ -158,6 +161,9 @@ class SwOperation(BaseModel):
             "- feature_tree: 无参数（查询操作，返回特征树含尺寸信息）\n"
             "- body_bounding_box: 无参数（查询操作，返回包围盒）\n"
             "- select_face_and_sketch: {rx, ry, rz, dx, dy, dz: float} — 射线起点和方向（米），用于选中实体面并进入草图编辑\n"
+            "- select_observed_face_and_sketch: {faceIndex: int} — "
+            "按当前 observation.faces 的 index 选择已观察到的平面并进入草图；"
+            "Multi-turn 修复时优先使用，避免重新猜射线坐标\n"
             "- modify_dimension: {featureName: str, dimensionName: str (可选), newValue: float 或 delta: float} — 修改特征尺寸。newValue 设绝对值，delta 设增量（二选一）\n"
             "- save_part_as: {savePath: str} — 把活动零件保存为绝对 .SLDPRT 路径\n"
             "- assembly_new: {savePath: str}; assembly_open: {assemblyPath: str}\n"
@@ -550,6 +556,9 @@ class SwOperation(BaseModel):
     @model_validator(mode="after")
     def _validate_operation_contract(self):
         required = {
+            OperationType.SELECT_OBSERVED_FACE_AND_SKETCH: (
+                "faceIndex",
+            ),
             OperationType.ASSEMBLY_OPEN: ("assemblyPath",),
             OperationType.ASSEMBLY_ADD_COMPONENT: (
                 "partPath",

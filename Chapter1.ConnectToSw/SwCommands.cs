@@ -418,6 +418,7 @@ namespace Chapter1.ConnectToSw
         private void RecordFeatureSketchLink(
             string featureName,
             string featureType,
+            string operationKind,
             double depth = 0)
         {
             if (string.IsNullOrEmpty(featureName))
@@ -428,6 +429,7 @@ namespace Chapter1.ConnectToSw
                 { "featureType", featureType },
                 { "sketchName", _activeSketchName ?? "" },
                 { "faceKey", _activeFaceKey ?? "" },
+                { "operationKind", operationKind ?? "" },
                 { "depth", depth },
             });
         }
@@ -1099,6 +1101,83 @@ namespace Chapter1.ConnectToSw
             return result;
         }
 
+        /// <summary>
+        /// Select a planar face from the latest model observation by its
+        /// deterministic enumeration index. The face itself supplies a point
+        /// on material and its normal, so the caller does not guess a ray.
+        /// </summary>
+        public Dictionary<string, object> SelectObservedFaceAndStartSketch(
+            int faceIndex)
+        {
+            EnsureActiveDoc();
+            var partDoc = ActiveDoc as IPartDoc;
+            if (partDoc == null)
+                throw new InvalidOperationException("当前文档不是零件文档");
+            if (faceIndex < 0)
+                throw new ArgumentOutOfRangeException(
+                    nameof(faceIndex), "faceIndex 不能为负数");
+
+            var bodies = partDoc.GetBodies2(
+                (int)swBodyType_e.swSolidBody, true) as object[];
+            if (bodies == null || bodies.Length == 0)
+                throw new InvalidOperationException("当前零件没有实体");
+
+            IFace2 target = null;
+            int currentIndex = 0;
+            foreach (object bodyObj in bodies)
+            {
+                var body = bodyObj as IBody2;
+                if (body == null) continue;
+                var faces = body.GetFaces() as object[];
+                if (faces == null) continue;
+                foreach (object faceObj in faces)
+                {
+                    if (currentIndex == faceIndex)
+                    {
+                        target = faceObj as IFace2;
+                        break;
+                    }
+                    currentIndex++;
+                }
+                if (target != null) break;
+            }
+            if (target == null)
+                throw new InvalidOperationException(
+                    $"观察面索引 {faceIndex} 不存在；请重新读取 observation.faces");
+
+            var surface = target.IGetSurface();
+            if (surface == null || !surface.IsPlane())
+                throw new InvalidOperationException(
+                    $"观察面索引 {faceIndex} 不是平面，不能创建二维草图");
+
+            var box = target.GetBox() as double[];
+            if (box == null || box.Length < 6)
+                throw new InvalidOperationException(
+                    $"无法读取观察面索引 {faceIndex} 的包围盒");
+            double centerX = (box[0] + box[3]) / 2.0;
+            double centerY = (box[1] + box[4]) / 2.0;
+            double centerZ = (box[2] + box[5]) / 2.0;
+            var materialPoint = target.GetClosestPointOn(
+                centerX, centerY, centerZ) as double[];
+            if (materialPoint == null || materialPoint.Length < 3)
+                throw new InvalidOperationException(
+                    $"无法定位观察面索引 {faceIndex} 上的实体点");
+
+            var plane = (double[])surface.PlaneParams;
+            const double offset = 0.005;
+            Console.WriteLine(
+                $"[SwCommands] 按 observation.faces[{faceIndex}] 选面，" +
+                $"材料点=({materialPoint[0]:F4},{materialPoint[1]:F4}," +
+                $"{materialPoint[2]:F4})");
+            return SelectFaceByRayAndStartSketch(
+                materialPoint[0] + plane[0] * offset,
+                materialPoint[1] + plane[1] * offset,
+                materialPoint[2] + plane[2] * offset,
+                -plane[0],
+                -plane[1],
+                -plane[2]);
+        }
+
         #endregion
 
         #region 原子操作 — 文档
@@ -1715,7 +1794,11 @@ namespace Chapter1.ConnectToSw
 
             if (feat == null)
                 throw new InvalidOperationException("拉伸失败，请确保草图中有封闭的轮廓");
-            RecordFeatureSketchLink(feat.Name, feat.GetTypeName2(), depth);
+            RecordFeatureSketchLink(
+                feat.Name,
+                feat.GetTypeName2(),
+                "extrusion",
+                depth);
 
             // 缩放到合适视图
             mdoc.ViewZoomtofit2();
@@ -1966,6 +2049,47 @@ namespace Chapter1.ConnectToSw
                 Console.WriteLine($"[SwCommands] 第二次 FeatureCut4 返回: {(feat != null ? feat.Name : "null")}");
             }
 
+            if (
+                feat == null
+                && t1 == (int)swEndConditions_e.swEndCondUpToNext
+            )
+            {
+                Console.WriteLine(
+                    "[SwCommands] 到下一面切除失败，" +
+                    "保持方向并降级为贯穿全部重试");
+                ActiveDoc.ClearSelection2(true);
+                bool selected = activeSketchFeature != null
+                    && activeSketchFeature.Select2(false, 0);
+                if (!selected && !string.IsNullOrEmpty(_activeSketchName))
+                {
+                    selected = mdoc.Extension.SelectByID2(
+                        _activeSketchName,
+                        "SKETCH",
+                        0, 0, 0,
+                        false,
+                        0,
+                        null,
+                        0);
+                }
+                if (selected)
+                {
+                    feat = ActiveDoc.FeatureManager.FeatureCut4(
+                        true, flipDirection, false,
+                        (int)swEndConditions_e.swEndCondThroughAll,
+                        0,
+                        depth, depth,
+                        false, false, false, false,
+                        0.0, 0.0,
+                        false, false, false, false,
+                        false, true, true, false, false, false,
+                        (int)swStartConditions_e.swStartSketchPlane,
+                        0.0, false, false);
+                }
+                Console.WriteLine(
+                    "[SwCommands] 贯穿全部降级返回: " +
+                    (feat != null ? feat.Name : "null"));
+            }
+
             // ⚠️ 注意：这里**不再**做"反转方向重试"！
             // 历史教训：曾有一段 FeatureCut4(!flipDirection) 的反转容错，
             // 当某一刀的切除偶发失败时，它会用相反方向重试——而相反方向是朝实体【外侧】，
@@ -1981,7 +2105,11 @@ namespace Chapter1.ConnectToSw
             // 安全校验：确认生成的特征确实是"切除"而非"凸台"（防御性检查）
             string featTypeName = feat.GetTypeName2();
             Console.WriteLine($"[SwCommands] 切除特征类型校验: {featTypeName}");
-            RecordFeatureSketchLink(feat.Name, featTypeName, depth);
+            RecordFeatureSketchLink(
+                feat.Name,
+                featTypeName,
+                "cut",
+                depth);
 
             // 缩放到合适视图
             ((ModelDoc2)ActiveDoc).ViewZoomtofit2();
@@ -2136,6 +2264,7 @@ namespace Chapter1.ConnectToSw
             ActiveDoc.ClearSelection2(true);
 
             int edgeCount = 0;
+            object[] allBodies = null;
 
             if (edgeSelection.ToLower() == "all")
             {
@@ -2153,6 +2282,7 @@ namespace Chapter1.ConnectToSw
 
                 if (bodies == null || bodies.Length == 0)
                     throw new InvalidOperationException("当前零件没有实体");
+                allBodies = bodies;
 
                 foreach (object bodyObj in bodies)
                 {
@@ -2238,6 +2368,53 @@ namespace Chapter1.ConnectToSw
                 pointDist2Array,    // PointDist2Array
                 pointRhoArray       // PointRhoArray
             );
+
+            if (feat == null
+                && edgeSelection.Equals(
+                    "all",
+                    StringComparison.OrdinalIgnoreCase)
+                && allBodies != null)
+            {
+                Console.WriteLine(
+                    "[SwCommands] 全边圆角失败，依次尝试可接受该半径的单边");
+                foreach (object bodyObj in allBodies)
+                {
+                    var body = bodyObj as IBody2;
+                    var edges = body?.GetEdges() as object[];
+                    if (edges == null) continue;
+                    foreach (object edgeObj in edges)
+                    {
+                        var edge = edgeObj as IEdge;
+                        if (edge == null) continue;
+                        ActiveDoc.ClearSelection2(true);
+                        if (!((IEntity)edge).Select4(false, null))
+                            continue;
+                        feat = (Feature)ActiveDoc.FeatureManager.FeatureFillet3(
+                            195,
+                            radius,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            radiiArray,
+                            dist2Array,
+                            conicRhosArray,
+                            setBackArray,
+                            pointRadiusArray,
+                            pointDist2Array,
+                            pointRhoArray);
+                        if (feat != null)
+                        {
+                            edgeCount = 1;
+                            Console.WriteLine(
+                                "[SwCommands] 已降级为单条有效边圆角");
+                            break;
+                        }
+                    }
+                    if (feat != null) break;
+                }
+            }
 
             if (feat == null)
                 throw new InvalidOperationException("创建圆角失败，请确保选中了有效的边");

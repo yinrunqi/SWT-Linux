@@ -96,6 +96,7 @@ namespace Chapter1.ConnectToSw
             Console.WriteLine("  GET  /api/feature-tree            - 获取特征树（含尺寸）");
             Console.WriteLine("  GET  /api/body-bounding-box       - 获取实体包围盒");
             Console.WriteLine("  POST /api/select-face-and-sketch  - 射线选面并进入草图");
+            Console.WriteLine("  POST /api/select-observed-face-and-sketch - 按 observation 面索引进入草图");
             Console.WriteLine("  POST /api/modify-dimension        - 修改特征尺寸值");
             Console.WriteLine("  POST /api/feature/fillet           - 圆角");
             Console.WriteLine("  POST /api/feature/chamfer          - 倒角");
@@ -280,6 +281,13 @@ namespace Chapter1.ConnectToSw
 
                 case "/api/select-face-and-sketch":
                     RequirePost(method, resp, () => HandleSelectFaceAndSketch(req, resp));
+                    break;
+
+                case "/api/select-observed-face-and-sketch":
+                    RequirePost(
+                        method,
+                        resp,
+                        () => HandleSelectObservedFaceAndSketch(req, resp));
                     break;
 
                 case "/api/modify-dimension":
@@ -1203,6 +1211,69 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"选面并进入草图失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSelectObservedFaceAndSketch(
+            HttpListenerRequest req,
+            HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                if (!body.ContainsKey("faceIndex"))
+                    throw new KeyNotFoundException(
+                        "缺少必要参数: faceIndex");
+                int faceIndex = Convert.ToInt32(body["faceIndex"]);
+                var result = _commands.SelectObservedFaceAndStartSketch(
+                    faceIndex);
+                var respData = new Dictionary<string, object>
+                {
+                    { "success", true },
+                    { "message", result["message"] },
+                    { "faceType", result["faceType"] },
+                };
+                foreach (string key in new[] {
+                    "hitPoint",
+                    "sketchTransform",
+                    "sketchName",
+                    "faceKey",
+                    "normal",
+                    "persistRef",
+                })
+                {
+                    if (result.ContainsKey(key))
+                        respData[key] = result[key];
+                }
+                SendJson(resp, 200, respData);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                SendJson(
+                    resp,
+                    400,
+                    new { success = false, message = ex.Message });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                SendJson(
+                    resp,
+                    400,
+                    new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(
+                    resp,
+                    400,
+                    new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new {
+                    success = false,
+                    message = $"按观察面索引选面失败: {ex.Message}",
+                });
             }
         }
 

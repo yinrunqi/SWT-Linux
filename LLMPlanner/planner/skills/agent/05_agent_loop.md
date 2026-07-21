@@ -11,6 +11,11 @@
   faces、sketches、featureSketchLinks、包围盒和体积；装配任务要检查 components、
   mates、每个组件 transform/fixed 状态及 interference_summary。
 - 操作失败后必须改变参数、选面/选边方式或建模策略，禁止原样重试。
+- `faces` 中每个平面都有当前状态的 `index/center/normal/area`。初次射线选面失败，
+  或已有孔槽使射线位置失效时，优先改用
+  `select_observed_face_and_sketch {faceIndex: faces[i].index}` 精确引用当前观察面；
+  不要继续猜另一组射线。必须选择与目标方向、面积和位置都一致的平面，并把选面
+  作为该修复轮的第一个动作，避免前序几何改变 faceIndex。
 - 已完成里程碑禁止重做；不要根据 ICE 总数猜测哪个面已完成。
 - 一组草图操作和对应特征操作应放在同一轮，不能让草图长时间处于未完成状态。
 - L/T/H/十字形等连续折线轮廓必须优先使用一次 `sketch_polyline`

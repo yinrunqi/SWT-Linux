@@ -1323,7 +1323,7 @@ class SwLLMClient:
             "sketch_circle, sketch_centerline, sketch_arc, sketch_ellipse, sketch_polygon, sketch_slot, "
             "feature_extrusion, feature_cut_extrusion, feature_revolve, feature_fillet, feature_chamfer, "
             "feature_circular_pattern, feature_linear_pattern, close_sketch, feature_tree, body_bounding_box, "
-            "select_face_and_sketch, modify_dimension。\n"
+            "select_face_and_sketch, select_observed_face_and_sketch, modify_dimension。\n"
             "modify_dimension 的 params 中，newValue（绝对值）和 delta（增量）二选一。\n\n"
             "⚠️ **极其重要：你必须一次性输出所有步骤，不能截断！** 如果模型需要4条腿，就必须有4个 sketch_circle 步骤（或者在同一草图中画4个圆）。"
             "**每个 steps 数组元素必须是一个对象（Object），包含 operation、params、description 三个字段。绝对不能是字符串或其他类型！**"

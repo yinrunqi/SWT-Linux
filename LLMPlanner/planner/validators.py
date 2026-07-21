@@ -10,10 +10,29 @@ from .schemas import ModelObservation, PostconditionSpec, ValidationResult
 
 def _feature_count(observation: ModelObservation, keyword: str) -> int:
     needle = keyword.lower()
-    return sum(
+    tree_count = sum(
         needle in f"{item.get('name', '')} {item.get('type', '')}".lower()
         for item in observation.features
     )
+    operation_kind = {
+        "extr": "extrusion",
+        "ice": "cut",
+        "revol": "revolve",
+    }.get(needle)
+    if operation_kind is None:
+        return tree_count
+    operation_kinds = [
+        str(item.get("operationKind", "")).lower()
+        for item in observation.feature_sketch_links
+        if item.get("operationKind")
+    ]
+    ledger_count = sum(
+        item == operation_kind
+        for item in operation_kinds
+    )
+    # Some SolidWorks face-based bosses and cuts are both reported as ICE.
+    # The service-side operation ledger preserves their actual semantics.
+    return ledger_count if operation_kinds else tree_count
 
 
 class ValidatorRegistry:

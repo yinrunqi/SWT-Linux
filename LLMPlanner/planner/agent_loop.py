@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import time
 
 from .compressed_memory import CompressedMemory
@@ -138,6 +139,103 @@ class MultiTurnAgent:
         )
         if callable(settle):
             settle(execution_succeeded)
+
+    @staticmethod
+    def _stabilize_repair_face_selection(
+        actions: list[SwOperation],
+        observation: ModelObservation,
+    ) -> list[SwOperation]:
+        """Replace repair-time ray guesses with observed planar face indices."""
+        faces = observation.faces or []
+        if not faces:
+            return actions
+        stabilized: list[SwOperation] = []
+        for action in actions:
+            if action.operation != OperationType.SELECT_FACE_AND_SKETCH:
+                stabilized.append(action)
+                continue
+            params = action.params
+            try:
+                origin = [
+                    float(params[key])
+                    for key in ("rx", "ry", "rz")
+                ]
+                direction = [
+                    float(params[key])
+                    for key in ("dx", "dy", "dz")
+                ]
+                length = math.sqrt(sum(value * value for value in direction))
+                if length <= 1e-12:
+                    raise ValueError("zero ray direction")
+                unit = [value / length for value in direction]
+            except (KeyError, TypeError, ValueError):
+                stabilized.append(action)
+                continue
+
+            best: tuple[float, int] | None = None
+            for face in faces:
+                if str(face.get("surfaceType", "")).lower() != "plane":
+                    continue
+                normal_data = face.get("normal") or {}
+                center_data = face.get("center") or {}
+                try:
+                    normal = [
+                        float(normal_data[key])
+                        for key in ("x", "y", "z")
+                    ]
+                    center = [
+                        float(center_data[key])
+                        for key in ("x", "y", "z")
+                    ]
+                    face_index = int(face["index"])
+                except (KeyError, TypeError, ValueError):
+                    continue
+                normal_length = math.sqrt(
+                    sum(value * value for value in normal)
+                )
+                if normal_length <= 1e-12:
+                    continue
+                alignment = abs(sum(
+                    unit[i] * normal[i] / normal_length
+                    for i in range(3)
+                ))
+                if alignment < 0.70:
+                    continue
+                relative = [
+                    center[i] - origin[i]
+                    for i in range(3)
+                ]
+                forward = sum(
+                    relative[i] * unit[i]
+                    for i in range(3)
+                )
+                lateral = math.sqrt(sum(
+                    (
+                        relative[i] - forward * unit[i]
+                    ) ** 2
+                    for i in range(3)
+                ))
+                area = max(float(face.get("area") or 0), 0.0)
+                score = (
+                    alignment * 100.0
+                    + (5.0 if forward >= 0 else 0.0)
+                    + math.log1p(area * 1e6) * 0.1
+                    - lateral * 100.0
+                    - abs(forward) * 1000.0
+                )
+                if best is None or score > best[0]:
+                    best = (score, face_index)
+            if best is None:
+                stabilized.append(action)
+                continue
+            stabilized.append(SwOperation(
+                operation=OperationType.SELECT_OBSERVED_FACE_AND_SKETCH,
+                params={"faceIndex": best[1]},
+                description=(
+                    "修复轮：用当前 observation 的平面索引替代射线猜测"
+                ),
+            ))
+        return stabilized
 
     @staticmethod
     def _rejected_record(
@@ -330,7 +428,6 @@ class MultiTurnAgent:
                 result.get("success", False)
                 for result in execution_results
             )
-            self._settle_agent_cache(execution_succeeded)
             step_offset += len(execution_results)
             after = self.observer.collect(execution_results)
             validation = ValidatorRegistry.validate(
@@ -345,6 +442,9 @@ class MultiTurnAgent:
                     "passed": False,
                     "message": "执行存在失败，里程碑不能完成",
                 })
+            self._settle_agent_cache(
+                execution_succeeded and validation.passed
+            )
             ledger.mark_from_validation(milestone.id, validation)
             record = MultiTurnRecord(
                 turn=turn_number,
@@ -469,7 +569,6 @@ class MultiTurnAgent:
                 result.get("success", False)
                 for result in execution_results
             )
-            self._settle_agent_cache(execution_succeeded)
             step_offset += len(execution_results)
             observation = self.observer.collect(execution_results)
             validation = ValidatorRegistry.validate(
@@ -484,6 +583,9 @@ class MultiTurnAgent:
                     "passed": False,
                     "message": "执行存在失败，里程碑不能完成",
                 })
+            self._settle_agent_cache(
+                execution_succeeded and validation.passed
+            )
             ledger.mark_from_validation(milestone.id, validation)
             record = MultiTurnRecord(
                 turn=turn_number,
@@ -577,6 +679,10 @@ class MultiTurnAgent:
                 repair_actions = repair.actions[
                     : min(self.max_actions_per_turn, milestone.max_actions)
                 ]
+                repair_actions = self._stabilize_repair_face_selection(
+                    repair_actions,
+                    observation,
+                )
                 if self._valid_finish_state(observation):
                     repair_actions = [
                         action for action in repair_actions

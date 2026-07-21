@@ -74,6 +74,26 @@ class SwObserver:
         return compact
 
     @staticmethod
+    def _compact_faces(payload: dict[str, Any] | None) -> list[dict]:
+        if payload is None:
+            return []
+        compact: list[dict] = []
+        for face in payload.get("faces", []):
+            compact.append({
+                "index": face.get("index"),
+                "faceKey": face.get("faceKey", ""),
+                "surfaceType": face.get("surfaceType", ""),
+                "center": face.get("center", {}),
+                "normal": face.get("normal", {}),
+                "area": face.get("area"),
+                "geometricSignature": face.get(
+                    "geometricSignature",
+                    "",
+                ),
+            })
+        return compact
+
+    @staticmethod
     def _bbox_mm(payload: dict[str, Any] | None) -> dict | None:
         if payload is None:
             return None
@@ -101,6 +121,7 @@ class SwObserver:
         snapshot, snapshot_error = self._get("/api/model-observation")
         if snapshot is not None:
             features = self._compact_features(snapshot)
+            faces = self._compact_faces(snapshot)
             bounding_box_mm = self._bbox_mm(snapshot)
             raw_volume = snapshot.get("volumeMm3")
             volume_mm3 = (
@@ -110,7 +131,7 @@ class SwObserver:
             )
             return self._build_observation(
                 features=features,
-                faces=snapshot.get("faces", []),
+                faces=faces,
                 sketches=snapshot.get("sketches", []),
                 feature_sketch_links=snapshot.get(
                     "featureSketchLinks",

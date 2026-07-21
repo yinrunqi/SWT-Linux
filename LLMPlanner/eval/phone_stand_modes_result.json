@@ -1,6 +1,6 @@
 {
   "evaluation_version": 1,
-  "run_at": "2026-07-21T09:36:37+08:00",
+  "run_at": "2026-07-21T11:21:57+08:00",
   "provider": "AI Ping",
   "plan_model": "Qwen3.5-397B-A17B",
   "case": {
@@ -62,12 +62,12 @@
   "results": [
     {
       "mode": "single_turn",
-      "status": "failed",
-      "duration_seconds": 25.233,
+      "status": "completed",
+      "duration_seconds": 37.738,
       "turns": 1,
       "llm_calls": 1,
       "total_actions": 35,
-      "successful_actions": 34,
+      "successful_actions": 35,
       "token_usage": {
         "by_model": {},
         "calls": 0,
@@ -75,19 +75,14 @@
         "prompt_tokens": 0,
         "total_tokens": 0
       },
-      "failed_actions": [
-        {
-          "operation": "feature_fillet",
-          "message": "创建圆角失败，请确保选中了有效的边"
-        }
-      ],
-      "score": 89.71,
-      "acceptance_ok": false,
+      "failed_actions": [],
+      "score": 100.0,
+      "acceptance_ok": true,
       "dimension_points": 30.0,
       "volume_points": 10.0,
       "topology_points": 20.0,
-      "detail_points": 20.0,
-      "execution_points": 9.71,
+      "detail_points": 25.0,
+      "execution_points": 15.0,
       "bbox_mm": {
         "minX": 0.0,
         "minY": 0.0,
@@ -109,61 +104,41 @@
         true,
         true
       ],
-      "volume_mm3": 128050.959706,
+      "volume_mm3": 128195.175315,
       "volume_ok": true,
       "feature_counts": {
         "extrusion": 1,
         "cut": 5,
-        "fillet": 0,
-        "total": 30,
-        "faces": 49
+        "fillet": 1,
+        "total": 31,
+        "faces": 46
       },
-      "action_success_rate": 0.971429,
+      "action_success_rate": 1.0,
       "error": null
     },
     {
       "mode": "multi_turn",
-      "status": "blocked",
-      "duration_seconds": 191.644,
-      "turns": 8,
-      "llm_calls": 3,
-      "total_actions": 26,
+      "status": "completed",
+      "duration_seconds": 48.076,
+      "turns": 7,
+      "llm_calls": 0,
+      "total_actions": 23,
       "successful_actions": 23,
       "token_usage": {
-        "by_model": {
-          "Qwen3.5-397B-A17B": {
-            "calls": 3,
-            "completion_tokens": 11630,
-            "prompt_tokens": 99081,
-            "total_tokens": 110711
-          }
-        },
-        "calls": 3,
-        "completion_tokens": 11630,
-        "prompt_tokens": 99081,
-        "total_tokens": 110711
+        "by_model": {},
+        "calls": 0,
+        "completion_tokens": 0,
+        "prompt_tokens": 0,
+        "total_tokens": 0
       },
-      "failed_actions": [
-        {
-          "operation": "select_face_and_sketch",
-          "message": "未能通过射线选中实体面。射线起点(0.02,0.063,0.05)，方向(0,0,-1)及其反方向均未命中。"
-        },
-        {
-          "operation": "feature_extrusion",
-          "message": "拉伸失败，请确保草图中有封闭的轮廓"
-        },
-        {
-          "operation": "feature_extrusion",
-          "message": "拉伸失败，请确保草图中有封闭的轮廓"
-        }
-      ],
-      "score": 88.85,
-      "acceptance_ok": false,
+      "failed_actions": [],
+      "score": 100.0,
+      "acceptance_ok": true,
       "dimension_points": 30.0,
       "volume_points": 10.0,
       "topology_points": 20.0,
-      "detail_points": 20.0,
-      "execution_points": 8.85,
+      "detail_points": 25.0,
+      "execution_points": 15.0,
       "bbox_mm": {
         "maxX": 116.0,
         "maxY": 118.0,
@@ -185,16 +160,16 @@
         true,
         true
       ],
-      "volume_mm3": 127238.627429,
+      "volume_mm3": 128195.175315,
       "volume_ok": true,
       "feature_counts": {
         "extrusion": 1,
-        "cut": 4,
-        "fillet": 0,
-        "total": 30,
-        "faces": 43
+        "cut": 5,
+        "fillet": 1,
+        "total": 31,
+        "faces": 46
       },
-      "action_success_rate": 0.884615,
+      "action_success_rate": 1.0,
       "error": null
     }
   ]

@@ -44,6 +44,10 @@ OPERATION_ENDPOINT_MAP: dict[OperationType, tuple[str, str]] = {
     OperationType.FEATURE_TREE:            ("GET",  "/api/feature-tree"),
     OperationType.BODY_BOUNDING_BOX:       ("GET",  "/api/body-bounding-box"),
     OperationType.SELECT_FACE_AND_SKETCH:  ("POST", "/api/select-face-and-sketch"),
+    OperationType.SELECT_OBSERVED_FACE_AND_SKETCH: (
+        "POST",
+        "/api/select-observed-face-and-sketch",
+    ),
     OperationType.MODIFY_DIMENSION:        ("POST", "/api/modify-dimension"),
     # --- 文档持久化 & 装配体 ---
     OperationType.SAVE_PART_AS:            ("POST", "/api/save-part-as"),
