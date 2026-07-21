@@ -1,0 +1,158 @@
+{
+  "case_id": "adjustable_two_arm_desk_lamp_v1",
+  "description": "带双节平面灯臂、弹簧和可俯仰灯罩的可调节金属台灯",
+  "units": {
+    "length": "mm",
+    "angle": "deg"
+  },
+  "mechanism": {
+    "base_pivot": [0.0, 60.0, 0.0],
+    "rotation_axis": [0.0, 0.0, 1.0],
+    "lower_arm_length": 120.0,
+    "upper_arm_length": 105.0,
+    "head_angle_deg": -15.0,
+    "joint_limits_deg": {
+      "lower_absolute": [20.0, 85.0],
+      "upper_relative": [-60.0, 40.0],
+      "head_absolute": [-45.0, 20.0]
+    },
+    "poses": [
+      {
+        "name": "low_reach",
+        "control_percent": 0,
+        "lower_angle_deg": 30.0,
+        "upper_relative_angle_deg": 35.0
+      },
+      {
+        "name": "working",
+        "control_percent": 50,
+        "lower_angle_deg": 60.0,
+        "upper_relative_angle_deg": -35.0
+      },
+      {
+        "name": "raised",
+        "control_percent": 100,
+        "lower_angle_deg": 82.0,
+        "upper_relative_angle_deg": -50.0
+      }
+    ]
+  },
+  "components": [
+    {
+      "role": "base_plate",
+      "kind": "weighted_round_base",
+      "group": "foundation",
+      "translation": [0.0, 0.0, -10.0]
+    },
+    {
+      "role": "base_weight",
+      "kind": "inner_weight_disc",
+      "group": "foundation",
+      "translation": [0.0, 0.0, 0.0]
+    },
+    {
+      "role": "rotary_post",
+      "kind": "upright_post",
+      "group": "foundation",
+      "translation": [0.0, 25.0, 0.0]
+    },
+    {
+      "role": "shoulder_joint",
+      "kind": "pivot_hub",
+      "group": "foundation",
+      "translation": [0.0, 60.0, 0.0]
+    },
+    {
+      "role": "lower_arm_left",
+      "kind": "rigid_link",
+      "group": "lower_linkage",
+      "translation": [30.0, 111.9615, -8.0]
+    },
+    {
+      "role": "lower_arm_right",
+      "kind": "rigid_link",
+      "group": "lower_linkage",
+      "translation": [30.0, 111.9615, 8.0]
+    },
+    {
+      "role": "elbow_joint",
+      "kind": "pivot_hub",
+      "group": "lower_linkage",
+      "translation": [60.0, 163.923, 0.0]
+    },
+    {
+      "role": "lower_spring_left",
+      "kind": "tension_spring",
+      "group": "lower_linkage",
+      "translation": [30.0, 111.9615, -13.0]
+    },
+    {
+      "role": "lower_spring_right",
+      "kind": "tension_spring",
+      "group": "lower_linkage",
+      "translation": [30.0, 111.9615, 13.0]
+    },
+    {
+      "role": "upper_arm_left",
+      "kind": "rigid_link",
+      "group": "upper_linkage",
+      "translation": [107.581, 186.111, -8.0]
+    },
+    {
+      "role": "upper_arm_right",
+      "kind": "rigid_link",
+      "group": "upper_linkage",
+      "translation": [107.581, 186.111, 8.0]
+    },
+    {
+      "role": "head_joint",
+      "kind": "pivot_hub",
+      "group": "upper_linkage",
+      "translation": [155.162, 208.299, 0.0]
+    },
+    {
+      "role": "upper_spring_left",
+      "kind": "tension_spring",
+      "group": "upper_linkage",
+      "translation": [107.581, 186.111, -13.0]
+    },
+    {
+      "role": "upper_spring_right",
+      "kind": "tension_spring",
+      "group": "upper_linkage",
+      "translation": [107.581, 186.111, 13.0]
+    },
+    {
+      "role": "lamp_shade",
+      "kind": "conical_shade",
+      "group": "head_and_details",
+      "translation": [174.481, 203.122, 0.0]
+    },
+    {
+      "role": "bulb",
+      "kind": "lamp_bulb",
+      "group": "head_and_details",
+      "translation": [193.799, 197.946, 0.0]
+    },
+    {
+      "role": "rocker_switch",
+      "kind": "switch",
+      "group": "head_and_details",
+      "translation": [-35.0, 12.0, 0.0]
+    },
+    {
+      "role": "cable_grommet",
+      "kind": "cable_exit",
+      "group": "head_and_details",
+      "translation": [35.0, 10.0, 0.0]
+    }
+  ],
+  "acceptance": {
+    "component_count": 18,
+    "translation_tolerance_mm": 1.0,
+    "link_length_tolerance_mm": 0.25,
+    "angle_tolerance_deg": 0.000001,
+    "minimum_pose_count": 3,
+    "assembly_file_required": true
+  }
+}

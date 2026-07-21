@@ -59,6 +59,9 @@ class OperationType(str, Enum):
     ASSEMBLY_GET_COMPONENT_TRANSFORM = "assembly_get_component_transform"
     ASSEMBLY_SET_COMPONENT_POSE = "assembly_set_component_pose"
     ASSEMBLY_SET_CRANK_SLIDER_POSE = "assembly_set_crank_slider_pose"
+    ASSEMBLY_SET_PLANAR_CHAIN_POSE = (
+        "assembly_set_planar_chain_pose"
+    )
     ASSEMBLY_SET_INDEXED_ROTARY_POSE = (
         "assembly_set_indexed_rotary_pose"
     )
@@ -180,6 +183,11 @@ class SwOperation(BaseModel):
             "centerX,centerY,centerZ,crankRadius,rodLength,sliderAxisX,sliderAxisY,sliderAxisZ,"
             "rotationAxisX,rotationAxisY,rotationAxisZ,angleDeg,synchronizedComponents?}；"
             "长度单位米，synchronizedComponents 每项含 componentName,x,y,z,ratio,reverse?,phaseDeg?"
+            "\n- assembly_set_planar_chain_pose: {baseX,baseY,baseZ,rotationAxisX?,"
+            "rotationAxisY?,rotationAxisZ?,baseAngleDeg?,segments:[{length,angleDeg,"
+            "componentName?或componentNames?,axisOffsets?}],jointComponents?,endComponents?}；"
+            "每段 angleDeg 为相对上一段的关节角，组件局部 +X 沿杆长方向；可让多根平行杆"
+            "共享同一段，并返回所有关节点坐标"
             "\n- assembly_set_indexed_rotary_pose: {driverComponent,indexedComponent,inputAngleDeg,"
             "slotCount?,engagementStartDeg?,engagementEndDeg?,reverseOutput?,"
             "continuousComponents?,indexedComponents?}；连续输入在啮合区推动输出轮每周期"
@@ -430,6 +438,128 @@ class SwOperation(BaseModel):
                     params["synchronizedComponents"] = (
                         normalized_synchronized
                     )
+            if operation_value == "assembly_set_planar_chain_pose":
+                for target, candidates in {
+                    "baseX": (
+                        "base_x",
+                        "originX",
+                        "origin_x",
+                        "basePivotX",
+                        "base_pivot_x",
+                    ),
+                    "baseY": (
+                        "base_y",
+                        "originY",
+                        "origin_y",
+                        "basePivotY",
+                        "base_pivot_y",
+                    ),
+                    "baseZ": (
+                        "base_z",
+                        "originZ",
+                        "origin_z",
+                        "basePivotZ",
+                        "base_pivot_z",
+                    ),
+                    "baseAngleDeg": (
+                        "base_angle_deg",
+                        "baseAngle",
+                    ),
+                    "segments": ("links", "chain", "arms"),
+                    "jointComponents": (
+                        "joint_components",
+                        "joints",
+                    ),
+                    "endComponents": (
+                        "end_components",
+                        "endEffectors",
+                        "end_effectors",
+                    ),
+                }.items():
+                    if target not in params:
+                        for candidate in candidates:
+                            if candidate in params:
+                                params[target] = params[candidate]
+                                break
+                for target, pivot_key in (
+                    ("baseX", "basePivotX"),
+                    ("baseY", "basePivotY"),
+                    ("baseZ", "basePivotZ"),
+                ):
+                    if pivot_key in params:
+                        params[target] = params[pivot_key]
+                params.setdefault("baseX", 0.0)
+                params.setdefault("baseY", 0.0)
+                params.setdefault("baseZ", 0.0)
+                rotation_axis = params.get("rotationAxis")
+                if isinstance(rotation_axis, str):
+                    axis_name = rotation_axis.strip().lower().lstrip("+")
+                    axis_values = {
+                        "x": (1.0, 0.0, 0.0),
+                        "y": (0.0, 1.0, 0.0),
+                        "z": (0.0, 0.0, 1.0),
+                        "-x": (-1.0, 0.0, 0.0),
+                        "-y": (0.0, -1.0, 0.0),
+                        "-z": (0.0, 0.0, -1.0),
+                    }.get(axis_name)
+                    if axis_values:
+                        for key, coordinate in zip(
+                            (
+                                "rotationAxisX",
+                                "rotationAxisY",
+                                "rotationAxisZ",
+                            ),
+                            axis_values,
+                        ):
+                            params.setdefault(key, coordinate)
+                segments = params.get("segments")
+                segment_count = (
+                    len(segments) if isinstance(segments, list) else 0
+                )
+                raw_joints = params.get("jointComponents")
+                if isinstance(raw_joints, list):
+                    normalized_joints = []
+                    for index, raw_joint in enumerate(raw_joints):
+                        if isinstance(raw_joint, str):
+                            joint = {"componentName": raw_joint}
+                        elif isinstance(raw_joint, dict):
+                            joint = dict(raw_joint)
+                            joint.setdefault(
+                                "componentName",
+                                joint.get("name")
+                                or joint.get("component"),
+                            )
+                        else:
+                            normalized_joints.append(raw_joint)
+                            continue
+                        if joint.get("componentName"):
+                            joint.setdefault(
+                                "anchorIndex",
+                                min(index + 1, segment_count),
+                            )
+                        normalized_joints.append(joint)
+                    params["jointComponents"] = normalized_joints
+                raw_end_components = params.get("endComponents")
+                if isinstance(raw_end_components, list):
+                    normalized_end_components = []
+                    end_angle = params.get("endAbsoluteAngleDeg")
+                    for raw_end in raw_end_components:
+                        if isinstance(raw_end, str):
+                            end_item = {"componentName": raw_end}
+                        elif isinstance(raw_end, dict):
+                            end_item = dict(raw_end)
+                            end_item.setdefault(
+                                "componentName",
+                                end_item.get("name")
+                                or end_item.get("component"),
+                            )
+                        else:
+                            normalized_end_components.append(raw_end)
+                            continue
+                        if end_angle is not None:
+                            end_item.setdefault("angleDeg", end_angle)
+                        normalized_end_components.append(end_item)
+                    params["endComponents"] = normalized_end_components
             if operation_value == "assembly_set_indexed_rotary_pose":
                 for target, candidates in {
                     "driverComponent": (
@@ -648,6 +778,12 @@ class SwOperation(BaseModel):
                 "crankRadius",
                 "rodLength",
                 "angleDeg",
+            ),
+            OperationType.ASSEMBLY_SET_PLANAR_CHAIN_POSE: (
+                "baseX",
+                "baseY",
+                "baseZ",
+                "segments",
             ),
             OperationType.ASSEMBLY_SET_INDEXED_ROTARY_POSE: (
                 "driverComponent",

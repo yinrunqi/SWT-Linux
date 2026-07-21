@@ -914,3 +914,41 @@ Multi-turn 状态为 `completed`。
 
 样例 `C4` 自动出现在 Web Demo“由三视图生成”区域；点击后直接加载原始 PNG，
 以保持图片哈希和缓存键稳定。
+
+---
+
+## 二十、18 组件双节可调台灯 Multi-turn 装配测试
+
+该测例生成一台日常金属台灯：椭圆加重底座、立柱、上下双杆、四根平衡弹簧、
+肩/肘/灯头转轴、灯罩、灯泡、开关和电源线出线套。Multi-turn 负责分阶段插入
+并保存 18 个组件；通用平面链 API 负责确定性姿态求解。
+
+```cmd
+cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
+
+REM 生成 18 个参数化零件；每个零件完成后自动关闭文档
+py eval\eval_adjustable_desk_lamp_multiturn.py --prepare-only --force-parts
+
+REM Multi-turn 装配和三姿态 100 分验收
+py eval\eval_adjustable_desk_lamp_multiturn.py --use-cache --max-turns 24
+
+REM 对已保存装配体执行 0-token 复验
+py eval\eval_adjustable_desk_lamp_multiturn.py --validate-existing
+
+REM 协议、评分和 Web Demo 回归
+py -m pytest test/test_adjustable_desk_lamp.py test/test_assembly_planner.py -q
+py test/test_web_modes.py
+node --check web/static/app.js
+```
+
+验收内容：
+
+- 精确 18 个组件且 `.SLDASM` 已保存；
+- 低位 30°/35°、工作 60°/-35°、升高 82°/-50° 三种绝对/相对关节角；
+- 每种姿态的两段关节点距离分别保持 120mm 和 105mm，误差不超过 0.25mm；
+- 三组关节角均在规格限位内，灯头绝对角恒为 -15°；
+- 静态装配 40 分、机构姿态 40 分、执行可靠性 20 分。
+
+Web Demo“装配体相关”区域提供“Multi-turn 构建双节可调台灯”按钮和
+0%–100% 灯臂高度滑块。滑块使用分段线性关节插值并直接调用 SolidWorks API，
+不会调用 LLM；每次测试结束仍关闭所有非活动零件窗口。

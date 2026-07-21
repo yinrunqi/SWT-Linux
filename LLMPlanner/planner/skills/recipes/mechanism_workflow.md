@@ -1,7 +1,7 @@
 ---
 name: mechanism_workflow
-description: 通用平面机构装配、曲柄滑块求解和同步传动
-triggers: [机构, 曲柄, 滑块, 连杆, 活塞, crank, slider, linkage, mechanism, timing]
+description: 通用平面机构装配、曲柄滑块、多关节链求解和同步传动
+triggers: [机构, 曲柄, 滑块, 连杆, 活塞, 台灯, 机械臂, crank, slider, linkage, mechanism, timing]
 applies_to: [text]
 ---
 
@@ -23,5 +23,17 @@ applies_to: [text]
 5. 至少检查一个完整周期中的上止点、下止点和两个中间位置。机器验收应验证：
    滑块行程等于两倍曲柄半径、连杆长度保持不变、周期首尾姿态一致、同步传动比正确。
 6. 机构运动前解除移动组件的固定状态；固定机架不能参与姿态更新。运动后重建并保存装配体。
+
+### 多关节平面链
+
+串联灯臂、机械臂或折叠支架使用 `assembly_set_planar_chain_pose`。每个 segment
+给出米制 `length`、相对上一段的 `angleDeg`，以及一个 `componentName` 或多根
+平行杆的 `componentNames/axisOffsets`。组件局部 +X 必须沿杆长方向；求解器会
+把每根杆放在两关节点的中点并返回所有 `anchors`。转轴装饰件放入
+`jointComponents`，灯头/夹爪等末端件放入 `endComponents`。
+
+至少采样收拢、中间、升高三种姿态，并验证：每段关节点距离保持等于杆长、关节
+角不越限、同段平行杆共享角度、末端姿态满足任务要求。禁止把多段相对角误当成
+绝对角，也不能为每个姿态手写不相干的组件坐标。
 
 若某个角度无实数解，应修正几何参数（连杆长度必须大于曲柄半径），不能通过跳过该采样点掩盖问题。

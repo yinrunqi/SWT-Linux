@@ -3452,6 +3452,305 @@ namespace Chapter1.ConnectToSw
         }
 
         /// <summary>
+        /// Solve and apply a rigid planar serial-chain pose. Each segment advances
+        /// one joint while one or more parallel components can share its midpoint
+        /// and angle at different offsets along the rotation axis.
+        /// </summary>
+        public Dictionary<string, object> SetPlanarChainPose(
+            double baseX,
+            double baseY,
+            double baseZ,
+            double rotationAxisX,
+            double rotationAxisY,
+            double rotationAxisZ,
+            double baseAngleDeg,
+            List<Dictionary<string, object>> segments,
+            List<Dictionary<string, object>> jointComponents,
+            List<Dictionary<string, object>> endComponents)
+        {
+            EnsureActiveAssembly();
+            if (segments == null || segments.Count == 0)
+                throw new ArgumentException("平面连杆链至少需要一个 segment");
+
+            double axisNorm = Math.Sqrt(
+                rotationAxisX * rotationAxisX +
+                rotationAxisY * rotationAxisY +
+                rotationAxisZ * rotationAxisZ);
+            if (axisNorm < 1e-12)
+                throw new ArgumentException("平面连杆旋转轴不能为零向量");
+            rotationAxisX /= axisNorm;
+            rotationAxisY /= axisNorm;
+            rotationAxisZ /= axisNorm;
+
+            // The local +X axis is every link's zero-angle direction.
+            double dotX = rotationAxisX;
+            if (Math.Abs(dotX) > 1e-6)
+                throw new ArgumentException(
+                    "平面连杆旋转轴必须垂直于组件局部 +X 轴");
+            double perpX = 0.0;
+            double perpY = rotationAxisZ;
+            double perpZ = -rotationAxisY;
+            double perpNorm = Math.Sqrt(
+                perpX * perpX + perpY * perpY + perpZ * perpZ);
+            if (perpNorm < 1e-12)
+                throw new ArgumentException("无法建立平面连杆参考坐标系");
+            perpX /= perpNorm;
+            perpY /= perpNorm;
+            perpZ /= perpNorm;
+
+            var componentLookup = new Dictionary<string, IComponent2>(
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var item in (_activeAssembly.GetComponents(false)
+                as object[]) ?? new object[0])
+            {
+                var component = item as IComponent2;
+                if (component != null)
+                    componentLookup[component.Name2] = component;
+            }
+            Func<string, IComponent2> resolve = name =>
+            {
+                IComponent2 component;
+                if (!componentLookup.TryGetValue(name, out component))
+                    throw new InvalidOperationException(
+                        $"装配体中找不到组件: {name}");
+                return component;
+            };
+            Func<IComponent2, double[]> translationOf = component =>
+            {
+                var transform = component.Transform2 as MathTransform;
+                var values = transform?.ArrayData as double[];
+                if (values == null || values.Length < 12)
+                    throw new InvalidOperationException(
+                        $"无法读取组件姿态: {component.Name2}");
+                return new double[] { values[9], values[10], values[11] };
+            };
+            Func<object, List<object>> asList = raw =>
+            {
+                var output = new List<object>();
+                var enumerable = raw as System.Collections.IEnumerable;
+                if (enumerable == null || raw is string)
+                    return output;
+                foreach (var value in enumerable)
+                    output.Add(value);
+                return output;
+            };
+
+            var anchors = new List<double[]>
+            {
+                new double[] { baseX, baseY, baseZ }
+            };
+            var cumulativeAngles = new List<double> { baseAngleDeg };
+            var segmentResults = new List<Dictionary<string, object>>();
+            double currentX = baseX;
+            double currentY = baseY;
+            double currentZ = baseZ;
+            double cumulativeAngle = baseAngleDeg;
+
+            var modelDoc = (IModelDoc2)_activeAssembly;
+            var modelView = modelDoc.ActiveView as IModelView;
+            try
+            {
+                _swApp.CommandInProgress = true;
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = false;
+
+                foreach (var segment in segments)
+                {
+                    if (!segment.ContainsKey("length"))
+                        throw new ArgumentException("segment 缺少 length");
+                    double length = Convert.ToDouble(segment["length"]);
+                    if (length <= 0)
+                        throw new ArgumentException("segment length 必须为正数");
+                    double relativeAngle = segment.ContainsKey("angleDeg")
+                        ? Convert.ToDouble(segment["angleDeg"])
+                        : (segment.ContainsKey("relativeAngleDeg")
+                            ? Convert.ToDouble(segment["relativeAngleDeg"])
+                            : 0.0);
+                    cumulativeAngle += relativeAngle;
+                    double angleRad = cumulativeAngle * Math.PI / 180.0;
+                    double dirX = Math.Cos(angleRad);
+                    double dirY = perpY * Math.Sin(angleRad);
+                    double dirZ = perpZ * Math.Sin(angleRad);
+                    double midpointX = currentX + dirX * length / 2.0;
+                    double midpointY = currentY + dirY * length / 2.0;
+                    double midpointZ = currentZ + dirZ * length / 2.0;
+                    double endX = currentX + dirX * length;
+                    double endY = currentY + dirY * length;
+                    double endZ = currentZ + dirZ * length;
+
+                    var names = segment.ContainsKey("componentNames")
+                        ? asList(segment["componentNames"])
+                        : new List<object>();
+                    if (names.Count == 0 && segment.ContainsKey("componentName"))
+                        names.Add(segment["componentName"]);
+                    if (names.Count == 0)
+                        throw new ArgumentException(
+                            "segment 缺少 componentName/componentNames");
+                    var offsets = segment.ContainsKey("axisOffsets")
+                        ? asList(segment["axisOffsets"])
+                        : new List<object>();
+                    bool preserveAxisOffsets =
+                        !segment.ContainsKey("preserveAxisOffsets")
+                        || Convert.ToBoolean(
+                            segment["preserveAxisOffsets"]);
+                    var posedNames = new List<string>();
+                    for (int index = 0; index < names.Count; index++)
+                    {
+                        string name = Convert.ToString(names[index]);
+                        var resolved = resolve(name);
+                        var currentTranslation = translationOf(resolved);
+                        double currentAxisOffset =
+                            (currentTranslation[0] - baseX) * rotationAxisX
+                            + (currentTranslation[1] - baseY) * rotationAxisY
+                            + (currentTranslation[2] - baseZ) * rotationAxisZ;
+                        double offset = preserveAxisOffsets
+                            ? currentAxisOffset
+                            : (index < offsets.Count
+                                ? Convert.ToDouble(offsets[index])
+                                : 0.0);
+                        SetComponentPose(
+                            name,
+                            midpointX + rotationAxisX * offset,
+                            midpointY + rotationAxisY * offset,
+                            midpointZ + rotationAxisZ * offset,
+                            rotationAxisX,
+                            rotationAxisY,
+                            rotationAxisZ,
+                            cumulativeAngle,
+                            false,
+                            resolved);
+                        posedNames.Add(name);
+                    }
+                    segmentResults.Add(new Dictionary<string, object>
+                    {
+                        ["componentNames"] = posedNames.ToArray(),
+                        ["length"] = length,
+                        ["angleDeg"] = cumulativeAngle,
+                        ["startXYZ"] = new double[]
+                            { currentX, currentY, currentZ },
+                        ["midpointXYZ"] = new double[]
+                            { midpointX, midpointY, midpointZ },
+                        ["endXYZ"] = new double[] { endX, endY, endZ },
+                    });
+                    currentX = endX;
+                    currentY = endY;
+                    currentZ = endZ;
+                    anchors.Add(new double[] { currentX, currentY, currentZ });
+                    cumulativeAngles.Add(cumulativeAngle);
+                }
+
+                var jointResults = new List<Dictionary<string, object>>();
+                foreach (var item in jointComponents
+                    ?? new List<Dictionary<string, object>>())
+                {
+                    if (!item.ContainsKey("componentName"))
+                        throw new ArgumentException(
+                            "jointComponent 缺少 componentName");
+                    string name = Convert.ToString(item["componentName"]);
+                    int anchorIndex = item.ContainsKey("anchorIndex")
+                        ? Convert.ToInt32(item["anchorIndex"])
+                        : 0;
+                    if (anchorIndex < 0 || anchorIndex >= anchors.Count)
+                        throw new ArgumentException(
+                            $"jointComponent anchorIndex 越界: {anchorIndex}");
+                    double offset = item.ContainsKey("axisOffset")
+                        ? Convert.ToDouble(item["axisOffset"])
+                        : 0.0;
+                    double angleDeg = item.ContainsKey("angleDeg")
+                        ? Convert.ToDouble(item["angleDeg"])
+                        : cumulativeAngles[Math.Min(
+                            anchorIndex, cumulativeAngles.Count - 1)];
+                    var anchor = anchors[anchorIndex];
+                    jointResults.Add(SetComponentPose(
+                        name,
+                        anchor[0] + rotationAxisX * offset,
+                        anchor[1] + rotationAxisY * offset,
+                        anchor[2] + rotationAxisZ * offset,
+                        rotationAxisX,
+                        rotationAxisY,
+                        rotationAxisZ,
+                        angleDeg,
+                        false,
+                        resolve(name)));
+                }
+
+                var endResults = new List<Dictionary<string, object>>();
+                foreach (var item in endComponents
+                    ?? new List<Dictionary<string, object>>())
+                {
+                    if (!item.ContainsKey("componentName"))
+                        throw new ArgumentException(
+                            "endComponent 缺少 componentName");
+                    string name = Convert.ToString(item["componentName"]);
+                    double angleDeg = item.ContainsKey("angleDeg")
+                        ? Convert.ToDouble(item["angleDeg"])
+                        : cumulativeAngle;
+                    double angleRad = angleDeg * Math.PI / 180.0;
+                    double dirX = Math.Cos(angleRad);
+                    double dirY = perpY * Math.Sin(angleRad);
+                    double dirZ = perpZ * Math.Sin(angleRad);
+                    double normalX = -Math.Sin(angleRad);
+                    double normalY = perpY * Math.Cos(angleRad);
+                    double normalZ = perpZ * Math.Cos(angleRad);
+                    var resolved = resolve(name);
+                    var currentTranslation = translationOf(resolved);
+                    double deltaX = currentTranslation[0] - currentX;
+                    double deltaY = currentTranslation[1] - currentY;
+                    double deltaZ = currentTranslation[2] - currentZ;
+                    double along = item.ContainsKey("alongOffset")
+                        ? Convert.ToDouble(item["alongOffset"])
+                        : deltaX * dirX + deltaY * dirY + deltaZ * dirZ;
+                    double perpendicular = item.ContainsKey(
+                        "perpendicularOffset")
+                        ? Convert.ToDouble(item["perpendicularOffset"])
+                        : deltaX * normalX
+                            + deltaY * normalY
+                            + deltaZ * normalZ;
+                    double axisOffset = item.ContainsKey("axisOffset")
+                        ? Convert.ToDouble(item["axisOffset"])
+                        : deltaX * rotationAxisX
+                            + deltaY * rotationAxisY
+                            + deltaZ * rotationAxisZ;
+                    endResults.Add(SetComponentPose(
+                        name,
+                        currentX + dirX * along
+                            + normalX * perpendicular
+                            + rotationAxisX * axisOffset,
+                        currentY + dirY * along
+                            + normalY * perpendicular
+                            + rotationAxisY * axisOffset,
+                        currentZ + dirZ * along
+                            + normalZ * perpendicular
+                            + rotationAxisZ * axisOffset,
+                        rotationAxisX,
+                        rotationAxisY,
+                        rotationAxisZ,
+                        angleDeg,
+                        false,
+                        resolved));
+                }
+
+                return new Dictionary<string, object>
+                {
+                    ["baseXYZ"] = new double[] { baseX, baseY, baseZ },
+                    ["anchors"] = anchors.ToArray(),
+                    ["segments"] = segmentResults.ToArray(),
+                    ["joints"] = jointResults.ToArray(),
+                    ["endComponents"] = endResults.ToArray(),
+                    ["endXYZ"] = new double[]
+                        { currentX, currentY, currentZ },
+                };
+            }
+            finally
+            {
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = true;
+                _swApp.CommandInProgress = false;
+                modelDoc.GraphicsRedraw2();
+            }
+        }
+
+        /// <summary>
         /// Apply one analytically solved pose of a planar crank-slider mechanism.
         /// The rod part's local +Y axis is assumed to run between its pin centers.
         /// Optional synchronized components rotate at signed ratios of crank angle.

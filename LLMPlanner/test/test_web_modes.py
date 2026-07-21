@@ -215,6 +215,16 @@ def run_tests() -> None:
         assert "/api/engine-animation/pose" in script
         print("[PASS] crank-slider engine demo is exposed in assembly UI")
 
+        assert 'id="lamp-run-btn"' in page
+        assert 'id="lamp-height"' in page
+        assert 'id="lamp-pose-btn"' in page
+        assert (
+            "/api/assembly-examples/adjustable-desk-lamp/run"
+            in script
+        )
+        assert "/api/lamp-animation/pose" in script
+        print("[PASS] adjustable desk lamp demo is exposed in assembly UI")
+
         assert 'id="projector-run-btn"' in page
         assert 'id="projector-angle"' in page
         assert 'id="projector-pose-btn"' in page

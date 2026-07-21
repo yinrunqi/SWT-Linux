@@ -74,6 +74,10 @@ OPERATION_ENDPOINT_MAP: dict[OperationType, tuple[str, str]] = {
         "POST",
         "/api/assembly/mechanism/crank-slider-pose",
     ),
+    OperationType.ASSEMBLY_SET_PLANAR_CHAIN_POSE: (
+        "POST",
+        "/api/assembly/mechanism/planar-chain-pose",
+    ),
     OperationType.ASSEMBLY_SET_INDEXED_ROTARY_POSE: (
         "POST",
         "/api/assembly/mechanism/indexed-rotary-pose",

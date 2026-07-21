@@ -49,6 +49,11 @@ const engineAngle = document.getElementById("engine-angle");
 const engineAngleValue = document.getElementById("engine-angle-value");
 const enginePoseBtn = document.getElementById("engine-pose-btn");
 const engineRunStatus = document.getElementById("engine-run-status");
+const lampRunBtn = document.getElementById("lamp-run-btn");
+const lampHeight = document.getElementById("lamp-height");
+const lampHeightValue = document.getElementById("lamp-height-value");
+const lampPoseBtn = document.getElementById("lamp-pose-btn");
+const lampRunStatus = document.getElementById("lamp-run-status");
 const projectorRunBtn = document.getElementById("projector-run-btn");
 const projectorAngle = document.getElementById("projector-angle");
 const projectorAngleValue = document.getElementById("projector-angle-value");
@@ -492,6 +497,95 @@ async function setEnginePose() {
     engineRunStatus.classList.add("fail");
   } finally {
     enginePoseBtn.disabled = false;
+  }
+}
+
+async function runAdjustableDeskLamp() {
+  if (busy) return;
+  busy = true;
+  lampRunBtn.disabled = true;
+  sendBtn.disabled = true;
+  lampRunStatus.textContent =
+    "正在准备 18 个台灯零件，并由 Multi-turn Agent 分阶段装配双节灯臂…";
+  lampRunStatus.classList.remove("ok", "fail");
+  appendUser(
+    "装配带双节灯臂、平衡弹簧和可俯仰灯罩的金属台灯",
+    null,
+  );
+  const loadingId = appendLoading(
+    "正在构建台灯；重复运行将复用已验收的 Agent 状态缓存…",
+  );
+  try {
+    const response = await fetch(
+      `${API}/api/assembly-examples/adjustable-desk-lamp/run`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: providerEl.value,
+          api_key: apiKeyEl.value.trim(),
+          base_url: baseUrlEl.value.trim(),
+          vision_model: visionModelEl.value,
+          plan_model: planModelEl.value,
+          max_turns: maxTurnsEl.value
+            ? Number(maxTurnsEl.value)
+            : 28,
+        }),
+      },
+    );
+    const data = await response.json();
+    removeLoading(loadingId);
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+    appendMultiTurnResponse(data.multi_turn, data.summary);
+    const tokens = Number(data.token_usage?.total_tokens || 0);
+    const cacheText = tokens === 0
+      ? "Agent 决策全部命中缓存，token 花费为 0"
+      : `本次新消耗 ${tokens} tokens`;
+    const accepted = Boolean(data.summary?.all_ok);
+    lampRunStatus.textContent = accepted
+      ? `台灯装配及三姿态验收成功，评分 ${Number(data.score || 0).toFixed(2)}；${cacheText}`
+      : `台灯装配或机构验收未通过；${cacheText}`;
+    lampRunStatus.classList.add(accepted ? "ok" : "fail");
+  } catch (error) {
+    removeLoading(loadingId);
+    lampRunStatus.textContent = `台灯构建失败：${error.message}`;
+    lampRunStatus.classList.add("fail");
+    appendError(error.message);
+  } finally {
+    busy = false;
+    lampRunBtn.disabled = false;
+    sendBtn.disabled = false;
+  }
+}
+
+async function setLampPose() {
+  lampPoseBtn.disabled = true;
+  lampRunStatus.textContent =
+    `正在通过确定性 SW API 设置 ${lampHeight.value}% 台灯高度…`;
+  lampRunStatus.classList.remove("ok", "fail");
+  try {
+    const response = await fetch(`${API}/api/lamp-animation/pose`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        control_percent: Number(lampHeight.value),
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+    const end = data.end_xyz_mm || [0, 0, 0];
+    lampRunStatus.textContent =
+      `${data.message}，灯头转轴位置 (${Number(end[0]).toFixed(1)}, ${Number(end[1]).toFixed(1)}) mm；不调用 LLM`;
+    lampRunStatus.classList.add("ok");
+  } catch (error) {
+    lampRunStatus.textContent = `台灯姿态设置失败：${error.message}`;
+    lampRunStatus.classList.add("fail");
+  } finally {
+    lampPoseBtn.disabled = false;
   }
 }
 
@@ -1204,6 +1298,11 @@ engineRunBtn.addEventListener("click", runSingleCylinderEngine);
 enginePoseBtn.addEventListener("click", setEnginePose);
 engineAngle.addEventListener("input", () => {
   engineAngleValue.textContent = `${engineAngle.value}°`;
+});
+lampRunBtn.addEventListener("click", runAdjustableDeskLamp);
+lampPoseBtn.addEventListener("click", setLampPose);
+lampHeight.addEventListener("input", () => {
+  lampHeightValue.textContent = `${lampHeight.value}%`;
 });
 projectorRunBtn.addEventListener("click", runFilmProjector);
 projectorPoseBtn.addEventListener("click", setProjectorPose);

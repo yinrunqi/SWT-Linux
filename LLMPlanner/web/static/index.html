@@ -161,6 +161,19 @@
         </div>
         <div class="gear-animation-panel">
           <div class="gear-animation-actions">
+            <button id="lamp-run-btn">💡 Multi-turn 构建双节可调台灯</button>
+          </div>
+          <div class="gear-animation-actions gearbox-motion-actions">
+            <label for="lamp-height">灯臂高度 <span id="lamp-height-value">50%</span></label>
+            <input id="lamp-height" type="range" min="0" max="100" step="5" value="50">
+            <button id="lamp-pose-btn">设置台灯姿态</button>
+          </div>
+          <div id="lamp-run-status" class="gear-animation-status">
+            18 组件双节灯臂；验证三种高度、杆长闭环、关节限位和灯头姿态
+          </div>
+        </div>
+        <div class="gear-animation-panel">
+          <div class="gear-animation-actions">
             <button id="projector-run-btn">🎞 Multi-turn 构建复古 16mm 放映机</button>
           </div>
           <div class="gear-animation-actions gearbox-motion-actions">

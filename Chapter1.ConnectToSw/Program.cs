@@ -357,6 +357,9 @@ namespace Chapter1.ConnectToSw
                 case "/api/assembly/mechanism/crank-slider-pose":
                     RequirePost(method, resp, () => HandleCrankSliderPose(req, resp));
                     break;
+                case "/api/assembly/mechanism/planar-chain-pose":
+                    RequirePost(method, resp, () => HandlePlanarChainPose(req, resp));
+                    break;
                 case "/api/assembly/mechanism/indexed-rotary-pose":
                     RequirePost(method, resp, () => HandleIndexedRotaryPose(req, resp));
                     break;
@@ -1706,6 +1709,71 @@ namespace Chapter1.ConnectToSw
                 {
                     success = false,
                     message = $"曲柄滑块姿态失败: {ex.Message}",
+                });
+            }
+        }
+
+        private static void HandlePlanarChainPose(
+            HttpListenerRequest req,
+            HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                Func<string, bool, List<Dictionary<string, object>>> readList =
+                    (key, required) =>
+                    {
+                        var entries =
+                            new List<Dictionary<string, object>>();
+                        if (!body.ContainsKey(key))
+                        {
+                            if (required)
+                                throw new KeyNotFoundException(
+                                    $"缺少必要参数: {key}");
+                            return entries;
+                        }
+                        var raw = body[key]
+                            as System.Collections.IEnumerable;
+                        if (raw == null)
+                            throw new ArgumentException(
+                                $"{key} 必须是数组");
+                        foreach (var item in raw)
+                        {
+                            var entry =
+                                item as Dictionary<string, object>;
+                            if (entry == null)
+                                throw new ArgumentException(
+                                    $"{key} 的每一项必须是对象");
+                            entries.Add(entry);
+                        }
+                        return entries;
+                    };
+                var result = _commands.SetPlanarChainPose(
+                    GetDoubleOrDefault(body, "baseX", 0),
+                    GetDoubleOrDefault(body, "baseY", 0),
+                    GetDoubleOrDefault(body, "baseZ", 0),
+                    GetDoubleOrDefault(body, "rotationAxisX", 0),
+                    GetDoubleOrDefault(body, "rotationAxisY", 0),
+                    GetDoubleOrDefault(body, "rotationAxisZ", 1),
+                    GetDoubleOrDefault(body, "baseAngleDeg", 0),
+                    readList("segments", true),
+                    readList("jointComponents", false),
+                    readList("endComponents", false));
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = "平面多关节连杆姿态已更新",
+                    result,
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"[错误] PlanarChainPose 失败: {ex.Message}");
+                SendJson(resp, 500, new
+                {
+                    success = false,
+                    message = $"平面多关节连杆姿态失败: {ex.Message}",
                 });
             }
         }

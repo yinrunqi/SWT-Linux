@@ -346,6 +346,21 @@ plan = client.plan("这是一张 L 型支架的三视图……", image_base64=im
 
 详见 `docs/multimodal-plan.md`。
 
+## 通用多关节装配能力
+
+除齿轮、曲柄滑块和间歇分度机构外，系统支持
+`assembly_set_planar_chain_pose`：按相对关节角解析求解任意刚性平面串联链，
+并可让多根平行杆共享同一段运动。求解结果返回全部关节点、每段中点/末点和
+末端执行件姿态，可用于机械臂、折叠支架、双节台灯等装配体的机器验收。
+
+Web Demo“装配体相关”包含 18 组件双节可调台灯。Multi-turn 首次完成装配后，
+高度滑块可在低位、工作和升高姿态之间确定性插值；滑块只调用 SolidWorks API，
+不产生 LLM token。对应评测和规格位于：
+
+- `eval/eval_adjustable_desk_lamp_multiturn.py`
+- `eval/adjustable_desk_lamp_spec.json`
+- `test/test_adjustable_desk_lamp.py`
+
 ## 回归测试
 
 ```bash
