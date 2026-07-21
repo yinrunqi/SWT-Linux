@@ -1,0 +1,166 @@
+{
+  "part_id": "C4",
+  "name": "C4 一体式多功能桌面笔筒",
+  "part_type": "stepped_organizer",
+  "profile_xy": [
+    [
+      -70,
+      0
+    ],
+    [
+      70,
+      0
+    ],
+    [
+      70,
+      110
+    ],
+    [
+      28,
+      110
+    ],
+    [
+      28,
+      78
+    ],
+    [
+      -18,
+      78
+    ],
+    [
+      -18,
+      44
+    ],
+    [
+      -70,
+      44
+    ]
+  ],
+  "depth_z": 90,
+  "holes": [],
+  "expected_bbox_mm": {
+    "length": 140,
+    "height": 110,
+    "depth": 90
+  },
+  "expected_volume_mm3": 449952.0,
+  "key_dimensions_mm": {
+    "outer_length": 140,
+    "outer_height": 110,
+    "depth": 90
+  },
+  "operations": [
+    {
+      "type": "cutout_on_face",
+      "face": "top_y",
+      "shape": "rectangle",
+      "depth": 36.0,
+      "through_all": false,
+      "cx": -44.0,
+      "cy": 45.0,
+      "radius": 0.0,
+      "width": 38.0,
+      "height": 72.0,
+      "length": 0.0,
+      "positions": [],
+      "surface_level": 44.0,
+      "label": "前部手机/零物浅仓"
+    },
+    {
+      "type": "cutout_on_face",
+      "face": "top_y",
+      "shape": "rectangle",
+      "depth": 70.0,
+      "through_all": false,
+      "cx": 5.0,
+      "cy": 45.0,
+      "radius": 0.0,
+      "width": 34.0,
+      "height": 72.0,
+      "length": 0.0,
+      "positions": [],
+      "surface_level": 78.0,
+      "label": "中部文具仓"
+    },
+    {
+      "type": "cutout_on_face",
+      "face": "top_y",
+      "shape": "rectangle",
+      "depth": 102.0,
+      "through_all": false,
+      "cx": 49.0,
+      "cy": 45.0,
+      "radius": 0.0,
+      "width": 30.0,
+      "height": 72.0,
+      "length": 0.0,
+      "positions": [],
+      "surface_level": 110.0,
+      "label": "后部高笔仓"
+    },
+    {
+      "type": "cutout_on_face",
+      "face": "front_z",
+      "shape": "rectangle",
+      "depth": 9.0,
+      "through_all": false,
+      "cx": -44.0,
+      "cy": 32.0,
+      "radius": 0.0,
+      "width": 14.0,
+      "height": 10.0,
+      "length": 0.0,
+      "positions": [],
+      "surface_level": 0.0,
+      "label": "前仓充电线孔"
+    },
+    {
+      "type": "cutout_on_face",
+      "face": "front_z",
+      "shape": "slot",
+      "depth": 9.0,
+      "through_all": false,
+      "cx": 49.0,
+      "cy": 88.0,
+      "radius": 0.0,
+      "width": 10.0,
+      "height": 0.0,
+      "length": 24.0,
+      "positions": [],
+      "surface_level": 0.0,
+      "label": "后仓提手槽"
+    },
+    {
+      "type": "cutout_on_face",
+      "face": "bottom_y",
+      "shape": "rectangle",
+      "depth": 1.5,
+      "through_all": false,
+      "cx": 0.0,
+      "cy": 0.0,
+      "radius": 0.0,
+      "width": 26.0,
+      "height": 14.0,
+      "length": 0.0,
+      "positions": [
+        [
+          -44,
+          45
+        ],
+        [
+          49,
+          45
+        ]
+      ],
+      "surface_level": 0.0,
+      "label": "底面双防滑浅槽"
+    },
+    {
+      "type": "fillet_edges",
+      "edges": "all",
+      "radius": 3.0,
+      "label": "适合的外轮廓 R3"
+    }
+  ],
+  "notes": "日常桌面笔筒：140×90×110mm 一体式阶梯外形，沿 X 从前到后分为高 44/78/110mm 的三段。每段顶部各有一个矩形盲腔，统一留 8mm 底厚和至少 6mm 周壁；前壁有充电线孔，后仓前壁有提手槽；底面有两个 26×14×1.5mm 防滑浅槽，外轮廓尽可能 R3 圆角。"
+}

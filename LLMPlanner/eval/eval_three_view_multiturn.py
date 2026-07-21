@@ -171,7 +171,7 @@ def run_one(
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=900) as resp:
+        with urllib.request.urlopen(req, timeout=1200) as resp:
             body = json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")
@@ -284,6 +284,7 @@ def run_one(
         "blueprint": body.get("blueprint"),
         "task_plan": body.get("task_plan"),
         "turn_diagnostics": body.get("turns"),
+        "final_observation": final_obs,
         "duration_seconds": round(time.perf_counter() - started, 2),
         "cleanup_before": cleanup,
         "error": None,

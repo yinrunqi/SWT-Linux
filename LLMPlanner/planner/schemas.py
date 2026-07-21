@@ -226,6 +226,19 @@ class SwOperation(BaseModel):
         )
         if isinstance(params, dict):
             params = dict(params)
+            nested_args = (
+                params.get("args")
+                or params.get("arguments")
+            )
+            if isinstance(nested_args, dict):
+                params = {
+                    **nested_args,
+                    **{
+                        key: nested_value
+                        for key, nested_value in params.items()
+                        if key not in {"args", "arguments"}
+                    },
+                }
             reserved = {
                 "operation",
                 "action",
@@ -251,6 +264,15 @@ class SwOperation(BaseModel):
                 if isinstance(operation, OperationType)
                 else str(operation or "").strip().lower().replace("-", "_")
             )
+            if operation_value == "sketch_line":
+                if "x1" in params and "x2" not in params:
+                    params["x2"] = params["x1"]
+                if "x2" in params and "x1" not in params:
+                    params["x1"] = params["x2"]
+                if "y1" in params and "y2" not in params:
+                    params["y2"] = params["y1"]
+                if "y2" in params and "y1" not in params:
+                    params["y1"] = params["y2"]
             aliases_by_operation = {
                 "save_part_as": {
                     "savePath": ("path", "filePath", "outputPath"),
@@ -556,6 +578,23 @@ class SwOperation(BaseModel):
     @model_validator(mode="after")
     def _validate_operation_contract(self):
         required = {
+            OperationType.SELECT_PLANE: ("index",),
+            OperationType.SKETCH_LINE: (
+                "x1",
+                "y1",
+                "x2",
+                "y2",
+            ),
+            OperationType.SKETCH_POLYLINE: ("points", "closed"),
+            OperationType.SKETCH_RECTANGLE: (
+                "x1",
+                "y1",
+                "x2",
+                "y2",
+            ),
+            OperationType.SKETCH_CIRCLE: ("cx", "cy", "radius"),
+            OperationType.FEATURE_EXTRUSION: ("depth",),
+            OperationType.FEATURE_CUT_EXTRUSION: ("depth",),
             OperationType.SELECT_OBSERVED_FACE_AND_SKETCH: (
                 "faceIndex",
             ),

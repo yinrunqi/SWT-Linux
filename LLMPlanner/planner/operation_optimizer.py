@@ -185,7 +185,6 @@ def stabilize_three_view_blueprint(
             step.operation == OperationType.FEATURE_CUT_EXTRUSION
             and str(step.params.get("endCondition", "")).lower()
             == "through_all"
-            and not step.params.get("depth")
         ):
             normalized_steps.append(step.model_copy(update={
                 "params": {**step.params, "depth": traversal_depth},

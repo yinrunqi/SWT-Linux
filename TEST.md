@@ -881,3 +881,36 @@ py test/test_web_modes.py
 结果写入 `eval/phone_stand_modes_result.json`，包含 0–100 分、三轴尺寸、
 体积、特征数、动作完成率、token 和失败操作。Web Demo 的“2A. 复杂单体零件
 模式对比”区域提供 Single-turn 和 Multi-turn 两个直接运行按钮。
+
+---
+
+## 十九、C4 一体式多功能桌面笔筒三视图 Multi-turn 测试
+
+该测例使用程序生成的第三角法三视图，构建 140×90×110mm 的日常桌面笔筒。
+主视图给出 44/78/110mm 三段阶梯高度，俯视图给出三个仓位和 90mm 深度，
+局部特征表给出三个盲腔深度、充电线孔、提手槽、双防滑浅槽及 R3 圆角。
+运行时只向模型提供图纸和自然几何要求，不提供 SolidWorks 操作步骤。
+
+```cmd
+cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
+
+REM 重新从 samples.json 生成 drawing.png 与 groundtruth.json
+py -X utf8 datasets\manual_three_view\build_all.py
+
+REM 运行 C4 专用 100 分 Multi-turn 评分
+py eval\eval_pen_holder_three_view.py
+
+REM 通用三视图 runner 也可单独运行 C4
+py eval\eval_three_view_multiturn.py --ids C4 --requirements-hint
+
+REM 评分、协议与建模归一化回归
+py -m pytest test/test_pen_holder_three_view.py test/test_web_modes.py -q
+```
+
+100 分由尺寸 25、体积 15、拓扑复杂度 20、局部细节 25、执行可靠性 15
+组成。完整通过还要求三个盲腔的 36/70/102mm 深度全部存在、至少 6 个切除
+特征、至少 1 个圆角、三轴尺寸误差不超过 4mm、体积误差不超过 10%，且
+Multi-turn 状态为 `completed`。
+
+样例 `C4` 自动出现在 Web Demo“由三视图生成”区域；点击后直接加载原始 PNG，
+以保持图片哈希和缓存键稳定。

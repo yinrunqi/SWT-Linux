@@ -184,6 +184,13 @@ def run_tests() -> None:
             not any(token in sample["prompt"] for token in forbidden_tokens)
             for sample in samples
         )
+        pen_holder = next(
+            sample
+            for sample in samples
+            if sample["part_id"] == "C4"
+        )
+        assert pen_holder["subdir"] == "C4_desktop_pen_holder"
+        assert "笔筒" in pen_holder["label"]
         print("[PASS] Web sample prompts contain no operation-level answers")
 
         assert hasattr(web_app._sw_execution_lock, "acquire")

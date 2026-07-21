@@ -1174,6 +1174,120 @@
       "test": {
         "text_hint": "这是一张齿轮啮合组的三视图, 由两个平行放置的直齿圆柱齿轮组成. 小齿轮(输入): 分度圆 ⌀40mm × 厚 15mm, 沿圆周均匀分布 10 个矩形凸齿(齿高 4mm, 齿宽 5mm, 使外接圆达 ⌀48mm); 中心位于 (X=-35mm, Y=0). 大齿轮(输出): 分度圆 ⌀80mm × 厚 15mm, 沿圆周均匀分布 20 个矩形凸齿(齿高 4mm, 齿宽 5mm, 使外接圆达 ⌀88mm); 中心位于 (X=+35mm, Y=0). 两齿轮中心距 70mm, 两齿轮齿顶留 2mm 视觉间隙(避免矩形齿几何干涉). 两齿轮各自独立(不合并为一个实体), 都在同一 XY 平面上并排放置, Z 方向厚度相同 15mm. **本简化版本不需要轴孔**(实体齿轮), 建完两个齿轮的齿即完成; 若加轴孔会因齿轮阵列后特征树面数过多导致选面超时."
       }
+    },
+    {
+      "part_id": "C4",
+      "subdir": "C4_desktop_pen_holder",
+      "name": "C4 一体式多功能桌面笔筒",
+      "part_type": "stepped_organizer",
+      "notes": "日常桌面笔筒：140×90×110mm 一体式阶梯外形，沿 X 从前到后分为高 44/78/110mm 的三段。每段顶部各有一个矩形盲腔，统一留 8mm 底厚和至少 6mm 周壁；前壁有充电线孔，后仓前壁有提手槽；底面有两个 26×14×1.5mm 防滑浅槽，外轮廓尽可能 R3 圆角。",
+      "profile_xy": [
+        [-70, 0],
+        [70, 0],
+        [70, 110],
+        [28, 110],
+        [28, 78],
+        [-18, 78],
+        [-18, 44],
+        [-70, 44]
+      ],
+      "depth_z": 90,
+      "profile_centered": true,
+      "holes": [],
+      "operations": [
+        {
+          "type": "cutout_on_face",
+          "face": "top_y",
+          "shape": "rectangle",
+          "cx": -44,
+          "cy": 45,
+          "width": 38,
+          "height": 72,
+          "surface_level": 44,
+          "depth": 36,
+          "through_all": false,
+          "label": "前部手机/零物浅仓"
+        },
+        {
+          "type": "cutout_on_face",
+          "face": "top_y",
+          "shape": "rectangle",
+          "cx": 5,
+          "cy": 45,
+          "width": 34,
+          "height": 72,
+          "surface_level": 78,
+          "depth": 70,
+          "through_all": false,
+          "label": "中部文具仓"
+        },
+        {
+          "type": "cutout_on_face",
+          "face": "top_y",
+          "shape": "rectangle",
+          "cx": 49,
+          "cy": 45,
+          "width": 30,
+          "height": 72,
+          "surface_level": 110,
+          "depth": 102,
+          "through_all": false,
+          "label": "后部高笔仓"
+        },
+        {
+          "type": "cutout_on_face",
+          "face": "front_z",
+          "shape": "rectangle",
+          "cx": -44,
+          "cy": 32,
+          "width": 14,
+          "height": 10,
+          "depth": 9,
+          "through_all": false,
+          "label": "前仓充电线孔"
+        },
+        {
+          "type": "cutout_on_face",
+          "face": "front_z",
+          "shape": "slot",
+          "cx": 49,
+          "cy": 88,
+          "length": 24,
+          "width": 10,
+          "depth": 9,
+          "through_all": false,
+          "label": "后仓提手槽"
+        },
+        {
+          "type": "cutout_on_face",
+          "face": "bottom_y",
+          "shape": "rectangle",
+          "positions": [
+            [-44, 45],
+            [49, 45]
+          ],
+          "width": 26,
+          "height": 14,
+          "surface_level": 0,
+          "depth": 1.5,
+          "through_all": false,
+          "label": "底面双防滑浅槽"
+        },
+        {
+          "type": "fillet_edges",
+          "edges": "all",
+          "radius": 3,
+          "label": "适合的外轮廓 R3"
+        }
+      ],
+      "ui": {
+        "label": "🖊️ 多功能桌面笔筒",
+        "prompt": "请根据这张三视图精确创建一体式多功能桌面笔筒，识别阶梯外轮廓、三个不同深度的顶部收纳仓、前壁充电线孔、后仓提手槽、底面双防滑浅槽和外轮廓圆角。"
+      },
+      "test": {
+        "requirements": "创建单一实体桌面笔筒：总体 140×90×110mm；沿长度方向三段高度依次为44、78、110mm，分界位置为X=-18mm和X=28mm。三段顶部矩形盲腔分别为38×72×36mm（中心X=-44mm）、34×72×70mm（中心X=5mm）、30×72×102mm（中心X=49mm），均保留8mm底厚。前壁有14×10mm充电线孔，后仓前壁有24×10mm提手槽，两者切深9mm。底面有两个26×14×1.5mm浅槽，外轮廓适合位置R3圆角；保持左右壁厚、隔板和单一实体。",
+        "text_hint": "这是一张一体式多功能桌面笔筒三视图。请读取全部尺寸并还原阶梯外形、三个不同深度的顶部盲腔、前壁充电线孔、后仓提手槽、底面防滑浅槽及R3圆角；所有结构保持为一个实体。"
+      }
     }
   ]
 }

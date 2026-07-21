@@ -110,6 +110,7 @@ class CutoutOnFace:
     height: float = 0.0
     length: float = 0.0
     positions: list[tuple[float, float]] = field(default_factory=list)
+    surface_level: float = 0.0
     label: str = ""
 
 
@@ -597,7 +598,8 @@ def render_three_view_png(
     # ============ 关键局部尺寸（L 型/T 型缺口等）============
     # 用户传的 profile 里已经把每个顶点坐标写死了。这里自动检测哪些"内角"是缺口的角，
     # 并标注该缺口相对包围盒的尺寸。
-    _annotate_notches(dr, part, to_px_front, F_DIM)
+    if part.part_type != "stepped_organizer":
+        _annotate_notches(dr, part, to_px_front, F_DIM)
 
     # ============ 附加标注：孔径 ============
     for h in part.holes:
@@ -760,19 +762,154 @@ def _render_composite_ops(
     fillets = [op for op in part.operations if isinstance(op, FilletEdges)]
     cutouts = [op for op in part.operations if isinstance(op, CutoutOnFace)]
 
-    # ---- 主视图上叠加 cutouts ----
-    for op in cutouts:
-        # 决定线型：顶面=实线（可见），底面=虚线（不可见），贯穿=实线
-        solid = op.face == "top" or op.through_all
+    xmin, ymin, xmax, ymax = part.bbox_xy()
+    depth_z = part.depth_z
 
-        # 展开成位置列表（若 positions 为空，用单个 (cx, cy)）
+    def to_px_top(x: float, z: float) -> tuple[float, float]:
+        return (
+            top_origin[0] + (x - xmin) * S,
+            top_origin[1] + (depth_z - z) * S,
+        )
+
+    def to_px_right(z: float, y: float) -> tuple[float, float]:
+        return (
+            right_origin[0] + z * S,
+            right_origin[1] + (ymax - y) * S,
+        )
+
+    def shape_half_extents(op: CutoutOnFace) -> tuple[float, float]:
+        if op.shape == "circle":
+            return op.radius, op.radius
+        if op.shape == "slot":
+            return op.length / 2.0, op.width / 2.0
+        return op.width / 2.0, op.height / 2.0
+
+    def dashed_rect(mapper, a1, b1, a2, b2) -> None:
+        corners = [
+            mapper(a1, b1),
+            mapper(a2, b1),
+            mapper(a2, b2),
+            mapper(a1, b2),
+        ]
+        for index, start in enumerate(corners):
+            end = corners[(index + 1) % len(corners)]
+            _draw_dashed_line(
+                dr,
+                start[0],
+                start[1],
+                end[0],
+                end[1],
+                color="#555555",
+            )
+
+    # ---- 在各正交视图上叠加 cutouts ----
+    operation_legend: list[str] = []
+    for op_index, op in enumerate(cutouts):
+        marker = chr(ord("A") + op_index)
+        half_x, half_second = shape_half_extents(op)
+        operation_legend.append(
+            f"{marker}  {op.label or op.shape}: "
+            f"{int(half_x * 2)}×{int(half_second * 2)}mm, "
+            f"深 {op.depth:g}mm"
+        )
         positions = op.positions if op.positions else [(op.cx, op.cy)]
+        face = op.face.lower()
+        if face in {"top_y", "bottom_y"}:
+            surface = op.surface_level
+            if not surface:
+                surface = ymax if face == "top_y" else ymin
+            direction = -1.0 if face == "top_y" else 1.0
+            end_y = surface + direction * op.depth
+            for cx, cz in positions:
+                _draw_cutout_shape_at(
+                    dr,
+                    op,
+                    cx,
+                    cz,
+                    to_px_top,
+                    S,
+                    color="black",
+                    solid=face == "top_y",
+                )
+                half_x, half_z = shape_half_extents(op)
+                dashed_rect(
+                    to_px_front,
+                    cx - half_x,
+                    min(surface, end_y),
+                    cx + half_x,
+                    max(surface, end_y),
+                )
+                dashed_rect(
+                    to_px_right,
+                    max(0.0, cz - half_z),
+                    min(surface, end_y),
+                    min(depth_z, cz + half_z),
+                    max(surface, end_y),
+                )
+                label_point = to_px_top(cx, cz)
+                dr.text(
+                    (label_point[0] - 6, label_point[1] - 10),
+                    marker,
+                    fill="#0066cc",
+                    font=font,
+                )
+            continue
 
+        # Legacy top/bottom mean the +Z/-Z faces and use XY coordinates.
+        front_side = face in {"top", "front_z"}
         for cx, cy in positions:
             _draw_cutout_shape_at(
-                dr, op, cx, cy, to_px_front, S,
-                color="black", solid=solid,
+                dr,
+                op,
+                cx,
+                cy,
+                to_px_front,
+                S,
+                color="black",
+                solid=front_side or op.through_all,
             )
+            half_x, half_y = shape_half_extents(op)
+            start_z = depth_z - op.depth if front_side else 0.0
+            end_z = depth_z if front_side else op.depth
+            dashed_rect(
+                to_px_top,
+                cx - half_x,
+                start_z,
+                cx + half_x,
+                end_z,
+            )
+            dashed_rect(
+                to_px_right,
+                start_z,
+                cy - half_y,
+                end_z,
+                cy + half_y,
+            )
+            px, py = to_px_front(cx, cy)
+            dr.text(
+                (px - 6, py - 10),
+                marker,
+                fill="#0066cc",
+                font=font,
+            )
+
+    if operation_legend:
+        legend_x = right_origin[0]
+        legend_y = right_origin[1] + right_h + 120
+        dr.text(
+            (legend_x, legend_y - 28),
+            "局部特征：",
+            fill="#0066cc",
+            font=font,
+        )
+        for line in operation_legend:
+            dr.text(
+                (legend_x, legend_y),
+                line,
+                fill="#0066cc",
+                font=font,
+            )
+            legend_y += 24
 
     # ---- 圆角：在标题下方加文字图例 ----
     if fillets:
@@ -908,6 +1045,7 @@ def _serialize_operations(ops: list) -> list:
                 "height": op.height,
                 "length": op.length,
                 "positions": op.positions,
+                "surface_level": op.surface_level,
                 "label": op.label,
             })
     return out

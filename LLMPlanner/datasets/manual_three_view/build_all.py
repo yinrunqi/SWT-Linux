@@ -85,6 +85,7 @@ def _parse_operations(ops_cfg: list) -> list:
                 height=float(o.get("height", 0.0)),
                 length=float(o.get("length", 0.0)),
                 positions=[tuple(p) for p in o.get("positions", [])],
+                surface_level=float(o.get("surface_level", 0.0)),
                 label=o.get("label", ""),
             ))
         else:
