@@ -91,15 +91,35 @@ def _build_link(
     width: float = 0.012,
     depth: float = 0.006,
 ) -> None:
+    pivot_overhang = width / 2
     _build_rectangles(
         api,
         path,
-        [(-length / 2, -width / 2, length / 2, width / 2)],
+        [(
+            -length / 2 - pivot_overhang,
+            -width / 2,
+            length / 2 + pivot_overhang,
+            width / 2,
+        )],
         depth=depth,
         circles=[
-            (-length / 2 + 0.006, 0, 0.0035),
-            (length / 2 - 0.006, 0, 0.0035),
+            (-length / 2, 0, 0.0035),
+            (length / 2, 0, 0.0035),
         ],
+    )
+
+
+def _build_spring(
+    api: SwApi,
+    path: Path,
+    *,
+    length: float,
+) -> None:
+    _build_rectangles(
+        api,
+        path,
+        [(-length / 2, -0.002, length / 2, 0.002)],
+        depth=0.003,
     )
 
 
@@ -156,11 +176,11 @@ def prepare_parts(
         "elbow_joint": lambda p: _build_round_part(
             api, p, radius=0.013, bore_radius=0.0045, depth=0.022
         ),
-        "lower_spring_left": lambda p: _build_link(
-            api, p, length=0.095, width=0.004, depth=0.003
+        "lower_spring_left": lambda p: _build_spring(
+            api, p, length=0.095
         ),
-        "lower_spring_right": lambda p: _build_link(
-            api, p, length=0.095, width=0.004, depth=0.003
+        "lower_spring_right": lambda p: _build_spring(
+            api, p, length=0.095
         ),
         "upper_arm_left": lambda p: _build_link(
             api, p, length=upper_length
@@ -171,11 +191,11 @@ def prepare_parts(
         "head_joint": lambda p: _build_round_part(
             api, p, radius=0.012, bore_radius=0.004, depth=0.022
         ),
-        "upper_spring_left": lambda p: _build_link(
-            api, p, length=0.082, width=0.004, depth=0.003
+        "upper_spring_left": lambda p: _build_spring(
+            api, p, length=0.082
         ),
-        "upper_spring_right": lambda p: _build_link(
-            api, p, length=0.082, width=0.004, depth=0.003
+        "upper_spring_right": lambda p: _build_spring(
+            api, p, length=0.082
         ),
         "lamp_shade": lambda p: _build_shade(api, p),
         "bulb": lambda p: _build_ellipse(
@@ -423,6 +443,12 @@ def _pose_payload(
                     names["lower_spring_right"],
                 ],
                 "axisOffsets": [-0.008, 0.008, -0.013, 0.013],
+                "bodyLengths": [
+                    mechanism["lower_arm_length"] / 1000,
+                    mechanism["lower_arm_length"] / 1000,
+                    0.095,
+                    0.095,
+                ],
             },
             {
                 "length": mechanism["upper_arm_length"] / 1000,
@@ -434,6 +460,12 @@ def _pose_payload(
                     names["upper_spring_right"],
                 ],
                 "axisOffsets": [-0.008, 0.008, -0.013, 0.013],
+                "bodyLengths": [
+                    mechanism["upper_arm_length"] / 1000,
+                    mechanism["upper_arm_length"] / 1000,
+                    0.082,
+                    0.082,
+                ],
             },
         ],
         "jointComponents": [
@@ -505,6 +537,12 @@ def validate_kinematics(
     names = _resolve_components(observation)
     mechanism = spec["mechanism"]
     tolerance = float(spec["acceptance"]["link_length_tolerance_mm"])
+    endpoint_tolerance = float(
+        spec["acceptance"]["body_endpoint_tolerance_mm"]
+    )
+    orientation_tolerance = float(
+        spec["acceptance"]["orientation_tolerance_deg"]
+    )
     angle_tolerance = float(spec["acceptance"]["angle_tolerance_deg"])
     limits = mechanism["joint_limits_deg"]
     samples: list[dict] = []
@@ -534,6 +572,14 @@ def validate_kinematics(
             float(item["angleDeg"])
             for item in result["segments"]
         ]
+        orientation_errors = [
+            float(item.get("maximumOrientationErrorDeg", math.inf))
+            for item in result["segments"]
+        ]
+        body_endpoint_errors = [
+            float(item.get("maximumBodyEndpointError", math.inf)) * 1000
+            for item in result["segments"]
+        ]
         expected_angles = [lower, lower + upper_relative]
         angles_ok = all(
             math.isclose(actual, expected, abs_tol=angle_tolerance)
@@ -556,6 +602,14 @@ def validate_kinematics(
         ]
         passed = (
             all(error <= tolerance for error in length_errors)
+            and all(
+                error <= orientation_tolerance
+                for error in orientation_errors
+            )
+            and all(
+                error <= endpoint_tolerance
+                for error in body_endpoint_errors
+            )
             and angles_ok
             and limits_ok
         )
@@ -567,6 +621,8 @@ def validate_kinematics(
             "segment_angles_deg": segment_angles,
             "measured_lengths_mm": measured_lengths,
             "length_errors_mm": length_errors,
+            "orientation_errors_deg": orientation_errors,
+            "body_endpoint_errors_mm": body_endpoint_errors,
             "end_xyz_mm": end_xyz_mm,
             "head_angle_deg": mechanism["head_angle_deg"],
             "limits_ok": limits_ok,

@@ -151,6 +151,8 @@
     "component_count": 18,
     "translation_tolerance_mm": 1.0,
     "link_length_tolerance_mm": 0.25,
+    "body_endpoint_tolerance_mm": 0.25,
+    "orientation_tolerance_deg": 0.1,
     "angle_tolerance_deg": 0.000001,
     "minimum_pose_count": 3,
     "assembly_file_required": true

@@ -3589,11 +3589,18 @@ namespace Chapter1.ConnectToSw
                     var offsets = segment.ContainsKey("axisOffsets")
                         ? asList(segment["axisOffsets"])
                         : new List<object>();
+                    var bodyLengths = segment.ContainsKey("bodyLengths")
+                        ? asList(segment["bodyLengths"])
+                        : new List<object>();
                     bool preserveAxisOffsets =
                         !segment.ContainsKey("preserveAxisOffsets")
                         || Convert.ToBoolean(
                             segment["preserveAxisOffsets"]);
                     var posedNames = new List<string>();
+                    var componentDiagnostics =
+                        new List<Dictionary<string, object>>();
+                    double maximumOrientationErrorDeg = 0.0;
+                    double maximumBodyEndpointError = 0.0;
                     for (int index = 0; index < names.Count; index++)
                     {
                         string name = Convert.ToString(names[index]);
@@ -3616,16 +3623,121 @@ namespace Chapter1.ConnectToSw
                             rotationAxisX,
                             rotationAxisY,
                             rotationAxisZ,
-                            cumulativeAngle,
+                            // SolidWorks MathTransform stores the local basis
+                            // vectors by row, so its positive axis-angle appears
+                            // visually reversed from the FK convention.
+                            -cumulativeAngle,
                             false,
                             resolved);
                         posedNames.Add(name);
+                        var appliedTransform =
+                            resolved.Transform2 as MathTransform;
+                        var appliedValues =
+                            appliedTransform?.ArrayData as double[];
+                        if (appliedValues == null
+                            || appliedValues.Length < 12)
+                            throw new InvalidOperationException(
+                                $"无法读取已应用的连杆姿态: {name}");
+                        double bodyAxisX = appliedValues[0];
+                        double bodyAxisY = appliedValues[1];
+                        double bodyAxisZ = appliedValues[2];
+                        double bodyAxisNorm = Math.Sqrt(
+                            bodyAxisX * bodyAxisX
+                            + bodyAxisY * bodyAxisY
+                            + bodyAxisZ * bodyAxisZ);
+                        bodyAxisX /= bodyAxisNorm;
+                        bodyAxisY /= bodyAxisNorm;
+                        bodyAxisZ /= bodyAxisNorm;
+                        double directionDot = Math.Max(
+                            -1.0,
+                            Math.Min(
+                                1.0,
+                                bodyAxisX * dirX
+                                + bodyAxisY * dirY
+                                + bodyAxisZ * dirZ));
+                        double orientationErrorDeg =
+                            Math.Acos(directionDot) * 180.0 / Math.PI;
+                        double bodyLength = index < bodyLengths.Count
+                            ? Convert.ToDouble(bodyLengths[index])
+                            : length;
+                        double posedMidpointX =
+                            midpointX + rotationAxisX * offset;
+                        double posedMidpointY =
+                            midpointY + rotationAxisY * offset;
+                        double posedMidpointZ =
+                            midpointZ + rotationAxisZ * offset;
+                        double actualStartX =
+                            posedMidpointX - bodyAxisX * bodyLength / 2.0;
+                        double actualStartY =
+                            posedMidpointY - bodyAxisY * bodyLength / 2.0;
+                        double actualStartZ =
+                            posedMidpointZ - bodyAxisZ * bodyLength / 2.0;
+                        double actualEndX =
+                            posedMidpointX + bodyAxisX * bodyLength / 2.0;
+                        double actualEndY =
+                            posedMidpointY + bodyAxisY * bodyLength / 2.0;
+                        double actualEndZ =
+                            posedMidpointZ + bodyAxisZ * bodyLength / 2.0;
+                        double expectedStartX =
+                            midpointX - dirX * bodyLength / 2.0
+                            + rotationAxisX * offset;
+                        double expectedStartY =
+                            midpointY - dirY * bodyLength / 2.0
+                            + rotationAxisY * offset;
+                        double expectedStartZ =
+                            midpointZ - dirZ * bodyLength / 2.0
+                            + rotationAxisZ * offset;
+                        double expectedEndX =
+                            midpointX + dirX * bodyLength / 2.0
+                            + rotationAxisX * offset;
+                        double expectedEndY =
+                            midpointY + dirY * bodyLength / 2.0
+                            + rotationAxisY * offset;
+                        double expectedEndZ =
+                            midpointZ + dirZ * bodyLength / 2.0
+                            + rotationAxisZ * offset;
+                        double startError = Math.Sqrt(
+                            Math.Pow(actualStartX - expectedStartX, 2)
+                            + Math.Pow(actualStartY - expectedStartY, 2)
+                            + Math.Pow(actualStartZ - expectedStartZ, 2));
+                        double endError = Math.Sqrt(
+                            Math.Pow(actualEndX - expectedEndX, 2)
+                            + Math.Pow(actualEndY - expectedEndY, 2)
+                            + Math.Pow(actualEndZ - expectedEndZ, 2));
+                        double endpointError = Math.Max(startError, endError);
+                        maximumOrientationErrorDeg = Math.Max(
+                            maximumOrientationErrorDeg,
+                            orientationErrorDeg);
+                        maximumBodyEndpointError = Math.Max(
+                            maximumBodyEndpointError,
+                            endpointError);
+                        componentDiagnostics.Add(
+                            new Dictionary<string, object>
+                            {
+                                ["componentName"] = name,
+                                ["bodyLength"] = bodyLength,
+                                ["bodyAxisXYZ"] = new double[]
+                                    { bodyAxisX, bodyAxisY, bodyAxisZ },
+                                ["orientationErrorDeg"] =
+                                    orientationErrorDeg,
+                                ["bodyEndpointError"] = endpointError,
+                                ["actualStartXYZ"] = new double[]
+                                    { actualStartX, actualStartY, actualStartZ },
+                                ["actualEndXYZ"] = new double[]
+                                    { actualEndX, actualEndY, actualEndZ },
+                            });
                     }
                     segmentResults.Add(new Dictionary<string, object>
                     {
                         ["componentNames"] = posedNames.ToArray(),
+                        ["componentDiagnostics"] =
+                            componentDiagnostics.ToArray(),
                         ["length"] = length,
                         ["angleDeg"] = cumulativeAngle,
+                        ["maximumOrientationErrorDeg"] =
+                            maximumOrientationErrorDeg,
+                        ["maximumBodyEndpointError"] =
+                            maximumBodyEndpointError,
                         ["startXYZ"] = new double[]
                             { currentX, currentY, currentZ },
                         ["midpointXYZ"] = new double[]
@@ -3669,7 +3781,7 @@ namespace Chapter1.ConnectToSw
                         rotationAxisX,
                         rotationAxisY,
                         rotationAxisZ,
-                        angleDeg,
+                        -angleDeg,
                         false,
                         resolve(name)));
                 }
@@ -3725,7 +3837,7 @@ namespace Chapter1.ConnectToSw
                         rotationAxisX,
                         rotationAxisY,
                         rotationAxisZ,
-                        angleDeg,
+                        -angleDeg,
                         false,
                         resolved));
                 }

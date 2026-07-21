@@ -68,6 +68,12 @@ def test_pose_payload_updates_parallel_arms_and_head():
         "lower_spring_right-1",
     ]
     assert payload["segments"][1]["length"] == 0.105
+    assert payload["segments"][0]["bodyLengths"] == [
+        0.12,
+        0.12,
+        0.095,
+        0.095,
+    ]
     assert {
         item["componentName"]
         for item in payload["endComponents"]
