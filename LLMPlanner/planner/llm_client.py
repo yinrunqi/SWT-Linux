@@ -116,7 +116,10 @@ def _extract_first_json_block(text: str) -> Optional[str]:
     return None  # 没匹配到完整闭合
 
 
-def _normalize_agent_decision_payload(payload: dict) -> dict:
+def _normalize_agent_decision_payload(
+    payload: dict,
+    observation=None,
+) -> dict:
     """Normalize unambiguous enum aliases emitted by compatible providers."""
     decision_aliases = {
         "continue": AgentDecision.ACT.value,
@@ -143,6 +146,59 @@ def _normalize_agent_decision_payload(payload: dict) -> dict:
     # that this is an act turn; normalize before Pydantic cross-field checks.
     if normalized.get("actions"):
         normalized["decision"] = AgentDecision.ACT.value
+    actions = normalized.get("actions")
+    if isinstance(actions, list) and observation is not None:
+        normalized_actions = []
+        for raw_action in actions:
+            if not isinstance(raw_action, dict):
+                normalized_actions.append(raw_action)
+                continue
+            action = dict(raw_action)
+            operation = action.get("operation")
+            params = action.get("params")
+            if (
+                operation == "assembly_set_radial_deployable_pose"
+                and isinstance(params, dict)
+                and not any(
+                    key in params
+                    for key in (
+                        "runnerComponent",
+                        "runner",
+                        "runnerName",
+                        "sliderComponent",
+                        "sliderName",
+                        "slidingRunner",
+                    )
+                )
+            ):
+                candidates = []
+                for component in observation.components:
+                    searchable = (
+                        str(component.get("name", ""))
+                        + " "
+                        + str(component.get("path", ""))
+                    ).lower()
+                    if any(
+                        token in searchable
+                        for token in (
+                            "runner",
+                            "slider",
+                            "sliding_runner",
+                            "collar",
+                            "carriage",
+                            "sleeve",
+                        )
+                    ):
+                        candidates.append(
+                            str(component.get("name", ""))
+                        )
+                candidates = sorted(set(filter(None, candidates)))
+                if len(candidates) == 1:
+                    params = dict(params)
+                    params["runnerComponent"] = candidates[0]
+                    action["params"] = params
+            normalized_actions.append(action)
+        normalized["actions"] = normalized_actions
     return normalized
 
 
@@ -1138,14 +1194,51 @@ class SwLLMClient:
             raise ValueError("Multi-turn LLM 返回了无效 JSON") from exc
         # 部分 OpenAI 兼容中转站不严格执行 enum。只归一化无歧义的常见别名，
         # 最终仍交给 Pydantic 校验操作和动作预算。
+        normalized_decision_payload = _normalize_agent_decision_payload(
+            decision_payload,
+            observation,
+        )
         try:
             turn = AgentTurn.model_validate(
-                _normalize_agent_decision_payload(decision_payload)
+                normalized_decision_payload
             )
         except ValidationError as validation_error:
             # A blind temperature=0 retry usually reproduces the same malformed
             # object. Give the provider its rejected JSON and exact contract
             # errors so the paid retry can correct only the protocol shape.
+            contract_hint = ""
+            action_payloads = normalized_decision_payload.get("actions")
+            if isinstance(action_payloads, list) and any(
+                isinstance(action, dict)
+                and action.get("operation")
+                == "assembly_set_radial_deployable_pose"
+                for action in action_payloads
+            ):
+                contract_hint = (
+                    "\nassembly_set_radial_deployable_pose 的 params "
+                    "必须使用以下顶层字段名且不得省略：centerX, centerY, "
+                    "centerZ, hubRadius, runnerRadius, ribLength, "
+                    "ribAttachmentDistance, stretcherLength, "
+                    "ribDownAngleDeg, runnerComponent, bays。"
+                    "bays 每项必须含 ribComponent 和 "
+                    "stretcherComponent，可选 phaseDeg。长度单位为 m。"
+                )
+            rejected_operations = [
+                {
+                    "operation": action.get("operation"),
+                    "params": action.get("params"),
+                }
+                for action in (action_payloads or [])
+                if isinstance(action, dict)
+            ]
+            print(
+                "[LLM] 被拒绝的操作参数: "
+                + json.dumps(
+                    rejected_operations,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                )
+            )
             correction = self.client.chat.completions.create(
                 model=self.plan_model,
                 messages=[
@@ -1158,6 +1251,7 @@ class SwLLMClient:
                             "完整 JSON，不要解释。若 decision=act，actions 必须"
                             "是非空数组且每项包含 operation 和 params。\n"
                             f"校验错误：{validation_error}"
+                            f"{contract_hint}"
                         ),
                     },
                 ],
@@ -1176,9 +1270,31 @@ class SwLLMClient:
                 or corrected_content
             )
             corrected_payload = json.loads(corrected_json)
-            turn = AgentTurn.model_validate(
-                _normalize_agent_decision_payload(corrected_payload)
-            )
+            try:
+                turn = AgentTurn.model_validate(
+                    _normalize_agent_decision_payload(
+                        corrected_payload,
+                        observation,
+                    )
+                )
+            except ValidationError:
+                corrected_actions = corrected_payload.get("actions")
+                print(
+                    "[LLM] 修正后仍无效的操作参数: "
+                    + json.dumps(
+                        [
+                            {
+                                "operation": action.get("operation"),
+                                "params": action.get("params"),
+                            }
+                            for action in (corrected_actions or [])
+                            if isinstance(action, dict)
+                        ],
+                        ensure_ascii=False,
+                        sort_keys=True,
+                    )
+                )
+                raise
         if self.use_cache and agent_cache_key is not None:
             self._active_agent_cache_key = agent_cache_key
             self._pending_agent_cache_value = turn.model_dump_json()

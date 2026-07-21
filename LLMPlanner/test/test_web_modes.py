@@ -225,6 +225,16 @@ def run_tests() -> None:
         assert "/api/lamp-animation/pose" in script
         print("[PASS] adjustable desk lamp demo is exposed in assembly UI")
 
+        assert 'id="umbrella-run-btn"' in page
+        assert 'id="umbrella-openness"' in page
+        assert 'id="umbrella-pose-btn"' in page
+        assert (
+            "/api/assembly-examples/radial-folding-umbrella/run"
+            in script
+        )
+        assert "/api/umbrella-animation/pose" in script
+        print("[PASS] radial folding umbrella demo is exposed in assembly UI")
+
         assert 'id="projector-run-btn"' in page
         assert 'id="projector-angle"' in page
         assert 'id="projector-pose-btn"' in page

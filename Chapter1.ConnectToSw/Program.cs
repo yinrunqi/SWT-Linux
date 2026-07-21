@@ -360,6 +360,9 @@ namespace Chapter1.ConnectToSw
                 case "/api/assembly/mechanism/planar-chain-pose":
                     RequirePost(method, resp, () => HandlePlanarChainPose(req, resp));
                     break;
+                case "/api/assembly/mechanism/radial-deployable-pose":
+                    RequirePost(method, resp, () => HandleRadialDeployablePose(req, resp));
+                    break;
                 case "/api/assembly/mechanism/indexed-rotary-pose":
                     RequirePost(method, resp, () => HandleIndexedRotaryPose(req, resp));
                     break;
@@ -1774,6 +1777,64 @@ namespace Chapter1.ConnectToSw
                 {
                     success = false,
                     message = $"平面多关节连杆姿态失败: {ex.Message}",
+                });
+            }
+        }
+
+        private static void HandleRadialDeployablePose(
+            HttpListenerRequest req,
+            HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var bays = new List<Dictionary<string, object>>();
+                var rawBays = body.ContainsKey("bays")
+                    ? body["bays"] as System.Collections.IEnumerable
+                    : null;
+                if (rawBays == null)
+                    throw new ArgumentException("bays 必须是对象数组");
+                foreach (var item in rawBays)
+                {
+                    var bay = item as Dictionary<string, object>;
+                    if (bay == null)
+                        throw new ArgumentException(
+                            "bays 的每一项必须是对象");
+                    bays.Add(bay);
+                }
+                var result = _commands.SetRadialDeployablePose(
+                    GetDoubleOrDefault(body, "centerX", 0),
+                    GetDoubleOrDefault(body, "centerY", 0),
+                    GetDoubleOrDefault(body, "centerZ", 0),
+                    GetDoubleOrDefault(body, "deploymentAxisX", 0),
+                    GetDoubleOrDefault(body, "deploymentAxisY", 0),
+                    GetDoubleOrDefault(body, "deploymentAxisZ", 1),
+                    GetDoubleOrDefault(body, "referenceRadialX", 1),
+                    GetDoubleOrDefault(body, "referenceRadialY", 0),
+                    GetDoubleOrDefault(body, "referenceRadialZ", 0),
+                    GetDouble(body, "hubRadius"),
+                    GetDouble(body, "runnerRadius"),
+                    GetDouble(body, "ribLength"),
+                    GetDouble(body, "ribAttachmentDistance"),
+                    GetDouble(body, "stretcherLength"),
+                    GetDouble(body, "ribDownAngleDeg"),
+                    GetString(body, "runnerComponent"),
+                    bays);
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = "径向展开连杆姿态已更新",
+                    result,
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"[错误] RadialDeployablePose 失败: {ex.Message}");
+                SendJson(resp, 500, new
+                {
+                    success = false,
+                    message = $"径向展开连杆姿态失败: {ex.Message}",
                 });
             }
         }

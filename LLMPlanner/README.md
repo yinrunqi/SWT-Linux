@@ -361,6 +361,17 @@ Web Demo“装配体相关”包含 18 组件双节可调台灯。Multi-turn 首
 - `eval/adjustable_desk_lamp_spec.json`
 - `test/test_adjustable_desk_lamp.py`
 
+系统还支持 `assembly_set_radial_deployable_pose`：用中心滑套、主肋连接距离和
+撑杆长度解析求解任意数量的等间隔径向连杆，可用于折叠伞、可展开天线和径向
+支架。API 返回每个方位的铰点、末端、实际实体方向及端点误差。
+
+Web Demo 中的 22 组件八骨折叠伞使用该能力，并提供 0%–100% 确定性开合滑块。
+对应规格、评分和回归位于：
+
+- `eval/eval_radial_folding_umbrella_multiturn.py`
+- `eval/radial_folding_umbrella_spec.json`
+- `test/test_radial_folding_umbrella.py`
+
 ## 回归测试
 
 ```bash

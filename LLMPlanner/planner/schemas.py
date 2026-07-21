@@ -62,6 +62,9 @@ class OperationType(str, Enum):
     ASSEMBLY_SET_PLANAR_CHAIN_POSE = (
         "assembly_set_planar_chain_pose"
     )
+    ASSEMBLY_SET_RADIAL_DEPLOYABLE_POSE = (
+        "assembly_set_radial_deployable_pose"
+    )
     ASSEMBLY_SET_INDEXED_ROTARY_POSE = (
         "assembly_set_indexed_rotary_pose"
     )
@@ -188,6 +191,12 @@ class SwOperation(BaseModel):
             "componentName?或componentNames?,axisOffsets?}],jointComponents?,endComponents?}；"
             "每段 angleDeg 为相对上一段的关节角，组件局部 +X 沿杆长方向；可让多根平行杆"
             "共享同一段，并返回所有关节点坐标"
+            "\n- assembly_set_radial_deployable_pose: {centerX,centerY,centerZ,"
+            "deploymentAxisX?,deploymentAxisY?,deploymentAxisZ?,referenceRadialX?,"
+            "referenceRadialY?,referenceRadialZ?,hubRadius,runnerRadius,ribLength,"
+            "ribAttachmentDistance,stretcherLength,ribDownAngleDeg,runnerComponent,"
+            "bays:[{ribComponent,stretcherComponent,phaseDeg?}]}；用于伞骨、径向支架、"
+            "可展开天线等重复径向连杆，组件局部 +X 沿杆中心线"
             "\n- assembly_set_indexed_rotary_pose: {driverComponent,indexedComponent,inputAngleDeg,"
             "slotCount?,engagementStartDeg?,engagementEndDeg?,reverseOutput?,"
             "continuousComponents?,indexedComponents?}；连续输入在啮合区推动输出轮每周期"
@@ -560,6 +569,200 @@ class SwOperation(BaseModel):
                             end_item.setdefault("angleDeg", end_angle)
                         normalized_end_components.append(end_item)
                     params["endComponents"] = normalized_end_components
+            if operation_value == "assembly_set_radial_deployable_pose":
+                # Providers frequently group shared mechanism dimensions in a
+                # nested object while leaving bay instances at the top level.
+                # Flatten these semantic containers without overwriting an
+                # explicitly supplied top-level value.
+                for container_name in (
+                    "mechanism",
+                    "geometry",
+                    "dimensions",
+                    "kinematics",
+                ):
+                    container = params.get(container_name)
+                    if isinstance(container, dict):
+                        for key, value in container.items():
+                            params.setdefault(key, value)
+                for target, candidates in {
+                    "ribDownAngleDeg": (
+                        "rib_down_angle_deg",
+                        "ribAngleDeg",
+                        "ribAngle",
+                        "rib_down_angle",
+                        "initialAngleDeg",
+                        "deploymentAngle",
+                        "deploymentAngleDeg",
+                        "deployAngleDeg",
+                        "angleDeg",
+                    ),
+                    "runnerComponent": (
+                        "runner_component",
+                        "runner",
+                        "runnerComponentName",
+                        "runnerName",
+                        "slidingRunner",
+                        "slidingRunnerName",
+                        "sliding_runner",
+                        "slidingRunnerComponent",
+                        "sliderComponent",
+                        "sliderName",
+                    ),
+                    "hubRadius": ("hub_radius", "hubPivotRadius"),
+                    "runnerRadius": (
+                        "runner_radius",
+                        "runnerPivotRadius",
+                        "sliderRadius",
+                    ),
+                    "ribLength": (
+                        "rib_length",
+                        "mainRibLength",
+                        "main_rib_length",
+                    ),
+                    "ribAttachmentDistance": (
+                        "rib_attachment_distance",
+                        "ribAttachDistance",
+                        "ribAttachment",
+                        "ribConnectionDistance",
+                        "attachmentDistance",
+                        "attachmentPointDistance",
+                        "stretcherAttachDistance",
+                        "stretcherConnectDistance",
+                        "stretcherConnectDist",
+                        "stretcherAttachmentDistance",
+                    ),
+                    "stretcherLength": (
+                        "stretcher_length",
+                        "linkLength",
+                        "supportRodLength",
+                    ),
+                    "bays": ("links", "radialLinks", "radial_links"),
+                }.items():
+                    if target not in params:
+                        for candidate in candidates:
+                            if candidate in params:
+                                params[target] = params[candidate]
+                                break
+                center = (
+                    params.get("center")
+                    or params.get("hubCenter")
+                    or params.get("centerXYZ")
+                )
+                if isinstance(center, (list, tuple)) and len(center) >= 3:
+                    for key, coordinate in zip(
+                        ("centerX", "centerY", "centerZ"),
+                        center[:3],
+                    ):
+                        params.setdefault(key, coordinate)
+                deployment_axis = (
+                    params.get("deploymentAxis")
+                    or params.get("deployAxis")
+                )
+                if isinstance(deployment_axis, str):
+                    axis_name = (
+                        deployment_axis.strip().lower().lstrip("+")
+                    )
+                    axis_values = {
+                        "x": (1.0, 0.0, 0.0),
+                        "y": (0.0, 1.0, 0.0),
+                        "z": (0.0, 0.0, 1.0),
+                        "-x": (-1.0, 0.0, 0.0),
+                        "-y": (0.0, -1.0, 0.0),
+                        "-z": (0.0, 0.0, -1.0),
+                    }.get(axis_name)
+                    if axis_values:
+                        for key, coordinate in zip(
+                            (
+                                "deploymentAxisX",
+                                "deploymentAxisY",
+                                "deploymentAxisZ",
+                            ),
+                            axis_values,
+                        ):
+                            params.setdefault(key, coordinate)
+                raw_bays = params.get("bays")
+                if isinstance(raw_bays, list):
+                    normalized_bays = []
+                    for index, raw_bay in enumerate(raw_bays):
+                        if not isinstance(raw_bay, dict):
+                            normalized_bays.append(raw_bay)
+                            continue
+                        bay = dict(raw_bay)
+                        for target, candidates in {
+                            "ribComponent": (
+                                "rib",
+                                "rib_component",
+                                "ribName",
+                                "ribComponentName",
+                            ),
+                            "stretcherComponent": (
+                                "stretcher",
+                                "stretcher_component",
+                                "stretcherName",
+                                "stretcherComponentName",
+                                "linkComponent",
+                            ),
+                            "phaseDeg": (
+                                "phase_deg",
+                                "azimuthDeg",
+                                "angleDeg",
+                            ),
+                        }.items():
+                            if target not in bay:
+                                for candidate in candidates:
+                                    if candidate in bay:
+                                        bay[target] = bay[candidate]
+                                        break
+                        bay.setdefault(
+                            "phaseDeg",
+                            index * 360.0 / max(len(raw_bays), 1),
+                        )
+                        normalized_bays.append(bay)
+                    params["bays"] = normalized_bays
+                    # Shared values are also accepted on every bay. This is
+                    # equivalent to top-level mechanism geometry and is useful
+                    # for providers that emit self-contained repeated items.
+                    if normalized_bays:
+                        first_bay = normalized_bays[0]
+                        for target, candidates in {
+                            "ribLength": (
+                                "ribLength",
+                                "rib_length",
+                                "mainRibLength",
+                            ),
+                            "ribAttachmentDistance": (
+                                "ribAttachmentDistance",
+                                "ribAttachDistance",
+                                "ribConnectionDistance",
+                                "attachmentDistance",
+                                "attachmentPointDistance",
+                            ),
+                            "stretcherLength": (
+                                "stretcherLength",
+                                "stretcher_length",
+                                "linkLength",
+                            ),
+                            "ribDownAngleDeg": (
+                                "ribDownAngleDeg",
+                                "ribAngleDeg",
+                                "angleDeg",
+                            ),
+                            "runnerComponent": (
+                                "runnerComponent",
+                                "runner",
+                                "runnerName",
+                                "sliderComponent",
+                                "sliderName",
+                            ),
+                        }.items():
+                            if target not in params:
+                                for candidate in candidates:
+                                    if candidate in first_bay:
+                                        params[target] = first_bay[candidate]
+                                        break
+                params.setdefault("centerX", 0.0)
+                params.setdefault("centerY", 0.0)
+                params.setdefault("centerZ", 0.0)
             if operation_value == "assembly_set_indexed_rotary_pose":
                 for target, candidates in {
                     "driverComponent": (
@@ -784,6 +987,19 @@ class SwOperation(BaseModel):
                 "baseY",
                 "baseZ",
                 "segments",
+            ),
+            OperationType.ASSEMBLY_SET_RADIAL_DEPLOYABLE_POSE: (
+                "centerX",
+                "centerY",
+                "centerZ",
+                "hubRadius",
+                "runnerRadius",
+                "ribLength",
+                "ribAttachmentDistance",
+                "stretcherLength",
+                "ribDownAngleDeg",
+                "runnerComponent",
+                "bays",
             ),
             OperationType.ASSEMBLY_SET_INDEXED_ROTARY_POSE: (
                 "driverComponent",

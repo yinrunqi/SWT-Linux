@@ -54,6 +54,11 @@ const lampHeight = document.getElementById("lamp-height");
 const lampHeightValue = document.getElementById("lamp-height-value");
 const lampPoseBtn = document.getElementById("lamp-pose-btn");
 const lampRunStatus = document.getElementById("lamp-run-status");
+const umbrellaRunBtn = document.getElementById("umbrella-run-btn");
+const umbrellaOpenness = document.getElementById("umbrella-openness");
+const umbrellaOpennessValue = document.getElementById("umbrella-openness-value");
+const umbrellaPoseBtn = document.getElementById("umbrella-pose-btn");
+const umbrellaRunStatus = document.getElementById("umbrella-run-status");
 const projectorRunBtn = document.getElementById("projector-run-btn");
 const projectorAngle = document.getElementById("projector-angle");
 const projectorAngleValue = document.getElementById("projector-angle-value");
@@ -586,6 +591,94 @@ async function setLampPose() {
     lampRunStatus.classList.add("fail");
   } finally {
     lampPoseBtn.disabled = false;
+  }
+}
+
+async function runRadialFoldingUmbrella() {
+  if (busy) return;
+  busy = true;
+  umbrellaRunBtn.disabled = true;
+  sendBtn.disabled = true;
+  umbrellaRunStatus.textContent =
+    "正在准备 22 个折叠伞零件，并由 Multi-turn Agent 分阶段装配八方位连杆…";
+  umbrellaRunStatus.classList.remove("ok", "fail");
+  appendUser(
+    "装配带八根主伞骨、八根撑杆和中心滑套的径向折叠伞",
+    null,
+  );
+  const loadingId = appendLoading(
+    "正在构建折叠伞；重复运行将复用已验收的 Agent 状态缓存…",
+  );
+  try {
+    const response = await fetch(
+      `${API}/api/assembly-examples/radial-folding-umbrella/run`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: providerEl.value,
+          api_key: apiKeyEl.value.trim(),
+          base_url: baseUrlEl.value.trim(),
+          vision_model: visionModelEl.value,
+          plan_model: planModelEl.value,
+          max_turns: maxTurnsEl.value
+            ? Number(maxTurnsEl.value)
+            : 30,
+        }),
+      },
+    );
+    const data = await response.json();
+    removeLoading(loadingId);
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+    appendMultiTurnResponse(data.multi_turn, data.summary);
+    const tokens = Number(data.token_usage?.total_tokens || 0);
+    const cacheText = tokens === 0
+      ? "Agent 决策全部命中缓存，token 花费为 0"
+      : `本次新消耗 ${tokens} tokens`;
+    const accepted = Boolean(data.summary?.all_ok);
+    umbrellaRunStatus.textContent = accepted
+      ? `折叠伞装配及三姿态验收成功，评分 ${Number(data.score || 0).toFixed(2)}；${cacheText}`
+      : `折叠伞装配或径向机构验收未通过；${cacheText}`;
+    umbrellaRunStatus.classList.add(accepted ? "ok" : "fail");
+  } catch (error) {
+    removeLoading(loadingId);
+    umbrellaRunStatus.textContent = `折叠伞构建失败：${error.message}`;
+    umbrellaRunStatus.classList.add("fail");
+    appendError(error.message);
+  } finally {
+    busy = false;
+    umbrellaRunBtn.disabled = false;
+    sendBtn.disabled = false;
+  }
+}
+
+async function setUmbrellaPose() {
+  umbrellaPoseBtn.disabled = true;
+  umbrellaRunStatus.textContent =
+    `正在通过确定性 SW API 设置 ${umbrellaOpenness.value}% 开合度…`;
+  umbrellaRunStatus.classList.remove("ok", "fail");
+  try {
+    const response = await fetch(`${API}/api/umbrella-animation/pose`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        openness_percent: Number(umbrellaOpenness.value),
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+    umbrellaRunStatus.textContent =
+      `${data.message}，主肋下倾 ${Number(data.rib_down_angle_deg).toFixed(1)}°，滑套行程 ${Number(data.runner_drop_mm).toFixed(1)} mm；不调用 LLM`;
+    umbrellaRunStatus.classList.add("ok");
+  } catch (error) {
+    umbrellaRunStatus.textContent = `折叠伞姿态设置失败：${error.message}`;
+    umbrellaRunStatus.classList.add("fail");
+  } finally {
+    umbrellaPoseBtn.disabled = false;
   }
 }
 
@@ -1303,6 +1396,11 @@ lampRunBtn.addEventListener("click", runAdjustableDeskLamp);
 lampPoseBtn.addEventListener("click", setLampPose);
 lampHeight.addEventListener("input", () => {
   lampHeightValue.textContent = `${lampHeight.value}%`;
+});
+umbrellaRunBtn.addEventListener("click", runRadialFoldingUmbrella);
+umbrellaPoseBtn.addEventListener("click", setUmbrellaPose);
+umbrellaOpenness.addEventListener("input", () => {
+  umbrellaOpennessValue.textContent = `${umbrellaOpenness.value}%`;
 });
 projectorRunBtn.addEventListener("click", runFilmProjector);
 projectorPoseBtn.addEventListener("click", setProjectorPose);

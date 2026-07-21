@@ -879,6 +879,221 @@ def set_lamp_animation_pose():
 
 
 @app.route(
+    "/api/assembly-examples/radial-folding-umbrella/run",
+    methods=["POST"],
+)
+def run_radial_folding_umbrella():
+    """Build and machine-check the multi-turn radial umbrella."""
+    data = request.get_json(force=True) or {}
+    provider = data.get("provider", "aiping").strip()
+    key_env = (
+        "JUHEAI_API_KEY"
+        if provider == "juheai"
+        else "OPENAI_API_KEY"
+    )
+    url_env = (
+        "JUHEAI_BASE_URL"
+        if provider == "juheai"
+        else "OPENAI_BASE_URL"
+    )
+    api_key = data.get("api_key", "").strip() or os.getenv(key_env, "")
+    base_url = data.get("base_url", "").strip() or os.getenv(url_env, "")
+    plan_model = (
+        data.get("plan_model", "").strip()
+        or os.getenv("PLAN_MODEL", "gpt-4o")
+    )
+    vision_model = (
+        data.get("vision_model", "").strip()
+        or os.getenv("VISION_MODEL", plan_model)
+    )
+    try:
+        max_turns = max(1, min(int(data.get("max_turns") or 30), 100))
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "error": "max_turns 必须是整数",
+        }), 400
+    if not api_key:
+        return jsonify({"success": False, "error": "请填写 API Key"}), 400
+    if executor is None:
+        return jsonify({
+            "success": False,
+            "error": "SolidWorks Executor 尚未初始化",
+        }), 503
+
+    from eval.eval_radial_folding_umbrella_multiturn import (
+        ARTIFACT_DIR,
+        SPEC_PATH,
+        SwApi,
+        _acceptance_specs,
+        _task_plan,
+        _user_goal,
+        prepare_parts,
+        score_result,
+        validate_radial_kinematics,
+    )
+    from planner.validators import ValidatorRegistry
+    import json as _json
+
+    api = SwApi(executor.base_url)
+    try:
+        with _sw_execution_lock:
+            spec = _json.loads(SPEC_PATH.read_text(encoding="utf-8"))
+            paths, build_log = prepare_parts(
+                api,
+                spec,
+                ARTIFACT_DIR,
+                force=bool(data.get("force_parts", False)),
+            )
+            assembly_path = (
+                ARTIFACT_DIR / "radial_folding_umbrella.SLDASM"
+            )
+            goal = _user_goal(paths, spec, assembly_path)
+            task_plan = _task_plan(goal, spec, assembly_path)
+            llm_client = _get_llm_client(
+                api_key,
+                base_url,
+                vision_model,
+                plan_model,
+                use_cache=True,
+            )
+            usage_before = llm_client.usage_snapshot()
+            agent = MultiTurnAgent(
+                llm_client,
+                executor,
+                max_turns=max_turns,
+            )
+            result = agent.run(goal, task_plan=task_plan)
+            token_usage = llm_client.usage_since(usage_before)
+            static_acceptance = ValidatorRegistry.validate(
+                _acceptance_specs(spec, assembly_path),
+                result.final_observation,
+            )
+            radial_acceptance = (
+                validate_radial_kinematics(
+                    api,
+                    spec,
+                    result.final_observation,
+                )
+                if result.status == "completed"
+                and static_acceptance.passed
+                else {"passed": False, "samples": []}
+            )
+            passed = (
+                result.status == "completed"
+                and static_acceptance.passed
+                and radial_acceptance["passed"]
+            )
+            score = score_result(
+                status=result.status,
+                static_passed=static_acceptance.passed,
+                kinematics=radial_acceptance,
+                successful_actions=result.successful_actions,
+                total_actions=result.total_actions,
+            )
+            cleanup = api.close_inactive()
+            result_dict = result.model_dump(mode="json")
+            return jsonify({
+                "success": True,
+                "mode": "multi_turn",
+                "example": "radial_folding_umbrella",
+                "multi_turn": result_dict,
+                "turns": result_dict["turns"],
+                "final_observation": result_dict["final_observation"],
+                "task_plan": task_plan.model_dump(mode="json"),
+                "acceptance": static_acceptance.model_dump(mode="json"),
+                "radial_acceptance": radial_acceptance,
+                "score": score,
+                "build_log": build_log,
+                "window_cleanup": cleanup,
+                "cache_enabled": True,
+                "token_usage": token_usage,
+                "summary": {
+                    "total": result.total_actions,
+                    "succeeded": result.successful_actions,
+                    "all_ok": passed,
+                    "score": score,
+                    "status": "completed" if passed else result.status,
+                    "llm_calls": result.llm_calls,
+                    "turn_count": len(result.turns),
+                    "token_usage": token_usage,
+                },
+            })
+    except Exception as exc:
+        traceback.print_exc()
+        try:
+            api.close_all()
+        except Exception:
+            pass
+        return jsonify({"success": False, "error": str(exc)}), 500
+
+
+@app.route("/api/umbrella-animation/pose", methods=["POST"])
+def set_umbrella_animation_pose():
+    """Open the generated umbrella and set deterministic openness."""
+    data = request.get_json(force=True) or {}
+    try:
+        openness_percent = max(
+            0.0,
+            min(float(data.get("openness_percent", 100)), 100.0),
+        )
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "error": "openness_percent 必须是数字",
+        }), 400
+
+    from eval.eval_radial_folding_umbrella_multiturn import (
+        ARTIFACT_DIR,
+        SPEC_PATH,
+        SwApi,
+        _observation,
+        _pose_for_openness,
+        _pose_payload,
+        _resolve_components,
+    )
+    import json as _json
+
+    assembly_path = ARTIFACT_DIR / "radial_folding_umbrella.SLDASM"
+    api = SwApi(executor.base_url) if executor is not None else None
+    try:
+        if api is None:
+            raise RuntimeError("SolidWorks Executor 尚未初始化")
+        if not assembly_path.is_file():
+            raise FileNotFoundError(
+                "折叠伞装配体尚未生成，请先运行 Multi-turn 构建"
+            )
+        with _sw_execution_lock:
+            spec = _json.loads(SPEC_PATH.read_text(encoding="utf-8"))
+            api.call(
+                "/api/assembly/open",
+                {"assemblyPath": str(assembly_path)},
+            )
+            names = _resolve_components(_observation(api))
+            rib_down_angle_deg = _pose_for_openness(
+                spec,
+                openness_percent,
+            )
+            pose = api.call(
+                "/api/assembly/mechanism/radial-deployable-pose",
+                _pose_payload(names, spec, rib_down_angle_deg),
+            )["result"]
+            cleanup = api.close_inactive()
+        return jsonify({
+            "success": True,
+            "message": f"折叠伞开合度已设置为 {openness_percent:g}%",
+            "openness_percent": openness_percent,
+            "rib_down_angle_deg": rib_down_angle_deg,
+            "runner_drop_mm": float(pose["runnerDrop"]) * 1000,
+            "result": pose,
+            "window_cleanup": cleanup,
+        })
+    except Exception as exc:
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(exc)}), 500
+
+
+@app.route(
     "/api/assembly-examples/film-projector/run",
     methods=["POST"],
 )

@@ -954,3 +954,43 @@ node --check web/static/app.js
 Web Demo“装配体相关”区域提供“Multi-turn 构建双节可调台灯”按钮和
 0%–100% 灯臂高度滑块。滑块使用分段线性关节插值并直接调用 SolidWorks API，
 不会调用 LLM；每次测试结束仍关闭所有非活动零件窗口。
+
+---
+
+## 二十一、22 组件八骨径向折叠伞 Multi-turn 装配测试
+
+该测例构建刚性折叠伞骨架：中心伞轴和滑套驱动八根等间隔撑杆，撑杆再推动
+八根主伞骨。通用 `radial-deployable-pose` API 解析求解任意方位数量的径向
+重复连杆，不依赖折叠伞专用坐标表。
+
+```cmd
+cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
+
+REM 生成 22 个参数化零件，每个零件完成后关闭文档
+py eval\eval_radial_folding_umbrella_multiturn.py --prepare-only --force-parts
+
+REM Multi-turn 装配和三姿态 100 分验收
+py eval\eval_radial_folding_umbrella_multiturn.py --use-cache --max-turns 30
+
+REM 已保存装配体零 token 复验
+py eval\eval_radial_folding_umbrella_multiturn.py --validate-existing
+
+REM schema、评分、缓存和 Web 回归
+py -m pytest test/test_radial_folding_umbrella.py test/test_multiturn_cache.py -q
+py test/test_web_modes.py
+node --check web/static/app.js
+```
+
+验收内容：
+
+- 精确 22 个组件且 `.SLDASM` 已保存；
+- 收拢 78°、半开 45°、全开 12° 三种主肋下倾角；
+- 每个姿态的八根主肋恒长 300mm、八根撑杆恒长 160mm；
+- 八个主肋末端到中心轴的半径一致，误差不超过 0.25mm；
+- 从实际 `Component.Transform2` 反读 16 根杆的局部 +X 轴，方向误差不超过
+  0.1°，实体两端与解析铰点误差不超过 0.25mm；
+- 滑套向上移动时伞骨末端半径严格增大；
+- 静态装配 40 分、三态机构 40 分、执行可靠性 20 分。
+
+Web Demo“装配体相关”提供构建按钮和 0%–100% 开合滑块。滑块只调用确定性
+SolidWorks API，不调用 LLM；最终全开姿态会保存在装配体中。

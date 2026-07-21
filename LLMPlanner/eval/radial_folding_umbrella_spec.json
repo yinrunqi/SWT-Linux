@@ -1,0 +1,180 @@
+{
+  "case_id": "radial_folding_umbrella_v1",
+  "description": "带八根伞骨、八根撑杆和中心滑套的径向折叠伞骨架",
+  "units": {
+    "length": "mm",
+    "angle": "deg"
+  },
+  "mechanism": {
+    "bay_count": 8,
+    "hub_center": [0.0, 0.0, 340.0],
+    "deployment_axis": [0.0, 0.0, 1.0],
+    "reference_radial": [1.0, 0.0, 0.0],
+    "hub_radius": 18.0,
+    "runner_radius": 15.0,
+    "rib_length": 300.0,
+    "rib_attachment_distance": 120.0,
+    "stretcher_length": 160.0,
+    "poses": [
+      {
+        "name": "closed",
+        "openness_percent": 0,
+        "rib_down_angle_deg": 78.0
+      },
+      {
+        "name": "half_open",
+        "openness_percent": 50,
+        "rib_down_angle_deg": 45.0
+      },
+      {
+        "name": "open",
+        "openness_percent": 100,
+        "rib_down_angle_deg": 12.0
+      }
+    ]
+  },
+  "components": [
+    {
+      "role": "umbrella_handle",
+      "kind": "cylindrical_handle",
+      "group": "foundation",
+      "translation": [0.0, 0.0, -80.0]
+    },
+    {
+      "role": "umbrella_shaft",
+      "kind": "central_shaft",
+      "group": "foundation",
+      "translation": [0.0, 0.0, -80.0]
+    },
+    {
+      "role": "top_hub",
+      "kind": "radial_rib_hub",
+      "group": "foundation",
+      "translation": [0.0, 0.0, 334.0]
+    },
+    {
+      "role": "sliding_runner",
+      "kind": "sliding_ring",
+      "group": "foundation",
+      "translation": [0.0, 0.0, 209.6504]
+    },
+    {
+      "role": "rib_1",
+      "kind": "radial_rib",
+      "group": "ribs_a",
+      "translation": [164.7221, 0.0, 308.8132]
+    },
+    {
+      "role": "rib_2",
+      "kind": "radial_rib",
+      "group": "ribs_a",
+      "translation": [116.4761, 116.4761, 308.8132]
+    },
+    {
+      "role": "rib_3",
+      "kind": "radial_rib",
+      "group": "ribs_a",
+      "translation": [0.0, 164.7221, 308.8132]
+    },
+    {
+      "role": "rib_4",
+      "kind": "radial_rib",
+      "group": "ribs_a",
+      "translation": [-116.4761, 116.4761, 308.8132]
+    },
+    {
+      "role": "rib_5",
+      "kind": "radial_rib",
+      "group": "ribs_b",
+      "translation": [-164.7221, 0.0, 308.8132]
+    },
+    {
+      "role": "rib_6",
+      "kind": "radial_rib",
+      "group": "ribs_b",
+      "translation": [-116.4761, -116.4761, 308.8132]
+    },
+    {
+      "role": "rib_7",
+      "kind": "radial_rib",
+      "group": "ribs_b",
+      "translation": [0.0, -164.7221, 308.8132]
+    },
+    {
+      "role": "rib_8",
+      "kind": "radial_rib",
+      "group": "ribs_b",
+      "translation": [116.4761, -116.4761, 308.8132]
+    },
+    {
+      "role": "stretcher_1",
+      "kind": "runner_stretcher",
+      "group": "stretchers_a",
+      "translation": [75.1889, 0.0, 262.3505]
+    },
+    {
+      "role": "stretcher_2",
+      "kind": "runner_stretcher",
+      "group": "stretchers_a",
+      "translation": [53.1665, 53.1665, 262.3505]
+    },
+    {
+      "role": "stretcher_3",
+      "kind": "runner_stretcher",
+      "group": "stretchers_a",
+      "translation": [0.0, 75.1889, 262.3505]
+    },
+    {
+      "role": "stretcher_4",
+      "kind": "runner_stretcher",
+      "group": "stretchers_a",
+      "translation": [-53.1665, 53.1665, 262.3505]
+    },
+    {
+      "role": "stretcher_5",
+      "kind": "runner_stretcher",
+      "group": "stretchers_b",
+      "translation": [-75.1889, 0.0, 262.3505]
+    },
+    {
+      "role": "stretcher_6",
+      "kind": "runner_stretcher",
+      "group": "stretchers_b",
+      "translation": [-53.1665, -53.1665, 262.3505]
+    },
+    {
+      "role": "stretcher_7",
+      "kind": "runner_stretcher",
+      "group": "stretchers_b",
+      "translation": [0.0, -75.1889, 262.3505]
+    },
+    {
+      "role": "stretcher_8",
+      "kind": "runner_stretcher",
+      "group": "stretchers_b",
+      "translation": [53.1665, -53.1665, 262.3505]
+    },
+    {
+      "role": "canopy_cap",
+      "kind": "top_cap",
+      "group": "details",
+      "translation": [0.0, 0.0, 346.0]
+    },
+    {
+      "role": "release_button",
+      "kind": "runner_release",
+      "group": "details",
+      "translation": [0.0, -7.0, 145.0]
+    }
+  ],
+  "acceptance": {
+    "component_count": 22,
+    "translation_tolerance_mm": 1.0,
+    "rod_length_tolerance_mm": 0.25,
+    "body_endpoint_tolerance_mm": 0.25,
+    "orientation_tolerance_deg": 0.1,
+    "symmetry_tolerance_mm": 0.25,
+    "minimum_pose_count": 3,
+    "assembly_file_required": true
+  }
+}

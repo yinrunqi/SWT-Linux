@@ -3863,6 +3863,388 @@ namespace Chapter1.ConnectToSw
         }
 
         /// <summary>
+        /// Apply one pose of a generic radial deployable linkage. A translating
+        /// runner drives equal-length stretchers connected to repeated ribs.
+        /// Component local +X axes represent rod centerlines.
+        /// </summary>
+        public Dictionary<string, object> SetRadialDeployablePose(
+            double centerX,
+            double centerY,
+            double centerZ,
+            double deploymentAxisX,
+            double deploymentAxisY,
+            double deploymentAxisZ,
+            double referenceRadialX,
+            double referenceRadialY,
+            double referenceRadialZ,
+            double hubRadius,
+            double runnerRadius,
+            double ribLength,
+            double ribAttachmentDistance,
+            double stretcherLength,
+            double ribDownAngleDeg,
+            string runnerComponent,
+            List<Dictionary<string, object>> bays)
+        {
+            EnsureActiveAssembly();
+            if (bays == null || bays.Count < 2)
+                throw new ArgumentException("径向展开机构至少需要两个 bay");
+            if (hubRadius < 0 || runnerRadius < 0
+                || ribLength <= 0 || ribAttachmentDistance <= 0
+                || ribAttachmentDistance > ribLength
+                || stretcherLength <= 0)
+                throw new ArgumentException("径向展开机构长度参数无效");
+
+            double axisNorm = Math.Sqrt(
+                deploymentAxisX * deploymentAxisX
+                + deploymentAxisY * deploymentAxisY
+                + deploymentAxisZ * deploymentAxisZ);
+            if (axisNorm < 1e-12)
+                throw new ArgumentException("展开轴不能为零向量");
+            deploymentAxisX /= axisNorm;
+            deploymentAxisY /= axisNorm;
+            deploymentAxisZ /= axisNorm;
+
+            double referenceDot =
+                referenceRadialX * deploymentAxisX
+                + referenceRadialY * deploymentAxisY
+                + referenceRadialZ * deploymentAxisZ;
+            referenceRadialX -= referenceDot * deploymentAxisX;
+            referenceRadialY -= referenceDot * deploymentAxisY;
+            referenceRadialZ -= referenceDot * deploymentAxisZ;
+            double referenceNorm = Math.Sqrt(
+                referenceRadialX * referenceRadialX
+                + referenceRadialY * referenceRadialY
+                + referenceRadialZ * referenceRadialZ);
+            if (referenceNorm < 1e-12)
+                throw new ArgumentException("参考径向不能与展开轴平行");
+            referenceRadialX /= referenceNorm;
+            referenceRadialY /= referenceNorm;
+            referenceRadialZ /= referenceNorm;
+            double tangentX =
+                deploymentAxisY * referenceRadialZ
+                - deploymentAxisZ * referenceRadialY;
+            double tangentY =
+                deploymentAxisZ * referenceRadialX
+                - deploymentAxisX * referenceRadialZ;
+            double tangentZ =
+                deploymentAxisX * referenceRadialY
+                - deploymentAxisY * referenceRadialX;
+
+            double beta = ribDownAngleDeg * Math.PI / 180.0;
+            double radialAttachment =
+                hubRadius + ribAttachmentDistance * Math.Cos(beta);
+            double radialDifference =
+                radialAttachment - runnerRadius;
+            double root =
+                stretcherLength * stretcherLength
+                - radialDifference * radialDifference;
+            if (root < -1e-12)
+                throw new InvalidOperationException(
+                    "当前伞骨角度下撑杆没有实数闭合解");
+            double runnerDrop =
+                ribAttachmentDistance * Math.Sin(beta)
+                + Math.Sqrt(Math.Max(0.0, root));
+            double runnerX =
+                centerX - deploymentAxisX * runnerDrop;
+            double runnerY =
+                centerY - deploymentAxisY * runnerDrop;
+            double runnerZ =
+                centerZ - deploymentAxisZ * runnerDrop;
+
+            var componentLookup = new Dictionary<string, IComponent2>(
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var raw in (_activeAssembly.GetComponents(false)
+                as object[]) ?? new object[0])
+            {
+                var component = raw as IComponent2;
+                if (component != null)
+                    componentLookup[component.Name2] = component;
+            }
+            Func<string, IComponent2> resolve = name =>
+            {
+                IComponent2 component;
+                if (!componentLookup.TryGetValue(name, out component))
+                    throw new InvalidOperationException(
+                        $"装配体中找不到组件: {name}");
+                return component;
+            };
+            Func<double[], double[], double> distance = (left, right) =>
+                Math.Sqrt(
+                    Math.Pow(left[0] - right[0], 2)
+                    + Math.Pow(left[1] - right[1], 2)
+                    + Math.Pow(left[2] - right[2], 2));
+            Func<
+                string,
+                double[],
+                double[],
+                double,
+                Dictionary<string, object>> poseRod =
+                (name, midpoint, direction, bodyLength) =>
+                {
+                    double directionNorm = Math.Sqrt(
+                        direction[0] * direction[0]
+                        + direction[1] * direction[1]
+                        + direction[2] * direction[2]);
+                    if (directionNorm < 1e-12)
+                        throw new ArgumentException(
+                            $"杆件方向不能为零: {name}");
+                    double dx = direction[0] / directionNorm;
+                    double dy = direction[1] / directionNorm;
+                    double dz = direction[2] / directionNorm;
+                    // Cross(local +X, target). Negating the angle converts
+                    // column-vector Rodrigues convention to SW row bases.
+                    double axisX = 0.0;
+                    double axisY = -dz;
+                    double axisZ = dy;
+                    double rotationNorm = Math.Sqrt(
+                        axisX * axisX + axisY * axisY + axisZ * axisZ);
+                    double angleDeg;
+                    if (rotationNorm < 1e-12)
+                    {
+                        axisX = 0;
+                        axisY = 0;
+                        axisZ = 1;
+                        angleDeg = dx >= 0 ? 0.0 : 180.0;
+                    }
+                    else
+                    {
+                        axisX /= rotationNorm;
+                        axisY /= rotationNorm;
+                        axisZ /= rotationNorm;
+                        angleDeg = Math.Acos(
+                            Math.Max(-1.0, Math.Min(1.0, dx)))
+                            * 180.0 / Math.PI;
+                    }
+                    var component = resolve(name);
+                    SetComponentPose(
+                        name,
+                        midpoint[0],
+                        midpoint[1],
+                        midpoint[2],
+                        axisX,
+                        axisY,
+                        axisZ,
+                        -angleDeg,
+                        false,
+                        component);
+                    var transform = component.Transform2 as MathTransform;
+                    var values = transform?.ArrayData as double[];
+                    if (values == null || values.Length < 12)
+                        throw new InvalidOperationException(
+                            $"无法读取径向杆件姿态: {name}");
+                    var actualAxis = new double[]
+                        { values[0], values[1], values[2] };
+                    double actualNorm = Math.Sqrt(
+                        actualAxis[0] * actualAxis[0]
+                        + actualAxis[1] * actualAxis[1]
+                        + actualAxis[2] * actualAxis[2]);
+                    for (int coordinate = 0; coordinate < 3; coordinate++)
+                        actualAxis[coordinate] /= actualNorm;
+                    double dot = Math.Max(
+                        -1.0,
+                        Math.Min(
+                            1.0,
+                            actualAxis[0] * dx
+                            + actualAxis[1] * dy
+                            + actualAxis[2] * dz));
+                    var expectedStart = new double[]
+                    {
+                        midpoint[0] - dx * bodyLength / 2.0,
+                        midpoint[1] - dy * bodyLength / 2.0,
+                        midpoint[2] - dz * bodyLength / 2.0,
+                    };
+                    var expectedEnd = new double[]
+                    {
+                        midpoint[0] + dx * bodyLength / 2.0,
+                        midpoint[1] + dy * bodyLength / 2.0,
+                        midpoint[2] + dz * bodyLength / 2.0,
+                    };
+                    var actualStart = new double[]
+                    {
+                        midpoint[0] - actualAxis[0] * bodyLength / 2.0,
+                        midpoint[1] - actualAxis[1] * bodyLength / 2.0,
+                        midpoint[2] - actualAxis[2] * bodyLength / 2.0,
+                    };
+                    var actualEnd = new double[]
+                    {
+                        midpoint[0] + actualAxis[0] * bodyLength / 2.0,
+                        midpoint[1] + actualAxis[1] * bodyLength / 2.0,
+                        midpoint[2] + actualAxis[2] * bodyLength / 2.0,
+                    };
+                    return new Dictionary<string, object>
+                    {
+                        ["componentName"] = name,
+                        ["bodyAxisXYZ"] = actualAxis,
+                        ["orientationErrorDeg"] =
+                            Math.Acos(dot) * 180.0 / Math.PI,
+                        ["bodyEndpointError"] = Math.Max(
+                            distance(actualStart, expectedStart),
+                            distance(actualEnd, expectedEnd)),
+                        ["actualStartXYZ"] = actualStart,
+                        ["actualEndXYZ"] = actualEnd,
+                    };
+                };
+
+            var modelDoc = (IModelDoc2)_activeAssembly;
+            var modelView = modelDoc.ActiveView as IModelView;
+            var bayResults = new List<Dictionary<string, object>>();
+            double maximumOrientationErrorDeg = 0.0;
+            double maximumEndpointError = 0.0;
+            try
+            {
+                _swApp.CommandInProgress = true;
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = false;
+                SetComponentPose(
+                    runnerComponent,
+                    runnerX,
+                    runnerY,
+                    runnerZ,
+                    deploymentAxisX,
+                    deploymentAxisY,
+                    deploymentAxisZ,
+                    0.0,
+                    false,
+                    resolve(runnerComponent));
+
+                for (int index = 0; index < bays.Count; index++)
+                {
+                    var bay = bays[index];
+                    string ribName = Convert.ToString(
+                        bay["ribComponent"]);
+                    string stretcherName = Convert.ToString(
+                        bay["stretcherComponent"]);
+                    double phaseDeg = bay.ContainsKey("phaseDeg")
+                        ? Convert.ToDouble(bay["phaseDeg"])
+                        : index * 360.0 / bays.Count;
+                    double phase = phaseDeg * Math.PI / 180.0;
+                    double radialX =
+                        Math.Cos(phase) * referenceRadialX
+                        + Math.Sin(phase) * tangentX;
+                    double radialY =
+                        Math.Cos(phase) * referenceRadialY
+                        + Math.Sin(phase) * tangentY;
+                    double radialZ =
+                        Math.Cos(phase) * referenceRadialZ
+                        + Math.Sin(phase) * tangentZ;
+                    var ribPivot = new double[]
+                    {
+                        centerX + radialX * hubRadius,
+                        centerY + radialY * hubRadius,
+                        centerZ + radialZ * hubRadius,
+                    };
+                    var ribDirection = new double[]
+                    {
+                        Math.Cos(beta) * radialX
+                            - Math.Sin(beta) * deploymentAxisX,
+                        Math.Cos(beta) * radialY
+                            - Math.Sin(beta) * deploymentAxisY,
+                        Math.Cos(beta) * radialZ
+                            - Math.Sin(beta) * deploymentAxisZ,
+                    };
+                    var ribTip = new double[]
+                    {
+                        ribPivot[0] + ribDirection[0] * ribLength,
+                        ribPivot[1] + ribDirection[1] * ribLength,
+                        ribPivot[2] + ribDirection[2] * ribLength,
+                    };
+                    var attachment = new double[]
+                    {
+                        ribPivot[0]
+                            + ribDirection[0] * ribAttachmentDistance,
+                        ribPivot[1]
+                            + ribDirection[1] * ribAttachmentDistance,
+                        ribPivot[2]
+                            + ribDirection[2] * ribAttachmentDistance,
+                    };
+                    var runnerPivot = new double[]
+                    {
+                        runnerX + radialX * runnerRadius,
+                        runnerY + radialY * runnerRadius,
+                        runnerZ + radialZ * runnerRadius,
+                    };
+                    var ribMidpoint = new double[]
+                    {
+                        (ribPivot[0] + ribTip[0]) / 2.0,
+                        (ribPivot[1] + ribTip[1]) / 2.0,
+                        (ribPivot[2] + ribTip[2]) / 2.0,
+                    };
+                    var stretcherMidpoint = new double[]
+                    {
+                        (runnerPivot[0] + attachment[0]) / 2.0,
+                        (runnerPivot[1] + attachment[1]) / 2.0,
+                        (runnerPivot[2] + attachment[2]) / 2.0,
+                    };
+                    var stretcherDirection = new double[]
+                    {
+                        attachment[0] - runnerPivot[0],
+                        attachment[1] - runnerPivot[1],
+                        attachment[2] - runnerPivot[2],
+                    };
+                    var ribDiagnostic = poseRod(
+                        ribName,
+                        ribMidpoint,
+                        ribDirection,
+                        ribLength);
+                    var stretcherDiagnostic = poseRod(
+                        stretcherName,
+                        stretcherMidpoint,
+                        stretcherDirection,
+                        stretcherLength);
+                    maximumOrientationErrorDeg = Math.Max(
+                        maximumOrientationErrorDeg,
+                        Math.Max(
+                            Convert.ToDouble(
+                                ribDiagnostic["orientationErrorDeg"]),
+                            Convert.ToDouble(
+                                stretcherDiagnostic[
+                                    "orientationErrorDeg"])));
+                    maximumEndpointError = Math.Max(
+                        maximumEndpointError,
+                        Math.Max(
+                            Convert.ToDouble(
+                                ribDiagnostic["bodyEndpointError"]),
+                            Convert.ToDouble(
+                                stretcherDiagnostic[
+                                    "bodyEndpointError"])));
+                    bayResults.Add(new Dictionary<string, object>
+                    {
+                        ["phaseDeg"] = phaseDeg,
+                        ["ribPivotXYZ"] = ribPivot,
+                        ["ribTipXYZ"] = ribTip,
+                        ["attachmentXYZ"] = attachment,
+                        ["runnerPivotXYZ"] = runnerPivot,
+                        ["ribLength"] = distance(ribPivot, ribTip),
+                        ["stretcherLength"] =
+                            distance(runnerPivot, attachment),
+                        ["ribDiagnostic"] = ribDiagnostic,
+                        ["stretcherDiagnostic"] = stretcherDiagnostic,
+                    });
+                }
+            }
+            finally
+            {
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = true;
+                _swApp.CommandInProgress = false;
+                modelDoc.GraphicsRedraw2();
+            }
+
+            return new Dictionary<string, object>
+            {
+                ["ribDownAngleDeg"] = ribDownAngleDeg,
+                ["runnerDrop"] = runnerDrop,
+                ["runnerXYZ"] =
+                    new double[] { runnerX, runnerY, runnerZ },
+                ["bays"] = bayResults.ToArray(),
+                ["maximumOrientationErrorDeg"] =
+                    maximumOrientationErrorDeg,
+                ["maximumBodyEndpointError"] = maximumEndpointError,
+            };
+        }
+
+        /// <summary>
         /// Apply one analytically solved pose of a planar crank-slider mechanism.
         /// The rod part's local +Y axis is assumed to run between its pin centers.
         /// Optional synchronized components rotate at signed ratios of crank angle.
