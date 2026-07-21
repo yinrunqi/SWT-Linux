@@ -6,6 +6,17 @@ const EDIT_BASE_PROMPT =
 const EDIT_CONTINUE_PROMPT =
   "将当前凸台沿原拉伸方向再增加 50mm。";
 
+const PHONE_STAND_PROMPT =
+  "创建一个一体式桌面手机支架，所有结构必须合并为单一实体。"
+  + "底座长110mm、宽78mm、厚8mm；78mm宽的倾斜背板厚6mm，"
+  + "与水平面成74°，从底座上表面升起，成品总高度118mm。"
+  + "底座前端设置贯穿全宽的挡唇，前后厚10mm，高出底座上表面12mm，"
+  + "使成品前端总高度20mm。背板左右两侧各有一个三角加强筋。"
+  + "背板下部中央开一个宽16mm、向下开口高度28mm的充电线U形通槽；"
+  + "背板中上部开3个36×8mm的水平贯穿散热槽，槽中心竖向间距18mm。"
+  + "底面加工两个24×10mm、深1.5mm的防滑垫浅凹槽。"
+  + "最后尽可能对适合的外轮廓做R4mm圆角，同时保持底面平整、支架左右对称。";
+
 const BASIC_PROMPTS = [
   { label: "长方体 100×50×30", test: "basic box", prompt: "创建一个 100mm × 50mm × 30mm 的长方体。" },
   { label: "方块", test: "basic cube", prompt: "创建一个边长 40mm 的立方体。" },
@@ -20,6 +31,11 @@ const BASIC_PROMPTS = [
 ];
 
 const TEXT_PROMPTS = [
+  {
+    label: "一体式手机支架",
+    test: "one-piece phone stand",
+    prompt: PHONE_STAND_PROMPT,
+  },
   {
     label: "四脚板凳",
     test: "stool",

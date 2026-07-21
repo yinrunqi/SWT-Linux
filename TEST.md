@@ -854,3 +854,30 @@ py eval\eval_assembly_model_benchmark.py ^
 ```cmd
 py -m pytest test/test_assembly_model_benchmark.py -q
 ```
+
+---
+
+## 十八、一体式手机支架 Single-turn / Multi-turn 对比
+
+该测例使用同一份尺寸化自然语言输入构建日常单体零件，包含倾斜背板、挡唇、
+加强筋、充电槽、散热槽、底面浅凹槽和圆角。运行时不注入建模步骤；case 专用
+尺寸、体积和细节阈值只存在于 eval 层。
+
+```cmd
+cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
+
+REM 连续运行两种模式；每次开始前自动关闭全部 SolidWorks 文档
+py eval\eval_phone_stand_modes.py
+
+REM 仅运行指定模式
+py eval\eval_phone_stand_modes.py --modes single_turn
+py eval\eval_phone_stand_modes.py --modes multi_turn --max-turns 24
+
+REM 评分与 Web 协议回归
+py -m pytest test/test_phone_stand_eval.py -q
+py test/test_web_modes.py
+```
+
+结果写入 `eval/phone_stand_modes_result.json`，包含 0–100 分、三轴尺寸、
+体积、特征数、动作完成率、token 和失败操作。Web Demo 的“2A. 复杂单体零件
+模式对比”区域提供 Single-turn 和 Multi-turn 两个直接运行按钮。

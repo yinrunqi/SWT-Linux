@@ -1,0 +1,201 @@
+{
+  "evaluation_version": 1,
+  "run_at": "2026-07-21T09:36:37+08:00",
+  "provider": "AI Ping",
+  "plan_model": "Qwen3.5-397B-A17B",
+  "case": {
+    "case_id": "one_piece_desktop_phone_stand_v1",
+    "description": "带充电槽、散热槽、加强筋和圆角的一体式桌面手机支架",
+    "units": {
+      "length": "mm",
+      "angle": "deg"
+    },
+    "overall_size": [
+      116.0,
+      78.0,
+      118.0
+    ],
+    "base": {
+      "length": 110.0,
+      "width": 78.0,
+      "thickness": 8.0
+    },
+    "back_plate": {
+      "width": 78.0,
+      "thickness": 6.0,
+      "angle_from_horizontal_deg": 74.0,
+      "overall_height": 118.0
+    },
+    "front_lip": {
+      "width": 78.0,
+      "thickness": 10.0,
+      "height_above_base": 20.0
+    },
+    "details": {
+      "side_ribs": 2,
+      "cable_slot_width": 16.0,
+      "cable_slot_open_height": 28.0,
+      "ventilation_slots": 3,
+      "ventilation_slot_size": [
+        36.0,
+        8.0
+      ],
+      "anti_slip_recesses": 2,
+      "anti_slip_recess_size": [
+        24.0,
+        10.0,
+        1.5
+      ],
+      "external_fillet_radius": 4.0
+    },
+    "acceptance": {
+      "bbox_tolerance_mm": 5.0,
+      "minimum_volume_mm3": 80000.0,
+      "maximum_volume_mm3": 180000.0,
+      "minimum_cut_features": 2,
+      "minimum_fillet_features": 1,
+      "minimum_total_features": 4,
+      "minimum_faces": 10
+    }
+  },
+  "prompt": "创建一个一体式桌面手机支架，所有结构必须合并为单一实体。底座长110mm、宽78mm、厚8mm；78mm宽的倾斜背板厚6mm，与水平面成74°，从底座上表面升起，成品总高度118mm。底座前端设置贯穿全宽的挡唇，前后厚10mm，高出底座上表面12mm，使成品前端总高度20mm。背板左右两侧各有一个三角加强筋。背板下部中央开一个宽16mm、向下开口高度28mm的充电线U形通槽；背板中上部开3个36×8mm的水平贯穿散热槽，槽中心竖向间距18mm。底面加工两个24×10mm、深1.5mm的防滑垫浅凹槽。最后尽可能对适合的外轮廓做R4mm圆角，同时保持底面平整、支架左右对称。",
+  "results": [
+    {
+      "mode": "single_turn",
+      "status": "failed",
+      "duration_seconds": 25.233,
+      "turns": 1,
+      "llm_calls": 1,
+      "total_actions": 35,
+      "successful_actions": 34,
+      "token_usage": {
+        "by_model": {},
+        "calls": 0,
+        "completion_tokens": 0,
+        "prompt_tokens": 0,
+        "total_tokens": 0
+      },
+      "failed_actions": [
+        {
+          "operation": "feature_fillet",
+          "message": "创建圆角失败，请确保选中了有效的边"
+        }
+      ],
+      "score": 89.71,
+      "acceptance_ok": false,
+      "dimension_points": 30.0,
+      "volume_points": 10.0,
+      "topology_points": 20.0,
+      "detail_points": 20.0,
+      "execution_points": 9.71,
+      "bbox_mm": {
+        "minX": 0.0,
+        "minY": 0.0,
+        "minZ": -39.0,
+        "maxX": 116.0,
+        "maxY": 118.0,
+        "maxZ": 39.0,
+        "sizeX": 116.0,
+        "sizeY": 118.0,
+        "sizeZ": 78.0
+      },
+      "expected_dimensions_mm": [
+        78.0,
+        116.0,
+        118.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 128050.959706,
+      "volume_ok": true,
+      "feature_counts": {
+        "extrusion": 1,
+        "cut": 5,
+        "fillet": 0,
+        "total": 30,
+        "faces": 49
+      },
+      "action_success_rate": 0.971429,
+      "error": null
+    },
+    {
+      "mode": "multi_turn",
+      "status": "blocked",
+      "duration_seconds": 191.644,
+      "turns": 8,
+      "llm_calls": 3,
+      "total_actions": 26,
+      "successful_actions": 23,
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 3,
+            "completion_tokens": 11630,
+            "prompt_tokens": 99081,
+            "total_tokens": 110711
+          }
+        },
+        "calls": 3,
+        "completion_tokens": 11630,
+        "prompt_tokens": 99081,
+        "total_tokens": 110711
+      },
+      "failed_actions": [
+        {
+          "operation": "select_face_and_sketch",
+          "message": "未能通过射线选中实体面。射线起点(0.02,0.063,0.05)，方向(0,0,-1)及其反方向均未命中。"
+        },
+        {
+          "operation": "feature_extrusion",
+          "message": "拉伸失败，请确保草图中有封闭的轮廓"
+        },
+        {
+          "operation": "feature_extrusion",
+          "message": "拉伸失败，请确保草图中有封闭的轮廓"
+        }
+      ],
+      "score": 88.85,
+      "acceptance_ok": false,
+      "dimension_points": 30.0,
+      "volume_points": 10.0,
+      "topology_points": 20.0,
+      "detail_points": 20.0,
+      "execution_points": 8.85,
+      "bbox_mm": {
+        "maxX": 116.0,
+        "maxY": 118.0,
+        "maxZ": 39.0,
+        "minX": 0.0,
+        "minY": 0.0,
+        "minZ": -39.0,
+        "sizeX": 116.0,
+        "sizeY": 118.0,
+        "sizeZ": 78.0
+      },
+      "expected_dimensions_mm": [
+        78.0,
+        116.0,
+        118.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 127238.627429,
+      "volume_ok": true,
+      "feature_counts": {
+        "extrusion": 1,
+        "cut": 4,
+        "fillet": 0,
+        "total": 30,
+        "faces": 43
+      },
+      "action_success_rate": 0.884615,
+      "error": null
+    }
+  ]
+}

@@ -285,6 +285,25 @@ class SwOperation(BaseModel):
                         if candidate in params:
                             params[target] = params[candidate]
                             break
+            if operation_value == "feature_cut_extrusion":
+                raw_end_condition = str(
+                    params.get("endCondition")
+                    or params.get("end_condition")
+                    or "blind"
+                ).strip().lower().replace("-", "_")
+                compact_end_condition = raw_end_condition.replace(
+                    "_", ""
+                ).replace(" ", "")
+                end_condition = {
+                    "throughall": "through_all",
+                    "midplane": "mid_plane",
+                    "uptonext": "up_to_next",
+                }.get(compact_end_condition, raw_end_condition)
+                params["endCondition"] = end_condition
+                # SolidWorks' through-all API still requires a numeric D1
+                # argument even though the termination geometry ignores it.
+                if end_condition in {"through_all", "up_to_next"}:
+                    params.setdefault("depth", 1.0)
             if operation_value == "assembly_add_component":
                 position = (
                     params.get("position")

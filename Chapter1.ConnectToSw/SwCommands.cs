@@ -916,6 +916,98 @@ namespace Chapter1.ConnectToSw
                     Console.WriteLine("[SwCommands] 反转方向后成功命中面！");
             }
 
+            // A valid target face can contain an existing hole exactly under
+            // the requested ray. Retry with small deterministic offsets in
+            // the plane perpendicular to the ray, starting at 2 mm. This is
+            // especially useful when creating several features on one face.
+            if (bestFace == null)
+            {
+                double dLength = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                if (dLength > 1e-12)
+                {
+                    double ndx = dx / dLength;
+                    double ndy = dy / dLength;
+                    double ndz = dz / dLength;
+                    double ax = Math.Abs(ndx) < 0.9 ? 1.0 : 0.0;
+                    double ay = Math.Abs(ndx) < 0.9 ? 0.0 : 1.0;
+                    double az = 0.0;
+                    double ux = ndy * az - ndz * ay;
+                    double uy = ndz * ax - ndx * az;
+                    double uz = ndx * ay - ndy * ax;
+                    double uLength = Math.Sqrt(
+                        ux * ux + uy * uy + uz * uz);
+                    ux /= uLength; uy /= uLength; uz /= uLength;
+                    double vx = ndy * uz - ndz * uy;
+                    double vy = ndz * ux - ndx * uz;
+                    double vz = ndx * uy - ndy * ux;
+                    var offsets = new[]
+                    {
+                        new[] { ux, uy, uz },
+                        new[] { -ux, -uy, -uz },
+                        new[] { vx, vy, vz },
+                        new[] { -vx, -vy, -vz },
+                    };
+                    foreach (double radius in new[] {
+                        0.002, 0.005, 0.010, 0.020
+                    })
+                    {
+                        foreach (double[] offset in offsets)
+                        {
+                            double orx = rx + radius * offset[0];
+                            double ory = ry + radius * offset[1];
+                            double orz = rz + radius * offset[2];
+                            FindFaceByRay(
+                                bodies,
+                                orx, ory, orz,
+                                dx, dy, dz,
+                                out bestFace,
+                                out bestHitPt);
+                            if (bestFace == null)
+                            {
+                                FindFaceByRay(
+                                    bodies,
+                                    orx, ory, orz,
+                                    -dx, -dy, -dz,
+                                    out bestFace,
+                                    out bestHitPt);
+                            }
+                            if (bestFace != null)
+                            {
+                                var offsetSurface = bestFace.IGetSurface();
+                                if (offsetSurface == null
+                                    || !offsetSurface.IsPlane())
+                                {
+                                    bestFace = null;
+                                    bestHitPt = null;
+                                }
+                                else
+                                {
+                                    var plane = (double[])
+                                        offsetSurface.PlaneParams;
+                                    double alignment = Math.Abs(
+                                        plane[0] * ndx
+                                        + plane[1] * ndy
+                                        + plane[2] * ndz);
+                                    if (alignment < 0.70)
+                                    {
+                                        bestFace = null;
+                                        bestHitPt = null;
+                                    }
+                                }
+                            }
+                            if (bestFace != null)
+                            {
+                                Console.WriteLine(
+                                    "[SwCommands] 射线通过垂直偏移 " +
+                                    $"{radius * 1000:F0}mm 后命中面");
+                                break;
+                            }
+                        }
+                        if (bestFace != null) break;
+                    }
+                }
+            }
+
             if (bestFace == null)
                 throw new InvalidOperationException(
                     $"未能通过射线选中实体面。射线起点({rx},{ry},{rz})，方向({dx},{dy},{dz})及其反方向均未命中。");
@@ -1245,6 +1337,30 @@ namespace Chapter1.ConnectToSw
             double sx1, sy1, sx2, sy2;
             ModelToSketchPoint(x1, y1, z1, out sx1, out sy1);
             ModelToSketchPoint(x2, y2, z2, out sx2, out sy2);
+            // On an arbitrarily oriented face, callers often provide the
+            // rectangle in the active sketch's local 2D coordinates. If
+            // interpreting those values as model XY collapses a genuine
+            // rectangle into a line, use the values as local coordinates.
+            // This preserves model-coordinate behavior whenever the
+            // transform produces a non-degenerate rectangle.
+            bool inputIsRectangle =
+                Math.Abs(x2 - x1) > 1e-9
+                && Math.Abs(y2 - y1) > 1e-9;
+            bool transformedIsDegenerate =
+                Math.Abs(sx2 - sx1) <= 1e-9
+                || Math.Abs(sy2 - sy1) <= 1e-9;
+            if (!_sketchOnRefPlane
+                && inputIsRectangle
+                && transformedIsDegenerate)
+            {
+                Console.WriteLine(
+                    "[SwCommands] 模型XY变换使矩形退化，" +
+                    "按活动草图局部XY坐标解释输入");
+                sx1 = x1;
+                sy1 = y1;
+                sx2 = x2;
+                sy2 = y2;
+            }
             ActiveDoc.SketchManager.CreateCornerRectangle(sx1, sy1, 0, sx2, sy2, 0);
             Console.WriteLine($"[SwCommands] 绘制矩形: 模型({x1},{y1}) -> ({x2},{y2})，草图({sx1:F4},{sy1:F4}) -> ({sx2:F4},{sy2:F4})");
         }
@@ -1682,6 +1798,20 @@ namespace Chapter1.ConnectToSw
 
             // 检查是否在草图编辑模式中
             var activeSketch = ActiveDoc.SketchManager.ActiveSketch;
+            IFeature activeSketchFeature = null;
+            if (activeSketch != null)
+            {
+                try
+                {
+                    activeSketchFeature = ((IPartDoc)ActiveDoc)
+                        .FeatureByName(_activeSketchName) as IFeature;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(
+                        $"[SwCommands] 获取活动草图 Feature 失败: {ex.Message}");
+                }
+            }
             Console.WriteLine($"[SwCommands] 切除拉伸 - 当前ActiveSketch: {(activeSketch != null ? "有" : "无")}");
 
             // 退出草图编辑模式（使用 IModelDoc2.InsertSketch2 —— 官方推荐方式）
@@ -1733,8 +1863,21 @@ namespace Chapter1.ConnectToSw
             if (!string.IsNullOrEmpty(_activeSketchName))
             {
                 ActiveDoc.ClearSelection2(true);
-                bool selOk = mdoc.Extension.SelectByID2(_activeSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
-                Console.WriteLine($"[SwCommands] 切除前显式选中草图 \"{_activeSketchName}\" = {selOk}");
+                bool selOk = activeSketchFeature != null
+                    && activeSketchFeature.Select2(false, 0);
+                if (!selOk)
+                {
+                    selOk = mdoc.Extension.SelectByID2(
+                        _activeSketchName,
+                        "SKETCH",
+                        0, 0, 0,
+                        false,
+                        0,
+                        null,
+                        0);
+                }
+                Console.WriteLine(
+                    $"[SwCommands] 切除前选中捕获的草图 Feature/名称 \"{_activeSketchName}\" = {selOk}");
                 if (!selOk)
                     Console.WriteLine("[SwCommands] ⚠️ 按名选中草图失败，将回退到自动选择状态");
 
@@ -1789,7 +1932,19 @@ namespace Chapter1.ConnectToSw
                 ActiveDoc.ClearSelection2(true);
                 if (!string.IsNullOrEmpty(_activeSketchName))
                 {
-                    bool sel = mdoc.Extension.SelectByID2(_activeSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
+                    bool sel = activeSketchFeature != null
+                        && activeSketchFeature.Select2(false, 0);
+                    if (!sel)
+                    {
+                        sel = mdoc.Extension.SelectByID2(
+                            _activeSketchName,
+                            "SKETCH",
+                            0, 0, 0,
+                            false,
+                            0,
+                            null,
+                            0);
+                    }
                     Console.WriteLine($"[SwCommands] 重试 SelectByID2(\"{_activeSketchName}\", \"SKETCH\") = {sel}");
 
                     selCount = selMgr.GetSelectedObjectCount2(-1);

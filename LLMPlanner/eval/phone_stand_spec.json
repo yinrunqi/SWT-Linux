@@ -1,0 +1,44 @@
+{
+  "case_id": "one_piece_desktop_phone_stand_v1",
+  "description": "带充电槽、散热槽、加强筋和圆角的一体式桌面手机支架",
+  "units": {
+    "length": "mm",
+    "angle": "deg"
+  },
+  "overall_size": [116.0, 78.0, 118.0],
+  "base": {
+    "length": 110.0,
+    "width": 78.0,
+    "thickness": 8.0
+  },
+  "back_plate": {
+    "width": 78.0,
+    "thickness": 6.0,
+    "angle_from_horizontal_deg": 74.0,
+    "overall_height": 118.0
+  },
+  "front_lip": {
+    "width": 78.0,
+    "thickness": 10.0,
+    "height_above_base": 20.0
+  },
+  "details": {
+    "side_ribs": 2,
+    "cable_slot_width": 16.0,
+    "cable_slot_open_height": 28.0,
+    "ventilation_slots": 3,
+    "ventilation_slot_size": [36.0, 8.0],
+    "anti_slip_recesses": 2,
+    "anti_slip_recess_size": [24.0, 10.0, 1.5],
+    "external_fillet_radius": 4.0
+  },
+  "acceptance": {
+    "bbox_tolerance_mm": 5.0,
+    "minimum_volume_mm3": 80000.0,
+    "maximum_volume_mm3": 180000.0,
+    "minimum_cut_features": 2,
+    "minimum_fillet_features": 1,
+    "minimum_total_features": 4,
+    "minimum_faces": 10
+  }
+}

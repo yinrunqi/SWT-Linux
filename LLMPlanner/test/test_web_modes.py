@@ -132,6 +132,16 @@ def run_tests() -> None:
         assert payload["summary"]["all_ok"] is True
         print("[PASS] omitted mode preserves exact single-turn response")
 
+        response = client.post(
+            "/api/run",
+            json={**base_request, "mode": "single_turn"},
+        )
+        payload = response.get_json()
+        assert response.status_code == 200
+        assert payload["mode"] == "single_turn"
+        assert payload["token_usage"]["total_tokens"] > 0
+        print("[PASS] explicit single-turn reports request token usage")
+
         multi_request = {**base_request, "mode": "multi_turn", "max_turns": 5}
         response = client.post("/api/run", json=multi_request)
         payload = response.get_json()
@@ -204,6 +214,12 @@ def run_tests() -> None:
         assert "/api/assembly-examples/film-projector/run" in script
         assert "/api/projector-animation/pose" in script
         print("[PASS] film projector demo is exposed in assembly UI")
+
+        assert 'id="phone-stand-single-btn"' in page
+        assert 'id="phone-stand-multi-btn"' in page
+        assert "runPhoneStand" in script
+        assert "PHONE_STAND_PROMPT" in script
+        print("[PASS] phone stand exposes both modeling modes")
 
         component = web_app._resolve_gearbox_component(
             {

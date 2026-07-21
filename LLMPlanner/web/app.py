@@ -1037,6 +1037,7 @@ def run():
                 vision_model,
                 plan_model,
             )
+            usage_before = llm_client.usage_snapshot()
             plan = llm_client.plan(
                 instruction,
                 image_base64=image_b64 or None,
@@ -1051,7 +1052,7 @@ def run():
                 if result.get("success") or result.get("status") == "dry_run"
             )
             all_ok = success_count == len(plan.steps)
-            return jsonify({
+            response_payload = {
                 "success": True,
                 "plan": plan_dict,
                 "results": results,
@@ -1060,7 +1061,16 @@ def run():
                     "succeeded": success_count,
                     "all_ok": all_ok,
                 },
-            })
+            }
+            # Preserve the historical response exactly when mode is omitted.
+            # Explicit-mode callers (Web comparison/eval) also receive
+            # request-local usage without affecting legacy clients.
+            if "mode" in data:
+                token_usage = llm_client.usage_since(usage_before)
+                response_payload["mode"] = "single_turn"
+                response_payload["token_usage"] = token_usage
+                response_payload["summary"]["token_usage"] = token_usage
+            return jsonify(response_payload)
 
     except Exception as e:
         traceback.print_exc()

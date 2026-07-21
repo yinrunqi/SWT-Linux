@@ -54,6 +54,10 @@ const projectorAngle = document.getElementById("projector-angle");
 const projectorAngleValue = document.getElementById("projector-angle-value");
 const projectorPoseBtn = document.getElementById("projector-pose-btn");
 const projectorRunStatus = document.getElementById("projector-run-status");
+const phoneStandSection = document.getElementById("phone-stand-section");
+const phoneStandSingleBtn = document.getElementById("phone-stand-single-btn");
+const phoneStandMultiBtn = document.getElementById("phone-stand-multi-btn");
+const phoneStandStatus = document.getElementById("phone-stand-status");
 let gearStatusTimer = null;
 let gearboxMotionTimer = null;
 
@@ -625,14 +629,38 @@ function updateEditWorkflowAfterRun(step, succeeded) {
   );
 }
 
+async function runPhoneStand(mode) {
+  if (busy) return;
+  phoneStandSingleBtn.disabled = true;
+  phoneStandMultiBtn.disabled = true;
+  modeEl.value = mode;
+  if (mode === "multi_turn" && !maxTurnsEl.value) {
+    maxTurnsEl.value = "24";
+  }
+  updateModeUI();
+  saveSettings();
+  inputEl.value = PHONE_STAND_PROMPT;
+  phoneStandStatus.textContent = mode === "multi_turn"
+    ? "正在使用 Multi-turn 反复观察和修复手机支架…"
+    : "正在使用 Single-turn 一次规划并构建手机支架…";
+  phoneStandStatus.classList.remove("ok", "fail");
+  const requestSucceeded = await send();
+  phoneStandStatus.textContent = requestSucceeded
+    ? `${mode === "multi_turn" ? "Multi-turn" : "Single-turn"} 运行结束；完整度请查看上方时间线和配套 eval 分数`
+    : `${mode === "multi_turn" ? "Multi-turn" : "Single-turn"} 请求失败；请查看错误信息`;
+  phoneStandStatus.classList.add(requestSucceeded ? "ok" : "fail");
+  phoneStandSingleBtn.disabled = false;
+  phoneStandMultiBtn.disabled = false;
+}
+
 // ---- 发送指令 ----
 async function send() {
   const text = inputEl.value.trim();
   const hasImage = currentImage !== null;
   const editStep = pendingEditStep;
   // 文字与图片至少要有一个
-  if (!text && !hasImage) return;
-  if (busy) return;
+  if (!text && !hasImage) return false;
+  if (busy) return false;
 
   const apiKey = apiKeyEl.value.trim();
 
@@ -644,6 +672,12 @@ async function send() {
   // 移除欢迎区
   const welcome = document.querySelector(".welcome");
   if (welcome) {
+    if (
+      phoneStandSection
+      && welcome.contains(phoneStandSection)
+    ) {
+      chatEl.insertBefore(phoneStandSection, welcome.nextSibling);
+    }
     // 只有从 Edit 控件发起请求时才保留跨请求操作区。
     if (editStep && editSection && welcome.contains(editSection)) {
       chatEl.insertBefore(editSection, welcome.nextSibling);
@@ -665,6 +699,7 @@ async function send() {
       ? "正在识别图纸并规划建模 …"
       : "正在思考并执行中 …";
   const loadingId = appendLoading(loadingHint);
+  let requestSucceeded = false;
 
   try {
     const res = await fetch(`${API}/api/run`, {
@@ -686,6 +721,7 @@ async function send() {
     removeLoading(loadingId);
 
     if (data.success) {
+      requestSucceeded = true;
       if (data.mode === "multi_turn") {
         appendMultiTurnResponse(data.multi_turn, data.summary);
       } else {
@@ -705,6 +741,7 @@ async function send() {
   busy = false;
   sendBtn.disabled = false;
   inputEl.focus();
+  return requestSucceeded;
 }
 
 // ---- 渲染函数 ----
@@ -1173,6 +1210,14 @@ projectorPoseBtn.addEventListener("click", setProjectorPose);
 projectorAngle.addEventListener("input", () => {
   projectorAngleValue.textContent = `${projectorAngle.value}°`;
 });
+phoneStandSingleBtn.addEventListener(
+  "click",
+  () => runPhoneStand("single_turn"),
+);
+phoneStandMultiBtn.addEventListener(
+  "click",
+  () => runPhoneStand("multi_turn"),
+);
 gearboxGearSelect.addEventListener("change", () => {
   gearboxMotionPlayBtn.disabled = true;
   gearboxMotionStopBtn.disabled = true;
