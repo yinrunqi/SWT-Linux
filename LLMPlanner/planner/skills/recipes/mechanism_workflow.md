@@ -1,7 +1,7 @@
 ---
 name: mechanism_workflow
 description: 通用平面机构装配、曲柄滑块、多关节链求解和同步传动
-triggers: [机构, 曲柄, 滑块, 连杆, 活塞, 台灯, 机械臂, 折叠伞, 径向展开, crank, slider, linkage, mechanism, timing, umbrella, deployable]
+triggers: [机构, 曲柄, 滑块, 连杆, 活塞, 台灯, 机械臂, 折叠伞, 径向展开, 行星齿轮, 手电钻, 钻夹头, crank, slider, linkage, mechanism, timing, umbrella, deployable, planetary, drill, chuck]
 applies_to: [text]
 ---
 
@@ -46,5 +46,25 @@ applies_to: [text]
 至少验证收拢、半开和全开三态：每根主肋/撑杆长度不变、撑杆两端分别落在滑套
 与主肋连接点、各方位末端半径相等、实体局部轴与解析方向一致，并检查首尾状态
 可重复。若三角闭合无实数解，应修正几何参数，不能跳过该方位。
+
+### 多级固定齿圈行星轮系
+
+同轴多级行星减速器使用 `assembly_set_planetary_train_pose`。每一级明确太阳轮、
+行星架、太阳轮/齿圈/行星轮齿数、行星轮实例和轨道半径。固定齿圈必须满足
+`Nr = Ns + 2Np`；当前级输出行星架角作为下一级太阳轮输入角，禁止把多个行星
+轮当作固定中心的普通齿轮对。
+
+齿轮零件局部 +X 必须与共同旋转轴重合；每个行星轮既随行星架公转，又按外啮合
+关系自转。至少采样零位、输入一圈和多圈，验证每级
+`carrier/sun = Ns/(Ns+Nr)`、行星中心轨道半径、行星轮自转关系及总减速比。
+
+### 同步径向滑块
+
+三爪夹头、径向夹具和同心夹爪使用 `assembly_set_radial_sliders_pose`。各滑块
+局部 +X 沿径向移动方向，以均匀 `phaseDeg` 分布；共同改变
+`radialDistance`，不能分别手写三个不一致的坐标。
+
+至少采样夹紧、中间和张开三态，并验证所有内端半径相等、方位间隔均匀、实体
+局部轴与径向一致、夹紧半径不穿过被夹工件。
 
 若某个角度无实数解，应修正几何参数（连杆长度必须大于曲柄半径），不能通过跳过该采样点掩盖问题。

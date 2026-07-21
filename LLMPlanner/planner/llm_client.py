@@ -1223,6 +1223,33 @@ class SwLLMClient:
                     "bays 每项必须含 ribComponent 和 "
                     "stretcherComponent，可选 phaseDeg。长度单位为 m。"
                 )
+            if isinstance(action_payloads, list) and any(
+                isinstance(action, dict)
+                and action.get("operation")
+                == "assembly_set_planetary_train_pose"
+                for action in action_payloads
+            ):
+                contract_hint += (
+                    "\nassembly_set_planetary_train_pose 的 params 顶层"
+                    "必须包含 centerX, centerY, centerZ, inputAngleDeg, "
+                    "stages；可选 axisX/Y/Z、referenceRadialX/Y/Z、"
+                    "outputComponents。每个 stage 必须包含 sunComponent, "
+                    "carrierComponent, sunTeeth, ringTeeth, planetTeeth, "
+                    "orbitRadius, planetComponents；planetComponents 每项"
+                    "必须含 componentName，可选 phaseDeg。长度单位为 m。"
+                )
+            if isinstance(action_payloads, list) and any(
+                isinstance(action, dict)
+                and action.get("operation")
+                == "assembly_set_radial_sliders_pose"
+                for action in action_payloads
+            ):
+                contract_hint += (
+                    "\nassembly_set_radial_sliders_pose 的 params 顶层必须"
+                    "包含 centerX, centerY, centerZ, radialDistance, "
+                    "sliders；sliders 每项必须含 componentName，可选 "
+                    "phaseDeg, axialOffset, bodyLength。长度单位为 m。"
+                )
             rejected_operations = [
                 {
                     "operation": action.get("operation"),

@@ -372,6 +372,20 @@ Web Demo 中的 22 组件八骨折叠伞使用该能力，并提供 0%–100% �
 - `eval/radial_folding_umbrella_spec.json`
 - `test/test_radial_folding_umbrella.py`
 
+面向同轴传动和夹紧机构，系统新增：
+
+- `assembly_set_planetary_train_pose`：解析求解任意级固定齿圈行星轮系，包含
+  太阳轮输入、行星架输出、行星轮自转/公转和同步输出组件；
+- `assembly_set_radial_sliders_pose`：同步控制多爪夹头、径向夹具和同心滑块，
+  返回每个滑块的真实方向、径向距离和内端半径。
+
+Web Demo 中的 27 组件充电式手电钻组合了 20:1 双级行星减速器与三爪自定心
+夹头，并提供电机角和夹头开度控制。对应文件：
+
+- `eval/eval_cordless_drill_planetary_multiturn.py`
+- `eval/cordless_drill_planetary_spec.json`
+- `test/test_cordless_drill_planetary.py`
+
 ## 回归测试
 
 ```bash

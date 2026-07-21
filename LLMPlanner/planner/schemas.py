@@ -65,6 +65,12 @@ class OperationType(str, Enum):
     ASSEMBLY_SET_RADIAL_DEPLOYABLE_POSE = (
         "assembly_set_radial_deployable_pose"
     )
+    ASSEMBLY_SET_PLANETARY_TRAIN_POSE = (
+        "assembly_set_planetary_train_pose"
+    )
+    ASSEMBLY_SET_RADIAL_SLIDERS_POSE = (
+        "assembly_set_radial_sliders_pose"
+    )
     ASSEMBLY_SET_INDEXED_ROTARY_POSE = (
         "assembly_set_indexed_rotary_pose"
     )
@@ -197,6 +203,18 @@ class SwOperation(BaseModel):
             "ribAttachmentDistance,stretcherLength,ribDownAngleDeg,runnerComponent,"
             "bays:[{ribComponent,stretcherComponent,phaseDeg?}]}；用于伞骨、径向支架、"
             "可展开天线等重复径向连杆，组件局部 +X 沿杆中心线"
+            "\n- assembly_set_planetary_train_pose: {centerX,centerY,centerZ,"
+            "axisX?,axisY?,axisZ?,referenceRadialX?,referenceRadialY?,"
+            "referenceRadialZ?,inputAngleDeg,stages:[{sunComponent,"
+            "carrierComponent,sunTeeth,ringTeeth,planetTeeth,orbitRadius,"
+            "axialOffset?,carrierAxialOffset?,planetComponents:[{componentName,"
+            "phaseDeg?}]}],outputComponents?:[{componentName,ratio?,reverse?,"
+            "phaseDeg?}]}；固定内齿圈多级行星轮系，齿轮局部 +X 为轴线"
+            "\n- assembly_set_radial_sliders_pose: {centerX,centerY,centerZ,"
+            "axisX?,axisY?,axisZ?,referenceRadialX?,referenceRadialY?,"
+            "referenceRadialZ?,radialDistance,sliders:[{componentName,"
+            "phaseDeg?,axialOffset?,bodyLength?}]}；用于三爪夹头、径向夹具和"
+            "同步滑块，组件局部 +X 沿径向"
             "\n- assembly_set_indexed_rotary_pose: {driverComponent,indexedComponent,inputAngleDeg,"
             "slotCount?,engagementStartDeg?,engagementEndDeg?,reverseOutput?,"
             "continuousComponents?,indexedComponents?}；连续输入在啮合区推动输出轮每周期"
@@ -763,6 +781,243 @@ class SwOperation(BaseModel):
                 params.setdefault("centerX", 0.0)
                 params.setdefault("centerY", 0.0)
                 params.setdefault("centerZ", 0.0)
+            if operation_value == "assembly_set_planetary_train_pose":
+                for container_name in (
+                    "mechanism",
+                    "geometry",
+                    "kinematics",
+                ):
+                    container = params.get(container_name)
+                    if isinstance(container, dict):
+                        for key, value in container.items():
+                            params.setdefault(key, value)
+                for target, candidates in {
+                    "inputAngleDeg": (
+                        "input_angle_deg",
+                        "motorAngleDeg",
+                        "driverAngleDeg",
+                        "angleDeg",
+                    ),
+                    "stages": (
+                        "gearStages",
+                        "planetaryStages",
+                        "planetary_stages",
+                    ),
+                    "outputComponents": (
+                        "output_components",
+                        "synchronizedOutputs",
+                        "outputs",
+                    ),
+                }.items():
+                    if target not in params:
+                        for candidate in candidates:
+                            if candidate in params:
+                                params[target] = params[candidate]
+                                break
+                center = (
+                    params.get("center")
+                    or params.get("centerXYZ")
+                    or params.get("gearboxCenter")
+                )
+                if isinstance(center, (list, tuple)) and len(center) >= 3:
+                    for key, coordinate in zip(
+                        ("centerX", "centerY", "centerZ"),
+                        center[:3],
+                    ):
+                        params.setdefault(key, coordinate)
+                axis = params.get("axis") or params.get("rotationAxis")
+                if isinstance(axis, str):
+                    axis_values = {
+                        "x": (1.0, 0.0, 0.0),
+                        "y": (0.0, 1.0, 0.0),
+                        "z": (0.0, 0.0, 1.0),
+                        "-x": (-1.0, 0.0, 0.0),
+                        "-y": (0.0, -1.0, 0.0),
+                        "-z": (0.0, 0.0, -1.0),
+                    }.get(axis.strip().lower().lstrip("+"))
+                    if axis_values:
+                        for key, coordinate in zip(
+                            ("axisX", "axisY", "axisZ"),
+                            axis_values,
+                        ):
+                            params.setdefault(key, coordinate)
+                raw_stages = params.get("stages")
+                if isinstance(raw_stages, list):
+                    normalized_stages = []
+                    for raw_stage in raw_stages:
+                        if not isinstance(raw_stage, dict):
+                            normalized_stages.append(raw_stage)
+                            continue
+                        stage = dict(raw_stage)
+                        for target, candidates in {
+                            "sunComponent": (
+                                "sun",
+                                "sunName",
+                                "sun_component",
+                            ),
+                            "carrierComponent": (
+                                "carrier",
+                                "carrierName",
+                                "carrier_component",
+                            ),
+                            "sunTeeth": (
+                                "sun_teeth",
+                                "sunToothCount",
+                            ),
+                            "ringTeeth": (
+                                "ring_teeth",
+                                "ringToothCount",
+                            ),
+                            "planetTeeth": (
+                                "planet_teeth",
+                                "planetToothCount",
+                            ),
+                            "orbitRadius": (
+                                "orbit_radius",
+                                "planetOrbitRadius",
+                            ),
+                            "planetComponents": (
+                                "planets",
+                                "planet_components",
+                            ),
+                            "axialOffset": (
+                                "axial_offset",
+                                "stageOffset",
+                            ),
+                            "carrierAxialOffset": (
+                                "carrier_axial_offset",
+                                "carrierOffset",
+                            ),
+                        }.items():
+                            if target not in stage:
+                                for candidate in candidates:
+                                    if candidate in stage:
+                                        stage[target] = stage[candidate]
+                                        break
+                        raw_planets = stage.get("planetComponents")
+                        if isinstance(raw_planets, list):
+                            planets = []
+                            for index, raw_planet in enumerate(raw_planets):
+                                if isinstance(raw_planet, str):
+                                    planet = {
+                                        "componentName": raw_planet
+                                    }
+                                elif isinstance(raw_planet, dict):
+                                    planet = dict(raw_planet)
+                                    planet.setdefault(
+                                        "componentName",
+                                        planet.get("name")
+                                        or planet.get("component")
+                                        or planet.get("planetName"),
+                                    )
+                                else:
+                                    planets.append(raw_planet)
+                                    continue
+                                planet.setdefault(
+                                    "phaseDeg",
+                                    index * 360.0
+                                    / max(len(raw_planets), 1),
+                                )
+                                planets.append(planet)
+                            stage["planetComponents"] = planets
+                        normalized_stages.append(stage)
+                    params["stages"] = normalized_stages
+                raw_outputs = params.get("outputComponents")
+                if isinstance(raw_outputs, list):
+                    outputs = []
+                    for raw_output in raw_outputs:
+                        if isinstance(raw_output, str):
+                            output = {"componentName": raw_output}
+                        elif isinstance(raw_output, dict):
+                            output = dict(raw_output)
+                            output.setdefault(
+                                "componentName",
+                                output.get("name")
+                                or output.get("component")
+                                or output.get("outputName"),
+                            )
+                        else:
+                            outputs.append(raw_output)
+                            continue
+                        outputs.append(output)
+                    params["outputComponents"] = outputs
+                params.setdefault("centerX", 0.0)
+                params.setdefault("centerY", 0.0)
+                params.setdefault("centerZ", 0.0)
+                params.setdefault("outputComponents", [])
+            if operation_value == "assembly_set_radial_sliders_pose":
+                for target, candidates in {
+                    "radialDistance": (
+                        "radial_distance",
+                        "jawCenterRadius",
+                        "openingRadius",
+                        "sliderRadius",
+                    ),
+                    "sliders": (
+                        "jaws",
+                        "sliderComponents",
+                        "slider_components",
+                    ),
+                }.items():
+                    if target not in params:
+                        for candidate in candidates:
+                            if candidate in params:
+                                params[target] = params[candidate]
+                                break
+                center = (
+                    params.get("center")
+                    or params.get("centerXYZ")
+                    or params.get("chuckCenter")
+                )
+                if isinstance(center, (list, tuple)) and len(center) >= 3:
+                    for key, coordinate in zip(
+                        ("centerX", "centerY", "centerZ"),
+                        center[:3],
+                    ):
+                        params.setdefault(key, coordinate)
+                axis = params.get("axis") or params.get("rotationAxis")
+                if isinstance(axis, str):
+                    axis_values = {
+                        "x": (1.0, 0.0, 0.0),
+                        "y": (0.0, 1.0, 0.0),
+                        "z": (0.0, 0.0, 1.0),
+                        "-x": (-1.0, 0.0, 0.0),
+                        "-y": (0.0, -1.0, 0.0),
+                        "-z": (0.0, 0.0, -1.0),
+                    }.get(axis.strip().lower().lstrip("+"))
+                    if axis_values:
+                        for key, coordinate in zip(
+                            ("axisX", "axisY", "axisZ"),
+                            axis_values,
+                        ):
+                            params.setdefault(key, coordinate)
+                raw_sliders = params.get("sliders")
+                if isinstance(raw_sliders, list):
+                    sliders = []
+                    for index, raw_slider in enumerate(raw_sliders):
+                        if isinstance(raw_slider, str):
+                            slider = {"componentName": raw_slider}
+                        elif isinstance(raw_slider, dict):
+                            slider = dict(raw_slider)
+                            slider.setdefault(
+                                "componentName",
+                                slider.get("name")
+                                or slider.get("component")
+                                or slider.get("jawName"),
+                            )
+                        else:
+                            sliders.append(raw_slider)
+                            continue
+                        slider.setdefault(
+                            "phaseDeg",
+                            index * 360.0
+                            / max(len(raw_sliders), 1),
+                        )
+                        sliders.append(slider)
+                    params["sliders"] = sliders
+                params.setdefault("centerX", 0.0)
+                params.setdefault("centerY", 0.0)
+                params.setdefault("centerZ", 0.0)
             if operation_value == "assembly_set_indexed_rotary_pose":
                 for target, candidates in {
                     "driverComponent": (
@@ -1000,6 +1255,20 @@ class SwOperation(BaseModel):
                 "ribDownAngleDeg",
                 "runnerComponent",
                 "bays",
+            ),
+            OperationType.ASSEMBLY_SET_PLANETARY_TRAIN_POSE: (
+                "centerX",
+                "centerY",
+                "centerZ",
+                "inputAngleDeg",
+                "stages",
+            ),
+            OperationType.ASSEMBLY_SET_RADIAL_SLIDERS_POSE: (
+                "centerX",
+                "centerY",
+                "centerZ",
+                "radialDistance",
+                "sliders",
             ),
             OperationType.ASSEMBLY_SET_INDEXED_ROTARY_POSE: (
                 "driverComponent",

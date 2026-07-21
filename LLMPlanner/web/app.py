@@ -1094,6 +1094,249 @@ def set_umbrella_animation_pose():
 
 
 @app.route(
+    "/api/assembly-examples/cordless-drill/run",
+    methods=["POST"],
+)
+def run_cordless_drill():
+    """Build and machine-check the multi-turn cordless drill."""
+    data = request.get_json(force=True) or {}
+    provider = data.get("provider", "aiping").strip()
+    key_env = (
+        "JUHEAI_API_KEY"
+        if provider == "juheai"
+        else "OPENAI_API_KEY"
+    )
+    url_env = (
+        "JUHEAI_BASE_URL"
+        if provider == "juheai"
+        else "OPENAI_BASE_URL"
+    )
+    api_key = data.get("api_key", "").strip() or os.getenv(key_env, "")
+    base_url = data.get("base_url", "").strip() or os.getenv(url_env, "")
+    plan_model = (
+        data.get("plan_model", "").strip()
+        or os.getenv("PLAN_MODEL", "gpt-4o")
+    )
+    vision_model = (
+        data.get("vision_model", "").strip()
+        or os.getenv("VISION_MODEL", plan_model)
+    )
+    try:
+        max_turns = max(1, min(int(data.get("max_turns") or 34), 100))
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "error": "max_turns 必须是整数",
+        }), 400
+    if not api_key:
+        return jsonify({"success": False, "error": "请填写 API Key"}), 400
+    if executor is None:
+        return jsonify({
+            "success": False,
+            "error": "SolidWorks Executor 尚未初始化",
+        }), 503
+
+    from eval.eval_cordless_drill_planetary_multiturn import (
+        ARTIFACT_DIR,
+        SPEC_PATH,
+        SwApi,
+        _acceptance_specs,
+        _task_plan,
+        _user_goal,
+        prepare_parts,
+        score_result,
+        validate_mechanisms,
+    )
+    from planner.validators import ValidatorRegistry
+    import json as _json
+
+    api = SwApi(executor.base_url)
+    try:
+        with _sw_execution_lock:
+            spec = _json.loads(SPEC_PATH.read_text(encoding="utf-8"))
+            paths, build_log = prepare_parts(
+                api,
+                spec,
+                ARTIFACT_DIR,
+                force=bool(data.get("force_parts", False)),
+            )
+            assembly_path = ARTIFACT_DIR / "cordless_drill.SLDASM"
+            goal = _user_goal(paths, spec, assembly_path)
+            task_plan = _task_plan(goal, spec, assembly_path)
+            llm_client = _get_llm_client(
+                api_key,
+                base_url,
+                vision_model,
+                plan_model,
+                use_cache=True,
+            )
+            usage_before = llm_client.usage_snapshot()
+            agent = MultiTurnAgent(
+                llm_client,
+                executor,
+                max_turns=max_turns,
+            )
+            result = agent.run(goal, task_plan=task_plan)
+            token_usage = llm_client.usage_since(usage_before)
+            static_acceptance = ValidatorRegistry.validate(
+                _acceptance_specs(spec, assembly_path),
+                result.final_observation,
+            )
+            mechanism_acceptance = (
+                validate_mechanisms(
+                    api,
+                    spec,
+                    result.final_observation,
+                )
+                if result.status == "completed"
+                and static_acceptance.passed
+                else {
+                    "passed": False,
+                    "planetary_samples": [],
+                    "chuck_samples": [],
+                }
+            )
+            passed = (
+                result.status == "completed"
+                and static_acceptance.passed
+                and mechanism_acceptance["passed"]
+            )
+            score = score_result(
+                status=result.status,
+                static_passed=static_acceptance.passed,
+                mechanisms=mechanism_acceptance,
+                successful_actions=result.successful_actions,
+                total_actions=result.total_actions,
+            )
+            cleanup = api.close_inactive()
+            result_dict = result.model_dump(mode="json")
+            return jsonify({
+                "success": True,
+                "mode": "multi_turn",
+                "example": "cordless_drill_planetary",
+                "multi_turn": result_dict,
+                "turns": result_dict["turns"],
+                "final_observation": result_dict["final_observation"],
+                "task_plan": task_plan.model_dump(mode="json"),
+                "acceptance": static_acceptance.model_dump(mode="json"),
+                "mechanism_acceptance": mechanism_acceptance,
+                "score": score,
+                "build_log": build_log,
+                "window_cleanup": cleanup,
+                "cache_enabled": True,
+                "token_usage": token_usage,
+                "summary": {
+                    "total": result.total_actions,
+                    "succeeded": result.successful_actions,
+                    "all_ok": passed,
+                    "score": score,
+                    "status": "completed" if passed else result.status,
+                    "llm_calls": result.llm_calls,
+                    "turn_count": len(result.turns),
+                    "token_usage": token_usage,
+                },
+            })
+    except Exception as exc:
+        traceback.print_exc()
+        try:
+            api.close_all()
+        except Exception:
+            pass
+        return jsonify({"success": False, "error": str(exc)}), 500
+
+
+@app.route("/api/drill-animation/pose", methods=["POST"])
+def set_drill_animation_pose():
+    """Set deterministic planetary rotation and chuck opening."""
+    data = request.get_json(force=True) or {}
+    try:
+        motor_angle_deg = float(data.get("motor_angle_deg", 0))
+        opening_percent = max(
+            0.0,
+            min(float(data.get("opening_percent", 50)), 100.0),
+        )
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "error": "电机角度和夹头开度必须是数字",
+        }), 400
+
+    from eval.eval_cordless_drill_planetary_multiturn import (
+        ARTIFACT_DIR,
+        SPEC_PATH,
+        SwApi,
+        _chuck_payload,
+        _jaw_radius_for_control,
+        _observation,
+        _planetary_payload,
+        _resolve_components,
+    )
+    import json as _json
+
+    assembly_path = ARTIFACT_DIR / "cordless_drill.SLDASM"
+    api = SwApi(executor.base_url) if executor is not None else None
+    try:
+        if api is None:
+            raise RuntimeError("SolidWorks Executor 尚未初始化")
+        if not assembly_path.is_file():
+            raise FileNotFoundError(
+                "手电钻装配体尚未生成，请先运行 Multi-turn 构建"
+            )
+        with _sw_execution_lock:
+            spec = _json.loads(SPEC_PATH.read_text(encoding="utf-8"))
+            api.call(
+                "/api/assembly/open",
+                {"assemblyPath": str(assembly_path)},
+            )
+            names = _resolve_components(_observation(api))
+            planetary = api.call(
+                "/api/assembly/mechanism/planetary-train-pose",
+                _planetary_payload(names, spec, motor_angle_deg),
+            )["result"]
+            jaw_radius = _jaw_radius_for_control(
+                spec,
+                opening_percent,
+            )
+            chuck = api.call(
+                "/api/assembly/mechanism/radial-sliders-pose",
+                _chuck_payload(
+                    names,
+                    spec,
+                    jaw_radius,
+                    phase_offset_deg=float(
+                        planetary["outputAngleDeg"]
+                    ),
+                ),
+            )["result"]
+            cleanup = api.close_inactive()
+        return jsonify({
+            "success": True,
+            "message": (
+                f"电机已转到 {motor_angle_deg:g}°，"
+                f"夹头开度 {opening_percent:g}%"
+            ),
+            "motor_angle_deg": motor_angle_deg,
+            "output_angle_deg": planetary["outputAngleDeg"],
+            "opening_percent": opening_percent,
+            "jaw_center_radius_mm": jaw_radius,
+            "inner_radius_mm": (
+                sum(
+                    float(item["innerTipRadius"])
+                    for item in chuck["sliders"]
+                )
+                / len(chuck["sliders"])
+                * 1000
+            ),
+            "planetary": planetary,
+            "chuck": chuck,
+            "window_cleanup": cleanup,
+        })
+    except Exception as exc:
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(exc)}), 500
+
+
+@app.route(
     "/api/assembly-examples/film-projector/run",
     methods=["POST"],
 )

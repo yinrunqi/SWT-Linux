@@ -1,0 +1,109 @@
+{
+  "case_id": "cordless_drill_planetary_v1",
+  "description": "双级固定齿圈行星减速器和三爪自定心夹头的充电式手电钻",
+  "units": {
+    "length": "mm",
+    "angle": "deg"
+  },
+  "gear_standard": {
+    "module": 1.2,
+    "pressure_angle": 20.0,
+    "face_width": 8.0,
+    "bore_diameter": 5.0
+  },
+  "planetary": {
+    "center": [0.0, 0.0, 0.0],
+    "axis": [1.0, 0.0, 0.0],
+    "reference_radial": [0.0, 1.0, 0.0],
+    "stages": [
+      {
+        "name": "stage_1",
+        "sun_teeth": 12,
+        "ring_teeth": 48,
+        "planet_teeth": 18,
+        "orbit_radius": 18.0,
+        "axial_offset": -38.0,
+        "carrier_axial_offset": -27.0,
+        "planet_phases_deg": [0.0, 120.0, 240.0]
+      },
+      {
+        "name": "stage_2",
+        "sun_teeth": 15,
+        "ring_teeth": 45,
+        "planet_teeth": 15,
+        "orbit_radius": 18.0,
+        "axial_offset": -20.0,
+        "carrier_axial_offset": -9.0,
+        "planet_phases_deg": [0.0, 120.0, 240.0]
+      }
+    ],
+    "input_samples_deg": [0.0, 360.0, 720.0, 1440.0],
+    "expected_stage_ratios": [5.0, 4.0],
+    "expected_total_ratio": 20.0
+  },
+  "chuck": {
+    "center": [82.0, 0.0, 0.0],
+    "axis": [1.0, 0.0, 0.0],
+    "reference_radial": [0.0, 1.0, 0.0],
+    "jaw_body_length": 20.0,
+    "drill_bit_radius": 3.0,
+    "poses": [
+      {
+        "name": "clamped",
+        "opening_percent": 0,
+        "jaw_center_radius": 13.5
+      },
+      {
+        "name": "half_open",
+        "opening_percent": 50,
+        "jaw_center_radius": 17.0
+      },
+      {
+        "name": "open",
+        "opening_percent": 100,
+        "jaw_center_radius": 22.0
+      }
+    ]
+  },
+  "components": [
+    {"role": "shell_left", "kind": "housing_side", "group": "foundation", "translation": [0.0, 0.0, -38.0]},
+    {"role": "shell_right", "kind": "housing_side", "group": "foundation", "translation": [0.0, 0.0, 33.0]},
+    {"role": "battery_pack", "kind": "battery", "group": "foundation", "translation": [0.0, 0.0, -30.0]},
+    {"role": "trigger", "kind": "trigger", "group": "foundation", "translation": [0.0, 0.0, -12.0]},
+    {"role": "direction_switch", "kind": "direction_switch", "group": "drive", "translation": [0.0, 0.0, -8.0]},
+    {"role": "motor_stator", "kind": "motor_stator", "group": "drive", "translation": [-100.0, 0.0, 0.0]},
+    {"role": "motor_rotor", "kind": "motor_rotor", "group": "drive", "translation": [-105.0, 0.0, 0.0]},
+    {"role": "ring_stage1", "kind": "fixed_ring", "group": "drive", "translation": [-38.0, 0.0, 0.0]},
+    {"role": "sun_stage1", "kind": "sun_gear", "group": "stage1", "translation": [-38.0, 0.0, 0.0]},
+    {"role": "planet1_a", "kind": "planet_gear", "group": "stage1", "translation": [-38.0, 18.0, 0.0]},
+    {"role": "planet1_b", "kind": "planet_gear", "group": "stage1", "translation": [-38.0, -9.0, 15.5885]},
+    {"role": "planet1_c", "kind": "planet_gear", "group": "stage1", "translation": [-38.0, -9.0, -15.5885]},
+    {"role": "carrier_stage1", "kind": "planet_carrier", "group": "transition", "translation": [-27.0, 0.0, 0.0]},
+    {"role": "ring_stage2", "kind": "fixed_ring", "group": "transition", "translation": [-20.0, 0.0, 0.0]},
+    {"role": "sun_stage2", "kind": "sun_gear", "group": "transition", "translation": [-20.0, 0.0, 0.0]},
+    {"role": "planet2_a", "kind": "planet_gear", "group": "transition", "translation": [-20.0, 18.0, 0.0]},
+    {"role": "planet2_b", "kind": "planet_gear", "group": "stage2", "translation": [-20.0, -9.0, 15.5885]},
+    {"role": "planet2_c", "kind": "planet_gear", "group": "stage2", "translation": [-20.0, -9.0, -15.5885]},
+    {"role": "carrier_stage2", "kind": "planet_carrier", "group": "stage2", "translation": [-9.0, 0.0, 0.0]},
+    {"role": "spindle", "kind": "output_spindle", "group": "output", "translation": [-10.0, 0.0, 0.0]},
+    {"role": "front_bearing", "kind": "front_bearing", "group": "output", "translation": [8.0, 0.0, 0.0]},
+    {"role": "torque_collar", "kind": "torque_collar", "group": "output", "translation": [20.0, 0.0, 0.0]},
+    {"role": "chuck_body", "kind": "chuck_body", "group": "output", "translation": [35.0, 0.0, 0.0]},
+    {"role": "jaw_1", "kind": "chuck_jaw", "group": "tooling", "translation": [82.0, 17.0, 0.0]},
+    {"role": "jaw_2", "kind": "chuck_jaw", "group": "tooling", "translation": [82.0, -8.5, 14.7224]},
+    {"role": "jaw_3", "kind": "chuck_jaw", "group": "tooling", "translation": [82.0, -8.5, -14.7224]},
+    {"role": "drill_bit", "kind": "drill_bit", "group": "tooling", "translation": [80.0, 0.0, 0.0]}
+  ],
+  "acceptance": {
+    "component_count": 27,
+    "translation_tolerance_mm": 1.0,
+    "gear_ratio_tolerance": 0.000001,
+    "orbit_radius_tolerance_mm": 0.25,
+    "orientation_tolerance_deg": 0.1,
+    "jaw_symmetry_tolerance_mm": 0.25,
+    "jaw_position_tolerance_mm": 0.25,
+    "minimum_planetary_samples": 4,
+    "minimum_chuck_samples": 3,
+    "assembly_file_required": true
+  }
+}

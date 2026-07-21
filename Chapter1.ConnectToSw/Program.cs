@@ -363,6 +363,12 @@ namespace Chapter1.ConnectToSw
                 case "/api/assembly/mechanism/radial-deployable-pose":
                     RequirePost(method, resp, () => HandleRadialDeployablePose(req, resp));
                     break;
+                case "/api/assembly/mechanism/planetary-train-pose":
+                    RequirePost(method, resp, () => HandlePlanetaryTrainPose(req, resp));
+                    break;
+                case "/api/assembly/mechanism/radial-sliders-pose":
+                    RequirePost(method, resp, () => HandleRadialSlidersPose(req, resp));
+                    break;
                 case "/api/assembly/mechanism/indexed-rotary-pose":
                     RequirePost(method, resp, () => HandleIndexedRotaryPose(req, resp));
                     break;
@@ -1835,6 +1841,128 @@ namespace Chapter1.ConnectToSw
                 {
                     success = false,
                     message = $"径向展开连杆姿态失败: {ex.Message}",
+                });
+            }
+        }
+
+        private static void HandlePlanetaryTrainPose(
+            HttpListenerRequest req,
+            HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                Func<string, bool, List<Dictionary<string, object>>> readList =
+                    (key, required) =>
+                    {
+                        var entries =
+                            new List<Dictionary<string, object>>();
+                        var raw = body.ContainsKey(key)
+                            ? body[key] as System.Collections.IEnumerable
+                            : null;
+                        if (raw == null)
+                        {
+                            if (required)
+                                throw new ArgumentException(
+                                    $"{key} 必须是对象数组");
+                            return entries;
+                        }
+                        foreach (var item in raw)
+                        {
+                            var entry =
+                                item as Dictionary<string, object>;
+                            if (entry == null)
+                                throw new ArgumentException(
+                                    $"{key} 的每一项必须是对象");
+                            entries.Add(entry);
+                        }
+                        return entries;
+                    };
+                var result = _commands.SetPlanetaryTrainPose(
+                    GetDoubleOrDefault(body, "centerX", 0),
+                    GetDoubleOrDefault(body, "centerY", 0),
+                    GetDoubleOrDefault(body, "centerZ", 0),
+                    GetDoubleOrDefault(body, "axisX", 1),
+                    GetDoubleOrDefault(body, "axisY", 0),
+                    GetDoubleOrDefault(body, "axisZ", 0),
+                    GetDoubleOrDefault(body, "referenceRadialX", 0),
+                    GetDoubleOrDefault(body, "referenceRadialY", 1),
+                    GetDoubleOrDefault(body, "referenceRadialZ", 0),
+                    GetDouble(body, "inputAngleDeg"),
+                    readList("stages", true),
+                    readList("outputComponents", false));
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = "多级行星轮系姿态已更新",
+                    result,
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"[错误] PlanetaryTrainPose 失败: {ex.Message}");
+                SendJson(resp, 500, new
+                {
+                    success = false,
+                    message = $"多级行星轮系姿态失败: {ex.Message}",
+                });
+            }
+        }
+
+        private static void HandleRadialSlidersPose(
+            HttpListenerRequest req,
+            HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var sliders = new List<Dictionary<string, object>>();
+                var rawSliders = body.ContainsKey("sliders")
+                    ? body["sliders"] as System.Collections.IEnumerable
+                    : null;
+                if (rawSliders == null)
+                    throw new ArgumentException(
+                        "sliders 必须是对象数组");
+                foreach (var item in rawSliders)
+                {
+                    var slider = item as Dictionary<string, object>;
+                    if (slider == null)
+                        throw new ArgumentException(
+                            "sliders 的每一项必须是对象");
+                    sliders.Add(slider);
+                }
+                var result =
+                    _commands.SetSynchronizedRadialSlidersPose(
+                        GetDoubleOrDefault(body, "centerX", 0),
+                        GetDoubleOrDefault(body, "centerY", 0),
+                        GetDoubleOrDefault(body, "centerZ", 0),
+                        GetDoubleOrDefault(body, "axisX", 1),
+                        GetDoubleOrDefault(body, "axisY", 0),
+                        GetDoubleOrDefault(body, "axisZ", 0),
+                        GetDoubleOrDefault(
+                            body, "referenceRadialX", 0),
+                        GetDoubleOrDefault(
+                            body, "referenceRadialY", 1),
+                        GetDoubleOrDefault(
+                            body, "referenceRadialZ", 0),
+                        GetDouble(body, "radialDistance"),
+                        sliders);
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = "同步径向滑块姿态已更新",
+                    result,
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"[错误] RadialSlidersPose 失败: {ex.Message}");
+                SendJson(resp, 500, new
+                {
+                    success = false,
+                    message = $"同步径向滑块姿态失败: {ex.Message}",
                 });
             }
         }

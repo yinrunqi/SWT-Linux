@@ -187,6 +187,21 @@
         </div>
         <div class="gear-animation-panel">
           <div class="gear-animation-actions">
+            <button id="drill-run-btn">🔩 Multi-turn 构建行星减速手电钻</button>
+          </div>
+          <div class="gear-animation-actions gearbox-motion-actions">
+            <label for="drill-angle">电机角 <span id="drill-angle-value">0°</span></label>
+            <input id="drill-angle" type="range" min="0" max="1440" step="30" value="0">
+            <label for="drill-opening">夹头开度 <span id="drill-opening-value">50%</span></label>
+            <input id="drill-opening" type="range" min="0" max="100" step="5" value="50">
+            <button id="drill-pose-btn">设置电钻姿态</button>
+          </div>
+          <div id="drill-run-status" class="gear-animation-status">
+            27 组件、20:1 双级行星减速和三爪自定心夹头
+          </div>
+        </div>
+        <div class="gear-animation-panel">
+          <div class="gear-animation-actions">
             <button id="projector-run-btn">🎞 Multi-turn 构建复古 16mm 放映机</button>
           </div>
           <div class="gear-animation-actions gearbox-motion-actions">

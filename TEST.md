@@ -994,3 +994,45 @@ node --check web/static/app.js
 
 Web Demo“装配体相关”提供构建按钮和 0%–100% 开合滑块。滑块只调用确定性
 SolidWorks API，不调用 LLM；最终全开姿态会保存在装配体中。
+
+---
+
+## 二十二、27 组件双级行星减速手电钻 Multi-turn 装配测试
+
+该测例生成一台枪形充电式手电钻。电机驱动两级固定齿圈行星轮系，第一级
+12/48/18 齿、第二级 15/45/15 齿，总减速比 20:1；输出主轴连接带三个
+120° 等分夹爪的自定心夹头。
+
+```cmd
+cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
+
+REM 生成 27 个参数化零件，每个零件完成后关闭文档
+py eval\eval_cordless_drill_planetary_multiturn.py --prepare-only --force-parts
+
+REM Multi-turn 装配、四个电机角和三个夹头开度验收
+py eval\eval_cordless_drill_planetary_multiturn.py --use-cache --max-turns 34
+
+REM 已保存装配体零 token 复验
+py eval\eval_cordless_drill_planetary_multiturn.py --validate-existing
+
+REM schema、评分和 Web 回归
+py -m pytest test/test_cordless_drill_planetary.py test/test_multiturn_cache.py -q
+py test/test_web_modes.py
+node --check web/static/app.js
+```
+
+验收内容：
+
+- 精确 27 个组件且 `.SLDASM` 已保存；
+- 两级固定齿圈均满足 `Nr = Ns + 2Np`，减速比分别为 5:1 和 4:1；
+- 输入 0/360/720/1440° 时，总输出角严格为输入角的 1/20；
+- 每级三个行星轮按行星架角公转，同时满足太阳轮—行星轮外啮合自转关系；
+- 行星中心轨道半径保持 18mm，误差不超过 0.25mm；
+- 三爪夹紧、半开、张开三态的内端半径一致，对称误差不超过 0.25mm；
+- 夹爪局部 +X 与实际径向一致，位置误差不超过 0.25mm；
+- 闭合夹爪与 3mm 半径钻头保持非负间隙；
+- 静态装配 40 分、轮系/夹头机构 40 分、执行可靠性 20 分。
+
+Web Demo 提供 Multi-turn 构建按钮、电机角滑块和夹头开度滑块。控制动作直接
+调用 SolidWorks 机构 API；电机角同时驱动太阳轮、行星轮、行星架、主轴和夹头，
+夹爪则随输出角旋转并保持同步径向开合。

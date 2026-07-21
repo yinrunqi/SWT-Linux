@@ -59,6 +59,13 @@ const umbrellaOpenness = document.getElementById("umbrella-openness");
 const umbrellaOpennessValue = document.getElementById("umbrella-openness-value");
 const umbrellaPoseBtn = document.getElementById("umbrella-pose-btn");
 const umbrellaRunStatus = document.getElementById("umbrella-run-status");
+const drillRunBtn = document.getElementById("drill-run-btn");
+const drillAngle = document.getElementById("drill-angle");
+const drillAngleValue = document.getElementById("drill-angle-value");
+const drillOpening = document.getElementById("drill-opening");
+const drillOpeningValue = document.getElementById("drill-opening-value");
+const drillPoseBtn = document.getElementById("drill-pose-btn");
+const drillRunStatus = document.getElementById("drill-run-status");
 const projectorRunBtn = document.getElementById("projector-run-btn");
 const projectorAngle = document.getElementById("projector-angle");
 const projectorAngleValue = document.getElementById("projector-angle-value");
@@ -679,6 +686,95 @@ async function setUmbrellaPose() {
     umbrellaRunStatus.classList.add("fail");
   } finally {
     umbrellaPoseBtn.disabled = false;
+  }
+}
+
+async function runCordlessDrill() {
+  if (busy) return;
+  busy = true;
+  drillRunBtn.disabled = true;
+  sendBtn.disabled = true;
+  drillRunStatus.textContent =
+    "正在准备 27 个电钻零件，并由 Multi-turn Agent 装配双级行星轮系和三爪夹头…";
+  drillRunStatus.classList.remove("ok", "fail");
+  appendUser(
+    "装配带双级固定齿圈行星减速和三爪自定心夹头的充电式手电钻",
+    null,
+  );
+  const loadingId = appendLoading(
+    "正在构建手电钻；重复运行将复用已验收的 Agent 状态缓存…",
+  );
+  try {
+    const response = await fetch(
+      `${API}/api/assembly-examples/cordless-drill/run`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: providerEl.value,
+          api_key: apiKeyEl.value.trim(),
+          base_url: baseUrlEl.value.trim(),
+          vision_model: visionModelEl.value,
+          plan_model: planModelEl.value,
+          max_turns: maxTurnsEl.value
+            ? Number(maxTurnsEl.value)
+            : 34,
+        }),
+      },
+    );
+    const data = await response.json();
+    removeLoading(loadingId);
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+    appendMultiTurnResponse(data.multi_turn, data.summary);
+    const tokens = Number(data.token_usage?.total_tokens || 0);
+    const cacheText = tokens === 0
+      ? "Agent 决策全部命中缓存，token 花费为 0"
+      : `本次新消耗 ${tokens} tokens`;
+    const accepted = Boolean(data.summary?.all_ok);
+    drillRunStatus.textContent = accepted
+      ? `手电钻装配及轮系/夹头验收成功，评分 ${Number(data.score || 0).toFixed(2)}；${cacheText}`
+      : `手电钻装配或机构验收未通过；${cacheText}`;
+    drillRunStatus.classList.add(accepted ? "ok" : "fail");
+  } catch (error) {
+    removeLoading(loadingId);
+    drillRunStatus.textContent = `手电钻构建失败：${error.message}`;
+    drillRunStatus.classList.add("fail");
+    appendError(error.message);
+  } finally {
+    busy = false;
+    drillRunBtn.disabled = false;
+    sendBtn.disabled = false;
+  }
+}
+
+async function setDrillPose() {
+  drillPoseBtn.disabled = true;
+  drillRunStatus.textContent =
+    `正在设置电机 ${drillAngle.value}°、夹头 ${drillOpening.value}%…`;
+  drillRunStatus.classList.remove("ok", "fail");
+  try {
+    const response = await fetch(`${API}/api/drill-animation/pose`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        motor_angle_deg: Number(drillAngle.value),
+        opening_percent: Number(drillOpening.value),
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+    drillRunStatus.textContent =
+      `${data.message}，20:1 输出角 ${Number(data.output_angle_deg).toFixed(2)}°，夹爪内径 ${Number(data.inner_radius_mm).toFixed(2)} mm；不调用 LLM`;
+    drillRunStatus.classList.add("ok");
+  } catch (error) {
+    drillRunStatus.textContent = `手电钻姿态设置失败：${error.message}`;
+    drillRunStatus.classList.add("fail");
+  } finally {
+    drillPoseBtn.disabled = false;
   }
 }
 
@@ -1401,6 +1497,14 @@ umbrellaRunBtn.addEventListener("click", runRadialFoldingUmbrella);
 umbrellaPoseBtn.addEventListener("click", setUmbrellaPose);
 umbrellaOpenness.addEventListener("input", () => {
   umbrellaOpennessValue.textContent = `${umbrellaOpenness.value}%`;
+});
+drillRunBtn.addEventListener("click", runCordlessDrill);
+drillPoseBtn.addEventListener("click", setDrillPose);
+drillAngle.addEventListener("input", () => {
+  drillAngleValue.textContent = `${drillAngle.value}°`;
+});
+drillOpening.addEventListener("input", () => {
+  drillOpeningValue.textContent = `${drillOpening.value}%`;
 });
 projectorRunBtn.addEventListener("click", runFilmProjector);
 projectorPoseBtn.addEventListener("click", setProjectorPose);

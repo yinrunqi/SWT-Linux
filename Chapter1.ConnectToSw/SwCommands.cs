@@ -4245,6 +4245,619 @@ namespace Chapter1.ConnectToSw
         }
 
         /// <summary>
+        /// Apply a deterministic pose to one or more serial fixed-ring
+        /// planetary stages. Gear parts are modeled around local +X and the
+        /// assembly rotation axis must be parallel to world X.
+        /// </summary>
+        public Dictionary<string, object> SetPlanetaryTrainPose(
+            double centerX,
+            double centerY,
+            double centerZ,
+            double axisX,
+            double axisY,
+            double axisZ,
+            double referenceRadialX,
+            double referenceRadialY,
+            double referenceRadialZ,
+            double inputAngleDeg,
+            List<Dictionary<string, object>> stages,
+            List<Dictionary<string, object>> outputComponents)
+        {
+            EnsureActiveAssembly();
+            if (stages == null || stages.Count == 0)
+                throw new ArgumentException("行星轮系至少需要一级");
+            double axisNorm = Math.Sqrt(
+                axisX * axisX + axisY * axisY + axisZ * axisZ);
+            if (axisNorm < 1e-12)
+                throw new ArgumentException("行星轮系旋转轴不能为零");
+            axisX /= axisNorm;
+            axisY /= axisNorm;
+            axisZ /= axisNorm;
+            if (Math.Abs(Math.Abs(axisX) - 1.0) > 1e-6
+                || Math.Abs(axisY) > 1e-6
+                || Math.Abs(axisZ) > 1e-6)
+                throw new ArgumentException(
+                    "当前行星轮零件约定要求旋转轴平行于世界 X");
+            double referenceDot =
+                referenceRadialX * axisX
+                + referenceRadialY * axisY
+                + referenceRadialZ * axisZ;
+            referenceRadialX -= referenceDot * axisX;
+            referenceRadialY -= referenceDot * axisY;
+            referenceRadialZ -= referenceDot * axisZ;
+            double referenceNorm = Math.Sqrt(
+                referenceRadialX * referenceRadialX
+                + referenceRadialY * referenceRadialY
+                + referenceRadialZ * referenceRadialZ);
+            if (referenceNorm < 1e-12)
+                throw new ArgumentException(
+                    "行星轮参考径向不能与旋转轴平行");
+            referenceRadialX /= referenceNorm;
+            referenceRadialY /= referenceNorm;
+            referenceRadialZ /= referenceNorm;
+            double tangentX =
+                axisY * referenceRadialZ
+                - axisZ * referenceRadialY;
+            double tangentY =
+                axisZ * referenceRadialX
+                - axisX * referenceRadialZ;
+            double tangentZ =
+                axisX * referenceRadialY
+                - axisY * referenceRadialX;
+
+            var componentLookup = new Dictionary<string, IComponent2>(
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var raw in (_activeAssembly.GetComponents(false)
+                as object[]) ?? new object[0])
+            {
+                var component = raw as IComponent2;
+                if (component != null)
+                    componentLookup[component.Name2] = component;
+            }
+            Func<string, IComponent2> resolve = name =>
+            {
+                IComponent2 component;
+                if (!componentLookup.TryGetValue(name, out component))
+                    throw new InvalidOperationException(
+                        $"装配体中找不到组件: {name}");
+                return component;
+            };
+            Func<IComponent2, double[]> translationOf = component =>
+            {
+                var transform = component.Transform2 as MathTransform;
+                var values = transform?.ArrayData as double[];
+                if (values == null || values.Length < 12)
+                    throw new InvalidOperationException(
+                        $"无法读取组件姿态: {component.Name2}");
+                return new double[] { values[9], values[10], values[11] };
+            };
+            Func<double, double> normalizedAngle = angle =>
+            {
+                double value = angle % 360.0;
+                if (value <= -180.0) value += 360.0;
+                if (value > 180.0) value -= 360.0;
+                return value;
+            };
+            Func<IComponent2, double> actualAngleOf = component =>
+            {
+                var transform = component.Transform2 as MathTransform;
+                var values = transform?.ArrayData as double[];
+                if (values == null || values.Length < 9)
+                    throw new InvalidOperationException(
+                        $"无法读取组件旋转: {component.Name2}");
+                return Math.Atan2(values[7], values[4])
+                    * 180.0 / Math.PI;
+            };
+            Func<string, double, double, double, double,
+                Dictionary<string, object>> poseGear =
+                (name, x, y, z, angle) =>
+                {
+                    var component = resolve(name);
+                    SetComponentPose(
+                        name,
+                        x, y, z,
+                        axisX, axisY, axisZ,
+                        angle,
+                        false,
+                        component);
+                    double actualAngle = actualAngleOf(component);
+                    return new Dictionary<string, object>
+                    {
+                        ["componentName"] = name,
+                        ["translationXYZ"] = new double[] { x, y, z },
+                        ["commandedAngleDeg"] = angle,
+                        ["actualAngleDeg"] = actualAngle,
+                        ["orientationErrorDeg"] = Math.Abs(
+                            normalizedAngle(actualAngle - angle)),
+                    };
+                };
+            Func<Dictionary<string, object>, string, string> stringValue =
+                (item, key) =>
+                {
+                    object raw;
+                    if (!item.TryGetValue(key, out raw)
+                        || string.IsNullOrWhiteSpace(Convert.ToString(raw)))
+                        throw new ArgumentException($"行星级缺少 {key}");
+                    return Convert.ToString(raw);
+                };
+
+            var modelDoc = (IModelDoc2)_activeAssembly;
+            var modelView = modelDoc.ActiveView as IModelView;
+            var stageResults = new List<Dictionary<string, object>>();
+            var outputResults = new List<Dictionary<string, object>>();
+            double stageInputAngle = inputAngleDeg;
+            double overallRatio = 1.0;
+            double maximumOrbitError = 0.0;
+            double maximumOrientationError = 0.0;
+            try
+            {
+                _swApp.CommandInProgress = true;
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = false;
+                for (int stageIndex = 0;
+                    stageIndex < stages.Count;
+                    stageIndex++)
+                {
+                    var stage = stages[stageIndex];
+                    string sunName = stringValue(stage, "sunComponent");
+                    string carrierName =
+                        stringValue(stage, "carrierComponent");
+                    int sunTeeth = Convert.ToInt32(stage["sunTeeth"]);
+                    int ringTeeth = Convert.ToInt32(stage["ringTeeth"]);
+                    int planetTeeth = Convert.ToInt32(
+                        stage["planetTeeth"]);
+                    if (sunTeeth <= 0 || ringTeeth <= 0
+                        || planetTeeth <= 0)
+                        throw new ArgumentException(
+                            "行星轮齿数必须为正整数");
+                    if (ringTeeth != sunTeeth + 2 * planetTeeth)
+                        throw new ArgumentException(
+                            "固定内齿圈必须满足 Nr = Ns + 2Np");
+                    double orbitRadius = Convert.ToDouble(
+                        stage["orbitRadius"]);
+                    if (orbitRadius <= 0)
+                        throw new ArgumentException(
+                            "planet orbitRadius 必须为正");
+                    double axialOffset = stage.ContainsKey("axialOffset")
+                        ? Convert.ToDouble(stage["axialOffset"])
+                        : 0.0;
+                    double carrierAxialOffset =
+                        stage.ContainsKey("carrierAxialOffset")
+                        ? Convert.ToDouble(stage["carrierAxialOffset"])
+                        : axialOffset;
+                    double phaseOffset = stage.ContainsKey("phaseOffsetDeg")
+                        ? Convert.ToDouble(stage["phaseOffsetDeg"])
+                        : 0.0;
+                    double carrierPerSun =
+                        (double)sunTeeth / (sunTeeth + ringTeeth);
+                    double carrierAngle =
+                        stageInputAngle * carrierPerSun;
+                    double planetAngle = carrierAngle
+                        - ((double)sunTeeth / planetTeeth)
+                        * (stageInputAngle - carrierAngle);
+                    overallRatio /= carrierPerSun;
+                    double stageX = centerX + axisX * axialOffset;
+                    double stageY = centerY + axisY * axialOffset;
+                    double stageZ = centerZ + axisZ * axialOffset;
+                    var sunResult = poseGear(
+                        sunName,
+                        stageX, stageY, stageZ,
+                        stageInputAngle);
+                    var carrierResult = poseGear(
+                        carrierName,
+                        centerX + axisX * carrierAxialOffset,
+                        centerY + axisY * carrierAxialOffset,
+                        centerZ + axisZ * carrierAxialOffset,
+                        carrierAngle);
+                    maximumOrientationError = Math.Max(
+                        maximumOrientationError,
+                        Math.Max(
+                            Convert.ToDouble(
+                                sunResult["orientationErrorDeg"]),
+                            Convert.ToDouble(
+                                carrierResult["orientationErrorDeg"])));
+
+                    var planetEntries = new List<
+                        Dictionary<string, object>>();
+                    var rawPlanets =
+                        stage["planetComponents"]
+                        as System.Collections.IEnumerable;
+                    if (rawPlanets == null)
+                        throw new ArgumentException(
+                            "planetComponents 必须是数组");
+                    var planets = new List<Dictionary<string, object>>();
+                    foreach (var rawPlanet in rawPlanets)
+                    {
+                        var planetObject =
+                            rawPlanet as Dictionary<string, object>;
+                        if (planetObject != null)
+                            planets.Add(planetObject);
+                        else
+                            planets.Add(new Dictionary<string, object>
+                            {
+                                ["componentName"] =
+                                    Convert.ToString(rawPlanet),
+                            });
+                    }
+                    if (planets.Count < 2)
+                        throw new ArgumentException(
+                            "每级行星轮至少需要两个 planetComponents");
+                    for (int planetIndex = 0;
+                        planetIndex < planets.Count;
+                        planetIndex++)
+                    {
+                        var planet = planets[planetIndex];
+                        string planetName = stringValue(
+                            planet,
+                            "componentName");
+                        double basePhase = planet.ContainsKey("phaseDeg")
+                            ? Convert.ToDouble(planet["phaseDeg"])
+                            : planetIndex * 360.0 / planets.Count;
+                        double orbitPhase =
+                            basePhase + phaseOffset + carrierAngle;
+                        double phase =
+                            orbitPhase * Math.PI / 180.0;
+                        double radialX =
+                            Math.Cos(phase) * referenceRadialX
+                            + Math.Sin(phase) * tangentX;
+                        double radialY =
+                            Math.Cos(phase) * referenceRadialY
+                            + Math.Sin(phase) * tangentY;
+                        double radialZ =
+                            Math.Cos(phase) * referenceRadialZ
+                            + Math.Sin(phase) * tangentZ;
+                        double planetX = stageX
+                            + radialX * orbitRadius;
+                        double planetY = stageY
+                            + radialY * orbitRadius;
+                        double planetZ = stageZ
+                            + radialZ * orbitRadius;
+                        var planetResult = poseGear(
+                            planetName,
+                            planetX, planetY, planetZ,
+                            planetAngle + basePhase);
+                        var actual = translationOf(resolve(planetName));
+                        double actualOrbit = Math.Sqrt(
+                            Math.Pow(actual[0] - stageX, 2)
+                            + Math.Pow(actual[1] - stageY, 2)
+                            + Math.Pow(actual[2] - stageZ, 2));
+                        double orbitError = Math.Abs(
+                            actualOrbit - orbitRadius);
+                        maximumOrbitError = Math.Max(
+                            maximumOrbitError,
+                            orbitError);
+                        maximumOrientationError = Math.Max(
+                            maximumOrientationError,
+                            Convert.ToDouble(
+                                planetResult["orientationErrorDeg"]));
+                        planetEntries.Add(new Dictionary<string, object>
+                        {
+                            ["componentName"] = planetName,
+                            ["basePhaseDeg"] = basePhase,
+                            ["orbitPhaseDeg"] = orbitPhase,
+                            ["spinAngleDeg"] =
+                                planetAngle + basePhase,
+                            ["translationXYZ"] = actual,
+                            ["measuredOrbitRadius"] = actualOrbit,
+                            ["orbitRadiusError"] = orbitError,
+                            ["orientationErrorDeg"] =
+                                planetResult["orientationErrorDeg"],
+                        });
+                    }
+                    stageResults.Add(new Dictionary<string, object>
+                    {
+                        ["stageIndex"] = stageIndex,
+                        ["sunTeeth"] = sunTeeth,
+                        ["ringTeeth"] = ringTeeth,
+                        ["planetTeeth"] = planetTeeth,
+                        ["sunAngleDeg"] = stageInputAngle,
+                        ["carrierAngleDeg"] = carrierAngle,
+                        ["planetSpinBaseAngleDeg"] = planetAngle,
+                        ["carrierPerSunRatio"] = carrierPerSun,
+                        ["reductionRatio"] = 1.0 / carrierPerSun,
+                        ["sun"] = sunResult,
+                        ["carrier"] = carrierResult,
+                        ["planets"] = planetEntries.ToArray(),
+                    });
+                    stageInputAngle = carrierAngle;
+                }
+
+                foreach (var item in outputComponents
+                    ?? new List<Dictionary<string, object>>())
+                {
+                    string name = stringValue(item, "componentName");
+                    double ratio = item.ContainsKey("ratio")
+                        ? Convert.ToDouble(item["ratio"])
+                        : 1.0;
+                    if (Math.Abs(ratio) < 1e-12)
+                        throw new ArgumentException(
+                            "输出同步组件 ratio 不能为零");
+                    bool reverse = item.ContainsKey("reverse")
+                        && Convert.ToBoolean(item["reverse"]);
+                    double phase = item.ContainsKey("phaseDeg")
+                        ? Convert.ToDouble(item["phaseDeg"])
+                        : 0.0;
+                    string source = item.ContainsKey("source")
+                        ? Convert.ToString(item["source"]).ToLowerInvariant()
+                        : "output";
+                    double sourceAngle = source == "input"
+                        ? inputAngleDeg
+                        : stageInputAngle;
+                    double angle = sourceAngle / ratio
+                        * (reverse ? -1.0 : 1.0) + phase;
+                    var current = translationOf(resolve(name));
+                    var result = poseGear(
+                        name,
+                        item.ContainsKey("x")
+                            ? Convert.ToDouble(item["x"]) : current[0],
+                        item.ContainsKey("y")
+                            ? Convert.ToDouble(item["y"]) : current[1],
+                        item.ContainsKey("z")
+                            ? Convert.ToDouble(item["z"]) : current[2],
+                        angle);
+                    result["source"] = source;
+                    maximumOrientationError = Math.Max(
+                        maximumOrientationError,
+                        Convert.ToDouble(result["orientationErrorDeg"]));
+                    outputResults.Add(result);
+                }
+            }
+            finally
+            {
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = true;
+                _swApp.CommandInProgress = false;
+                modelDoc.GraphicsRedraw2();
+            }
+            return new Dictionary<string, object>
+            {
+                ["inputAngleDeg"] = inputAngleDeg,
+                ["outputAngleDeg"] = stageInputAngle,
+                ["overallReductionRatio"] = overallRatio,
+                ["stages"] = stageResults.ToArray(),
+                ["outputs"] = outputResults.ToArray(),
+                ["maximumOrbitRadiusError"] = maximumOrbitError,
+                ["maximumOrientationErrorDeg"] =
+                    maximumOrientationError,
+            };
+        }
+
+        /// <summary>
+        /// Pose equal radial sliders around an axis. Slider part local +X is
+        /// aligned with its radial travel direction.
+        /// </summary>
+        public Dictionary<string, object> SetSynchronizedRadialSlidersPose(
+            double centerX,
+            double centerY,
+            double centerZ,
+            double axisX,
+            double axisY,
+            double axisZ,
+            double referenceRadialX,
+            double referenceRadialY,
+            double referenceRadialZ,
+            double radialDistance,
+            List<Dictionary<string, object>> sliders)
+        {
+            EnsureActiveAssembly();
+            if (radialDistance < 0)
+                throw new ArgumentException(
+                    "radialDistance 不能为负数");
+            if (sliders == null || sliders.Count < 2)
+                throw new ArgumentException(
+                    "同步径向滑块至少需要两个组件");
+            double axisNorm = Math.Sqrt(
+                axisX * axisX + axisY * axisY + axisZ * axisZ);
+            if (axisNorm < 1e-12)
+                throw new ArgumentException("滑块中心轴不能为零");
+            axisX /= axisNorm;
+            axisY /= axisNorm;
+            axisZ /= axisNorm;
+            double referenceDot =
+                referenceRadialX * axisX
+                + referenceRadialY * axisY
+                + referenceRadialZ * axisZ;
+            referenceRadialX -= referenceDot * axisX;
+            referenceRadialY -= referenceDot * axisY;
+            referenceRadialZ -= referenceDot * axisZ;
+            double referenceNorm = Math.Sqrt(
+                referenceRadialX * referenceRadialX
+                + referenceRadialY * referenceRadialY
+                + referenceRadialZ * referenceRadialZ);
+            if (referenceNorm < 1e-12)
+                throw new ArgumentException(
+                    "滑块参考径向不能与中心轴平行");
+            referenceRadialX /= referenceNorm;
+            referenceRadialY /= referenceNorm;
+            referenceRadialZ /= referenceNorm;
+            double tangentX =
+                axisY * referenceRadialZ
+                - axisZ * referenceRadialY;
+            double tangentY =
+                axisZ * referenceRadialX
+                - axisX * referenceRadialZ;
+            double tangentZ =
+                axisX * referenceRadialY
+                - axisY * referenceRadialX;
+
+            var componentLookup = new Dictionary<string, IComponent2>(
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var raw in (_activeAssembly.GetComponents(false)
+                as object[]) ?? new object[0])
+            {
+                var component = raw as IComponent2;
+                if (component != null)
+                    componentLookup[component.Name2] = component;
+            }
+            Func<string, IComponent2> resolve = name =>
+            {
+                IComponent2 component;
+                if (!componentLookup.TryGetValue(name, out component))
+                    throw new InvalidOperationException(
+                        $"装配体中找不到组件: {name}");
+                return component;
+            };
+            var modelDoc = (IModelDoc2)_activeAssembly;
+            var modelView = modelDoc.ActiveView as IModelView;
+            var results = new List<Dictionary<string, object>>();
+            double maximumOrientationError = 0.0;
+            double maximumPositionError = 0.0;
+            double minimumInnerRadius = double.PositiveInfinity;
+            double maximumInnerRadius = double.NegativeInfinity;
+            try
+            {
+                _swApp.CommandInProgress = true;
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = false;
+                for (int index = 0; index < sliders.Count; index++)
+                {
+                    var slider = sliders[index];
+                    object rawName;
+                    if (!slider.TryGetValue("componentName", out rawName)
+                        && !slider.TryGetValue("name", out rawName))
+                        throw new ArgumentException(
+                            "滑块缺少 componentName/name");
+                    string name = Convert.ToString(rawName);
+                    double phaseDeg = slider.ContainsKey("phaseDeg")
+                        ? Convert.ToDouble(slider["phaseDeg"])
+                        : index * 360.0 / sliders.Count;
+                    double axialOffset = slider.ContainsKey("axialOffset")
+                        ? Convert.ToDouble(slider["axialOffset"])
+                        : 0.0;
+                    double bodyLength = slider.ContainsKey("bodyLength")
+                        ? Convert.ToDouble(slider["bodyLength"])
+                        : 0.0;
+                    double phase =
+                        phaseDeg * Math.PI / 180.0;
+                    double radialX =
+                        Math.Cos(phase) * referenceRadialX
+                        + Math.Sin(phase) * tangentX;
+                    double radialY =
+                        Math.Cos(phase) * referenceRadialY
+                        + Math.Sin(phase) * tangentY;
+                    double radialZ =
+                        Math.Cos(phase) * referenceRadialZ
+                        + Math.Sin(phase) * tangentZ;
+                    double x = centerX + axisX * axialOffset
+                        + radialX * radialDistance;
+                    double y = centerY + axisY * axialOffset
+                        + radialY * radialDistance;
+                    double z = centerZ + axisZ * axialOffset
+                        + radialZ * radialDistance;
+                    double rotationX = 0.0;
+                    double rotationY = -radialZ;
+                    double rotationZ = radialY;
+                    double rotationNorm = Math.Sqrt(
+                        rotationX * rotationX
+                        + rotationY * rotationY
+                        + rotationZ * rotationZ);
+                    double rotationAngleDeg;
+                    if (rotationNorm < 1e-12)
+                    {
+                        rotationX = 0;
+                        rotationY = 0;
+                        rotationZ = 1;
+                        rotationAngleDeg =
+                            radialX >= 0 ? 0.0 : 180.0;
+                    }
+                    else
+                    {
+                        rotationX /= rotationNorm;
+                        rotationY /= rotationNorm;
+                        rotationZ /= rotationNorm;
+                        rotationAngleDeg = Math.Acos(
+                            Math.Max(-1.0, Math.Min(1.0, radialX)))
+                            * 180.0 / Math.PI;
+                    }
+                    var component = resolve(name);
+                    SetComponentPose(
+                        name,
+                        x, y, z,
+                        rotationX, rotationY, rotationZ,
+                        -rotationAngleDeg,
+                        false,
+                        component);
+                    var transform = component.Transform2 as MathTransform;
+                    var values = transform?.ArrayData as double[];
+                    if (values == null || values.Length < 12)
+                        throw new InvalidOperationException(
+                            $"无法读取滑块姿态: {name}");
+                    double actualAxisX = values[0];
+                    double actualAxisY = values[1];
+                    double actualAxisZ = values[2];
+                    double dot = Math.Max(
+                        -1.0,
+                        Math.Min(
+                            1.0,
+                            actualAxisX * radialX
+                            + actualAxisY * radialY
+                            + actualAxisZ * radialZ));
+                    double orientationError =
+                        Math.Acos(dot) * 180.0 / Math.PI;
+                    double positionError = Math.Sqrt(
+                        Math.Pow(values[9] - x, 2)
+                        + Math.Pow(values[10] - y, 2)
+                        + Math.Pow(values[11] - z, 2));
+                    double measuredRadialDistance = Math.Sqrt(
+                        Math.Pow(
+                            values[9] - centerX
+                            - axisX * axialOffset, 2)
+                        + Math.Pow(
+                            values[10] - centerY
+                            - axisY * axialOffset, 2)
+                        + Math.Pow(
+                            values[11] - centerZ
+                            - axisZ * axialOffset, 2));
+                    double innerRadius =
+                        measuredRadialDistance - bodyLength / 2.0;
+                    maximumOrientationError = Math.Max(
+                        maximumOrientationError,
+                        orientationError);
+                    maximumPositionError = Math.Max(
+                        maximumPositionError,
+                        positionError);
+                    minimumInnerRadius = Math.Min(
+                        minimumInnerRadius,
+                        innerRadius);
+                    maximumInnerRadius = Math.Max(
+                        maximumInnerRadius,
+                        innerRadius);
+                    results.Add(new Dictionary<string, object>
+                    {
+                        ["componentName"] = name,
+                        ["phaseDeg"] = phaseDeg,
+                        ["translationXYZ"] = new double[]
+                            { values[9], values[10], values[11] },
+                        ["bodyAxisXYZ"] = new double[]
+                            { actualAxisX, actualAxisY, actualAxisZ },
+                        ["measuredRadialDistance"] =
+                            measuredRadialDistance,
+                        ["innerTipRadius"] = innerRadius,
+                        ["orientationErrorDeg"] = orientationError,
+                        ["positionError"] = positionError,
+                    });
+                }
+            }
+            finally
+            {
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = true;
+                _swApp.CommandInProgress = false;
+                modelDoc.GraphicsRedraw2();
+            }
+            return new Dictionary<string, object>
+            {
+                ["radialDistance"] = radialDistance,
+                ["sliders"] = results.ToArray(),
+                ["innerRadiusSpread"] =
+                    maximumInnerRadius - minimumInnerRadius,
+                ["maximumOrientationErrorDeg"] =
+                    maximumOrientationError,
+                ["maximumPositionError"] = maximumPositionError,
+            };
+        }
+
+        /// <summary>
         /// Apply one analytically solved pose of a planar crank-slider mechanism.
         /// The rod part's local +Y axis is assumed to run between its pin centers.
         /// Optional synchronized components rotate at signed ratios of crank angle.
