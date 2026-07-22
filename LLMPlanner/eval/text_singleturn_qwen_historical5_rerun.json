@@ -1,0 +1,433 @@
+{
+  "run_at": "2026-07-22T19:48:15+08:00",
+  "provider": "AI Ping",
+  "model": "Qwen3.5-397B-A17B",
+  "mode": "single_turn",
+  "cache_enabled": false,
+  "historical_skipped": [],
+  "case_ids": [
+    "phone_stand",
+    "stool",
+    "rounded_stool",
+    "storage_box",
+    "standard_die"
+  ],
+  "average_score": 63.75,
+  "passed": 2,
+  "total": 5,
+  "token_totals": {
+    "prompt_tokens": 33305,
+    "completion_tokens": 14258,
+    "total_tokens": 47563,
+    "calls": 4
+  },
+  "balance_before": {
+    "limit_cents": 50000,
+    "consumed_cents": 1982.383638,
+    "remaining_cents": 48017.616362,
+    "limit_yuan": 500.0,
+    "consumed_yuan": 19.823836,
+    "remaining_yuan": 480.176164,
+    "monthly_reset": false,
+    "remark": "FSQ_V5"
+  },
+  "balance_after": {
+    "limit_cents": 50000,
+    "consumed_cents": 1994.677158,
+    "remaining_cents": 48005.322842,
+    "limit_yuan": 500.0,
+    "consumed_yuan": 19.946772,
+    "remaining_yuan": 480.053228,
+    "monthly_reset": false,
+    "remark": "FSQ_V5"
+  },
+  "spent_yuan": 0.122936,
+  "results": [
+    {
+      "case_id": "phone_stand",
+      "name": "一体式手机支架",
+      "score": 0.0,
+      "acceptance_ok": false,
+      "status": "error",
+      "token_usage": null,
+      "duration_seconds": 903.08,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": "HTTPConnectionPool(host='localhost', port=5000): Read timed out. (read timeout=900)"
+    },
+    {
+      "case_id": "stool",
+      "name": "四脚板凳",
+      "score": 100.0,
+      "acceptance_ok": true,
+      "status": "completed",
+      "plan_steps": 10,
+      "successful_steps": 10,
+      "execution_points": 25.0,
+      "dimension_points": 30.0,
+      "volume_points": 20.0,
+      "detail_points": 25.0,
+      "bbox_mm": {
+        "minX": -100.0,
+        "minY": -150.0,
+        "minZ": -100.0,
+        "maxX": 100.0,
+        "maxY": 20.0,
+        "maxZ": 100.0,
+        "sizeX": 200.0,
+        "sizeY": 170.0,
+        "sizeZ": 200.0
+      },
+      "expected_bbox_mm": [
+        170.0,
+        200.0,
+        200.0
+      ],
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 988495.559,
+      "expected_volume_range_mm3": [
+        900000.0,
+        1050000.0
+      ],
+      "volume_ok": true,
+      "actual_details": {
+        "extrusions": 2,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "circles": 4,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 14
+      },
+      "expected_details": {
+        "extrusions": 2
+      },
+      "detail_checks": {
+        "extrusions": true
+      },
+      "failed_steps": [],
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 4025,
+            "prompt_tokens": 8321,
+            "total_tokens": 12346
+          }
+        },
+        "calls": 1,
+        "completion_tokens": 4025,
+        "prompt_tokens": 8321,
+        "total_tokens": 12346
+      },
+      "duration_seconds": 420.51,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "rounded_stool",
+      "name": "圆角板凳",
+      "score": 45.78,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 14,
+      "successful_steps": 9,
+      "execution_points": 12.86,
+      "dimension_points": 20.0,
+      "volume_points": 6.67,
+      "detail_points": 6.25,
+      "bbox_mm": {
+        "minX": -100.0,
+        "minY": 0.0,
+        "minZ": -100.0,
+        "maxX": 100.0,
+        "maxY": 20.0,
+        "maxZ": 100.0,
+        "sizeX": 200.0,
+        "sizeY": 20.0,
+        "sizeZ": 200.0
+      },
+      "expected_bbox_mm": [
+        170.0,
+        200.0,
+        200.0
+      ],
+      "dimension_errors_mm": [
+        150.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        false,
+        true,
+        true
+      ],
+      "volume_mm3": 800000.0,
+      "expected_volume_range_mm3": [
+        900000.0,
+        1050000.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 1,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "circles": 4,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 6
+      },
+      "expected_details": {
+        "extrusions": 2,
+        "fillets": 1
+      },
+      "detail_checks": {
+        "extrusions": false,
+        "fillets": false
+      },
+      "failed_steps": [
+        {
+          "step": 10,
+          "operation": "feature_extrusion",
+          "message": "拉伸失败，请确保草图中有封闭的轮廓"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 1139,
+            "prompt_tokens": 8331,
+            "total_tokens": 9470
+          }
+        },
+        "calls": 1,
+        "completion_tokens": 1139,
+        "prompt_tokens": 8331,
+        "total_tokens": 9470
+      },
+      "duration_seconds": 21.46,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "storage_box",
+      "name": "收纳盒",
+      "score": 100.0,
+      "acceptance_ok": true,
+      "status": "completed",
+      "plan_steps": 11,
+      "successful_steps": 11,
+      "execution_points": 25.0,
+      "dimension_points": 30.0,
+      "volume_points": 20.0,
+      "detail_points": 25.0,
+      "bbox_mm": {
+        "minX": -60.0,
+        "minY": 0.0,
+        "minZ": -40.0,
+        "maxX": 60.0,
+        "maxY": 50.0,
+        "maxZ": 40.0,
+        "sizeX": 120.0,
+        "sizeY": 50.0,
+        "sizeZ": 80.0
+      },
+      "expected_bbox_mm": [
+        50.0,
+        80.0,
+        120.0
+      ],
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 199307.23,
+      "expected_volume_range_mm3": [
+        180000.0,
+        220000.0
+      ],
+      "volume_ok": true,
+      "actual_details": {
+        "extrusions": 1,
+        "cuts": 1,
+        "fillets": 4,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "circles": 0,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 23
+      },
+      "expected_details": {
+        "extrusions": 1,
+        "cuts": 1,
+        "fillets": 1
+      },
+      "detail_checks": {
+        "extrusions": true,
+        "cuts": true,
+        "fillets": true
+      },
+      "failed_steps": [],
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 1148,
+            "prompt_tokens": 8316,
+            "total_tokens": 9464
+          }
+        },
+        "calls": 1,
+        "completion_tokens": 1148,
+        "prompt_tokens": 8316,
+        "total_tokens": 9464
+      },
+      "duration_seconds": 26.14,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "standard_die",
+      "name": "标准骰子",
+      "score": 72.99,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 38,
+      "successful_steps": 12,
+      "execution_points": 6.32,
+      "dimension_points": 30.0,
+      "volume_points": 20.0,
+      "detail_points": 16.67,
+      "bbox_mm": {
+        "minX": -10.0,
+        "minY": -10.0,
+        "minZ": -10.0,
+        "maxX": 10.0,
+        "maxY": 10.0,
+        "maxZ": 10.0,
+        "sizeX": 20.0,
+        "sizeY": 20.0,
+        "sizeZ": 20.0
+      },
+      "expected_bbox_mm": [
+        20.0,
+        20.0,
+        20.0
+      ],
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 7888.635,
+      "expected_volume_range_mm3": [
+        7000.0,
+        8000.0
+      ],
+      "volume_ok": true,
+      "actual_details": {
+        "extrusions": 1,
+        "cuts": 0,
+        "fillets": 1,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "circles": 6,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 26
+      },
+      "expected_details": {
+        "extrusions": 1,
+        "cuts": 6,
+        "fillets": 1
+      },
+      "detail_checks": {
+        "extrusions": true,
+        "cuts": false,
+        "fillets": true
+      },
+      "failed_steps": [
+        {
+          "step": 13,
+          "operation": "feature_cut_extrusion",
+          "message": "切除拉伸失败，请确保草图闭合且位于实体面上。请查看 C# 控制台的调试信息。"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 7946,
+            "prompt_tokens": 8337,
+            "total_tokens": 16283
+          }
+        },
+        "calls": 1,
+        "completion_tokens": 7946,
+        "prompt_tokens": 8337,
+        "total_tokens": 16283
+      },
+      "duration_seconds": 121.05,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    }
+  ]
+}
