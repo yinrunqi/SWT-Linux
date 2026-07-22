@@ -1,0 +1,1452 @@
+{
+  "run_at": "2026-07-22T17:57:35+08:00",
+  "provider": "AI Ping",
+  "model": "GLM-4.6V",
+  "mode": "single_turn",
+  "cache_enabled": false,
+  "historical_skipped": [],
+  "case_ids": [
+    "phone_stand",
+    "stool",
+    "rounded_stool",
+    "storage_box",
+    "standard_die",
+    "hex_nut",
+    "mug",
+    "wrench",
+    "vase",
+    "key",
+    "gear_disc",
+    "flange",
+    "pulley",
+    "stepped_shaft",
+    "socket_bolt"
+  ],
+  "average_score": 58.55,
+  "passed": 1,
+  "total": 15,
+  "token_totals": {
+    "prompt_tokens": 247613,
+    "completion_tokens": 52552,
+    "total_tokens": 300165,
+    "calls": 30
+  },
+  "balance_before": {
+    "limit_cents": 50000,
+    "consumed_cents": 1941.932898,
+    "remaining_cents": 48058.067102,
+    "limit_yuan": 500.0,
+    "consumed_yuan": 19.419329,
+    "remaining_yuan": 480.580671,
+    "monthly_reset": false,
+    "remark": "FSQ_V5"
+  },
+  "balance_after": {
+    "limit_cents": 50000,
+    "consumed_cents": 1982.383638,
+    "remaining_cents": 48017.616362,
+    "limit_yuan": 500.0,
+    "consumed_yuan": 19.823836,
+    "remaining_yuan": 480.176164,
+    "monthly_reset": false,
+    "remark": "FSQ_V5"
+  },
+  "spent_yuan": 0.404507,
+  "results": [
+    {
+      "case_id": "phone_stand",
+      "name": "一体式手机支架",
+      "score": 18.04,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 35,
+      "successful_steps": 17,
+      "execution_points": 9.71,
+      "dimension_points": 0.0,
+      "volume_points": 0.0,
+      "detail_points": 8.33,
+      "bbox_mm": {
+        "minX": -334.034904,
+        "minY": -450.514904,
+        "minZ": 0.0,
+        "maxX": 521.514904,
+        "maxY": 450.514904,
+        "maxZ": 118.0,
+        "sizeX": 855.549809,
+        "sizeY": 901.029809,
+        "sizeZ": 118.0
+      },
+      "expected_bbox_mm": [
+        78.0,
+        116.0,
+        118.0
+      ],
+      "dimension_errors_mm": [
+        40.0,
+        739.55,
+        783.03
+      ],
+      "dimension_checks": [
+        false,
+        false,
+        false
+      ],
+      "volume_mm3": 32382573.506,
+      "expected_volume_range_mm3": [
+        80000.0,
+        180000.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 5,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 2,
+        "centerlines": 0,
+        "circles": 0,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 16
+      },
+      "expected_details": {
+        "extrusions": 1,
+        "cuts": 2,
+        "fillets": 1
+      },
+      "detail_checks": {
+        "extrusions": true,
+        "cuts": false,
+        "fillets": false
+      },
+      "failed_steps": [
+        {
+          "step": 18,
+          "operation": "sketch_slot",
+          "message": "长圆孔长度(0.016)必须大于宽度(0.028)，否则退化为圆或异形\r\n参数名: length"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 2,
+            "completion_tokens": 5161,
+            "prompt_tokens": 16785,
+            "total_tokens": 21946
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 5161,
+        "prompt_tokens": 16785,
+        "total_tokens": 21946
+      },
+      "duration_seconds": 854.38,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "stool",
+      "name": "四脚板凳",
+      "score": 82.95,
+      "acceptance_ok": false,
+      "status": "completed",
+      "plan_steps": 16,
+      "successful_steps": 16,
+      "execution_points": 25.0,
+      "dimension_points": 20.0,
+      "volume_points": 12.95,
+      "detail_points": 25.0,
+      "bbox_mm": {
+        "minX": -100.0,
+        "minY": -100.0,
+        "minZ": -10.0,
+        "maxX": 100.0,
+        "maxY": 100.0,
+        "maxZ": 20.0,
+        "sizeX": 200.0,
+        "sizeY": 200.0,
+        "sizeZ": 30.0
+      },
+      "expected_bbox_mm": [
+        170.0,
+        200.0,
+        200.0
+      ],
+      "dimension_errors_mm": [
+        140.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        false,
+        true,
+        true
+      ],
+      "volume_mm3": 847123.89,
+      "expected_volume_range_mm3": [
+        900000.0,
+        1050000.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 5,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "circles": 4,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 10
+      },
+      "expected_details": {
+        "extrusions": 2
+      },
+      "detail_checks": {
+        "extrusions": true
+      },
+      "failed_steps": [],
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 2,
+            "completion_tokens": 3016,
+            "prompt_tokens": 16473,
+            "total_tokens": 19489
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 3016,
+        "prompt_tokens": 16473,
+        "total_tokens": 19489
+      },
+      "duration_seconds": 84.93,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "rounded_stool",
+      "name": "圆角板凳",
+      "score": 76.79,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 14,
+      "successful_steps": 10,
+      "execution_points": 14.29,
+      "dimension_points": 30.0,
+      "volume_points": 20.0,
+      "detail_points": 12.5,
+      "bbox_mm": {
+        "minX": -100.0,
+        "minY": -100.0,
+        "minZ": 0.0,
+        "maxX": 100.0,
+        "maxY": 100.0,
+        "maxZ": 150.0,
+        "sizeX": 200.0,
+        "sizeY": 200.0,
+        "sizeZ": 150.0
+      },
+      "expected_bbox_mm": [
+        170.0,
+        200.0,
+        200.0
+      ],
+      "dimension_errors_mm": [
+        20.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 963362.818,
+      "expected_volume_range_mm3": [
+        900000.0,
+        1050000.0
+      ],
+      "volume_ok": true,
+      "actual_details": {
+        "extrusions": 2,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "circles": 4,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 14
+      },
+      "expected_details": {
+        "extrusions": 2,
+        "fillets": 1
+      },
+      "detail_checks": {
+        "extrusions": true,
+        "fillets": false
+      },
+      "failed_steps": [
+        {
+          "step": 11,
+          "operation": "feature_fillet",
+          "message": "未能通过语义化位置 \"top_front\" 选中边。计算的射线: 起点(0.0000,0.1100,0.1600), 方向(0.0000,-0.7071,-0.7071)。包围盒: (-0.1000,-0.1000,0.0000)->(0.1000,0.1000,0.1500)"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 2,
+            "completion_tokens": 4231,
+            "prompt_tokens": 16495,
+            "total_tokens": 20726
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 4231,
+        "prompt_tokens": 16495,
+        "total_tokens": 20726
+      },
+      "duration_seconds": 72.28,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "storage_box",
+      "name": "收纳盒",
+      "score": 80.0,
+      "acceptance_ok": false,
+      "status": "completed",
+      "plan_steps": 11,
+      "successful_steps": 11,
+      "execution_points": 25.0,
+      "dimension_points": 30.0,
+      "volume_points": 0.0,
+      "detail_points": 25.0,
+      "bbox_mm": {
+        "minX": -60.0,
+        "minY": -40.0,
+        "minZ": 0.0,
+        "maxX": 60.0,
+        "maxY": 40.0,
+        "maxZ": 50.0,
+        "sizeX": 120.0,
+        "sizeY": 80.0,
+        "sizeZ": 50.0
+      },
+      "expected_bbox_mm": [
+        50.0,
+        80.0,
+        120.0
+      ],
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 338967.345,
+      "expected_volume_range_mm3": [
+        180000.0,
+        220000.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 1,
+        "cuts": 1,
+        "fillets": 4,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "circles": 0,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 22
+      },
+      "expected_details": {
+        "extrusions": 1,
+        "cuts": 1,
+        "fillets": 1
+      },
+      "detail_checks": {
+        "extrusions": true,
+        "cuts": true,
+        "fillets": true
+      },
+      "failed_steps": [],
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 3,
+            "completion_tokens": 3643,
+            "prompt_tokens": 24904,
+            "total_tokens": 28547
+          }
+        },
+        "calls": 3,
+        "completion_tokens": 3643,
+        "prompt_tokens": 24904,
+        "total_tokens": 28547
+      },
+      "duration_seconds": 90.72,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "standard_die",
+      "name": "标准骰子",
+      "score": 68.49,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 77,
+      "successful_steps": 7,
+      "execution_points": 1.82,
+      "dimension_points": 30.0,
+      "volume_points": 20.0,
+      "detail_points": 16.67,
+      "bbox_mm": {
+        "minX": -10.0,
+        "minY": -10.0,
+        "minZ": 0.0,
+        "maxX": 10.0,
+        "maxY": 10.0,
+        "maxZ": 20.0,
+        "sizeX": 20.0,
+        "sizeY": 20.0,
+        "sizeZ": 20.0
+      },
+      "expected_bbox_mm": [
+        20.0,
+        20.0,
+        20.0
+      ],
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 7888.635,
+      "expected_volume_range_mm3": [
+        7000.0,
+        8000.0
+      ],
+      "volume_ok": true,
+      "actual_details": {
+        "extrusions": 1,
+        "cuts": 0,
+        "fillets": 1,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "circles": 1,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 26
+      },
+      "expected_details": {
+        "extrusions": 1,
+        "cuts": 6,
+        "fillets": 1
+      },
+      "detail_checks": {
+        "extrusions": true,
+        "cuts": false,
+        "fillets": true
+      },
+      "failed_steps": [
+        {
+          "step": 8,
+          "operation": "feature_cut_extrusion",
+          "message": "切除拉伸失败，请确保草图闭合且位于实体面上。请查看 C# 控制台的调试信息。"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 2,
+            "completion_tokens": 7880,
+            "prompt_tokens": 16513,
+            "total_tokens": 24393
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 7880,
+        "prompt_tokens": 16513,
+        "total_tokens": 24393
+      },
+      "duration_seconds": 108.18,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "hex_nut",
+      "name": "六角螺母",
+      "score": 100.0,
+      "acceptance_ok": true,
+      "status": "completed",
+      "plan_steps": 7,
+      "successful_steps": 7,
+      "execution_points": 25.0,
+      "dimension_points": 30.0,
+      "volume_points": 20.0,
+      "detail_points": 25.0,
+      "bbox_mm": {
+        "minX": -17.32,
+        "minY": -14.99956,
+        "minZ": -4.0,
+        "maxX": 17.32,
+        "maxY": 14.99956,
+        "maxZ": 4.0,
+        "sizeX": 34.64,
+        "sizeY": 29.99912,
+        "sizeZ": 8.0
+      },
+      "expected_bbox_mm": [
+        8.0,
+        30.0,
+        34.641
+      ],
+      "dimension_errors_mm": [
+        0.0,
+        0.001,
+        0.001
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 5606.699,
+      "expected_volume_range_mm3": [
+        4500.0,
+        6500.0
+      ],
+      "volume_ok": true,
+      "actual_details": {
+        "extrusions": 1,
+        "cuts": 1,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 1,
+        "centerlines": 0,
+        "circles": 1,
+        "slots": 0,
+        "cut_circles": 1,
+        "faces": 9
+      },
+      "expected_details": {
+        "extrusions": 1,
+        "polygons": 1,
+        "circles": 1
+      },
+      "detail_checks": {
+        "extrusions": true,
+        "polygons": true,
+        "circles": true
+      },
+      "failed_steps": [],
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 2,
+            "completion_tokens": 3174,
+            "prompt_tokens": 16469,
+            "total_tokens": 19643
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 3174,
+        "prompt_tokens": 16469,
+        "total_tokens": 19643
+      },
+      "duration_seconds": 111.03,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "mug",
+      "name": "马克杯",
+      "score": 8.11,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 15,
+      "successful_steps": 4,
+      "execution_points": 5.33,
+      "dimension_points": 0.0,
+      "volume_points": 0.0,
+      "detail_points": 2.78,
+      "bbox_mm": null,
+      "expected_bbox_mm": [
+        70.0,
+        90.0,
+        100.0
+      ],
+      "dimension_errors_mm": [
+        70.0,
+        90.0,
+        100.0
+      ],
+      "dimension_checks": [
+        false,
+        false,
+        false
+      ],
+      "volume_mm3": null,
+      "expected_volume_range_mm3": [
+        100000.0,
+        145000.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 0,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 1,
+        "circles": 1,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 0
+      },
+      "expected_details": {
+        "extrusions": 2,
+        "cuts": 1,
+        "circles": 3
+      },
+      "detail_checks": {
+        "extrusions": false,
+        "cuts": false,
+        "circles": false
+      },
+      "failed_steps": [
+        {
+          "step": 5,
+          "operation": "feature_revolve",
+          "message": "旋转操作失败，请确保草图中包含有效的轮廓和中心线作为旋转轴。"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 2,
+            "completion_tokens": 2557,
+            "prompt_tokens": 16497,
+            "total_tokens": 19054
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 2557,
+        "prompt_tokens": 16497,
+        "total_tokens": 19054
+      },
+      "duration_seconds": 171.32,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "wrench",
+      "name": "扳手",
+      "score": 50.9,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 10,
+      "successful_steps": 6,
+      "execution_points": 12.0,
+      "dimension_points": 20.0,
+      "volume_points": 0.15,
+      "detail_points": 18.75,
+      "bbox_mm": {
+        "minX": -20.0,
+        "minY": -20.0,
+        "minZ": 0.0,
+        "maxX": 20.0,
+        "maxY": 20.0,
+        "maxZ": 8.0,
+        "sizeX": 40.0,
+        "sizeY": 40.0,
+        "sizeZ": 8.0
+      },
+      "expected_bbox_mm": [
+        8.0,
+        40.0,
+        140.0
+      ],
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        100.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        false
+      ],
+      "volume_mm3": 10053.096,
+      "expected_volume_range_mm3": [
+        17000.0,
+        24000.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 1,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 1,
+        "centerlines": 0,
+        "circles": 0,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 3
+      },
+      "expected_details": {
+        "extrusions": 2,
+        "polygons": 1
+      },
+      "detail_checks": {
+        "extrusions": false,
+        "polygons": true
+      },
+      "failed_steps": [
+        {
+          "step": 7,
+          "operation": "feature_cut_extrusion",
+          "message": "切除拉伸失败，请确保草图闭合且位于实体面上。请查看 C# 控制台的调试信息。"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 2,
+            "completion_tokens": 2004,
+            "prompt_tokens": 16491,
+            "total_tokens": 18495
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 2004,
+        "prompt_tokens": 16491,
+        "total_tokens": 18495
+      },
+      "duration_seconds": 58.86,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "vase",
+      "name": "花瓶",
+      "score": 88.46,
+      "acceptance_ok": false,
+      "status": "completed",
+      "plan_steps": 10,
+      "successful_steps": 10,
+      "execution_points": 25.0,
+      "dimension_points": 30.0,
+      "volume_points": 8.46,
+      "detail_points": 25.0,
+      "bbox_mm": {
+        "minX": -45.0,
+        "minY": 0.0,
+        "minZ": -45.0,
+        "maxX": 45.0,
+        "maxY": 150.0,
+        "maxZ": 45.0,
+        "sizeX": 90.0,
+        "sizeY": 150.0,
+        "sizeZ": 90.0
+      },
+      "expected_bbox_mm": [
+        90.0,
+        90.0,
+        150.0
+      ],
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 615424.911,
+      "expected_volume_range_mm3": [
+        300000.0,
+        500000.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 0,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 1,
+        "polygons": 0,
+        "centerlines": 1,
+        "circles": 0,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 5
+      },
+      "expected_details": {
+        "revolves": 1,
+        "centerlines": 1
+      },
+      "detail_checks": {
+        "revolves": true,
+        "centerlines": true
+      },
+      "failed_steps": [],
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 2,
+            "completion_tokens": 7997,
+            "prompt_tokens": 16477,
+            "total_tokens": 24474
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 7997,
+        "prompt_tokens": 16477,
+        "total_tokens": 24474
+      },
+      "duration_seconds": 178.8,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "key",
+      "name": "钥匙",
+      "score": 40.2,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 15,
+      "successful_steps": 7,
+      "execution_points": 9.33,
+      "dimension_points": 15.62,
+      "volume_points": 9.0,
+      "detail_points": 6.25,
+      "bbox_mm": {
+        "minX": -20.0,
+        "minY": -20.0,
+        "minZ": 0.0,
+        "maxX": 20.0,
+        "maxY": 20.0,
+        "maxZ": 2.0,
+        "sizeX": 40.0,
+        "sizeY": 40.0,
+        "sizeZ": 2.0
+      },
+      "expected_bbox_mm": [
+        2.0,
+        20.0,
+        59.0
+      ],
+      "dimension_errors_mm": [
+        0.0,
+        20.0,
+        19.0
+      ],
+      "dimension_checks": [
+        true,
+        false,
+        false
+      ],
+      "volume_mm3": 1884.956,
+      "expected_volume_range_mm3": [
+        800.0,
+        1500.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 1,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "circles": 0,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 4
+      },
+      "expected_details": {
+        "extrusions": 2,
+        "cuts": 1
+      },
+      "detail_checks": {
+        "extrusions": false,
+        "cuts": false
+      },
+      "failed_steps": [
+        {
+          "step": 8,
+          "operation": "feature_cut_extrusion",
+          "message": "切除拉伸失败，请确保草图闭合且位于实体面上。请查看 C# 控制台的调试信息。"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 2,
+            "completion_tokens": 2925,
+            "prompt_tokens": 16495,
+            "total_tokens": 19420
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 2925,
+        "prompt_tokens": 16495,
+        "total_tokens": 19420
+      },
+      "duration_seconds": 73.89,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "gear_disc",
+      "name": "齿轮盘",
+      "score": 70.66,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 11,
+      "successful_steps": 6,
+      "execution_points": 10.91,
+      "dimension_points": 30.0,
+      "volume_points": 17.25,
+      "detail_points": 12.5,
+      "bbox_mm": {
+        "minX": -30.0,
+        "minY": -30.0,
+        "minZ": 0.0,
+        "maxX": 30.0,
+        "maxY": 30.0,
+        "maxZ": 8.0,
+        "sizeX": 60.0,
+        "sizeY": 60.0,
+        "sizeZ": 8.0
+      },
+      "expected_bbox_mm": [
+        8.0,
+        60.0,
+        60.0
+      ],
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 22619.467,
+      "expected_volume_range_mm3": [
+        17500.0,
+        22000.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 1,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "circles": 1,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 3
+      },
+      "expected_details": {
+        "extrusions": 1,
+        "cuts": 1
+      },
+      "detail_checks": {
+        "extrusions": true,
+        "cuts": false
+      },
+      "failed_steps": [
+        {
+          "step": 7,
+          "operation": "feature_cut_extrusion",
+          "message": "切除拉伸失败，请确保草图闭合且位于实体面上。请查看 C# 控制台的调试信息。"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 2,
+            "completion_tokens": 2809,
+            "prompt_tokens": 16475,
+            "total_tokens": 19284
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 2809,
+        "prompt_tokens": 16475,
+        "total_tokens": 19284
+      },
+      "duration_seconds": 54.02,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "flange",
+      "name": "法兰盘",
+      "score": 79.62,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 9,
+      "successful_steps": 7,
+      "execution_points": 15.56,
+      "dimension_points": 30.0,
+      "volume_points": 20.0,
+      "detail_points": 14.06,
+      "bbox_mm": {
+        "minX": -50.0,
+        "minY": -50.0,
+        "minZ": 0.0,
+        "maxX": 50.0,
+        "maxY": 50.0,
+        "maxZ": 12.0,
+        "sizeX": 100.0,
+        "sizeY": 100.0,
+        "sizeZ": 12.0
+      },
+      "expected_bbox_mm": [
+        12.0,
+        100.0,
+        100.0
+      ],
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 85765.479,
+      "expected_volume_range_mm3": [
+        78000.0,
+        86000.0
+      ],
+      "volume_ok": true,
+      "actual_details": {
+        "extrusions": 1,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "circles": 1,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 4
+      },
+      "expected_details": {
+        "extrusions": 1,
+        "circles": 8
+      },
+      "detail_checks": {
+        "extrusions": true,
+        "circles": false
+      },
+      "failed_steps": [
+        {
+          "step": 8,
+          "operation": "feature_cut_extrusion",
+          "message": "切除拉伸失败，请确保草图闭合且位于实体面上。请查看 C# 控制台的调试信息。"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 2,
+            "completion_tokens": 1665,
+            "prompt_tokens": 16481,
+            "total_tokens": 18146
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 1665,
+        "prompt_tokens": 16481,
+        "total_tokens": 18146
+      },
+      "duration_seconds": 42.33,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "pulley",
+      "name": "皮带轮",
+      "score": 48.33,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 12,
+      "successful_steps": 6,
+      "execution_points": 10.0,
+      "dimension_points": 30.0,
+      "volume_points": 0.0,
+      "detail_points": 8.33,
+      "bbox_mm": {
+        "minX": -50.0,
+        "minY": -50.0,
+        "minZ": 0.0,
+        "maxX": 50.0,
+        "maxY": 50.0,
+        "maxZ": 20.0,
+        "sizeX": 100.0,
+        "sizeY": 100.0,
+        "sizeZ": 20.0
+      },
+      "expected_bbox_mm": [
+        20.0,
+        100.0,
+        100.0
+      ],
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 157079.633,
+      "expected_volume_range_mm3": [
+        115000.0,
+        128000.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 1,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "circles": 1,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 3
+      },
+      "expected_details": {
+        "extrusions": 1,
+        "cuts": 1,
+        "chamfers": 1
+      },
+      "detail_checks": {
+        "extrusions": true,
+        "cuts": false,
+        "chamfers": false
+      },
+      "failed_steps": [
+        {
+          "step": 7,
+          "operation": "feature_cut_extrusion",
+          "message": "切除拉伸失败，请确保草图闭合且位于实体面上。请查看 C# 控制台的调试信息。"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 1,
+            "completion_tokens": 1083,
+            "prompt_tokens": 8060,
+            "total_tokens": 9143
+          }
+        },
+        "calls": 1,
+        "completion_tokens": 1083,
+        "prompt_tokens": 8060,
+        "total_tokens": 9143
+      },
+      "duration_seconds": 27.13,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "stepped_shaft",
+      "name": "三段阶梯轴",
+      "score": 29.64,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 7,
+      "successful_steps": 6,
+      "execution_points": 17.14,
+      "dimension_points": 0.0,
+      "volume_points": 0.0,
+      "detail_points": 12.5,
+      "bbox_mm": null,
+      "expected_bbox_mm": [
+        50.0,
+        50.0,
+        90.0
+      ],
+      "dimension_errors_mm": [
+        50.0,
+        50.0,
+        90.0
+      ],
+      "dimension_checks": [
+        false,
+        false,
+        false
+      ],
+      "volume_mm3": null,
+      "expected_volume_range_mm3": [
+        102000.0,
+        111500.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 0,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 1,
+        "circles": 0,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 0
+      },
+      "expected_details": {
+        "revolves": 1,
+        "centerlines": 1
+      },
+      "detail_checks": {
+        "revolves": false,
+        "centerlines": true
+      },
+      "failed_steps": [
+        {
+          "step": 7,
+          "operation": "feature_revolve",
+          "message": "旋转操作失败，请确保草图中包含有效的轮廓和中心线作为旋转轴。"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 2,
+            "completion_tokens": 2391,
+            "prompt_tokens": 16485,
+            "total_tokens": 18876
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 2391,
+        "prompt_tokens": 16485,
+        "total_tokens": 18876
+      },
+      "duration_seconds": 71.85,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "socket_bolt",
+      "name": "内六角螺栓",
+      "score": 36.13,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 11,
+      "successful_steps": 9,
+      "execution_points": 16.36,
+      "dimension_points": 0.0,
+      "volume_points": 7.27,
+      "detail_points": 12.5,
+      "bbox_mm": {
+        "minX": -5.0,
+        "minY": -5.0,
+        "minZ": 0.0,
+        "maxX": 5.0,
+        "maxY": 5.0,
+        "maxZ": 50.0,
+        "sizeX": 10.0,
+        "sizeY": 10.0,
+        "sizeZ": 50.0
+      },
+      "expected_bbox_mm": [
+        18.0,
+        18.0,
+        56.0
+      ],
+      "dimension_errors_mm": [
+        8.0,
+        8.0,
+        6.0
+      ],
+      "dimension_checks": [
+        false,
+        false,
+        false
+      ],
+      "volume_mm3": 3926.991,
+      "expected_volume_range_mm3": [
+        5200.0,
+        7200.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 2,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 1,
+        "centerlines": 0,
+        "circles": 0,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 3
+      },
+      "expected_details": {
+        "extrusions": 2,
+        "cuts": 1,
+        "polygons": 1,
+        "fillets": 1
+      },
+      "detail_checks": {
+        "extrusions": true,
+        "cuts": false,
+        "polygons": true,
+        "fillets": false
+      },
+      "failed_steps": [
+        {
+          "step": 10,
+          "operation": "feature_cut_extrusion",
+          "message": "切除拉伸失败，请确保草图闭合且位于实体面上。请查看 C# 控制台的调试信息。"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "GLM-4.6V": {
+            "calls": 2,
+            "completion_tokens": 2016,
+            "prompt_tokens": 16513,
+            "total_tokens": 18529
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 2016,
+        "prompt_tokens": 16513,
+        "total_tokens": 18529
+      },
+      "duration_seconds": 74.85,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    }
+  ]
+}

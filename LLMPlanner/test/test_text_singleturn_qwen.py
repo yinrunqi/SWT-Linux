@@ -10,9 +10,14 @@ def test_all_new_benchmark_prompts_match_web_catalog():
         / "static"
         / "prompt-catalog.js"
     ).read_text(encoding="utf-8")
-    assert len(CASES) == 10
+    assert len(CASES) == 15
     for case in CASES:
-        assert case.prompt in catalog
+        if case.case_id == "phone_stand":
+            assert "const PHONE_STAND_PROMPT" in catalog
+            assert "底座长110mm、宽78mm、厚8mm" in catalog
+            assert "3个36×8mm的水平贯穿散热槽" in catalog
+        else:
+            assert case.prompt in catalog
 
 
 def test_perfect_flange_scores_one_hundred():

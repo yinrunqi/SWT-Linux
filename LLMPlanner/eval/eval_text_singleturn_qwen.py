@@ -41,6 +41,59 @@ class TextCase:
 
 CASES = (
     TextCase(
+        "phone_stand",
+        "一体式手机支架",
+        "创建一个一体式桌面手机支架，所有结构必须合并为单一实体。"
+        "底座长110mm、宽78mm、厚8mm；78mm宽的倾斜背板厚6mm，"
+        "与水平面成74°，从底座上表面升起，成品总高度118mm。"
+        "底座前端设置贯穿全宽的挡唇，前后厚10mm，高出底座上表面12mm，"
+        "使成品前端总高度20mm。背板左右两侧各有一个三角加强筋。"
+        "背板下部中央开一个宽16mm、向下开口高度28mm的充电线U形通槽；"
+        "背板中上部开3个36×8mm的水平贯穿散热槽，槽中心竖向间距18mm。"
+        "底面加工两个24×10mm、深1.5mm的防滑垫浅凹槽。"
+        "最后尽可能对适合的外轮廓做R4mm圆角，同时保持底面平整、支架左右对称。",
+        (78.0, 116.0, 118.0),
+        5.0,
+        (80000.0, 180000.0),
+        (("extrusions", 1), ("cuts", 2), ("fillets", 1)),
+    ),
+    TextCase(
+        "stool",
+        "四脚板凳",
+        "创建四脚板凳：凳面 200×200×20mm；四条圆柱腿直径 20mm、长 150mm，腿中心距相邻边 30mm。",
+        (170.0, 200.0, 200.0),
+        20.0,
+        (900000.0, 1050000.0),
+        (("extrusions", 2),),
+    ),
+    TextCase(
+        "rounded_stool",
+        "圆角板凳",
+        "创建四脚板凳：凳面 200×200×20mm；四条圆柱腿直径 20mm、长 150mm，距边 30mm；凳面顶部四条边做 R5mm 圆角。",
+        (170.0, 200.0, 200.0),
+        20.0,
+        (900000.0, 1050000.0),
+        (("extrusions", 2), ("fillets", 1)),
+    ),
+    TextCase(
+        "storage_box",
+        "收纳盒",
+        "创建顶部敞开的长方形收纳盒，外部 120×80×50mm，壁厚和底厚均为 8mm，顶部开口边做 R3mm 圆角。",
+        (50.0, 80.0, 120.0),
+        5.0,
+        (180000.0, 220000.0),
+        (("extrusions", 1), ("cuts", 1), ("fillets", 1)),
+    ),
+    TextCase(
+        "standard_die",
+        "标准骰子",
+        "创建边长 20mm 的标准六面骰子，全部棱边 R1.5mm；六面分别为 1 至 6 点、相对面点数和为 7；点为直径 3mm、深 1.5mm 的凹坑。",
+        (20.0, 20.0, 20.0),
+        2.0,
+        (7000.0, 8000.0),
+        (("extrusions", 1), ("cuts", 6), ("fillets", 1)),
+    ),
+    TextCase(
         "hex_nut",
         "六角螺母",
         "创建对边距 30mm、厚 8mm 的正六角螺母，中心有直径 10mm 的贯穿孔，厚度方向关于原点居中。",
@@ -406,6 +459,7 @@ def run_one(
     *,
     web_url: str,
     sw_url: str,
+    model: str,
 ) -> dict:
     started = time.perf_counter()
     cleanup_before = _close_documents(sw_url)
@@ -417,8 +471,8 @@ def run_one(
             json={
                 "instruction": case.prompt,
                 "provider": "aiping",
-                "vision_model": MODEL,
-                "plan_model": MODEL,
+                "vision_model": model,
+                "plan_model": model,
                 "mode": "single_turn",
                 "use_cache": False,
                 "dry_run": False,
@@ -468,6 +522,10 @@ def _write_report(
     results: list[dict],
     balance_before: dict | None,
     balance_after: dict | None = None,
+    *,
+    model: str = MODEL,
+    selected_cases: list[TextCase] | None = None,
+    historical_skipped: list[dict] | None = None,
 ) -> dict:
     spent_yuan = None
     if balance_before and balance_after:
@@ -479,11 +537,14 @@ def _write_report(
     report = {
         "run_at": datetime.now().astimezone().isoformat(timespec="seconds"),
         "provider": "AI Ping",
-        "model": MODEL,
+        "model": model,
         "mode": "single_turn",
         "cache_enabled": False,
-        "historical_skipped": list(HISTORICAL_CASES),
-        "new_case_ids": [case.case_id for case in CASES],
+        "historical_skipped": historical_skipped or [],
+        "case_ids": [
+            case.case_id
+            for case in (selected_cases or list(CASES))
+        ],
         "average_score": round(
             sum(float(item["score"]) for item in results) / len(results),
             2,
@@ -521,10 +582,16 @@ def main() -> int:
     parser.add_argument("--web-url", default="http://localhost:5000")
     parser.add_argument("--sw-url", default="http://localhost:5100")
     parser.add_argument("--ids", nargs="*")
+    parser.add_argument("--model", default=MODEL)
+    parser.add_argument(
+        "--skip-qwen-historical",
+        action="store_true",
+        help="Skip five cases with existing Qwen Single-turn results",
+    )
     parser.add_argument(
         "--output",
         type=Path,
-        default=ROOT / "eval" / "text_singleturn_qwen_result.json",
+        default=None,
     )
     parser.add_argument(
         "--pause-every",
@@ -533,11 +600,25 @@ def main() -> int:
         help="Pause briefly after this many sequential SolidWorks cases",
     )
     args = parser.parse_args()
+    historical_ids = {
+        item["case_id"] for item in HISTORICAL_CASES
+    } if args.skip_qwen_historical else set()
     selected = [
         case
         for case in CASES
-        if not args.ids or case.case_id in set(args.ids)
+        if (
+            (not args.ids or case.case_id in set(args.ids))
+            and case.case_id not in historical_ids
+        )
     ]
+    output = args.output
+    if output is None:
+        safe_model = (
+            args.model.lower()
+            .replace(".", "_")
+            .replace("-", "_")
+        )
+        output = ROOT / "eval" / f"text_singleturn_{safe_model}_result.json"
     balance_before = _query_balance(ROOT / ".env")
     results: list[dict] = []
     for index, case in enumerate(selected, 1):
@@ -546,6 +627,7 @@ def main() -> int:
             case,
             web_url=args.web_url.rstrip("/"),
             sw_url=args.sw_url.rstrip("/"),
+            model=args.model,
         )
         results.append(result)
         usage = result.get("token_usage") or {}
@@ -557,7 +639,18 @@ def main() -> int:
             f"duration={result['duration_seconds']}s",
             flush=True,
         )
-        _write_report(args.output, results, balance_before)
+        _write_report(
+            output,
+            results,
+            balance_before,
+            model=args.model,
+            selected_cases=selected,
+            historical_skipped=(
+                list(HISTORICAL_CASES)
+                if args.skip_qwen_historical
+                else []
+            ),
+        )
         if (
             args.pause_every > 0
             and index < len(selected)
@@ -568,10 +661,17 @@ def main() -> int:
 
     balance_after = _query_balance(ROOT / ".env")
     report = _write_report(
-        args.output,
+        output,
         results,
         balance_before,
         balance_after,
+        model=args.model,
+        selected_cases=selected,
+        historical_skipped=(
+            list(HISTORICAL_CASES)
+            if args.skip_qwen_historical
+            else []
+        ),
     )
     print(
         f"summary score={report['average_score']} "
