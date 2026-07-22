@@ -74,6 +74,13 @@ class OperationType(str, Enum):
     ASSEMBLY_SET_INDEXED_ROTARY_POSE = (
         "assembly_set_indexed_rotary_pose"
     )
+    ASSEMBLY_SET_SYNCHRONIZED_ROTARY_POSE = (
+        "assembly_set_synchronized_rotary_pose"
+    )
+    ASSEMBLY_SET_FOUR_BAR_POSE = "assembly_set_four_bar_pose"
+    ASSEMBLY_SET_CAM_FOLLOWER_POSE = (
+        "assembly_set_cam_follower_pose"
+    )
 
 
 class SwOperation(BaseModel):
@@ -219,6 +226,18 @@ class SwOperation(BaseModel):
             "slotCount?,engagementStartDeg?,engagementEndDeg?,reverseOutput?,"
             "continuousComponents?,indexedComponents?}；连续输入在啮合区推动输出轮每周期"
             "分度 360/slotCount，其余区间锁止；同步组件支持 ratio/reverse/phaseDeg"
+            "\n- assembly_set_synchronized_rotary_pose: {inputAngleDeg,"
+            "rotors:[{componentName,x,y,z,ratio,reverse?,phaseDeg?}],"
+            "rotationAxisX?,rotationAxisY?,rotationAxisZ?}；按统一输入角和传动比设置多个转子"
+            "\n- assembly_set_four_bar_pose: {groundAX,groundAY,groundAZ,groundBX,"
+            "groundBY,groundBZ,inputLength,couplerLength,outputLength,inputAngleDeg,"
+            "inputComponent,couplerComponent,outputComponent,assemblyMode?,"
+            "rotationAxisX?,rotationAxisY?,rotationAxisZ?,couplerPointX?,"
+            "couplerPointY?,couplerPointZ?,couplerPointComponents?}；求解通用平面四杆机构"
+            "\n- assembly_set_cam_follower_pose: {driverComponent,followerComponent,"
+            "centerX,centerY,centerZ,baseRadius,lift,inputAngleDeg,phaseDeg?,profile?,"
+            "rotationAxisX?,rotationAxisY?,rotationAxisZ?,followerAxisX?,"
+            "followerAxisY?,followerAxisZ?}；设置通用凸轮从动件姿态"
         )
     )
     description: str = Field(
@@ -252,7 +271,7 @@ class SwOperation(BaseModel):
             operation = operation.strip().lower().replace("-", "_")
             if operation.startswith("/api/"):
                 operation = operation[5:].replace("/", "_")
-            item.setdefault("operation", operation)
+            item["operation"] = operation
         params = (
             item.get("params")
             or item.get("parameters")
@@ -1145,6 +1164,257 @@ class SwOperation(BaseModel):
                                 entry.setdefault(key, coordinate)
                         normalized_items.append(entry)
                     params[list_key] = normalized_items
+            if operation_value in {
+                "assembly_set_synchronized_rotary_pose",
+                "assembly_set_four_bar_pose",
+                "assembly_set_cam_follower_pose",
+            }:
+                def set_alias(target, *candidates):
+                    if target not in params:
+                        for candidate in candidates:
+                            if candidate in params:
+                                params[target] = params[candidate]
+                                break
+
+                def set_xyz(source, targets, *, axis=False):
+                    vector = source
+                    if isinstance(vector, str) and axis:
+                        vector = {
+                            "x": (1.0, 0.0, 0.0),
+                            "y": (0.0, 1.0, 0.0),
+                            "z": (0.0, 0.0, 1.0),
+                            "-x": (-1.0, 0.0, 0.0),
+                            "-y": (0.0, -1.0, 0.0),
+                            "-z": (0.0, 0.0, -1.0),
+                        }.get(vector.strip().lower().lstrip("+"))
+                    if isinstance(vector, dict):
+                        vector = tuple(
+                            vector.get(key, vector.get(key.upper()))
+                            for key in ("x", "y", "z")
+                        )
+                    if isinstance(vector, (list, tuple)) and len(vector) >= 3:
+                        for target, coordinate in zip(targets, vector[:3]):
+                            if coordinate is not None:
+                                params.setdefault(target, coordinate)
+
+                def component_name(value):
+                    if not isinstance(value, dict):
+                        return value
+                    return (
+                        value.get("componentName")
+                        or value.get("component_name")
+                        or value.get("name")
+                        or value.get("component")
+                    )
+
+                set_alias(
+                    "inputAngleDeg",
+                    "input_angle_deg",
+                    "angleDeg",
+                    "angle_deg",
+                    "angle",
+                )
+
+                if operation_value == "assembly_set_synchronized_rotary_pose":
+                    set_alias(
+                        "rotors",
+                        "rotorComponents",
+                        "rotor_components",
+                        "synchronizedComponents",
+                        "synchronized_components",
+                        "components",
+                    )
+                    axis = (
+                        params.get("rotationAxis")
+                        or params.get("rotation_axis")
+                        or params.get("axis")
+                    )
+                    set_xyz(
+                        axis,
+                        ("rotationAxisX", "rotationAxisY", "rotationAxisZ"),
+                        axis=True,
+                    )
+                    raw_rotors = params.get("rotors")
+                    if isinstance(raw_rotors, list):
+                        rotors = []
+                        for raw_rotor in raw_rotors:
+                            if isinstance(raw_rotor, str):
+                                rotor = {"componentName": raw_rotor}
+                            elif isinstance(raw_rotor, dict):
+                                rotor = dict(raw_rotor)
+                                rotor.setdefault(
+                                    "componentName",
+                                    component_name(rotor),
+                                )
+                            else:
+                                rotors.append(raw_rotor)
+                                continue
+                            for target, candidates in {
+                                "phaseDeg": ("phase_deg", "phase"),
+                                "reverse": ("reversed", "isReverse"),
+                                "ratio": ("speedRatio", "speed_ratio"),
+                            }.items():
+                                if target not in rotor:
+                                    for candidate in candidates:
+                                        if candidate in rotor:
+                                            rotor[target] = rotor[candidate]
+                                            break
+                            position = (
+                                rotor.get("position")
+                                or rotor.get("center")
+                                or rotor.get("origin")
+                            )
+                            if isinstance(position, dict):
+                                position = [
+                                    position.get("x", position.get("X")),
+                                    position.get("y", position.get("Y")),
+                                    position.get("z", position.get("Z")),
+                                ]
+                            if (
+                                isinstance(position, (list, tuple))
+                                and len(position) >= 3
+                            ):
+                                for key, coordinate in zip(
+                                    ("x", "y", "z"),
+                                    position[:3],
+                                ):
+                                    if coordinate is not None:
+                                        rotor.setdefault(key, coordinate)
+                            rotors.append(rotor)
+                        params["rotors"] = rotors
+
+                if operation_value == "assembly_set_four_bar_pose":
+                    for target, candidates in {
+                        "inputLength": ("input_length", "crankLength"),
+                        "couplerLength": ("coupler_length", "linkLength"),
+                        "outputLength": ("output_length", "rockerLength"),
+                        "inputComponent": (
+                            "input_component",
+                            "input",
+                            "crankComponent",
+                        ),
+                        "couplerComponent": (
+                            "coupler_component",
+                            "coupler",
+                            "linkComponent",
+                        ),
+                        "outputComponent": (
+                            "output_component",
+                            "output",
+                            "rockerComponent",
+                        ),
+                        "assemblyMode": (
+                            "assembly_mode",
+                            "configuration",
+                            "mode",
+                        ),
+                        "couplerPointComponents": (
+                            "coupler_point_components",
+                            "pointComponents",
+                        ),
+                    }.items():
+                        set_alias(target, *candidates)
+                    set_xyz(
+                        params.get("groundA")
+                        or params.get("ground_a")
+                        or params.get("pivotA")
+                        or params.get("inputPivot"),
+                        ("groundAX", "groundAY", "groundAZ"),
+                    )
+                    set_xyz(
+                        params.get("groundB")
+                        or params.get("ground_b")
+                        or params.get("pivotB")
+                        or params.get("outputPivot"),
+                        ("groundBX", "groundBY", "groundBZ"),
+                    )
+                    for prefix in ("groundA", "groundB"):
+                        snake = "ground_a" if prefix == "groundA" else "ground_b"
+                        for coordinate in ("X", "Y", "Z"):
+                            set_alias(
+                                f"{prefix}{coordinate}",
+                                f"{snake}_{coordinate.lower()}",
+                            )
+                    set_xyz(
+                        params.get("rotationAxis")
+                        or params.get("rotation_axis")
+                        or params.get("axis"),
+                        ("rotationAxisX", "rotationAxisY", "rotationAxisZ"),
+                        axis=True,
+                    )
+                    set_xyz(
+                        params.get("couplerPoint")
+                        or params.get("coupler_point"),
+                        ("couplerPointX", "couplerPointY", "couplerPointZ"),
+                    )
+                    for target in (
+                        "inputComponent",
+                        "couplerComponent",
+                        "outputComponent",
+                    ):
+                        params[target] = component_name(params.get(target))
+                    raw_points = params.get("couplerPointComponents")
+                    if isinstance(raw_points, list):
+                        params["couplerPointComponents"] = [
+                            {"componentName": item}
+                            if isinstance(item, str)
+                            else {
+                                **item,
+                                "componentName": component_name(item),
+                            }
+                            if isinstance(item, dict)
+                            else item
+                            for item in raw_points
+                        ]
+
+                if operation_value == "assembly_set_cam_follower_pose":
+                    for target, candidates in {
+                        "driverComponent": (
+                            "driver_component",
+                            "driver",
+                            "camComponent",
+                        ),
+                        "followerComponent": (
+                            "follower_component",
+                            "follower",
+                        ),
+                        "baseRadius": ("base_radius",),
+                        "phaseDeg": ("phase_deg", "phase"),
+                        "profile": ("profile_type", "profileType", "camProfile"),
+                    }.items():
+                        set_alias(target, *candidates)
+                    set_xyz(
+                        params.get("center")
+                        or params.get("camCenter")
+                        or params.get("cam_center"),
+                        ("centerX", "centerY", "centerZ"),
+                    )
+                    for coordinate in ("X", "Y", "Z"):
+                        set_alias(
+                            f"center{coordinate}",
+                            f"center_{coordinate.lower()}",
+                        )
+                    axes = params.get("axes")
+                    if not isinstance(axes, dict):
+                        axes = {}
+                    set_xyz(
+                        params.get("rotationAxis")
+                        or params.get("rotation_axis")
+                        or params.get("driverAxis")
+                        or axes.get("rotation")
+                        or axes.get("driver"),
+                        ("rotationAxisX", "rotationAxisY", "rotationAxisZ"),
+                        axis=True,
+                    )
+                    set_xyz(
+                        params.get("followerAxis")
+                        or params.get("follower_axis")
+                        or axes.get("follower"),
+                        ("followerAxisX", "followerAxisY", "followerAxisZ"),
+                        axis=True,
+                    )
+                    for target in ("driverComponent", "followerComponent"):
+                        params[target] = component_name(params.get(target))
             if operation_value == "assembly_mate_coincident":
                 plane_aliases = {
                     "front": "前视基准面",
@@ -1273,6 +1543,35 @@ class SwOperation(BaseModel):
             OperationType.ASSEMBLY_SET_INDEXED_ROTARY_POSE: (
                 "driverComponent",
                 "indexedComponent",
+                "inputAngleDeg",
+            ),
+            OperationType.ASSEMBLY_SET_SYNCHRONIZED_ROTARY_POSE: (
+                "inputAngleDeg",
+                "rotors",
+            ),
+            OperationType.ASSEMBLY_SET_FOUR_BAR_POSE: (
+                "groundAX",
+                "groundAY",
+                "groundAZ",
+                "groundBX",
+                "groundBY",
+                "groundBZ",
+                "inputLength",
+                "couplerLength",
+                "outputLength",
+                "inputAngleDeg",
+                "inputComponent",
+                "couplerComponent",
+                "outputComponent",
+            ),
+            OperationType.ASSEMBLY_SET_CAM_FOLLOWER_POSE: (
+                "driverComponent",
+                "followerComponent",
+                "centerX",
+                "centerY",
+                "centerZ",
+                "baseRadius",
+                "lift",
                 "inputAngleDeg",
             ),
         }.get(self.operation, ())

@@ -66,6 +66,11 @@ const drillOpening = document.getElementById("drill-opening");
 const drillOpeningValue = document.getElementById("drill-opening-value");
 const drillPoseBtn = document.getElementById("drill-pose-btn");
 const drillRunStatus = document.getElementById("drill-run-status");
+const sewingMachineRunBtn = document.getElementById("sewing-machine-run-btn");
+const sewingMachineAngle = document.getElementById("sewing-machine-angle");
+const sewingMachineAngleValue = document.getElementById("sewing-machine-angle-value");
+const sewingMachinePoseBtn = document.getElementById("sewing-machine-pose-btn");
+const sewingMachineRunStatus = document.getElementById("sewing-machine-run-status");
 const projectorRunBtn = document.getElementById("projector-run-btn");
 const projectorAngle = document.getElementById("projector-angle");
 const projectorAngleValue = document.getElementById("projector-angle-value");
@@ -775,6 +780,98 @@ async function setDrillPose() {
     drillRunStatus.classList.add("fail");
   } finally {
     drillPoseBtn.disabled = false;
+  }
+}
+
+async function runHouseholdSewingMachine() {
+  if (busy) return;
+  busy = true;
+  sewingMachineRunBtn.disabled = true;
+  sendBtn.disabled = true;
+  sewingMachineRunStatus.textContent =
+    "正在准备 40 个缝纫机零件，并由 Multi-turn Agent 装配四套联动机构…";
+  sewingMachineRunStatus.classList.remove("ok", "fail");
+  appendUser(
+    "装配带针杆、旋梭、送布牙、挑线和压脚联动的家用机械缝纫机",
+    null,
+  );
+  const loadingId = appendLoading(
+    "正在构建缝纫机；将机器验收针杆行程、旋梭相位、送布轨迹和压脚升程…",
+  );
+  try {
+    const response = await fetch(
+      `${API}/api/assembly-examples/household-sewing-machine/run`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: providerEl.value,
+          api_key: apiKeyEl.value.trim(),
+          base_url: baseUrlEl.value.trim(),
+          vision_model: visionModelEl.value,
+          plan_model: planModelEl.value,
+          max_turns: maxTurnsEl.value
+            ? Number(maxTurnsEl.value)
+            : 42,
+        }),
+      },
+    );
+    const data = await response.json();
+    removeLoading(loadingId);
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+    appendMultiTurnResponse(data.multi_turn, data.summary);
+    const tokens = Number(data.token_usage?.total_tokens || 0);
+    const cacheText = tokens === 0
+      ? "Agent 决策全部命中缓存，token 花费为 0"
+      : `本次新消耗 ${tokens} tokens`;
+    const accepted = Boolean(data.summary?.all_ok);
+    sewingMachineRunStatus.textContent = accepted
+      ? `缝纫机装配及四机构验收成功，评分 ${Number(data.score || 0).toFixed(2)}；${cacheText}`
+      : `缝纫机装配或机构验收未通过；${cacheText}`;
+    sewingMachineRunStatus.classList.add(accepted ? "ok" : "fail");
+  } catch (error) {
+    removeLoading(loadingId);
+    sewingMachineRunStatus.textContent = `缝纫机构建失败：${error.message}`;
+    sewingMachineRunStatus.classList.add("fail");
+    appendError(error.message);
+  } finally {
+    busy = false;
+    sewingMachineRunBtn.disabled = false;
+    sendBtn.disabled = false;
+  }
+}
+
+async function setSewingMachinePose() {
+  sewingMachinePoseBtn.disabled = true;
+  sewingMachineRunStatus.textContent =
+    `正在设置主轴 ${sewingMachineAngle.value}° 的联动姿态…`;
+  sewingMachineRunStatus.classList.remove("ok", "fail");
+  try {
+    const response = await fetch(
+      `${API}/api/sewing-machine-animation/pose`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          main_shaft_angle_deg: Number(sewingMachineAngle.value),
+        }),
+      },
+    );
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+    sewingMachineRunStatus.textContent =
+      `${data.message}；针杆 ${Number(data.needle_position_mm).toFixed(2)} mm，送布点 (${Number(data.feed_x_mm).toFixed(2)}, ${Number(data.feed_y_mm).toFixed(2)}) mm，压脚升程 ${Number(data.presser_lift_mm).toFixed(2)} mm；不调用 LLM`;
+    sewingMachineRunStatus.classList.add("ok");
+  } catch (error) {
+    sewingMachineRunStatus.textContent =
+      `缝纫机姿态设置失败：${error.message}`;
+    sewingMachineRunStatus.classList.add("fail");
+  } finally {
+    sewingMachinePoseBtn.disabled = false;
   }
 }
 
@@ -1505,6 +1602,11 @@ drillAngle.addEventListener("input", () => {
 });
 drillOpening.addEventListener("input", () => {
   drillOpeningValue.textContent = `${drillOpening.value}%`;
+});
+sewingMachineRunBtn.addEventListener("click", runHouseholdSewingMachine);
+sewingMachinePoseBtn.addEventListener("click", setSewingMachinePose);
+sewingMachineAngle.addEventListener("input", () => {
+  sewingMachineAngleValue.textContent = `${sewingMachineAngle.value}°`;
 });
 projectorRunBtn.addEventListener("click", runFilmProjector);
 projectorPoseBtn.addEventListener("click", setProjectorPose);

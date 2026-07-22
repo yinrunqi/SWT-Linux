@@ -243,6 +243,16 @@ def run_tests() -> None:
         assert "/api/drill-animation/pose" in script
         print("[PASS] planetary cordless drill demo is exposed in assembly UI")
 
+        assert 'id="sewing-machine-run-btn"' in page
+        assert 'id="sewing-machine-angle"' in page
+        assert 'id="sewing-machine-pose-btn"' in page
+        assert (
+            "/api/assembly-examples/household-sewing-machine/run"
+            in script
+        )
+        assert "/api/sewing-machine-animation/pose" in script
+        print("[PASS] household sewing machine demo is exposed in assembly UI")
+
         assert 'id="projector-run-btn"' in page
         assert 'id="projector-angle"' in page
         assert 'id="projector-pose-btn"' in page

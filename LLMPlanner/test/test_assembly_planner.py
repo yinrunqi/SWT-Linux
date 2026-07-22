@@ -1,8 +1,14 @@
 from pathlib import Path
 
+import pytest
+
 from planner.agent_loop import MultiTurnAgent
 from planner.executor import OPERATION_ENDPOINT_MAP
 from planner.llm_client import _normalize_agent_decision_payload
+from planner.observer import (
+    MAX_AUTO_INTERFERENCE_COMPONENTS,
+    SwObserver,
+)
 from planner.operation_optimizer import group_feature_batches
 from planner.schemas import (
     AgentDecision,
@@ -18,6 +24,67 @@ from planner.validators import ValidatorRegistry
 
 def op(operation: OperationType, **params) -> SwOperation:
     return SwOperation(operation=operation, params=params)
+
+
+def test_component_positions_prefer_exact_part_stem() -> None:
+    observation = ModelObservation(
+        document_type="assembly",
+        components=[
+            {
+                "name": "needle_bar-1",
+                "path": r"C:\parts\needle_bar.SLDPRT",
+                "translationXYZ": [0.045, 0.040, 0.0],
+            },
+            {
+                "name": "needle-1",
+                "path": r"C:\parts\needle.SLDPRT",
+                "translationXYZ": [0.045, 0.005, 0.0],
+            },
+        ],
+    )
+    result = ValidatorRegistry.validate(
+        [
+            PostconditionSpec(
+                kind="component_positions",
+                params={
+                    "expected": [{
+                        "path_contains": "needle",
+                        "translation_mm": [45, 5, 0],
+                    }],
+                    "tolerance_mm": 0.1,
+                },
+            ),
+        ],
+        observation,
+    )
+    assert result.passed is True
+
+
+def test_large_assembly_observation_skips_quadratic_interference() -> None:
+    observer = SwObserver()
+    observer._get = lambda _path: ({
+        "result": {
+            "assemblyPath": r"C:\parts\large.SLDASM",
+            "components": [
+                {"name": f"part-{index}"}
+                for index in range(MAX_AUTO_INTERFERENCE_COMPONENTS + 1)
+            ],
+            "mates": [],
+        },
+    }, None)
+
+    def unexpected_post(*_args, **_kwargs):
+        raise AssertionError("large assembly must not auto-check interference")
+
+    observer._post = unexpected_post
+    result = observer._collect_assembly([])
+    assert result.interference_summary == {
+        "skipped": True,
+        "reason": "component_count_threshold",
+        "componentCount": 21,
+        "threshold": 20,
+    }
+    observer.close()
 
 
 def test_assembly_operations_have_http_endpoints():
@@ -39,9 +106,15 @@ def test_assembly_operations_have_http_endpoints():
             "/api/assembly/mechanism/crank-slider-pose",
         OperationType.ASSEMBLY_SET_INDEXED_ROTARY_POSE:
             "/api/assembly/mechanism/indexed-rotary-pose",
+        OperationType.ASSEMBLY_SET_SYNCHRONIZED_ROTARY_POSE:
+            "/api/assembly/mechanism/synchronized-rotary-pose",
+        OperationType.ASSEMBLY_SET_FOUR_BAR_POSE:
+            "/api/assembly/mechanism/four-bar-pose",
+        OperationType.ASSEMBLY_SET_CAM_FOLLOWER_POSE:
+            "/api/assembly/mechanism/cam-follower-pose",
     }
     for operation, endpoint in expected.items():
-        assert OPERATION_ENDPOINT_MAP[operation][1] == endpoint
+        assert OPERATION_ENDPOINT_MAP[operation] == ("POST", endpoint)
 
 
 def test_assembly_blueprint_gets_structural_postconditions(tmp_path: Path):
@@ -340,3 +413,157 @@ def test_indexed_rotary_pose_aliases_and_nested_components():
     })
     assert named.params["driverComponent"] == "driver-1"
     assert named.params["indexedComponent"] == "wheel-1"
+
+
+def test_synchronized_rotary_pose_aliases_and_vectors():
+    operation = SwOperation.model_validate({
+        "operation": "assembly-set-synchronized-rotary-pose",
+        "params": {
+            "input_angle_deg": 120,
+            "rotation_axis": "z",
+            "rotor_components": [
+                {
+                    "component_name": "rotor-1",
+                    "position": {"x": 0.01, "y": 0.02, "z": 0.03},
+                    "speed_ratio": 2,
+                    "phase_deg": 15,
+                },
+                "rotor-2",
+            ],
+        },
+    })
+    assert operation.params["inputAngleDeg"] == 120
+    assert operation.params["rotationAxisZ"] == 1.0
+    rotor = operation.params["rotors"][0]
+    assert rotor["componentName"] == "rotor-1"
+    assert (rotor["x"], rotor["y"], rotor["z"]) == (0.01, 0.02, 0.03)
+    assert rotor["ratio"] == 2
+    assert rotor["phaseDeg"] == 15
+    assert operation.params["rotors"][1] == {"componentName": "rotor-2"}
+
+
+def test_four_bar_pose_aliases_vectors_and_component_shapes():
+    operation = SwOperation.model_validate({
+        "operation": "assembly_set_four_bar_pose",
+        "params": {
+            "ground_a": [0, 0, 0],
+            "groundB": {"x": 0.1, "y": 0, "z": 0},
+            "input_length": 0.04,
+            "coupler_length": 0.09,
+            "output_length": 0.06,
+            "angle": 35,
+            "input": {"name": "input-1"},
+            "coupler": {"component": "coupler-1"},
+            "output": "output-1",
+            "assembly_mode": "open",
+            "rotationAxis": [0, 0, 1],
+            "coupler_point": [0.02, 0.01, 0],
+            "coupler_point_components": ["marker-1"],
+        },
+    })
+    assert operation.params["groundBX"] == 0.1
+    assert operation.params["inputComponent"] == "input-1"
+    assert operation.params["couplerComponent"] == "coupler-1"
+    assert operation.params["outputComponent"] == "output-1"
+    assert operation.params["rotationAxisZ"] == 1
+    assert operation.params["couplerPointY"] == 0.01
+    assert operation.params["couplerPointComponents"] == [
+        {"componentName": "marker-1"},
+    ]
+
+
+def test_cam_follower_pose_aliases_nested_components_and_axes():
+    operation = SwOperation.model_validate({
+        "operation": "assembly_set_cam_follower_pose",
+        "params": {
+            "driver": {"component_name": "cam-1"},
+            "follower_component": {"name": "follower-1"},
+            "cam_center": [0.01, -0.02, 0.03],
+            "base_radius": 0.025,
+            "lift": 0.008,
+            "input_angle_deg": 90,
+            "phase_deg": 10,
+            "profile_type": "harmonic",
+            "axes": {"driver": "z", "follower": [0, 1, 0]},
+        },
+    })
+    assert operation.params["driverComponent"] == "cam-1"
+    assert operation.params["followerComponent"] == "follower-1"
+    assert operation.params["centerY"] == -0.02
+    assert operation.params["baseRadius"] == 0.025
+    assert operation.params["inputAngleDeg"] == 90
+    assert operation.params["profile"] == "harmonic"
+    assert operation.params["rotationAxisZ"] == 1.0
+    assert operation.params["followerAxisY"] == 1
+
+
+@pytest.mark.parametrize(
+    ("operation", "params", "missing"),
+    [
+        (
+            "assembly_set_synchronized_rotary_pose",
+            {"inputAngleDeg": 0},
+            "rotors",
+        ),
+        (
+            "assembly_set_four_bar_pose",
+            {
+                "groundA": [0, 0, 0],
+                "groundB": [1, 0, 0],
+                "inputLength": 1,
+                "couplerLength": 1,
+                "outputLength": 1,
+                "inputAngleDeg": 0,
+                "inputComponent": "input-1",
+                "couplerComponent": "coupler-1",
+            },
+            "outputComponent",
+        ),
+        (
+            "assembly_set_cam_follower_pose",
+            {
+                "driverComponent": "cam-1",
+                "followerComponent": "follower-1",
+                "center": [0, 0, 0],
+                "baseRadius": 1,
+                "inputAngleDeg": 0,
+            },
+            "lift",
+        ),
+    ],
+)
+def test_new_mechanism_operations_validate_required_fields(
+    operation,
+    params,
+    missing,
+):
+    with pytest.raises(ValueError, match=missing):
+        SwOperation.model_validate({
+            "operation": operation,
+            "params": params,
+        })
+
+
+def test_new_mechanism_operations_terminate_feature_batches():
+    operations = [
+        op(
+            OperationType.ASSEMBLY_SET_SYNCHRONIZED_ROTARY_POSE,
+            inputAngleDeg=0,
+            rotors=[],
+        ),
+        op(
+            OperationType.ASSEMBLY_SET_CAM_FOLLOWER_POSE,
+            driverComponent="cam-1",
+            followerComponent="follower-1",
+            centerX=0,
+            centerY=0,
+            centerZ=0,
+            baseRadius=1,
+            lift=0.1,
+            inputAngleDeg=0,
+        ),
+    ]
+    assert group_feature_batches(operations) == [
+        [operations[0]],
+        [operations[1]],
+    ]

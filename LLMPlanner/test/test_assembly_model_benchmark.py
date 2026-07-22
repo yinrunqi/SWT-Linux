@@ -85,6 +85,43 @@ def test_error_without_machine_evidence_scores_zero():
     assert score["score"] == 0
 
 
+def test_sewing_machine_scores_all_four_mechanism_groups():
+    run = {
+        "status": "completed",
+        "passed": True,
+        "static_acceptance": {
+            "checks": {
+                "0:valid_assembly": True,
+                "1:component_count": True,
+                "2:assembly_saved": True,
+            },
+        },
+        "mechanism_acceptance": {
+            "needle": {
+                "samples": [{"passed": True}] * 2,
+                "cycle_closed": True,
+            },
+            "rotary": {
+                "samples": [{"passed": True}] * 2,
+                "cycle_closed": True,
+            },
+            "four_bar": {
+                "samples": [{"passed": True}] * 2,
+                "cycle_closed": True,
+            },
+            "cam": {
+                "samples": [{"passed": True}] * 2,
+                "cycle_closed": True,
+            },
+        },
+        "result": _completed_result(),
+    }
+    score = score_agent_run("sewing_machine", run)
+    assert score["score"] == 100
+    assert score["sample_count"] == 8
+    assert score["global_check_rate"] == 1
+
+
 def test_recovered_machine_evidence_scores_product_not_execution():
     primary = {
         "status": "error",
@@ -115,6 +152,25 @@ def test_recovered_machine_evidence_scores_product_not_execution():
     assert score["functional_points"] == 40
     assert score["execution_points"] == 0
     assert score["score"] == 80
+
+
+def test_recovered_validation_can_complete_successful_agent_run():
+    merged = merge_machine_evidence(
+        {
+            "status": "completed",
+            "passed": False,
+            "result": _completed_result(),
+        },
+        {
+            "status": "completed",
+            "passed": True,
+            "static_acceptance": {"checks": {"0:valid_assembly": True}},
+            "mechanism_acceptance": {"passed": True},
+        },
+    )
+    assert merged["status"] == "completed"
+    assert merged["passed"] is True
+    assert merged["post_run_machine_passed"] is True
 
 
 def test_summary_ranks_quality_before_token_efficiency():

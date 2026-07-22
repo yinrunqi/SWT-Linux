@@ -1036,3 +1036,42 @@ node --check web/static/app.js
 Web Demo 提供 Multi-turn 构建按钮、电机角滑块和夹头开度滑块。控制动作直接
 调用 SolidWorks 机构 API；电机角同时驱动太阳轮、行星轮、行星架、主轴和夹头，
 夹爪则随输出角旋转并保持同步径向开合。
+
+---
+
+## 二十三、40 组件家用机械缝纫机 Multi-turn 装配测试
+
+该测例构建一台带主轴、针杆、旋梭梭芯、送布牙、挑线机构和压脚的家用机械
+缝纫机。它同时验证曲柄滑块、同步旋转、闭环四连杆和凸轮从动件四类通用机构，
+所有产品尺寸、采样角和评分阈值只存在于 eval 规格中。
+
+```cmd
+cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
+
+REM 生成 40 个参数化零件，每个零件完成后立即关闭文档
+py eval\eval_household_sewing_machine_multiturn.py --prepare-only --force-parts
+
+REM Multi-turn 装配和四套机构的完整验收
+py eval\eval_household_sewing_machine_multiturn.py --use-cache --max-turns 42
+
+REM 对已保存装配体执行零 token 机器复验
+py eval\eval_household_sewing_machine_multiturn.py --validate-existing
+
+REM 协议、评分、benchmark 和 Web 回归
+py -m pytest test/test_household_sewing_machine.py test/test_assembly_planner.py -q
+py -m pytest test/test_assembly_model_benchmark.py test/test_web_modes.py -q
+```
+
+验收内容：
+
+- 精确 40 个组件且 `.SLDASM` 已保存；
+- 主轴 0°–720° 采样中针杆行程为 36mm，位置误差不超过 0.25mm，并完成周期闭合；
+- 主轴、下轴、旋梭和挑线偏心轮满足各自比例、方向和相位，角度误差不超过 0.1°；
+- 送布闭环四连杆在全部采样角满足杆长约束，闭合及耦合点误差不超过 0.25mm；
+- 压脚凸轮的谐波升程与实体位置误差不超过 0.25mm，并在 360° 后闭合；
+- 静态装配 40 分、四套机构 40 分、执行可靠性 20 分；
+- 结果 JSON 保存原始 LLM messages/响应、Agent turns、动作结果、最终 observation、
+  token、费用和机器评分，支持离线复查与重新打分。
+
+Web Demo“装配体相关”区域提供 Multi-turn 构建按钮和 0°–720° 主轴角滑块。
+姿态按钮直接调用确定性机构 API 联动针杆、旋梭、送布牙和压脚，不调用 LLM。

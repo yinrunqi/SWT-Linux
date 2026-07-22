@@ -357,6 +357,15 @@ namespace Chapter1.ConnectToSw
                 case "/api/assembly/mechanism/crank-slider-pose":
                     RequirePost(method, resp, () => HandleCrankSliderPose(req, resp));
                     break;
+                case "/api/assembly/mechanism/synchronized-rotary-pose":
+                    RequirePost(method, resp, () => HandleSynchronizedRotaryPose(req, resp));
+                    break;
+                case "/api/assembly/mechanism/four-bar-pose":
+                    RequirePost(method, resp, () => HandleFourBarPose(req, resp));
+                    break;
+                case "/api/assembly/mechanism/cam-follower-pose":
+                    RequirePost(method, resp, () => HandleCamFollowerPose(req, resp));
+                    break;
                 case "/api/assembly/mechanism/planar-chain-pose":
                     RequirePost(method, resp, () => HandlePlanarChainPose(req, resp));
                     break;
@@ -1463,7 +1472,14 @@ namespace Chapter1.ConnectToSw
                 double y = GetDoubleOrDefault(body, "y", 0);
                 double z = GetDoubleOrDefault(body, "z", 0);
                 string compName = _commands.AddComponent(partPath, x, y, z);
-                SendJson(resp, 200, new { success = true, message = $"已加入组件: {compName}", componentName = compName });
+                var closedDocuments = _commands.CloseInactiveDocuments();
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = $"已加入组件: {compName}",
+                    componentName = compName,
+                    closedDocuments,
+                });
             }
             catch (Exception ex)
             {
@@ -1718,6 +1734,374 @@ namespace Chapter1.ConnectToSw
                 {
                     success = false,
                     message = $"曲柄滑块姿态失败: {ex.Message}",
+                });
+            }
+        }
+
+        private static void HandleSynchronizedRotaryPose(
+            HttpListenerRequest req,
+            HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                Func<string[], object> valueOf = keys =>
+                {
+                    foreach (string key in keys)
+                        if (body.ContainsKey(key))
+                            return body[key];
+                    return null;
+                };
+                Func<string[], double, double> numberOrDefault =
+                    (keys, defaultValue) =>
+                    {
+                        object value = valueOf(keys);
+                        return value == null
+                            ? defaultValue
+                            : Convert.ToDouble(value);
+                    };
+                object rawRotors = valueOf(
+                    new string[] { "rotors", "components" });
+                var enumerable =
+                    rawRotors as System.Collections.IEnumerable;
+                if (enumerable == null || rawRotors is string)
+                    throw new ArgumentException(
+                        "rotors 必须是对象数组");
+                var rotors = new List<Dictionary<string, object>>();
+                foreach (var item in enumerable)
+                {
+                    var rotor = item as Dictionary<string, object>;
+                    if (rotor == null)
+                        throw new ArgumentException(
+                            "rotors 的每一项必须是对象");
+                    rotors.Add(rotor);
+                }
+                object rawInput = valueOf(
+                    new string[] { "inputAngleDeg", "angleDeg" });
+                if (rawInput == null)
+                    throw new KeyNotFoundException(
+                        "缺少必要参数: inputAngleDeg");
+                var result = _commands.SetSynchronizedRotaryPose(
+                    Convert.ToDouble(rawInput),
+                    numberOrDefault(
+                        new string[] { "pivotX", "centerX" }, 0),
+                    numberOrDefault(
+                        new string[] { "pivotY", "centerY" }, 0),
+                    numberOrDefault(
+                        new string[] { "pivotZ", "centerZ" }, 0),
+                    numberOrDefault(
+                        new string[] { "rotationAxisX", "axisX" }, 0),
+                    numberOrDefault(
+                        new string[] { "rotationAxisY", "axisY" }, 0),
+                    numberOrDefault(
+                        new string[] { "rotationAxisZ", "axisZ" }, 1),
+                    rotors);
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = "同步旋转机构姿态已更新",
+                    result,
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"[错误] SynchronizedRotaryPose 失败: {ex.Message}");
+                SendJson(resp, 500, new
+                {
+                    success = false,
+                    message = $"同步旋转机构姿态失败: {ex.Message}",
+                });
+            }
+        }
+
+        private static void HandleFourBarPose(
+            HttpListenerRequest req,
+            HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                Func<string[], object> valueOf = keys =>
+                {
+                    foreach (string key in keys)
+                        if (body.ContainsKey(key))
+                            return body[key];
+                    return null;
+                };
+                Func<string[], double> requiredNumber = keys =>
+                {
+                    object value = valueOf(keys);
+                    if (value == null)
+                        throw new KeyNotFoundException(
+                            $"缺少必要参数: {keys[0]}");
+                    return Convert.ToDouble(value);
+                };
+                Func<string[], double, double> numberOrDefault =
+                    (keys, defaultValue) =>
+                    {
+                        object value = valueOf(keys);
+                        return value == null
+                            ? defaultValue
+                            : Convert.ToDouble(value);
+                    };
+                Func<string[], string> requiredString = keys =>
+                {
+                    object value = valueOf(keys);
+                    if (value == null)
+                        throw new KeyNotFoundException(
+                            $"缺少必要参数: {keys[0]}");
+                    return Convert.ToString(value);
+                };
+                Func<string[], string, string> stringOrDefault =
+                    (keys, defaultValue) =>
+                    {
+                        object value = valueOf(keys);
+                        return value == null
+                            ? defaultValue
+                            : Convert.ToString(value);
+                    };
+                var pointA = valueOf(new string[] { "groundA", "pivotA" })
+                    as Dictionary<string, object>;
+                var pointB = valueOf(new string[] { "groundB", "pivotB" })
+                    as Dictionary<string, object>;
+                Func<Dictionary<string, object>, string, double, double>
+                    pointCoordinate =
+                        (point, key, fallback) =>
+                        {
+                            if (point == null || !point.ContainsKey(key))
+                                return fallback;
+                            return Convert.ToDouble(point[key]);
+                        };
+                double ax = pointCoordinate(
+                    pointA,
+                    "x",
+                    numberOrDefault(
+                        new string[] { "groundAX", "pivotAX", "aX" }, 0));
+                double ay = pointCoordinate(
+                    pointA,
+                    "y",
+                    numberOrDefault(
+                        new string[] { "groundAY", "pivotAY", "aY" }, 0));
+                double az = pointCoordinate(
+                    pointA,
+                    "z",
+                    numberOrDefault(
+                        new string[] { "groundAZ", "pivotAZ", "aZ" }, 0));
+                double bx;
+                if (pointB != null && pointB.ContainsKey("x"))
+                    bx = Convert.ToDouble(pointB["x"]);
+                else
+                    bx = requiredNumber(
+                        new string[] { "groundBX", "pivotBX", "bX" });
+                double by = pointCoordinate(
+                    pointB,
+                    "y",
+                    numberOrDefault(
+                        new string[] { "groundBY", "pivotBY", "bY" }, 0));
+                double bz = pointCoordinate(
+                    pointB,
+                    "z",
+                    numberOrDefault(
+                        new string[] { "groundBZ", "pivotBZ", "bZ" }, 0));
+                var couplerPoint = valueOf(
+                    new string[] { "couplerPoint" })
+                    as Dictionary<string, object>;
+                var pointComponents =
+                    new List<Dictionary<string, object>>();
+                object rawPointComponents = valueOf(
+                    new string[]
+                    {
+                        "couplerPointComponents",
+                        "pointComponents",
+                    });
+                if (rawPointComponents == null && couplerPoint != null
+                    && couplerPoint.ContainsKey("components"))
+                    rawPointComponents = couplerPoint["components"];
+                if (rawPointComponents != null)
+                {
+                    var enumerable = rawPointComponents
+                        as System.Collections.IEnumerable;
+                    if (enumerable == null
+                        || rawPointComponents is string)
+                        throw new ArgumentException(
+                            "couplerPointComponents 必须是数组");
+                    foreach (var item in enumerable)
+                    {
+                        var entry =
+                            item as Dictionary<string, object>;
+                        if (entry == null)
+                            throw new ArgumentException(
+                                "couplerPointComponents 的每一项必须是对象");
+                        pointComponents.Add(entry);
+                    }
+                }
+                var result = _commands.SetFourBarPose(
+                    requiredString(
+                        new string[]
+                            { "inputComponent", "crankComponent" }),
+                    requiredString(
+                        new string[] { "couplerComponent", "rodComponent" }),
+                    requiredString(
+                        new string[]
+                            { "outputComponent", "rockerComponent" }),
+                    ax, ay, az,
+                    bx, by, bz,
+                    requiredNumber(
+                        new string[] { "inputLength", "crankLength" }),
+                    requiredNumber(
+                        new string[] { "couplerLength", "rodLength" }),
+                    requiredNumber(
+                        new string[] { "outputLength", "rockerLength" }),
+                    requiredNumber(
+                        new string[] { "inputAngleDeg", "angleDeg" }),
+                    stringOrDefault(
+                        new string[] { "assemblyMode", "mode" },
+                        "open"),
+                    numberOrDefault(
+                        new string[] { "rotationAxisX", "axisX" }, 0),
+                    numberOrDefault(
+                        new string[] { "rotationAxisY", "axisY" }, 0),
+                    numberOrDefault(
+                        new string[] { "rotationAxisZ", "axisZ" }, 1),
+                    couplerPoint,
+                    pointComponents);
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = "四杆机构姿态已更新",
+                    result,
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"[错误] FourBarPose 失败: {ex.Message}");
+                SendJson(resp, 500, new
+                {
+                    success = false,
+                    message = $"四杆机构姿态失败: {ex.Message}",
+                });
+            }
+        }
+
+        private static void HandleCamFollowerPose(
+            HttpListenerRequest req,
+            HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                Func<string[], object> valueOf = keys =>
+                {
+                    foreach (string key in keys)
+                        if (body.ContainsKey(key))
+                            return body[key];
+                    return null;
+                };
+                Func<string[], double> requiredNumber = keys =>
+                {
+                    object value = valueOf(keys);
+                    if (value == null)
+                        throw new KeyNotFoundException(
+                            $"缺少必要参数: {keys[0]}");
+                    return Convert.ToDouble(value);
+                };
+                Func<string[], double, double> numberOrDefault =
+                    (keys, defaultValue) =>
+                    {
+                        object value = valueOf(keys);
+                        return value == null
+                            ? defaultValue
+                            : Convert.ToDouble(value);
+                    };
+                Func<string[], string> requiredString = keys =>
+                {
+                    object value = valueOf(keys);
+                    if (value == null)
+                        throw new KeyNotFoundException(
+                            $"缺少必要参数: {keys[0]}");
+                    return Convert.ToString(value);
+                };
+                var synchronized =
+                    new List<Dictionary<string, object>>();
+                object rawSynchronized = valueOf(
+                    new string[]
+                    {
+                        "synchronizedFollowerComponents",
+                        "synchronizedComponents",
+                        "followerComponents",
+                    });
+                if (rawSynchronized != null)
+                {
+                    var enumerable = rawSynchronized
+                        as System.Collections.IEnumerable;
+                    if (enumerable == null || rawSynchronized is string)
+                        throw new ArgumentException(
+                            "synchronizedFollowerComponents 必须是数组");
+                    foreach (var item in enumerable)
+                    {
+                        var entry =
+                            item as Dictionary<string, object>;
+                        if (entry == null)
+                            throw new ArgumentException(
+                                "同步从动件配置必须是对象");
+                        synchronized.Add(entry);
+                    }
+                }
+                object rawProfile = valueOf(
+                    new string[] { "profile", "camType", "type" });
+                var result = _commands.SetCamFollowerPose(
+                    requiredString(
+                        new string[]
+                            { "driverComponent", "camComponent" }),
+                    requiredString(
+                        new string[] { "followerComponent", "sliderComponent" }),
+                    numberOrDefault(
+                        new string[] { "centerX", "pivotX" }, 0),
+                    numberOrDefault(
+                        new string[] { "centerY", "pivotY" }, 0),
+                    numberOrDefault(
+                        new string[] { "centerZ", "pivotZ" }, 0),
+                    requiredNumber(
+                        new string[] { "baseRadius", "radius" }),
+                    requiredNumber(
+                        new string[] { "lift", "liftDistance" }),
+                    numberOrDefault(
+                        new string[] { "phaseDeg", "phase" }, 0),
+                    requiredNumber(
+                        new string[] { "inputAngleDeg", "angleDeg" }),
+                    rawProfile == null
+                        ? "harmonic"
+                        : Convert.ToString(rawProfile),
+                    numberOrDefault(
+                        new string[] { "rotationAxisX", "axisX" }, 0),
+                    numberOrDefault(
+                        new string[] { "rotationAxisY", "axisY" }, 0),
+                    numberOrDefault(
+                        new string[] { "rotationAxisZ", "axisZ" }, 1),
+                    numberOrDefault(
+                        new string[] { "followerAxisX", "travelAxisX" }, 1),
+                    numberOrDefault(
+                        new string[] { "followerAxisY", "travelAxisY" }, 0),
+                    numberOrDefault(
+                        new string[] { "followerAxisZ", "travelAxisZ" }, 0),
+                    synchronized);
+                SendJson(resp, 200, new
+                {
+                    success = true,
+                    message = "凸轮从动机构姿态已更新",
+                    result,
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"[错误] CamFollowerPose 失败: {ex.Message}");
+                SendJson(resp, 500, new
+                {
+                    success = false,
+                    message = $"凸轮从动机构姿态失败: {ex.Message}",
                 });
             }
         }

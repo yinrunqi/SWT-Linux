@@ -202,6 +202,19 @@
         </div>
         <div class="gear-animation-panel">
           <div class="gear-animation-actions">
+            <button id="sewing-machine-run-btn">🧵 Multi-turn 构建家用机械缝纫机</button>
+          </div>
+          <div class="gear-animation-actions gearbox-motion-actions">
+            <label for="sewing-machine-angle">主轴角 <span id="sewing-machine-angle-value">0°</span></label>
+            <input id="sewing-machine-angle" type="range" min="0" max="720" step="15" value="0">
+            <button id="sewing-machine-pose-btn">设置缝纫机构姿态</button>
+          </div>
+          <div id="sewing-machine-run-status" class="gear-animation-status">
+            40 组件；联动验证针杆、旋梭、送布四连杆和压脚凸轮
+          </div>
+        </div>
+        <div class="gear-animation-panel">
+          <div class="gear-animation-actions">
             <button id="projector-run-btn">🎞 Multi-turn 构建复古 16mm 放映机</button>
           </div>
           <div class="gear-animation-actions gearbox-motion-actions">

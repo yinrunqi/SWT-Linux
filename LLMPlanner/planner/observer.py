@@ -10,6 +10,8 @@ import requests
 
 from .schemas import ModelObservation
 
+MAX_AUTO_INTERFERENCE_COMPONENTS = 20
+
 
 class SwObserver:
     """Collect a compact, deterministic snapshot from existing C# APIs."""
@@ -189,14 +191,24 @@ class SwObserver:
             if isinstance(payload, dict)
             else {}
         )
-        interference_payload, interference_error = self._post(
-            "/api/assembly/check-interference"
-        )
-        interference = (
-            interference_payload.get("result")
-            if isinstance(interference_payload, dict)
-            else None
-        )
+        components = result.get("components", [])
+        if len(components) <= MAX_AUTO_INTERFERENCE_COMPONENTS:
+            interference_payload, interference_error = self._post(
+                "/api/assembly/check-interference"
+            )
+            interference = (
+                interference_payload.get("result")
+                if isinstance(interference_payload, dict)
+                else None
+            )
+        else:
+            interference_error = None
+            interference = {
+                "skipped": True,
+                "reason": "component_count_threshold",
+                "componentCount": len(components),
+                "threshold": MAX_AUTO_INTERFERENCE_COMPONENTS,
+            }
         errors = {}
         if observation_error:
             errors["assembly_observation"] = observation_error
@@ -211,7 +223,7 @@ class SwObserver:
             volume_mm3=None,
             document_type="assembly",
             assembly_path=str(result.get("assemblyPath", "")),
-            components=result.get("components", []),
+            components=components,
             mates=result.get("mates", []),
             interference_summary=interference,
             last_execution=last_execution,

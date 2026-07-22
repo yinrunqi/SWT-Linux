@@ -383,6 +383,7 @@ def run_two_stage_gearbox():
         SPEC_PATH,
         SwApi,
         _acceptance_specs,
+        _observation,
         _task_plan,
         _user_goal,
         prepare_parts,
@@ -1333,6 +1334,266 @@ def set_drill_animation_pose():
         })
     except Exception as exc:
         traceback.print_exc()
+        return jsonify({"success": False, "error": str(exc)}), 500
+
+
+@app.route(
+    "/api/assembly-examples/household-sewing-machine/run",
+    methods=["POST"],
+)
+def run_household_sewing_machine():
+    """Build and machine-check the multi-turn household sewing machine."""
+    data = request.get_json(force=True) or {}
+    provider = data.get("provider", "aiping").strip()
+    key_env = (
+        "JUHEAI_API_KEY"
+        if provider == "juheai"
+        else "OPENAI_API_KEY"
+    )
+    url_env = (
+        "JUHEAI_BASE_URL"
+        if provider == "juheai"
+        else "OPENAI_BASE_URL"
+    )
+    api_key = data.get("api_key", "").strip() or os.getenv(key_env, "")
+    base_url = data.get("base_url", "").strip() or os.getenv(url_env, "")
+    plan_model = (
+        data.get("plan_model", "").strip()
+        or os.getenv("PLAN_MODEL", "gpt-4o")
+    )
+    vision_model = (
+        data.get("vision_model", "").strip()
+        or os.getenv("VISION_MODEL", plan_model)
+    )
+    try:
+        max_turns = max(1, min(int(data.get("max_turns") or 42), 100))
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "error": "max_turns 必须是整数",
+        }), 400
+    if not api_key:
+        return jsonify({"success": False, "error": "请填写 API Key"}), 400
+    if executor is None:
+        return jsonify({
+            "success": False,
+            "error": "SolidWorks Executor 尚未初始化",
+        }), 503
+
+    from eval.eval_household_sewing_machine_multiturn import (
+        ARTIFACT_DIR,
+        ASSEMBLY_NAME,
+        SPEC_PATH,
+        SwApi,
+        _acceptance_specs,
+        _observation,
+        _task_plan,
+        _user_goal,
+        prepare_parts,
+        score_result,
+        validate_mechanisms,
+    )
+    from planner.validators import ValidatorRegistry
+    import json as _json
+
+    api = SwApi(executor.base_url)
+    try:
+        with _sw_execution_lock:
+            spec = _json.loads(SPEC_PATH.read_text(encoding="utf-8"))
+            paths, build_log = prepare_parts(
+                api,
+                spec,
+                ARTIFACT_DIR,
+                force=bool(data.get("force_parts", False)),
+            )
+            assembly_path = ARTIFACT_DIR / ASSEMBLY_NAME
+            goal = _user_goal(paths, spec, assembly_path)
+            task_plan = _task_plan(goal, spec, assembly_path)
+            llm_client = _get_llm_client(
+                api_key,
+                base_url,
+                vision_model,
+                plan_model,
+                use_cache=True,
+            )
+            usage_before = llm_client.usage_snapshot()
+            agent = MultiTurnAgent(
+                llm_client,
+                executor,
+                max_turns=max_turns,
+            )
+            result = agent.run(goal, task_plan=task_plan)
+            token_usage = llm_client.usage_since(usage_before)
+            if result.status == "completed":
+                api.call("/api/assembly/save")
+                validation_observation = _observation(api)
+            else:
+                validation_observation = result.final_observation
+            static_acceptance = ValidatorRegistry.validate(
+                _acceptance_specs(spec, assembly_path),
+                validation_observation,
+            )
+            mechanism_acceptance = (
+                validate_mechanisms(
+                    api,
+                    spec,
+                    validation_observation,
+                )
+                if result.status == "completed"
+                and static_acceptance.passed
+                else {
+                    "passed": False,
+                    "needle": {"samples": []},
+                    "rotary": {"samples": []},
+                    "four_bar": {"samples": []},
+                    "cam": {"samples": []},
+                }
+            )
+            passed = (
+                result.status == "completed"
+                and static_acceptance.passed
+                and mechanism_acceptance["passed"]
+            )
+            score = score_result(
+                status=result.status,
+                static_passed=static_acceptance.passed,
+                mechanisms=mechanism_acceptance,
+                successful_actions=result.successful_actions,
+                total_actions=result.total_actions,
+            )
+            cleanup = api.close_inactive()
+            result_dict = result.model_dump(mode="json")
+            return jsonify({
+                "success": True,
+                "mode": "multi_turn",
+                "example": "household_sewing_machine",
+                "multi_turn": result_dict,
+                "turns": result_dict["turns"],
+                "final_observation": result_dict["final_observation"],
+                "task_plan": task_plan.model_dump(mode="json"),
+                "acceptance": static_acceptance.model_dump(mode="json"),
+                "mechanism_acceptance": mechanism_acceptance,
+                "score": score,
+                "build_log": build_log,
+                "window_cleanup": cleanup,
+                "cache_enabled": True,
+                "token_usage": token_usage,
+                "summary": {
+                    "total": result.total_actions,
+                    "succeeded": result.successful_actions,
+                    "all_ok": passed,
+                    "score": score,
+                    "status": "completed" if passed else result.status,
+                    "llm_calls": result.llm_calls,
+                    "turn_count": len(result.turns),
+                    "token_usage": token_usage,
+                },
+            })
+    except Exception as exc:
+        traceback.print_exc()
+        try:
+            api.close_all()
+        except Exception:
+            pass
+        return jsonify({"success": False, "error": str(exc)}), 500
+
+
+@app.route("/api/sewing-machine-animation/pose", methods=["POST"])
+def set_sewing_machine_animation_pose():
+    """Set all four sewing mechanisms to a deterministic shaft angle."""
+    data = request.get_json(force=True) or {}
+    try:
+        angle_deg = float(data.get("main_shaft_angle_deg", 0)) % 720.0
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "error": "主轴角必须是数字",
+        }), 400
+
+    from eval.eval_household_sewing_machine_multiturn import (
+        ARTIFACT_DIR,
+        ASSEMBLY_NAME,
+        SPEC_PATH,
+        SwApi,
+        _cam_follower_payload,
+        _crank_slider_payload,
+        _four_bar_geometry_mm,
+        _four_bar_payload,
+        _needle_distance_mm,
+        _observation,
+        _resolve_components,
+        _synchronized_rotary_payload,
+    )
+    import json as _json
+
+    assembly_path = ARTIFACT_DIR / ASSEMBLY_NAME
+    api = SwApi(executor.base_url) if executor is not None else None
+    try:
+        if api is None:
+            raise RuntimeError("SolidWorks Executor 尚未初始化")
+        if not assembly_path.is_file():
+            raise FileNotFoundError(
+                "缝纫机装配体尚未生成，请先运行 Multi-turn 构建"
+            )
+        with _sw_execution_lock:
+            spec = _json.loads(SPEC_PATH.read_text(encoding="utf-8"))
+            api.call(
+                "/api/assembly/open",
+                {"assemblyPath": str(assembly_path)},
+            )
+            names = _resolve_components(_observation(api))
+            needle = api.call(
+                "/api/assembly/mechanism/crank-slider-pose",
+                _crank_slider_payload(names, spec, angle_deg),
+            )["result"]
+            rotary = api.call(
+                "/api/assembly/mechanism/synchronized-rotary-pose",
+                _synchronized_rotary_payload(names, spec, angle_deg),
+            )["result"]
+            four_bar = api.call(
+                "/api/assembly/mechanism/four-bar-pose",
+                _four_bar_payload(names, spec, angle_deg % 360.0),
+            )["result"]
+            cam = api.call(
+                "/api/assembly/mechanism/cam-follower-pose",
+                _cam_follower_payload(names, spec, angle_deg),
+            )["result"]
+            api.call("/api/assembly/save")
+            cleanup = api.close_inactive()
+        feed = _four_bar_geometry_mm(spec, angle_deg % 360.0)[
+            "coupler_point"
+        ]
+        return jsonify({
+            "success": True,
+            "message": f"缝纫机主轴已转到 {angle_deg:g}°",
+            "main_shaft_angle_deg": angle_deg,
+            "needle_position_mm": float(
+                needle.get(
+                    "sliderDistance",
+                    _needle_distance_mm(spec, angle_deg) / 1000,
+                )
+            ) * 1000,
+            "feed_x_mm": feed[0],
+            "feed_y_mm": feed[1],
+            "presser_lift_mm": float(
+                cam.get(
+                    "followerLift",
+                    cam.get("lift", 0),
+                )
+            ) * 1000,
+            "needle": needle,
+            "rotary": rotary,
+            "four_bar": four_bar,
+            "cam": cam,
+            "window_cleanup": cleanup,
+        })
+    except Exception as exc:
+        traceback.print_exc()
+        try:
+            if api is not None:
+                api.close_all()
+        except Exception:
+            pass
         return jsonify({"success": False, "error": str(exc)}), 500
 
 

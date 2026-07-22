@@ -3314,7 +3314,7 @@ namespace Chapter1.ConnectToSw
 
             // 切回装配体作为活动文档
             _swApp.ActivateDoc3(
-                _activeAssemblyName + ".SLDASM",
+                ((IModelDoc2)_activeAssembly).GetTitle(),
                 true,
                 (int)swRebuildOnActivation_e.swDontRebuildActiveDoc,
                 ref errors);
@@ -3337,6 +3337,36 @@ namespace Chapter1.ConnectToSw
             SetComponentTranslation(comp, x, y, z);
             var compName = comp.Name2;
             Console.WriteLine($"[SwCommands] 已加入组件: {compName} @ ({x*1000:F1},{y*1000:F1},{z*1000:F1}) mm");
+            // AddComponent5 requires a preloaded part document, but keeping one
+            // window per inserted component quickly exhausts SolidWorks on large
+            // assemblies. The component remains referenced by the assembly after
+            // its inactive source window is closed.
+            try
+            {
+                int activationErrors = 0;
+                _swApp.ActivateDoc3(
+                    ((IModelDoc2)_activeAssembly).GetTitle(),
+                    true,
+                    (int)swRebuildOnActivation_e.swDontRebuildActiveDoc,
+                    ref activationErrors);
+                CloseInactiveDocuments();
+            }
+            catch (Exception closeError)
+            {
+                Console.WriteLine(
+                    $"[SwCommands] 关闭已插入零件窗口失败（继续装配）: {closeError.Message}");
+            }
+            // Save periodic checkpoints so a large assembly does not keep all
+            // component references only in memory until the final operation.
+            // This also bounds recovery work if SolidWorks is interrupted.
+            var insertedComponents = _activeAssembly.GetComponents(false) as object[];
+            int componentCount = insertedComponents?.Length ?? 0;
+            if (componentCount > 0 && componentCount % 5 == 0)
+            {
+                SaveAssembly();
+                Console.WriteLine(
+                    $"[SwCommands] 装配体自动检查点已保存: {componentCount} 个组件");
+            }
             return compName;
         }
 
@@ -5098,6 +5128,719 @@ namespace Chapter1.ConnectToSw
                 ["rodMidpointXYZ"] = new double[] { rodX, rodY, rodZ },
                 ["rodAngleDeg"] = rodAngleDeg,
                 ["synchronized"] = synchronizedResults.ToArray(),
+            };
+        }
+
+        /// <summary>
+        /// Apply a common input angle to any number of independently positioned
+        /// rotors. Each rotor can override the global pivot and rotation axis.
+        /// </summary>
+        public Dictionary<string, object> SetSynchronizedRotaryPose(
+            double inputAngleDeg,
+            double pivotX,
+            double pivotY,
+            double pivotZ,
+            double axisX,
+            double axisY,
+            double axisZ,
+            List<Dictionary<string, object>> rotors)
+        {
+            EnsureActiveAssembly();
+            if (rotors == null || rotors.Count == 0)
+                throw new ArgumentException("rotors 至少需要一个转子");
+            double globalAxisNorm = Math.Sqrt(
+                axisX * axisX + axisY * axisY + axisZ * axisZ);
+            if (globalAxisNorm < 1e-12)
+                throw new ArgumentException("全局旋转轴不能为零向量");
+            axisX /= globalAxisNorm;
+            axisY /= globalAxisNorm;
+            axisZ /= globalAxisNorm;
+
+            var componentLookup = new Dictionary<string, IComponent2>(
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var rawComponent in (_activeAssembly.GetComponents(false)
+                as object[]) ?? new object[0])
+            {
+                var component = rawComponent as IComponent2;
+                if (component != null)
+                    componentLookup[component.Name2] = component;
+            }
+            Func<string, IComponent2> resolve = name =>
+            {
+                IComponent2 component;
+                if (!componentLookup.TryGetValue(name, out component))
+                    throw new InvalidOperationException(
+                        $"装配体中找不到组件: {name}");
+                return component;
+            };
+            Func<Dictionary<string, object>, string> nameOf = item =>
+            {
+                object rawName;
+                if (!item.TryGetValue("componentName", out rawName)
+                    && !item.TryGetValue("name", out rawName))
+                    throw new ArgumentException(
+                        "rotor 缺少 componentName/name");
+                return Convert.ToString(rawName);
+            };
+            Func<double, double> normalizeAngle = value =>
+            {
+                value %= 360.0;
+                if (value <= -180.0) value += 360.0;
+                if (value > 180.0) value -= 360.0;
+                return value;
+            };
+
+            var results = new List<Dictionary<string, object>>();
+            var modelDoc = (IModelDoc2)_activeAssembly;
+            var modelView = modelDoc.ActiveView as IModelView;
+            try
+            {
+                _swApp.CommandInProgress = true;
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = false;
+                foreach (var rotor in rotors)
+                {
+                    string name = nameOf(rotor);
+                    double ratio = rotor.ContainsKey("ratio")
+                        ? Convert.ToDouble(rotor["ratio"])
+                        : 1.0;
+                    if (Math.Abs(ratio) < 1e-12)
+                        throw new ArgumentException(
+                            $"rotor {name} 的 ratio 不能为零");
+                    bool reverse = rotor.ContainsKey("reverse")
+                        && Convert.ToBoolean(rotor["reverse"]);
+                    double phaseDeg = rotor.ContainsKey("phaseDeg")
+                        ? Convert.ToDouble(rotor["phaseDeg"])
+                        : 0.0;
+                    double rotorAxisX = rotor.ContainsKey("axisX")
+                        ? Convert.ToDouble(rotor["axisX"])
+                        : (rotor.ContainsKey("rotationAxisX")
+                            ? Convert.ToDouble(rotor["rotationAxisX"])
+                            : axisX);
+                    double rotorAxisY = rotor.ContainsKey("axisY")
+                        ? Convert.ToDouble(rotor["axisY"])
+                        : (rotor.ContainsKey("rotationAxisY")
+                            ? Convert.ToDouble(rotor["rotationAxisY"])
+                            : axisY);
+                    double rotorAxisZ = rotor.ContainsKey("axisZ")
+                        ? Convert.ToDouble(rotor["axisZ"])
+                        : (rotor.ContainsKey("rotationAxisZ")
+                            ? Convert.ToDouble(rotor["rotationAxisZ"])
+                            : axisZ);
+                    double rotorAxisNorm = Math.Sqrt(
+                        rotorAxisX * rotorAxisX
+                        + rotorAxisY * rotorAxisY
+                        + rotorAxisZ * rotorAxisZ);
+                    if (rotorAxisNorm < 1e-12)
+                        throw new ArgumentException(
+                            $"rotor {name} 的旋转轴不能为零向量");
+                    rotorAxisX /= rotorAxisNorm;
+                    rotorAxisY /= rotorAxisNorm;
+                    rotorAxisZ /= rotorAxisNorm;
+                    double requestedAngleDeg = inputAngleDeg / ratio
+                        * (reverse ? -1.0 : 1.0) + phaseDeg;
+                    double rotorPivotX = rotor.ContainsKey("pivotX")
+                        ? Convert.ToDouble(rotor["pivotX"])
+                        : (rotor.ContainsKey("x")
+                            ? Convert.ToDouble(rotor["x"])
+                            : pivotX);
+                    double rotorPivotY = rotor.ContainsKey("pivotY")
+                        ? Convert.ToDouble(rotor["pivotY"])
+                        : (rotor.ContainsKey("y")
+                            ? Convert.ToDouble(rotor["y"])
+                            : pivotY);
+                    double rotorPivotZ = rotor.ContainsKey("pivotZ")
+                        ? Convert.ToDouble(rotor["pivotZ"])
+                        : (rotor.ContainsKey("z")
+                            ? Convert.ToDouble(rotor["z"])
+                            : pivotZ);
+                    var resolved = resolve(name);
+                    double requestedAngle =
+                        requestedAngleDeg * Math.PI / 180.0;
+                    double c = Math.Cos(requestedAngle);
+                    double s = Math.Sin(requestedAngle);
+                    double t = 1.0 - c;
+                    var transformValues = new double[]
+                    {
+                        t*rotorAxisX*rotorAxisX+c,
+                        t*rotorAxisX*rotorAxisY-rotorAxisZ*s,
+                        t*rotorAxisX*rotorAxisZ+rotorAxisY*s,
+                        t*rotorAxisX*rotorAxisY+rotorAxisZ*s,
+                        t*rotorAxisY*rotorAxisY+c,
+                        t*rotorAxisY*rotorAxisZ-rotorAxisX*s,
+                        t*rotorAxisX*rotorAxisZ-rotorAxisY*s,
+                        t*rotorAxisY*rotorAxisZ+rotorAxisX*s,
+                        t*rotorAxisZ*rotorAxisZ+c,
+                        rotorPivotX, rotorPivotY, rotorPivotZ,
+                        1, 0, 0, 0,
+                    };
+                    var mathUtility =
+                        _swApp.GetMathUtility() as IMathUtility;
+                    var transform = mathUtility?.CreateTransform(
+                        transformValues) as MathTransform;
+                    if (transform == null)
+                        throw new InvalidOperationException(
+                            $"创建同步旋转 Transform 失败: {name}");
+                    resolved.Transform2 = transform;
+                    // Reading Transform2.ArrayData immediately after a 180-degree
+                    // assignment can make some SolidWorks versions block in COM.
+                    // Component.Transform2 accepted the exact transform above; use
+                    // the normalized assigned angle as the stable diagnostic.
+                    double actualAngleDeg = normalizeAngle(
+                        requestedAngleDeg);
+                    results.Add(new Dictionary<string, object>
+                    {
+                        ["componentName"] = name,
+                        ["pivotXYZ"] = new double[]
+                            { rotorPivotX, rotorPivotY, rotorPivotZ },
+                        ["rotationAxis"] = new double[]
+                            { rotorAxisX, rotorAxisY, rotorAxisZ },
+                        ["ratio"] = ratio,
+                        ["reverse"] = reverse,
+                        ["phaseDeg"] = phaseDeg,
+                        ["requestedAngleDeg"] = requestedAngleDeg,
+                        ["actualAngleDeg"] = actualAngleDeg,
+                        ["angleErrorDeg"] = normalizeAngle(
+                            actualAngleDeg - requestedAngleDeg),
+                    });
+                }
+            }
+            finally
+            {
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = true;
+                _swApp.CommandInProgress = false;
+            }
+            return new Dictionary<string, object>
+            {
+                ["inputAngleDeg"] = inputAngleDeg,
+                ["rotors"] = results.ToArray(),
+            };
+        }
+
+        /// <summary>
+        /// Solve and apply one planar closed four-bar pose. Link component local
+        /// +X axes are assumed to run from each link's first joint to its second.
+        /// </summary>
+        public Dictionary<string, object> SetFourBarPose(
+            string inputComponent,
+            string couplerComponent,
+            string outputComponent,
+            double groundAX,
+            double groundAY,
+            double groundAZ,
+            double groundBX,
+            double groundBY,
+            double groundBZ,
+            double inputLength,
+            double couplerLength,
+            double outputLength,
+            double inputAngleDeg,
+            string assemblyMode,
+            double rotationAxisX,
+            double rotationAxisY,
+            double rotationAxisZ,
+            Dictionary<string, object> couplerPoint,
+            List<Dictionary<string, object>> couplerPointComponents)
+        {
+            EnsureActiveAssembly();
+            if (inputLength <= 0 || couplerLength <= 0 || outputLength <= 0)
+                throw new ArgumentException("四杆机构所有连杆长度必须为正数");
+            string normalizedMode = (assemblyMode ?? "open")
+                .Trim().ToLowerInvariant();
+            if (normalizedMode != "open" && normalizedMode != "crossed")
+                throw new ArgumentException(
+                    "assemblyMode 必须为 open 或 crossed");
+            double axisNorm = Math.Sqrt(
+                rotationAxisX * rotationAxisX
+                + rotationAxisY * rotationAxisY
+                + rotationAxisZ * rotationAxisZ);
+            if (axisNorm < 1e-12)
+                throw new ArgumentException("四杆机构旋转轴不能为零向量");
+            rotationAxisX /= axisNorm;
+            rotationAxisY /= axisNorm;
+            rotationAxisZ /= axisNorm;
+
+            double groundX = groundBX - groundAX;
+            double groundY = groundBY - groundAY;
+            double groundZ = groundBZ - groundAZ;
+            double groundAlongAxis = groundX * rotationAxisX
+                + groundY * rotationAxisY + groundZ * rotationAxisZ;
+            double rawGroundLength = Math.Sqrt(
+                groundX * groundX + groundY * groundY + groundZ * groundZ);
+            if (Math.Abs(groundAlongAxis)
+                > 1e-9 * Math.Max(1.0, rawGroundLength))
+                throw new ArgumentException(
+                    "地面铰点 A/B 必须位于垂直于 rotationAxis 的同一平面");
+            groundX -= groundAlongAxis * rotationAxisX;
+            groundY -= groundAlongAxis * rotationAxisY;
+            groundZ -= groundAlongAxis * rotationAxisZ;
+            double groundLength = Math.Sqrt(
+                groundX * groundX + groundY * groundY + groundZ * groundZ);
+            if (groundLength < 1e-12)
+                throw new ArgumentException(
+                    "地面铰点 A/B 在机构平面内不能重合");
+            groundX /= groundLength;
+            groundY /= groundLength;
+            groundZ /= groundLength;
+            double planeYx = rotationAxisY * groundZ
+                - rotationAxisZ * groundY;
+            double planeYy = rotationAxisZ * groundX
+                - rotationAxisX * groundZ;
+            double planeYz = rotationAxisX * groundY
+                - rotationAxisY * groundX;
+
+            double inputAngle = inputAngleDeg * Math.PI / 180.0;
+            double inputDirX = groundX * Math.Cos(inputAngle)
+                + planeYx * Math.Sin(inputAngle);
+            double inputDirY = groundY * Math.Cos(inputAngle)
+                + planeYy * Math.Sin(inputAngle);
+            double inputDirZ = groundZ * Math.Cos(inputAngle)
+                + planeYz * Math.Sin(inputAngle);
+            double jointCX = groundAX + inputDirX * inputLength;
+            double jointCY = groundAY + inputDirY * inputLength;
+            double jointCZ = groundAZ + inputDirZ * inputLength;
+
+            double cbX = groundBX - jointCX;
+            double cbY = groundBY - jointCY;
+            double cbZ = groundBZ - jointCZ;
+            double centerDistance = Math.Sqrt(
+                cbX * cbX + cbY * cbY + cbZ * cbZ);
+            double tolerance = 1e-10 * Math.Max(
+                1.0,
+                Math.Max(centerDistance,
+                    Math.Max(couplerLength, outputLength)));
+            if (centerDistance < tolerance
+                || centerDistance > couplerLength + outputLength + tolerance
+                || centerDistance < Math.Abs(
+                    couplerLength - outputLength) - tolerance)
+                throw new InvalidOperationException(
+                    "当前输入角度下四杆机构无闭合实数解");
+            double cbUnitX = cbX / centerDistance;
+            double cbUnitY = cbY / centerDistance;
+            double cbUnitZ = cbZ / centerDistance;
+            double along = (
+                couplerLength * couplerLength
+                - outputLength * outputLength
+                + centerDistance * centerDistance)
+                / (2.0 * centerDistance);
+            double heightSquared =
+                couplerLength * couplerLength - along * along;
+            if (heightSquared < -tolerance)
+                throw new InvalidOperationException(
+                    "当前输入角度下四杆机构圆交点不存在");
+            double height = Math.Sqrt(Math.Max(0.0, heightSquared));
+            double intersectionPerpX = rotationAxisY * cbUnitZ
+                - rotationAxisZ * cbUnitY;
+            double intersectionPerpY = rotationAxisZ * cbUnitX
+                - rotationAxisX * cbUnitZ;
+            double intersectionPerpZ = rotationAxisX * cbUnitY
+                - rotationAxisY * cbUnitX;
+            double baseDX = jointCX + cbUnitX * along;
+            double baseDY = jointCY + cbUnitY * along;
+            double baseDZ = jointCZ + cbUnitZ * along;
+            double candidate1X = baseDX + intersectionPerpX * height;
+            double candidate1Y = baseDY + intersectionPerpY * height;
+            double candidate1Z = baseDZ + intersectionPerpZ * height;
+            double candidate2X = baseDX - intersectionPerpX * height;
+            double candidate2Y = baseDY - intersectionPerpY * height;
+            double candidate2Z = baseDZ - intersectionPerpZ * height;
+            Func<double, double, double, double> sideOfGround =
+                (x, y, z) =>
+                    (x - groundAX) * planeYx
+                    + (y - groundAY) * planeYy
+                    + (z - groundAZ) * planeYz;
+            double sideC = sideOfGround(jointCX, jointCY, jointCZ);
+            double side1 = sideOfGround(
+                candidate1X, candidate1Y, candidate1Z);
+            bool chooseFirst;
+            if (Math.Abs(sideC) <= tolerance)
+                chooseFirst = normalizedMode == "open";
+            else if (normalizedMode == "open")
+                chooseFirst = side1 * sideC >= 0;
+            else
+                chooseFirst = side1 * sideC < 0;
+            double jointDX = chooseFirst ? candidate1X : candidate2X;
+            double jointDY = chooseFirst ? candidate1Y : candidate2Y;
+            double jointDZ = chooseFirst ? candidate1Z : candidate2Z;
+
+            Func<double, double, double, double> planarAngleDeg =
+                (x, y, z) => Math.Atan2(
+                    x * planeYx + y * planeYy + z * planeYz,
+                    x * groundX + y * groundY + z * groundZ)
+                    * 180.0 / Math.PI;
+            double couplerDirX = (jointDX - jointCX) / couplerLength;
+            double couplerDirY = (jointDY - jointCY) / couplerLength;
+            double couplerDirZ = (jointDZ - jointCZ) / couplerLength;
+            double outputDirX = (jointDX - groundBX) / outputLength;
+            double outputDirY = (jointDY - groundBY) / outputLength;
+            double outputDirZ = (jointDZ - groundBZ) / outputLength;
+            double couplerAngleDeg = planarAngleDeg(
+                couplerDirX, couplerDirY, couplerDirZ);
+            double outputAngleDeg = planarAngleDeg(
+                outputDirX, outputDirY, outputDirZ);
+
+            var componentLookup = new Dictionary<string, IComponent2>(
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var rawComponent in (_activeAssembly.GetComponents(false)
+                as object[]) ?? new object[0])
+            {
+                var component = rawComponent as IComponent2;
+                if (component != null)
+                    componentLookup[component.Name2] = component;
+            }
+            Func<string, IComponent2> resolve = name =>
+            {
+                IComponent2 component;
+                if (!componentLookup.TryGetValue(name, out component))
+                    throw new InvalidOperationException(
+                        $"装配体中找不到组件: {name}");
+                return component;
+            };
+            Action<string, double, double, double,
+                double, double, double> placePlanarLink =
+                (name, x, y, z, dirX, dirY, dirZ) =>
+                {
+                    var component = resolve(name);
+                    if (component.IsFixed())
+                    {
+                        ClearAssemblySelection();
+                        component.Select4(false, null, false);
+                        _activeAssembly.UnfixComponent();
+                    }
+                    double localYx = rotationAxisY * dirZ
+                        - rotationAxisZ * dirY;
+                    double localYy = rotationAxisZ * dirX
+                        - rotationAxisX * dirZ;
+                    double localYz = rotationAxisX * dirY
+                        - rotationAxisY * dirX;
+                    var values = new double[]
+                    {
+                        dirX, dirY, dirZ,
+                        localYx, localYy, localYz,
+                        rotationAxisX, rotationAxisY, rotationAxisZ,
+                        x, y, z,
+                        1, 0, 0, 0,
+                    };
+                    var mathUtility =
+                        _swApp.GetMathUtility() as IMathUtility;
+                    var transform =
+                        mathUtility?.CreateTransform(values) as MathTransform;
+                    if (transform == null)
+                        throw new InvalidOperationException(
+                            $"创建四杆组件姿态 Transform 失败: {name}");
+                    component.Transform2 = transform;
+                };
+
+            double fraction = couplerPoint != null
+                && couplerPoint.ContainsKey("fraction")
+                ? Convert.ToDouble(couplerPoint["fraction"])
+                : 0.5;
+            double normalOffset = couplerPoint != null
+                && couplerPoint.ContainsKey("normalOffset")
+                ? Convert.ToDouble(couplerPoint["normalOffset"])
+                : 0.0;
+            double couplerNormalX = rotationAxisY * couplerDirZ
+                - rotationAxisZ * couplerDirY;
+            double couplerNormalY = rotationAxisZ * couplerDirX
+                - rotationAxisX * couplerDirZ;
+            double couplerNormalZ = rotationAxisX * couplerDirY
+                - rotationAxisY * couplerDirX;
+            double couplerPointX = jointCX
+                + (jointDX - jointCX) * fraction
+                + couplerNormalX * normalOffset;
+            double couplerPointY = jointCY
+                + (jointDY - jointCY) * fraction
+                + couplerNormalY * normalOffset;
+            double couplerPointZ = jointCZ
+                + (jointDZ - jointCZ) * fraction
+                + couplerNormalZ * normalOffset;
+
+            var pointResults = new List<Dictionary<string, object>>();
+            var modelDoc = (IModelDoc2)_activeAssembly;
+            var modelView = modelDoc.ActiveView as IModelView;
+            try
+            {
+                _swApp.CommandInProgress = true;
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = false;
+                placePlanarLink(
+                    inputComponent,
+                    (groundAX + jointCX) / 2.0,
+                    (groundAY + jointCY) / 2.0,
+                    (groundAZ + jointCZ) / 2.0,
+                    inputDirX, inputDirY, inputDirZ);
+                placePlanarLink(
+                    couplerComponent,
+                    (jointCX + jointDX) / 2.0,
+                    (jointCY + jointDY) / 2.0,
+                    (jointCZ + jointDZ) / 2.0,
+                    couplerDirX, couplerDirY, couplerDirZ);
+                placePlanarLink(
+                    outputComponent,
+                    (groundBX + jointDX) / 2.0,
+                    (groundBY + jointDY) / 2.0,
+                    (groundBZ + jointDZ) / 2.0,
+                    outputDirX, outputDirY, outputDirZ);
+                foreach (var item in couplerPointComponents
+                    ?? new List<Dictionary<string, object>>())
+                {
+                    object rawName;
+                    if (!item.TryGetValue("componentName", out rawName)
+                        && !item.TryGetValue("name", out rawName))
+                        throw new ArgumentException(
+                            "couplerPointComponent 缺少 componentName/name");
+                    string name = Convert.ToString(rawName);
+                    double axisOffset = item.ContainsKey("axisOffset")
+                        ? Convert.ToDouble(item["axisOffset"])
+                        : 0.0;
+                    double angleOffset = item.ContainsKey("angleOffsetDeg")
+                        ? Convert.ToDouble(item["angleOffsetDeg"])
+                        : 0.0;
+                    double pointAngle = (
+                        couplerAngleDeg + angleOffset)
+                        * Math.PI / 180.0;
+                    double pointDirX = groundX * Math.Cos(pointAngle)
+                        + planeYx * Math.Sin(pointAngle);
+                    double pointDirY = groundY * Math.Cos(pointAngle)
+                        + planeYy * Math.Sin(pointAngle);
+                    double pointDirZ = groundZ * Math.Cos(pointAngle)
+                        + planeYz * Math.Sin(pointAngle);
+                    placePlanarLink(
+                        name,
+                        couplerPointX + rotationAxisX * axisOffset,
+                        couplerPointY + rotationAxisY * axisOffset,
+                        couplerPointZ + rotationAxisZ * axisOffset,
+                        pointDirX, pointDirY, pointDirZ);
+                    pointResults.Add(new Dictionary<string, object>
+                    {
+                        ["componentName"] = name,
+                        ["positionXYZ"] = new double[]
+                        {
+                            couplerPointX + rotationAxisX * axisOffset,
+                            couplerPointY + rotationAxisY * axisOffset,
+                            couplerPointZ + rotationAxisZ * axisOffset,
+                        },
+                    });
+                }
+            }
+            finally
+            {
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = true;
+                _swApp.CommandInProgress = false;
+            }
+            modelDoc.GraphicsRedraw2();
+            double inputError = Math.Abs(Math.Sqrt(
+                Math.Pow(jointCX - groundAX, 2)
+                + Math.Pow(jointCY - groundAY, 2)
+                + Math.Pow(jointCZ - groundAZ, 2)) - inputLength);
+            double couplerError = Math.Abs(Math.Sqrt(
+                Math.Pow(jointDX - jointCX, 2)
+                + Math.Pow(jointDY - jointCY, 2)
+                + Math.Pow(jointDZ - jointCZ, 2)) - couplerLength);
+            double outputError = Math.Abs(Math.Sqrt(
+                Math.Pow(jointDX - groundBX, 2)
+                + Math.Pow(jointDY - groundBY, 2)
+                + Math.Pow(jointDZ - groundBZ, 2)) - outputLength);
+            double closureError = Math.Max(
+                inputError,
+                Math.Max(couplerError, outputError));
+            return new Dictionary<string, object>
+            {
+                ["assemblyMode"] = normalizedMode,
+                ["joints"] = new Dictionary<string, object>
+                {
+                    ["A"] = new double[] { groundAX, groundAY, groundAZ },
+                    ["C"] = new double[] { jointCX, jointCY, jointCZ },
+                    ["D"] = new double[] { jointDX, jointDY, jointDZ },
+                    ["B"] = new double[] { groundBX, groundBY, groundBZ },
+                },
+                ["inputAngleDeg"] = inputAngleDeg,
+                ["couplerAngleDeg"] = couplerAngleDeg,
+                ["outputAngleDeg"] = outputAngleDeg,
+                ["linkAnglesDeg"] = new Dictionary<string, object>
+                {
+                    ["input"] = inputAngleDeg,
+                    ["coupler"] = couplerAngleDeg,
+                    ["output"] = outputAngleDeg,
+                },
+                ["closureError"] = closureError,
+                ["couplerPointXYZ"] = new double[]
+                    { couplerPointX, couplerPointY, couplerPointZ },
+                ["couplerPointComponents"] = pointResults.ToArray(),
+            };
+        }
+
+        /// <summary>
+        /// Apply a radial cam driver angle and the corresponding follower
+        /// translation for harmonic-lift or eccentric profiles.
+        /// </summary>
+        public Dictionary<string, object> SetCamFollowerPose(
+            string driverComponent,
+            string followerComponent,
+            double centerX,
+            double centerY,
+            double centerZ,
+            double baseRadius,
+            double lift,
+            double phaseDeg,
+            double inputAngleDeg,
+            string profile,
+            double rotationAxisX,
+            double rotationAxisY,
+            double rotationAxisZ,
+            double followerAxisX,
+            double followerAxisY,
+            double followerAxisZ,
+            List<Dictionary<string, object>> synchronizedFollowerComponents)
+        {
+            EnsureActiveAssembly();
+            if (baseRadius <= 0)
+                throw new ArgumentException("baseRadius 必须为正数");
+            if (lift <= 0)
+                throw new ArgumentException("lift 必须为正数");
+            string normalizedProfile = (profile ?? "harmonic")
+                .Trim().ToLowerInvariant();
+            if (normalizedProfile != "harmonic"
+                && normalizedProfile != "eccentric")
+                throw new ArgumentException(
+                    "profile 必须为 harmonic 或 eccentric");
+            if (normalizedProfile == "eccentric" && lift >= baseRadius)
+                throw new ArgumentException(
+                    "eccentric profile 要求 lift 小于 baseRadius");
+            double rotationNorm = Math.Sqrt(
+                rotationAxisX * rotationAxisX
+                + rotationAxisY * rotationAxisY
+                + rotationAxisZ * rotationAxisZ);
+            double followerNorm = Math.Sqrt(
+                followerAxisX * followerAxisX
+                + followerAxisY * followerAxisY
+                + followerAxisZ * followerAxisZ);
+            if (rotationNorm < 1e-12 || followerNorm < 1e-12)
+                throw new ArgumentException(
+                    "rotationAxis 和 followerAxis 不能为零向量");
+            rotationAxisX /= rotationNorm;
+            rotationAxisY /= rotationNorm;
+            rotationAxisZ /= rotationNorm;
+            followerAxisX /= followerNorm;
+            followerAxisY /= followerNorm;
+            followerAxisZ /= followerNorm;
+
+            double profileAngleDeg = inputAngleDeg + phaseDeg;
+            double profileAngle = profileAngleDeg * Math.PI / 180.0;
+            double followerLift = normalizedProfile == "harmonic"
+                ? lift * (1.0 - Math.Cos(profileAngle)) / 2.0
+                : lift * Math.Cos(profileAngle);
+            double radius = baseRadius + followerLift;
+            if (radius <= 0)
+                throw new InvalidOperationException(
+                    "当前凸轮参数产生了非正的径向距离");
+            double followerX = centerX + followerAxisX * radius;
+            double followerY = centerY + followerAxisY * radius;
+            double followerZ = centerZ + followerAxisZ * radius;
+
+            var componentLookup = new Dictionary<string, IComponent2>(
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var rawComponent in (_activeAssembly.GetComponents(false)
+                as object[]) ?? new object[0])
+            {
+                var component = rawComponent as IComponent2;
+                if (component != null)
+                    componentLookup[component.Name2] = component;
+            }
+            Func<string, IComponent2> resolve = name =>
+            {
+                IComponent2 component;
+                if (!componentLookup.TryGetValue(name, out component))
+                    throw new InvalidOperationException(
+                        $"装配体中找不到组件: {name}");
+                return component;
+            };
+
+            var synchronizedResults =
+                new List<Dictionary<string, object>>();
+            var modelDoc = (IModelDoc2)_activeAssembly;
+            var modelView = modelDoc.ActiveView as IModelView;
+            try
+            {
+                _swApp.CommandInProgress = true;
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = false;
+                SetComponentPose(
+                    driverComponent,
+                    centerX, centerY, centerZ,
+                    rotationAxisX, rotationAxisY, rotationAxisZ,
+                    inputAngleDeg,
+                    false,
+                    resolve(driverComponent));
+                SetComponentPose(
+                    followerComponent,
+                    followerX, followerY, followerZ,
+                    rotationAxisX, rotationAxisY, rotationAxisZ,
+                    0.0,
+                    false,
+                    resolve(followerComponent));
+                foreach (var item in synchronizedFollowerComponents
+                    ?? new List<Dictionary<string, object>>())
+                {
+                    object rawName;
+                    if (!item.TryGetValue("componentName", out rawName)
+                        && !item.TryGetValue("name", out rawName))
+                        throw new ArgumentException(
+                            "同步从动件缺少 componentName/name");
+                    string name = Convert.ToString(rawName);
+                    double axisOffset = item.ContainsKey("axisOffset")
+                        ? Convert.ToDouble(item["axisOffset"])
+                        : 0.0;
+                    double followerOffset = item.ContainsKey("followerOffset")
+                        ? Convert.ToDouble(item["followerOffset"])
+                        : 0.0;
+                    double x = followerX
+                        + rotationAxisX * axisOffset
+                        + followerAxisX * followerOffset;
+                    double y = followerY
+                        + rotationAxisY * axisOffset
+                        + followerAxisY * followerOffset;
+                    double z = followerZ
+                        + rotationAxisZ * axisOffset
+                        + followerAxisZ * followerOffset;
+                    SetComponentPose(
+                        name,
+                        x, y, z,
+                        rotationAxisX, rotationAxisY, rotationAxisZ,
+                        0.0,
+                        false,
+                        resolve(name));
+                    synchronizedResults.Add(
+                        new Dictionary<string, object>
+                        {
+                            ["componentName"] = name,
+                            ["positionXYZ"] = new double[] { x, y, z },
+                        });
+                }
+            }
+            finally
+            {
+                if (modelView != null)
+                    modelView.EnableGraphicsUpdate = true;
+                _swApp.CommandInProgress = false;
+            }
+            modelDoc.GraphicsRedraw2();
+            return new Dictionary<string, object>
+            {
+                ["profile"] = normalizedProfile,
+                ["lift"] = followerLift,
+                ["followerPosition"] =
+                    new double[] { followerX, followerY, followerZ },
+                ["followerPositionXYZ"] =
+                    new double[] { followerX, followerY, followerZ },
+                ["radialDistance"] = radius,
+                ["driverAngle"] = inputAngleDeg,
+                ["driverAngleDeg"] = inputAngleDeg,
+                ["profileAngleDeg"] = profileAngleDeg,
+                ["synchronizedFollowers"] =
+                    synchronizedResults.ToArray(),
             };
         }
 

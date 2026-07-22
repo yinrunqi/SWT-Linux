@@ -66,6 +66,25 @@ CASE_CONFIG = {
         "max_turns": 28,
         "dynamic_key": "indexing_acceptance",
     },
+    "sewing_machine": {
+        "label": "家用机械缝纫机",
+        "script": "eval_household_sewing_machine_multiturn.py",
+        "artifact_dir": "household_sewing_machine",
+        "max_turns": 42,
+        "dynamic_key": "mechanism_acceptance",
+        "sample_groups": (
+            "needle",
+            "rotary",
+            "four_bar",
+            "cam",
+        ),
+        "global_checks": (
+            "needle.cycle_closed",
+            "rotary.cycle_closed",
+            "four_bar.cycle_closed",
+            "cam.cycle_closed",
+        ),
+    },
 }
 
 
@@ -126,13 +145,39 @@ def _dynamic_functional_score(
     dynamic_key = config.get("dynamic_key")
     if dynamic_key:
         dynamic = agent_run.get(dynamic_key) or {}
-        samples = dynamic.get("samples") or []
+        sample_groups = config.get("sample_groups")
+        if sample_groups:
+            samples = [
+                sample
+                for group in sample_groups
+                for sample in (
+                    (dynamic.get(group) or {}).get("samples") or []
+                )
+                if isinstance(sample, dict)
+            ]
+        else:
+            samples = [
+                sample
+                for sample in (dynamic.get("samples") or [])
+                if isinstance(sample, dict)
+            ]
         sample_rate = _fraction([
             bool(sample.get("passed"))
             for sample in samples
-            if isinstance(sample, dict)
         ])
-        if case_id == "engine":
+        configured_globals = config.get("global_checks")
+        if configured_globals:
+            global_checks = []
+            for key in configured_globals:
+                value: Any = dynamic
+                for part in str(key).split("."):
+                    value = (
+                        value.get(part)
+                        if isinstance(value, dict)
+                        else None
+                    )
+                global_checks.append(bool(value))
+        elif case_id == "engine":
             global_checks = [
                 bool(dynamic.get("cycle_closed")),
                 (
@@ -299,6 +344,8 @@ def merge_machine_evidence(
     merged["post_run_machine_passed"] = bool(
         recovered_run.get("passed")
     )
+    if str(primary_run.get("status")) == "completed":
+        merged["passed"] = bool(recovered_run.get("passed"))
     return merged
 
 
@@ -403,7 +450,7 @@ def run_one(
             "error": "eval did not produce result.json",
             "token_usage": {},
         }
-    if agent_run.get("status") != "completed":
+    if not agent_run.get("passed"):
         recovered = _recover_machine_evidence(
             case_id=case_id,
             command=command,

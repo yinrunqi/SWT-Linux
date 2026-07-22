@@ -386,6 +386,23 @@ Web Demo 中的 27 组件充电式手电钻组合了 20:1 双级行星减速器�
 - `eval/cordless_drill_planetary_spec.json`
 - `test/test_cordless_drill_planetary.py`
 
+面向更多闭环与相位耦合机构，系统进一步提供：
+
+- `assembly_set_synchronized_rotary_pose`：由共同输入角驱动任意数量、任意比例、
+  方向和相位的旋转组件；
+- `assembly_set_four_bar_pose`：解析求解开式或交叉式平面四连杆闭环，并返回
+  关节、杆角、闭合误差和任意耦合点位置；
+- `assembly_set_cam_follower_pose`：按谐波或偏心轮廓求解旋转凸轮和直动从动件
+  的升程与实体姿态。
+
+Web Demo 中的 40 组件家用机械缝纫机组合针杆曲柄滑块、旋梭同步转动、送布
+四连杆和压脚凸轮，并提供 0°–720° 主轴确定性姿态控制。产品尺寸和验收轨迹
+只保留在 eval 层，对应文件：
+
+- `eval/eval_household_sewing_machine_multiturn.py`
+- `eval/household_sewing_machine_spec.json`
+- `test/test_household_sewing_machine.py`
+
 ## 回归测试
 
 ```bash

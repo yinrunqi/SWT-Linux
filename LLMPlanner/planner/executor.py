@@ -94,6 +94,18 @@ OPERATION_ENDPOINT_MAP: dict[OperationType, tuple[str, str]] = {
         "POST",
         "/api/assembly/mechanism/indexed-rotary-pose",
     ),
+    OperationType.ASSEMBLY_SET_SYNCHRONIZED_ROTARY_POSE: (
+        "POST",
+        "/api/assembly/mechanism/synchronized-rotary-pose",
+    ),
+    OperationType.ASSEMBLY_SET_FOUR_BAR_POSE: (
+        "POST",
+        "/api/assembly/mechanism/four-bar-pose",
+    ),
+    OperationType.ASSEMBLY_SET_CAM_FOLLOWER_POSE: (
+        "POST",
+        "/api/assembly/mechanism/cam-follower-pose",
+    ),
 }
 
 # 常见的英文→中文特征类型名映射（SolidWorks 中文版）

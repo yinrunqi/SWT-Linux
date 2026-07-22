@@ -1,0 +1,116 @@
+{
+  "case_id": "household_sewing_machine_v1",
+  "description": "带针杆、旋梭、送布牙、挑线与压脚联动的家用机械缝纫机",
+  "units": {
+    "length": "mm",
+    "angle": "deg"
+  },
+  "assembly": {
+    "name": "household_sewing_machine",
+    "component_count": 40,
+    "translation_tolerance_mm": 1.0
+  },
+  "needle_drive": {
+    "crank_center": [45.0, 105.0, 0.0],
+    "rotation_axis": [0.0, 0.0, 1.0],
+    "slider_axis": [0.0, -1.0, 0.0],
+    "crank_radius": 18.0,
+    "connecting_rod_length": 65.0,
+    "expected_stroke": 36.0,
+    "sample_angles_deg": [0.0, 90.0, 180.0, 270.0, 360.0, 720.0]
+  },
+  "rotary_timing": {
+    "sample_angles_deg": [0.0, 90.0, 180.0, 360.0, 720.0],
+    "rotors": [
+      {"role": "hand_wheel", "ratio": 1.0, "reverse": false, "phase_deg": 0.0},
+      {"role": "main_shaft", "ratio": 1.0, "reverse": false, "phase_deg": 0.0},
+      {"role": "lower_shaft", "ratio": 1.0, "reverse": true, "phase_deg": 0.0},
+      {"role": "rotary_hook", "ratio": 0.5, "reverse": true, "phase_deg": 25.0},
+      {"role": "takeup_eccentric", "ratio": 1.0, "reverse": false, "phase_deg": 90.0}
+    ]
+  },
+  "feed_four_bar": {
+    "ground_pivot_a": [10.0, 25.0, 0.0],
+    "ground_pivot_b": [70.0, 25.0, 0.0],
+    "rotation_axis": [0.0, 0.0, 1.0],
+    "input_length": 22.0,
+    "coupler_length": 58.0,
+    "output_length": 28.0,
+    "coupler_point": {"along": 0.72, "offset": 9.0},
+    "assembly_mode": "open",
+    "sample_angles_deg": [20.0, 70.0, 120.0, 180.0, 240.0, 300.0, 340.0]
+  },
+  "presser_cam": {
+    "center": [25.0, 82.0, 0.0],
+    "rotation_axis": [0.0, 0.0, 1.0],
+    "follower_axis": [0.0, 1.0, 0.0],
+    "base_radius": 10.0,
+    "lift": 6.0,
+    "phase_deg": 30.0,
+    "profile": "harmonic",
+    "sample_angles_deg": [0.0, 90.0, 180.0, 270.0, 360.0]
+  },
+  "components": [
+    {"role": "base_plate", "kind": "base_plate", "group": "foundation", "translation": [0.0, 0.0, 0.0]},
+    {"role": "column", "kind": "column", "group": "foundation", "translation": [-105.0, 55.0, 0.0]},
+    {"role": "arm_body", "kind": "arm_body", "group": "foundation", "translation": [-25.0, 125.0, 0.0]},
+    {"role": "bed_cover", "kind": "bed_cover", "group": "foundation", "translation": [0.0, 8.0, 0.0]},
+    {"role": "stitch_plate", "kind": "stitch_plate", "group": "foundation", "translation": [75.0, 12.0, 0.0]},
+    {"role": "arm_cover", "kind": "arm_cover", "group": "foundation", "translation": [-25.0, 125.0, 18.0]},
+
+    {"role": "hand_wheel", "kind": "wheel", "group": "drive", "translation": [-125.0, 118.0, 0.0]},
+    {"role": "main_shaft", "kind": "shaft", "group": "drive", "translation": [-35.0, 118.0, 0.0]},
+    {"role": "motor_pulley", "kind": "pulley", "group": "drive", "translation": [-120.0, 58.0, 0.0]},
+    {"role": "motor_rotor", "kind": "motor", "group": "drive", "translation": [-120.0, 45.0, 0.0]},
+    {"role": "upper_timing_gear", "kind": "gear", "group": "drive", "translation": [-75.0, 112.0, 0.0]},
+    {"role": "lower_timing_gear", "kind": "gear", "group": "drive", "translation": [-75.0, 25.0, 0.0]},
+
+    {"role": "needle_crank", "kind": "crank", "group": "needle_train", "translation": [45.0, 105.0, 0.0]},
+    {"role": "needle_connecting_rod", "kind": "link", "group": "needle_train", "translation": [45.0, 78.0, 0.0]},
+    {"role": "needle_bar", "kind": "needle_bar", "group": "needle_train", "translation": [45.0, 40.0, 0.0]},
+    {"role": "needle_bar_guide", "kind": "guide", "group": "needle_train", "translation": [45.0, 68.0, 0.0]},
+    {"role": "needle_clamp", "kind": "clamp", "group": "needle_train", "translation": [45.0, 20.0, 0.0]},
+    {"role": "needle", "kind": "needle", "group": "needle_train", "translation": [45.0, 5.0, 0.0]},
+    {"role": "face_plate", "kind": "cover", "group": "needle_train", "translation": [45.0, 62.0, 14.0]},
+
+    {"role": "lower_shaft", "kind": "shaft", "group": "hook_bobbin", "translation": [-5.0, 24.0, 0.0]},
+    {"role": "hook_drive_gear", "kind": "gear", "group": "hook_bobbin", "translation": [35.0, 24.0, 0.0]},
+    {"role": "rotary_hook", "kind": "hook", "group": "hook_bobbin", "translation": [75.0, 20.0, 0.0]},
+    {"role": "bobbin_case", "kind": "bobbin_case", "group": "hook_bobbin", "translation": [75.0, 20.0, 6.0]},
+    {"role": "bobbin", "kind": "bobbin", "group": "hook_bobbin", "translation": [75.0, 20.0, 10.0]},
+    {"role": "hook_cover", "kind": "cover", "group": "hook_bobbin", "translation": [75.0, 20.0, 16.0]},
+
+    {"role": "feed_crank", "kind": "crank", "group": "feed", "translation": [10.0, 25.0, 0.0]},
+    {"role": "feed_coupler", "kind": "link", "group": "feed", "translation": [38.0, 35.0, 0.0]},
+    {"role": "feed_rocker", "kind": "link", "group": "feed", "translation": [70.0, 25.0, 0.0]},
+    {"role": "feed_dog_bar", "kind": "feed_bar", "group": "feed", "translation": [48.0, 30.0, 0.0]},
+    {"role": "feed_dog", "kind": "feed_dog", "group": "feed", "translation": [65.0, 14.0, 0.0]},
+    {"role": "feed_adjuster", "kind": "control", "group": "feed", "translation": [-45.0, 45.0, 0.0]},
+
+    {"role": "takeup_eccentric", "kind": "cam", "group": "takeup_presser", "translation": [0.0, 105.0, 0.0]},
+    {"role": "takeup_link", "kind": "link", "group": "takeup_presser", "translation": [5.0, 88.0, 0.0]},
+    {"role": "takeup_lever", "kind": "lever", "group": "takeup_presser", "translation": [15.0, 95.0, 0.0]},
+    {"role": "presser_cam", "kind": "cam", "group": "takeup_presser", "translation": [25.0, 82.0, 0.0]},
+    {"role": "presser_bar", "kind": "presser_bar", "group": "takeup_presser", "translation": [58.0, 45.0, 0.0]},
+    {"role": "presser_foot", "kind": "presser_foot", "group": "takeup_presser", "translation": [58.0, 12.0, 0.0]},
+
+    {"role": "tension_dial", "kind": "control", "group": "controls", "translation": [10.0, 105.0, 16.0]},
+    {"role": "reverse_lever", "kind": "control", "group": "controls", "translation": [-35.0, 75.0, 16.0]},
+    {"role": "spool_pin", "kind": "pin", "group": "controls", "translation": [-35.0, 150.0, 0.0]}
+  ],
+  "acceptance": {
+    "component_count": 40,
+    "translation_tolerance_mm": 1.0,
+    "needle_position_tolerance_mm": 0.25,
+    "stroke_tolerance_mm": 0.25,
+    "angle_tolerance_deg": 0.1,
+    "four_bar_closure_tolerance_mm": 0.25,
+    "feed_position_tolerance_mm": 0.25,
+    "cam_lift_tolerance_mm": 0.25,
+    "minimum_needle_samples": 6,
+    "minimum_rotary_samples": 5,
+    "minimum_feed_samples": 7,
+    "minimum_cam_samples": 5,
+    "assembly_file_required": true
+  }
+}

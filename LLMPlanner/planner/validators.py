@@ -190,12 +190,25 @@ class ValidatorRegistry:
         checks = []
         for target in expected:
             needle = str(target.get("path_contains", "")).lower()
-            component = next(
-                (
-                    item for item in observation.components
-                    if needle in str(item.get("path", "")).lower()
-                ),
-                None,
+            exact_matches = []
+            partial_matches = []
+            for item in observation.components:
+                path_value = str(item.get("path", ""))
+                path_stem = Path(path_value).stem.lower()
+                name = str(item.get("name", "")).lower()
+                name_stem = name
+                if "-" in name:
+                    prefix, suffix = name.rsplit("-", 1)
+                    if suffix.isdigit():
+                        name_stem = prefix
+                if needle in {path_stem, name_stem}:
+                    exact_matches.append(item)
+                elif needle in path_value.lower() or needle in name:
+                    partial_matches.append(item)
+            component = (
+                exact_matches[0]
+                if exact_matches
+                else (partial_matches[0] if partial_matches else None)
             )
             actual = (
                 [float(value) * 1000 for value in component.get(

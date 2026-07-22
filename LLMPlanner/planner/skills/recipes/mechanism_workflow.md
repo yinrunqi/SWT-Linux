@@ -1,7 +1,7 @@
 ---
 name: mechanism_workflow
-description: 通用平面机构装配、曲柄滑块、多关节链求解和同步传动
-triggers: [机构, 曲柄, 滑块, 连杆, 活塞, 台灯, 机械臂, 折叠伞, 径向展开, 行星齿轮, 手电钻, 钻夹头, crank, slider, linkage, mechanism, timing, umbrella, deployable, planetary, drill, chuck]
+description: 通用平面机构装配、曲柄滑块、多关节链、同步旋转、四杆和凸轮从动机构
+triggers: [机构, 曲柄, 滑块, 连杆, 活塞, 台灯, 机械臂, 折叠伞, 径向展开, 行星齿轮, 手电钻, 钻夹头, 缝纫机, 针杆, 旋梭, 送布, 压脚, 同步旋转, 四杆, 凸轮, 从动件, crank, slider, linkage, mechanism, timing, umbrella, deployable, planetary, drill, chuck, sewing, synchronized rotary, four bar, cam, follower]
 applies_to: [text]
 ---
 
@@ -68,3 +68,26 @@ applies_to: [text]
 局部轴与径向一致、夹紧半径不穿过被夹工件。
 
 若某个角度无实数解，应修正几何参数（连杆长度必须大于曲柄半径），不能通过跳过该采样点掩盖问题。
+
+### 通用机构操作选择
+
+- 多个组件只需围绕各自中心按固定传动比同步旋转时，使用
+  `assembly_set_synchronized_rotary_pose`。每个转子声明真实组件实例名、旋转
+  中心、传动比、方向和相位；所有转子共享输入角与全局旋转轴。
+- 两个固定铰点之间由输入杆、耦合杆和输出杆组成闭环时，使用
+  `assembly_set_four_bar_pose`。根据机构交叉或非交叉构型明确
+  `assemblyMode`，不要把三个相对独立的旋转姿态当作闭环解。
+- 主动件轮廓驱动直动或摆动从动件时，使用
+  `assembly_set_cam_follower_pose`。明确基圆半径、升程、轮廓规律、相位以及
+  主动轴和从动轴；不要用离散手写位移代替轮廓求值。
+- 若机构拓扑不满足以上语义，选择更通用的链、单组件姿态或约束操作，不要仅因
+  组件数量相近而套用专用求解器。
+
+### 通用验证
+
+所有机构先从 observation 读取真实组件实例名，并检查长度使用米、角度使用度、
+轴向量非零且已归一化。至少采样输入周期的起点、若干中间点和终点；验证周期首尾
+一致、固定支点不漂移、杆长或旋转中心保持不变、传动比与相位连续，并在每个姿态
+重建后检查干涉。四杆机构还要验证两条闭环路径到达同一耦合点；凸轮机构要验证
+从动位移处于定义升程范围且轮廓过渡连续。无实数解、零长度轴、缺失组件或越界
+轮廓参数都应视为输入错误并修正，不能跳过失败采样点。

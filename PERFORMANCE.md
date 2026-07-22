@@ -767,3 +767,25 @@ Kimi 平均分比 GLM 高 4.42、比 Qwen 高 14.62，且 token 比 GLM 少
 
 可复查主产物：
 `LLMPlanner/eval/text_singleturn_kimi_k2_5_combined_result.json`。
+
+## 40 组件家用机械缝纫机 Multi-turn（2026-07-22）
+
+使用 Qwen3.5-397B-A17B 完成 7 个累积里程碑和 40 组件装配。正式执行共
+14 turns、47 个动作，成功 46 个；唯一失败是挑线平面链首段长度为 0，Agent
+下一 turn 修正为 18mm 后完成。静态、四机构和执行分分别为
+**40 / 40 / 19.68**，总分 **99.68**。
+
+机构机器验收覆盖 0°–720° 主轴周期：针杆 6 个、同步旋转 5 个、送布四连杆
+7 个、压脚凸轮 5 个采样，共 23 个姿态全部通过，四组周期闭合检查也全部通过。
+完整运行耗时 500.654s，15 次模型调用共 397,915 prompt、7,468 completion、
+**405,383 tokens**。结果保留完整 Provider 原始输入/输出、Agent turns、动作
+结果、最终 observation 和分项机器证据。
+
+稳定性修复包括：超过 20 个组件时迭代 observation 跳过二次复杂度干涉检查；
+机构 API 批量设置 transform 后仅重建一次；插入零件后关闭非活动源文档；每
+5 个组件保存装配体检查点。最终清理检查显示打开文档为 0。零 token
+`--validate-existing` 恢复验收得 85 分（不计 15 分动作成功率），可在执行中断后
+恢复产品证据而不虚增执行分。
+
+可复查主产物：
+`LLMPlanner/eval/household_sewing_machine_result.json`。
