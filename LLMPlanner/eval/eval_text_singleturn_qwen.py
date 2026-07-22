@@ -465,29 +465,44 @@ def run_one(
     cleanup_before = _close_documents(sw_url)
     time.sleep(1.0)
     payload: dict[str, Any] = {}
+    observation: dict[str, Any] = {}
+    request_payload = {
+        "instruction": case.prompt,
+        "provider": "aiping",
+        "vision_model": model,
+        "plan_model": model,
+        "mode": "single_turn",
+        "use_cache": False,
+        "capture_trace": True,
+        "dry_run": False,
+    }
+    trace = {
+        "request": {
+            "url": f"{web_url}/api/run",
+            "json": request_payload,
+        },
+        "response_status": None,
+        "response": None,
+        "final_observation": None,
+    }
     try:
         response = requests.post(
             f"{web_url}/api/run",
-            json={
-                "instruction": case.prompt,
-                "provider": "aiping",
-                "vision_model": model,
-                "plan_model": model,
-                "mode": "single_turn",
-                "use_cache": False,
-                "dry_run": False,
-            },
+            json=request_payload,
             timeout=900,
         )
+        trace["response_status"] = response.status_code
         try:
             payload = response.json()
         except ValueError:
             payload = {"error": response.text[:500]}
+        trace["response"] = payload
         if not response.ok or not payload.get("success"):
             raise RuntimeError(
                 payload.get("error") or f"HTTP {response.status_code}"
             )
         observation = _observation(sw_url)
+        trace["final_observation"] = observation
         scoring = score_case(case, payload, observation)
         return {
             "case_id": case.case_id,
@@ -497,8 +512,15 @@ def run_one(
             "duration_seconds": round(time.perf_counter() - started, 2),
             "cleanup_before": cleanup_before,
             "error": None,
+            "trace": trace,
         }
     except Exception as exc:
+        if not observation:
+            try:
+                observation = _observation(sw_url)
+            except Exception:
+                observation = {}
+        trace["final_observation"] = observation or None
         return {
             "case_id": case.case_id,
             "name": case.name,
@@ -509,6 +531,7 @@ def run_one(
             "duration_seconds": round(time.perf_counter() - started, 2),
             "cleanup_before": cleanup_before,
             "error": str(exc),
+            "trace": trace,
         }
     finally:
         try:

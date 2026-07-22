@@ -15,7 +15,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import diskcache
 from openai import OpenAI, BadRequestError
@@ -452,19 +452,55 @@ class SwLLMClient:
             "calls": 0,
             "by_model": {},
         }
+        self._capture_llm_traces = False
+        self._llm_traces: list[dict] = []
         self._install_usage_tracker()
 
     def _install_usage_tracker(self) -> None:
-        """Wrap chat.completions.create so every call records usage."""
+        """Wrap chat.completions.create to record usage and optional raw traces."""
         completions = self.client.chat.completions
         original_create = completions.create
 
         def tracked_create(*args, **kwargs):
-            completion = original_create(*args, **kwargs)
+            trace = None
+            if self._capture_llm_traces:
+                trace = {
+                    "request": self._json_safe(kwargs),
+                    "response": None,
+                    "error": None,
+                }
+                self._llm_traces.append(trace)
+            try:
+                completion = original_create(*args, **kwargs)
+            except Exception as exc:
+                if trace is not None:
+                    trace["error"] = f"{type(exc).__name__}: {exc}"
+                raise
             self._record_usage(completion, kwargs.get("model"))
+            if trace is not None:
+                trace["response"] = self._json_safe(
+                    completion.model_dump(mode="json")
+                    if hasattr(completion, "model_dump")
+                    else completion
+                )
             return completion
 
         completions.create = tracked_create  # type: ignore[method-assign]
+
+    @staticmethod
+    def _json_safe(value: Any) -> Any:
+        """Convert SDK request/response objects into lossless JSON data."""
+        return json.loads(json.dumps(value, ensure_ascii=False, default=str))
+
+    def begin_trace_capture(self) -> None:
+        """Start a fresh request-local record of raw provider calls."""
+        self._llm_traces = []
+        self._capture_llm_traces = True
+
+    def end_trace_capture(self) -> list[dict]:
+        """Stop capture and return a detached JSON-safe trace."""
+        self._capture_llm_traces = False
+        return self._json_safe(self._llm_traces)
 
     def _record_usage(self, completion, model: Optional[str] = None) -> None:
         usage = getattr(completion, "usage", None)

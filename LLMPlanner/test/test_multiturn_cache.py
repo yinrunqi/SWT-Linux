@@ -107,6 +107,62 @@ def test_usage_since_reports_request_delta() -> None:
     }
 
 
+def test_raw_trace_capture_records_provider_request_and_response() -> None:
+    class _Usage:
+        prompt_tokens = 4
+        completion_tokens = 2
+        total_tokens = 6
+
+    class _Completion:
+        usage = _Usage()
+
+        def model_dump(self, mode: str):
+            assert mode == "json"
+            return {
+                "choices": [{
+                    "message": {"role": "assistant", "content": '{"steps":[]}'},
+                }],
+            }
+
+    class _Completions:
+        def create(self, **_kwargs):
+            return _Completion()
+
+    class _Chat:
+        completions = _Completions()
+
+    class _Provider:
+        chat = _Chat()
+
+    client = object.__new__(SwLLMClient)
+    client.client = _Provider()
+    client.plan_model = "trace-model"
+    client.token_usage = {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "calls": 0,
+        "by_model": {},
+    }
+    client._capture_llm_traces = False
+    client._llm_traces = []
+    client._install_usage_tracker()
+
+    client.begin_trace_capture()
+    client.client.chat.completions.create(
+        model="trace-model",
+        messages=[{"role": "user", "content": "make a part"}],
+        temperature=0,
+    )
+    traces = client.end_trace_capture()
+
+    assert traces[0]["request"]["messages"][0]["content"] == "make a part"
+    assert traces[0]["response"]["choices"][0]["message"]["content"] == (
+        '{"steps":[]}'
+    )
+    assert traces[0]["error"] is None
+
+
 def test_semantic_assembly_state_ignores_matrix_noise_and_ratio_scale() -> None:
     first = ModelObservation(
         document_type="assembly",

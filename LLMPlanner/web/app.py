@@ -1550,6 +1550,7 @@ def run():
       "mode": "single_turn",       (可选: single_turn / multi_turn)
       "max_turns": 8,              (multi_turn 可选)
       "use_cache": true,           (可选；评测冷启动可设 false)
+      "capture_trace": false,      (可选；返回原始 LLM 请求/响应)
       "dry_run": false
     }
     """
@@ -1583,6 +1584,7 @@ def run():
             return jsonify({"success": False, "error": "max_turns 必须是整数"}), 400
     dry_run = data.get("dry_run", False)
     use_cache = bool(data.get("use_cache", True))
+    capture_trace = bool(data.get("capture_trace", False))
     # 多模态：可选图片（base64，可含或不含 data URI 前缀；不含时按 JPEG 处理）
     image_raw = data.get("image", "") or ""
     image_b64 = image_raw.strip()
@@ -1614,6 +1616,8 @@ def run():
                     plan_model,
                     use_cache=use_cache,
                 )
+                if capture_trace:
+                    llm_client.begin_trace_capture()
                 usage_before = llm_client.usage_snapshot()
                 from planner.operation_optimizer import (
                     group_feature_batches,
@@ -1691,7 +1695,7 @@ def run():
                 )
                 token_usage = llm_client.usage_since(usage_before)
                 result_dict = result.model_dump(mode="json")
-                return jsonify({
+                response_payload = {
                     "success": True,
                     "mode": "multi_turn",
                     "multi_turn": result_dict,
@@ -1710,7 +1714,12 @@ def run():
                         "turn_count": len(result.turns),
                         "token_usage": token_usage,
                     },
-                })
+                }
+                if capture_trace:
+                    response_payload["raw_llm_trace"] = (
+                        llm_client.end_trace_capture()
+                    )
+                return jsonify(response_payload)
 
             # Single-turn 原路径：保持响应结构与默认行为不变。
             llm_client = _get_llm_client(
@@ -1720,6 +1729,8 @@ def run():
                 plan_model,
                 use_cache=use_cache,
             )
+            if capture_trace:
+                llm_client.begin_trace_capture()
             usage_before = llm_client.usage_snapshot()
             plan = llm_client.plan(
                 instruction,
@@ -1753,6 +1764,10 @@ def run():
                 response_payload["mode"] = "single_turn"
                 response_payload["token_usage"] = token_usage
                 response_payload["summary"]["token_usage"] = token_usage
+            if capture_trace:
+                response_payload["raw_llm_trace"] = (
+                    llm_client.end_trace_capture()
+                )
             return jsonify(response_payload)
 
     except Exception as e:
@@ -1762,11 +1777,14 @@ def run():
             if llm_client is not None
             else None
         )
-        return jsonify({
+        error_payload = {
             "success": False,
             "error": str(e),
             "token_usage": token_usage,
-        }), 500
+        }
+        if capture_trace and llm_client is not None:
+            error_payload["raw_llm_trace"] = llm_client.end_trace_capture()
+        return jsonify(error_payload), 500
 
 
 # ============================================================
