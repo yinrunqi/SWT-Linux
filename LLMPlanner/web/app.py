@@ -1549,6 +1549,7 @@ def run():
       "model": "gpt-4o",           (旧协议兼容，Vision + Plan 共用此模型)
       "mode": "single_turn",       (可选: single_turn / multi_turn)
       "max_turns": 8,              (multi_turn 可选)
+      "use_cache": true,           (可选；评测冷启动可设 false)
       "dry_run": false
     }
     """
@@ -1581,6 +1582,7 @@ def run():
         except (TypeError, ValueError):
             return jsonify({"success": False, "error": "max_turns 必须是整数"}), 400
     dry_run = data.get("dry_run", False)
+    use_cache = bool(data.get("use_cache", True))
     # 多模态：可选图片（base64，可含或不含 data URI 前缀；不含时按 JPEG 处理）
     image_raw = data.get("image", "") or ""
     image_b64 = image_raw.strip()
@@ -1610,7 +1612,7 @@ def run():
                     base_url,
                     vision_model,
                     plan_model,
-                    use_cache=True,
+                    use_cache=use_cache,
                 )
                 usage_before = llm_client.usage_snapshot()
                 from planner.operation_optimizer import (

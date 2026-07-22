@@ -114,6 +114,7 @@ def run_one(
     plan_model: str,
     minimal_hint: bool = False,
     requirements_hint: bool = False,
+    use_cache: bool | None = None,
 ) -> dict:
     part_id = sample["part_id"]
     subdir = sample["subdir"]
@@ -164,6 +165,8 @@ def run_one(
         "vision_model": vision_model,
         "plan_model": plan_model,
     }
+    if use_cache is not None:
+        payload["use_cache"] = use_cache
     req = urllib.request.Request(
         f"{web_url.rstrip('/')}/api/run",
         data=json.dumps(payload).encode("utf-8"),

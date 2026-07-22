@@ -7,12 +7,20 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-from eval_three_view_multiturn import (
-    DATASET,
-    ROOT,
-    _load_first_samples,
-    run_one,
-)
+try:
+    from .eval_three_view_multiturn import (
+        DATASET,
+        ROOT,
+        _load_first_samples,
+        run_one,
+    )
+except ImportError:
+    from eval_three_view_multiturn import (
+        DATASET,
+        ROOT,
+        _load_first_samples,
+        run_one,
+    )
 
 
 def _close(value: float, target: float, tolerance: float) -> bool:

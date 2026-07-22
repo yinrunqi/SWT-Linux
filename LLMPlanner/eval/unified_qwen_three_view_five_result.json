@@ -1,0 +1,455 @@
+{
+  "run_at": "2026-07-22T16:05:08+08:00",
+  "mode": "multi_turn",
+  "provider": "AI Ping",
+  "vision_model": "Qwen3.5-397B-A17B",
+  "plan_model": "Qwen3.5-397B-A17B",
+  "cache_enabled": false,
+  "input_policy": "natural_requirements_hint",
+  "sample_ids": [
+    "B01",
+    "B07",
+    "B11",
+    "B22",
+    "C4"
+  ],
+  "average_score": 63.24,
+  "passed": 1,
+  "total": 5,
+  "token_totals": {
+    "prompt_tokens": 153796,
+    "completion_tokens": 62705,
+    "total_tokens": 216501,
+    "calls": 16
+  },
+  "balance_before": {
+    "limit_cents": 50000,
+    "consumed_cents": 1837.404098,
+    "remaining_cents": 48162.595902,
+    "limit_yuan": 500.0,
+    "consumed_yuan": 18.374041,
+    "remaining_yuan": 481.625959,
+    "monthly_reset": false,
+    "remark": "FSQ_V5"
+  },
+  "balance_after": {
+    "limit_cents": 50000,
+    "consumed_cents": 1879.806178,
+    "remaining_cents": 48120.193822,
+    "limit_yuan": 500.0,
+    "consumed_yuan": 18.798062,
+    "remaining_yuan": 481.201938,
+    "monthly_reset": false,
+    "remark": "FSQ_V5"
+  },
+  "spent_yuan": 0.424021,
+  "results": [
+    {
+      "part_id": "B01",
+      "name": "B01 L 型支架",
+      "status": "error",
+      "acceptance_ok": false,
+      "error": "HTTP 500: 蓝图批次数必须与里程碑数一致: 0 != 1",
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 2,
+            "completion_tokens": 2419,
+            "prompt_tokens": 14054,
+            "total_tokens": 16473
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 2419,
+        "prompt_tokens": 14054,
+        "total_tokens": 16473
+      },
+      "duration_seconds": 43.26,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "score": 0.0,
+      "dimension_points": 0.0,
+      "volume_points": 0.0,
+      "detail_points": 0.0,
+      "execution_points": 0.0,
+      "dimension_errors_mm": [
+        20.0,
+        40.0,
+        60.0
+      ],
+      "volume_relative_error": 1.0,
+      "expected_details": {
+        "holes": 0,
+        "cuts": 0,
+        "fillets": 0
+      },
+      "actual_details": {
+        "cuts": 0,
+        "extrusions": 0,
+        "fillets": 0,
+        "cut_circles": 0,
+        "cut_depths_mm": [],
+        "faces": 0
+      },
+      "action_success_rate": 0.0,
+      "vision_ir_summary": {}
+    },
+    {
+      "part_id": "B07",
+      "name": "B07 86 型开关面板",
+      "status": "completed",
+      "acceptance_ok": true,
+      "dimensions_ok": true,
+      "volume_ok": true,
+      "holes_ok": true,
+      "actual_holes": 4,
+      "expected_holes": 0,
+      "bbox_mm": {
+        "maxX": 43.0,
+        "maxY": 43.0,
+        "maxZ": 10.0,
+        "minX": -43.0,
+        "minY": -43.0,
+        "minZ": 0.0,
+        "sizeX": 86.0,
+        "sizeY": 86.0,
+        "sizeZ": 10.0
+      },
+      "expected_bbox_mm": {
+        "length": 86,
+        "height": 86,
+        "depth": 10
+      },
+      "volume_mm3": 66184.823002,
+      "expected_volume_mm3": 66177.257,
+      "turns": 7,
+      "llm_calls": 2,
+      "actions": "14/14",
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 2,
+            "completion_tokens": 6282,
+            "prompt_tokens": 14112,
+            "total_tokens": 20394
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 6282,
+        "prompt_tokens": 14112,
+        "total_tokens": 20394
+      },
+      "duration_seconds": 90.22,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null,
+      "score": 100.0,
+      "dimension_points": 25.0,
+      "volume_points": 20.0,
+      "detail_points": 40.0,
+      "execution_points": 15.0,
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "volume_relative_error": 0.000114,
+      "expected_details": {
+        "holes": 4,
+        "cuts": 2,
+        "fillets": 1
+      },
+      "actual_details": {
+        "cuts": 2,
+        "extrusions": 1,
+        "fillets": 4,
+        "cut_circles": 4,
+        "cut_depths_mm": [
+          3.0,
+          10.0
+        ],
+        "faces": 23
+      },
+      "action_success_rate": 1.0,
+      "vision_ir_summary": {
+        "base_view": "front",
+        "overall_size_mm": {},
+        "part_type": "plate_with_holes"
+      }
+    },
+    {
+      "part_id": "B11",
+      "name": "B11 齿轮盘 (圆周阵列首例)",
+      "status": "blocked",
+      "acceptance_ok": false,
+      "dimensions_ok": true,
+      "volume_ok": false,
+      "holes_ok": false,
+      "actual_holes": 0,
+      "expected_holes": 13,
+      "bbox_mm": {
+        "maxX": 30.0,
+        "maxY": 30.0,
+        "maxZ": 10.0,
+        "minX": -30.0,
+        "minY": -30.0,
+        "minZ": 0.0,
+        "sizeX": 60.0,
+        "sizeY": 60.0,
+        "sizeZ": 10.0
+      },
+      "expected_bbox_mm": {
+        "length": 60.0,
+        "height": 60.0,
+        "depth": 10
+      },
+      "volume_mm3": 26381.524309,
+      "expected_volume_mm3": 24953.813,
+      "turns": 5,
+      "llm_calls": 5,
+      "actions": "7/8",
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 5,
+            "completion_tokens": 7299,
+            "prompt_tokens": 55286,
+            "total_tokens": 62585
+          }
+        },
+        "calls": 5,
+        "completion_tokens": 7299,
+        "prompt_tokens": 55286,
+        "total_tokens": 62585
+      },
+      "duration_seconds": 113.47,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 1,
+        "closedDocuments": [
+          "零件1"
+        ],
+        "message": "已关闭 1 个测试文档"
+      },
+      "error": null,
+      "score": 63.03,
+      "dimension_points": 25.0,
+      "volume_points": 19.28,
+      "detail_points": 10.0,
+      "execution_points": 8.75,
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "volume_relative_error": 0.057214,
+      "expected_details": {
+        "holes": 13,
+        "cuts": 1,
+        "fillets": 0
+      },
+      "actual_details": {
+        "cuts": 0,
+        "extrusions": 1,
+        "fillets": 0,
+        "cut_circles": 0,
+        "cut_depths_mm": [],
+        "faces": 5
+      },
+      "action_success_rate": 0.875,
+      "vision_ir_summary": {
+        "base_view": "front",
+        "overall_size_mm": {},
+        "part_type": "flange"
+      }
+    },
+    {
+      "part_id": "B22",
+      "name": "B22 圆碗 (Shell 替代法首例)",
+      "status": "completed",
+      "acceptance_ok": false,
+      "dimensions_ok": true,
+      "volume_ok": false,
+      "holes_ok": true,
+      "actual_holes": 0,
+      "expected_holes": 0,
+      "bbox_mm": {
+        "maxX": 40.0,
+        "maxY": 38.963398,
+        "maxZ": 40.0,
+        "minX": -39.323618,
+        "minY": -38.732344,
+        "minZ": 0.0,
+        "sizeX": 79.323618,
+        "sizeY": 77.695743,
+        "sizeZ": 40.0
+      },
+      "expected_bbox_mm": {
+        "length": 80.0,
+        "height": 80.0,
+        "depth": 40
+      },
+      "volume_mm3": 43524.971725,
+      "expected_volume_mm3": 77262.002,
+      "turns": 2,
+      "llm_calls": 2,
+      "actions": "8/8",
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 2,
+            "completion_tokens": 4250,
+            "prompt_tokens": 14148,
+            "total_tokens": 18398
+          }
+        },
+        "calls": 2,
+        "completion_tokens": 4250,
+        "prompt_tokens": 14148,
+        "total_tokens": 18398
+      },
+      "duration_seconds": 81.62,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 1,
+        "closedDocuments": [
+          "零件2"
+        ],
+        "message": "已关闭 1 个测试文档"
+      },
+      "error": null,
+      "score": 77.52,
+      "dimension_points": 22.52,
+      "volume_points": 0.0,
+      "detail_points": 40.0,
+      "execution_points": 15.0,
+      "dimension_errors_mm": [
+        0.0,
+        2.304,
+        0.676
+      ],
+      "volume_relative_error": 0.436657,
+      "expected_details": {
+        "holes": 0,
+        "cuts": 1,
+        "fillets": 0
+      },
+      "actual_details": {
+        "cuts": 1,
+        "extrusions": 1,
+        "fillets": 0,
+        "cut_circles": 0,
+        "cut_depths_mm": [
+          34.0
+        ],
+        "faces": 90
+      },
+      "action_success_rate": 1.0,
+      "vision_ir_summary": {
+        "base_view": "front",
+        "overall_size_mm": {},
+        "part_type": "plate_with_holes"
+      }
+    },
+    {
+      "part_id": "C4",
+      "name": "C4 一体式多功能桌面笔筒",
+      "status": "completed",
+      "acceptance_ok": false,
+      "dimensions_ok": true,
+      "volume_ok": false,
+      "holes_ok": true,
+      "actual_holes": 0,
+      "expected_holes": 0,
+      "bbox_mm": {
+        "maxX": 70.0,
+        "maxY": 110.0,
+        "maxZ": 90.0,
+        "minX": -70.0,
+        "minY": 0.0,
+        "minZ": 0.0,
+        "sizeX": 140.0,
+        "sizeY": 110.0,
+        "sizeZ": 90.0
+      },
+      "expected_bbox_mm": {
+        "length": 140,
+        "height": 110,
+        "depth": 90
+      },
+      "volume_mm3": 697923.102875,
+      "expected_volume_mm3": 449952.0,
+      "turns": 8,
+      "llm_calls": 5,
+      "actions": "28/30",
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 5,
+            "completion_tokens": 42455,
+            "prompt_tokens": 56196,
+            "total_tokens": 98651
+          }
+        },
+        "calls": 5,
+        "completion_tokens": 42455,
+        "prompt_tokens": 56196,
+        "total_tokens": 98651
+      },
+      "duration_seconds": 469.68,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 1,
+        "closedDocuments": [
+          "零件3"
+        ],
+        "message": "已关闭 1 个测试文档"
+      },
+      "error": null,
+      "score": 75.66,
+      "dimension_points": 25.0,
+      "volume_points": 0.0,
+      "topology_points": 20.0,
+      "detail_points": 16.33,
+      "execution_points": 14.33,
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_relative_error": 0.551106,
+      "feature_counts": {
+        "cuts": 4,
+        "extrusions": 1,
+        "fillets": 1,
+        "faces": 36,
+        "total": 30
+      },
+      "cut_depths_mm": [
+        1.5,
+        9.0,
+        9.0,
+        102.0
+      ],
+      "cavity_depth_checks": [
+        false,
+        false,
+        true
+      ],
+      "action_success_rate": 0.933333,
+      "vision_ir_summary": {
+        "base_view": "front",
+        "overall_size_mm": {},
+        "part_type": "extrude_prism"
+      }
+    }
+  ]
+}
