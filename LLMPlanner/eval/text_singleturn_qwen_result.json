@@ -1,0 +1,983 @@
+{
+  "run_at": "2026-07-22T17:06:43+08:00",
+  "provider": "AI Ping",
+  "model": "Qwen3.5-397B-A17B",
+  "mode": "single_turn",
+  "cache_enabled": false,
+  "historical_skipped": [
+    {
+      "case_id": "phone_stand",
+      "name": "一体式手机支架",
+      "score": 100.0,
+      "status": "completed",
+      "source": "PERFORMANCE.md 2026-07-21 final Single-turn rerun",
+      "cold_tokens": 19945
+    },
+    {
+      "case_id": "stool",
+      "name": "四脚板凳",
+      "score": 80.0,
+      "status": "completed",
+      "source": "eval/text_first5_result.json 16/20 legacy score"
+    },
+    {
+      "case_id": "rounded_stool",
+      "name": "圆角板凳",
+      "score": 90.0,
+      "status": "completed",
+      "source": "eval/text_first5_result.json 18/20 legacy score"
+    },
+    {
+      "case_id": "storage_box",
+      "name": "收纳盒",
+      "score": 90.0,
+      "status": "completed",
+      "source": "eval/text_first5_result.json 18/20 legacy score"
+    },
+    {
+      "case_id": "standard_die",
+      "name": "标准骰子",
+      "score": 100.0,
+      "status": "completed",
+      "source": "PERFORMANCE.md 2026-07-16 accepted Single-turn rerun"
+    }
+  ],
+  "new_case_ids": [
+    "hex_nut",
+    "mug",
+    "wrench",
+    "vase",
+    "key",
+    "gear_disc",
+    "flange",
+    "pulley",
+    "stepped_shaft",
+    "socket_bolt"
+  ],
+  "average_score": 40.64,
+  "passed": 2,
+  "total": 10,
+  "token_totals": {
+    "prompt_tokens": 83254,
+    "completion_tokens": 33345,
+    "total_tokens": 116599,
+    "calls": 10
+  },
+  "balance_before": {
+    "limit_cents": 50000,
+    "consumed_cents": 1881.018738,
+    "remaining_cents": 48118.981262,
+    "limit_yuan": 500.0,
+    "consumed_yuan": 18.810187,
+    "remaining_yuan": 481.189813,
+    "monthly_reset": false,
+    "remark": "FSQ_V5"
+  },
+  "balance_after": {
+    "limit_cents": 50000,
+    "consumed_cents": 1941.932898,
+    "remaining_cents": 48058.067102,
+    "limit_yuan": 500.0,
+    "consumed_yuan": 19.419329,
+    "remaining_yuan": 480.580671,
+    "monthly_reset": false,
+    "remark": "FSQ_V5"
+  },
+  "spent_yuan": 0.609142,
+  "task_balance_before": {
+    "consumed_yuan": 18.798062,
+    "remaining_yuan": 481.201938
+  },
+  "task_spent_yuan": 0.621267,
+  "setup_attempt": {
+    "known_tokens": 9452,
+    "prompt_tokens": 8311,
+    "completion_tokens": 1141,
+    "reason": "observation scorer calibration; result excluded from quality aggregate"
+  },
+  "known_task_total_tokens": 126051,
+  "results": [
+    {
+      "case_id": "hex_nut",
+      "name": "六角螺母",
+      "score": 100.0,
+      "acceptance_ok": true,
+      "status": "completed",
+      "plan_steps": 5,
+      "successful_steps": 5,
+      "execution_points": 25.0,
+      "dimension_points": 30.0,
+      "volume_points": 20.0,
+      "detail_points": 25.0,
+      "bbox_mm": {
+        "minX": -17.32,
+        "minY": -14.99956,
+        "minZ": -4.0,
+        "maxX": 17.32,
+        "maxY": 14.99956,
+        "maxZ": 4.0,
+        "sizeX": 34.64,
+        "sizeY": 29.99912,
+        "sizeZ": 8.0
+      },
+      "expected_bbox_mm": [
+        8.0,
+        30.0,
+        34.641
+      ],
+      "dimension_errors_mm": [
+        0.0,
+        0.001,
+        0.001
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 5606.699,
+      "expected_volume_range_mm3": [
+        4500.0,
+        6500.0
+      ],
+      "volume_ok": true,
+      "actual_details": {
+        "extrusions": 1,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 1,
+        "centerlines": 0,
+        "circles": 1,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 9
+      },
+      "expected_details": {
+        "extrusions": 1,
+        "polygons": 1,
+        "circles": 1
+      },
+      "detail_checks": {
+        "extrusions": true,
+        "polygons": true,
+        "circles": true
+      },
+      "failed_steps": [],
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 806,
+            "prompt_tokens": 8311,
+            "total_tokens": 9117
+          }
+        },
+        "calls": 1,
+        "completion_tokens": 806,
+        "prompt_tokens": 8311,
+        "total_tokens": 9117
+      },
+      "duration_seconds": 141.81,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "mug",
+      "name": "马克杯",
+      "score": 10.0,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 10,
+      "successful_steps": 5,
+      "execution_points": 10.0,
+      "dimension_points": 0.0,
+      "volume_points": 0.0,
+      "detail_points": 0.0,
+      "bbox_mm": null,
+      "expected_bbox_mm": [
+        70.0,
+        90.0,
+        100.0
+      ],
+      "dimension_errors_mm": [
+        70.0,
+        90.0,
+        100.0
+      ],
+      "dimension_checks": [
+        false,
+        false,
+        false
+      ],
+      "volume_mm3": null,
+      "expected_volume_range_mm3": [
+        100000.0,
+        145000.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 0,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 1,
+        "circles": 0,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 0
+      },
+      "expected_details": {
+        "extrusions": 2,
+        "cuts": 1,
+        "circles": 3
+      },
+      "detail_checks": {
+        "extrusions": false,
+        "cuts": false,
+        "circles": false
+      },
+      "failed_steps": [
+        {
+          "step": 6,
+          "operation": "feature_revolve",
+          "message": "旋转操作失败，请确保草图中包含有效的轮廓和中心线作为旋转轴。"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 10798,
+            "prompt_tokens": 8329,
+            "total_tokens": 19127
+          }
+        },
+        "calls": 1,
+        "completion_tokens": 10798,
+        "prompt_tokens": 8329,
+        "total_tokens": 19127
+      },
+      "duration_seconds": 833.82,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "wrench",
+      "name": "扳手",
+      "score": 20.19,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 13,
+      "successful_steps": 5,
+      "execution_points": 7.69,
+      "dimension_points": 0.0,
+      "volume_points": 0.0,
+      "detail_points": 12.5,
+      "bbox_mm": null,
+      "expected_bbox_mm": [
+        8.0,
+        40.0,
+        140.0
+      ],
+      "dimension_errors_mm": [
+        8.0,
+        40.0,
+        140.0
+      ],
+      "dimension_checks": [
+        false,
+        false,
+        false
+      ],
+      "volume_mm3": null,
+      "expected_volume_range_mm3": [
+        17000.0,
+        24000.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 0,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 1,
+        "centerlines": 0,
+        "circles": 1,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 0
+      },
+      "expected_details": {
+        "extrusions": 2,
+        "polygons": 1
+      },
+      "detail_checks": {
+        "extrusions": false,
+        "polygons": true
+      },
+      "failed_steps": [
+        {
+          "step": 6,
+          "operation": "feature_extrusion",
+          "message": "拉伸失败，请确保草图中有封闭的轮廓"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 1598,
+            "prompt_tokens": 8324,
+            "total_tokens": 9922
+          }
+        },
+        "calls": 1,
+        "completion_tokens": 1598,
+        "prompt_tokens": 8324,
+        "total_tokens": 9922
+      },
+      "duration_seconds": 152.07,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "vase",
+      "name": "花瓶",
+      "score": 24.5,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 5,
+      "successful_steps": 3,
+      "execution_points": 12.0,
+      "dimension_points": 0.0,
+      "volume_points": 0.0,
+      "detail_points": 12.5,
+      "bbox_mm": null,
+      "expected_bbox_mm": [
+        90.0,
+        90.0,
+        150.0
+      ],
+      "dimension_errors_mm": [
+        90.0,
+        90.0,
+        150.0
+      ],
+      "dimension_checks": [
+        false,
+        false,
+        false
+      ],
+      "volume_mm3": null,
+      "expected_volume_range_mm3": [
+        300000.0,
+        500000.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 0,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 1,
+        "circles": 0,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 0
+      },
+      "expected_details": {
+        "revolves": 1,
+        "centerlines": 1
+      },
+      "detail_checks": {
+        "revolves": false,
+        "centerlines": true
+      },
+      "failed_steps": [
+        {
+          "step": 4,
+          "operation": "sketch_polyline",
+          "message": "points 中每项必须是对象"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 2527,
+            "prompt_tokens": 8322,
+            "total_tokens": 10849
+          }
+        },
+        "calls": 1,
+        "completion_tokens": 2527,
+        "prompt_tokens": 8322,
+        "total_tokens": 10849
+      },
+      "duration_seconds": 162.33,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "key",
+      "name": "钥匙",
+      "score": 7.69,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 13,
+      "successful_steps": 5,
+      "execution_points": 7.69,
+      "dimension_points": 0.0,
+      "volume_points": 0.0,
+      "detail_points": 0.0,
+      "bbox_mm": null,
+      "expected_bbox_mm": [
+        2.0,
+        20.0,
+        59.0
+      ],
+      "dimension_errors_mm": [
+        2.0,
+        20.0,
+        59.0
+      ],
+      "dimension_checks": [
+        false,
+        false,
+        false
+      ],
+      "volume_mm3": null,
+      "expected_volume_range_mm3": [
+        800.0,
+        1500.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 0,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "circles": 1,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 0
+      },
+      "expected_details": {
+        "extrusions": 2,
+        "cuts": 1
+      },
+      "detail_checks": {
+        "extrusions": false,
+        "cuts": false
+      },
+      "failed_steps": [
+        {
+          "step": 6,
+          "operation": "feature_extrusion",
+          "message": "拉伸失败，请确保草图中有封闭的轮廓"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 7310,
+            "prompt_tokens": 8325,
+            "total_tokens": 15635
+          }
+        },
+        "calls": 1,
+        "completion_tokens": 7310,
+        "prompt_tokens": 8325,
+        "total_tokens": 15635
+      },
+      "duration_seconds": 135.76,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "gear_disc",
+      "name": "齿轮盘",
+      "score": 78.06,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 9,
+      "successful_steps": 7,
+      "execution_points": 15.56,
+      "dimension_points": 30.0,
+      "volume_points": 20.0,
+      "detail_points": 12.5,
+      "bbox_mm": {
+        "minX": -30.0,
+        "minY": 0.0,
+        "minZ": -30.0,
+        "maxX": 30.0,
+        "maxY": 8.0,
+        "maxZ": 30.0,
+        "sizeX": 60.0,
+        "sizeY": 8.0,
+        "sizeZ": 60.0
+      },
+      "expected_bbox_mm": [
+        8.0,
+        60.0,
+        60.0
+      ],
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 21714.688,
+      "expected_volume_range_mm3": [
+        17500.0,
+        22000.0
+      ],
+      "volume_ok": true,
+      "actual_details": {
+        "extrusions": 1,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "circles": 0,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 4
+      },
+      "expected_details": {
+        "extrusions": 1,
+        "cuts": 1
+      },
+      "detail_checks": {
+        "extrusions": true,
+        "cuts": false
+      },
+      "failed_steps": [
+        {
+          "step": 8,
+          "operation": "feature_cut_extrusion",
+          "message": "切除拉伸失败，请确保草图闭合且位于实体面上。请查看 C# 控制台的调试信息。"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 3651,
+            "prompt_tokens": 8318,
+            "total_tokens": 11969
+          }
+        },
+        "calls": 1,
+        "completion_tokens": 3651,
+        "prompt_tokens": 8318,
+        "total_tokens": 11969
+      },
+      "duration_seconds": 93.85,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "flange",
+      "name": "法兰盘",
+      "score": 0.0,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 0,
+      "successful_steps": 0,
+      "execution_points": 0.0,
+      "dimension_points": 0.0,
+      "volume_points": 0.0,
+      "detail_points": 0.0,
+      "bbox_mm": null,
+      "expected_bbox_mm": [
+        12.0,
+        100.0,
+        100.0
+      ],
+      "dimension_errors_mm": [
+        12.0,
+        100.0,
+        100.0
+      ],
+      "dimension_checks": [
+        false,
+        false,
+        false
+      ],
+      "volume_mm3": null,
+      "expected_volume_range_mm3": [
+        78000.0,
+        86000.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 0,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "circles": 0,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 0
+      },
+      "expected_details": {
+        "extrusions": 1,
+        "circles": 8
+      },
+      "detail_checks": {
+        "extrusions": false,
+        "circles": false
+      },
+      "failed_steps": [],
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 1214,
+            "prompt_tokens": 8327,
+            "total_tokens": 9541
+          }
+        },
+        "calls": 1,
+        "completion_tokens": 1214,
+        "prompt_tokens": 8327,
+        "total_tokens": 9541
+      },
+      "duration_seconds": 660.36,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "pulley",
+      "name": "皮带轮",
+      "score": 54.33,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 10,
+      "successful_steps": 8,
+      "execution_points": 16.0,
+      "dimension_points": 30.0,
+      "volume_points": 0.0,
+      "detail_points": 8.33,
+      "bbox_mm": {
+        "minX": -50.0,
+        "minY": -50.0,
+        "minZ": 0.0,
+        "maxX": 50.0,
+        "maxY": 50.0,
+        "maxZ": 20.0,
+        "sizeX": 100.0,
+        "sizeY": 100.0,
+        "sizeZ": 20.0
+      },
+      "expected_bbox_mm": [
+        20.0,
+        100.0,
+        100.0
+      ],
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 147262.156,
+      "expected_volume_range_mm3": [
+        115000.0,
+        128000.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 1,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "circles": 2,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 4
+      },
+      "expected_details": {
+        "extrusions": 1,
+        "cuts": 1,
+        "chamfers": 1
+      },
+      "detail_checks": {
+        "extrusions": true,
+        "cuts": false,
+        "chamfers": false
+      },
+      "failed_steps": [
+        {
+          "step": 9,
+          "operation": "feature_cut_extrusion",
+          "message": "切除拉伸失败，请确保草图闭合且位于实体面上。请查看 C# 控制台的调试信息。"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 1340,
+            "prompt_tokens": 8339,
+            "total_tokens": 9679
+          }
+        },
+        "calls": 1,
+        "completion_tokens": 1340,
+        "prompt_tokens": 8339,
+        "total_tokens": 9679
+      },
+      "duration_seconds": 113.77,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "stepped_shaft",
+      "name": "三段阶梯轴",
+      "score": 100.0,
+      "acceptance_ok": true,
+      "status": "completed",
+      "plan_steps": 12,
+      "successful_steps": 12,
+      "execution_points": 25.0,
+      "dimension_points": 30.0,
+      "volume_points": 20.0,
+      "detail_points": 25.0,
+      "bbox_mm": {
+        "minX": -45.0,
+        "minY": -25.0,
+        "minZ": -25.0,
+        "maxX": 45.0,
+        "maxY": 25.0,
+        "maxZ": 25.0,
+        "sizeX": 90.0,
+        "sizeY": 50.0,
+        "sizeZ": 50.0
+      },
+      "expected_bbox_mm": [
+        50.0,
+        50.0,
+        90.0
+      ],
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_mm3": 107206.849,
+      "expected_volume_range_mm3": [
+        102000.0,
+        111500.0
+      ],
+      "volume_ok": true,
+      "actual_details": {
+        "extrusions": 0,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 1,
+        "polygons": 0,
+        "centerlines": 1,
+        "circles": 0,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 7
+      },
+      "expected_details": {
+        "revolves": 1,
+        "centerlines": 1
+      },
+      "detail_checks": {
+        "revolves": true,
+        "centerlines": true
+      },
+      "failed_steps": [],
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 2195,
+            "prompt_tokens": 8324,
+            "total_tokens": 10519
+          }
+        },
+        "calls": 1,
+        "completion_tokens": 2195,
+        "prompt_tokens": 8324,
+        "total_tokens": 10519
+      },
+      "duration_seconds": 105.56,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    },
+    {
+      "case_id": "socket_bolt",
+      "name": "内六角螺栓",
+      "score": 11.67,
+      "acceptance_ok": false,
+      "status": "failed",
+      "plan_steps": 12,
+      "successful_steps": 7,
+      "execution_points": 11.67,
+      "dimension_points": 0.0,
+      "volume_points": 0.0,
+      "detail_points": 0.0,
+      "bbox_mm": null,
+      "expected_bbox_mm": [
+        18.0,
+        18.0,
+        56.0
+      ],
+      "dimension_errors_mm": [
+        18.0,
+        18.0,
+        56.0
+      ],
+      "dimension_checks": [
+        false,
+        false,
+        false
+      ],
+      "volume_mm3": null,
+      "expected_volume_range_mm3": [
+        5200.0,
+        7200.0
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 0,
+        "cuts": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "revolves": 0,
+        "polygons": 0,
+        "centerlines": 1,
+        "circles": 0,
+        "slots": 0,
+        "cut_circles": 0,
+        "faces": 0
+      },
+      "expected_details": {
+        "extrusions": 2,
+        "cuts": 1,
+        "polygons": 1,
+        "fillets": 1
+      },
+      "detail_checks": {
+        "extrusions": false,
+        "cuts": false,
+        "polygons": false,
+        "fillets": false
+      },
+      "failed_steps": [
+        {
+          "step": 8,
+          "operation": "feature_revolve",
+          "message": "旋转操作失败，请确保草图中包含有效的轮廓和中心线作为旋转轴。"
+        }
+      ],
+      "token_usage": {
+        "by_model": {
+          "Qwen3.5-397B-A17B": {
+            "calls": 1,
+            "completion_tokens": 1906,
+            "prompt_tokens": 8335,
+            "total_tokens": 10241
+          }
+        },
+        "calls": 1,
+        "completion_tokens": 1906,
+        "prompt_tokens": 8335,
+        "total_tokens": 10241
+      },
+      "duration_seconds": 36.53,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null
+    }
+  ]
+}

@@ -1718,6 +1718,7 @@ def run():
                 base_url,
                 vision_model,
                 plan_model,
+                use_cache=use_cache,
             )
             usage_before = llm_client.usage_snapshot()
             plan = llm_client.plan(
