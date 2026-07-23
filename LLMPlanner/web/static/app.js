@@ -211,6 +211,19 @@ function setGearAnimationStatus(text, state = "") {
   if (state) gearAnimationStatus.classList.add(state);
 }
 
+async function readJsonResponse(response, featureName) {
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.toLowerCase().includes("application/json")) {
+    const body = await response.text();
+    const preview = body.replace(/\s+/g, " ").slice(0, 120);
+    throw new Error(
+      `${featureName}接口返回 HTTP ${response.status} 的非 JSON 响应` +
+      `；请确认 Web Demo 已重启并加载最新后端。${preview ? ` 响应：${preview}` : ""}`,
+    );
+  }
+  return response.json();
+}
+
 async function callGearAnimation(path) {
   const response = await fetch(`${API}/api/gear-animation/${path}`, {
     method: path === "status" ? "GET" : "POST",
@@ -816,7 +829,7 @@ async function runHouseholdSewingMachine() {
         }),
       },
     );
-    const data = await response.json();
+    const data = await readJsonResponse(response, "缝纫机 Multi-turn");
     removeLoading(loadingId);
     if (!response.ok || !data.success) {
       throw new Error(data.error || `HTTP ${response.status}`);
@@ -859,7 +872,7 @@ async function setSewingMachinePose() {
         }),
       },
     );
-    const data = await response.json();
+    const data = await readJsonResponse(response, "缝纫机姿态");
     if (!response.ok || !data.success) {
       throw new Error(data.error || `HTTP ${response.status}`);
     }

@@ -251,6 +251,14 @@ def run_tests() -> None:
             in script
         )
         assert "/api/sewing-machine-animation/pose" in script
+        assert "readJsonResponse(response, \"缝纫机 Multi-turn\")" in script
+        response = client.post(
+            "/api/assembly-examples/household-sewing-machine/run",
+            json={"max_turns": "invalid"},
+        )
+        assert response.status_code == 400
+        assert response.is_json
+        assert response.get_json()["error"] == "max_turns 必须是整数"
         print("[PASS] household sewing machine demo is exposed in assembly UI")
 
         assert 'id="projector-run-btn"' in page
