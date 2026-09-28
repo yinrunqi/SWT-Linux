@@ -214,12 +214,8 @@ def align(features: list[dict], segments: list[dict]) -> list[dict]:
 
 def summarize_task(task_dir: Path, record: dict) -> dict:
     task_id = task_dir.name
+    # stats.json 会入库，只放派生统计，不复制任务描述、rubric 等原文。
     summary: dict = {"task_id": task_id}
-    try:
-        task_desc = _load_json(task_dir / "task_desc.json")
-        summary["task"] = task_desc.get("task")
-    except (OSError, ValueError):
-        pass
     try:
         rubrics = _load_json(task_dir / "rubrics.json").get("rubrics") or []
         summary["rubric_count"] = len(rubrics)
