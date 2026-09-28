@@ -93,9 +93,12 @@ def _is_removal_consumer(consumer: dict) -> bool:
 
 
 def sketch_counts(sketch_stats: Iterable[dict]) -> dict[str, int]:
+    """只统计被某个特征消费的草图；画了但没用上的草图不构成几何。"""
     circles = polygons = centerlines = slots = cut_circles = 0
     lines = arcs = splines = 0
     for sketch in sketch_stats or []:
+        if not sketch.get("consumers"):
+            continue
         n_circles = int(sketch.get("circles") or 0)
         circles += n_circles
         polygons += bool(sketch.get("regularPolygon"))

@@ -46,6 +46,17 @@ def test_sketch_counts_use_real_geometry_and_consumers():
     assert counts["centerlines"] == 1
 
 
+def test_unconsumed_sketches_are_not_counted():
+    sketches = [
+        {"lines": 6, "regularPolygon": True, "consumers": []},
+        {"circles": 1, "consumers": []},
+        {"circles": 2, "consumers": [{"name": "Boss-Extrude1", "type": "Extrusion"}]},
+    ]
+    counts = metrics.sketch_counts(sketches)
+    assert counts["polygons"] == 0
+    assert counts["circles"] == 2
+
+
 def test_pass_at_k_matches_known_values():
     assert metrics.pass_at_k(5, 0, 1) == 0.0
     assert metrics.pass_at_k(5, 5, 3) == 1.0

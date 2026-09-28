@@ -768,6 +768,40 @@ def _write_report(
     return report
 
 
+def rescore_report(source: Path, output: Path, strict_orientation: bool = False) -> dict:
+    """用结果文件里保存的 trace 重新计算 v2 分数，便于打分规则修订后复现。"""
+    old = json.loads(source.read_text(encoding="utf-8"))
+    cases = {case.case_id: case for case in CASES}
+    results = []
+    for item in old["results"]:
+        trace = item.get("trace") or {}
+        observation = trace.get("final_observation")
+        if item.get("error") or not observation or "sketch_stats" not in trace:
+            results.append(item)
+            continue
+        scoring = score_case_v2(
+            cases[item["case_id"]],
+            trace.get("response") or {},
+            observation,
+            trace["sketch_stats"],
+            strict_orientation=strict_orientation,
+        )
+        results.append({**item, **scoring})
+    selected = [cases[case_id] for case_id in old.get("case_ids") or [] if case_id in cases]
+    report = _write_report(
+        output,
+        results,
+        old.get("balance_before"),
+        old.get("balance_after"),
+        model=old.get("model", MODEL),
+        selected_cases=selected or None,
+        historical_skipped=old.get("historical_skipped"),
+        repeats=int(old.get("repeats") or 1),
+        strict_orientation=strict_orientation,
+    )
+    return report
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--web-url", default="http://localhost:5000")
@@ -801,7 +835,21 @@ def main() -> int:
         action="store_true",
         help="Compare bbox axes X/Y/Z in order instead of sorted",
     )
+    parser.add_argument(
+        "--rescore",
+        type=Path,
+        default=None,
+        help="Recompute v2 scores from traces in an existing result file (no LLM/SolidWorks calls)",
+    )
     args = parser.parse_args()
+    if args.rescore:
+        report = rescore_report(args.rescore, args.output or args.rescore, args.strict_orientation)
+        print(
+            f"rescored score={report['average_score']} ci95={report['average_score_ci95']} "
+            f"passed={report['passed']}/{report['total']} pass@1={report['pass_at_1']}",
+            flush=True,
+        )
+        return 0
     repeats = max(1, args.repeats)
     historical_ids = {
         item["case_id"] for item in HISTORICAL_CASES
