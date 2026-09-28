@@ -1,0 +1,2012 @@
+{
+  "tasks": 114,
+  "feature_ngrams": {
+    "2": [
+      {
+        "pattern": "EXT -> CUT",
+        "tasks": 64
+      },
+      {
+        "pattern": "EXT -> EXT",
+        "tasks": 60
+      },
+      {
+        "pattern": "CUT -> CUT",
+        "tasks": 47
+      },
+      {
+        "pattern": "EXT -> PLANE",
+        "tasks": 36
+      },
+      {
+        "pattern": "PLANE -> EXT",
+        "tasks": 35
+      },
+      {
+        "pattern": "CUT -> EXT",
+        "tasks": 30
+      },
+      {
+        "pattern": "EXT -> FIL",
+        "tasks": 21
+      },
+      {
+        "pattern": "CUT -> FIL",
+        "tasks": 20
+      },
+      {
+        "pattern": "CUT -> PLANE",
+        "tasks": 19
+      },
+      {
+        "pattern": "FIL -> CUT",
+        "tasks": 14
+      },
+      {
+        "pattern": "PLANE -> RIB",
+        "tasks": 12
+      },
+      {
+        "pattern": "FIL -> FIL",
+        "tasks": 11
+      },
+      {
+        "pattern": "EXT -> MIR",
+        "tasks": 10
+      },
+      {
+        "pattern": "MIR -> CUT",
+        "tasks": 9
+      },
+      {
+        "pattern": "REV -> CUT",
+        "tasks": 8
+      },
+      {
+        "pattern": "FIL -> EXT",
+        "tasks": 8
+      },
+      {
+        "pattern": "PLANE -> PLANE",
+        "tasks": 7
+      },
+      {
+        "pattern": "SWEEP -> EXT",
+        "tasks": 6
+      },
+      {
+        "pattern": "FIL -> PLANE",
+        "tasks": 6
+      },
+      {
+        "pattern": "CUT -> CHAM",
+        "tasks": 6
+      },
+      {
+        "pattern": "MIR -> EXT",
+        "tasks": 6
+      },
+      {
+        "pattern": "PLANE -> MIR",
+        "tasks": 6
+      },
+      {
+        "pattern": "CHAM -> CUT",
+        "tasks": 5
+      },
+      {
+        "pattern": "CUT -> MIR",
+        "tasks": 5
+      },
+      {
+        "pattern": "MIR -> MIR",
+        "tasks": 5
+      }
+    ],
+    "3": [
+      {
+        "pattern": "EXT -> EXT -> CUT",
+        "tasks": 32
+      },
+      {
+        "pattern": "EXT -> CUT -> CUT",
+        "tasks": 30
+      },
+      {
+        "pattern": "EXT -> PLANE -> EXT",
+        "tasks": 23
+      },
+      {
+        "pattern": "CUT -> CUT -> CUT",
+        "tasks": 22
+      },
+      {
+        "pattern": "EXT -> EXT -> EXT",
+        "tasks": 21
+      },
+      {
+        "pattern": "EXT -> CUT -> EXT",
+        "tasks": 17
+      },
+      {
+        "pattern": "PLANE -> EXT -> PLANE",
+        "tasks": 14
+      },
+      {
+        "pattern": "EXT -> EXT -> PLANE",
+        "tasks": 13
+      },
+      {
+        "pattern": "CUT -> PLANE -> EXT",
+        "tasks": 12
+      },
+      {
+        "pattern": "PLANE -> EXT -> EXT",
+        "tasks": 12
+      },
+      {
+        "pattern": "CUT -> CUT -> EXT",
+        "tasks": 12
+      },
+      {
+        "pattern": "CUT -> EXT -> CUT",
+        "tasks": 11
+      },
+      {
+        "pattern": "PLANE -> EXT -> CUT",
+        "tasks": 10
+      },
+      {
+        "pattern": "EXT -> CUT -> PLANE",
+        "tasks": 10
+      },
+      {
+        "pattern": "CUT -> EXT -> EXT",
+        "tasks": 9
+      },
+      {
+        "pattern": "EXT -> CUT -> FIL",
+        "tasks": 9
+      },
+      {
+        "pattern": "EXT -> EXT -> FIL",
+        "tasks": 7
+      },
+      {
+        "pattern": "FIL -> CUT -> CUT",
+        "tasks": 7
+      },
+      {
+        "pattern": "EXT -> EXT -> MIR",
+        "tasks": 7
+      },
+      {
+        "pattern": "CUT -> FIL -> FIL",
+        "tasks": 7
+      },
+      {
+        "pattern": "CUT -> FIL -> CUT",
+        "tasks": 6
+      },
+      {
+        "pattern": "CUT -> EXT -> FIL",
+        "tasks": 6
+      },
+      {
+        "pattern": "CUT -> CUT -> PLANE",
+        "tasks": 5
+      },
+      {
+        "pattern": "EXT -> FIL -> CUT",
+        "tasks": 5
+      },
+      {
+        "pattern": "FIL -> PLANE -> EXT",
+        "tasks": 5
+      }
+    ],
+    "4": [
+      {
+        "pattern": "EXT -> CUT -> CUT -> CUT",
+        "tasks": 18
+      },
+      {
+        "pattern": "EXT -> EXT -> EXT -> CUT",
+        "tasks": 12
+      },
+      {
+        "pattern": "CUT -> CUT -> CUT -> CUT",
+        "tasks": 12
+      },
+      {
+        "pattern": "EXT -> EXT -> CUT -> CUT",
+        "tasks": 11
+      },
+      {
+        "pattern": "EXT -> PLANE -> EXT -> EXT",
+        "tasks": 9
+      },
+      {
+        "pattern": "PLANE -> EXT -> PLANE -> EXT",
+        "tasks": 8
+      },
+      {
+        "pattern": "EXT -> CUT -> PLANE -> EXT",
+        "tasks": 8
+      },
+      {
+        "pattern": "EXT -> PLANE -> EXT -> PLANE",
+        "tasks": 8
+      },
+      {
+        "pattern": "EXT -> CUT -> EXT -> CUT",
+        "tasks": 8
+      },
+      {
+        "pattern": "EXT -> PLANE -> EXT -> CUT",
+        "tasks": 6
+      },
+      {
+        "pattern": "EXT -> EXT -> CUT -> PLANE",
+        "tasks": 6
+      },
+      {
+        "pattern": "EXT -> EXT -> EXT -> EXT",
+        "tasks": 6
+      },
+      {
+        "pattern": "CUT -> CUT -> CUT -> EXT",
+        "tasks": 6
+      },
+      {
+        "pattern": "EXT -> EXT -> CUT -> EXT",
+        "tasks": 6
+      },
+      {
+        "pattern": "EXT -> CUT -> EXT -> FIL",
+        "tasks": 5
+      },
+      {
+        "pattern": "CUT -> EXT -> CUT -> CUT",
+        "tasks": 5
+      },
+      {
+        "pattern": "PLANE -> EXT -> EXT -> EXT",
+        "tasks": 5
+      },
+      {
+        "pattern": "CUT -> EXT -> EXT -> CUT",
+        "tasks": 5
+      },
+      {
+        "pattern": "EXT -> EXT -> PLANE -> EXT",
+        "tasks": 5
+      },
+      {
+        "pattern": "PLANE -> EXT -> CUT -> CUT",
+        "tasks": 4
+      },
+      {
+        "pattern": "EXT -> FIL -> PLANE -> EXT",
+        "tasks": 4
+      },
+      {
+        "pattern": "EXT -> CUT -> CUT -> EXT",
+        "tasks": 4
+      },
+      {
+        "pattern": "EXT -> CUT -> EXT -> EXT",
+        "tasks": 4
+      },
+      {
+        "pattern": "CUT -> CUT -> EXT -> EXT",
+        "tasks": 4
+      },
+      {
+        "pattern": "EXT -> CUT -> FIL -> CUT",
+        "tasks": 3
+      }
+    ]
+  },
+  "signature_bigrams": [
+    {
+      "pattern": "PLANE -> EXT[mixed]",
+      "tasks": 17
+    },
+    {
+      "pattern": "EXT[lines] -> PLANE",
+      "tasks": 14
+    },
+    {
+      "pattern": "EXT[circle] -> CUT[circle]",
+      "tasks": 12
+    },
+    {
+      "pattern": "PLANE -> RIB[lines]",
+      "tasks": 11
+    },
+    {
+      "pattern": "FIL -> FIL",
+      "tasks": 11
+    },
+    {
+      "pattern": "PLANE -> EXT[lines]",
+      "tasks": 10
+    },
+    {
+      "pattern": "CUT[circle] -> CUT[circle]",
+      "tasks": 10
+    },
+    {
+      "pattern": "CUT[circle] -> FIL",
+      "tasks": 9
+    },
+    {
+      "pattern": "CUT[circle] -> PLANE",
+      "tasks": 9
+    },
+    {
+      "pattern": "EXT[circles] -> PLANE",
+      "tasks": 9
+    },
+    {
+      "pattern": "EXT[mixed] -> FIL",
+      "tasks": 8
+    },
+    {
+      "pattern": "EXT[mixed] -> EXT[mixed]",
+      "tasks": 8
+    },
+    {
+      "pattern": "EXT[circle] -> EXT[circle]",
+      "tasks": 8
+    },
+    {
+      "pattern": "CUT[circles] -> PLANE",
+      "tasks": 7
+    },
+    {
+      "pattern": "PLANE -> PLANE",
+      "tasks": 7
+    },
+    {
+      "pattern": "EXT[mixed] -> PLANE",
+      "tasks": 7
+    },
+    {
+      "pattern": "EXT[circle] -> FIL",
+      "tasks": 7
+    },
+    {
+      "pattern": "EXT[circles] -> CUT[circle]",
+      "tasks": 6
+    },
+    {
+      "pattern": "FIL -> CUT[circles]",
+      "tasks": 6
+    },
+    {
+      "pattern": "CUT[circles] -> FIL",
+      "tasks": 6
+    },
+    {
+      "pattern": "EXT[lines] -> EXT[lines]",
+      "tasks": 6
+    },
+    {
+      "pattern": "FIL -> PLANE",
+      "tasks": 6
+    },
+    {
+      "pattern": "EXT[circles] -> EXT[mixed+cl]",
+      "tasks": 6
+    },
+    {
+      "pattern": "EXT[mixed] -> MIR",
+      "tasks": 6
+    },
+    {
+      "pattern": "PLANE -> MIR",
+      "tasks": 6
+    },
+    {
+      "pattern": "EXT[lines] -> CUT[lines]",
+      "tasks": 6
+    },
+    {
+      "pattern": "CUT[lines] -> CUT[lines]",
+      "tasks": 6
+    },
+    {
+      "pattern": "CUT[circle] -> CUT[circles]",
+      "tasks": 5
+    },
+    {
+      "pattern": "EXT[mixed+cl] -> EXT[circle]",
+      "tasks": 5
+    },
+    {
+      "pattern": "CUT[circles] -> CUT[circles]",
+      "tasks": 5
+    },
+    {
+      "pattern": "EXT[lines+cl] -> PLANE",
+      "tasks": 5
+    },
+    {
+      "pattern": "EXT[mixed] -> CUT[circle]",
+      "tasks": 5
+    },
+    {
+      "pattern": "MIR -> MIR",
+      "tasks": 5
+    },
+    {
+      "pattern": "EXT[mixed+cl] -> FIL",
+      "tasks": 5
+    },
+    {
+      "pattern": "EXT[mixed] -> CUT[circles]",
+      "tasks": 4
+    },
+    {
+      "pattern": "EXT[lines] -> CUT[circle]",
+      "tasks": 4
+    },
+    {
+      "pattern": "EXT[circle] -> CUT[circles]",
+      "tasks": 4
+    },
+    {
+      "pattern": "PLANE -> EXT[lines+cl]",
+      "tasks": 4
+    },
+    {
+      "pattern": "CHAM -> FIL",
+      "tasks": 4
+    },
+    {
+      "pattern": "EXT[mixed+cl] -> EXT[mixed+cl]",
+      "tasks": 4
+    }
+  ],
+  "motifs": [
+    {
+      "motif": "base solid then subtractive details",
+      "tasks": 79,
+      "instances": 95,
+      "example_tasks": [
+        "01525920-042f-4ba5-9896-31898fcd7b47",
+        "04c5e468-78b5-4e97-b84b-dc34fc0c8b85",
+        "051a4b52-599c-4de4-924b-65d486c407fc",
+        "06e5b82d-8430-49d8-a339-7ec9db4518c8",
+        "0956b5b3-ef6a-418d-aabf-4848d8a47270"
+      ]
+    },
+    {
+      "motif": "annular boss (tube / bushing in one sketch)",
+      "tasks": 36,
+      "instances": 54,
+      "example_tasks": [
+        "01525920-042f-4ba5-9896-31898fcd7b47",
+        "06e5b82d-8430-49d8-a339-7ec9db4518c8",
+        "0956b5b3-ef6a-418d-aabf-4848d8a47270",
+        "09e6b3ee-6aca-4c9b-a892-6cb44ae3ca57",
+        "10abb43c-bfb5-48cf-bfce-2c5d5533706e"
+      ]
+    },
+    {
+      "motif": "reference plane -> EXT",
+      "tasks": 35,
+      "instances": 52,
+      "example_tasks": [
+        "051a4b52-599c-4de4-924b-65d486c407fc",
+        "0956b5b3-ef6a-418d-aabf-4848d8a47270",
+        "09e6b3ee-6aca-4c9b-a892-6cb44ae3ca57",
+        "0af9090d-9674-4f32-856b-467ed0bc18ca",
+        "12c25c46-b58c-42b4-a6d8-4988019739b3"
+      ]
+    },
+    {
+      "motif": "multi-hole cut in one sketch (>=3 circles)",
+      "tasks": 23,
+      "instances": 34,
+      "example_tasks": [
+        "04c5e468-78b5-4e97-b84b-dc34fc0c8b85",
+        "06e5b82d-8430-49d8-a339-7ec9db4518c8",
+        "0956b5b3-ef6a-418d-aabf-4848d8a47270",
+        "09e6b3ee-6aca-4c9b-a892-6cb44ae3ca57",
+        "0af9090d-9674-4f32-856b-467ed0bc18ca"
+      ]
+    },
+    {
+      "motif": "revolve profile about a centerline",
+      "tasks": 16,
+      "instances": 29,
+      "example_tasks": [
+        "01525920-042f-4ba5-9896-31898fcd7b47",
+        "06e5b82d-8430-49d8-a339-7ec9db4518c8",
+        "09e6b3ee-6aca-4c9b-a892-6cb44ae3ca57",
+        "20118498-c3dd-421d-947b-6e8d86dad3b8",
+        "26e9fc5a-18a2-41e8-849e-b1a83d657beb"
+      ]
+    },
+    {
+      "motif": "rib from open profile",
+      "tasks": 13,
+      "instances": 16,
+      "example_tasks": [
+        "04c5e468-78b5-4e97-b84b-dc34fc0c8b85",
+        "12c25c46-b58c-42b4-a6d8-4988019739b3",
+        "40e8211e-ecae-4001-b268-d6fdb7b2dbdd",
+        "545d329f-f547-4d78-8a1f-051838f39ce7",
+        "647f65d8-f350-4719-99c8-f7748509569e"
+      ]
+    },
+    {
+      "motif": "reference plane -> RIB",
+      "tasks": 12,
+      "instances": 15,
+      "example_tasks": [
+        "04c5e468-78b5-4e97-b84b-dc34fc0c8b85",
+        "12c25c46-b58c-42b4-a6d8-4988019739b3",
+        "40e8211e-ecae-4001-b268-d6fdb7b2dbdd",
+        "647f65d8-f350-4719-99c8-f7748509569e",
+        "84985061-95be-4aac-9c60-e12074831340"
+      ]
+    },
+    {
+      "motif": "finishing fillet/chamfer chain (>=2 at end)",
+      "tasks": 12,
+      "instances": 13,
+      "example_tasks": [
+        "1577ab33-6c24-470a-a568-8d795bb9e560",
+        "319e1618-f425-445c-9cd9-698204ee9665",
+        "545d329f-f547-4d78-8a1f-051838f39ce7",
+        "55ae345a-f6c3-4e7e-8e95-be1eb2aab8ca",
+        "69840c82-b8bf-4216-acfa-c68722de1513"
+      ]
+    },
+    {
+      "motif": "EXT -> mirror",
+      "tasks": 10,
+      "instances": 13,
+      "example_tasks": [
+        "09e6b3ee-6aca-4c9b-a892-6cb44ae3ca57",
+        "204f61ed-0637-45db-a7fe-bf391da3c9eb",
+        "3091c8b3-249a-4e3f-946e-08b57a955d58",
+        "401bd4dd-dbf1-4bbb-931f-828ef218c19c",
+        "53c66ee6-7f14-41dd-9eee-19fcb879d127"
+      ]
+    },
+    {
+      "motif": "sweep along path / between profiles",
+      "tasks": 9,
+      "instances": 10,
+      "example_tasks": [
+        "06e5b82d-8430-49d8-a339-7ec9db4518c8",
+        "69840c82-b8bf-4216-acfa-c68722de1513",
+        "77d30fef-8800-46a8-97fe-6de2a9bfa004",
+        "8f60435a-30fa-46e7-8b9b-b4d4d454194f",
+        "ae7411f9-a05b-40a0-99f3-6e0c909b3ce0"
+      ]
+    },
+    {
+      "motif": "PLANE -> mirror",
+      "tasks": 6,
+      "instances": 6,
+      "example_tasks": [
+        "3091c8b3-249a-4e3f-946e-08b57a955d58",
+        "69a2da35-89d2-4cdd-b4e8-6635e48c3e0a",
+        "76c3813a-2af4-449c-b7e5-b4a6d1c16817",
+        "8e21770e-9c3f-4ec9-9353-7ec5b7a78a8d",
+        "96436e13-129a-4a18-ba9f-603fcc3292c2"
+      ]
+    },
+    {
+      "motif": "CUT -> mirror",
+      "tasks": 5,
+      "instances": 6,
+      "example_tasks": [
+        "204f61ed-0637-45db-a7fe-bf391da3c9eb",
+        "5cb7b1d2-4c36-4775-8b40-058ff6018ac0",
+        "b24720cb-623e-4bdd-994e-ae7d852e9c46",
+        "ec50e5bc-a3eb-4cb3-9918-39c0cc6f28ea",
+        "f6320756-1a7e-4303-bf1a-57597a6f77f3"
+      ]
+    },
+    {
+      "motif": "MIR -> mirror",
+      "tasks": 5,
+      "instances": 10,
+      "example_tasks": [
+        "5cb7b1d2-4c36-4775-8b40-058ff6018ac0",
+        "76c3813a-2af4-449c-b7e5-b4a6d1c16817",
+        "969d753e-6fbe-4813-a6b5-e25c69098066",
+        "d3fe61fc-f5bb-44a6-8711-f206d854e5ab",
+        "f6320756-1a7e-4303-bf1a-57597a6f77f3"
+      ]
+    },
+    {
+      "motif": "reference plane -> CUT",
+      "tasks": 5,
+      "instances": 5,
+      "example_tasks": [
+        "5fce8c0a-b5ac-4455-a4a4-7ac1cc1d0ff1",
+        "799a2069-e851-4126-bddc-68cd2330b438",
+        "8919b948-ed5b-4c63-a7f6-e8da2358b4cb",
+        "8f60435a-30fa-46e7-8b9b-b4d4d454194f",
+        "bf10ebc9-3522-4293-813d-90bb43d36a49"
+      ]
+    },
+    {
+      "motif": "reference plane -> SWEEP",
+      "tasks": 4,
+      "instances": 4,
+      "example_tasks": [
+        "06e5b82d-8430-49d8-a339-7ec9db4518c8",
+        "77d30fef-8800-46a8-97fe-6de2a9bfa004",
+        "b350bb94-a809-4c60-be07-6b689b47bb58",
+        "b61f0a07-db04-4072-8334-cf313c631e9d"
+      ]
+    },
+    {
+      "motif": "polygon ext (hex etc.)",
+      "tasks": 4,
+      "instances": 7,
+      "example_tasks": [
+        "09e6b3ee-6aca-4c9b-a892-6cb44ae3ca57",
+        "401bd4dd-dbf1-4bbb-931f-828ef218c19c",
+        "ca3a2da3-7d88-4378-861c-ecba9ff6c5f3",
+        "e5dea03e-a412-4a99-b7a7-c4962f7c9017"
+      ]
+    },
+    {
+      "motif": "RIB -> mirror",
+      "tasks": 3,
+      "instances": 4,
+      "example_tasks": [
+        "04c5e468-78b5-4e97-b84b-dc34fc0c8b85",
+        "40e8211e-ecae-4001-b268-d6fdb7b2dbdd",
+        "b168b189-19bb-4e69-a572-3368a8e14276"
+      ]
+    },
+    {
+      "motif": "loft along path / between profiles",
+      "tasks": 3,
+      "instances": 4,
+      "example_tasks": [
+        "12ccc262-30a5-451d-9bc9-fa52778416dc",
+        "647f65d8-f350-4719-99c8-f7748509569e",
+        "9c6f60b4-75ba-4598-82cd-3a97f83e9bbd"
+      ]
+    },
+    {
+      "motif": "slot cut",
+      "tasks": 3,
+      "instances": 7,
+      "example_tasks": [
+        "425dd654-efd5-4ebd-a674-37be94518874",
+        "545d329f-f547-4d78-8a1f-051838f39ce7",
+        "ff073033-3426-47fe-9b28-016a5cbd2f7a"
+      ]
+    },
+    {
+      "motif": "shell (hollow with wall)",
+      "tasks": 2,
+      "instances": 2,
+      "example_tasks": [
+        "55ae345a-f6c3-4e7e-8e95-be1eb2aab8ca",
+        "69840c82-b8bf-4216-acfa-c68722de1513"
+      ]
+    },
+    {
+      "motif": "reference plane -> LOFT",
+      "tasks": 2,
+      "instances": 2,
+      "example_tasks": [
+        "647f65d8-f350-4719-99c8-f7748509569e",
+        "9c6f60b4-75ba-4598-82cd-3a97f83e9bbd"
+      ]
+    },
+    {
+      "motif": "polygon cut (hex etc.)",
+      "tasks": 2,
+      "instances": 2,
+      "example_tasks": [
+        "8f60435a-30fa-46e7-8b9b-b4d4d454194f",
+        "e47c8537-534b-4b08-bbaa-4a3bc8150ffd"
+      ]
+    },
+    {
+      "motif": "hole/cut then pattern",
+      "tasks": 1,
+      "instances": 1,
+      "example_tasks": [
+        "55ae345a-f6c3-4e7e-8e95-be1eb2aab8ca"
+      ]
+    }
+  ],
+  "narration_ops": [
+    {
+      "op": "fully defined sketch",
+      "group": "constraint",
+      "tasks": 114,
+      "segments": 2017,
+      "minutes": 386.6
+    },
+    {
+      "op": "relations (tangent/concentric/equal/symmetric)",
+      "group": "constraint",
+      "tasks": 109,
+      "segments": 1385,
+      "minutes": 263.9
+    },
+    {
+      "op": "centerline / construction",
+      "group": "sketch",
+      "tasks": 106,
+      "segments": 1031,
+      "minutes": 199.8
+    },
+    {
+      "op": "trim / extend",
+      "group": "sketch",
+      "tasks": 101,
+      "segments": 842,
+      "minutes": 150.6
+    },
+    {
+      "op": "undo / delete",
+      "group": "edit",
+      "tasks": 96,
+      "segments": 417,
+      "minutes": 76.2
+    },
+    {
+      "op": "sketch on face",
+      "group": "sketch",
+      "tasks": 88,
+      "segments": 270,
+      "minutes": 49.1
+    },
+    {
+      "op": "edit sketch / edit feature",
+      "group": "edit",
+      "tasks": 84,
+      "segments": 256,
+      "minutes": 44.4
+    },
+    {
+      "op": "measure / mass properties",
+      "group": "check",
+      "tasks": 83,
+      "segments": 284,
+      "minutes": 56.6
+    },
+    {
+      "op": "angled plane",
+      "group": "reference",
+      "tasks": 67,
+      "segments": 257,
+      "minutes": 46.4
+    },
+    {
+      "op": "fillet",
+      "group": "detail",
+      "tasks": 63,
+      "segments": 691,
+      "minutes": 129.9
+    },
+    {
+      "op": "offset plane",
+      "group": "reference",
+      "tasks": 57,
+      "segments": 277,
+      "minutes": 49.6
+    },
+    {
+      "op": "end: mid plane",
+      "group": "end_condition",
+      "tasks": 50,
+      "segments": 198,
+      "minutes": 37.9
+    },
+    {
+      "op": "mirror feature",
+      "group": "pattern",
+      "tasks": 47,
+      "segments": 252,
+      "minutes": 45.1
+    },
+    {
+      "op": "end: through all",
+      "group": "end_condition",
+      "tasks": 46,
+      "segments": 119,
+      "minutes": 21.3
+    },
+    {
+      "op": "rib",
+      "group": "detail",
+      "tasks": 40,
+      "segments": 180,
+      "minutes": 32.6
+    },
+    {
+      "op": "slot",
+      "group": "sketch",
+      "tasks": 40,
+      "segments": 590,
+      "minutes": 108.0
+    },
+    {
+      "op": "convert entities",
+      "group": "sketch",
+      "tasks": 34,
+      "segments": 147,
+      "minutes": 25.4
+    },
+    {
+      "op": "end: up to surface/vertex/next",
+      "group": "end_condition",
+      "tasks": 32,
+      "segments": 108,
+      "minutes": 19.5
+    },
+    {
+      "op": "revolve",
+      "group": "advanced",
+      "tasks": 30,
+      "segments": 480,
+      "minutes": 93.3
+    },
+    {
+      "op": "sketch fillet / chamfer",
+      "group": "sketch",
+      "tasks": 30,
+      "segments": 142,
+      "minutes": 26.5
+    },
+    {
+      "op": "section view (model)",
+      "group": "check",
+      "tasks": 27,
+      "segments": 143,
+      "minutes": 25.8
+    },
+    {
+      "op": "offset entities",
+      "group": "sketch",
+      "tasks": 25,
+      "segments": 161,
+      "minutes": 29.0
+    },
+    {
+      "op": "circular pattern",
+      "group": "pattern",
+      "tasks": 22,
+      "segments": 169,
+      "minutes": 30.5
+    },
+    {
+      "op": "sketch pattern",
+      "group": "sketch",
+      "tasks": 20,
+      "segments": 53,
+      "minutes": 9.5
+    },
+    {
+      "op": "chamfer",
+      "group": "detail",
+      "tasks": 19,
+      "segments": 107,
+      "minutes": 20.9
+    },
+    {
+      "op": "mirror entities (sketch)",
+      "group": "sketch",
+      "tasks": 17,
+      "segments": 25,
+      "minutes": 4.3
+    },
+    {
+      "op": "end: two directions",
+      "group": "end_condition",
+      "tasks": 17,
+      "segments": 50,
+      "minutes": 8.7
+    },
+    {
+      "op": "shell",
+      "group": "detail",
+      "tasks": 16,
+      "segments": 33,
+      "minutes": 6.0
+    },
+    {
+      "op": "tangent / 3-point arc",
+      "group": "sketch",
+      "tasks": 13,
+      "segments": 23,
+      "minutes": 4.3
+    },
+    {
+      "op": "tapped hole / thread",
+      "group": "hole",
+      "tasks": 13,
+      "segments": 392,
+      "minutes": 70.4
+    },
+    {
+      "op": "sweep",
+      "group": "advanced",
+      "tasks": 12,
+      "segments": 193,
+      "minutes": 37.0
+    },
+    {
+      "op": "hole wizard",
+      "group": "hole",
+      "tasks": 12,
+      "segments": 41,
+      "minutes": 7.7
+    },
+    {
+      "op": "thin feature",
+      "group": "end_condition",
+      "tasks": 11,
+      "segments": 64,
+      "minutes": 12.8
+    },
+    {
+      "op": "polygon",
+      "group": "sketch",
+      "tasks": 11,
+      "segments": 148,
+      "minutes": 30.2
+    },
+    {
+      "op": "reference axis",
+      "group": "reference",
+      "tasks": 9,
+      "segments": 11,
+      "minutes": 1.9
+    },
+    {
+      "op": "draft",
+      "group": "detail",
+      "tasks": 9,
+      "segments": 62,
+      "minutes": 12.3
+    },
+    {
+      "op": "rollback / reorder / suppress",
+      "group": "edit",
+      "tasks": 8,
+      "segments": 8,
+      "minutes": 1.8
+    },
+    {
+      "op": "linear pattern",
+      "group": "pattern",
+      "tasks": 7,
+      "segments": 46,
+      "minutes": 7.8
+    },
+    {
+      "op": "spline",
+      "group": "sketch",
+      "tasks": 7,
+      "segments": 9,
+      "minutes": 1.5
+    },
+    {
+      "op": "loft",
+      "group": "advanced",
+      "tasks": 7,
+      "segments": 79,
+      "minutes": 13.9
+    },
+    {
+      "op": "counterbore / countersink",
+      "group": "hole",
+      "tasks": 6,
+      "segments": 9,
+      "minutes": 1.6
+    },
+    {
+      "op": "equations / global variables",
+      "group": "constraint",
+      "tasks": 5,
+      "segments": 6,
+      "minutes": 1.2
+    },
+    {
+      "op": "reverse direction",
+      "group": "end_condition",
+      "tasks": 4,
+      "segments": 9,
+      "minutes": 1.6
+    }
+  ],
+  "rubric_intents": [
+    {
+      "intent": "through hole / bore",
+      "tasks": 82
+    },
+    {
+      "intent": "fillet radius",
+      "tasks": 73
+    },
+    {
+      "intent": "boss / hub",
+      "tasks": 56
+    },
+    {
+      "intent": "step / shoulder",
+      "tasks": 46
+    },
+    {
+      "intent": "rib / gusset / web",
+      "tasks": 45
+    },
+    {
+      "intent": "slot",
+      "tasks": 33
+    },
+    {
+      "intent": "flange",
+      "tasks": 32
+    },
+    {
+      "intent": "spokes / arms",
+      "tasks": 29
+    },
+    {
+      "intent": "blind hole / pocket",
+      "tasks": 28
+    },
+    {
+      "intent": "angled feature (degrees)",
+      "tasks": 27
+    },
+    {
+      "intent": "symmetry",
+      "tasks": 24
+    },
+    {
+      "intent": "taper / draft",
+      "tasks": 16
+    },
+    {
+      "intent": "counterbore / countersink hole",
+      "tasks": 9
+    },
+    {
+      "intent": "chamfer",
+      "tasks": 9
+    },
+    {
+      "intent": "bolt circle / equally spaced holes",
+      "tasks": 8
+    },
+    {
+      "intent": "tapped / threaded hole",
+      "tasks": 5
+    },
+    {
+      "intent": "keyway",
+      "tasks": 5
+    },
+    {
+      "intent": "wall thickness / shell",
+      "tasks": 5
+    },
+    {
+      "intent": "groove",
+      "tasks": 4
+    },
+    {
+      "intent": "hexagon",
+      "tasks": 3
+    },
+    {
+      "intent": "teeth / serration / knurl",
+      "tasks": 1
+    }
+  ],
+  "complex_parts": [
+    {
+      "task_id": "dddde982-3689-447c-b788-5fdfcf17c759",
+      "part": "output.sldprt",
+      "solid_features": 21,
+      "distinct_kinds": 3,
+      "ref_planes": 0,
+      "faces": 113,
+      "sketches": 3,
+      "bbox_mm": [
+        112.6,
+        111.4,
+        20.1
+      ],
+      "volume_mm3": 61961.0,
+      "sequence": [
+        "EXT",
+        "EXT",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL",
+        "CUT",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL"
+      ],
+      "complexity": 38.3
+    },
+    {
+      "task_id": "545d329f-f547-4d78-8a1f-051838f39ce7",
+      "part": "output.sldprt",
+      "solid_features": 20,
+      "distinct_kinds": 4,
+      "ref_planes": 0,
+      "faces": 39,
+      "sketches": 13,
+      "bbox_mm": [
+        5.0,
+        2.5,
+        4.9
+      ],
+      "volume_mm3": 14.6,
+      "sequence": [
+        "EXT",
+        "EXT",
+        "EXT",
+        "CUT",
+        "CUT",
+        "RIB",
+        "EXT",
+        "CUT",
+        "CUT",
+        "EXT",
+        "CUT",
+        "EXT",
+        "CUT",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL"
+      ],
+      "complexity": 31.9
+    },
+    {
+      "task_id": "797f5af1-37d1-48ad-bddb-828a792cfe8e",
+      "part": "output.sldprt",
+      "solid_features": 11,
+      "distinct_kinds": 4,
+      "ref_planes": 0,
+      "faces": 112,
+      "sketches": 6,
+      "bbox_mm": [
+        177.8,
+        39.0,
+        161.7
+      ],
+      "volume_mm3": 301559.1,
+      "sequence": [
+        "EXT",
+        "FIL",
+        "EXT",
+        "FIL",
+        "HOLE",
+        "EXT",
+        "FIL",
+        "FIL",
+        "CUT",
+        "CUT",
+        "FIL"
+      ],
+      "complexity": 30.2
+    },
+    {
+      "task_id": "e47c8537-534b-4b08-bbaa-4a3bc8150ffd",
+      "part": "output.sldprt",
+      "solid_features": 13,
+      "distinct_kinds": 3,
+      "ref_planes": 1,
+      "faces": 109,
+      "sketches": 11,
+      "bbox_mm": [
+        110.0,
+        35.0,
+        110.0
+      ],
+      "volume_mm3": 203992.8,
+      "sequence": [
+        "EXT",
+        "EXT",
+        "CUT",
+        "EXT",
+        "EXT",
+        "PLANE",
+        "EXT",
+        "FIL",
+        "FIL",
+        "CUT",
+        "CUT",
+        "CUT",
+        "CUT",
+        "CUT"
+      ],
+      "complexity": 29.9
+    },
+    {
+      "task_id": "ff1753ee-8eff-4ff2-8e35-96043100aeb2",
+      "part": "output.sldprt",
+      "solid_features": 17,
+      "distinct_kinds": 4,
+      "ref_planes": 3,
+      "faces": 47,
+      "sketches": 11,
+      "bbox_mm": [
+        120.0,
+        120.0,
+        117.0
+      ],
+      "volume_mm3": 530938.2,
+      "sequence": [
+        "EXT",
+        "FIL",
+        "EXT",
+        "FIL",
+        "CUT",
+        "PLANE",
+        "EXT",
+        "FIL",
+        "PLANE",
+        "EXT",
+        "FIL",
+        "PLANE",
+        "EXT",
+        "FIL",
+        "CUT",
+        "CUT",
+        "CUT",
+        "HOLE",
+        "HOLE",
+        "HOLE"
+      ],
+      "complexity": 29.7
+    },
+    {
+      "task_id": "d3fe61fc-f5bb-44a6-8711-f206d854e5ab",
+      "part": "output.sldprt",
+      "solid_features": 5,
+      "distinct_kinds": 2,
+      "ref_planes": 0,
+      "faces": 200,
+      "sketches": 11,
+      "bbox_mm": [
+        100.0,
+        62.3,
+        107.5
+      ],
+      "volume_mm3": 22232.6,
+      "sequence": [
+        "MIR",
+        "MIR",
+        "MIR",
+        "CUT",
+        "CUT"
+      ],
+      "complexity": 29.0
+    },
+    {
+      "task_id": "0956b5b3-ef6a-418d-aabf-4848d8a47270",
+      "part": "output.sldprt",
+      "solid_features": 17,
+      "distinct_kinds": 3,
+      "ref_planes": 4,
+      "faces": 59,
+      "sketches": 14,
+      "bbox_mm": [
+        58.0,
+        131.0,
+        102.0
+      ],
+      "volume_mm3": 118593.9,
+      "sequence": [
+        "EXT",
+        "EXT",
+        "EXT",
+        "FIL",
+        "CUT",
+        "CUT",
+        "PLANE",
+        "EXT",
+        "PLANE",
+        "EXT",
+        "CUT",
+        "PLANE",
+        "EXT",
+        "CUT",
+        "FIL",
+        "PLANE",
+        "EXT",
+        "FIL",
+        "EXT",
+        "EXT",
+        "CUT"
+      ],
+      "complexity": 28.9
+    },
+    {
+      "task_id": "b24720cb-623e-4bdd-994e-ae7d852e9c46",
+      "part": "output.sldprt",
+      "solid_features": 14,
+      "distinct_kinds": 4,
+      "ref_planes": 1,
+      "faces": 43,
+      "sketches": 8,
+      "bbox_mm": [
+        96.0,
+        66.0,
+        30.0
+      ],
+      "volume_mm3": 62601.2,
+      "sequence": [
+        "EXT",
+        "PLANE",
+        "EXT",
+        "EXT",
+        "MIR",
+        "EXT",
+        "CUT",
+        "MIR",
+        "EXT",
+        "CUT",
+        "CUT",
+        "FIL",
+        "FIL",
+        "FIL",
+        "FIL"
+      ],
+      "complexity": 26.3
+    },
+    {
+      "task_id": "f3fb249e-47f7-48b0-a3df-ea89622f173b",
+      "part": "output.sldprt",
+      "solid_features": 14,
+      "distinct_kinds": 3,
+      "ref_planes": 1,
+      "faces": 52,
+      "sketches": 12,
+      "bbox_mm": [
+        188.1,
+        146.0,
+        170.0
+      ],
+      "volume_mm3": 1223330.6,
+      "sequence": [
+        "EXT",
+        "EXT",
+        "PLANE",
+        "EXT",
+        "EXT",
+        "EXT",
+        "CUT",
+        "EXT",
+        "FIL",
+        "CUT",
+        "CUT",
+        "EXT",
+        "CUT",
+        "FIL",
+        "FIL"
+      ],
+      "complexity": 25.2
+    },
+    {
+      "task_id": "8865a35c-8d77-4949-a53f-2bdd2a21102f",
+      "part": "output.sldprt",
+      "solid_features": 9,
+      "distinct_kinds": 2,
+      "ref_planes": 2,
+      "faces": 106,
+      "sketches": 9,
+      "bbox_mm": [
+        150.0,
+        20.0,
+        150.0
+      ],
+      "volume_mm3": 9168.8,
+      "sequence": [
+        "EXT",
+        "EXT",
+        "CUT",
+        "CUT",
+        "PLANE",
+        "EXT",
+        "PLANE",
+        "EXT",
+        "EXT",
+        "EXT",
+        "EXT"
+      ],
+      "complexity": 23.6
+    },
+    {
+      "task_id": "319e1618-f425-445c-9cd9-698204ee9665",
+      "part": "output.sldprt",
+      "solid_features": 10,
+      "distinct_kinds": 3,
+      "ref_planes": 1,
+      "faces": 75,
+      "sketches": 7,
+      "bbox_mm": [
+        130.0,
+        74.0,
+        80.0
+      ],
+      "volume_mm3": 185769.0,
+      "sequence": [
+        "EXT",
+        "CUT",
+        "EXT",
+        "CUT",
+        "EXT",
+        "FIL",
+        "PLANE",
+        "EXT",
+        "CUT",
+        "FIL",
+        "FIL"
+      ],
+      "complexity": 23.5
+    },
+    {
+      "task_id": "69840c82-b8bf-4216-acfa-c68722de1513",
+      "part": "output.sldprt",
+      "solid_features": 8,
+      "distinct_kinds": 6,
+      "ref_planes": 0,
+      "faces": 34,
+      "sketches": 6,
+      "bbox_mm": [
+        84.0,
+        240.0,
+        240.0
+      ],
+      "volume_mm3": 453860.9,
+      "sequence": [
+        "SWEEP",
+        "SHELL",
+        "EXT",
+        "EXT",
+        "CUT",
+        "CUT",
+        "CHAM",
+        "FIL"
+      ],
+      "complexity": 23.4
+    },
+    {
+      "task_id": "404e7174-71c7-40bb-b6cd-7eb7013d81f3",
+      "part": "output.sldprt",
+      "solid_features": 7,
+      "distinct_kinds": 4,
+      "ref_planes": 0,
+      "faces": 83,
+      "sketches": 4,
+      "bbox_mm": [
+        22.0,
+        119.9,
+        119.9
+      ],
+      "volume_mm3": 107833.4,
+      "sequence": [
+        "REV",
+        "CUT",
+        "FIL",
+        "CUT",
+        "CHAM",
+        "CHAM",
+        "CUT"
+      ],
+      "complexity": 23.3
+    },
+    {
+      "task_id": "8e21770e-9c3f-4ec9-9353-7ec5b7a78a8d",
+      "part": "output.sldprt",
+      "solid_features": 11,
+      "distinct_kinds": 4,
+      "ref_planes": 3,
+      "faces": 43,
+      "sketches": 9,
+      "bbox_mm": [
+        92.0,
+        44.0,
+        40.0
+      ],
+      "volume_mm3": 51639.8,
+      "sequence": [
+        "EXT",
+        "EXT",
+        "PLANE",
+        "EXT",
+        "PLANE",
+        "PLANE",
+        "MIR",
+        "CUT",
+        "CUT",
+        "CUT",
+        "EXT",
+        "CUT",
+        "CUT",
+        "FIL"
+      ],
+      "complexity": 23.3
+    },
+    {
+      "task_id": "1c2fa4b4-57a4-4404-bb5b-ac7d76fa1285",
+      "part": "output.sldprt",
+      "solid_features": 11,
+      "distinct_kinds": 4,
+      "ref_planes": 0,
+      "faces": 40,
+      "sketches": 10,
+      "bbox_mm": [
+        80.0,
+        45.0,
+        85.0
+      ],
+      "volume_mm3": 76995.7,
+      "sequence": [
+        "EXT",
+        "CUT",
+        "CUT",
+        "CUT",
+        "EXT",
+        "FIL",
+        "REVCUT",
+        "EXT",
+        "CUT",
+        "CUT",
+        "REVCUT"
+      ],
+      "complexity": 23.0
+    },
+    {
+      "task_id": "cd57c276-0e0e-4b07-81e4-38b604bb8531",
+      "part": "output.sldprt",
+      "solid_features": 5,
+      "distinct_kinds": 2,
+      "ref_planes": 0,
+      "faces": 137,
+      "sketches": 5,
+      "bbox_mm": [
+        60.0,
+        100.0,
+        50.0
+      ],
+      "volume_mm3": 88502.6,
+      "sequence": [
+        "EXT",
+        "EXT",
+        "CUT",
+        "CUT",
+        "CUT"
+      ],
+      "complexity": 22.7
+    },
+    {
+      "task_id": "b168b189-19bb-4e69-a572-3368a8e14276",
+      "part": "output.sldprt",
+      "solid_features": 7,
+      "distinct_kinds": 5,
+      "ref_planes": 1,
+      "faces": 54,
+      "sketches": 5,
+      "bbox_mm": [
+        28.0,
+        28.0,
+        14.0
+      ],
+      "volume_mm3": 3698.6,
+      "sequence": [
+        "EXT",
+        "FIL",
+        "CUT",
+        "EXT",
+        "PLANE",
+        "RIB",
+        "MIR",
+        "CUT"
+      ],
+      "complexity": 22.4
+    },
+    {
+      "task_id": "ee0f035c-76fc-497b-a928-a1a5e9dc5ade",
+      "part": "output.sldprt",
+      "solid_features": 15,
+      "distinct_kinds": 2,
+      "ref_planes": 0,
+      "faces": 33,
+      "sketches": 16,
+      "bbox_mm": [
+        70.0,
+        170.0,
+        70.5
+      ],
+      "volume_mm3": 257794.8,
+      "sequence": [
+        "EXT",
+        "EXT",
+        "EXT",
+        "CUT",
+        "EXT",
+        "EXT",
+        "CUT",
+        "CUT",
+        "CUT",
+        "EXT",
+        "EXT",
+        "CUT",
+        "EXT",
+        "CUT",
+        "CUT"
+      ],
+      "complexity": 22.3
+    },
+    {
+      "task_id": "b927c32b-eafd-4044-addc-5e0187c66e18",
+      "part": "output.sldprt",
+      "solid_features": 11,
+      "distinct_kinds": 4,
+      "ref_planes": 0,
+      "faces": 24,
+      "sketches": 9,
+      "bbox_mm": [
+        142.0,
+        100.7,
+        142.0
+      ],
+      "volume_mm3": 320893.7,
+      "sequence": [
+        "REV",
+        "FIL",
+        "EXT",
+        "CUT",
+        "EXT",
+        "EXT",
+        "CUT",
+        "FIL",
+        "EXT",
+        "EXT",
+        "CUT"
+      ],
+      "complexity": 21.4
+    },
+    {
+      "task_id": "3dd4a5bb-4b08-4fdb-85e6-9c34ae533eb8",
+      "part": "output.sldprt",
+      "solid_features": 9,
+      "distinct_kinds": 4,
+      "ref_planes": 0,
+      "faces": 40,
+      "sketches": 8,
+      "bbox_mm": [
+        80.0,
+        85.0,
+        45.0
+      ],
+      "volume_mm3": 76946.8,
+      "sequence": [
+        "EXT",
+        "CUT",
+        "EXT",
+        "FIL",
+        "REVCUT",
+        "CUT",
+        "CUT",
+        "EXT",
+        "REVCUT"
+      ],
+      "complexity": 21.0
+    },
+    {
+      "task_id": "8ee98491-5b4d-4cb7-a8f3-3f92919ae417",
+      "part": "output.sldprt",
+      "solid_features": 10,
+      "distinct_kinds": 3,
+      "ref_planes": 0,
+      "faces": 50,
+      "sketches": 10,
+      "bbox_mm": [
+        180.0,
+        87.0,
+        72.0
+      ],
+      "volume_mm3": 248714.3,
+      "sequence": [
+        "EXT",
+        "EXT",
+        "EXT",
+        "EXT",
+        "CUT",
+        "EXT",
+        "EXT",
+        "EXT",
+        "EXT",
+        "FIL"
+      ],
+      "complexity": 21.0
+    },
+    {
+      "task_id": "8919b948-ed5b-4c63-a7f6-e8da2358b4cb",
+      "part": "output.sldprt",
+      "solid_features": 10,
+      "distinct_kinds": 4,
+      "ref_planes": 4,
+      "faces": 28,
+      "sketches": 8,
+      "bbox_mm": [
+        126.0,
+        90.0,
+        78.0
+      ],
+      "volume_mm3": 298770.4,
+      "sequence": [
+        "EXT",
+        "EXT",
+        "PLANE",
+        "CUT",
+        "PLANE",
+        "PLANE",
+        "EXT",
+        "PLANE",
+        "RIB",
+        "CUT",
+        "CUT",
+        "FIL",
+        "FIL",
+        "EXT"
+      ],
+      "complexity": 20.8
+    },
+    {
+      "task_id": "a16eb12c-3805-40cd-b8b8-5ac15069ca2c",
+      "part": "output.sldprt",
+      "solid_features": 8,
+      "distinct_kinds": 4,
+      "ref_planes": 2,
+      "faces": 48,
+      "sketches": 7,
+      "bbox_mm": [
+        90.0,
+        146.0,
+        50.0
+      ],
+      "volume_mm3": 150010.5,
+      "sequence": [
+        "EXT",
+        "FIL",
+        "PLANE",
+        "EXT",
+        "CUT",
+        "EXT",
+        "CUT",
+        "CUT",
+        "PLANE",
+        "RIB"
+      ],
+      "complexity": 20.8
+    },
+    {
+      "task_id": "1c8c655e-12d3-405d-b3ff-32ccedbbb5df",
+      "part": "output.sldprt",
+      "solid_features": 11,
+      "distinct_kinds": 2,
+      "ref_planes": 2,
+      "faces": 57,
+      "sketches": 11,
+      "bbox_mm": [
+        160.0,
+        144.7,
+        92.0
+      ],
+      "volume_mm3": 751187.0,
+      "sequence": [
+        "EXT",
+        "EXT",
+        "CUT",
+        "CUT",
+        "CUT",
+        "CUT",
+        "EXT",
+        "PLANE",
+        "EXT",
+        "CUT",
+        "PLANE",
+        "EXT",
+        "CUT"
+      ],
+      "complexity": 20.7
+    },
+    {
+      "task_id": "e59efd3c-dd81-4a59-ac7d-d0508edc7ef4",
+      "part": "output.sldprt",
+      "solid_features": 12,
+      "distinct_kinds": 2,
+      "ref_planes": 0,
+      "faces": 47,
+      "sketches": 12,
+      "bbox_mm": [
+        250.0,
+        60.9,
+        60.0
+      ],
+      "volume_mm3": 171019.8,
+      "sequence": [
+        "EXT",
+        "EXT",
+        "EXT",
+        "CUT",
+        "CUT",
+        "CUT",
+        "CUT",
+        "EXT",
+        "EXT",
+        "CUT",
+        "CUT",
+        "EXT"
+      ],
+      "complexity": 20.7
+    },
+    {
+      "task_id": "04c5e468-78b5-4e97-b84b-dc34fc0c8b85",
+      "part": "output.sldprt",
+      "solid_features": 6,
+      "distinct_kinds": 5,
+      "ref_planes": 1,
+      "faces": 46,
+      "sketches": 4,
+      "bbox_mm": [
+        28.0,
+        28.6,
+        14.0
+      ],
+      "volume_mm3": 3812.3,
+      "sequence": [
+        "EXT",
+        "CUT",
+        "FIL",
+        "CUT",
+        "PLANE",
+        "RIB",
+        "MIR"
+      ],
+      "complexity": 20.6
+    },
+    {
+      "task_id": "c405f861-ab80-40d5-8051-e2c3670d2ed3",
+      "part": "output.sldprt",
+      "solid_features": 9,
+      "distinct_kinds": 4,
+      "ref_planes": 3,
+      "faces": 36,
+      "sketches": 8,
+      "bbox_mm": [
+        120.0,
+        151.0,
+        48.0
+      ],
+      "volume_mm3": 159306.9,
+      "sequence": [
+        "EXT",
+        "PLANE",
+        "EXT",
+        "PLANE",
+        "EXT",
+        "EXT",
+        "FIL",
+        "PLANE",
+        "EXT",
+        "MIR",
+        "CUT",
+        "CUT"
+      ],
+      "complexity": 20.6
+    },
+    {
+      "task_id": "ec50e5bc-a3eb-4cb3-9918-39c0cc6f28ea",
+      "part": "output.sldprt",
+      "solid_features": 2,
+      "distinct_kinds": 2,
+      "ref_planes": 0,
+      "faces": 138,
+      "sketches": 9,
+      "bbox_mm": [
+        90.0,
+        90.0,
+        89.9
+      ],
+      "volume_mm3": 52682.7,
+      "sequence": [
+        "CUT",
+        "MIR"
+      ],
+      "complexity": 19.8
+    },
+    {
+      "task_id": "06e5b82d-8430-49d8-a339-7ec9db4518c8",
+      "part": "output.sldprt",
+      "solid_features": 9,
+      "distinct_kinds": 4,
+      "ref_planes": 1,
+      "faces": 25,
+      "sketches": 10,
+      "bbox_mm": [
+        140.0,
+        97.0,
+        78.0
+      ],
+      "volume_mm3": 157777.2,
+      "sequence": [
+        "EXT",
+        "REV",
+        "EXT",
+        "CUT",
+        "CUT",
+        "PLANE",
+        "SWEEP",
+        "EXT",
+        "EXT",
+        "CUT"
+      ],
+      "complexity": 19.5
+    },
+    {
+      "task_id": "f6320756-1a7e-4303-bf1a-57597a6f77f3",
+      "part": "output.sldprt",
+      "solid_features": 9,
+      "distinct_kinds": 4,
+      "ref_planes": 0,
+      "faces": 25,
+      "sketches": 5,
+      "bbox_mm": [
+        90.0,
+        160.0,
+        90.0
+      ],
+      "volume_mm3": 419908.1,
+      "sequence": [
+        "REV",
+        "CUT",
+        "MIR",
+        "MIR",
+        "MIR",
+        "CUT",
+        "CUT",
+        "FIL",
+        "CUT"
+      ],
+      "complexity": 19.5
+    }
+  ]
+}
