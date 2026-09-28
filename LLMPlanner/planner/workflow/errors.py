@@ -12,6 +12,8 @@ ERROR_CODES = {
     "REF_NOT_FOUND": "当前模型中找不到满足条件的面",
     "REF_AMBIGUOUS": "有多个同样匹配的面，需要更具体的引用",
     "REF_UNBOUND": "命名引用尚未绑定",
+    "REF_NOT_PLANAR": "引用的面不是平面",
+    "REF_NOT_AXIS_ALIGNED": "引用的平面法向不与坐标轴对齐",
     "SKETCH_EMPTY": "草图没有任何轮廓",
     "SKETCH_DEGENERATE": "轮廓退化（点数不足、零面积或非正半径）",
     "SKETCH_OPEN_LOOP": "轮廓未闭合",
@@ -19,6 +21,14 @@ ERROR_CODES = {
     "SKETCH_LOOPS_OVERLAP": "两个轮廓相交但互不包含",
     "SKETCH_OUTSIDE_BOUNDARY": "轮廓超出所在面的边界",
     "SKETCH_THIN_WALL": "壁厚或边距小于下限",
+    "SKETCH_MISSES_FACE": "轮廓与所在面没有重叠",
+    "SKETCH_CROSSES_AXIS": "旋转轮廓跨越了旋转轴",
+    "TOOL_ARGS": "工具参数缺失或非法",
+    "NO_PART": "还没有打开的零件",
+    "NO_BODY": "零件中还没有实体",
+    "FEATURE_FAILED": "SolidWorks 未能创建特征",
+    "FEATURE_NO_EFFECT": "特征已创建但没有改变实体（方向或位置可能不对）",
+    "SW_UNAVAILABLE": "无法连接 SolidWorks 服务",
 }
 
 

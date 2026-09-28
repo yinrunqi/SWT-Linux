@@ -195,6 +195,10 @@ namespace Chapter1.ConnectToSw
                     RequirePost(method, resp, () => HandleOpenPart(req, resp));
                     break;
 
+                case "/api/delete-feature":
+                    RequirePost(method, resp, () => HandleDeleteFeature(req, resp));
+                    break;
+
                 case "/api/export-step":
                     RequirePost(method, resp, () => HandleExportStep(req, resp));
                     break;
@@ -1644,6 +1648,20 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"打开零件失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleDeleteFeature(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.DeleteFeature(GetString(body, "featureName"));
+                SendJson(resp, 200, new { success = true, message = $"已删除特征 {result["featureName"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"删除特征失败: {ex.Message}" });
             }
         }
 

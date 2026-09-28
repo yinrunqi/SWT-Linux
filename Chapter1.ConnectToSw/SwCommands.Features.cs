@@ -13,6 +13,49 @@ namespace Chapter1.ConnectToSw
         #region 原子操作 — 特征
 
         /// <summary>
+        /// 按名称删除特征（含被吸收的草图），供 Agent 撤销失败或错误的一步。
+        /// 若仍在草图编辑中，先退出草图。
+        /// </summary>
+        public Dictionary<string, object> DeleteFeature(string featureName)
+        {
+            EnsureActiveDoc();
+            if (string.IsNullOrWhiteSpace(featureName))
+                throw new ArgumentException("featureName 不能为空");
+
+            if (ActiveDoc.SketchManager.ActiveSketch != null)
+                ((ModelDoc2)ActiveDoc).InsertSketch2(true);
+            _sketchOnRefPlane = false;
+
+            var feature = ((IPartDoc)ActiveDoc).FeatureByName(featureName) as IFeature;
+            if (feature == null)
+                throw new InvalidOperationException($"找不到特征 {featureName}");
+            string typeName = feature.GetTypeName2();
+
+            ActiveDoc.ClearSelection2(true);
+            if (!feature.Select2(false, 0))
+                throw new InvalidOperationException($"无法选中特征 {featureName}");
+            int options = (int)swDeleteSelectionOptions_e.swDelete_Absorbed
+                | (int)swDeleteSelectionOptions_e.swDelete_Children;
+            bool deleted = ActiveDoc.Extension.DeleteSelection2(options);
+            ActiveDoc.ClearSelection2(true);
+            if (!deleted)
+                throw new InvalidOperationException($"删除特征 {featureName} 失败");
+
+            if (string.Equals(_activeSketchName, featureName, StringComparison.Ordinal))
+                _activeSketchName = null;
+            _featureSketchLinks.RemoveAll(link =>
+                link.TryGetValue("featureName", out var name)
+                && string.Equals(Convert.ToString(name), featureName, StringComparison.Ordinal));
+            ActiveDoc.ForceRebuild3(false);
+            Console.WriteLine($"[SwCommands] 已删除特征 {featureName} ({typeName})");
+            return new Dictionary<string, object>
+            {
+                { "featureName", featureName },
+                { "featureType", typeName },
+            };
+        }
+
+        /// <summary>
         /// 退出草图并拉伸当前草图。depth 为拉伸深度，单位：米。
         /// flipDirection: 是否翻转拉伸方向（默认 false）。
         /// midPlane: 是否使用中间面拉伸（从草图面两侧各拉伸 depth/2），默认 false。
@@ -309,8 +352,8 @@ namespace Chapter1.ConnectToSw
             // 执行切除拉伸
             var feat = ActiveDoc.FeatureManager.FeatureCut4(
                 true,               // 1.  Sd - 单方向
-                flipDirection,      // 2.  Flip - 是否反转方向
-                false,              // 3.  Dir - 方向2
+                false,              // 2.  Flip - 反转“切除侧”（保留轮廓外的材料），不是反转方向
+                flipDirection,      // 3.  Dir - 反转切除方向
                 t1,                 // 4.  T1 - 终止条件1 (int)
                 0,                  // 5.  T2 - 终止条件2（单端切除时不使用）
                 depth,              // 6.  D1 - 深度1 (double)
@@ -371,7 +414,7 @@ namespace Chapter1.ConnectToSw
                 }
 
                 feat = ActiveDoc.FeatureManager.FeatureCut4(
-                    true, flipDirection, false,
+                    true, false, flipDirection,
                     t1, 0, depth, depth,
                     false, false, false, false,
                     0.0, 0.0, false, false, false, false,
@@ -406,7 +449,7 @@ namespace Chapter1.ConnectToSw
                 if (selected)
                 {
                     feat = ActiveDoc.FeatureManager.FeatureCut4(
-                        true, flipDirection, false,
+                        true, false, flipDirection,
                         (int)swEndConditions_e.swEndCondThroughAll,
                         0,
                         depth, depth,

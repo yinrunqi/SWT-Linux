@@ -249,9 +249,30 @@ namespace Chapter1.ConnectToSw
                             { "x", normal[0] }, { "y", normal[1] }, { "z", normal[2] }
                         }},
                         { "area", area },
+                        { "box", new Dictionary<string, double> {
+                            { "minX", faceBox[0] }, { "minY", faceBox[1] }, { "minZ", faceBox[2] },
+                            { "maxX", faceBox[3] }, { "maxY", faceBox[4] }, { "maxZ", faceBox[5] }
+                        }},
                         { "geometricSignature",
                             $"{surfaceType}:{center[0]:F6}:{center[1]:F6}:{center[2]:F6}:{area:F9}" },
                     };
+                    if (surfaceType == "cylinder")
+                    {
+                        try
+                        {
+                            // CylinderParams: origin(3), axis(3), radius
+                            var cp = surface.CylinderParams as double[];
+                            if (cp != null && cp.Length >= 7)
+                            {
+                                item["radius"] = cp[6];
+                                item["axisOrigin"] = new Dictionary<string, double> {
+                                    { "x", cp[0] }, { "y", cp[1] }, { "z", cp[2] } };
+                                item["axis"] = new Dictionary<string, double> {
+                                    { "x", cp[3] }, { "y", cp[4] }, { "z", cp[5] } };
+                            }
+                        }
+                        catch { }
+                    }
                     try
                     {
                         var persist = ActiveDoc.Extension.GetPersistReference3(face) as byte[];
