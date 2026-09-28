@@ -82,6 +82,14 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="SwCommands.cs" />
+    <Compile Include="SwCommands.Helpers.cs" />
+    <Compile Include="SwCommands.Query.cs" />
+    <Compile Include="SwCommands.Selection.cs" />
+    <Compile Include="SwCommands.Document.cs" />
+    <Compile Include="SwCommands.Sketch.cs" />
+    <Compile Include="SwCommands.Features.cs" />
+    <Compile Include="SwCommands.Composite.cs" />
+    <Compile Include="SwCommands.Assembly.cs" />
     <Compile Include="TutorialExamples.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

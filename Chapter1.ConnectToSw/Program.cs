@@ -191,6 +191,14 @@ namespace Chapter1.ConnectToSw
                     RequirePost(method, resp, () => HandleNewPart(resp));
                     break;
 
+                case "/api/open-part":
+                    RequirePost(method, resp, () => HandleOpenPart(req, resp));
+                    break;
+
+                case "/api/export-step":
+                    RequirePost(method, resp, () => HandleExportStep(req, resp));
+                    break;
+
                 case "/api/select-plane":
                     RequirePost(method, resp, () => HandleSelectPlane(req, resp));
                     break;
@@ -1601,6 +1609,34 @@ namespace Chapter1.ConnectToSw
             {
                 Console.WriteLine($"[错误] 装配体干涉检测失败: {ex.Message}\n{ex.StackTrace}");
                 SendJson(resp, 500, new { success = false, message = ex.Message });
+            }
+        }
+
+        private static void HandleOpenPart(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.OpenPart(GetString(body, "partPath"));
+                SendJson(resp, 200, new { success = true, message = $"零件已打开: {result["path"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"打开零件失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleExportStep(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.ExportStep(GetString(body, "stepPath"));
+                SendJson(resp, 200, new { success = true, message = $"STEP 已导出: {result["path"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"导出 STEP 失败: {ex.Message}" });
             }
         }
 
