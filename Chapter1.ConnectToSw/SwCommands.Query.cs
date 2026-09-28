@@ -218,11 +218,21 @@ namespace Chapter1.ConnectToSw
                         (faceBox[1] + faceBox[4]) / 2,
                         (faceBox[2] + faceBox[5]) / 2,
                     };
+                    // IFace2.Normal 已考虑面相对曲面的朝向，平面上即实体外法向；
+                    // PlaneParams 是曲面法向，可能朝内。
                     var normal = new double[] { 0, 0, 0 };
                     if (planar)
                     {
-                        var pp = (double[])surface.PlaneParams;
-                        normal = new double[] { pp[0], pp[1], pp[2] };
+                        var faceNormal = face.Normal as double[];
+                        if (faceNormal != null && faceNormal.Length >= 3)
+                        {
+                            normal = new double[] { faceNormal[0], faceNormal[1], faceNormal[2] };
+                        }
+                        else
+                        {
+                            var pp = (double[])surface.PlaneParams;
+                            normal = new double[] { pp[0], pp[1], pp[2] };
+                        }
                     }
                     string faceKey = planar
                         ? GetAxisFaceKey(center, normal, bbox)
