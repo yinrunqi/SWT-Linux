@@ -40,7 +40,10 @@ class MultiTurnAgent:
         max_actions_per_turn: int = 5,
         repeated_action_limit: int = 2,
         task_decomposer: TaskDecomposer | None = None,
+        hide_targets: bool = False,
     ):
+        # 评测时 milestone 的 postconditions 来自 GT，hide_targets=True 避免把目标值发给 LLM。
+        self.hide_targets = hide_targets
         self.llm_client = llm_client
         self.executor = executor
         self.observer = observer or SwObserver(
@@ -53,6 +56,9 @@ class MultiTurnAgent:
         self.max_actions_per_turn = max(1, min(max_actions_per_turn, 5))
         self.repeated_action_limit = max(1, repeated_action_limit)
         self.task_decomposer = task_decomposer or TaskDecomposer(llm_client)
+
+    def _target_kwargs(self) -> dict:
+        return {"hide_targets": True} if self.hide_targets else {}
 
     def _normalize_first_turn(
         self,
@@ -322,13 +328,14 @@ class MultiTurnAgent:
                     ledger=ledger,
                 )
 
-            context = memory.to_payload(ledger)
+            context = memory.to_payload(ledger, hide_targets=self.hide_targets)
             decision = self.llm_client.decide_agent_turn(
                 user_goal,
                 observation,
                 context,
                 turn_number,
                 current_milestone=milestone,
+                **self._target_kwargs(),
             )
             llm_calls += 1
             decision = decision.model_copy(
@@ -646,10 +653,11 @@ class MultiTurnAgent:
                 repair = self.llm_client.decide_agent_turn(
                     user_goal,
                     observation,
-                    memory.to_payload(ledger),
+                    memory.to_payload(ledger, hide_targets=self.hide_targets),
                     turn_number + 1,
                     current_milestone=milestone,
                     repair_required=True,
+                    **self._target_kwargs(),
                 )
                 llm_calls += 1
                 repair = repair.model_copy(

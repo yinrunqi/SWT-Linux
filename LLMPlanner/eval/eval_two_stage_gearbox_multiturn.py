@@ -407,6 +407,7 @@ def run_agent(
         client,
         executor,
         max_turns=max_turns,
+        hide_targets=True,
     )
     started = time.perf_counter()
     try:

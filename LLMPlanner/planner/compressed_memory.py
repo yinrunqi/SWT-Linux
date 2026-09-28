@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import Counter, deque
 
 from .milestone_ledger import MilestoneLedger
+from .milestone_view import public_evidence, public_ledger_summary
 from .schemas import MultiTurnRecord, TaskPlan
 
 
@@ -62,11 +63,27 @@ class CompressedMemory:
             ),
         })
 
+    @staticmethod
+    def _public_turn(turn: dict) -> dict:
+        validation = turn.get("validation")
+        if not validation:
+            return turn
+        return {
+            **turn,
+            "validation": {
+                **validation,
+                "details": public_evidence(validation.get("details") or {}),
+            },
+        }
+
     def forbid(self, action: dict) -> None:
         if action not in self._forbidden_actions:
             self._forbidden_actions.append(action)
 
-    def to_payload(self, ledger: MilestoneLedger) -> dict:
+    def to_payload(self, ledger: MilestoneLedger, *, hide_targets: bool = False) -> dict:
+        last_turns = self._turns[-3:]
+        if hide_targets:
+            last_turns = [self._public_turn(item) for item in last_turns]
         older = [
             {
                 "turn": item["turn"],
@@ -79,9 +96,13 @@ class CompressedMemory:
             for item in self._turns[:-3]
         ]
         return {
-            "milestones": ledger.summary(),
+            "milestones": (
+                public_ledger_summary(ledger.task_plan.milestones)
+                if hide_targets
+                else ledger.summary()
+            ),
             "older_turns_compact": older,
-            "last_3_turns": self._turns[-3:],
+            "last_3_turns": last_turns,
             "failure_digest": {
                 "by_operation": dict(self._failure_counts),
                 "recent": list(self._failures),

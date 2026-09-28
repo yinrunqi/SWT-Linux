@@ -258,18 +258,14 @@ def run_one(
     actual_holes = _count_cut_circles(final_obs)
     holes_ok = expected_holes == 0 or actual_holes == expected_holes
     status = mt.get("status") or summary.get("status")
-    acceptance = (
-        status == "completed"
-        and bool(summary.get("all_ok"))
-        and dims_ok
-        and vol_ok
-        and holes_ok
-    )
+    # 验收只看最终几何与 GT；status/all_ok 来自模型自己生成的 blueprint 验证，仅作过程信号。
+    acceptance = dims_ok and vol_ok and holes_ok
     return {
         "part_id": part_id,
         "name": sample.get("name"),
         "status": status,
         "acceptance_ok": acceptance,
+        "process_completed": status == "completed" and bool(summary.get("all_ok")),
         "dimensions_ok": dims_ok,
         "volume_ok": vol_ok,
         "holes_ok": holes_ok,

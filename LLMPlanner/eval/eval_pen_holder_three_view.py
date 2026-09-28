@@ -130,9 +130,9 @@ def score_pen_holder(result: dict, groundtruth: dict) -> dict:
         + execution_points,
         2,
     )
+    # status 来自模型自己生成的 blueprint 验证，只计入 execution_points，不参与验收。
     acceptance = (
-        result.get("status") == "completed"
-        and all(dimension_checks)
+        all(dimension_checks)
         and relative_error <= 0.10
         and counts["cuts"] >= 6
         and all(cavity_depth_checks)
@@ -141,6 +141,7 @@ def score_pen_holder(result: dict, groundtruth: dict) -> dict:
     return {
         "score": score,
         "acceptance_ok": acceptance,
+        "process_completed": result.get("status") == "completed",
         "dimension_points": dimension_points,
         "volume_points": volume_points,
         "topology_points": topology_points,

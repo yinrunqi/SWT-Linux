@@ -31,6 +31,7 @@ from .schemas import (
     TaskPlan,
     ThreeViewIR,
 )
+from .milestone_view import public_milestone
 from .skill_registry import SkillRegistry, SkillSelector, build_system_prompt, default_registry
 
 # ============================================================
@@ -1079,6 +1080,7 @@ class SwLLMClient:
         turn_number: int,
         current_milestone: Milestone | None = None,
         repair_required: bool = False,
+        hide_targets: bool = False,
     ) -> AgentTurn:
         """Generate the next increment, cached by the complete agent state."""
         self._active_agent_cache_key = None
@@ -1114,9 +1116,19 @@ class SwLLMClient:
             "current_milestone": (
                 None
                 if current_milestone is None
-                else current_milestone.model_dump(mode="json")
+                else (
+                    public_milestone(current_milestone)
+                    if hide_targets
+                    else current_milestone.model_dump(mode="json")
+                )
             ),
         }
+        evidence_hint = (
+            "current_milestone.evidence 只给出实测值和偏大/偏小/不足等方向，"
+            "目标值需根据 user_goal 自行推断。\n"
+            if hide_targets
+            else "current_milestone.evidence 是实际值与目标值的差异。\n"
+        )
         agent_instructions = (
             "你正在执行 Multi-turn SolidWorks 建模。根据下面 JSON 决定下一轮。\n"
             "每轮只能完成一个可检查的里程碑，actions 最多 5 个原子操作；"
@@ -1135,7 +1147,7 @@ class SwLLMClient:
                 "本轮 decision 必须是 act，并输出 1~5 个能改变当前模型的修复操作；"
                 "禁止 finish、blocked，已有有效实体时禁止 new_part。"
                 "优先使用 modify_dimension，或在现有面上新增切除/凸台修正几何。"
-                "current_milestone.evidence 是实际值与目标值的差异。\n"
+                + evidence_hint
                 if repair_required
                 else ""
             )

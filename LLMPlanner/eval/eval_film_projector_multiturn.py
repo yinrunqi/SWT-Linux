@@ -665,7 +665,7 @@ def run_agent(
     )
     executor = SwExecutor(base_url=sw_url)
     api = SwApi(sw_url)
-    agent = MultiTurnAgent(client, executor, max_turns=max_turns)
+    agent = MultiTurnAgent(client, executor, max_turns=max_turns, hide_targets=True)
     started = time.perf_counter()
     try:
         result = agent.run(goal, task_plan=task_plan)
