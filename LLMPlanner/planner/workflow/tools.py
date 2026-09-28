@@ -37,8 +37,10 @@ _LOOP_SCHEMA = {
         "slot: {start:[u,v], end:[u,v], width}（两端真圆弧）；"
         "polygon: {points:[[u,v],...], corner_radius? 或逐顶点 corner_radii?}；"
         "annular_sector: {center:[u,v], r_inner, r_outer, start_deg, end_deg}（扇环，逆时针，r_inner=0 为扇形）；"
-        "path: {start:[u,v], segments:[...]}，每段 {to:[u,v]} 为直线，另加 center:[u,v]（可带 ccw）、"
-        "radius+ccw(+large)、through:[u,v] 或 tangent:true 之一为圆弧；末点不回到起点时自动补直线。"
+        "path: {start:[u,v], segments:[...]}，每段都必须有终点 to:[u,v]；只有 to 为直线，另加 through:[u,v]（圆弧经过的点，"
+        "最不易出错，半圆优先用它）、center:[u,v]（可带 ccw）、radius+ccw(+large) 或 tangent:true 之一为圆弧；"
+        "ccw 指在 (u,v) 中从当前点绕到 to 的旋转方向；末点不回到起点时自动补直线。"
+        "工具结果中的 profile_uv_bbox 是轮廓实际的 (u,v) 范围，可据此核对圆弧凸向。"
     ),
     "properties": {
         "type": {
@@ -500,13 +502,17 @@ class WorkflowSession:
                 )
             raise WorkflowError(first.code, first.message, issues=check.to_dict()["issues"], hint=hint)
         warnings: list[str] = []
+        region = None
+        for loop in loops:
+            geometry = to_geometry(loop)
+            region = geometry if region is None else region.union(geometry)
+        check = check.to_dict()
+        if region is not None and not region.is_empty:
+            u0, v0, u1, v1 = region.bounds
+            check["profile_uv_bbox"] = {"u": [_round(u0), _round(u1)], "v": [_round(v0), _round(v1)]}
         boundary = frame.boundary_uv()
         if boundary is not None:
             outline = to_geometry(boundary)
-            region = None
-            for loop in loops:
-                geometry = to_geometry(loop)
-                region = geometry if region is None else region.union(geometry)
             if region is not None and outline is not None:
                 overlap = region.intersection(outline.buffer(1e-6)).area
                 if overlap <= 1e-9:
@@ -516,7 +522,7 @@ class WorkflowSession:
                     warnings.append(message)
                 elif overlap < region.area - 1e-6:
                     warnings.append(f"部分轮廓超出 {frame.label} 的包围范围")
-        return loops, check.to_dict(), warnings
+        return loops, check, warnings
 
     # ------------------------------------------------------------ 事务
 
@@ -640,7 +646,8 @@ class WorkflowSession:
         operations = [self._open_sketch(frame), *draw_operations(frame, loops), feature]
         result = self._transaction(
             operations, expect="increase", before=before,
-            context={"plane": frame.describe(), "direction": actual, "region_area_mm2": check["region_area_mm2"]},
+            context={"plane": frame.describe(), "direction": actual, "region_area_mm2": check["region_area_mm2"],
+                     "profile_uv_bbox": check.get("profile_uv_bbox")},
         )
         return {**result, "warnings": warnings} if warnings else result
 
@@ -677,7 +684,8 @@ class WorkflowSession:
         operations = [self._open_sketch(frame), *draw_operations(frame, loops), feature]
         result = self._transaction(
             operations, expect="decrease", before=before,
-            context={"plane": frame.describe(), "direction": actual, "region_area_mm2": check["region_area_mm2"]},
+            context={"plane": frame.describe(), "direction": actual, "region_area_mm2": check["region_area_mm2"],
+                     "profile_uv_bbox": check.get("profile_uv_bbox")},
         )
         return {**result, "warnings": warnings} if warnings else result
 
@@ -710,7 +718,8 @@ class WorkflowSession:
         ]
         result = self._transaction(
             operations, expect="decrease" if is_cut else "increase", before=before,
-            context={"plane": frame.describe(), "region_area_mm2": check["region_area_mm2"]},
+            context={"plane": frame.describe(), "region_area_mm2": check["region_area_mm2"],
+                     "profile_uv_bbox": check.get("profile_uv_bbox")},
         )
         return {**result, "warnings": warnings} if warnings else result
 

@@ -189,7 +189,10 @@ def path(start: Point, steps: Sequence[dict], index: int = 0, pair=None) -> list
     cursor = tuple(start)
     for step_index, step in enumerate(steps):
         if not isinstance(step, dict) or "to" not in step:
-            raise WorkflowError("TOOL_ARGS", f"轮廓 {index} 第 {step_index} 段缺少 to", loop=index)
+            raise WorkflowError(
+                "TOOL_ARGS", f"轮廓 {index} 第 {step_index} 段缺少 to", loop=index,
+                hint="圆弧段同样要写终点 to，再用 through/center/radius/tangent 之一说明弧形，例如 {to:[12,63], through:[0,75]}",
+            )
         target = pair(step["to"], "to")
         if _norm(_sub(target, cursor)) <= LENGTH_EPS:
             raise WorkflowError("SKETCH_DEGENERATE", f"轮廓 {index} 第 {step_index} 段长度为零", loop=index)
