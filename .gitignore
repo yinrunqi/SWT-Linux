@@ -72,6 +72,9 @@ LLMPlanner/log/**
 LLMPlanner/**/*.log
 LLMPlanner/eval/artifacts/**
 
+# CAD-1K 原始数据未声明 license，只保留在本地，不入库（派生统计 stats.json 可入库）
+LLMPlanner/datasets/cad1k/raw/**
+
 # SolidWorks 打开文档时生成的临时锁文件，以及装配体冒烟脚本的本地输出
 LLMPlanner/**/~$*
 LLMPlanner/assembly_smoke/gear_pair_assembly_v2.SLDASM
