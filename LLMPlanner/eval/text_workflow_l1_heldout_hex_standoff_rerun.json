@@ -1,0 +1,1225 @@
+{
+  "run_at": "2026-09-28T22:38:08+08:00",
+  "provider": "AI Ping",
+  "model": "Qwen3.5-397B-A17B",
+  "mode": "workflow",
+  "action_level": "L1",
+  "score_version": 2,
+  "strict_orientation": false,
+  "repeats": 1,
+  "cache_enabled": false,
+  "historical_skipped": [],
+  "case_ids": [
+    "hex_standoff"
+  ],
+  "average_score": 100.0,
+  "average_score_v1": 75.0,
+  "average_score_ci95": null,
+  "pass_at_1": 1.0,
+  "passed": 1,
+  "passed_v1": 0,
+  "total": 1,
+  "total_duration_seconds": 40.38,
+  "per_case": [
+    {
+      "case_id": "hex_standoff",
+      "runs": 1,
+      "mean_score": 100.0,
+      "min_score": 100.0,
+      "max_score": 100.0,
+      "passed_runs": 1,
+      "pass_at_1": 1.0,
+      "pass_at_k": 1.0,
+      "mean_tokens": 30297
+    }
+  ],
+  "token_totals": {
+    "prompt_tokens": 28670,
+    "completion_tokens": 1627,
+    "total_tokens": 30297,
+    "calls": 6
+  },
+  "balance_before": {
+    "limit_cents": 50000,
+    "consumed_cents": 18979.815258,
+    "remaining_cents": 31020.184742,
+    "limit_yuan": 500.0,
+    "consumed_yuan": 189.798153,
+    "remaining_yuan": 310.201847,
+    "monthly_reset": false,
+    "remark": "CLS"
+  },
+  "balance_after": {
+    "limit_cents": 50000,
+    "consumed_cents": 18984.427098,
+    "remaining_cents": 31015.572902,
+    "limit_yuan": 500.0,
+    "consumed_yuan": 189.844271,
+    "remaining_yuan": 310.155729,
+    "monthly_reset": false,
+    "remark": "CLS"
+  },
+  "spent_yuan": 0.046118,
+  "results": [
+    {
+      "case_id": "hex_standoff",
+      "name": "六角隔离柱",
+      "score": 100.0,
+      "acceptance_ok": true,
+      "validity_points": 15.0,
+      "robustness_points": 10.0,
+      "failed_step_count": 0,
+      "dimension_points": 30.0,
+      "volume_points": 20.0,
+      "detail_points": 25.0,
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_ok": true,
+      "actual_details": {
+        "extrusions": 1,
+        "cuts": 2,
+        "revolves": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "holes": 0,
+        "shells": 0,
+        "patterns": 0,
+        "mirrors": 0,
+        "sweeps": 0,
+        "lofts": 0,
+        "ribs": 0,
+        "solid_features": 1,
+        "circles": 2,
+        "polygons": 1,
+        "centerlines": 0,
+        "slots": 0,
+        "cut_circles": 2,
+        "sketch_lines": 6,
+        "sketch_arcs": 0,
+        "sketch_splines": 0
+      },
+      "detail_checks": {
+        "polygons": true
+      },
+      "strict_orientation": false,
+      "status": "completed",
+      "plan_steps": 3,
+      "successful_steps": 3,
+      "failed_steps": [],
+      "bbox_mm": {
+        "minX": -4.618802,
+        "minY": 0.0,
+        "minZ": -4.0,
+        "maxX": 4.618802,
+        "maxY": 20.0,
+        "maxZ": 4.0,
+        "sizeX": 9.237604,
+        "sizeY": 20.0,
+        "sizeZ": 8.0
+      },
+      "volume_mm3": 1005.877,
+      "v1": {
+        "score": 75.0,
+        "acceptance_ok": false,
+        "execution_points": 25.0,
+        "dimension_points": 30.0,
+        "volume_points": 20.0,
+        "detail_points": 0.0,
+        "actual_details": {
+          "extrusions": 1,
+          "cuts": 2,
+          "fillets": 0,
+          "chamfers": 0,
+          "revolves": 0,
+          "polygons": 0,
+          "centerlines": 0,
+          "circles": 2,
+          "slots": 0,
+          "cut_circles": 2,
+          "faces": 12
+        }
+      },
+      "token_usage": {
+        "calls": 6,
+        "completion_tokens": 1627,
+        "prompt_tokens": 28670,
+        "total_tokens": 30297
+      },
+      "workflow_status": "finished",
+      "llm_calls": 6,
+      "tool_calls": 6,
+      "duration_seconds": 40.38,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null,
+      "trace": {
+        "request": {
+          "url": "http://localhost:5000/api/run",
+          "json": {
+            "instruction": "M3 六角隔离柱：对边距 8mm、长 20mm 的正六棱柱，两个端面中心各有一个 Ø3.3mm、深 6mm 的螺纹底孔（不做螺纹）。",
+            "provider": "aiping",
+            "vision_model": "Qwen3.5-397B-A17B",
+            "plan_model": "Qwen3.5-397B-A17B",
+            "mode": "single_turn",
+            "action_level": "L1",
+            "use_cache": false,
+            "capture_trace": true,
+            "dry_run": false,
+            "max_turns": 40
+          }
+        },
+        "response_status": 200,
+        "response": {
+          "action_level": "L1",
+          "mode": "workflow",
+          "plan": {
+            "notes": "M3 六角隔离柱建模完成。零件为正六棱柱，对边距 8mm，长度 20mm。两个端面（Y=0 和 Y=20）中心各有一个 Ø3.3mm、深 6mm 的螺纹底孔。总体积约 1005.88 mm³。特征包括：1个六棱柱拉伸基体，2个通孔切除特征。",
+            "steps": [
+              {
+                "operation": "extrude",
+                "params": {
+                  "depth": "=length",
+                  "direction": "+Y",
+                  "loops": [
+                    {
+                      "across_flats": "=across_flats",
+                      "center": [
+                        0,
+                        0
+                      ],
+                      "sides": 6,
+                      "type": "regular_polygon"
+                    }
+                  ],
+                  "plane": "top_plane"
+                }
+              },
+              {
+                "operation": "hole",
+                "params": {
+                  "centers": [
+                    [
+                      0,
+                      0
+                    ]
+                  ],
+                  "depth": "=hole_depth",
+                  "diameter": "=hole_dia",
+                  "plane": "top"
+                }
+              },
+              {
+                "operation": "hole",
+                "params": {
+                  "centers": [
+                    [
+                      0,
+                      0
+                    ]
+                  ],
+                  "depth": "=hole_depth",
+                  "diameter": "=hole_dia",
+                  "plane": "bottom"
+                }
+              }
+            ],
+            "user_intent": "M3 六角隔离柱：对边距 8mm、长 20mm 的正六棱柱，两个端面中心各有一个 Ø3.3mm、深 6mm 的螺纹底孔（不做螺纹）。"
+          },
+          "raw_llm_trace": [
+            {
+              "content": "你是一名资深机械设计工程师，正在 SolidWorks 中用工具逐步建出用户描述的零件。\n\n## 坐标与单位\n- 所有长度单位 mm，角度单位度。模型坐标：+Y 向上（顶），+Z 向前，+X 向右。\n- 除非需求另有说明，零件底面放在 Y=0、高度沿 +Y，并在 X、Z 方向上以原点为中心；回转体的轴线沿 Y。\n- 每个草图平面都有固定的 (u,v) 坐标，数值就是模型坐标：法向沿 Z → u=X, v=Y；法向沿 Y → u=X, v=Z；法向沿 X → u=Z, v=Y。\n  例如在顶面（法向 +Y）上 [10, -5] 表示 X=10, Z=-5。\n\n## 草图与特征规则\n- 一次 extrude/cut 调用画一个区域：外环加上它内部的内环（孔）。部分重叠的轮廓会被拒绝，需要拆成先后两个特征（实体会自动合并）或合并成一个 polygon。\n- 在已有实体上加特征时，用语义面引用（top/bottom/left/right/front/back、face(+X, innermost) 等）或 get_model_state 返回的 face#index，不要猜测。\n- cut 默认朝实体内部切；hole 可以一次打多个同径孔；重复特征优先用 circular_pattern / linear_pattern。\n- revolve 的轮廓是截面的一半，必须整体位于轴线一侧，可以贴着轴线。\n- fillet/chamfer 一般放在最后，edges 不确定时先用 get_model_state 查看几何。\n\n## 工作方式\n1. 先读懂需求，列出总体尺寸和关键特征；可以用 set_parameters 定义驱动参数，之后用 \"=表达式\" 引用。\n2. 先建基体，再逐个添加特征。每次调用后检查返回的 volume_delta_mm3 与 bbox_mm 是否符合预期。\n3. 工具失败时会自动回滚，模型保持调用前的状态。阅读错误码和提示，修改参数或换一种做法再试；不要重复完全相同的失败调用。做错的特征可以用 delete_feature 删除。\n4. 全部完成后调用 get_model_state，逐项核对总体尺寸、孔数、特征是否满足需求；不满足就继续修改。\n5. 核对无误后调用 finish，并在 summary 中说明零件的组成与关键尺寸。\n",
+              "role": "system"
+            },
+            {
+              "content": "建模需求：\nM3 六角隔离柱：对边距 8mm、长 20mm 的正六棱柱，两个端面中心各有一个 Ø3.3mm、深 6mm 的螺纹底孔（不做螺纹）。\n\n当前是一个空零件，请开始建模。",
+              "role": "user"
+            },
+            {
+              "content": "我将开始建模 M3 六角隔离柱。\n\n**需求分析：**\n- 正六棱柱：对边距 8mm，长度 20mm\n- 两端面中心各有一个 Ø3.3mm、深 6mm 的孔\n- 轴线沿 Y 方向（高度方向）\n\n**建模步骤：**\n1. 定义参数\n2. 在 front_plane (XY平面) 上绘制正六边形轮廓并拉伸成六棱柱\n3. 在顶面和底面分别打 Ø3.3mm、深 6mm 的孔\n\n让我先定义参数，然后创建六棱柱基体。\n\n",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"values\": {\"across_flats\": 8, \"length\": 20, \"hole_dia\": 3.3, \"hole_depth\": 6}}",
+                    "name": "set_parameters"
+                  },
+                  "id": "call_f037e818213c4dbf80124bde",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"parameters\": {\"across_flats\": 8.0, \"length\": 20.0, \"hole_dia\": 3.3, \"hole_depth\": 6.0}}",
+              "role": "tool",
+              "tool_call_id": "call_f037e818213c4dbf80124bde"
+            },
+            {
+              "content": "参数已定义。现在在 front_plane (XY平面，法向+Z) 上绘制正六边形并拉伸。\n\n对于正六边形，对边距为 8mm，我需要使用 `across_flats` 参数。在 front_plane 上，u=X, v=Y。六棱柱沿 Y 方向延伸 20mm，所以应该在 XY 平面上画六边形，然后沿 +Y 方向拉伸？不对，让我重新考虑。\n\n根据坐标规则：\n- front_plane 是 XY 平面，法向 +Z\n- 在 front_plane 上，u=X, v=Y\n- 如果我要让六棱柱沿 Y 方向（高度方向）延伸 20mm，我应该：\n  - 在 front_plane 上画六边形（在 XY 平面内）\n  - 沿 +Z 或 -Z 方向拉伸？不对...\n\n让我重新理解：零件底面放在 Y=0，高度沿 +Y。所以六棱柱应该从 Y=0 延伸到 Y=20。\n\n更好的方法是：\n- 在 right_plane (YZ平面，法向+X) 上画六边形，其中 u=Z, v=Y\n- 这样六边形在 YZ 平面内，中心在原点\n- 然后沿 +X 方向拉伸？不对，这样六棱柱会沿 X 方向延伸。\n\n实际上，最简单的方法是：\n- 在 front_plane (XY平面) 上画六边形，中心在原点\n- 六边形的对边距是 8mm\n- 然后沿 Z 方向拉伸 20mm？但需求说长度 20mm 是沿 Y 方向（高度）。\n\n让我再仔细读需求：\"对边距 8mm、长 20mm 的正六棱柱\"，以及\"两个端面中心各有一个孔\"。端面应该是六棱柱的两个底面。\n\n按照惯例，隔离柱是竖立的，所以：\n- 六棱柱沿 Y 轴方向，从 Y=0 到 Y=20\n- 横截面是正六边形，对边距 8mm，在 XZ 平面内\n\n所以应该在 top_plane (XZ平面，法向+Y) 上画六边形，然后沿 +Y 方向拉伸 20mm。\n\n在 top_plane 上，u=X, v=Z。六边形中心在 [0, 0]，对边距 8mm。\n\n",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\": \"top_plane\", \"loops\": [{\"type\": \"regular_polygon\", \"center\": [0, 0], \"sides\": 6, \"across_flats\": \"=across_flats\"}], \"depth\": \"=length\", \"direction\": \"+Y\"}",
+                    "name": "extrude"
+                  },
+                  "id": "call_c43448e791134869b5425a9a",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图1\", \"凸台-拉伸1\"], \"volume_mm3\": 1108.51, \"volume_delta_mm3\": 1108.51, \"bbox_mm\": {\"X\": [-4.619, 4.619], \"Y\": [0.0, 20.0], \"Z\": [-4.0, 4.0], \"size\": [9.238, 20.0, 8.0]}, \"plane\": \"top_plane: 平面 Y=0mm，法向 +Y；u=X, v=Z（模型坐标，mm）\", \"direction\": \"+Y\", \"region_area_mm2\": 55.425626}",
+              "role": "tool",
+              "tool_call_id": "call_c43448e791134869b5425a9a"
+            },
+            {
+              "content": "六棱柱基体已创建成功。从 bbox 可以看到：\n- X: [-4.619, 4.619] - 这是六边形的外接圆半径方向\n- Y: [0.0, 20.0] - 长度 20mm，正确\n- Z: [-4.0, 4.0] - 对边距 8mm（从 -4 到 4），正确\n\n现在需要在两个端面（top 和 bottom）中心各打一个 Ø3.3mm、深 6mm 的孔。\n\n首先，在顶面（top）打一个孔。顶面是 Y=20 的平面。\n\n",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\": \"top\", \"centers\": [[0, 0]], \"diameter\": \"=hole_dia\", \"depth\": \"=hole_depth\"}",
+                    "name": "hole"
+                  },
+                  "id": "call_98f8faeb3cca47e88746e38b",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图2\", \"切除-拉伸1\"], \"volume_mm3\": 1057.19, \"volume_delta_mm3\": -51.32, \"bbox_mm\": {\"X\": [-4.619, 4.619], \"Y\": [0.0, 20.0], \"Z\": [-4.0, 4.0], \"size\": [9.238, 20.0, 8.0]}, \"plane\": \"top(face#6): 平面 Y=20mm，法向 +Y；u=X, v=Z（模型坐标，mm）\", \"direction\": \"-Y\", \"region_area_mm2\": 8.539253}",
+              "role": "tool",
+              "tool_call_id": "call_98f8faeb3cca47e88746e38b"
+            },
+            {
+              "content": "顶面孔已创建。现在在底面（bottom）打同样的孔。\n\n",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\": \"bottom\", \"centers\": [[0, 0]], \"diameter\": \"=hole_dia\", \"depth\": \"=hole_depth\"}",
+                    "name": "hole"
+                  },
+                  "id": "call_3579842ca99b43eeaf24170d",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图3\", \"切除-拉伸2\"], \"volume_mm3\": 1005.88, \"volume_delta_mm3\": -51.32, \"bbox_mm\": {\"X\": [-4.619, 4.619], \"Y\": [0.0, 20.0], \"Z\": [-4.0, 4.0], \"size\": [9.238, 20.0, 8.0]}, \"plane\": \"bottom(face#7): 平面 Y=0mm，法向 -Y；u=X, v=Z（模型坐标，mm）\", \"direction\": \"+Y\", \"region_area_mm2\": 8.539253}",
+              "role": "tool",
+              "tool_call_id": "call_3579842ca99b43eeaf24170d"
+            },
+            {
+              "content": "两个孔都已创建成功。现在让我检查模型状态，确认所有尺寸和特征是否符合需求。\n\n",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{}",
+                    "name": "get_model_state"
+                  },
+                  "id": "call_f5219db54383437fbd62e37d",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"state\": {\"features\": [{\"name\": \"草图1\", \"type\": \"ProfileFeature\"}, {\"name\": \"凸台-拉伸1\", \"type\": \"Extrusion\"}, {\"name\": \"草图2\", \"type\": \"ProfileFeature\"}, {\"name\": \"切除-拉伸1\", \"type\": \"ICE\"}, {\"name\": \"草图3\", \"type\": \"ProfileFeature\"}, {\"name\": \"切除-拉伸2\", \"type\": \"ICE\"}], \"bbox_mm\": {\"X\": [-4.619, 4.619], \"Y\": [0.0, 20.0], \"Z\": [-4.0, 4.0], \"size\": [9.238, 20.0, 8.0]}, \"volume_mm3\": 1005.88, \"planar_faces\": [{\"ref\": \"face#1\", \"normal\": \"-Z\", \"at\": \"Z=-4.000\", \"area_mm2\": 92.38, \"u_range\": [-2.309, 2.309], \"v_range\": [0.0, 20.0], \"uv\": \"u=X,v=Y\", \"alias\": \"back\"}, {\"ref\": \"face#4\", \"normal\": \"+Z\", \"at\": \"Z=4.000\", \"area_mm2\": 92.38, \"u_range\": [-2.309, 2.309], \"v_range\": [0.0, 20.0], \"uv\": \"u=X,v=Y\", \"alias\": \"front\"}, {\"ref\": \"face#6\", \"normal\": \"+Y\", \"at\": \"Y=20.000\", \"area_mm2\": 46.87, \"u_range\": [-4.619, 4.619], \"v_range\": [-4.0, 4.0], \"uv\": \"u=X,v=Z\", \"alias\": \"top\"}, {\"ref\": \"face#7\", \"normal\": \"-Y\", \"at\": \"Y=0.000\", \"area_mm2\": 46.87, \"u_range\": [-4.619, 4.619], \"v_range\": [-4.0, 4.0], \"uv\": \"u=X,v=Z\", \"alias\": \"bottom\"}, {\"ref\": \"face#9\", \"normal\": \"+Y\", \"at\": \"Y=14.000\", \"area_mm2\": 8.55, \"u_range\": [-1.65, 1.65], \"v_range\": [-1.65, 1.65], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#11\", \"normal\": \"-Y\", \"at\": \"Y=6.000\", \"area_mm2\": 8.55, \"u_range\": [-1.65, 1.65], \"v_range\": [-1.65, 1.65], \"uv\": \"u=X,v=Z\"}], \"cylindrical_faces\": [{\"ref\": \"face#8\", \"diameter_mm\": 3.3, \"axis\": \"Y\", \"axis_point_mm\": [0.0, 14.0, 0.0], \"span_mm\": [14.0, 20.0]}, {\"ref\": \"face#10\", \"diameter_mm\": 3.3, \"axis\": \"Y\", \"axis_point_mm\": [0.0, 6.0, 0.0], \"span_mm\": [0.0, 6.0]}], \"parameters\": {\"across_flats\": 8.0, \"length\": 20.0, \"hole_dia\": 3.3, \"hole_depth\": 6.0}}}",
+              "role": "tool",
+              "tool_call_id": "call_f5219db54383437fbd62e37d"
+            },
+            {
+              "content": "模型状态检查：\n\n**尺寸验证：**\n- Bbox: X [-4.619, 4.619], Y [0.0, 20.0], Z [-4.0, 4.0]\n  - 对边距：Z 方向从 -4 到 4，共 8mm ✓\n  - 长度：Y 方向从 0 到 20，共 20mm ✓\n  \n**孔验证：**\n- 有两个圆柱面（cylindrical_faces）：\n  - face#8: 直径 3.3mm，轴线沿 Y，范围 Y=[14.0, 20.0] - 这是顶面孔，深度 6mm (20-14=6) ✓\n  - face#10: 直径 3.3mm，轴线沿 Y，范围 Y=[0.0, 6.0] - 这是底面孔，深度 6mm ✓\n\n**特征列表：**\n- 草图1 + 凸台-拉伸1：六棱柱基体\n- 草图2 + 切除-拉伸1：顶面孔\n- 草图3 + 切除-拉伸2：底面孔\n\n所有需求都已满足：\n- ✓ 正六棱柱，对边距 8mm\n- ✓ 长度 20mm\n- ✓ 两端面中心各有一个 Ø3.3mm、深 6mm 的孔\n\n现在可以完成建模。\n\n",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"summary\": \"M3 六角隔离柱建模完成。零件为正六棱柱，对边距 8mm，长度 20mm。两个端面（Y=0 和 Y=20）中心各有一个 Ø3.3mm、深 6mm 的螺纹底孔。总体积约 1005.88 mm³。特征包括：1个六棱柱拉伸基体，2个通孔切除特征。\"}",
+                    "name": "finish"
+                  },
+                  "id": "call_8c709e91f6bd4ce6810e0331",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"final_state\": {\"bbox_mm\": {\"X\": [-4.619, 4.619], \"Y\": [0.0, 20.0], \"Z\": [-4.0, 4.0], \"size\": [9.238, 20.0, 8.0]}, \"volume_mm3\": 1005.88}}",
+              "role": "tool",
+              "tool_call_id": "call_8c709e91f6bd4ce6810e0331"
+            }
+          ],
+          "results": [
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "extrude",
+              "step": 1,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "hole",
+              "step": 2,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "hole",
+              "step": 3,
+              "success": true
+            }
+          ],
+          "success": true,
+          "summary": {
+            "all_ok": true,
+            "llm_calls": 6,
+            "status": "finished",
+            "succeeded": 3,
+            "token_usage": {
+              "calls": 6,
+              "completion_tokens": 1627,
+              "prompt_tokens": 28670,
+              "total_tokens": 30297
+            },
+            "tool_calls": 6,
+            "total": 3
+          },
+          "token_usage": {
+            "calls": 6,
+            "completion_tokens": 1627,
+            "prompt_tokens": 28670,
+            "total_tokens": 30297
+          },
+          "workflow": {
+            "duration_seconds": 34.55,
+            "error": null,
+            "final_state": {
+              "bbox_mm": {
+                "X": [
+                  -4.619,
+                  4.619
+                ],
+                "Y": [
+                  0.0,
+                  20.0
+                ],
+                "Z": [
+                  -4.0,
+                  4.0
+                ],
+                "size": [
+                  9.238,
+                  20.0,
+                  8.0
+                ]
+              },
+              "cylindrical_faces": [
+                {
+                  "axis": "Y",
+                  "axis_point_mm": [
+                    0.0,
+                    14.0,
+                    0.0
+                  ],
+                  "diameter_mm": 3.3,
+                  "ref": "face#8",
+                  "span_mm": [
+                    14.0,
+                    20.0
+                  ]
+                },
+                {
+                  "axis": "Y",
+                  "axis_point_mm": [
+                    0.0,
+                    6.0,
+                    0.0
+                  ],
+                  "diameter_mm": 3.3,
+                  "ref": "face#10",
+                  "span_mm": [
+                    0.0,
+                    6.0
+                  ]
+                }
+              ],
+              "features": [
+                {
+                  "name": "草图1",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "凸台-拉伸1",
+                  "type": "Extrusion"
+                },
+                {
+                  "name": "草图2",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "切除-拉伸1",
+                  "type": "ICE"
+                },
+                {
+                  "name": "草图3",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "切除-拉伸2",
+                  "type": "ICE"
+                }
+              ],
+              "parameters": {
+                "across_flats": 8.0,
+                "hole_depth": 6.0,
+                "hole_dia": 3.3,
+                "length": 20.0
+              },
+              "planar_faces": [
+                {
+                  "alias": "back",
+                  "area_mm2": 92.38,
+                  "at": "Z=-4.000",
+                  "normal": "-Z",
+                  "ref": "face#1",
+                  "u_range": [
+                    -2.309,
+                    2.309
+                  ],
+                  "uv": "u=X,v=Y",
+                  "v_range": [
+                    0.0,
+                    20.0
+                  ]
+                },
+                {
+                  "alias": "front",
+                  "area_mm2": 92.38,
+                  "at": "Z=4.000",
+                  "normal": "+Z",
+                  "ref": "face#4",
+                  "u_range": [
+                    -2.309,
+                    2.309
+                  ],
+                  "uv": "u=X,v=Y",
+                  "v_range": [
+                    0.0,
+                    20.0
+                  ]
+                },
+                {
+                  "alias": "top",
+                  "area_mm2": 46.87,
+                  "at": "Y=20.000",
+                  "normal": "+Y",
+                  "ref": "face#6",
+                  "u_range": [
+                    -4.619,
+                    4.619
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    -4.0,
+                    4.0
+                  ]
+                },
+                {
+                  "alias": "bottom",
+                  "area_mm2": 46.87,
+                  "at": "Y=0.000",
+                  "normal": "-Y",
+                  "ref": "face#7",
+                  "u_range": [
+                    -4.619,
+                    4.619
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    -4.0,
+                    4.0
+                  ]
+                },
+                {
+                  "area_mm2": 8.55,
+                  "at": "Y=14.000",
+                  "normal": "+Y",
+                  "ref": "face#9",
+                  "u_range": [
+                    -1.65,
+                    1.65
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    -1.65,
+                    1.65
+                  ]
+                },
+                {
+                  "area_mm2": 8.55,
+                  "at": "Y=6.000",
+                  "normal": "-Y",
+                  "ref": "face#11",
+                  "u_range": [
+                    -1.65,
+                    1.65
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    -1.65,
+                    1.65
+                  ]
+                }
+              ],
+              "volume_mm3": 1005.88
+            },
+            "llm_calls": 6,
+            "status": "finished",
+            "summary": "M3 六角隔离柱建模完成。零件为正六棱柱，对边距 8mm，长度 20mm。两个端面（Y=0 和 Y=20）中心各有一个 Ø3.3mm、深 6mm 的螺纹底孔。总体积约 1005.88 mm³。特征包括：1个六棱柱拉伸基体，2个通孔切除特征。",
+            "token_usage": {
+              "calls": 6,
+              "completion_tokens": 1627,
+              "prompt_tokens": 28670,
+              "total_tokens": 30297
+            },
+            "tool_calls": [
+              {
+                "args": {
+                  "values": {
+                    "across_flats": 8,
+                    "hole_depth": 6,
+                    "hole_dia": 3.3,
+                    "length": 20
+                  }
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "set_parameters"
+              },
+              {
+                "args": {
+                  "depth": "=length",
+                  "direction": "+Y",
+                  "loops": [
+                    {
+                      "across_flats": "=across_flats",
+                      "center": [
+                        0,
+                        0
+                      ],
+                      "sides": 6,
+                      "type": "regular_polygon"
+                    }
+                  ],
+                  "plane": "top_plane"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "extrude"
+              },
+              {
+                "args": {
+                  "centers": [
+                    [
+                      0,
+                      0
+                    ]
+                  ],
+                  "depth": "=hole_depth",
+                  "diameter": "=hole_dia",
+                  "plane": "top"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "hole"
+              },
+              {
+                "args": {
+                  "centers": [
+                    [
+                      0,
+                      0
+                    ]
+                  ],
+                  "depth": "=hole_depth",
+                  "diameter": "=hole_dia",
+                  "plane": "bottom"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "hole"
+              },
+              {
+                "args": {},
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "get_model_state"
+              },
+              {
+                "args": {
+                  "summary": "M3 六角隔离柱建模完成。零件为正六棱柱，对边距 8mm，长度 20mm。两个端面（Y=0 和 Y=20）中心各有一个 Ø3.3mm、深 6mm 的螺纹底孔。总体积约 1005.88 mm³。特征包括：1个六棱柱拉伸基体，2个通孔切除特征。"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "finish"
+              }
+            ]
+          }
+        },
+        "final_observation": {
+          "features": [
+            {
+              "index": 0,
+              "name": "评论",
+              "type": "CommentsFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 1,
+              "name": "收藏",
+              "type": "FavoriteFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 2,
+              "name": "历史记录",
+              "type": "HistoryFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 3,
+              "name": "选择集",
+              "type": "SelectionSetFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 4,
+              "name": "传感器",
+              "type": "SensorFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 5,
+              "name": "设计活页夹",
+              "type": "DocsFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 6,
+              "name": "注解",
+              "type": "DetailCabinet",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 7,
+              "name": "曲面实体",
+              "type": "SurfaceBodyFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 8,
+              "name": "实体",
+              "type": "SolidBodyFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 9,
+              "name": "光源与相机",
+              "type": "EnvFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 10,
+              "name": "标注",
+              "type": "InkMarkupFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 11,
+              "name": "方程式",
+              "type": "EqnFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 12,
+              "name": "材质 <未指定>",
+              "type": "MaterialFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 13,
+              "name": "前视基准面",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 14,
+              "name": "上视基准面",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 15,
+              "name": "右视基准面",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 16,
+              "name": "原点",
+              "type": "OriginProfileFeature",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 17,
+              "name": "草图1",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 18,
+              "name": "凸台-拉伸1",
+              "type": "Extrusion",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@凸台-拉伸1@零件156.Part",
+                  "value": 0.02
+                }
+              ]
+            },
+            {
+              "index": 19,
+              "name": "草图2",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 20,
+              "name": "切除-拉伸1",
+              "type": "ICE",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@切除-拉伸1@零件156.Part",
+                  "value": 0.006
+                }
+              ]
+            },
+            {
+              "index": 21,
+              "name": "草图3",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 22,
+              "name": "切除-拉伸2",
+              "type": "ICE",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@切除-拉伸2@零件156.Part",
+                  "value": 0.006
+                }
+              ]
+            }
+          ],
+          "faces": [
+            {
+              "index": 0,
+              "faceKey": "+X",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0.0034641016151377543,
+                "y": 0.01,
+                "z": -0.0019999999999999996
+              },
+              "normal": {
+                "x": 0.8660254037844387,
+                "y": 0,
+                "z": -0.49999999999999994
+              },
+              "area": 9.237604307034011e-05,
+              "geometricSignature": "plane:0.003464:0.010000:-0.002000:0.000092376"
+            },
+            {
+              "index": 1,
+              "faceKey": "-Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": -1.3010426069826053e-18,
+                "y": 0.01,
+                "z": -0.003999999999999999
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": -1
+              },
+              "area": 9.237604307034018e-05,
+              "geometricSignature": "plane:0.000000:0.010000:-0.004000:0.000092376"
+            },
+            {
+              "index": 2,
+              "faceKey": "-X",
+              "surfaceType": "plane",
+              "center": {
+                "x": -0.0034641016151377556,
+                "y": 0.01,
+                "z": -0.001999999999999999
+              },
+              "normal": {
+                "x": -0.866025403784439,
+                "y": 0,
+                "z": -0.4999999999999995
+              },
+              "area": 9.237604307034011e-05,
+              "geometricSignature": "plane:-0.003464:0.010000:-0.002000:0.000092376"
+            },
+            {
+              "index": 3,
+              "faceKey": "-X",
+              "surfaceType": "plane",
+              "center": {
+                "x": -0.003464101615137754,
+                "y": 0.01,
+                "z": 0.0020000000000000005
+              },
+              "normal": {
+                "x": -0.8660254037844386,
+                "y": 0,
+                "z": 0.5000000000000002
+              },
+              "area": 9.237604307034013e-05,
+              "geometricSignature": "plane:-0.003464:0.010000:0.002000:0.000092376"
+            },
+            {
+              "index": 4,
+              "faceKey": "+Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": 6.505213034913027e-19,
+                "y": 0.01,
+                "z": 0.004
+              },
+              "normal": {
+                "x": 1.8778932484214498e-16,
+                "y": 0,
+                "z": 1
+              },
+              "area": 9.23760430703401e-05,
+              "geometricSignature": "plane:0.000000:0.010000:0.004000:0.000092376"
+            },
+            {
+              "index": 5,
+              "faceKey": "+X",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0.0034641016151377543,
+                "y": 0.01,
+                "z": 0.0019999999999999996
+              },
+              "normal": {
+                "x": 0.8660254037844387,
+                "y": 0,
+                "z": 0.49999999999999994
+              },
+              "area": 9.237604307034011e-05,
+              "geometricSignature": "plane:0.003464:0.010000:0.002000:0.000092376"
+            },
+            {
+              "index": 6,
+              "faceKey": "+Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.02,
+                "z": 4.336808689942018e-19
+              },
+              "normal": {
+                "x": 0,
+                "y": 1,
+                "z": 0
+              },
+              "area": 4.6872639842805856e-05,
+              "geometricSignature": "plane:0.000000:0.020000:0.000000:0.000046873"
+            },
+            {
+              "index": 7,
+              "faceKey": "-Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0,
+                "z": 4.336808689942018e-19
+              },
+              "normal": {
+                "x": 0,
+                "y": -1,
+                "z": 0
+              },
+              "area": 4.6872639842805856e-05,
+              "geometricSignature": "plane:0.000000:0.000000:0.000000:0.000046873"
+            },
+            {
+              "index": 8,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0,
+                "y": 0.017,
+                "z": 0
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 6.220353454107792e-05,
+              "geometricSignature": "cylinder:0.000000:0.017000:0.000000:0.000062204"
+            },
+            {
+              "index": 9,
+              "faceKey": "+Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.014,
+                "z": 0
+              },
+              "normal": {
+                "x": 0,
+                "y": 1,
+                "z": 0
+              },
+              "area": 8.552985999398215e-06,
+              "geometricSignature": "plane:0.000000:0.014000:0.000000:0.000008553"
+            },
+            {
+              "index": 10,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0,
+                "y": 0.003,
+                "z": 0
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 6.220353454107792e-05,
+              "geometricSignature": "cylinder:0.000000:0.003000:0.000000:0.000062204"
+            },
+            {
+              "index": 11,
+              "faceKey": "-Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.006,
+                "z": 0
+              },
+              "normal": {
+                "x": 0,
+                "y": -1,
+                "z": 0
+              },
+              "area": 8.552985999398215e-06,
+              "geometricSignature": "plane:0.000000:0.006000:0.000000:0.000008553"
+            }
+          ],
+          "sketches": [
+            {
+              "name": "草图1",
+              "faceKey": "PLANE:1",
+              "circleCount": 0,
+              "circles": []
+            },
+            {
+              "name": "草图2",
+              "faceKey": "+Y",
+              "circleCount": 1,
+              "circles": [
+                {
+                  "cx": 0,
+                  "cy": 0.02,
+                  "cz": 0,
+                  "radius": 0.00165
+                }
+              ]
+            },
+            {
+              "name": "草图3",
+              "faceKey": "-Y",
+              "circleCount": 1,
+              "circles": [
+                {
+                  "cx": 0,
+                  "cy": 0,
+                  "cz": 0,
+                  "radius": 0.00165
+                }
+              ]
+            }
+          ],
+          "feature_sketch_links": [
+            {
+              "featureName": "凸台-拉伸1",
+              "featureType": "Extrusion",
+              "sketchName": "草图1",
+              "faceKey": "PLANE:1",
+              "operationKind": "extrusion",
+              "depth": 0.02
+            },
+            {
+              "featureName": "切除-拉伸1",
+              "featureType": "ICE",
+              "sketchName": "草图2",
+              "faceKey": "+Y",
+              "operationKind": "cut",
+              "depth": 0.006
+            },
+            {
+              "featureName": "切除-拉伸2",
+              "featureType": "ICE",
+              "sketchName": "草图3",
+              "faceKey": "-Y",
+              "operationKind": "cut",
+              "depth": 0.006
+            }
+          ],
+          "bounding_box_mm": {
+            "minX": -4.618802,
+            "minY": 0.0,
+            "minZ": -4.0,
+            "maxX": 4.618802,
+            "maxY": 20.0,
+            "maxZ": 4.0,
+            "sizeX": 9.237604,
+            "sizeY": 20.0,
+            "sizeZ": 8.0
+          },
+          "volume_mm3": 1005.876685,
+          "document_type": "part",
+          "assembly_path": "",
+          "components": [],
+          "mates": [],
+          "interference_summary": null,
+          "last_execution": [],
+          "errors": {},
+          "state_fingerprint": "e6da72104671f0eebc213fafc4abd073707ce916f42ce83360f490b9a489c5f0"
+        },
+        "sketch_stats": [
+          {
+            "featureIndex": 17,
+            "name": "草图1",
+            "type": "ProfileFeature",
+            "lines": 6,
+            "arcs": 0,
+            "circles": 0,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": true,
+            "consumers": [
+              {
+                "name": "凸台-拉伸1",
+                "type": "Extrusion"
+              }
+            ]
+          },
+          {
+            "featureIndex": 19,
+            "name": "草图2",
+            "type": "ProfileFeature",
+            "lines": 0,
+            "arcs": 0,
+            "circles": 1,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": [
+              {
+                "name": "切除-拉伸1",
+                "type": "ICE"
+              }
+            ]
+          },
+          {
+            "featureIndex": 21,
+            "name": "草图3",
+            "type": "ProfileFeature",
+            "lines": 0,
+            "arcs": 0,
+            "circles": 1,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": [
+              {
+                "name": "切除-拉伸2",
+                "type": "ICE"
+              }
+            ]
+          }
+        ]
+      },
+      "repeat": 0
+    }
+  ]
+}
