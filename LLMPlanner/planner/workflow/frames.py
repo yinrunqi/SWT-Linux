@@ -9,7 +9,7 @@ LLM 在任何草图平面上都用 (u, v) 毫米坐标画轮廓，(u, v) 固定�
 这样同一个点在任何平面上的写法都和模型坐标一致，不需要知道 SolidWorks
 草图坐标在各基准面上的翻转规则。换算规则（在真机上实测）：
 基准面草图直接使用草图坐标，上视面 sketch = (X, -Z)，右视面 sketch = (-Z, Y)；
-实体面草图接受模型三维坐标，由 C# 端经 ModelToSketchTransform 换算。
+实体面和用户新建基准面上的草图接受模型三维坐标，由 C# 端经 ModelToSketchTransform 换算。
 """
 
 from __future__ import annotations
@@ -46,6 +46,7 @@ class SketchFrame:
     plane_index: int | None = None
     face_index: int | None = None
     face_box_mm: dict | None = None
+    ref_plane_name: str | None = None
 
     @property
     def u_axis(self) -> str:
@@ -58,6 +59,19 @@ class SketchFrame:
     @property
     def is_base_plane(self) -> bool:
         return self.plane_index is not None
+
+    @property
+    def is_face(self) -> bool:
+        return self.face_index is not None
+
+    @property
+    def sw_reference(self) -> str:
+        """C# SelectReference 的引用写法。"""
+        if self.is_base_plane:
+            return f"plane:{self.plane_index}"
+        if self.ref_plane_name is not None:
+            return f"refplane:{self.ref_plane_name}"
+        return f"face:{self.face_index}"
 
     def describe(self) -> str:
         side = "+" if self.normal_sign > 0 else "-"
@@ -100,6 +114,11 @@ def base_plane_frame(name: str) -> SketchFrame | None:
         return None
     index, axis = BASE_PLANES[key]
     return SketchFrame(label=key, axis=axis, normal_sign=1, offset_mm=0.0, plane_index=index)
+
+
+def ref_plane_frame(name: str, axis: str, normal_sign: int, offset_mm: float) -> SketchFrame:
+    """用户新建的轴对齐基准面：草图按模型坐标传入，由 C# 端经 ModelToSketchTransform 换算。"""
+    return SketchFrame(label=name, axis=axis, normal_sign=normal_sign, offset_mm=offset_mm, ref_plane_name=name)
 
 
 def face_frame(face: dict, label: str) -> SketchFrame:

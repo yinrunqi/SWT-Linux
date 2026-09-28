@@ -203,6 +203,22 @@ namespace Chapter1.ConnectToSw
                     RequirePost(method, resp, () => HandleExportStep(req, resp));
                     break;
 
+                case "/api/sketch/profile":
+                    RequirePost(method, resp, () => HandleSketchProfile(req, resp));
+                    break;
+
+                case "/api/ref-plane/offset":
+                    RequirePost(method, resp, () => HandleCreateOffsetPlane(req, resp));
+                    break;
+
+                case "/api/select-ref-plane-and-sketch":
+                    RequirePost(method, resp, () => HandleSelectRefPlaneAndSketch(req, resp));
+                    break;
+
+                case "/api/feature/mirror":
+                    RequirePost(method, resp, () => HandleMirror(req, resp));
+                    break;
+
                 case "/api/select-plane":
                     RequirePost(method, resp, () => HandleSelectPlane(req, resp));
                     break;
@@ -1662,6 +1678,94 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"删除特征失败: {ex.Message}" });
+            }
+        }
+
+        private static List<Dictionary<string, object>> GetObjectList(Dictionary<string, object> body, string key)
+        {
+            if (!body.ContainsKey(key))
+                throw new KeyNotFoundException($"缺少必填字段: {key}");
+            var raw = body[key] as System.Collections.IEnumerable;
+            if (raw == null || body[key] is string)
+                throw new ArgumentException($"{key} 必须是数组");
+            var items = new List<Dictionary<string, object>>();
+            foreach (object item in raw)
+            {
+                var entry = item as Dictionary<string, object>;
+                if (entry == null)
+                    throw new ArgumentException($"{key} 中每项必须是对象");
+                items.Add(entry);
+            }
+            return items;
+        }
+
+        private static void HandleSketchProfile(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.SketchProfile(
+                    GetObjectList(body, "segments"), GetBoolOrDefault(body, "closed", true));
+                result["success"] = true;
+                result["message"] = $"绘制轮廓 {result["segmentCount"]} 段";
+                SendJson(resp, 200, result);
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 400, new { success = false, message = $"绘制轮廓失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleCreateOffsetPlane(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.CreateOffsetPlane(
+                    GetString(body, "reference"), GetDouble(body, "distance"), GetBoolOrDefault(body, "flip", false));
+                SendJson(resp, 200, new { success = true, message = $"已创建基准面 {result["featureName"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"创建基准面失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSelectRefPlaneAndSketch(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.SelectRefPlaneAndStartSketch(GetString(body, "planeName"));
+                result["success"] = true;
+                result["message"] = $"已在基准面上开草图 {result["sketchName"]}";
+                SendJson(resp, 200, result);
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"在基准面上开草图失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleMirror(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var names = new List<string>();
+                if (body.ContainsKey("features") && body["features"] is System.Collections.IEnumerable raw
+                    && !(body["features"] is string))
+                {
+                    foreach (object item in raw)
+                        names.Add(Convert.ToString(item));
+                }
+                var result = _commands.MirrorFeatures(
+                    names, GetString(body, "plane"), GetBoolOrDefault(body, "mirrorBody", false));
+                SendJson(resp, 200, new { success = true, message = $"已镜像 {result["featureName"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"镜像失败: {ex.Message}" });
             }
         }
 

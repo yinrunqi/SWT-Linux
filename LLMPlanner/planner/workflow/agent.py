@@ -25,6 +25,9 @@ SYSTEM_PROMPT = """你是一名资深机械设计工程师，正在 SolidWorks �
 - 在已有实体上加特征时，用语义面引用（top/bottom/left/right/front/back、face(+X, innermost) 等）或 get_model_state 返回的 face#index，不要猜测。
 - cut 默认朝实体内部切；hole 可以一次打多个同径孔；重复特征优先用 circular_pattern / linear_pattern。
 - revolve 的轮廓是截面的一半，必须整体位于轴线一侧，可以贴着轴线。
+- 带圆角的外形（耳片、圆角板、腰形孔、扇形窗口、带圆弧的截面）直接在轮廓里表达：rect/polygon 的 corner_radius、slot、annular_sector 或 path 的圆弧段，而不是先画尖角再补 fillet。
+- 需要在没有现成平面的位置画草图时（悬空的凸台、离开实体表面一段距离的特征），先用 ref_plane 从已有平面偏移出基准面，再把它的名称作为 plane。
+- 对称的特征建好一侧后用 mirror 镜像；整个零件左右对称时也可以先建一半再 mirror(body=true)。
 - fillet/chamfer 一般放在最后，edges 不确定时先用 get_model_state 查看几何。
 
 ## 工作方式

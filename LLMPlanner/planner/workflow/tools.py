@@ -17,7 +17,7 @@ import requests
 from ..executor import SwExecutor
 from ..schemas import OperationType, SwOperation
 from .errors import WorkflowError
-from .frames import BASE_PLANES, SketchFrame, base_plane_frame, face_frame
+from .frames import BASE_PLANES, SketchFrame, base_plane_frame, face_frame, ref_plane_frame
 from .params import ParamTable
 from .profiles import centerline_operation, draw_operations, normalize_loops
 from .refs import RefRegistry, resolve_ref
@@ -32,17 +32,25 @@ _LOOP_SCHEMA = {
     "type": "object",
     "description": (
         "一个闭合轮廓，坐标为所在平面的 (u, v)，单位 mm。"
-        "circle: {center:[u,v], diameter}；rect: {center:[u,v], size:[du,dv]}；"
-        "regular_polygon: {center:[u,v], sides, across_flats 或 circumradius, angle_deg}；"
-        "slot: {start:[u,v], end:[u,v], width}；polygon: {points:[[u,v],...]}"
+        "circle: {center:[u,v], diameter}；rect: {center:[u,v], size:[du,dv], corner_radius?}；"
+        "regular_polygon: {center:[u,v], sides, across_flats 或 circumradius, angle_deg, corner_radius?}；"
+        "slot: {start:[u,v], end:[u,v], width}（两端真圆弧）；"
+        "polygon: {points:[[u,v],...], corner_radius? 或逐顶点 corner_radii?}；"
+        "annular_sector: {center:[u,v], r_inner, r_outer, start_deg, end_deg}（扇环，逆时针，r_inner=0 为扇形）；"
+        "path: {start:[u,v], segments:[...]}，每段 {to:[u,v]} 为直线，另加 center:[u,v]（可带 ccw）、"
+        "radius+ccw(+large)、through:[u,v] 或 tangent:true 之一为圆弧；末点不回到起点时自动补直线。"
     ),
     "properties": {
-        "type": {"type": "string", "enum": ["circle", "rect", "regular_polygon", "slot", "polygon"]},
+        "type": {
+            "type": "string",
+            "enum": ["circle", "rect", "regular_polygon", "slot", "polygon", "annular_sector", "path"],
+        },
     },
     "required": ["type"],
 }
 _PLANE_DESC = (
     "草图平面：基准面 front_plane(XY, 法向+Z) / top_plane(XZ, 法向+Y) / right_plane(YZ, 法向+X)，"
+    "ref_plane 新建的基准面名称，"
     "或实体平面引用：top/bottom/front/back/left/right（该侧最外侧的平面）、"
     "face(+Y, outermost|innermost|largest|smallest)、face#<index>（来自 get_model_state）。"
     "(u,v) 规则：法向沿 Z → u=X,v=Y；法向沿 Y → u=X,v=Z；法向沿 X → u=Z,v=Y。"
@@ -164,6 +172,27 @@ TOOL_SPECS: list[dict] = [
         ["count1", "spacing1", "direction1"],
     ),
     _tool(
+        "ref_plane",
+        "新建与参考平面平行的基准面，用于在没有现成平面的位置画草图（如悬空的侧凸台、中间层的筋、镜像面）。"
+        "offset 沿参考平面的法向（基准面为 +轴向，实体面为外法向），可为负。返回的 name 可作为其它工具的 plane。",
+        {
+            "reference": {"type": "string", "description": "参考平面：基准面名、已建基准面名或实体平面引用"},
+            "offset": _NUM,
+        },
+        ["reference", "offset"],
+    ),
+    _tool(
+        "mirror",
+        "关于一个平面镜像。features 给出要镜像的特征名（来自 get_model_state 的 features）；"
+        "或 body=true 镜像整个实体并合并（先做一半、再镜像成对称零件）。",
+        {
+            "plane": {"type": "string", "description": "镜像平面：基准面名、已建基准面名或实体平面引用"},
+            "features": {"type": "array", "items": {"type": "string"}},
+            "body": {"type": "boolean"},
+        },
+        ["plane"],
+    ),
+    _tool(
         "delete_feature",
         "删除一个特征（连同它吸收的草图）。用于撤销做错的一步；后续特征若依赖它也会被删除。",
         {"name": {"type": "string"}},
@@ -208,6 +237,7 @@ class WorkflowSession:
         self.params = ParamTable()
         self.registry = RefRegistry()
         self.baseline_features: set[str] = set()
+        self.ref_planes: dict[str, SketchFrame] = {}
         self.has_part = False
         self.log: list[dict] = []
         self._handlers: dict[str, Callable[[dict], dict]] = {
@@ -221,6 +251,8 @@ class WorkflowSession:
             "chamfer": self.chamfer,
             "circular_pattern": self.circular_pattern,
             "linear_pattern": self.linear_pattern,
+            "ref_plane": self.ref_plane,
+            "mirror": self.mirror,
             "delete_feature": self.delete_feature,
         }
 
@@ -254,14 +286,30 @@ class WorkflowSession:
         return data
 
     def _run(self, operations: list[dict]) -> tuple[bool, list[dict]]:
-        steps = [
-            SwOperation(operation=OperationType(item["operation"]), params=item.get("params") or {},
-                        description=item.get("description", ""))
-            for item in operations
-        ]
-        results = self.executor.execute_operations(steps)
-        ok = len(results) == len(steps) and all(item.get("success") for item in results)
-        return ok, results
+        """依次执行；带 route 的操作直接调用 workflow 专用接口（不属于 L0 的原子操作集）。"""
+        results: list[dict] = []
+        for item in operations:
+            if "route" in item:
+                data = self._request("POST", item["route"], item.get("params") or {})
+                result = {
+                    "operation": item["operation"],
+                    "success": bool(data.get("success")),
+                    "message": data.get("message"),
+                    "result": data.get("result", data),
+                }
+            else:
+                step = SwOperation(
+                    operation=OperationType(item["operation"]), params=item.get("params") or {},
+                    description=item.get("description", ""),
+                )
+                executed = self.executor.execute_operations([step])
+                result = executed[0] if executed else {
+                    "operation": item["operation"], "success": False, "message": "执行器没有返回结果",
+                }
+            results.append(result)
+            if not result.get("success"):
+                return False, results
+        return True, results
 
     # ------------------------------------------------------------ 状态
 
@@ -341,6 +389,15 @@ class WorkflowSession:
             "volume_mm3": _round(self._volume(snapshot), 2),
             "planar_faces": planar,
             "cylindrical_faces": cylinders,
+            "reference_planes": [
+                {
+                    "name": name,
+                    "normal": f"{'+' if frame.normal_sign > 0 else '-'}{frame.axis}",
+                    "at": f"{frame.axis}={frame.offset_mm:.3f}",
+                    "uv": f"u={frame.u_axis},v={frame.v_axis}",
+                }
+                for name, frame in self.ref_planes.items()
+            ],
             "parameters": {name: _round(value, 6) for name, value in self.params.resolve().items()},
         }
 
@@ -414,6 +471,8 @@ class WorkflowSession:
         frame = base_plane_frame(plane)
         if frame is not None:
             return frame
+        if str(plane).strip() in self.ref_planes:
+            return self.ref_planes[str(plane).strip()]
         resolved = resolve_ref(str(plane), snapshot.get("faces") or [], self.registry)
         return face_frame(resolved.face, f"{plane}(face#{resolved.face_index})")
 
@@ -421,6 +480,11 @@ class WorkflowSession:
     def _open_sketch(frame: SketchFrame) -> dict:
         if frame.is_base_plane:
             return {"operation": "select_plane", "params": {"index": frame.plane_index}}
+        if frame.ref_plane_name is not None:
+            return {
+                "operation": "select_ref_plane_and_sketch", "route": "/api/select-ref-plane-and-sketch",
+                "params": {"planeName": frame.ref_plane_name},
+            }
         return {"operation": "select_observed_face_and_sketch", "params": {"faceIndex": frame.face_index}}
 
     def _profile(self, args: dict, frame: SketchFrame, *, removing: bool) -> tuple[list[dict], dict, list[str]]:
@@ -542,7 +606,7 @@ class WorkflowSession:
             if axis != frame.axis:
                 raise WorkflowError("TOOL_ARGS", f"方向 {direction} 不沿平面法向轴 {frame.axis}")
             return "one", sign
-        if not frame.is_base_plane:
+        if frame.is_face:
             return "one", -frame.normal_sign
         bbox = self._bbox(snapshot)
         if bbox is None:
@@ -738,6 +802,68 @@ class WorkflowSession:
         operation = {"operation": "feature_linear_pattern", "params": params}
         return self._transaction([operation], expect="change", before=before, context={})
 
+    def ref_plane(self, args: dict) -> dict:
+        before = self.snapshot()
+        base = self._frame(args.get("reference"), before)
+        offset = self._num(args, "offset", required=True)
+        target = base.offset_mm + base.normal_sign * offset
+        index = AXES.index(base.axis)
+        attempts = []
+        # SolidWorks 的偏移方向取决于参考的朝向，按实际位置校验，不对就翻转重建。
+        for flip in (offset < 0, offset >= 0):
+            data = self._request("POST", "/api/ref-plane/offset", {
+                "reference": base.sw_reference, "distance": abs(offset) / 1000, "flip": flip,
+            })
+            if not data.get("success"):
+                raise WorkflowError("FEATURE_FAILED", str(data.get("message") or "创建基准面失败"))
+            created = data.get("result") or {}
+            name = str(created.get("featureName") or "")
+            position = float((created.get("origin") or [0, 0, 0])[index]) * 1000
+            attempts.append({"flip": flip, "at": _round(position)})
+            if abs(position - target) <= 1e-3:
+                sign = self._plane_normal_sign(created.get("rotation"), index, base.normal_sign)
+                frame = ref_plane_frame(name, base.axis, sign, target)
+                self.ref_planes[name] = frame
+                return {"name": name, "plane": frame.describe(), "from": base.label}
+            self._request("POST", "/api/delete-feature", {"featureName": name})
+        raise WorkflowError(
+            "FEATURE_FAILED", f"基准面位置与预期 {base.axis}={target:g}mm 不符", attempts=attempts,
+        )
+
+    @staticmethod
+    def _plane_normal_sign(rotation: Any, index: int, default: int) -> int:
+        """IRefPlane.Transform 的第三行是平面法向。"""
+        try:
+            value = float(rotation[6 + index])
+        except (TypeError, IndexError, ValueError):
+            return default
+        return default if abs(value) < 0.5 else (1 if value > 0 else -1)
+
+    def mirror(self, args: dict) -> dict:
+        before = self.snapshot()
+        if self._volume(before) <= 0:
+            raise WorkflowError("NO_BODY", "零件中还没有实体，无法镜像")
+        frame = self._frame(args.get("plane"), before)
+        body = bool(args.get("body", False))
+        names = [str(name) for name in args.get("features") or []]
+        if not body:
+            existing = {feature["name"] for feature in self._user_features(before)}
+            if not names:
+                raise WorkflowError("TOOL_ARGS", "给出 features（要镜像的特征名）或 body=true")
+            missing = [name for name in names if name not in existing]
+            if missing:
+                raise WorkflowError(
+                    "TOOL_ARGS", f"找不到特征 {missing}", hint=f"可用特征: {sorted(existing)}",
+                )
+        operation = {
+            "operation": "feature_mirror", "route": "/api/feature/mirror",
+            "params": {"plane": frame.sw_reference, "features": names, "mirrorBody": body},
+        }
+        return self._transaction(
+            [operation], expect="increase" if body else "change", before=before,
+            context={"plane": frame.describe(), "mirrored": "body" if body else names},
+        )
+
     def delete_feature(self, args: dict) -> dict:
         name = str(args.get("name") or "").strip()
         if not name:
@@ -749,6 +875,8 @@ class WorkflowSession:
         if not data.get("success"):
             raise WorkflowError("FEATURE_FAILED", str(data.get("message")))
         after = self.snapshot()
+        remaining = {feature.get("name") for feature in after.get("features", [])}
+        self.ref_planes = {key: frame for key, frame in self.ref_planes.items() if key in remaining}
         return {
             "deleted": name,
             "volume_mm3": _round(self._volume(after), 2),

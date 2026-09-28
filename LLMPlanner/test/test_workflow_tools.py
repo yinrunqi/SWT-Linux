@@ -207,6 +207,119 @@ def test_successful_hole_uses_selected_face_and_inward_cut():
     assert operations[1]["params"]["circles"][0] == pytest.approx({"cx": 0.02, "cy": 0.01, "cz": 0.015, "radius": 0.005})
 
 
+def _area(loop: dict) -> float:
+    from planner.workflow.sketch_check import to_geometry
+    return to_geometry(loop).area
+
+
+def test_rounded_rect_slot_and_sector_areas_match_closed_form():
+    rounded = normalize_loop({"type": "rect", "center": [0, 0], "size": [40, 20], "corner_radius": 5})
+    assert rounded["type"] == "path"
+    assert [s["kind"] for s in rounded["segments"]].count("arc") == 4
+    assert _area(rounded) == pytest.approx(40 * 20 - (4 - math.pi) * 25, rel=2e-3)
+    slot = normalize_loop({"type": "slot", "start": [0, 0], "end": [30, 0], "width": 10})
+    assert _area(slot) == pytest.approx(30 * 10 + math.pi * 25, rel=2e-3)
+    sector = normalize_loop({
+        "type": "annular_sector", "center": [0, 0], "r_inner": 20, "r_outer": 50, "start_deg": 30, "end_deg": 90,
+    })
+    assert _area(sector) == pytest.approx(math.pi * (50 ** 2 - 20 ** 2) / 6, rel=2e-3)
+
+
+def test_path_arcs_by_center_radius_through_and_tangent():
+    half_disk = normalize_loop({"type": "path", "start": [-10, 0], "segments": [
+        {"to": [10, 0]}, {"to": [-10, 0], "center": [0, 0], "ccw": True},
+    ]})
+    assert _area(half_disk) == pytest.approx(math.pi * 50, rel=2e-3)
+    by_radius = normalize_loop({"type": "path", "start": [-10, 0], "segments": [
+        {"to": [10, 0]}, {"to": [-10, 0], "radius": 10, "ccw": True},
+    ]})
+    assert _area(by_radius) == pytest.approx(math.pi * 50, rel=2e-3)
+    through = normalize_loop({"type": "path", "start": [-10, 0], "segments": [
+        {"to": [10, 0]}, {"to": [-10, 0], "through": [0, 10]},
+    ]})
+    assert _area(through) == pytest.approx(math.pi * 50, rel=2e-3)
+    # 直线沿 +u 到 (20,0)，再相切圆弧转回 (20,20)：半圆凸向 +u，自动补直线闭合
+    tangent = normalize_loop({"type": "path", "start": [0, 0], "segments": [
+        {"to": [20, 0]}, {"to": [20, 20], "tangent": True}, {"to": [0, 20]},
+    ]})
+    assert _area(tangent) == pytest.approx(20 * 20 + math.pi * 50, rel=2e-3)
+
+
+def test_corner_radius_that_does_not_fit_is_rejected():
+    with pytest.raises(WorkflowError) as err:
+        normalize_loop({"type": "rect", "center": [0, 0], "size": [10, 10], "corner_radius": 6})
+    assert err.value.code == "SKETCH_DEGENERATE"
+
+
+def test_path_is_drawn_as_one_profile_with_three_point_arcs():
+    frame = base_plane_frame("top_plane")
+    loop = normalize_loop({"type": "slot", "start": [0, 0], "end": [30, 0], "width": 10})
+    (operation,) = draw_operations(frame, [loop])
+    assert operation["operation"] == "sketch_profile" and operation["route"] == "/api/sketch/profile"
+    segments = operation["params"]["segments"]
+    assert [s["type"] for s in segments] == ["line", "arc", "line", "arc"]
+    arc = segments[1]
+    # 上视面 sketch = (X, -Z)：右端半圆的中点在 u=35, v=0
+    assert (arc["xm"], arc["ym"]) == pytest.approx((0.035, 0.0))
+    assert (arc["x1"], arc["y1"]) == pytest.approx((0.03, 0.005))
+
+
+class PlaneSession(FakeSession):
+    """在 FakeSession 上模拟 /api/ref-plane/offset：首次总放在参考的反侧，验证翻转重建。"""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.requests = []
+
+    def _request(self, method, path, body=None):
+        self.requests.append((path, body))
+        if path == "/api/ref-plane/offset":
+            name = f"基准面{len(self.features) + 1}"
+            self.features.append(name)
+            flip = body["flip"]
+            position = (10 + body["distance"] * 1000) if flip else (10 - body["distance"] * 1000)
+            return {"success": True, "result": {
+                "featureName": name, "origin": [0, position / 1000, 0], "rotation": [1, 0, 0, 0, 0, -1, 0, 1, 0],
+            }}
+        if path == "/api/delete-feature":
+            self.features.remove(body["featureName"])
+            return {"success": True}
+        raise AssertionError(path)
+
+
+def test_ref_plane_checks_position_and_is_usable_as_sketch_plane():
+    session = PlaneSession(delta=100)
+    result = session.call("ref_plane", {"reference": "top", "offset": 15})
+    assert result["ok"] is True
+    name = result["name"]
+    assert [body["flip"] for path, body in session.requests if path == "/api/ref-plane/offset"] == [False, True]
+    assert session.features == [name]
+    frame = session.ref_planes[name]
+    assert (frame.axis, frame.normal_sign, frame.offset_mm) == ("Y", 1, pytest.approx(25.0))
+    assert session.state_summary()["reference_planes"][0]["at"] == "Y=25.000"
+    extruded = session.call("extrude", {
+        "plane": name, "loops": [{"type": "circle", "center": [5, 0], "diameter": 8}], "depth": 5, "direction": "-Y",
+    })
+    assert extruded["ok"] is True
+    operations = session.ran[0]
+    assert operations[0]["route"] == "/api/select-ref-plane-and-sketch"
+    assert operations[1]["params"]["circles"][0] == pytest.approx({"cx": 0.005, "cy": 0.025, "cz": 0.0, "radius": 0.004})
+    assert operations[-1]["params"]["flipDirection"] is True
+    assert session._cut_direction(frame, None, session.snapshot()) == ("one", -1)
+
+
+def test_mirror_validates_features_and_uses_plane_reference():
+    session = FakeSession(delta=500)
+    session.features = ["凸台-拉伸1"]
+    missing = session.call("mirror", {"plane": "right_plane", "features": ["不存在"]})
+    assert missing["error"]["code"] == "TOOL_ARGS"
+    result = session.call("mirror", {"plane": "right_plane", "features": ["凸台-拉伸1"]})
+    assert result["ok"] is True
+    (operation,) = session.ran[0]
+    assert operation["route"] == "/api/feature/mirror"
+    assert operation["params"] == {"plane": "plane:2", "features": ["凸台-拉伸1"], "mirrorBody": False}
+
+
 def test_parameters_drive_tool_arguments():
     session = FakeSession(delta=100)
     assert session.call("set_parameters", {"values": {"W": 40, "wall": "=W/10"}})["ok"]

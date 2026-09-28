@@ -10,6 +10,7 @@ SolidWorks 对这类草图往往只返回“特征失败”，LLM 很难据此�
     {"type": "polyline", "points": [[x, y], ...], "closed": false}
     {"type": "regular_polygon", "cx": .., "cy": .., "r": .., "sides": 6}  # r 为外接圆半径
     {"type": "slot", "x1": .., "y1": .., "x2": .., "y2": .., "width": ..}
+    {"type": "path", "segments": [...]}                    # 直线 + 圆弧，见 curves.py
 """
 
 from __future__ import annotations
@@ -20,6 +21,7 @@ from dataclasses import dataclass, field
 from shapely.geometry import LineString, Point, Polygon
 from shapely.validation import explain_validity
 
+from .curves import discretize
 from .errors import ERROR_CODES
 
 MIN_AREA_MM2 = 1e-6
@@ -99,6 +101,9 @@ def to_geometry(loop: dict):
             return None
         line = LineString([(float(loop["x1"]), float(loop["y1"])), (float(loop["x2"]), float(loop["y2"]))])
         return line.buffer(width / 2, quad_segs=CIRCLE_RESOLUTION // 4)
+    if kind == "path":
+        points = discretize(loop["segments"])
+        return Polygon(points) if len(points) >= 3 else None
     if kind in ("polygon", "polyline"):
         points = _points(loop.get("points"))
         closed = kind == "polygon" or bool(loop.get("closed", False))

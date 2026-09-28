@@ -2,11 +2,15 @@
 
 LLM 侧轮廓（单位 mm，坐标为所在平面的 (u, v)）：
     {"type": "circle", "center": [u, v], "diameter": d}        # 或 "radius"
-    {"type": "rect", "center": [u, v], "size": [du, dv]}        # 或 "corner1"/"corner2"
+    {"type": "rect", "center": [u, v], "size": [du, dv]}        # 或 "corner1"/"corner2"；可加 "corner_radius"
     {"type": "regular_polygon", "center": [u, v], "sides": 6,
-     "circumradius": r | "across_flats": s, "angle_deg": 0}     # angle_deg 为第一个顶点相对 +u 的角度
+     "circumradius": r | "across_flats": s, "angle_deg": 0}     # angle_deg 为第一个顶点相对 +u 的角度；可加 "corner_radius"
     {"type": "slot", "start": [u, v], "end": [u, v], "width": w} # 两端为半圆
-    {"type": "polygon", "points": [[u, v], ...]}                # 自动闭合
+    {"type": "polygon", "points": [[u, v], ...]}                # 自动闭合；可加 "corner_radius" 或逐点 "corner_radii"
+    {"type": "annular_sector", "center": [u, v], "r_inner": a, "r_outer": b,
+     "start_deg": s, "end_deg": e}                              # 扇环，r_inner=0 为扇形
+    {"type": "path", "start": [u, v], "segments": [{"to": [u, v]}, {"to": [u, v], "center": [u, v]}, ...]}
+                                                                # 直线与圆弧组成的任意闭合轮廓，见 curves.path
 """
 
 from __future__ import annotations
@@ -16,11 +20,12 @@ from typing import Sequence
 
 from shapely.geometry import Polygon
 
+from . import curves
 from .errors import WorkflowError
 from .frames import SketchFrame
 from .sketch_check import to_geometry
 
-SLOT_ARC_SEGMENTS = 8
+PROFILE_ROUTE = "/api/sketch/profile"
 
 
 def _pair(value, name: str, index: int) -> tuple[float, float]:
@@ -37,6 +42,29 @@ def _positive(loop: dict, key: str, index: int) -> float:
     if value <= 0:
         raise WorkflowError("TOOL_ARGS", f"轮廓 {index} 的 {key} 必须为正", loop=index)
     return value
+
+
+def _corner_radii(loop: dict, count: int, index: int) -> list[float] | None:
+    if "corner_radii" in loop:
+        radii = loop["corner_radii"]
+        if not isinstance(radii, (list, tuple)) or len(radii) != count:
+            raise WorkflowError("TOOL_ARGS", f"轮廓 {index} 的 corner_radii 应为 {count} 个数", loop=index)
+        values = [float(value) for value in radii]
+    elif loop.get("corner_radius") not in (None, 0):
+        values = [float(loop["corner_radius"])] * count
+    else:
+        return None
+    if any(value < 0 for value in values):
+        raise WorkflowError("TOOL_ARGS", f"轮廓 {index} 的圆角半径不能为负", loop=index)
+    return values if any(value > 0 for value in values) else None
+
+
+def _path(segments: list[dict]) -> dict:
+    return {"type": "path", "segments": segments}
+
+
+def _polygon_points(normalized: dict) -> list[tuple[float, float]]:
+    return list(to_geometry(normalized).exterior.coords)[:-1]
 
 
 def normalize_loop(loop: dict, index: int = 0) -> dict:
@@ -61,7 +89,13 @@ def normalize_loop(loop: dict, index: int = 0) -> dict:
             if du <= 0 or dv <= 0:
                 raise WorkflowError("TOOL_ARGS", f"轮廓 {index} 的 size 必须为正", loop=index)
             x1, y1, x2, y2 = cx - du / 2, cy - dv / 2, cx + du / 2, cy + dv / 2
-        return {"type": "rect", "x1": x1, "y1": y1, "x2": x2, "y2": y2}
+        rect = {"type": "rect", "x1": x1, "y1": y1, "x2": x2, "y2": y2}
+        radii = _corner_radii(loop, 4, index)
+        if radii is None:
+            return rect
+        lo_u, hi_u, lo_v, hi_v = min(x1, x2), max(x1, x2), min(y1, y2), max(y1, y2)
+        corners = [(lo_u, lo_v), (hi_u, lo_v), (hi_u, hi_v), (lo_u, hi_v)]
+        return _path(curves.rounded_polygon(corners, radii, index))
     if kind == "regular_polygon":
         cx, cy = _pair(loop.get("center"), "center", index)
         sides = int(loop.get("sides", 6))
@@ -71,20 +105,42 @@ def normalize_loop(loop: dict, index: int = 0) -> dict:
             radius = _positive(loop, "across_flats", index) / 2 / math.cos(math.pi / sides)
         else:
             radius = _positive(loop, "circumradius", index)
-        return {
+        polygon = {
             "type": "regular_polygon", "cx": cx, "cy": cy, "r": radius,
             "sides": sides, "angle_deg": float(loop.get("angle_deg", 0)),
         }
+        radii = _corner_radii(loop, sides, index)
+        if radii is None:
+            return polygon
+        return _path(curves.rounded_polygon(_polygon_points(polygon), radii, index))
     if kind == "slot":
-        x1, y1 = _pair(loop.get("start"), "start", index)
-        x2, y2 = _pair(loop.get("end"), "end", index)
-        return {"type": "slot", "x1": x1, "y1": y1, "x2": x2, "y2": y2, "width": _positive(loop, "width", index)}
+        start = _pair(loop.get("start"), "start", index)
+        end = _pair(loop.get("end"), "end", index)
+        return _path(curves.slot(start, end, _positive(loop, "width", index), index))
     if kind == "polygon":
-        points = loop.get("points") or []
-        return {"type": "polygon", "points": [list(_pair(p, "points[i]", index)) for p in points]}
+        points = [_pair(p, "points[i]", index) for p in loop.get("points") or []]
+        if len(points) >= 2 and math.dist(points[0], points[-1]) <= 1e-9:
+            points = points[:-1]
+        radii = _corner_radii(loop, len(points), index)
+        if radii is None:
+            return {"type": "polygon", "points": [list(p) for p in points]}
+        return _path(curves.rounded_polygon(points, radii, index))
+    if kind == "annular_sector":
+        center = _pair(loop.get("center"), "center", index)
+        r_inner = float(loop.get("r_inner", 0) or 0)
+        return _path(curves.annular_sector(
+            center, r_inner, _positive(loop, "r_outer", index),
+            float(loop.get("start_deg", 0)), float(loop.get("end_deg", 90)), index,
+        ))
+    if kind == "path":
+        start = _pair(loop.get("start"), "start", index)
+        steps = loop.get("segments")
+        if not isinstance(steps, (list, tuple)):
+            raise WorkflowError("TOOL_ARGS", f"轮廓 {index} 的 segments 必须是数组", loop=index)
+        return _path(curves.path(start, steps, index, pair=lambda value, name: _pair(value, name, index)))
     raise WorkflowError(
         "TOOL_ARGS",
-        f"轮廓 {index} 类型 {kind!r} 不支持，可用 circle/rect/regular_polygon/slot/polygon",
+        f"轮廓 {index} 类型 {kind!r} 不支持，可用 circle/rect/regular_polygon/slot/polygon/annular_sector/path",
         loop=index,
     )
 
@@ -96,20 +152,19 @@ def normalize_loops(loops: Sequence[dict]) -> list[dict]:
 
 
 def _vertices(loop: dict) -> list[tuple[float, float]]:
-    kind = loop["type"]
-    if kind == "slot":
-        (x1, y1), (x2, y2), half = (loop["x1"], loop["y1"]), (loop["x2"], loop["y2"]), loop["width"] / 2
-        heading = math.atan2(y2 - y1, x2 - x1)
-        points = []
-        for (cx, cy), start in (((x2, y2), heading - math.pi / 2), ((x1, y1), heading + math.pi / 2)):
-            for step in range(SLOT_ARC_SEGMENTS + 1):
-                angle = start + math.pi * step / SLOT_ARC_SEGMENTS
-                points.append((cx + half * math.cos(angle), cy + half * math.sin(angle)))
-        return points
     geometry = to_geometry(loop)
     if not isinstance(geometry, Polygon):
         raise WorkflowError("TOOL_ARGS", "轮廓不是闭合多边形")
     return list(geometry.exterior.coords)[:-1]
+
+
+def _profile_segment(frame: SketchFrame, segment: dict) -> dict:
+    start = frame.point_params(*segment["p0"], keys=("x1", "y1", "z1"))
+    end = frame.point_params(*segment["p1"], keys=("x2", "y2", "z2"))
+    if segment["kind"] == "line":
+        return {"type": "line", **start, **end}
+    mid = frame.point_params(*curves.arc_point(segment, 0.5), keys=("xm", "ym", "zm"))
+    return {"type": "arc", **start, **end, **mid}
 
 
 def draw_operations(frame: SketchFrame, loops: Sequence[dict]) -> list[dict]:
@@ -120,6 +175,13 @@ def draw_operations(frame: SketchFrame, loops: Sequence[dict]) -> list[dict]:
         if loop["type"] == "circle":
             center = frame.point_params(loop["cx"], loop["cy"], keys=("cx", "cy", "cz"))
             circles.append({**center, "radius": loop["r"] / 1000.0})
+            continue
+        if loop["type"] == "path":
+            segments = [_profile_segment(frame, segment) for segment in loop["segments"]]
+            operations.append({
+                "operation": "sketch_profile", "route": PROFILE_ROUTE,
+                "params": {"segments": segments, "closed": True},
+            })
             continue
         points = [frame.point_params(u, v) for u, v in _vertices(loop)]
         operations.append({"operation": "sketch_polyline", "params": {"points": points, "closed": True}})
