@@ -1,16 +1,22 @@
+"""手动脚本：用原子操作创建 100×50×30mm 长方体。
+
+只在直接运行时执行，pytest 收集时不会向 SolidWorks 发请求。
+"""
+
+import os
+
 import requests
 
-# 组合操作：一键创建长方体
-# resp = requests.post("http://localhost:5100/api/create-box", json={
-#     "length": 0.1, "width": 0.05, "height": 0.03
-# })
-# print(resp.json())
-
-# 或者用原子操作逐步控制：
-requests.post("http://localhost:5100/api/new-part")
-requests.post("http://localhost:5100/api/select-plane", json={"index": 0})
-requests.post("http://localhost:5100/api/sketch/rectangle", json={"x1": 0, "y1": 0, "x2": 0.1, "y2": 0.05})
-requests.post("http://localhost:5100/api/feature/extrusion", json={"depth": 0.03})
+BASE = os.environ.get("SW_API_URL", "http://localhost:5100")
 
 
-print("创建长方体完成")
+def main() -> None:
+    requests.post(f"{BASE}/api/new-part")
+    requests.post(f"{BASE}/api/select-plane", json={"index": 0})
+    requests.post(f"{BASE}/api/sketch/rectangle", json={"x1": 0, "y1": 0, "x2": 0.1, "y2": 0.05})
+    requests.post(f"{BASE}/api/feature/extrusion", json={"depth": 0.03})
+    print("创建长方体完成")
+
+
+if __name__ == "__main__":
+    main()
