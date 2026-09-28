@@ -279,6 +279,10 @@ namespace Chapter1.ConnectToSw
                     HandleModelObservation(resp);
                     break;
 
+                case "/api/sketch-stats":
+                    HandleSketchStats(resp);
+                    break;
+
                 case "/api/body-bounding-box":
                     HandleBodyBoundingBox(resp);
                     break;
@@ -1119,6 +1123,23 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"创建长方体失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSketchStats(HttpListenerResponse resp)
+        {
+            try
+            {
+                var sketches = _commands.GetSketchGeometryStats();
+                SendJson(resp, 200, new { success = true, sketches });
+            }
+            catch (InvalidOperationException ex)
+            {
+                SendJson(resp, 400, new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"获取草图统计失败: {ex.Message}" });
             }
         }
 

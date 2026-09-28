@@ -255,6 +255,117 @@ namespace Chapter1.ConnectToSw
             return result;
         }
 
+        /// <summary>
+        /// 直接读取模型中每个草图的真实几何（不依赖本服务记录的草图元数据），
+        /// 因此对外部打开的 SLDPRT 同样有效。
+        /// </summary>
+        public List<Dictionary<string, object>> GetSketchGeometryStats()
+        {
+            EnsureActiveDoc();
+            var result = new List<Dictionary<string, object>>();
+            var feat = ActiveDoc.FirstFeature() as IFeature;
+            int featureIndex = 0;
+            while (feat != null)
+            {
+                string typeName = feat.GetTypeName2();
+                if (typeName == "ProfileFeature" || typeName == "3DProfileFeature")
+                {
+                    var sketch = feat.GetSpecificFeature2() as ISketch;
+                    if (sketch != null)
+                        result.Add(DescribeSketchGeometry(feat, sketch, featureIndex, typeName));
+                }
+                feat = feat.GetNextFeature() as IFeature;
+                featureIndex++;
+            }
+            return result;
+        }
+
+        private static Dictionary<string, object> DescribeSketchGeometry(
+            IFeature feat, ISketch sketch, int featureIndex, string typeName)
+        {
+            int lines = 0, arcs = 0, circles = 0, ellipses = 0, splines = 0, other = 0;
+            int constructionLines = 0, constructionOther = 0;
+            var lineLengths = new List<double>();
+            var segments = sketch.GetSketchSegments() as object[] ?? new object[0];
+            foreach (var raw in segments)
+            {
+                var seg = raw as ISketchSegment;
+                if (seg == null)
+                    continue;
+                var segType = (swSketchSegments_e)seg.GetType();
+                if (seg.ConstructionGeometry)
+                {
+                    if (segType == swSketchSegments_e.swSketchLINE)
+                        constructionLines++;
+                    else
+                        constructionOther++;
+                    continue;
+                }
+                switch (segType)
+                {
+                    case swSketchSegments_e.swSketchLINE:
+                        lines++;
+                        lineLengths.Add(seg.GetLength());
+                        break;
+                    case swSketchSegments_e.swSketchARC:
+                        var arc = seg as ISketchArc;
+                        if (arc != null && arc.IsCircle() == 1)
+                            circles++;
+                        else
+                            arcs++;
+                        break;
+                    case swSketchSegments_e.swSketchELLIPSE:
+                        ellipses++;
+                        break;
+                    case swSketchSegments_e.swSketchSPLINE:
+                        splines++;
+                        break;
+                    default:
+                        other++;
+                        break;
+                }
+            }
+
+            // 5~12 条等长直线视为一个正多边形（多边形工具的典型产物）。
+            bool regularPolygon = false;
+            if (lines >= 5 && lines <= 12 && arcs == 0)
+            {
+                double min = lineLengths.Min(), max = lineLengths.Max();
+                regularPolygon = min > 0 && (max - min) / max < 0.01;
+            }
+
+            var consumers = new List<Dictionary<string, object>>();
+            var children = feat.GetChildren() as object[] ?? new object[0];
+            foreach (var child in children)
+            {
+                var childFeat = child as IFeature;
+                if (childFeat == null)
+                    continue;
+                consumers.Add(new Dictionary<string, object>
+                {
+                    { "name", childFeat.Name },
+                    { "type", childFeat.GetTypeName2() },
+                });
+            }
+
+            return new Dictionary<string, object>
+            {
+                { "featureIndex", featureIndex },
+                { "name", feat.Name },
+                { "type", typeName },
+                { "lines", lines },
+                { "arcs", arcs },
+                { "circles", circles },
+                { "ellipses", ellipses },
+                { "splines", splines },
+                { "otherSegments", other },
+                { "constructionLines", constructionLines },
+                { "constructionOther", constructionOther },
+                { "regularPolygon", regularPolygon },
+                { "consumers", consumers },
+            };
+        }
+
         public List<Dictionary<string, object>> GetSketchSummaries()
         {
             var result = new List<Dictionary<string, object>>();

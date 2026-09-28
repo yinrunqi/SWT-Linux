@@ -21,8 +21,10 @@ from planner.observer import SwObserver
 
 try:
     from .eval_three_view_multiturn import ROOT, _query_balance
+    from . import metrics as geo_metrics
 except ImportError:
     from eval_three_view_multiturn import ROOT, _query_balance
+    import metrics as geo_metrics
 
 
 MODEL = "Qwen3.5-397B-A17B"
@@ -359,11 +361,12 @@ def _volume_score(
     )
 
 
-def score_case(
+def score_case_v1(
     case: TextCase,
     payload: dict,
     observation: dict,
 ) -> dict:
+    """旧版打分：执行分以模型自己的计划步数为分母，细节指标依赖服务端记录的元数据。"""
     plan_steps = (payload.get("plan") or {}).get("steps") or []
     results = payload.get("results") or []
     successful = [
@@ -454,12 +457,98 @@ def score_case(
     }
 
 
+score_case = score_case_v1
+
+FAILED_STEP_PENALTY = 2.5
+
+
+def score_case_v2(
+    case: TextCase,
+    payload: dict,
+    observation: dict,
+    sketch_stats: list[dict],
+    *,
+    strict_orientation: bool = False,
+) -> dict:
+    """新版打分：只看最终模型（特征树 + 真实草图几何 + 包围盒 + 体积）。
+
+    有效实体 15 + 执行稳健性 10 + 尺寸 30 + 体积 20 + 细节 25。
+    执行稳健性按失败步骤数扣分，不再以模型自己的计划步数为分母。
+    """
+    results = payload.get("results") or []
+    failed_steps = sum(not item.get("success") for item in results)
+
+    bbox = observation.get("bounding_box_mm") or {}
+    actual_dims = [float(bbox.get(key) or 0) for key in ("sizeX", "sizeY", "sizeZ")]
+    volume = float(observation.get("volume_mm3") or 0)
+    has_body = volume > 0 and all(value > 0 for value in actual_dims)
+    validity_points = 15.0 if has_body else 0.0
+    robustness_points = (
+        max(0.0, 10.0 - FAILED_STEP_PENALTY * failed_steps) if has_body else 0.0
+    )
+
+    dimension_points, dimension_errors, dimension_checks = geo_metrics.dimension_score(
+        actual_dims,
+        case.expected_bbox_mm,
+        case.bbox_tolerance_mm,
+        strict_orientation=strict_orientation,
+    )
+    volume_points, volume_ok = geo_metrics.volume_score(volume, case.volume_range_mm3)
+
+    metrics = geo_metrics.model_metrics(observation.get("features") or [], sketch_stats)
+    detail_checks = {
+        name: metrics.get(name, 0) >= minimum
+        for name, minimum in case.expected_details
+    }
+    detail_points = round(
+        25.0
+        * sum(min(metrics.get(name, 0) / minimum, 1.0) for name, minimum in case.expected_details)
+        / len(case.expected_details),
+        2,
+    )
+    score = round(
+        validity_points + robustness_points + dimension_points + volume_points + detail_points,
+        2,
+    )
+    acceptance = (
+        has_body
+        and all(dimension_checks)
+        and volume_ok
+        and all(detail_checks.values())
+    )
+    return {
+        "score": score,
+        "acceptance_ok": acceptance,
+        "validity_points": validity_points,
+        "robustness_points": robustness_points,
+        "failed_step_count": failed_steps,
+        "dimension_points": dimension_points,
+        "volume_points": volume_points,
+        "detail_points": detail_points,
+        "dimension_errors_mm": dimension_errors,
+        "dimension_checks": dimension_checks,
+        "volume_ok": volume_ok,
+        "actual_details": metrics,
+        "detail_checks": detail_checks,
+        "strict_orientation": strict_orientation,
+    }
+
+
+def _sketch_stats(sw_url: str) -> list[dict]:
+    response = requests.get(f"{sw_url}/api/sketch-stats", timeout=120)
+    body = response.json()
+    if not response.ok or not body.get("success"):
+        raise RuntimeError(body.get("message") or f"HTTP {response.status_code}")
+    return body.get("sketches") or []
+
+
 def run_one(
     case: TextCase,
     *,
     web_url: str,
     sw_url: str,
     model: str,
+    strict_orientation: bool = False,
 ) -> dict:
     started = time.perf_counter()
     cleanup_before = _close_documents(sw_url)
@@ -503,11 +592,38 @@ def run_one(
             )
         observation = _observation(sw_url)
         trace["final_observation"] = observation
-        scoring = score_case(case, payload, observation)
+        sketch_stats = _sketch_stats(sw_url)
+        trace["sketch_stats"] = sketch_stats
+        scoring_v1 = score_case_v1(case, payload, observation)
+        scoring = score_case_v2(
+            case,
+            payload,
+            observation,
+            sketch_stats,
+            strict_orientation=strict_orientation,
+        )
         return {
             "case_id": case.case_id,
             "name": case.name,
             **scoring,
+            "status": scoring_v1["status"],
+            "plan_steps": scoring_v1["plan_steps"],
+            "successful_steps": scoring_v1["successful_steps"],
+            "failed_steps": scoring_v1["failed_steps"],
+            "bbox_mm": scoring_v1["bbox_mm"],
+            "volume_mm3": scoring_v1["volume_mm3"],
+            "v1": {
+                key: scoring_v1[key]
+                for key in (
+                    "score",
+                    "acceptance_ok",
+                    "execution_points",
+                    "dimension_points",
+                    "volume_points",
+                    "detail_points",
+                    "actual_details",
+                )
+            },
             "token_usage": payload.get("token_usage"),
             "duration_seconds": round(time.perf_counter() - started, 2),
             "cleanup_before": cleanup_before,
@@ -526,6 +642,7 @@ def run_one(
             "name": case.name,
             "score": 0.0,
             "acceptance_ok": False,
+            "v1": {"score": 0.0, "acceptance_ok": False},
             "status": "error",
             "token_usage": payload.get("token_usage"),
             "duration_seconds": round(time.perf_counter() - started, 2),
@@ -540,6 +657,31 @@ def run_one(
             pass
 
 
+def _per_case_summary(results: list[dict], repeats: int) -> list[dict]:
+    grouped: dict[str, list[dict]] = {}
+    for item in results:
+        grouped.setdefault(item["case_id"], []).append(item)
+    summary = []
+    for case_id, runs in grouped.items():
+        scores = [float(run["score"]) for run in runs]
+        passed = sum(bool(run.get("acceptance_ok")) for run in runs)
+        summary.append({
+            "case_id": case_id,
+            "runs": len(runs),
+            "mean_score": round(sum(scores) / len(scores), 2),
+            "min_score": min(scores),
+            "max_score": max(scores),
+            "passed_runs": passed,
+            "pass_at_1": round(geo_metrics.pass_at_k(len(runs), passed, 1), 4),
+            "pass_at_k": round(geo_metrics.pass_at_k(len(runs), passed, repeats), 4),
+            "mean_tokens": round(
+                sum(int((run.get("token_usage") or {}).get("total_tokens") or 0) for run in runs)
+                / len(runs)
+            ),
+        })
+    return summary
+
+
 def _write_report(
     output: Path,
     results: list[dict],
@@ -549,6 +691,8 @@ def _write_report(
     model: str = MODEL,
     selected_cases: list[TextCase] | None = None,
     historical_skipped: list[dict] | None = None,
+    repeats: int = 1,
+    strict_orientation: bool = False,
 ) -> dict:
     spent_yuan = None
     if balance_before and balance_after:
@@ -557,11 +701,16 @@ def _write_report(
             - float(balance_before["consumed_yuan"]),
             6,
         )
+    per_case = _per_case_summary(results, repeats)
+    case_means = [item["mean_score"] for item in per_case]
     report = {
         "run_at": datetime.now().astimezone().isoformat(timespec="seconds"),
         "provider": "AI Ping",
         "model": model,
         "mode": "single_turn",
+        "score_version": 2,
+        "strict_orientation": strict_orientation,
+        "repeats": repeats,
         "cache_enabled": False,
         "historical_skipped": historical_skipped or [],
         "case_ids": [
@@ -572,10 +721,29 @@ def _write_report(
             sum(float(item["score"]) for item in results) / len(results),
             2,
         ) if results else 0.0,
+        "average_score_v1": round(
+            sum(float((item.get("v1") or {}).get("score") or 0) for item in results)
+            / len(results),
+            2,
+        ) if results else 0.0,
+        "average_score_ci95": geo_metrics.bootstrap_ci(case_means),
+        "pass_at_1": round(
+            sum(item["pass_at_1"] for item in per_case) / len(per_case), 4
+        ) if per_case else 0.0,
+        f"pass_at_{repeats}": round(
+            sum(item["pass_at_k"] for item in per_case) / len(per_case), 4
+        ) if per_case else 0.0,
         "passed": sum(
             bool(item.get("acceptance_ok")) for item in results
         ),
+        "passed_v1": sum(
+            bool((item.get("v1") or {}).get("acceptance_ok")) for item in results
+        ),
         "total": len(results),
+        "total_duration_seconds": round(
+            sum(float(item.get("duration_seconds") or 0) for item in results), 2
+        ),
+        "per_case": per_case,
         "token_totals": {
             key: sum(
                 int((item.get("token_usage") or {}).get(key) or 0)
@@ -622,7 +790,19 @@ def main() -> int:
         default=3,
         help="Pause briefly after this many sequential SolidWorks cases",
     )
+    parser.add_argument(
+        "--repeats",
+        type=int,
+        default=1,
+        help="Independent cold-cache runs per case, used for pass@k",
+    )
+    parser.add_argument(
+        "--strict-orientation",
+        action="store_true",
+        help="Compare bbox axes X/Y/Z in order instead of sorted",
+    )
     args = parser.parse_args()
+    repeats = max(1, args.repeats)
     historical_ids = {
         item["case_id"] for item in HISTORICAL_CASES
     } if args.skip_qwen_historical else set()
@@ -644,18 +824,21 @@ def main() -> int:
         output = ROOT / "eval" / f"text_singleturn_{safe_model}_result.json"
     balance_before = _query_balance(ROOT / ".env")
     results: list[dict] = []
-    for index, case in enumerate(selected, 1):
-        print(f"[{index}/{len(selected)}] {case.name}", flush=True)
+    jobs = [(case, repeat) for case in selected for repeat in range(repeats)]
+    for index, (case, repeat) in enumerate(jobs, 1):
+        print(f"[{index}/{len(jobs)}] {case.name} (run {repeat + 1}/{repeats})", flush=True)
         result = run_one(
             case,
             web_url=args.web_url.rstrip("/"),
             sw_url=args.sw_url.rstrip("/"),
             model=args.model,
+            strict_orientation=args.strict_orientation,
         )
+        result["repeat"] = repeat
         results.append(result)
         usage = result.get("token_usage") or {}
         print(
-            f"  score={result['score']} "
+            f"  score={result['score']} (v1={result['v1']['score']}) "
             f"accepted={result['acceptance_ok']} "
             f"status={result['status']} "
             f"tokens={usage.get('total_tokens')} "
@@ -673,10 +856,12 @@ def main() -> int:
                 if args.skip_qwen_historical
                 else []
             ),
+            repeats=repeats,
+            strict_orientation=args.strict_orientation,
         )
         if (
             args.pause_every > 0
-            and index < len(selected)
+            and index < len(jobs)
             and index % args.pause_every == 0
         ):
             print("  cooling pause 5s", flush=True)
@@ -695,10 +880,15 @@ def main() -> int:
             if args.skip_qwen_historical
             else []
         ),
+        repeats=repeats,
+        strict_orientation=args.strict_orientation,
     )
     print(
         f"summary score={report['average_score']} "
+        f"ci95={report['average_score_ci95']} "
+        f"v1={report['average_score_v1']} "
         f"passed={report['passed']}/{report['total']} "
+        f"pass@1={report['pass_at_1']} "
         f"tokens={report['token_totals']['total_tokens']} "
         f"spent_yuan={report['spent_yuan']}",
         flush=True,
