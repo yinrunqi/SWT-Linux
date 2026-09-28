@@ -127,6 +127,8 @@ flowchart LR
 
 ### W3：工具挖掘与准入
 
+> 已由 [RSI自我进化规划](RSI自我进化规划.md) 取代：准入改为在 val 族生成题上做 A/B、并要求 dev 无回归，held-out 只报告、不参与准入。以下为原始计划。
+
 - 输入：L0/L1 成功轨迹 + CAD-1K 的特征序列统计（只用来提示候选，不进运行时）。
 - 流程：挖高频子序列 → LLM 提议带参数的工具 → 回归集执行成功 → held-out 上降低步数或失败率才入库 → 覆盖率曲线。
 - 文件：`planner/workflow/library/`（候选、已准入、淘汰记录）和 `eval/eval_tool_admission.py`。
