@@ -337,7 +337,127 @@ HELDOUT_CASES = (
         split="heldout",
     ),
 )
-CASES = CASES + HELDOUT_CASES
+
+# 复杂零件：demo 为展示用自拟零件（受 CAD-1K 零件族启发，尺寸与描述均为自写）；
+# heldout2 为同族新测例，GT 均在系统首次运行前由 eval/gt_complex_cases.py 计算写定。
+COMPLEX_CASES = (
+    TextCase(
+        "fork_end",
+        "叉形接头",
+        "创建叉形接头，所有结构合并为单一实体。杆部为直径 20mm、长 35mm 的圆柱；"
+        "杆部顶端连接一个 40×24mm、高 10mm 的叉根方块，杆部轴线穿过方块中心。"
+        "叉根顶面伸出两片相同的叉耳：每片厚 8mm，外侧面与叉根 40mm 方向的两个端面齐平（两耳间开口 24mm），"
+        "耳宽 24mm 与叉根等宽，耳端为 R12mm 半圆，半圆圆心距叉根顶面 18mm。"
+        "在半圆圆心处沿厚度方向开一个直径 10mm 的横销孔，贯穿两片叉耳；"
+        "杆部底端面中心有直径 6.8mm、深 20mm 的螺纹底孔（不做螺纹）。",
+        (24.0, 40.0, 75.0),
+        1.0,
+        # gt_complex_cases.fork_end = 29143.7
+        (28700.0, 29600.0),
+        (("solid_features", 2),),
+        split="demo",
+    ),
+    TextCase(
+        "three_lug_housing",
+        "三耳法兰轴承座",
+        "创建三耳法兰轴承座。法兰厚 10mm，外形为半径 32mm 的圆盘加 3 个沿圆周 120° 均布的径向安装耳："
+        "每个耳宽 22mm，两侧边平行于径向，端部为与侧边相切的 R11mm 半圆，半圆圆心距中心 48mm，"
+        "并在该圆心处开直径 9mm 的贯穿安装孔。法兰上方同轴设置直径 46mm 的轮毂，轮毂顶面距法兰底面 38mm。"
+        "中心轴承孔直径 30mm 全长贯通，轮毂顶端再加工直径 38mm、深 9mm 的轴承座沉孔。",
+        (38.0, 94.0, 105.138),
+        1.5,
+        # gt_complex_cases.three_lug_housing = 62774.2
+        (61800.0, 63700.0),
+        (("solid_features", 2),),
+        split="demo",
+    ),
+    TextCase(
+        "pillow_block",
+        "立式轴承座",
+        "创建立式轴承座，左右对称，所有结构合并为单一实体。底座 120×40mm、厚 12mm。"
+        "底座上表面中央立起座体：座体沿底座 40mm 方向全宽，正视轮廓为宽 60mm 的矩形加顶部 R30mm 半圆，"
+        "半圆圆心距底座底面 45mm。在该圆心处开直径 35mm 的轴承孔，沿 40mm 方向贯穿。"
+        "底座两端各有一个沿 120mm 方向的安装长圆孔，宽 11mm、两端半圆圆心相距 10mm，"
+        "长圆孔中心距座体中心 45mm，贯穿底座。",
+        (40.0, 75.0, 120.0),
+        1.5,
+        # gt_complex_cases.pillow_block = 149943.0
+        (147700.0, 152200.0),
+        (("solid_features", 2),),
+        split="demo",
+    ),
+    TextCase(
+        "twin_arm_rocker",
+        "双臂摇臂",
+        "创建双臂摇臂，所有结构合并为单一实体。轮毂为直径 30mm、长 40mm 的圆柱，中心有直径 12mm 的贯穿轴孔。"
+        "两片相同的摇臂板垂直于轮毂轴线，厚度均为 8mm，外侧面分别与轮毂两个端面齐平；"
+        "摇臂板外形为以轮毂轴线为圆心的 R15mm 圆弧和以距轴线 70mm 处为圆心的 R10mm 圆弧，两圆弧由两条公切直线连接。"
+        "在 R10mm 圆弧圆心处开直径 8mm 的销孔，贯穿两片摇臂板。",
+        (30.0, 40.0, 95.0),
+        1.0,
+        # gt_complex_cases.twin_arm_rocker = 47876.0
+        (47150.0, 48600.0),
+        (("solid_features", 2),),
+        split="demo",
+    ),
+    TextCase(
+        "clevis_bracket",
+        "双耳支座",
+        "创建双耳支座。底板 80×50mm、厚 10mm，四个直径 9mm 的贯穿安装孔，孔心相对底板中心位于 (±30mm, ±17mm)，"
+        "其中 ±30mm 沿 80mm 方向。底板上表面立起两片相同的耳板：每片厚 10mm（沿 80mm 方向），宽 30mm 与底板 50mm 方向居中，"
+        "两耳内侧面相距 30mm 且关于底板中心对称；耳板顶端为 R15mm 半圆，圆心距底板上表面 25mm。"
+        "在该圆心处开直径 12mm 的销孔，沿 80mm 方向贯穿两片耳板。",
+        (50.0, 50.0, 80.0),
+        1.0,
+        # gt_complex_cases.clevis_bracket = 57261.9
+        (56400.0, 58100.0),
+        (("solid_features", 2),),
+        split="heldout2",
+    ),
+    TextCase(
+        "diamond_flange",
+        "菱形法兰座",
+        "创建菱形法兰座。法兰板厚 8mm，外形由中心 R25mm 圆弧与两侧 R12mm 圆弧（圆心分别距中心 42mm，三个圆心共线）"
+        "通过公切直线连接而成的凸轮廓；两个 R12mm 圆弧圆心处各开直径 10mm 的贯穿孔。"
+        "法兰板上方同轴设置直径 34mm 的凸台，凸台顶面距法兰底面 26mm；中心直径 20mm 的孔全长贯通。",
+        (26.0, 50.0, 108.0),
+        1.0,
+        # gt_complex_cases.diamond_flange = 36601.7
+        (36050.0, 37150.0),
+        (("solid_features", 2),),
+        split="heldout2",
+    ),
+    TextCase(
+        "support_seat",
+        "轴支撑座",
+        "创建轴支撑座，所有结构合并为单一实体。底座 100×50mm、厚 10mm；底座上表面中央立起厚 20mm 的立板，"
+        "立板在底座 50mm 方向居中，正视轮廓为宽 50mm 的矩形加顶部 R25mm 半圆，半圆圆心距底座底面 40mm；"
+        "在该圆心处开直径 24mm 的轴孔，沿立板厚度方向贯穿。"
+        "底座上在 100mm 方向中线上、距中心 38mm 处左右各开一个直径 10mm 的贯穿孔。",
+        (50.0, 65.0, 100.0),
+        1.0,
+        # gt_complex_cases.support_seat = 89016.2
+        (87700.0, 90350.0),
+        (("solid_features", 2),),
+        split="heldout2",
+    ),
+    TextCase(
+        "crank",
+        "曲柄",
+        "创建曲柄，所有结构合并为单一实体。轮毂为直径 36mm、长 24mm 的圆柱，中心有直径 16mm 的贯穿轴孔。"
+        "曲柄臂垂直于轮毂轴线，厚 10mm，一个侧面与轮毂一个端面齐平；臂外形为以轮毂轴线为圆心的 R18mm 圆弧"
+        "和以距轴线 60mm 处为圆心的 R11mm 圆弧，两圆弧由公切直线连接。"
+        "在 R11mm 圆弧圆心处、臂与轮毂齐平的那一侧，凸起直径 22mm、高 15mm 的曲柄销座；"
+        "销座中心开直径 10mm 的孔，贯穿销座和曲柄臂。",
+        (36.0, 39.0, 89.0),
+        1.0,
+        # gt_complex_cases.crank = 37671.9
+        (37100.0, 38250.0),
+        (("solid_features", 2),),
+        split="heldout2",
+    ),
+)
+CASES = CASES + HELDOUT_CASES + COMPLEX_CASES
 
 
 HISTORICAL_CASES = (
@@ -1013,7 +1133,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--split",
-        choices=("dev", "heldout", "all"),
+        choices=("dev", "heldout", "demo", "heldout2", "all"),
         default="dev",
         help="Case split; heldout cases must never be used to tune prompts, tools or code",
     )
