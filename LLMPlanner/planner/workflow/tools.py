@@ -393,6 +393,10 @@ class WorkflowSession:
         values = args.get("values")
         if not isinstance(values, dict) or not values:
             raise WorkflowError("TOOL_ARGS", "values 必须是非空对象")
+        values = {
+            name: (value.strip()[1:] if isinstance(value, str) and value.strip().startswith("=") else value)
+            for name, value in values.items()
+        }
         existing = {
             param.name: {"expr": param.expr, "unit": param.unit, "note": param.note}
             for param in self.params.params.values()

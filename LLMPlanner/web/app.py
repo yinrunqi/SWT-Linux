@@ -1796,6 +1796,67 @@ def set_projector_animation_pose():
         return jsonify({"success": False, "error": str(exc)}), 500
 
 
+WORKFLOW_QUERY_TOOLS = {"get_model_state", "set_parameters", "finish"}
+
+
+def _run_workflow_l1(
+    instruction: str,
+    *,
+    api_key: str,
+    base_url: str,
+    model: str,
+    max_llm_calls: int,
+    capture_trace: bool,
+) -> dict:
+    """L1：工程师级工具 + 闭环 Agent。results 只列建模工具调用，供打分统计失败次数。"""
+    from openai import OpenAI
+
+    from planner.workflow.agent import WorkflowAgent
+    from planner.workflow.tools import WorkflowSession
+
+    client = OpenAI(api_key=api_key, base_url=base_url or None, timeout=180, max_retries=2)
+    session = WorkflowSession(base_url=executor.base_url, executor=executor)
+    session.start_part()
+    outcome = WorkflowAgent(client, model, session, max_llm_calls=max_llm_calls).run(instruction)
+    modeling_calls = [item for item in outcome["tool_calls"] if item["tool"] not in WORKFLOW_QUERY_TOOLS]
+    results = [
+        {
+            "step": index,
+            "operation": item["tool"],
+            "success": item["ok"],
+            "message": item["message"] or ("OK" if item["ok"] else ""),
+            "error_code": item["error_code"],
+        }
+        for index, item in enumerate(modeling_calls, 1)
+    ]
+    token_usage = outcome["token_usage"]
+    payload = {
+        "success": True,
+        "mode": "workflow",
+        "action_level": "L1",
+        "plan": {
+            "user_intent": instruction,
+            "steps": [{"operation": item["tool"], "params": item["args"]} for item in modeling_calls],
+            "notes": outcome["summary"],
+        },
+        "results": results,
+        "workflow": {key: value for key, value in outcome.items() if key != "messages"},
+        "token_usage": token_usage,
+        "summary": {
+            "total": len(results),
+            "succeeded": sum(item["success"] for item in results),
+            "all_ok": outcome["status"] == "finished",
+            "status": outcome["status"],
+            "llm_calls": outcome["llm_calls"],
+            "tool_calls": len(outcome["tool_calls"]),
+            "token_usage": token_usage,
+        },
+    }
+    if capture_trace:
+        payload["raw_llm_trace"] = outcome["messages"]
+    return payload
+
+
 @app.route("/api/run", methods=["POST"])
 def run():
     """
@@ -1809,6 +1870,7 @@ def run():
       "plan_model":   "basic/claude-sonnet-5",  (可选，Plan 阶段模型)
       "model": "gpt-4o",           (旧协议兼容，Vision + Plan 共用此模型)
       "mode": "single_turn",       (可选: single_turn / multi_turn)
+      "action_level": "L0",        (可选: L0 原子操作 / L1 工程师级工具 + 闭环 Agent；L1 时 max_turns 为 LLM 调用上限)
       "max_turns": 8,              (multi_turn 可选)
       "use_cache": true,           (可选；评测冷启动可设 false)
       "capture_trace": false,      (可选；返回原始 LLM 请求/响应)
@@ -1836,6 +1898,9 @@ def run():
     mode = data.get("mode", "single_turn").strip().lower()
     if mode not in ("single_turn", "multi_turn"):
         return jsonify({"success": False, "error": f"未知 mode: {mode}"}), 400
+    action_level = str(data.get("action_level", "L0")).strip().upper()
+    if action_level not in ("L0", "L1"):
+        return jsonify({"success": False, "error": f"未知 action_level: {action_level}"}), 400
     raw_max_turns = data.get("max_turns")
     max_turns = None
     if raw_max_turns not in (None, ""):
@@ -1865,6 +1930,25 @@ def run():
             "success": False,
             "error": "Multi-turn MVP 不支持 dry_run",
         }), 400
+
+    if action_level == "L1":
+        if image_b64:
+            return jsonify({"success": False, "error": "L1 workflow 暂只支持文本输入"}), 400
+        if dry_run:
+            return jsonify({"success": False, "error": "L1 workflow 不支持 dry_run"}), 400
+        try:
+            with _sw_execution_lock:
+                return jsonify(_run_workflow_l1(
+                    instruction,
+                    api_key=api_key,
+                    base_url=base_url,
+                    model=plan_model,
+                    max_llm_calls=max_turns or 40,
+                    capture_trace=capture_trace,
+                ))
+        except Exception as exc:
+            traceback.print_exc()
+            return jsonify({"success": False, "error": str(exc)}), 500
 
     llm_client = None
     try:

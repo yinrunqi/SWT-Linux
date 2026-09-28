@@ -39,6 +39,7 @@ class TextCase:
     bbox_tolerance_mm: float
     volume_range_mm3: tuple[float, float]
     expected_details: tuple[tuple[str, int], ...]
+    split: str = "dev"
 
 
 CASES = (
@@ -191,6 +192,152 @@ CASES = (
         ),
     ),
 )
+
+# Held-out：规格与 GT 在系统首次运行之前写定，不得据其结果调整 prompt、工具或代码。
+# 体积为解析计算值（注释给出算式），区间留出圆弧离散化与合理建模差异的余量。
+HELDOUT_CASES = (
+    TextCase(
+        "l_bracket",
+        "L形角码",
+        "创建厚 5mm 的 L 形角码，两条边宽度均为 30mm：水平边外侧长 50mm，竖直边外侧高 40mm，两边在拐角处连成一体。"
+        "水平边上沿长度方向打 2 个直径 6mm 的贯穿孔，孔心位于宽度中线、距竖直边外侧面分别 20mm 和 38mm；"
+        "竖直边上在宽度中线、距底面 25mm 处打 1 个直径 6mm 的贯穿孔。",
+        (30.0, 40.0, 50.0),
+        1.5,
+        # (50*5 + 35*5)*30 - 3*pi*3^2*5 = 12325.9
+        (11950.0, 12700.0),
+        (("solid_features", 1),),
+        split="heldout",
+    ),
+    TextCase(
+        "spacer_ring",
+        "隔套",
+        "创建外径 40mm、内径 20mm、厚 10mm 的隔套，两个端面的外圆边都做 C1mm 倒角。",
+        (10.0, 40.0, 40.0),
+        1.0,
+        # pi*(20^2-10^2)*10 - 2*2*pi*(20-1/3)*0.5 = 9301.2
+        (9200.0, 9400.0),
+        (("chamfers", 1),),
+        split="heldout",
+    ),
+    TextCase(
+        "mounting_plate",
+        "安装板",
+        "安装板 120×80×6mm，四个角做 R8 圆角（竖直棱边），4-Ø7 贯穿孔，孔心距相邻两边各 12mm；"
+        "板中央开一个 40×20mm 的矩形贯穿窗口。",
+        (6.0, 80.0, 120.0),
+        1.5,
+        # 120*80*6 - 4*(8^2 - pi*8^2/4)*6 - 4*pi*3.5^2*6 - 40*20*6 = 51546.8
+        (51000.0, 52100.0),
+        (("solid_features", 1),),
+        split="heldout",
+    ),
+    TextCase(
+        "stepped_block",
+        "台阶块",
+        "创建台阶块：下层 80×50×15mm；上层 40×50×15mm，放在下层的一端，与下层的端面和两个侧面齐平，整体高 30mm。"
+        "在下层露出的上表面中央打一个直径 10mm、深 8mm 的盲孔。",
+        (30.0, 50.0, 80.0),
+        1.5,
+        # 80*50*15 + 40*50*15 - pi*5^2*8 = 89371.7
+        (88900.0, 89900.0),
+        (("solid_features", 1), ("cuts", 1)),
+        split="heldout",
+    ),
+    TextCase(
+        "knob",
+        "旋钮",
+        "创建旋钮：圆柱主体直径 30mm、高 20mm；顶面中央凸起一个直径 10mm、高 5mm 的小圆柱；"
+        "主体外圆周均布 12 条竖直防滑槽，每条宽 2mm、深 1mm，沿主体全高贯通；底面中央有直径 6mm、深 12mm 的安装盲孔。",
+        (25.0, 30.0, 30.0),
+        1.0,
+        # pi*15^2*20 + pi*5^2*5 - 12*2*1*20 - pi*3^2*12 = 13710.6
+        (13450.0, 13950.0),
+        (("solid_features", 1), ("cuts", 1)),
+        split="heldout",
+    ),
+    TextCase(
+        "hex_standoff",
+        "六角隔离柱",
+        "M3 六角隔离柱：对边距 8mm、长 20mm 的正六棱柱，两个端面中心各有一个 Ø3.3mm、深 6mm 的螺纹底孔（不做螺纹）。",
+        (8.0, 9.238, 20.0),
+        0.6,
+        # sqrt(3)/2*8^2*20 - 2*pi*1.65^2*6 = 1005.9
+        (985.0, 1025.0),
+        (("polygons", 1),),
+        split="heldout",
+    ),
+    TextCase(
+        "u_channel",
+        "U形槽",
+        "创建长 100mm 的 U 形槽：外宽 40mm、外高 30mm，两侧壁厚和底板厚都是 4mm，槽口朝上；"
+        "底板上沿长度方向打 3 个直径 8mm 的贯穿孔，孔距 30mm，整体在长度方向居中。",
+        (30.0, 40.0, 100.0),
+        1.5,
+        # (40*30 - 32*26)*100 - 3*pi*4^2*4 = 36196.8
+        (35900.0, 36500.0),
+        (("solid_features", 1),),
+        split="heldout",
+    ),
+    TextCase(
+        "flanged_bushing",
+        "法兰衬套",
+        "创建带法兰的衬套：套筒外径 20mm、内径 12mm、总长 30mm；一端带外径 36mm、厚 5mm 的法兰，法兰厚度计入总长；内孔全长贯通。",
+        (30.0, 36.0, 36.0),
+        1.0,
+        # pi*(10^2-6^2)*25 + pi*(18^2-6^2)*5 = 9550.4
+        (9400.0, 9700.0),
+        (("solid_features", 1),),
+        split="heldout",
+    ),
+    TextCase(
+        "wedge_block",
+        "斜楔块",
+        "创建斜楔块：长 60mm、宽 30mm，一端高 20mm、另一端高 5mm，上表面是连续的平斜面，底面平整。",
+        (20.0, 30.0, 60.0),
+        1.0,
+        # (20+5)/2*60*30 = 22500
+        (22200.0, 22800.0),
+        (("solid_features", 1),),
+        split="heldout",
+    ),
+    TextCase(
+        "spoked_wheel",
+        "减重轮盘",
+        "创建直径 120mm、厚 10mm 的轮盘，中心轴孔直径 20mm；在轴孔与外缘之间均布 4 个扇形减重孔，"
+        "每个减重孔是内半径 20mm、外半径 50mm、张角 60° 的扇环，全部贯穿。",
+        (10.0, 120.0, 120.0),
+        1.5,
+        # pi*60^2*10 - pi*10^2*10 - 4*(60/360)*pi*(50^2-20^2)*10 = 65973.4
+        (65000.0, 67000.0),
+        (("solid_features", 1),),
+        split="heldout",
+    ),
+    TextCase(
+        "end_cap",
+        "端盖",
+        "创建圆形端盖：外径 60mm、总高 15mm；从底面向上挖出直径 50mm、深 12mm 的内腔，使顶板厚 3mm；顶板中心打一个直径 8mm 的通孔。",
+        (15.0, 60.0, 60.0),
+        1.0,
+        # pi*30^2*15 - pi*25^2*12 - pi*4^2*3 = 18698.8
+        (18450.0, 18950.0),
+        (("solid_features", 1),),
+        split="heldout",
+    ),
+    TextCase(
+        "link_bar",
+        "连杆",
+        "创建厚 6mm 的连杆：两端是直径 24mm 的圆头，两圆心相距 80mm，中间用宽 14mm 的杆身连接，整体是一个外轮廓；"
+        "两个圆心处各有一个直径 10mm 的贯穿孔。",
+        (6.0, 24.0, 104.0),
+        1.0,
+        # (2*pi*12^2 + 80*14 - 2*∫_{-7}^{7}sqrt(144-y^2)dy - 2*pi*5^2)*6 = 9310.9
+        (9150.0, 9450.0),
+        (("solid_features", 1),),
+        split="heldout",
+    ),
+)
+CASES = CASES + HELDOUT_CASES
 
 
 HISTORICAL_CASES = (
@@ -549,6 +696,8 @@ def run_one(
     sw_url: str,
     model: str,
     strict_orientation: bool = False,
+    action_level: str = "L0",
+    max_llm_calls: int = 40,
 ) -> dict:
     started = time.perf_counter()
     cleanup_before = _close_documents(sw_url)
@@ -561,10 +710,13 @@ def run_one(
         "vision_model": model,
         "plan_model": model,
         "mode": "single_turn",
+        "action_level": action_level,
         "use_cache": False,
         "capture_trace": True,
         "dry_run": False,
     }
+    if action_level == "L1":
+        request_payload["max_turns"] = max_llm_calls
     trace = {
         "request": {
             "url": f"{web_url}/api/run",
@@ -625,6 +777,9 @@ def run_one(
                 )
             },
             "token_usage": payload.get("token_usage"),
+            "workflow_status": (payload.get("summary") or {}).get("status"),
+            "llm_calls": (payload.get("summary") or {}).get("llm_calls"),
+            "tool_calls": (payload.get("summary") or {}).get("tool_calls"),
             "duration_seconds": round(time.perf_counter() - started, 2),
             "cleanup_before": cleanup_before,
             "error": None,
@@ -693,6 +848,7 @@ def _write_report(
     historical_skipped: list[dict] | None = None,
     repeats: int = 1,
     strict_orientation: bool = False,
+    action_level: str = "L0",
 ) -> dict:
     spent_yuan = None
     if balance_before and balance_after:
@@ -707,7 +863,8 @@ def _write_report(
         "run_at": datetime.now().astimezone().isoformat(timespec="seconds"),
         "provider": "AI Ping",
         "model": model,
-        "mode": "single_turn",
+        "mode": "workflow" if action_level == "L1" else "single_turn",
+        "action_level": action_level,
         "score_version": 2,
         "strict_orientation": strict_orientation,
         "repeats": repeats,
@@ -798,6 +955,7 @@ def rescore_report(source: Path, output: Path, strict_orientation: bool = False)
         historical_skipped=old.get("historical_skipped"),
         repeats=int(old.get("repeats") or 1),
         strict_orientation=strict_orientation,
+        action_level=old.get("action_level", "L0"),
     )
     return report
 
@@ -841,6 +999,24 @@ def main() -> int:
         default=None,
         help="Recompute v2 scores from traces in an existing result file (no LLM/SolidWorks calls)",
     )
+    parser.add_argument(
+        "--action-level",
+        choices=("L0", "L1"),
+        default="L0",
+        help="L0: single-turn atomic plan; L1: engineer-level tools with a closed-loop agent",
+    )
+    parser.add_argument(
+        "--max-llm-calls",
+        type=int,
+        default=40,
+        help="LLM call budget per case for L1",
+    )
+    parser.add_argument(
+        "--split",
+        choices=("dev", "heldout", "all"),
+        default="dev",
+        help="Case split; heldout cases must never be used to tune prompts, tools or code",
+    )
     args = parser.parse_args()
     if args.rescore:
         report = rescore_report(args.rescore, args.output or args.rescore, args.strict_orientation)
@@ -860,6 +1036,7 @@ def main() -> int:
         if (
             (not args.ids or case.case_id in set(args.ids))
             and case.case_id not in historical_ids
+            and (args.split == "all" or case.split == args.split)
         )
     ]
     output = args.output
@@ -869,7 +1046,8 @@ def main() -> int:
             .replace(".", "_")
             .replace("-", "_")
         )
-        output = ROOT / "eval" / f"text_singleturn_{safe_model}_result.json"
+        prefix = "text_workflow_l1" if args.action_level == "L1" else "text_singleturn"
+        output = ROOT / "eval" / f"{prefix}_{safe_model}_{args.split}_result.json"
     balance_before = _query_balance(ROOT / ".env")
     results: list[dict] = []
     jobs = [(case, repeat) for case in selected for repeat in range(repeats)]
@@ -881,6 +1059,8 @@ def main() -> int:
             sw_url=args.sw_url.rstrip("/"),
             model=args.model,
             strict_orientation=args.strict_orientation,
+            action_level=args.action_level,
+            max_llm_calls=args.max_llm_calls,
         )
         result["repeat"] = repeat
         results.append(result)
@@ -906,6 +1086,7 @@ def main() -> int:
             ),
             repeats=repeats,
             strict_orientation=args.strict_orientation,
+            action_level=args.action_level,
         )
         if (
             args.pause_every > 0
@@ -930,6 +1111,7 @@ def main() -> int:
         ),
         repeats=repeats,
         strict_orientation=args.strict_orientation,
+        action_level=args.action_level,
     )
     print(
         f"summary score={report['average_score']} "

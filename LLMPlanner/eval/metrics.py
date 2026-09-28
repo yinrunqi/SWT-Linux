@@ -137,6 +137,9 @@ def model_metrics(features: Iterable[dict], sketch_stats: Iterable[dict]) -> dic
         "lofts": counts.get("lofts", 0),
         "ribs": counts.get("ribs", 0),
     }
+    metrics["solid_features"] = sum(
+        metrics[name] for name in ("extrusions", "revolves", "sweeps", "lofts")
+    )
     metrics.update(sketch_counts(sketch_stats))
     return metrics
 
