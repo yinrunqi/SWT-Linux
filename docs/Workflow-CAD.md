@@ -38,54 +38,109 @@ LLM 只和 Python 端通信，Python 端只通过 HTTP 调用 C# 服务。因此
 
 ---
 
-## 2. 环境准备
+## 2. 在一台新机器上配置环境
 
-### 2.1 前置条件
+下面按照从零开始的顺序来写。仓库里除了 `build_service.bat` 中的 MSBuild 路径以外，没有写死的绝对路径，放在任何目录下都能运行。下文用 `<repo>` 表示仓库根目录。
 
-- Windows 10/11，已安装并激活 **SolidWorks**（我们使用 2025 版）。
-- **Visual Studio 或 MSBuild**，用来构建 .NET Framework 4.7.2 的 C# 服务。
-- **Python 3.11 或更高版本**。
-- 一个 **OpenAI 兼容的 LLM 接口**，需要支持 function calling（L1 用）。论文实验使用 Qwen3.5-397B-A17B，温度 0。
+### 2.1 需要安装的软件
 
-### 2.2 构建 C# 服务
+| 软件 | 我们测试过的版本 | 说明 |
+|---|---|---|
+| Windows | 10 / 11，x64 | SolidWorks 与 COM 自动化只能在 Windows 上运行 |
+| SolidWorks | 2025（中文版），已激活 | 必须能正常启动并新建零件。其他版本见 2.4 节 |
+| Visual Studio 2022 或更新版本，或 Build Tools for Visual Studio | Community 版 | 安装“.NET 桌面开发”工作负载，并勾选 **.NET Framework 4.7.2 目标包** |
+| NuGet 命令行工具 `nuget.exe` | 6.x | 从 nuget.org 下载后放到 PATH 中，用来还原 `packages.config` |
+| Git | 任意 | 用来获取代码 |
+| Python | 3.14.3 | 主环境用 3.11 或更高版本即可；检查器环境需要 `cadquery-ocp` 有对应 Python 版本的 wheel，直接用 3.14 最省事 |
+| LLM 接口 | 任意 OpenAI 兼容接口 | 需要支持 function calling（L1 用）。论文用的是 Qwen3.5-397B-A17B，温度 0 |
 
-```cmd
-cd C:\codes\sw\SolidWorksTutorial
-nuget restore SolidWorksTutorial.slnx
-build_service.bat
-```
+只想用 benchmark 给 STEP 文件打分的话，只需要 Python，不需要 SolidWorks 和 Visual Studio，见 [`Workflow-CAD-Bench.md`](./Workflow-CAD-Bench.md)。
 
-`build_service.bat` 里写死了 MSBuild 路径，找不到时按脚本提示修改。如果 SolidWorks 版本不是 2025，要调整 `Chapter1.ConnectToSw.csproj` 中 COM 引用的版本号和 `HintPath`（见根目录 `README.md` 的“复现注意事项”）。
-
-### 2.3 Python 环境
-
-LLMPlanner 使用两个虚拟环境，互不干扰：
+### 2.2 获取代码
 
 ```powershell
-cd C:\codes\sw\SolidWorksTutorial\LLMPlanner
-
-# 主环境：Web 后端、Agent、评测脚本
-python -m venv venv
-venv\Scripts\pip install -r requirements.txt
-
-# 几何检查环境：OpenCASCADE（OCP）+ numpy + PyYAML + pytest
-python -m venv venv-occ
-venv-occ\Scripts\pip install -r geomcheck\requirements.txt
+git clone https://github.com/fansunqi/SolidWorksTutorial.git     # 或 git@github.com:fansunqi/SolidWorksTutorial.git
+cd SolidWorksTutorial
 ```
 
-### 2.4 配置 LLM
+仓库里不包含这些内容：NuGet 包（`packages/`）、Python 虚拟环境（`LLMPlanner/venv`、`LLMPlanner/venv-occ`）、密钥文件（`LLMPlanner/.env`），以及评测产生的 STEP/SLDPRT（`LLMPlanner/eval/artifacts/`）。下面几步会依次把它们准备好。
 
-复制 `.env.example` 为 `.env` 并填写（`.env` 已被 git 忽略，不要提交）：
+### 2.3 构建 C# 服务
+
+1. **还原 NuGet 包**（Xarial.XCad 0.8.3 系列，其中自带 SolidWorks Interop 程序集）：
+
+   ```cmd
+   cd <repo>
+   nuget restore Chapter1.ConnectToSw\packages.config -PackagesDirectory packages
+   ```
+
+2. **找到 MSBuild**。`build_service.bat` 默认写的是 `C:\Program Files\Microsoft Visual Studio\18\Community\...`，路径不同就要改脚本第 7 行，或者直接用下一步的命令。查找 MSBuild 的命令：
+
+   ```cmd
+   "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+   ```
+
+3. **构建**：
+
+   ```cmd
+   "<上一步得到的 MSBuild.exe>" Chapter1.ConnectToSw\Chapter1.ConnectToSw.csproj /p:Configuration=Debug /t:Rebuild /v:minimal
+   ```
+
+   成功后会生成 `Chapter1.ConnectToSw\bin\Debug\Chapter1.ConnectToSw.exe`，`run_service.bat` 启动的就是它。
+
+### 2.4 SolidWorks 安装位置与版本
+
+- 项目会从 SolidWorks 安装目录引用 `api\redist\SolidWorks.Interop.swmotionstudy.dll`。`.csproj` 会自动在 `C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\` 下查找。如果装在别的地方，构建时加上参数：
+
+  ```cmd
+  ... /p:SolidWorksInstallDir="D:\Apps\SOLIDWORKS Corp\SOLIDWORKS\\"
+  ```
+
+- 其余 Interop 程序集（`sldworks`、`swconst`、`swpublished`）来自 NuGet 包，引用的版本号是 `34.1.1.11`，对应 SolidWorks 2025。如果用的是其他版本，构建报“找不到引用或版本不匹配”时，把 `.csproj` 里这三个引用的版本号改成本机的版本，或者把 `HintPath` 改为指向本机 `api\redist` 下的同名 DLL。
+- 零件建模按特征类型定位基准面，不依赖“前视基准面 / Front Plane”这类名称，所以英文版 SolidWorks 也能用于 text-to-CAD。装配相关功能目前按中文版的默认基准面名称编写。
+- 新建零件时使用 SolidWorks 的默认零件模板（“选项 → 默认模板”），请确认这个模板文件存在。服务内部统一按 SolidWorks API 的米制单位传尺寸，导出的 STEP 自带单位，所以模板用什么单位制都不影响结果。
+
+### 2.5 Python 环境
+
+LLMPlanner 用两个互不干扰的虚拟环境：
+
+```powershell
+cd <repo>\LLMPlanner
+
+# 主环境：Web 后端、Agent、评测脚本（openai、pydantic、flask、requests 等）
+py -3.14 -m venv venv
+venv\Scripts\python.exe -m pip install -r requirements.txt
+
+# 检查器环境：OpenCASCADE 的 Python 绑定（cadquery-ocp）、numpy、PyYAML、pytest
+py -3.14 -m venv venv-occ
+venv-occ\Scripts\python.exe -m pip install -r geomcheck\requirements.txt
+```
+
+检查一下两个环境是否装好：
+
+```powershell
+venv\Scripts\python.exe -c "import openai, flask, pydantic, requests; print('main ok')"
+venv-occ\Scripts\python.exe -c "import OCP, numpy, yaml; print('occ ok')"
+venv-occ\Scripts\python.exe -m pytest geomcheck/tests -q -p no:cacheprovider    # 应为 125 passed，不需要 SolidWorks
+```
+
+### 2.6 配置 LLM
+
+```powershell
+copy .env.example .env      # 在 LLMPlanner 目录下执行
+```
+
+然后编辑 `.env`（它已被 git 忽略，不要提交）：
 
 ```ini
 OPENAI_API_KEY=<你的 key>
-OPENAI_BASE_URL=https://aiping.cn/api/v1      # 任意 OpenAI 兼容地址
-PLAN_MODEL=Qwen3.5-397B-A17B                  # 规划 / Agent 使用的模型
-VISION_MODEL=GLM-4.6V                         # 仅三视图输入时使用
+OPENAI_BASE_URL=<你的 OpenAI 兼容地址，例如 https://aiping.cn/api/v1>
+PLAN_MODEL=Qwen3.5-397B-A17B        # 规划 / Agent 用的模型名，按你的服务商填写
+VISION_MODEL=GLM-4.6V               # 只在三视图输入时使用
 SW_API_URL=http://localhost:5100
 ```
 
-请求里也可以临时指定 `api_key`、`base_url` 和 `plan_model`，这时会覆盖 `.env` 中的配置。
+请求里也可以临时指定 `api_key`、`base_url` 和 `plan_model`，会覆盖 `.env` 中的值。评测结果里的 `spent_yuan`（费用）依赖我们本机的 AI Ping 余额查询脚本，在别的机器上会是 `null`，不影响运行。需要的话，可以用结果里的 `token_usage` 乘以服务商的单价自己算。
 
 ---
 
@@ -107,6 +162,16 @@ SW_API_URL=http://localhost:5100
    ```
 
 然后在浏览器打开 `http://localhost:5000` 使用网页界面，或者按下一节直接调用 HTTP 接口。
+
+**端到端自检**：在新机器上配好环境后，建议先用一道简单的题把整条链路跑通，再做批量评测。在 `LLMPlanner` 目录下另开一个终端，执行：
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --action-level L1 --ids stool --repeats 1 `
+    --output eval\smoke_l1_result.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric --artifacts eval\artifacts\smoke_l1_result
+```
+
+SolidWorks 里会建出一张四脚板凳，`eval\artifacts\smoke_l1_result\` 下会出现 `stool_r1.step` 和 `stool_r1.SLDPRT`，打分输出形如 `stool_r1.step: score=100.0 ... accepted=True`。哪一步失败，就对照第 6 节排查。
 
 ---
 

@@ -6,14 +6,62 @@ Workflow-CAD-Bench 的 text-to-CAD 部分共有 **50 个任务**。每个任务�
 
 ---
 
-## 1. 五分钟上手
+## 0. 在一台新机器上配置评测环境
 
-以下命令都在 `SolidWorksTutorial/LLMPlanner` 目录下执行。
+打分**不需要 SolidWorks，也不需要我们的建模系统**，只需要 Python 和 OpenCASCADE 的 Python 绑定。
+
+### 0.1 需要安装的软件
+
+| 软件 | 我们测试过的版本 | 说明 |
+|---|---|---|
+| Python | 3.14.3 | `cadquery-ocp==8.0.1.0.0` 需要有对应 Python 版本的 wheel，直接用 3.14 最省事 |
+| Git | 任意 | 用来获取代码 |
+| 操作系统 | Windows 11 x64 | 检查器是纯 Python 加 OCP。OCP 也提供 Linux 和 macOS 的 wheel，但我们只在 Windows 上测试过 |
+
+### 0.2 获取代码
+
+```bash
+git clone https://github.com/fansunqi/SolidWorksTutorial.git     # 或 git@github.com:fansunqi/SolidWorksTutorial.git
+cd SolidWorksTutorial/LLMPlanner
+```
+
+评测只用到仓库里的两部分：`LLMPlanner/geomcheck/`（检查器、汇总工具和测试）和 `LLMPlanner/eval/rubrics/`（50 个 rubric，题面也在里面）。其余代码属于我们的建模系统，评测时用不到。
+
+### 0.3 创建检查器环境
+
+Windows（PowerShell）：
 
 ```powershell
-# 1) 安装检查器环境（只需要 OpenCASCADE 的 Python 绑定、numpy、PyYAML）
-python -m venv venv-occ
-venv-occ\Scripts\pip install -r geomcheck\requirements.txt
+py -3.14 -m venv venv-occ
+venv-occ\Scripts\python.exe -m pip install -r geomcheck\requirements.txt
+```
+
+Linux / macOS：
+
+```bash
+python3.14 -m venv venv-occ
+venv-occ/bin/python -m pip install -r geomcheck/requirements.txt
+```
+
+`geomcheck/requirements.txt` 固定了四个依赖：`cadquery-ocp==8.0.1.0.0`、`numpy==2.5.3`、`PyYAML==6.0.3` 和 `pytest==9.1.1`。
+
+### 0.4 验证环境
+
+```powershell
+venv-occ\Scripts\python.exe -c "import OCP, numpy, yaml; print('occ ok')"
+venv-occ\Scripts\python.exe -m pytest geomcheck/tests -q -p no:cacheprovider
+```
+
+测试会用 OpenCASCADE 直接构造 50 个参考实体、12 个合法变体和 62 个错误变体，分别用 rubric 打分，应该显示 `125 passed`。这一步通过，说明你机器上的检查器和我们的打分结果完全一致。
+
+Linux 和 macOS 上把 `venv-occ\Scripts\python.exe` 换成 `venv-occ/bin/python` 即可，下文同理。以下命令都在 `LLMPlanner` 目录下执行。
+
+---
+
+## 1. 五分钟上手
+
+```powershell
+# 1) 环境已按第 0 节配好
 
 # 2) 导出 50 个任务：每行一个 {"case", "kind", "prompt"}
 venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench tasks --output tasks.jsonl
@@ -193,7 +241,7 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench summary a.json b.json --r
 
 ## 6. 用 Workflow-CAD 跑这套 benchmark（可选）
 
-如果你想复现我们自己系统的结果，按 [`Workflow-CAD.md`](./Workflow-CAD.md) 启动 SolidWorks、C# 服务和 Web 后端，然后执行：
+如果你想复现我们自己系统的结果，需要一台装有 SolidWorks 的 Windows 机器。先按 [`Workflow-CAD.md`](./Workflow-CAD.md) 第 2 节配好环境（C# 服务、两个 Python 环境、`.env`），再按第 3 节启动 SolidWorks、C# 服务和 Web 后端，并完成端到端自检，然后执行：
 
 ```powershell
 venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --action-level L1 --split all --repeats 2 `
