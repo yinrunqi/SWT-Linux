@@ -1,0 +1,111 @@
+case: finned_housing
+prompt: >-
+  创建带散热鳍片的电机外壳，单一实体。壳体是外径 80mm、内径 70mm 的圆筒，底部封闭、底板厚 8mm，
+  筒体从底面到顶面总高 100mm，顶端敞开。顶端有一块 100×100mm、厚 8mm 的方形安装法兰，法兰上表面与筒顶齐平，
+  法兰中间是与筒内径相同的直径 70mm 通孔；法兰四角倒 R10mm 圆角（沿厚度方向的棱边），
+  并在孔心坐标 (±42, ±42)mm（以法兰中心为原点、坐标轴平行于法兰各边）处开 4 个直径 7mm 的贯穿安装孔。
+  筒体外壁有 12 片沿圆周均布的纵向散热鳍片，每片厚 3mm，从筒体外壁径向伸出到距轴线 50mm 处，
+  沿轴向从筒底面一直延伸到法兰下表面；其中一片鳍片的中面正对法兰一条边的中点。
+  底板中心开直径 22mm 的轴承孔，并在直径 40mm 的圆上开 4 个直径 4.5mm 的贯穿螺钉孔，
+  这 4 个孔分别与 4 个法兰安装孔位于同一方位。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿筒轴，t = 0 在法兰上表面（两端平面面积较大的一端），底面 t = 100；
+# 轴 1 指向某一个法兰安装孔（法兰对角线方向）。鳍片中面位于 ±15°、±45°、±75°……；零件关于轴 1 镜像对称。
+entities:
+  tube:          {cylinder: {d: 80, side: outer}, count: 1}
+  bore:          {cylinder: {d: 70, side: inner}, count: 1}
+  flange_holes:  {cylinder: {d: 7, side: inner}, count: 4}
+  bearing:       {cylinder: {d: 22, side: inner}, count: 1}
+  screw_holes:   {cylinder: {d: 4.5, side: inner}, count: 4}
+  frame:         {axis_frame: {axis: tube, low: larger_area, ref: flange_holes}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 总高 100mm；100×100mm 的方形法兰（鳍片外缘距轴线 50mm，不超出法兰）
+    hard: true
+    check:
+      - bbox_sorted: [100, 100, 100]
+
+  - id: tube
+    source: 壳体是外径 80mm、内径 70mm 的圆筒，顶端敞开
+    check:
+      - exists: tube
+      - exists: bore
+      - coaxial: [bore, tube]
+      - radial_material: {frame: frame, t: 50, deg: 0, expect: [[35, 40]]}
+      - line_material: {frame: frame, along: 0, polar: [37.5, 30], expect: [[0, 100]]}
+
+  - id: bottom
+    source: 底部封闭、底板厚 8mm；底板中心开直径 22mm 的轴承孔
+    check:
+      - exists: bearing
+      - coaxial: [bearing, tube]
+      - through: {holes: bearing}
+      - line_material: {frame: frame, along: 0, polar: [15, 30], expect: [[92, 100]]}
+      - line_material: {frame: frame, along: 0, polar: [0, 0], expect: []}
+
+  - id: flange
+    source: 厚 8mm 的方形安装法兰，上表面与筒顶齐平，中间是直径 70mm 通孔
+    derivation: 正对法兰边中点方向（frame −45°）法兰从 35 到 50
+    check:
+      - line_material: {frame: frame, along: 0, polar: [45, 30], expect: [[0, 8]]}
+      - radial_material: {frame: frame, t: 4, deg: -45, expect: [[35, 50]]}
+
+  - id: flange_corners
+    source: 法兰四角倒 R10mm 圆角
+    derivation: 沿对角线，圆角圆心距中心 40√2 = 56.569，外缘 66.569
+    check:
+      - blend_faces: {radius: 10, side: outer, min_count: 4}
+      - radial_material: {frame: frame, t: 4, deg: 0, expect: [[35, 55.897], [62.897, 66.569]]}
+
+  - id: flange_holes
+    source: 孔心 (±42, ±42)mm 处开 4 个直径 7mm 的贯穿安装孔
+    derivation: 孔心距轴线 42√2 = 59.397，孔在对角线上占 [55.897, 62.897]
+    check:
+      - exists: flange_holes
+      - through: {holes: flange_holes}
+      - axis_distance: {from: tube, to: flange_holes, value: 59.397}
+      - equal_angular: {about: tube, items: flange_holes}
+
+  - id: fins
+    source: 12 片沿圆周均布的纵向散热鳍片，每片厚 3mm，从筒体外壁径向伸出到距轴线 50mm 处
+    derivation: 半径 45 的圆上每片鳍占 2·asin(1.5/45) = 3.820°，相邻鳍之间空 30 − 3.820 = 26.180°
+    check:
+      - angular_openings: {frame: frame, t: 50, r: 45, count: 12, arc_deg: 26.18, radial: [40, open]}
+      - radial_material: {frame: frame, t: 50, deg: 15, expect: [[35, 50]]}
+
+  - id: fin_extent
+    source: 沿轴向从筒底面一直延伸到法兰下表面
+    check:
+      - line_material: {frame: frame, along: 0, polar: [48, 15], expect: [[0, 100]]}
+      - line_material: {frame: frame, along: 0, polar: [48, 45], expect: [[0, 100]]}
+
+  - id: fin_phase
+    source: 其中一片鳍片的中面正对法兰一条边的中点
+    derivation: 正对边中点方向为 frame −45°，该方向上有鳍
+    check:
+      - radial_material: {frame: frame, t: 50, deg: -45, expect: [[35, 50]]}
+
+  - id: screw_holes
+    source: 在直径 40mm 的圆上开 4 个直径 4.5mm 的贯穿螺钉孔，与法兰安装孔位于同一方位
+    derivation: 沿 frame 0° 方向：轴承孔边 11，螺钉孔 [17.75, 22.25]，筒外壁 40
+    check:
+      - exists: screw_holes
+      - through: {holes: screw_holes}
+      - axis_distance: {from: tube, to: screw_holes, value: 20}
+      - radial_material: {frame: frame, t: 96, deg: 0, expect: [[11, 17.75], [22.25, 40]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 216067.8
+    check:
+      - volume: 216067.8
+
+ungraded: []

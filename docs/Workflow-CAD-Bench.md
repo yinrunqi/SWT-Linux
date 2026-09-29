@@ -267,7 +267,56 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench summary eval\rubric_mymod
 
 ---
 
-## 7. 已知局限
+## 7. 困难子集：8 个复杂综合件（showcase）
+
+上面 50 题对当前系统已经偏简单（pass@1 = 0.74），所以另外准备了 8 道复杂零件。它们都是能直接当演示用的真实机械件，每题需要十几个特征，并且要把阵列相位、切线轮廓、径向孔、对称槽等关系全部做对。困难子集**不计入** 50 题的统计，rubric 单独放在 `LLMPlanner/eval/rubrics_hard/`。
+
+| 任务（case id） | 显式条目 | 主要难点 |
+|---|---|---|
+| X 型四旋翼机架 `quad_frame` | 12 | 沿对角线的机臂、16 个电机孔与 4 个飞控孔的位置换算、8 个内角 R5 圆角 |
+| 发动机连杆 `connecting_rod` | 12 | 两圆外公切线杆身、正反两面梯形减重槽、沿中线的油孔、轴承孔两端倒角 |
+| 带散热鳍片的电机壳 `finned_housing` | 12 | 12 片鳍片的相位与长度、带圆角的方形法兰、底板孔与法兰孔同方位 |
+| 18 齿滚子链链轮 `sprocket` | 11 | 节圆上的齿槽阵列、键槽、减重孔 / 齿槽 / 键槽三者对齐、径向紧定螺钉孔 |
+| 带摇把的五辐手轮 `handwheel` | 9 | 圆环轮缘、中面内的径向轮辐、六角孔、带球头的摇把 |
+| 四缸凸轮轴 `camshaft` | 10 | 基圆 + 桃尖圆 + 公切线的凸轮轮廓、四个凸轮顺时针 90° 递进的相位、定位销孔与键槽 |
+| 行星齿轮架 `planet_carrier` | 11 | 双盘 + 连接柱、行星轮轴孔与连接柱交错、输出轴螺纹底孔、4 条外圆倒角 |
+| 后弯叶片离心叶轮 `impeller` | 10 | 给定圆心和半径的圆弧叶片、45° 阵列、叶片高度与外端截止半径、轮毂倒角 |
+
+8 题共 87 个显式条目。rubric 的验证方式与 50 题相同：参考实体满分、1 个合法变体（叶轮叶片外端改为径向端面）满分、23 个针对性错误变体恰好在预期条目上失败（`geomcheck/tests/test_refs_hard.py`）。
+
+打分和汇总时用 `--rubric-dir` 指向这个目录：
+
+```powershell
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_hard tasks --output tasks_hard.jsonl
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric --artifacts my_hard_run --rubric-dir eval/rubrics_hard --output my_hard_scores.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_hard summary my_hard_scores.json --repeats 2
+```
+
+用 Workflow-CAD 跑时把 `--split all` 换成 `--split hard`。参考结果（协议同第 6 节：L1、24 个工具、Qwen3.5-397B-A17B、每题 2 次，共 16 次运行）：
+
+| 均分 | pass@1 | pass@2 | 核心形体率 | 平均 token | 平均 LLM 调用 | 平均耗时 |
+|---|---|---|---|---|---|---|
+| 62.2（95% CI [50.6, 74.6]） | 0.125 | 0.25 | 0.56 | 737k | 31.4（6 次用满 40 次预算） | 440 s |
+
+16 次运行共花费 15.7 元。只有行星齿轮架和凸轮轴各有一次合格。常见的失败有：
+- 手轮的轮辐穿过中心六角孔；
+- 链轮轮盘漏开中心孔；
+- 鳍片按半厚度建模；
+- 叶片伸出后盘，或者根本没有做成圆弧；
+- 连杆的油孔或减重槽把实体拆成多块；
+- 机架只做了 1 个内角圆角。
+
+打分文件是 `eval/rubric_hard_tools24.json`，汇总在 `eval/rubric_hard_tools24_summary.json`。
+
+需要说明两处在看过首批结果后对 rubric 的修正，两处都只放宽了与题意无关的判定：
+- 凸轮轴：模型按切点坐标画弧时，同一段基圆被拆成了圆心相差几微米的两张面，被数成了 5 个基圆。现在不再要求基圆和桃尖圆的数量恰好为 4，四个凸轮是否齐全改由逐个凸轮的探测保证。
+- 叶轮：后盘和轮毂的探测原本依赖叶片圆柱面来定方位。叶片缺失时，这两项会被连带判失败。现在它们改用与方位无关的坐标系。
+
+另外，评测脚本等待 Web 后端的超时从 900 s 放宽到了 3600 s。复杂件用满 40 次调用可能超过 15 分钟，原来的超时会在服务端还在建模时就发起下一次运行。
+
+---
+
+## 8. 已知局限
 
 - rubric 是人工编写的。rubric 没写到的要求不会被检查，标为 `ungraded` 的内容也不打分。
 - 目前只有 OpenCASCADE 一个检查器。一个通过 SolidWorks API 评估同一套 rubric 的检查器正在开发，用来交叉验证。

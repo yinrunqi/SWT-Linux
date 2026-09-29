@@ -258,7 +258,11 @@ def sel_axis_frame(ctx: Ctx, a: dict) -> Frame:
         ref = _axis(ctx.items(a["ref"])[0])
         e1 = ref.o - ax.o
     elif "ref_dir" in a:
-        e1 = _axis(ctx.items(a["ref_dir"])[0]).d
+        ref_item = ctx.items(a["ref_dir"])[0]
+        e1 = _axis(ref_item).d
+        # ref_dir_toward：轴 1 指向该实体所在一侧（如穿过主轴线的径向孔，轴线本身不带正负）
+        if a.get("ref_dir_toward") and float(np.dot(_pts(ref_item).mean(axis=0) - ax.o, e1)) < 0:
+            e1 = -e1
     else:
         e1 = _complete(ax.d)[1]
     frame = build(ax.d, e1)

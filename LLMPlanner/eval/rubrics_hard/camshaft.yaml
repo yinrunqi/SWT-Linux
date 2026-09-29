@@ -1,0 +1,105 @@
+case: camshaft
+prompt: >-
+  创建一根四缸发动机凸轮轴，单一实体，所有回转结构同轴。以左端面为 0、沿轴线向右量：
+  主轴直径 20mm，从 0 贯穿到 220mm；左轴颈直径 30mm、位于 0~16mm；中间轴颈直径 30mm、位于 102~118mm；
+  右轴颈直径 30mm、位于 204~220mm；右端再伸出直径 18mm 的驱动轴头，位于 220~245mm，
+  轴头上有一条宽 5mm 的通长平键槽，槽底平面距轴线 6mm。四个凸轮宽 14mm，宽度中心分别在 40、78、142、180mm 处；
+  每个凸轮的轮廓由直径 32mm 的基圆（与轴同心）、直径 16mm 的桃尖圆（圆心距轴线 12mm）
+  以及两圆的两条外公切线组成。左轴颈端面上开一个直径 5mm、深 8mm 的定位销孔，孔心距轴线 9mm。
+  第 1 个凸轮的桃尖朝向定位销孔所在方向；从左端沿轴线向右看，第 2、3、4 个凸轮的桃尖依次比前一个顺时针转过 90°。
+  驱动轴头的键槽开在定位销孔所在的一侧。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿轴线，t = 0 在左端面（两端平面面积较大的一端）；轴 1 指向定位销孔；
+# 轴 2 = 轴 0 × 轴 1，方位角从轴 1 转向轴 2 为正，即从左端向右看的顺时针方向。
+entities:
+  shaft:     {cylinder: {d: 20, side: outer}}
+  journals:  {cylinder: {d: 30, side: outer}, count: 3}
+  stub:      {cylinder: {d: 18, side: outer}, count: 1}
+  # 基圆 / 桃尖圆不计数：模型按切点坐标画弧时，同一段圆弧可能拆成圆心相差几微米的两张面；
+  # 4 个凸轮是否齐全由 stations、lobe_profile、phasing 的逐个探测保证
+  bases:     {cylinder: {d: 32, side: outer}}
+  noses:     {cylinder: {d: 16, side: outer}}
+  dowel:     {cylinder: {d: 5, side: inner}, count: 1}
+  frame:     {axis_frame: {axis: shaft, low: larger_area, ref: dowel}}
+
+rubrics:
+  - id: solid
+    source: 单一实体，所有回转结构同轴
+    hard: true
+    check:
+      - single_valid_solid: {}
+      - coaxial: [journals, shaft]
+      - coaxial: [bases, shaft]
+      - coaxial: [stub, shaft]
+
+  - id: length
+    source: 从 0 到驱动轴头末端 245mm
+    hard: true
+    check:
+      - extent_along: {axis: shaft, of: all, value: 245}
+
+  - id: journals
+    source: 左、中、右三个直径 30mm 的轴颈，长 16mm
+    check:
+      - exists: journals
+      - extent_along: {axis: shaft, of: journals, value: 16}
+
+  - id: stations
+    source: 轴颈位于 0~16、102~118、204~220mm；四个凸轮宽 14mm，宽度中心在 40、78、142、180mm
+    derivation: 半径 14mm（大于主轴 10、小于基圆 16 和轴颈 15）的母线上只有轴颈和凸轮
+    check:
+      - line_material: {frame: frame, along: 0, polar: [14, 45],
+                        expect: [[0, 16], [33, 47], [71, 85], [102, 118], [135, 149], [173, 187], [204, 220]]}
+
+  - id: lobe_profile
+    source: 凸轮轮廓由直径 32mm 的基圆、直径 16mm 的桃尖圆（圆心距轴线 12mm）以及两圆的两条外公切线组成
+    derivation: >-
+      公切线的法向与桃尖方向夹角 acos((16 − 8)/12) = 48.19°；在桃尖方向旋转 30° 处
+      轮廓半径 16 / cos(48.19° − 30°) = 16.842
+    check:
+      - exists: bases
+      - exists: noses
+      - axis_distance: {from: shaft, to: noses, value: 12}
+      - radial_material: {frame: frame, t: 40, deg: 30, expect: [[0, 16.842]]}
+      - radial_material: {frame: frame, t: 78, deg: 60, expect: [[0, 16.842]]}
+      - radial_material: {frame: frame, t: 142, deg: 150, expect: [[0, 16.842]]}
+      - radial_material: {frame: frame, t: 180, deg: 240, expect: [[0, 16.842]]}
+
+  - id: phasing
+    source: 第 1 个凸轮的桃尖朝向定位销孔；从左端沿轴线向右看，第 2、3、4 个凸轮的桃尖依次顺时针转过 90°
+    derivation: 半径 18mm（基圆之外、桃尖之内）的母线上，每个方位只穿过桃尖朝向该方位的那一个凸轮
+    check:
+      - line_material: {frame: frame, along: 0, polar: [18, 0], expect: [[33, 47]]}
+      - line_material: {frame: frame, along: 0, polar: [18, 90], expect: [[71, 85]]}
+      - line_material: {frame: frame, along: 0, polar: [18, 180], expect: [[135, 149]]}
+      - line_material: {frame: frame, along: 0, polar: [18, 270], expect: [[173, 187]]}
+
+  - id: dowel
+    source: 左轴颈端面上开一个直径 5mm、深 8mm 的定位销孔，孔心距轴线 9mm
+    check:
+      - exists: dowel
+      - parallel: [dowel, shaft]
+      - axis_distance: {from: shaft, to: dowel, value: 9}
+      - pocket_depth: {pocket: dowel, value: 8, open_at_extreme: true}
+
+  - id: stub
+    source: 右端再伸出直径 18mm 的驱动轴头，位于 220~245mm
+    check:
+      - exists: stub
+      - radial_material: {frame: frame, t: 232, deg: 180, expect: [[0, 9]]}
+
+  - id: keyway
+    source: 轴头上有一条宽 5mm 的通长平键槽，槽底平面距轴线 6mm，开在定位销孔所在的一侧
+    derivation: 距轴线 7.5mm 横截轴头：外圆 ±√(9² − 7.5²) = ±4.975，键槽占 [−2.5, 2.5]
+    check:
+      - radial_material: {frame: frame, t: 232, deg: 0, expect: [[0, 6]]}
+      - line_material: {frame: frame, along: 2, at: [232, 7.5, null], expect: [[-4.975, -2.5], [2.5, 4.975]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 124231.8
+    check:
+      - volume: 124231.8
+
+ungraded: []

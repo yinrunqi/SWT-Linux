@@ -28,6 +28,8 @@ KINDS = {
     "Operation-specific parts": "gusset_bracket corner_rib_stand open_box lidless_housing counterbore_plate "
                                 "csk_cover side_pad through_boss sheet_angle sheet_channel flanged_elbow "
                                 "bent_tube square_to_round rect_to_circle",
+    # 困难子集，rubric 在 eval/rubrics_hard（--rubric-dir 指定），不计入上面 50 题
+    "Showcase parts": "quad_frame connecting_rod finned_housing sprocket handwheel camshaft planet_carrier impeller",
 }
 ORDER = [c for v in KINDS.values() for c in v.split()]
 KIND_OF = {c: k for k, v in KINDS.items() for c in v.split()}

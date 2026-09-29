@@ -1,0 +1,94 @@
+case: handwheel
+prompt: >-
+  创建一个带摇把的五辐手轮，单一实体。轮缘是圆截面圆环：截面直径 16mm，截面圆心所在圆直径 184mm（轮缘外径 200mm）。
+  中心轮毂是外径 40mm、长 36mm 的圆柱，与轮缘同轴，轮毂长度方向的中点位于轮缘中面上；
+  轮毂中心开一个对边距 17mm 的正六边形贯穿孔。5 根直径 12mm 的圆柱形轮辐位于轮缘中面内，
+  沿径向从轮毂一直连到轮缘，沿圆周均布。在第一根轮辐的延长线上、距手轮中心 92mm 处装一根摇把：
+  摇把是直径 20mm 的圆柱，轴线平行于手轮轴线，从轮缘中面起向一侧伸出，末端为 R10mm 的半球，
+  摇把最高点距轮缘中面 70mm。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿轮毂轴线，t = 0 在远离摇把一侧的轮毂端面（另一端最高点是摇把球头，没有平面）；
+# 轮缘中面 t = 18，摇把最高点 t = 88。轴 1 指向摇把，轮辐位于 0°、±72°、±144°。
+entities:
+  hub:    {cylinder: {d: 40, side: outer}, count: 1}
+  rim:    {torus: {minor_r: 8, major_r: 92, side: outer}, count: 1}
+  spokes: {cylinder: {d: 12, side: outer}, count: 5}
+  handle: {cylinder: {d: 20, side: outer}, count: 1}
+  knob:   {sphere: {d: 20, side: outer}, count: 1}
+  hex:    {prism_pocket: {about: hub, sides: 6, across_flats: 17}}
+  frame:  {axis_frame: {axis: hub, low: larger_area, ref: handle}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 轮缘外径 200mm；摇把最高点距轮缘中面 70mm，轮毂长 36mm 且中点在轮缘中面上
+    hard: true
+    derivation: >-
+      轴向从轮毂端面 18 − 18 = 0 到摇把顶 18 + 70 = 88。在中面上、离轴线 30mm 平行于轴 1 的直线：
+      轮缘外缘 ±√(100² − 30²) = ±95.394、内缘 ±√(84² − 30²) = ±78.460；
+      穿过 72° 轮辐 [3.439, 16.056] 和 144° 轮辐 [−51.499, −31.084]
+    check:
+      - extent_along: {axis: hub, of: all, value: 88}
+      - line_material: {frame: frame, along: 1, at: [18, null, 30],
+                        expect: [[-95.394, -78.46], [-51.499, -31.084], [3.439, 16.056], [78.46, 95.394]]}
+
+  - id: rim
+    source: 轮缘是圆截面圆环：截面直径 16mm，截面圆心所在圆直径 184mm
+    derivation: 距轴线 98mm（离截面圆心 6mm）处轮缘厚 2·√(8² − 6²)，区间 18 ± 5.292
+    check:
+      - exists: rim
+      - coaxial: [rim, hub]
+      - line_material: {frame: frame, along: 0, polar: [98, 180], expect: [[12.708, 23.292]]}
+
+  - id: hub
+    source: 中心轮毂是外径 40mm、长 36mm 的圆柱，与轮缘同轴，轮毂长度方向的中点位于轮缘中面上
+    check:
+      - exists: hub
+      - extent_along: {axis: hub, of: hub, value: 36}
+      - line_material: {frame: frame, along: 0, polar: [15, 36], expect: [[0, 36]]}
+
+  - id: hex_bore
+    source: 轮毂中心开一个对边距 17mm 的正六边形贯穿孔
+    check:
+      - exists: hex
+      - through: {holes: hex}
+
+  - id: spokes
+    source: 5 根直径 12mm 的圆柱形轮辐位于轮缘中面内，沿径向从轮毂一直连到轮缘，沿圆周均布
+    derivation: 半径 50 的圆上每根轮辐占 2·asin(6/50) = 13.784°，间隔 72 − 13.784 = 58.216°
+    check:
+      - exists: spokes
+      - angular_openings: {frame: frame, t: 18, r: 50, count: 5, arc_deg: 58.216}
+      - line_material: {frame: frame, along: 0, polar: [50, 72], expect: [[12, 24]]}
+      - line_material: {frame: frame, along: 0, polar: [70, -144], expect: [[12, 24]]}
+
+  - id: handle
+    source: 在第一根轮辐的延长线上、距手轮中心 92mm 处装一根直径 20mm 的摇把，轴线平行于手轮轴线，从轮缘中面起向一侧伸出
+    derivation: 摇把轴线上：轮缘 [10, 26] 与摇把 [18, 88] 连成 [10, 88]
+    check:
+      - exists: handle
+      - parallel: [handle, hub]
+      - axis_distance: {from: hub, to: handle, value: 92}
+      - line_material: {frame: frame, along: 0, polar: [92, 0], expect: [[10, 88]]}
+      - line_material: {frame: frame, along: 0, polar: [50, 0], expect: [[12, 24]]}
+
+  - id: knob
+    source: 末端为 R10mm 的半球，摇把最高点距轮缘中面 70mm
+    derivation: 离摇把轴线 7mm 处：轮缘 18 − √(8² − 7²) = 14.127，球面 78 + √(10² − 7²) = 85.141
+    check:
+      - exists: knob
+      - line_material: {frame: frame, along: 0, polar: [99, 0], expect: [[14.127, 85.141]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 208078.7
+    check:
+      - volume: 208078.7
+
+ungraded: []

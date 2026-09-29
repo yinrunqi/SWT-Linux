@@ -1,0 +1,103 @@
+case: impeller
+prompt: >-
+  创建一个开式离心叶轮，单一实体。后盘是直径 120mm、厚 6mm 的圆盘；轮毂是外径 36mm 的圆柱，
+  从后盘底面算起总高 30mm，顶端外圆棱边倒 1mm×45° 倒角；中心孔直径 12mm 贯穿。
+  后盘上表面有 8 片沿圆周均布的后弯叶片，叶片高 20mm（从后盘上表面算起），厚 3mm（中线两侧各 1.5mm）。
+  从叶片一侧俯视后盘，以轴线为原点建立平面直角坐标系（X 向右、Y 向上），第 1 片叶片的中线是一段圆弧：
+  圆心在 (18, −40)mm、半径 40mm，从轮毂外圆上的点 (18, 0) 开始（此处中线沿径向），
+  顺时针方向弯向外侧，一直到半径 58mm 处截止（叶片外端面形状不限）；叶片内端伸入轮毂并与轮毂合并。
+  其余 7 片由第 1 片绕轴线每隔 45° 阵列得到。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿轮毂轴线，t = 0 在后盘底面（两端平面面积较大的一端），叶片 [6, 26]、轮毂顶 30；
+# 轴 1 指向某一片叶片中线圆弧的圆心（距轴线 √(18² + 40²) = 43.863，方位 −65.772°），
+# 俯视时 frame 方位角 = 题面坐标系方位角 + 65.772°。
+entities:
+  hub:      {cylinder: {d: 36, side: outer}, count: 1}
+  bore:     {cylinder: {d: 12, side: inner}, count: 1}
+  convex:   {cylinder: {d: 83, side: outer}, count: 8}
+  concave:  {cylinder: {d: 77, side: inner}, count: 8}
+  chamfer:  {cone: {semi_angle: 45, side: outer, max_r: 18}, count: 1}
+  frame:    {axis_frame: {axis: hub, low: larger_area, ref: convex}}
+  # 后盘、轮毂的探测与方位无关，不依赖叶片圆柱面（叶片缺失时这两项仍可单独判定）
+  axial:    {axis_frame: {axis: hub, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 后盘直径 120mm；轮毂从后盘底面算起总高 30mm
+    hard: true
+    check:
+      - bbox_sorted: [30, 120, 120]
+
+  - id: backplate
+    source: 后盘是直径 120mm、厚 6mm 的圆盘
+    check:
+      - radial_material: {frame: axial, t: 3, deg: 0, expect: [[6, 60]]}
+      - line_material: {frame: axial, along: 0, polar: [59, 0], expect: [[0, 6]]}
+
+  - id: hub
+    source: 轮毂是外径 36mm 的圆柱，总高 30mm；中心孔直径 12mm 贯穿
+    check:
+      - exists: hub
+      - exists: bore
+      - coaxial: [bore, hub]
+      - through: {holes: bore}
+      - line_material: {frame: axial, along: 0, polar: [12, 0], expect: [[0, 30]]}
+
+  - id: hub_chamfer
+    source: 顶端外圆棱边倒 1mm×45° 倒角
+    check:
+      - exists: chamfer
+      - cone_size: {cones: chamfer, radial: 1, axial: 1}
+
+  - id: blade_count
+    source: 8 片沿圆周均布的叶片，厚 3mm
+    derivation: >-
+      半径 30 处叶片占题面方位 [−6.424°, −0.520°]、半径 50 处占 [−17.890°, −13.793°]，
+      叶片间空 45 − 5.904 = 39.096° 与 45 − 4.097 = 40.903°
+    check:
+      - exists: convex
+      - exists: concave
+      - angular_openings: {frame: frame, t: 16, r: 30, count: 8, arc_deg: 39.096}
+      - angular_openings: {frame: frame, t: 16, r: 50, count: 8, arc_deg: 40.903}
+
+  - id: blade_arc
+    source: 中线是圆心在 (18, −40)mm、半径 40mm 的圆弧，从 (18, 0) 开始顺时针弯向外侧
+    derivation: >-
+      中线上圆心角 10°/30°/60° 的点在 frame 中为 (24.953, 64.377°)、(38.376, 57.745°)、(56.312, 44.969°)；
+      同一圆心角处半径 37 与 43 的点 (37.357, 53.474°)、(39.596, 61.774°) 在叶片两侧之外
+    check:
+      - axis_distance: {from: hub, to: convex, value: 43.863}
+      - coaxial: [concave, convex]
+      - line_material: {frame: frame, along: 0, polar: [24.953, 64.377], expect: [[0, 26]]}
+      - line_material: {frame: frame, along: 0, polar: [38.376, 57.745], expect: [[0, 26]]}
+      - line_material: {frame: frame, along: 0, polar: [56.312, 44.969], expect: [[0, 26]]}
+      - line_material: {frame: frame, along: 0, polar: [37.357, 53.474], expect: [[0, 6]]}
+      - line_material: {frame: frame, along: 0, polar: [39.596, 61.774], expect: [[0, 6]]}
+
+  - id: blade_height
+    source: 叶片高 20mm（从后盘上表面算起）
+    check:
+      - line_material: {frame: frame, along: 0, polar: [38.376, 57.745], expect: [[0, 26]]}
+      - line_material: {frame: frame, along: 0, polar: [38.376, 102.745], expect: [[0, 26]]}
+
+  - id: blade_tip
+    source: 一直到半径 58mm 处截止
+    derivation: 中线上半径 57 的点 (57, 44.395°) 仍在叶片内，半径 59 的点 (59, 42.681°) 已在叶片外
+    check:
+      - line_material: {frame: frame, along: 0, polar: [57, 44.395], expect: [[0, 26]]}
+      - line_material: {frame: frame, along: 0, polar: [59, 42.681], expect: [[0, 6]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算，叶片外端为 R58 圆柱面）体积 110009.5
+    check:
+      - volume: 110009.5
+
+ungraded: []

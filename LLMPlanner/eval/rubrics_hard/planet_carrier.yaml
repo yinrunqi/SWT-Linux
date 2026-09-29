@@ -1,0 +1,102 @@
+case: planet_carrier
+prompt: >-
+  创建一个行星齿轮架，单一实体。上下两块同轴圆盘，直径 120mm、厚 8mm，两盘之间净距 20mm。
+  两盘之间在直径 90mm 的圆上均布 3 根直径 18mm 的圆柱连接柱，每根连接柱中心开一个直径 6.6mm 的螺栓孔，
+  贯穿两块圆盘和连接柱。在同一个直径 90mm 的圆上、每两根相邻连接柱的正中间，开 3 个直径 12mm 的行星轮轴孔，
+  贯穿两块圆盘。上盘中心开直径 40mm 的太阳轮通孔。下盘下表面中心同轴伸出直径 30mm、长 40mm 的输出轴，
+  轴端中心有一个 M10 螺纹底孔：直径 8.5mm、深 20mm。两块圆盘外圆的上下棱边都倒 1mm×45° 倒角（共 4 条圆边）。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿输出轴轴线，t = 0 在上盘上表面（两端平面面积较大的一端）：上盘 [0, 8]、下盘 [28, 36]、
+# 输出轴 [36, 76]、螺纹底孔 [56, 76]。轴 1 指向某一个行星轮轴孔，连接柱在 ±60° 和 180°。
+entities:
+  shaft:     {cylinder: {d: 30, side: outer}, count: 1}
+  pillars:   {cylinder: {d: 18, side: outer}, count: 3}
+  bolts:     {cylinder: {d: 6.6, side: inner}, count: 3}
+  pins:      {cylinder: {d: 12, side: inner}, count: 6}
+  sun:       {cylinder: {d: 40, side: inner}, count: 1}
+  tap:       {cylinder: {d: 8.5, side: inner}, count: 1}
+  chamfers:  {cone: {semi_angle: 45, side: outer, max_r: 60}, count: 4}
+  frame:     {axis_frame: {axis: shaft, low: larger_area, ref: pins}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 圆盘直径 120mm；上盘顶面到输出轴端 8 + 20 + 8 + 40 = 76mm
+    hard: true
+    check:
+      - bbox_sorted: [76, 120, 120]
+      - extent_along: {axis: shaft, of: all, value: 76}
+
+  - id: discs
+    source: 上下两块同轴圆盘，直径 120mm、厚 8mm，两盘之间净距 20mm
+    check:
+      - line_material: {frame: frame, along: 0, polar: [45, 30], expect: [[0, 8], [28, 36]]}
+      - radial_material: {frame: frame, t: 32, deg: 30, expect: [[0, 60]]}
+
+  - id: pillars
+    source: 两盘之间在直径 90mm 的圆上均布 3 根直径 18mm 的圆柱连接柱
+    check:
+      - exists: pillars
+      - axis_distance: {from: shaft, to: pillars, value: 45}
+      - equal_angular: {about: shaft, items: pillars}
+      - line_material: {frame: frame, along: 0, polar: [51, 60], expect: [[0, 36]]}
+
+  - id: bolt_holes
+    source: 每根连接柱中心开一个直径 6.6mm 的螺栓孔，贯穿两块圆盘和连接柱
+    check:
+      - exists: bolts
+      - coaxial: [bolts, pillars]
+      - through: {holes: bolts}
+
+  - id: pin_holes
+    source: 在同一个直径 90mm 的圆上、每两根相邻连接柱的正中间，开 3 个直径 12mm 的行星轮轴孔，贯穿两块圆盘
+    derivation: 每个孔在上下盘各有一段孔壁，共 6 段；孔位 (45, 0°)、(45, ±120°)
+    check:
+      - exists: pins
+      - through: {holes: pins}
+      - axis_positions: {frame: frame, items: pins, axes: [1, 2],
+                         expect: [[45, 0], [45, 0], [-22.5, 38.971], [-22.5, 38.971], [-22.5, -38.971], [-22.5, -38.971]]}
+      - line_material: {frame: frame, along: 0, polar: [45, 0], expect: []}
+
+  - id: sun_hole
+    source: 上盘中心开直径 40mm 的太阳轮通孔
+    check:
+      - exists: sun
+      - coaxial: [sun, shaft]
+      - radial_material: {frame: frame, t: 4, deg: 30, expect: [[20, 60]]}
+      - line_material: {frame: frame, along: 0, polar: [10, 0], expect: [[28, 76]]}
+
+  - id: output_shaft
+    source: 下盘下表面中心同轴伸出直径 30mm、长 40mm 的输出轴
+    check:
+      - exists: shaft
+      - radial_material: {frame: frame, t: 46, deg: 0, expect: [[0, 15]]}
+      - radial_material: {frame: frame, t: 66, deg: 0, expect: [[4.25, 15]]}
+
+  - id: tapped_hole
+    source: 轴端中心有一个 M10 螺纹底孔：直径 8.5mm、深 20mm
+    check:
+      - exists: tap
+      - coaxial: [tap, shaft]
+      - pocket_depth: {pocket: tap, value: 20, open_at_extreme: true}
+      - line_material: {frame: frame, along: 0, polar: [0, 0], expect: [[28, 56]]}
+
+  - id: chamfers
+    source: 两块圆盘外圆的上下棱边都倒 1mm×45° 倒角（共 4 条圆边）
+    check:
+      - exists: chamfers
+      - cone_size: {cones: chamfers, radial: 1, axial: 1}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 203436.9
+    check:
+      - volume: 203436.9
+
+ungraded: []

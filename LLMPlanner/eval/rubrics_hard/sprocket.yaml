@@ -1,0 +1,102 @@
+case: sprocket
+prompt: >-
+  创建一个 18 齿滚子链链轮（节距 12.7mm），单一实体。轮盘厚 7mm、毛坯外径 80mm；
+  在直径 73.14mm 的节圆上均布 18 个直径 8.6mm 的齿槽圆，贯穿轮盘厚度切除，相邻齿槽之间剩下的部分就是轮齿。
+  轮盘一侧同轴伸出外径 40mm 的轮毂，轮毂端面距轮盘另一侧面 20mm。中心孔直径 20mm 全长贯通，
+  孔壁上有一条宽 6mm 的通长键槽，键槽底面距孔中心 12.8mm。轮盘上在直径 52mm 的圆上均布 6 个直径 9mm 的减重孔，
+  其中一个减重孔与键槽位于同一方位，并且这个方位上正好也有一个齿槽。
+  在轮毂上正对键槽、距轮毂端面 6.5mm 处沿径向钻一个直径 4.2mm 的紧定螺钉底孔，从轮毂外圆钻通到中心孔。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿中心孔轴线，t = 0 在轮盘不带轮毂的一面（两端平面面积较大的一端），轮毂端面 t = 20；
+# 轴 1 沿紧定螺钉孔轴线、指向螺钉孔（即键槽方向）。零件关于轴 0–轴 1 平面镜像对称。
+entities:
+  bore:        {cylinder: {d: 20, side: inner}, count: 1}
+  hub:         {cylinder: {d: 40, side: outer}, count: 1}
+  seats:       {cylinder: {d: 8.6, side: inner}, count: 18}
+  holes:       {cylinder: {d: 9, side: inner}, count: 6}
+  screw:       {cylinder: {d: 4.2, side: inner}, count: 1}
+  frame:       {axis_frame: {axis: bore, low: larger_area, ref_dir: screw, ref_dir_toward: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 轮毂端面距轮盘另一侧面 20mm；毛坯外径 80mm（齿顶在两齿槽正中）
+    hard: true
+    check:
+      - extent_along: {axis: bore, of: all, value: 20}
+      - radial_material: {frame: frame, t: 3.5, deg: 90, expect: [[10, 40]]}
+
+  - id: disc
+    source: 轮盘厚 7mm
+    check:
+      - line_material: {frame: frame, along: 0, polar: [25, 90], expect: [[0, 7]]}
+
+  - id: seats
+    source: 在直径 73.14mm 的节圆上均布 18 个直径 8.6mm 的齿槽圆，贯穿轮盘厚度
+    check:
+      - exists: seats
+      - through: {holes: seats}
+      - axis_distance: {from: bore, to: seats, value: 36.57}
+      - equal_angular: {about: bore, items: seats}
+
+  - id: teeth
+    source: 相邻齿槽之间剩下的部分就是轮齿
+    derivation: 半径 38 的圆与齿槽圆相交弧 12.472°，两齿槽之间的齿占 20 − 12.472 = 7.528°
+    check:
+      - angular_openings: {frame: frame, t: 3.5, r: 38, count: 18, arc_deg: 12.472}
+
+  - id: hub
+    source: 轮盘一侧同轴伸出外径 40mm 的轮毂
+    check:
+      - exists: hub
+      - coaxial: [hub, bore]
+      - line_material: {frame: frame, along: 0, polar: [15, 90], expect: [[0, 20]]}
+
+  - id: bore_keyway
+    source: 中心孔直径 20mm 全长贯通，孔壁上有一条宽 6mm 的通长键槽，键槽底面距孔中心 12.8mm
+    derivation: 距孔心 11mm、垂直于键槽方向横截轮毂：键槽占 [−3, 3]，轮毂外圆 ±√(20² − 11²) = ±16.703
+    check:
+      - exists: bore
+      - through: {holes: bore}
+      - line_material: {frame: frame, along: 2, at: [9, 11, null], expect: [[-16.703, -3], [3, 16.703]]}
+      - line_material: {frame: frame, along: 2, at: [18, 11, null], expect: [[-16.703, -3], [3, 16.703]]}
+
+  - id: lightening_holes
+    source: 在直径 52mm 的圆上均布 6 个直径 9mm 的减重孔
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_distance: {from: bore, to: holes, value: 26}
+      - equal_angular: {about: bore, items: holes}
+
+  - id: phasing
+    source: 其中一个减重孔与键槽位于同一方位，并且这个方位上正好也有一个齿槽
+    derivation: >-
+      沿键槽方向（+）：键槽底 12.8 → 减重孔 [21.5, 30.5] → 齿槽内缘 36.57 − 4.3 = 32.27；
+      反方向（−）：中心孔 10 → 减重孔 → 齿槽
+    check:
+      - line_material: {frame: frame, along: 1, at: [3.5, null, 0],
+                        expect: [[-32.27, -30.5], [-21.5, -10], [12.8, 21.5], [30.5, 32.27]]}
+
+  - id: set_screw
+    source: 在轮毂上正对键槽、距轮毂端面 6.5mm 处沿径向钻一个直径 4.2mm 的紧定螺钉底孔，从轮毂外圆钻通到中心孔
+    derivation: 螺钉孔中心 t = 20 − 6.5 = 13.5；沿轴 1 在该高度，键槽一侧的轮毂被螺钉孔全部打通
+    check:
+      - exists: screw
+      - through: {holes: screw}
+      - axis_positions: {frame: frame, items: screw, axes: [0, 2], expect: [[13.5, 0]]}
+      - line_material: {frame: frame, along: 1, at: [13.5, null, 0], expect: [[-20, -10]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 35201.4
+    check:
+      - volume: 35201.4
+
+ungraded: []

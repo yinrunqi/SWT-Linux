@@ -236,6 +236,7 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py `
 
 - 每次运行前会关闭所有文档，运行后把 `SLDPRT` 和 `STEP` 保存到 `eval/artifacts/<output 文件名>/<case>_r<k>.*`。
 - `--ids soap_dish mug` 只跑指定的任务；`--action-level L0` 跑单轮原子规划；`--model` 换骨干模型。
+- `--split all` 只包含 50 道核心任务；8 道复杂综合件（四旋翼机架、凸轮轴、离心叶轮等）用 `--split hard` 单独跑，适合做演示。
 - 打分和汇总见 [`Workflow-CAD-Bench.md`](./Workflow-CAD-Bench.md)。
 
 ---

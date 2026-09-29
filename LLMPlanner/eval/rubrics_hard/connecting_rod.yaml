@@ -1,0 +1,108 @@
+case: connecting_rod
+prompt: >-
+  创建发动机连杆，单一实体，整体厚 20mm。大头是外径 56mm 的圆柱凸台，中心开直径 36mm 的贯穿轴承孔；
+  小头是外径 30mm 的圆柱凸台，中心开直径 20mm 的贯穿活塞销孔；大、小头孔中心距 140mm。
+  杆身外轮廓由大、小头外圆的两条外公切线构成。杆身正反两面各铣一个深 6mm 的梯形减重槽，使杆身中间腹板厚 8mm：
+  梯形关于连杆中线对称，两条底边都垂直于中线，靠大头的一边距大头孔心 40mm、长 24mm，
+  靠小头的一边距大头孔心 110mm、长 14mm，槽角不倒圆。小头顶端沿连杆中线方向钻一个直径 4mm 的油孔，
+  从小头外圆一直钻通到活塞销孔。大头轴承孔两端孔口各倒 1mm×45° 倒角。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿厚度（t ∈ [0, 20]），原点在大头孔轴线上；轴 1 沿连杆中线指向小头。零件关于中线、中面都对称。
+entities:
+  big_boss:   {cylinder: {d: 56, side: outer}, count: 1}
+  big_bore:   {cylinder: {d: 36, side: inner}, count: 1}
+  small_boss: {cylinder: {d: 30, side: outer}, count: 1}
+  small_bore: {cylinder: {d: 20, side: inner}, count: 1}
+  oil_hole:   {cylinder: {d: 4, side: inner}, count: 1}
+  chamfers:   {cone: {semi_angle: 45, side: inner, max_r: 19}, count: 2}
+  frame:      {axis_frame: {axis: big_bore, ref: small_bore}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: thickness
+    source: 整体厚 20mm
+    hard: true
+    check:
+      - extent_along: {axis: big_bore, of: all, value: 20}
+      - line_material: {frame: frame, along: 0, polar: [23, 180], expect: [[0, 20]]}
+
+  - id: big_end
+    source: 大头是外径 56mm 的圆柱凸台，中心开直径 36mm 的贯穿轴承孔
+    check:
+      - exists: big_boss
+      - exists: big_bore
+      - coaxial: [big_bore, big_boss]
+      - through: {holes: big_bore}
+      - line_material: {frame: frame, along: 2, at: [10, 0, null], expect: [[-28, -18], [18, 28]]}
+
+  - id: small_end
+    source: 小头是外径 30mm 的圆柱凸台，中心开直径 20mm 的贯穿活塞销孔；大、小头孔中心距 140mm
+    check:
+      - exists: small_boss
+      - exists: small_bore
+      - coaxial: [small_bore, small_boss]
+      - through: {holes: small_bore}
+      - axis_distance: {from: big_bore, to: small_bore, value: 140}
+      - line_material: {frame: frame, along: 2, at: [10, 140, null], expect: [[-15, -10], [10, 15]]}
+
+  - id: shank
+    source: 杆身外轮廓由大、小头外圆的两条外公切线构成
+    derivation: 公切线与中线夹角 α，sin α = (28 − 15)/140；距大头孔心 x 处半宽 (28 − x·sin α)/cos α，x = 75 时 21.127
+    check:
+      - line_material: {frame: frame, along: 2, at: [10, 75, null], expect: [[-21.127, 21.127]]}
+
+  - id: centerline
+    source: 由以上尺寸确定；油孔从小头外圆钻通到活塞销孔
+    derivation: 中面上沿中线：大头 [−28, −18]，杆身连续到小头孔 130；小头孔外侧 [150, 155] 被油孔去掉
+    check:
+      - line_material: {frame: frame, along: 1, at: [10, null, 0], expect: [[-28, -18], [18, 130]]}
+
+  - id: pocket_top
+    source: 杆身正反两面各铣一个深 6mm 的梯形减重槽（一面）；梯形两底边距大头孔心 40 / 110mm、长 24 / 14mm
+    derivation: >-
+      距该面 3mm 处沿中线，材料在 40 和 110 处断开（油孔只占中面 ±2mm，小头外侧 [150, 155] 仍有材料）；
+      x = 100 处槽半宽 12 − 60·5/70 = 7.714，杆身半宽 18.795
+    check:
+      - line_material: {frame: frame, along: 1, at: [17, null, 0], expect: [[-28, -18], [18, 40], [110, 130], [150, 155]]}
+      - line_material: {frame: frame, along: 2, at: [17, 100, null], expect: [[-18.795, -7.714], [7.714, 18.795]]}
+
+  - id: pocket_bottom
+    source: 杆身正反两面各铣一个深 6mm 的梯形减重槽（另一面）
+    derivation: x = 41 处槽半宽 12 − 5/70 = 11.929，杆身半宽 24.298
+    check:
+      - line_material: {frame: frame, along: 1, at: [3, null, 0], expect: [[-28, -18], [18, 40], [110, 130], [150, 155]]}
+      - line_material: {frame: frame, along: 2, at: [3, 41, null], expect: [[-24.298, -11.929], [11.929, 24.298]]}
+
+  - id: web
+    source: 使杆身中间腹板厚 8mm
+    check:
+      - line_material: {frame: frame, along: 0, polar: [75, 0], expect: [[6, 14]]}
+
+  - id: oil_hole
+    source: 小头顶端沿连杆中线方向钻一个直径 4mm 的油孔
+    check:
+      - exists: oil_hole
+      - through: {holes: oil_hole}
+      - parallel_to_frame: {frame: frame, items: oil_hole, axis: 1}
+      - axis_positions: {frame: frame, items: oil_hole, axes: [0, 2], expect: [[10, 0]]}
+
+  - id: chamfers
+    source: 大头轴承孔两端孔口各倒 1mm×45° 倒角
+    check:
+      - exists: chamfers
+      - coaxial: [chamfers, big_bore]
+      - cone_size: {cones: chamfers, radial: 1, axial: 1}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 109839.2
+    check:
+      - volume: 109839.2
+
+ungraded: []

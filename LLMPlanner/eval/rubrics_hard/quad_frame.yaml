@@ -1,0 +1,119 @@
+case: quad_frame
+prompt: >-
+  创建一块 X 型四旋翼无人机机架底板，单一实体，整块板厚 4mm。中心板是边长 60mm 的正方形，
+  中心开直径 12mm 的走线孔，并有 4 个直径 3.5mm 的飞控安装孔，孔心位于以板中心为中心、边长 30.5mm、
+  各边与中心板边平行的正方形四角。四根机臂沿中心板两条对角线方向伸出，机臂宽 16mm、中线通过板中心；
+  每根机臂末端是直径 32mm 的圆形电机座，电机座圆心距板中心 110mm，机臂的矩形部分一直延伸到电机座圆心。
+  每个电机座中心开直径 8mm 的轴孔，另有 4 个直径 3.2mm 的电机安装孔，分别位于电机座圆心沿中心板两边方向
+  （即平行于中心板各边的 4 个方向）偏移 9.5mm 处。每根机臂中线上开一个宽 6mm 的减重长圆孔，
+  两端半圆圆心距板中心分别为 45mm 和 75mm。机臂侧边与中心板边相交形成的 8 个内角各倒 R5mm 圆角（沿板厚方向的棱边）。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿板厚（t ∈ [0, 4]），原点在走线孔轴线上；轴 1 指向某一个电机座（沿一条对角线），
+# 轴 2 沿另一条对角线。零件关于两条对角线都镜像对称，所以轴 2 的正负不影响下面的探测。
+entities:
+  hub:          {cylinder: {d: 12, side: inner}, count: 1}
+  mounts:       {cylinder: {d: 32, side: outer}, count: 4}
+  shaft_holes:  {cylinder: {d: 8, side: inner}, count: 4}
+  motor_holes:  {cylinder: {d: 3.2, side: inner}, count: 16}
+  fc_holes:     {cylinder: {d: 3.5, side: inner}, count: 4}
+  slot_ends:    {cylinder: {d: 6, side: inner}, count: 8}
+  frame:        {axis_frame: {axis: hub, ref: mounts}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: plate
+    source: 整块板厚 4mm
+    hard: true
+    check:
+      - extent_along: {axis: hub, of: all, value: 4}
+      - line_material: {frame: frame, along: 0, polar: [30, 20], expect: [[0, 4]]}
+      - line_material: {frame: frame, along: 0, polar: [90, 0], expect: [[0, 4]]}
+
+  - id: center_plate
+    source: 中心板是边长 60mm 的正方形；中心开直径 12mm 的走线孔
+    derivation: 沿中心板边的法向（与机臂成 45°）从中心出发，材料从走线孔边 6 到板边 30
+    check:
+      - exists: hub
+      - through: {holes: hub}
+      - radial_material: {frame: frame, t: 2, deg: 45, expect: [[6, 30]]}
+      - radial_material: {frame: frame, t: 2, deg: 135, expect: [[6, 30]]}
+
+  - id: fc_holes
+    source: 4 个直径 3.5mm 的飞控安装孔，孔心位于边长 30.5mm、各边与中心板边平行的正方形四角
+    derivation: 孔心在对角线上，距中心 30.5/√2 = 21.567
+    check:
+      - exists: fc_holes
+      - through: {holes: fc_holes}
+      - axis_positions: {frame: frame, items: fc_holes, axes: [1, 2],
+                         expect: [[21.567, 0], [-21.567, 0], [0, 21.567], [0, -21.567]]}
+
+  - id: arms
+    source: 四根机臂沿中心板两条对角线方向伸出，机臂宽 16mm、中线通过板中心
+    derivation: 在距中心 90mm 处横截机臂得 [−8, 8]；在 60mm 处被 6mm 宽的减重孔分成两段
+    check:
+      - line_material: {frame: frame, along: 2, at: [2, 90, null], expect: [[-8, 8]]}
+      - line_material: {frame: frame, along: 1, at: [2, null, 90], expect: [[-8, 8]]}
+      - line_material: {frame: frame, along: 2, at: [2, 60, null], expect: [[-8, -3], [3, 8]]}
+
+  - id: mounts
+    source: 每根机臂末端是直径 32mm 的圆形电机座，电机座圆心距板中心 110mm
+    check:
+      - exists: mounts
+      - axis_distance: {from: hub, to: mounts, value: 110}
+      - equal_angular: {about: hub, items: mounts}
+
+  - id: diagonal
+    source: 由以上尺寸确定（沿一条对角线穿过两根机臂、走线孔、飞控孔、减重孔和轴孔）
+    derivation: >-
+      电机座外缘 110 + 16 = 126；轴孔 110 ± 4；减重孔 [45 − 3, 75 + 3] = [42, 78]；
+      飞控孔 21.567 ± 1.75 = [19.817, 23.317]；走线孔 ±6
+    check:
+      - line_material: {frame: frame, along: 1, at: [2, null, 0],
+                        expect: [[-126, -114], [-106, -78], [-42, -23.317], [-19.817, -6],
+                                 [6, 19.817], [23.317, 42], [78, 106], [114, 126]]}
+
+  - id: shaft_holes
+    source: 每个电机座中心开直径 8mm 的轴孔
+    check:
+      - exists: shaft_holes
+      - coaxial: [shaft_holes, mounts]
+      - through: {holes: shaft_holes}
+
+  - id: motor_holes
+    source: 4 个直径 3.2mm 的电机安装孔，分别位于电机座圆心沿中心板两边方向偏移 9.5mm 处
+    derivation: 偏移方向与机臂成 45°，在 frame 中为 (±6.718, ±6.718)；110 ± 6.718 = 103.282 / 116.718
+    check:
+      - exists: motor_holes
+      - through: {holes: motor_holes}
+      - axis_positions: {frame: frame, items: motor_holes, axes: [1, 2],
+                         expect: [[116.718, 6.718], [116.718, -6.718], [103.282, 6.718], [103.282, -6.718],
+                                  [-116.718, 6.718], [-116.718, -6.718], [-103.282, 6.718], [-103.282, -6.718],
+                                  [6.718, 116.718], [-6.718, 116.718], [6.718, 103.282], [-6.718, 103.282],
+                                  [6.718, -116.718], [-6.718, -116.718], [6.718, -103.282], [-6.718, -103.282]]}
+
+  - id: slots
+    source: 每根机臂中线上开一个宽 6mm 的减重长圆孔，两端半圆圆心距板中心分别为 45mm 和 75mm
+    check:
+      - exists: slot_ends
+      - through: {holes: slot_ends}
+      - axis_positions: {frame: frame, items: slot_ends, axes: [1, 2],
+                         expect: [[45, 0], [75, 0], [-45, 0], [-75, 0], [0, 45], [0, 75], [0, -45], [0, -75]]}
+
+  - id: fillets
+    source: 机臂侧边与中心板边相交形成的 8 个内角各倒 R5mm 圆角
+    check:
+      - blend_faces: {radius: 5, side: inner, min_count: 8}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算，8 个 R5 内圆角）体积 36432.1
+    check:
+      - volume: 36432.1
+
+ungraded: []
