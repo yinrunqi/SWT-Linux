@@ -1,0 +1,4238 @@
+[
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\end_cap_r1.step",
+    "case": "end_cap",
+    "score": 100.0,
+    "passed": 5,
+    "total": 5,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              15.0
+            ]
+          },
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              15.0,
+              60.0,
+              60.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "cavity",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "pocket_depth",
+            "ok": true,
+            "pockets": [
+              {
+                "blind": true,
+                "open_at_extreme": true,
+                "depth": 12.0
+              }
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                3.0
+              ]
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                25.0,
+                30.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "hole",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                4.0,
+                30.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 18698.76,
+            "expected": 18698.8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\end_cap_r2.step",
+    "case": "end_cap",
+    "score": 100.0,
+    "passed": 5,
+    "total": 5,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              15.0
+            ]
+          },
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              15.0,
+              60.0,
+              60.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "cavity",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "pocket_depth",
+            "ok": true,
+            "pockets": [
+              {
+                "blind": true,
+                "open_at_extreme": true,
+                "depth": 12.0
+              }
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                3.0
+              ]
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                25.0,
+                30.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "hole",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                4.0,
+                30.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 18698.76,
+            "expected": 18698.8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\flanged_bushing_r1.step",
+    "case": "flanged_bushing",
+    "score": 100.0,
+    "passed": 5,
+    "total": 5,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              30.0,
+              36.0,
+              36.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sleeve_and_flange",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "stepped_length",
+            "ok": true,
+            "outer_len": [
+              5.0,
+              5.0,
+              5.0,
+              5.0
+            ],
+            "inner_len": [
+              25.0,
+              25.0,
+              25.0,
+              25.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bore",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 30.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              30.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 9550.44,
+            "expected": 9550.4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\flanged_bushing_r2.step",
+    "case": "flanged_bushing",
+    "score": 100.0,
+    "passed": 5,
+    "total": 5,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              30.0,
+              36.0,
+              36.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sleeve_and_flange",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "stepped_length",
+            "ok": true,
+            "outer_len": [
+              5.0,
+              5.0,
+              5.0,
+              5.0
+            ],
+            "inner_len": [
+              25.0,
+              25.0,
+              25.0,
+              25.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bore",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 30.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              30.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 9550.44,
+            "expected": 9550.4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\hex_standoff_r1.step",
+    "case": "hex_standoff",
+    "score": 100.0,
+    "passed": 4,
+    "total": 4,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "hex",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              20.0
+            ]
+          },
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              8.0,
+              9.238,
+              20.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "holes",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 2,
+            "expected": 2
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true,
+              true
+            ]
+          },
+          {
+            "check": "pocket_depth",
+            "ok": true,
+            "pockets": [
+              {
+                "blind": true,
+                "open_at_extreme": true,
+                "depth": 6.0
+              },
+              {
+                "blind": true,
+                "open_at_extreme": true,
+                "depth": 6.0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 1005.88,
+            "expected": 1005.9
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\hex_standoff_r2.step",
+    "case": "hex_standoff",
+    "score": 100.0,
+    "passed": 4,
+    "total": 4,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "hex",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              20.0
+            ]
+          },
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              8.0,
+              9.238,
+              20.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "holes",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 2,
+            "expected": 2
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true,
+              true
+            ]
+          },
+          {
+            "check": "pocket_depth",
+            "ok": true,
+            "pockets": [
+              {
+                "blind": true,
+                "open_at_extreme": true,
+                "depth": 6.0
+              },
+              {
+                "blind": true,
+                "open_at_extreme": true,
+                "depth": 6.0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 1005.88,
+            "expected": 1005.9
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\knob_r1.step",
+    "case": "knob",
+    "score": 50.0,
+    "passed": 3,
+    "total": 6,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": false,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "body",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              20.0
+            ]
+          },
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              25.0,
+              30.0,
+              30.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "cap",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              5.0
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                5.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                25.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "grooves",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "angular_openings",
+            "ok": false,
+            "sections": [
+              {
+                "t": 0.3,
+                "count": 0,
+                "ok": false
+              },
+              {
+                "t": 10,
+                "count": 0,
+                "ok": false
+              },
+              {
+                "t": 19.7,
+                "count": 0,
+                "ok": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "mount_hole",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "pocket_depth",
+            "ok": false,
+            "pockets": [
+              {
+                "blind": true,
+                "open_at_extreme": true,
+                "depth": 20.0
+              }
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                12.0,
+                25.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": false,
+            "measured": 14150.0,
+            "expected": 13715.9
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\knob_r2.step",
+    "case": "knob",
+    "score": 66.67,
+    "passed": 4,
+    "total": 6,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": false,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "body",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              20.0
+            ]
+          },
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              25.0,
+              30.0,
+              30.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "cap",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              5.0
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                5.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                25.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "grooves",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "angular_openings",
+            "ok": false,
+            "sections": [
+              {
+                "t": 0.3,
+                "r": 14.5,
+                "count": 12,
+                "gaps_deg": [
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0
+                ],
+                "arc_deg": [
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95
+                ],
+                "chord": [
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001
+                ],
+                "r_in": [
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008
+                ],
+                "r_out": [
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null
+                ],
+                "ok": false
+              },
+              {
+                "t": 10,
+                "r": 14.5,
+                "count": 12,
+                "gaps_deg": [
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0
+                ],
+                "arc_deg": [
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95
+                ],
+                "chord": [
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001
+                ],
+                "r_in": [
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008
+                ],
+                "r_out": [
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null
+                ],
+                "ok": false
+              },
+              {
+                "t": 19.7,
+                "r": 14.5,
+                "count": 12,
+                "gaps_deg": [
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0,
+                  30.0
+                ],
+                "arc_deg": [
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95,
+                  3.95
+                ],
+                "chord": [
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001,
+                  1.001
+                ],
+                "r_in": [
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008,
+                  14.008
+                ],
+                "r_out": [
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null
+                ],
+                "ok": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "mount_hole",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "pocket_depth",
+            "ok": true,
+            "pockets": [
+              {
+                "blind": true,
+                "open_at_extreme": true,
+                "depth": 12.0
+              }
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                12.0,
+                25.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": false,
+            "measured": 13953.24,
+            "expected": 13715.9
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\l_bracket_r1.step",
+    "case": "l_bracket",
+    "score": 16.67,
+    "passed": 1,
+    "total": 6,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": false,
+    "accepted": false,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": false,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": false,
+            "measured": [
+              5.0,
+              40.0,
+              50.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "l_shape",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "line_material",
+            "ok": false,
+            "measured": []
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "measured": []
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "measured": []
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "measured": []
+          }
+        ]
+      },
+      {
+        "id": "h_holes",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": false,
+            "found": 0,
+            "expected": 2
+          },
+          {
+            "check": "through",
+            "ok": false,
+            "error": "未找到实体 h_holes"
+          },
+          {
+            "check": "axis_positions",
+            "ok": false,
+            "error": "未找到实体 h_holes"
+          }
+        ]
+      },
+      {
+        "id": "v_hole",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": false,
+            "found": 0,
+            "expected": 1
+          },
+          {
+            "check": "through",
+            "ok": false,
+            "error": "未找到实体 v_hole"
+          },
+          {
+            "check": "axis_positions",
+            "ok": false,
+            "error": "未找到实体 v_hole"
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": false,
+            "measured": 8575.88,
+            "expected": 12325.9
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\l_bracket_r2.step",
+    "case": "l_bracket",
+    "score": 16.67,
+    "passed": 1,
+    "total": 6,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": false,
+    "accepted": false,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": false,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": false,
+            "measured": [
+              5.0,
+              40.0,
+              50.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "l_shape",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "line_material",
+            "ok": false,
+            "measured": []
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "measured": []
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "measured": []
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "measured": []
+          }
+        ]
+      },
+      {
+        "id": "h_holes",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": false,
+            "found": 0,
+            "expected": 2
+          },
+          {
+            "check": "through",
+            "ok": false,
+            "error": "未找到实体 h_holes"
+          },
+          {
+            "check": "axis_positions",
+            "ok": false,
+            "error": "未找到实体 h_holes"
+          }
+        ]
+      },
+      {
+        "id": "v_hole",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": false,
+            "found": 0,
+            "expected": 1
+          },
+          {
+            "check": "through",
+            "ok": false,
+            "error": "未找到实体 v_hole"
+          },
+          {
+            "check": "axis_positions",
+            "ok": false,
+            "error": "未找到实体 v_hole"
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": false,
+            "measured": 8575.88,
+            "expected": 12325.9
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\link_bar_r1.step",
+    "case": "link_bar",
+    "score": 100.0,
+    "passed": 6,
+    "total": 6,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              6.0,
+              24.0,
+              104.0
+            ]
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              6.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "heads",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 2,
+            "expected": 2
+          },
+          {
+            "check": "parallel",
+            "ok": true,
+            "parallel": [
+              true,
+              true
+            ]
+          },
+          {
+            "check": "pair_distance",
+            "ok": true,
+            "measured": 80.0
+          }
+        ]
+      },
+      {
+        "id": "bar",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "parallel_faces",
+            "ok": true,
+            "gaps": [
+              14.0
+            ],
+            "pairs": 1,
+            "mid_offset": 0.0
+          }
+        ]
+      },
+      {
+        "id": "holes",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 2,
+            "expected": 2
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true,
+              true
+            ]
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 6.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 6.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 9311.22,
+            "expected": 9311.2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\link_bar_r2.step",
+    "case": "link_bar",
+    "score": 100.0,
+    "passed": 6,
+    "total": 6,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              6.0,
+              24.005,
+              104.005
+            ]
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              6.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "heads",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 2,
+            "expected": 2
+          },
+          {
+            "check": "parallel",
+            "ok": true,
+            "parallel": [
+              true,
+              true
+            ]
+          },
+          {
+            "check": "pair_distance",
+            "ok": true,
+            "measured": 80.0
+          }
+        ]
+      },
+      {
+        "id": "bar",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "parallel_faces",
+            "ok": true,
+            "gaps": [
+              14.0
+            ],
+            "pairs": 1,
+            "mid_offset": 0.0
+          }
+        ]
+      },
+      {
+        "id": "holes",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 2,
+            "expected": 2
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true,
+              true
+            ]
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 6.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 6.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 9313.11,
+            "expected": 9311.2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\mounting_plate_r1.step",
+    "case": "mounting_plate",
+    "score": 100.0,
+    "passed": 6,
+    "total": 6,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "plate",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              6.0,
+              80.0,
+              120.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "corners",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 4,
+            "expected": 4
+          },
+          {
+            "check": "parallel_to_frame",
+            "ok": true,
+            "parallel": [
+              true,
+              true,
+              true,
+              true
+            ]
+          },
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                8.0,
+                8.0
+              ],
+              [
+                72.0,
+                8.0
+              ],
+              [
+                72.0,
+                112.0
+              ],
+              [
+                8.0,
+                112.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "holes",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 4,
+            "expected": 4
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 6.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 6.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 6.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 6.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          },
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                12.0,
+                108.0
+              ],
+              [
+                68.0,
+                12.0
+              ],
+              [
+                12.0,
+                12.0
+              ],
+              [
+                68.0,
+                108.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "window",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "opening_size",
+            "ok": true,
+            "sizes": [
+              20.0,
+              40.0
+            ],
+            "halves": [
+              [
+                10.0,
+                10.0
+              ],
+              [
+                20.0,
+                20.0
+              ]
+            ],
+            "through": true
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 51546.74,
+            "expected": 51546.8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\mounting_plate_r2.step",
+    "case": "mounting_plate",
+    "score": 100.0,
+    "passed": 6,
+    "total": 6,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "plate",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              6.0,
+              80.0,
+              120.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "corners",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 4,
+            "expected": 4
+          },
+          {
+            "check": "parallel_to_frame",
+            "ok": true,
+            "parallel": [
+              true,
+              true,
+              true,
+              true
+            ]
+          },
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                72.0,
+                8.0
+              ],
+              [
+                72.0,
+                112.0
+              ],
+              [
+                8.0,
+                112.0
+              ],
+              [
+                8.0,
+                8.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "holes",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 4,
+            "expected": 4
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 6.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 6.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 6.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 6.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          },
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                12.0,
+                12.0
+              ],
+              [
+                68.0,
+                108.0
+              ],
+              [
+                68.0,
+                12.0
+              ],
+              [
+                12.0,
+                108.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "window",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "opening_size",
+            "ok": true,
+            "sizes": [
+              20.0,
+              40.0
+            ],
+            "halves": [
+              [
+                10.0,
+                10.0
+              ],
+              [
+                20.0,
+                20.0
+              ]
+            ],
+            "through": true
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 51546.74,
+            "expected": 51546.8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\spacer_ring_r1.step",
+    "case": "spacer_ring",
+    "score": 100.0,
+    "passed": 4,
+    "total": 4,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "ring",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              10.0
+            ]
+          },
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              10.0,
+              40.0,
+              40.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chamfers",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 2,
+            "expected": 2
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true,
+              true
+            ]
+          },
+          {
+            "check": "cone_size",
+            "ok": true,
+            "measured": [
+              [
+                1.0,
+                1.0
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ]
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              8.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 9301.21,
+            "expected": 9301.2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\spacer_ring_r2.step",
+    "case": "spacer_ring",
+    "score": 100.0,
+    "passed": 4,
+    "total": 4,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "ring",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              10.0
+            ]
+          },
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              10.0,
+              40.0,
+              40.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chamfers",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 2,
+            "expected": 2
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true,
+              true
+            ]
+          },
+          {
+            "check": "cone_size",
+            "ok": true,
+            "measured": [
+              [
+                1.0,
+                1.0
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ]
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              8.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 9301.21,
+            "expected": 9301.2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\spoked_wheel_r1.step",
+    "case": "spoked_wheel",
+    "score": 100.0,
+    "passed": 5,
+    "total": 5,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "disk",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              10.0
+            ]
+          },
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              10.0,
+              120.0,
+              120.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bore",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sectors",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "angular_openings",
+            "ok": true,
+            "sections": [
+              {
+                "t": 0.3,
+                "r": 35.0,
+                "count": 4,
+                "gaps_deg": [
+                  90.0,
+                  90.0,
+                  90.0,
+                  90.0
+                ],
+                "arc_deg": [
+                  60.0,
+                  60.0,
+                  60.0,
+                  60.0
+                ],
+                "chord": [
+                  35.0,
+                  35.0,
+                  35.0,
+                  35.0
+                ],
+                "r_in": [
+                  20.0,
+                  20.0,
+                  20.0,
+                  20.0
+                ],
+                "r_out": [
+                  50.0,
+                  50.0,
+                  50.0,
+                  50.0
+                ],
+                "ok": true
+              },
+              {
+                "t": 5,
+                "r": 35.0,
+                "count": 4,
+                "gaps_deg": [
+                  90.0,
+                  90.0,
+                  90.0,
+                  90.0
+                ],
+                "arc_deg": [
+                  60.0,
+                  60.0,
+                  60.0,
+                  60.0
+                ],
+                "chord": [
+                  35.0,
+                  35.0,
+                  35.0,
+                  35.0
+                ],
+                "r_in": [
+                  20.0,
+                  20.0,
+                  20.0,
+                  20.0
+                ],
+                "r_out": [
+                  50.0,
+                  50.0,
+                  50.0,
+                  50.0
+                ],
+                "ok": true
+              },
+              {
+                "t": 9.7,
+                "r": 35.0,
+                "count": 4,
+                "gaps_deg": [
+                  90.0,
+                  90.0,
+                  90.0,
+                  90.0
+                ],
+                "arc_deg": [
+                  60.0,
+                  60.0,
+                  60.0,
+                  60.0
+                ],
+                "chord": [
+                  35.0,
+                  35.0,
+                  35.0,
+                  35.0
+                ],
+                "r_in": [
+                  20.0,
+                  20.0,
+                  20.0,
+                  20.0
+                ],
+                "r_out": [
+                  50.0,
+                  50.0,
+                  50.0,
+                  50.0
+                ],
+                "ok": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 65973.45,
+            "expected": 65973.4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\spoked_wheel_r2.step",
+    "case": "spoked_wheel",
+    "score": 100.0,
+    "passed": 5,
+    "total": 5,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "disk",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              10.0
+            ]
+          },
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              10.0,
+              120.0,
+              120.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bore",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sectors",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "angular_openings",
+            "ok": true,
+            "sections": [
+              {
+                "t": 0.3,
+                "r": 35.0,
+                "count": 4,
+                "gaps_deg": [
+                  90.0,
+                  90.0,
+                  90.0,
+                  90.0
+                ],
+                "arc_deg": [
+                  60.0,
+                  60.0,
+                  60.0,
+                  60.0
+                ],
+                "chord": [
+                  35.0,
+                  35.0,
+                  35.0,
+                  35.0
+                ],
+                "r_in": [
+                  20.0,
+                  20.0,
+                  20.0,
+                  20.0
+                ],
+                "r_out": [
+                  50.0,
+                  50.0,
+                  50.0,
+                  50.0
+                ],
+                "ok": true
+              },
+              {
+                "t": 5,
+                "r": 35.0,
+                "count": 4,
+                "gaps_deg": [
+                  90.0,
+                  90.0,
+                  90.0,
+                  90.0
+                ],
+                "arc_deg": [
+                  60.0,
+                  60.0,
+                  60.0,
+                  60.0
+                ],
+                "chord": [
+                  35.0,
+                  35.0,
+                  35.0,
+                  35.0
+                ],
+                "r_in": [
+                  20.0,
+                  20.0,
+                  20.0,
+                  20.0
+                ],
+                "r_out": [
+                  50.0,
+                  50.0,
+                  50.0,
+                  50.0
+                ],
+                "ok": true
+              },
+              {
+                "t": 9.7,
+                "r": 35.0,
+                "count": 4,
+                "gaps_deg": [
+                  90.0,
+                  90.0,
+                  90.0,
+                  90.0
+                ],
+                "arc_deg": [
+                  60.0,
+                  60.0,
+                  60.0,
+                  60.0
+                ],
+                "chord": [
+                  35.0,
+                  35.0,
+                  35.0,
+                  35.0
+                ],
+                "r_in": [
+                  20.0,
+                  20.0,
+                  20.0,
+                  20.0
+                ],
+                "r_out": [
+                  50.0,
+                  50.0,
+                  50.0,
+                  50.0
+                ],
+                "ok": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 65973.45,
+            "expected": 65973.4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\stepped_block_r1.step",
+    "case": "stepped_block",
+    "score": 100.0,
+    "passed": 5,
+    "total": 5,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              30.0,
+              50.0,
+              80.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "layers",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                30.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                15.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                50.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                40.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "hole",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "parallel_to_frame",
+            "ok": true,
+            "parallel": [
+              true
+            ]
+          },
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                25.0,
+                60.0
+              ]
+            ]
+          },
+          {
+            "check": "pocket_depth",
+            "ok": true,
+            "pockets": [
+              {
+                "blind": true,
+                "depth": 8.0
+              }
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                7.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 89371.68,
+            "expected": 89371.7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\stepped_block_r2.step",
+    "case": "stepped_block",
+    "score": 100.0,
+    "passed": 5,
+    "total": 5,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              30.0,
+              50.0,
+              80.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "layers",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                30.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                15.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                50.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                40.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "hole",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "parallel_to_frame",
+            "ok": true,
+            "parallel": [
+              true
+            ]
+          },
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                25.0,
+                60.0
+              ]
+            ]
+          },
+          {
+            "check": "pocket_depth",
+            "ok": true,
+            "pockets": [
+              {
+                "blind": true,
+                "depth": 8.0
+              }
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                7.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 89371.68,
+            "expected": 89371.7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\u_channel_r1.step",
+    "case": "u_channel",
+    "score": 100.0,
+    "passed": 5,
+    "total": 5,
+    "implied_passed": 1,
+    "implied_total": 1,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              30.0,
+              40.0,
+              100.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "section",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                4.0
+              ],
+              [
+                36.0,
+                40.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                4.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                30.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                100.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "holes",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 3,
+            "expected": 3
+          },
+          {
+            "check": "parallel_to_frame",
+            "ok": true,
+            "parallel": [
+              true,
+              true,
+              true
+            ]
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 4.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 4.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 4.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          },
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                20.0,
+                80.0
+              ],
+              [
+                20.0,
+                50.0
+              ],
+              [
+                20.0,
+                20.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "holes_centered",
+        "ok": true,
+        "hard": false,
+        "basis": "implied",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                20.0,
+                80.0
+              ],
+              [
+                20.0,
+                50.0
+              ],
+              [
+                20.0,
+                20.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 36196.81,
+            "expected": 36196.8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\u_channel_r2.step",
+    "case": "u_channel",
+    "score": 100.0,
+    "passed": 5,
+    "total": 5,
+    "implied_passed": 1,
+    "implied_total": 1,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              30.0,
+              40.0,
+              100.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "section",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                4.0
+              ],
+              [
+                36.0,
+                40.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                4.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                30.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                100.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "holes",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 3,
+            "expected": 3
+          },
+          {
+            "check": "parallel_to_frame",
+            "ok": true,
+            "parallel": [
+              true,
+              true,
+              true
+            ]
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 4.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 4.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 4.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          },
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                20.0,
+                20.0
+              ],
+              [
+                20.0,
+                50.0
+              ],
+              [
+                20.0,
+                80.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "holes_centered",
+        "ok": true,
+        "hard": false,
+        "basis": "implied",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                20.0,
+                20.0
+              ],
+              [
+                20.0,
+                50.0
+              ],
+              [
+                20.0,
+                80.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 36196.81,
+            "expected": 36196.8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\wedge_block_r1.step",
+    "case": "wedge_block",
+    "score": 66.67,
+    "passed": 4,
+    "total": 6,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": false,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              20.0,
+              30.0,
+              60.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ends",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "planar_face",
+            "ok": false,
+            "planes": [
+              [
+                180.0,
+                375.0
+              ]
+            ]
+          },
+          {
+            "check": "planar_face",
+            "ok": false,
+            "planes": [
+              [
+                0.0,
+                375.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "slope",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "planar_face",
+            "ok": false,
+            "planes": []
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "measured": [
+              [
+                0.0,
+                12.5
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "measured": [
+              [
+                0.0,
+                12.5
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bottom",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "planar_face",
+            "ok": true,
+            "planes": [
+              [
+                180.0,
+                1800.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 22500.0,
+            "expected": 22500
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout_tools24_result\\wedge_block_r2.step",
+    "case": "wedge_block",
+    "score": 100.0,
+    "passed": 6,
+    "total": 6,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              20.0,
+              30.0,
+              60.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ends",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "planar_face",
+            "ok": true,
+            "planes": [
+              [
+                180.0,
+                600.0
+              ]
+            ]
+          },
+          {
+            "check": "planar_face",
+            "ok": true,
+            "planes": [
+              [
+                0.0,
+                150.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "slope",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "planar_face",
+            "ok": true,
+            "planes": [
+              [
+                14.04,
+                1855.4
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                17.5
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                7.5
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bottom",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "planar_face",
+            "ok": true,
+            "planes": [
+              [
+                180.0,
+                1800.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 22500.0,
+            "expected": 22500
+          }
+        ]
+      }
+    ]
+  }
+]
