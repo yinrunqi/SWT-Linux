@@ -457,7 +457,175 @@ COMPLEX_CASES = (
         split="heldout2",
     ),
 )
-CASES = CASES + HELDOUT_CASES + COMPLEX_CASES
+
+# 新工具测例：demo3 展示用，heldout3 同族新题。GT 由 eval/gt_advanced_cases.py 在首次运行前写定。
+ADVANCED_CASES = (
+    TextCase(
+        "gusset_bracket",
+        "带筋角码",
+        "创建带筋角码，单一实体。水平底板 60×40mm、厚 6mm；在 60mm 方向的一端立起 40mm 宽、高 30mm、厚 6mm 的立板，"
+        "立板外侧面与底板该端面齐平。在底板与立板的内侧拐角加一块厚 4mm 的直角筋，筋的两条直角边分别沿底板和立板各 18mm，"
+        "筋位于 40mm 方向的对称中面。",
+        (36.0, 40.0, 60.0),
+        2.0,
+        # gt_advanced_cases.gusset_bracket = 22248（筋为三角近似）
+        (21000.0, 23500.0),
+        (("solid_features", 2),),
+        split="demo3",
+    ),
+    TextCase(
+        "flanged_elbow",
+        "法兰弯管",
+        "创建带法兰的 90° 弯管。中心线是半径 40mm 的四分之一圆弧；管子外径 16mm、实心。"
+        "两端各有外径 36mm、厚 4mm 的圆形法兰，法兰厚度沿管轴线向外凸出，中心孔与管子相贯。",
+        (36.0, 58.0, 58.0),
+        4.0,
+        # gt_advanced_cases.flanged_elbow = 19167.6
+        (17500.0, 21000.0),
+        (("sweeps", 1),),
+        split="demo3",
+    ),
+    TextCase(
+        "open_box",
+        "开口盒",
+        "创建顶部敞开的盒体：外部 80×50×40mm，壁厚和底厚均为 4mm，用抽壳完成。",
+        (40.0, 50.0, 80.0),
+        1.5,
+        # gt_advanced_cases.open_box = 51136
+        (50000.0, 52500.0),
+        (("shells", 1),),
+        split="demo3",
+    ),
+    TextCase(
+        "counterbore_plate",
+        "沉头孔安装板",
+        "创建 80×60×10mm 的安装板，四个沉头孔：通孔直径 6mm，沉头直径 11mm、深 3.5mm；"
+        "孔心距相邻两边各 14mm（即相对板中心位于 (±26mm, ±16mm)）。沉头在板的上表面。",
+        (10.0, 60.0, 80.0),
+        1.0,
+        # gt_advanced_cases.counterbore_plate = 45934.4
+        (45200.0, 46700.0),
+        (("cuts", 2),),
+        split="demo3",
+    ),
+    TextCase(
+        "side_pad",
+        "侧凸台块",
+        "创建 50×40×30mm 的长方体（50 沿 X，30 沿 Y 为高，40 沿 Z），底面在 Y=0。"
+        "在右端面外侧 20mm 处的平行平面上画直径 16mm 的圆，向实体拉伸直到贴上右端面，形成侧凸台。",
+        (30.0, 40.0, 70.0),
+        1.5,
+        # gt_advanced_cases.side_pad = 64021.2
+        (63000.0, 65100.0),
+        (("solid_features", 2),),
+        split="demo3",
+    ),
+    TextCase(
+        "sheet_angle",
+        "钣金平板",
+        "创建钣金平板：轮廓 70×40mm，板厚 1.5mm。",
+        (1.5, 40.0, 70.0),
+        0.4,
+        # gt_advanced_cases.sheet_angle = 4200
+        (4100.0, 4300.0),
+        (("sheet_metal", 1),),
+        split="demo3",
+    ),
+    TextCase(
+        "square_to_round",
+        "方圆过渡接管",
+        "创建一个高 40mm 的过渡接管：底面是边长 30mm 的正方形，顶面是直径 24mm 的圆，两截面平行且中心同轴，用放样连接。",
+        (30.0, 30.0, 40.0),
+        2.0,
+        # gt_advanced_cases.square_to_round = 27047.8（平均截面近似）
+        (24000.0, 31000.0),
+        (("lofts", 1),),
+        split="demo3",
+    ),
+    TextCase(
+        "corner_rib_stand",
+        "带筋支架",
+        "创建带筋支架，单一实体。水平底板 80×50mm、厚 8mm；在 80mm 方向的一端立起 50mm 宽、高 36mm、厚 8mm 的立板，"
+        "立板外侧面与底板该端面齐平。在底板与立板的内侧拐角加一块厚 5mm 的直角筋，筋的两条直角边分别沿底板和立板各 24mm，"
+        "筋位于 50mm 方向的对称中面。",
+        (44.0, 50.0, 80.0),
+        2.0,
+        # gt_advanced_cases.corner_rib_stand = 47840
+        (45500.0, 50500.0),
+        (("solid_features", 2),),
+        split="heldout3",
+    ),
+    TextCase(
+        "bent_tube",
+        "折弯接管",
+        "创建带法兰的 90° 弯管。中心线是半径 50mm 的四分之一圆弧；管子外径 20mm、实心。"
+        "两端各有外径 44mm、厚 5mm 的圆形法兰，法兰厚度沿管轴线向外凸出。",
+        (44.0, 72.0, 72.0),
+        5.0,
+        # gt_advanced_cases.bent_tube = 36737.7
+        (33500.0, 40000.0),
+        (("sweeps", 1),),
+        split="heldout3",
+    ),
+    TextCase(
+        "lidless_housing",
+        "敞口壳体",
+        "创建顶部敞开的壳体：外部 100×60×50mm，壁厚和底厚均为 5mm，用抽壳完成。",
+        (50.0, 60.0, 100.0),
+        1.5,
+        # gt_advanced_cases.lidless_housing = 102000
+        (100000.0, 104000.0),
+        (("shells", 1),),
+        split="heldout3",
+    ),
+    TextCase(
+        "csk_cover",
+        "沉头盖板",
+        "创建 90×70×12mm 的盖板，四个沉头孔：通孔直径 8mm，沉头直径 14mm、深 4mm；"
+        "孔心距相邻两边各 15mm。沉头在板的上表面。",
+        (12.0, 70.0, 90.0),
+        1.0,
+        # gt_advanced_cases.csk_cover = 71528.5
+        (70500.0, 72600.0),
+        (("cuts", 2),),
+        split="heldout3",
+    ),
+    TextCase(
+        "through_boss",
+        "侧凸台座",
+        "创建 60×48×36mm 的长方体（60 沿 X，36 沿 Y 为高，48 沿 Z），底面在 Y=0。"
+        "在右端面外侧 24mm 处的平行平面上画直径 20mm 的圆，向实体拉伸直到贴上右端面。",
+        (36.0, 48.0, 84.0),
+        1.5,
+        # gt_advanced_cases.through_boss = 111219.8
+        (109500.0, 113000.0),
+        (("solid_features", 2),),
+        split="heldout3",
+    ),
+    TextCase(
+        "sheet_channel",
+        "钣金条",
+        "创建钣金平板：轮廓 90×50mm，板厚 1.2mm。",
+        (1.2, 50.0, 90.0),
+        0.3,
+        # gt_advanced_cases.sheet_channel = 5400
+        (5280.0, 5520.0),
+        (("sheet_metal", 1),),
+        split="heldout3",
+    ),
+    TextCase(
+        "rect_to_circle",
+        "矩形圆过渡管",
+        "创建一个高 50mm 的过渡管：底面是 40×24mm 的矩形，顶面是直径 28mm 的圆，两截面平行且中心同轴，用放样连接。",
+        (24.0, 40.0, 50.0),
+        2.5,
+        # gt_advanced_cases.rect_to_circle = 39393.8
+        (35000.0, 45000.0),
+        (("lofts", 1),),
+        split="heldout3",
+    ),
+)
+CASES = CASES + HELDOUT_CASES + COMPLEX_CASES + ADVANCED_CASES
 
 
 HISTORICAL_CASES = (
@@ -1133,7 +1301,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--split",
-        choices=("dev", "heldout", "demo", "heldout2", "all"),
+        choices=("dev", "heldout", "demo", "heldout2", "demo3", "heldout3", "all"),
         default="dev",
         help="Case split; heldout cases must never be used to tune prompts, tools or code",
     )

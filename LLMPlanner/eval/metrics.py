@@ -45,6 +45,12 @@ _TYPE_CATEGORY = {
     "Rib": "ribs",
     "Draft": "drafts",
     "Thread": "threads",
+    "CosmeticThread": "threads",
+    "SheetMetal": "sheet_metal",
+    "SMBaseFlange": "sheet_metal",
+    "EdgeFlange": "sheet_metal",
+    "SMMiteredFlange": "sheet_metal",
+    "FlattenBends": "sheet_metal",
     "Dome": "domes",
     "RefPlane": "ref_planes",
     "RefAxis": "ref_axes",
@@ -136,6 +142,9 @@ def model_metrics(features: Iterable[dict], sketch_stats: Iterable[dict]) -> dic
         "sweeps": counts.get("sweeps", 0),
         "lofts": counts.get("lofts", 0),
         "ribs": counts.get("ribs", 0),
+        "drafts": counts.get("drafts", 0),
+        "threads": counts.get("threads", 0),
+        "sheet_metal": counts.get("sheet_metal", 0),
     }
     metrics["solid_features"] = sum(
         metrics[name] for name in ("extrusions", "revolves", "sweeps", "lofts")

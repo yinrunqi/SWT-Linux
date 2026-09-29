@@ -137,7 +137,10 @@ def normalize_loop(loop: dict, index: int = 0) -> dict:
         steps = loop.get("segments")
         if not isinstance(steps, (list, tuple)):
             raise WorkflowError("TOOL_ARGS", f"轮廓 {index} 的 segments 必须是数组", loop=index)
-        return _path(curves.path(start, steps, index, pair=lambda value, name: _pair(value, name, index)))
+        return _path(curves.path(
+            start, steps, index, pair=lambda value, name: _pair(value, name, index),
+            closed=bool(loop.get("closed", True)),
+        ))
     raise WorkflowError(
         "TOOL_ARGS",
         f"轮廓 {index} 类型 {kind!r} 不支持，可用 circle/rect/regular_polygon/slot/polygon/annular_sector/path",
@@ -180,7 +183,7 @@ def draw_operations(frame: SketchFrame, loops: Sequence[dict]) -> list[dict]:
             segments = [_profile_segment(frame, segment) for segment in loop["segments"]]
             operations.append({
                 "operation": "sketch_profile", "route": PROFILE_ROUTE,
-                "params": {"segments": segments, "closed": True},
+                "params": {"segments": segments, "closed": bool(loop.get("closed", True))},
             })
             continue
         points = [frame.point_params(u, v) for u, v in _vertices(loop)]
@@ -188,6 +191,18 @@ def draw_operations(frame: SketchFrame, loops: Sequence[dict]) -> list[dict]:
     if circles:
         operations.insert(0, {"operation": "sketch_circles", "params": {"circles": circles}})
     return operations
+
+
+def draw_open_path(frame: SketchFrame, start: Sequence[float], steps: Sequence[dict]) -> list[dict]:
+    """开放路径（筋、扫描路径）：不预检闭合，不自动补边。"""
+    segments = curves.path(
+        (float(start[0]), float(start[1])), steps, closed=False,
+        pair=lambda value, name: _pair(value, name, 0),
+    )
+    return [{
+        "operation": "sketch_profile", "route": PROFILE_ROUTE,
+        "params": {"segments": [_profile_segment(frame, segment) for segment in segments], "closed": False},
+    }]
 
 
 def centerline_operation(frame: SketchFrame, start: Sequence[float], end: Sequence[float]) -> dict:

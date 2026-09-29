@@ -8,7 +8,7 @@ import pytest
 
 from planner.workflow.errors import WorkflowError
 from planner.workflow.frames import base_plane_frame, face_frame
-from planner.workflow.profiles import draw_operations, normalize_loop, normalize_loops
+from planner.workflow.profiles import draw_open_path, draw_operations, normalize_loop, normalize_loops
 from planner.workflow.tools import TOOL_NAMES, TOOL_SPECS, WorkflowSession
 
 
@@ -330,3 +330,97 @@ def test_parameters_drive_tool_arguments():
     params = session.ran[0][-1]["params"]
     assert params["depth"] == pytest.approx(0.004)
     assert session.call("set_parameters", {"values": {"bad": "=missing*2"}})["error"]["code"] == "PARAM_UNDEFINED"
+
+
+def test_new_tool_names_are_registered():
+    for name in ("edit_feature", "rib", "counterbore", "sweep", "loft", "shell", "draft", "sheet_metal"):
+        assert name in TOOL_NAMES
+
+
+def test_open_path_is_not_closed():
+    frame = base_plane_frame("front_plane")
+    (operation,) = draw_open_path(frame, [0, 0], [{"to": [20, 15]}])
+    assert operation["params"]["closed"] is False
+    assert len(operation["params"]["segments"]) == 1
+
+
+def test_extrude_up_to_uses_until_route():
+    session = FakeSession(delta=100)
+    result = session.call("extrude", {
+        "plane": "right_plane",
+        "loops": [{"type": "circle", "center": [0, 15], "diameter": 16}],
+        "up_to": "left",
+        "direction": "-X",
+    })
+    assert result["ok"] is True
+    feature = session.ran[0][-1]
+    assert feature["route"] == "/api/feature/until"
+    assert feature["params"]["until"].startswith("face:")
+    assert feature["params"]["cut"] is False
+
+
+def test_rib_emits_open_path_and_rib_route():
+    session = FakeSession(delta=200)
+    result = session.call("rib", {
+        "plane": "front_plane", "start": [10, 6], "end": [24, 24], "thickness": 4,
+    })
+    assert result["ok"] is True
+    operations = session.ran[0]
+    assert operations[1]["params"]["closed"] is False
+    assert operations[-1]["route"] == "/api/feature/rib"
+    assert operations[-1]["params"]["thickness"] == pytest.approx(0.004)
+
+
+def test_loft_requires_two_sections_and_closes_intermediate_sketch():
+    session = FakeSession(delta=300)
+    bad = session.call("loft", {"sections": [{"plane": "top_plane", "loops": [{"type": "circle", "center": [0, 0], "diameter": 20}]}]})
+    assert bad["error"]["code"] == "TOOL_ARGS"
+    result = session.call("loft", {"sections": [
+        {"plane": "top_plane", "loops": [{"type": "rect", "center": [0, 0], "size": [30, 30]}]},
+        {"plane": "top", "loops": [{"type": "circle", "center": [0, 0], "diameter": 24}]},
+    ]})
+    assert result["ok"] is True
+    operations = session.ran[0]
+    assert operations[2]["route"] == "/api/close-sketch-named"
+    assert operations[-1]["route"] == "/api/feature/loft"
+    assert operations[-1]["params"]["sectionCount"] == 2
+
+
+def test_sheet_metal_rejects_existing_body():
+    session = FakeSession(volume=1000, delta=10)
+    result = session.call("sheet_metal", {
+        "plane": "top_plane", "loops": [{"type": "rect", "center": [0, 0], "size": [70, 40]}], "thickness": 1.5,
+    })
+    assert result["error"]["code"] == "TOOL_ARGS"
+    empty = FakeSession(volume=0, delta=4200)
+    ok = empty.call("sheet_metal", {
+        "plane": "top_plane", "loops": [{"type": "rect", "center": [0, 0], "size": [70, 40]}], "thickness": 1.5,
+    })
+    assert ok["ok"] is True
+    assert empty.ran[0][-1]["route"] == "/api/feature/sheet-metal-base"
+
+
+def test_counterbore_rejects_smaller_head():
+    session = FakeSession(delta=-100)
+    result = session.call("counterbore", {
+        "plane": "top", "centers": [[0, 0]],
+        "through_diameter": 10, "head_diameter": 8, "head_depth": 3,
+    })
+    assert result["error"]["code"] == "TOOL_ARGS"
+
+
+def test_edit_feature_validates_name():
+    session = PlaneSession(delta=0)
+    session.features = ["凸台-拉伸1"]
+
+    def request(method, path, body=None):
+        if path == "/api/modify-dimension":
+            return {"success": True, "oldValue": 0.01, "newValue": body["newValue"]}
+        return PlaneSession._request(session, method, path, body)
+
+    session._request = request
+    missing = session.call("edit_feature", {"name": "没有", "value": 20})
+    assert missing["error"]["code"] == "TOOL_ARGS"
+    ok = session.call("edit_feature", {"name": "凸台-拉伸1", "value": 20})
+    assert ok["ok"] is True
+    assert ok["new_value_mm"] == 20.0

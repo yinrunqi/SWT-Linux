@@ -218,6 +218,33 @@ namespace Chapter1.ConnectToSw
                 case "/api/feature/mirror":
                     RequirePost(method, resp, () => HandleMirror(req, resp));
                     break;
+                case "/api/feature/until":
+                    RequirePost(method, resp, () => HandleUntil(req, resp));
+                    break;
+                case "/api/feature/rib":
+                    RequirePost(method, resp, () => HandleRib(req, resp));
+                    break;
+                case "/api/feature/sweep":
+                    RequirePost(method, resp, () => HandleSweep(req, resp));
+                    break;
+                case "/api/feature/loft":
+                    RequirePost(method, resp, () => HandleLoft(req, resp));
+                    break;
+                case "/api/feature/shell":
+                    RequirePost(method, resp, () => HandleShell(req, resp));
+                    break;
+                case "/api/feature/draft":
+                    RequirePost(method, resp, () => HandleDraft(req, resp));
+                    break;
+                case "/api/feature/sheet-metal-base":
+                    RequirePost(method, resp, () => HandleSheetMetalBase(req, resp));
+                    break;
+                case "/api/feature/cosmetic-thread":
+                    RequirePost(method, resp, () => HandleCosmeticThread(req, resp));
+                    break;
+                case "/api/close-sketch-named":
+                    RequirePost(method, resp, () => HandleCloseSketchNamed(resp));
+                    break;
 
                 case "/api/select-plane":
                     RequirePost(method, resp, () => HandleSelectPlane(req, resp));
@@ -1766,6 +1793,157 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"镜像失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleUntil(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.ExtrudeOrCutUntil(
+                    GetString(body, "until"),
+                    GetBoolOrDefault(body, "flipDirection", false),
+                    GetBoolOrDefault(body, "cut", false));
+                SendJson(resp, 200, new { success = true, message = $"已创建到面特征 {result["featureName"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"拉伸/切除到面失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleRib(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.InsertRib(
+                    GetDouble(body, "thickness"),
+                    GetBoolOrDefault(body, "bothSides", true),
+                    GetBoolOrDefault(body, "flip", false));
+                SendJson(resp, 200, new { success = true, message = $"已创建筋 {result["featureName"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"创建筋失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSweep(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.InsertSweep(GetBoolOrDefault(body, "cut", false));
+                SendJson(resp, 200, new { success = true, message = $"已扫描 {result["featureName"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"扫描失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleLoft(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.InsertLoft(
+                    body.ContainsKey("sectionCount") ? Convert.ToInt32(body["sectionCount"]) : 2,
+                    GetBoolOrDefault(body, "cut", false));
+                SendJson(resp, 200, new { success = true, message = $"已放样 {result["featureName"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"放样失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleShell(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var faces = new List<string>();
+                if (body.ContainsKey("openFaces") && body["openFaces"] is System.Collections.IEnumerable raw
+                    && !(body["openFaces"] is string))
+                {
+                    foreach (object item in raw)
+                        faces.Add(Convert.ToString(item));
+                }
+                var result = _commands.InsertShell(
+                    GetDouble(body, "thickness"), faces, GetBoolOrDefault(body, "outward", false));
+                SendJson(resp, 200, new { success = true, message = $"已抽壳 {result["featureName"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"抽壳失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleDraft(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var faces = new List<string>();
+                if (body.ContainsKey("faces") && body["faces"] is System.Collections.IEnumerable raw
+                    && !(body["faces"] is string))
+                {
+                    foreach (object item in raw)
+                        faces.Add(Convert.ToString(item));
+                }
+                var result = _commands.InsertDraft(
+                    GetDouble(body, "angleDeg"), GetString(body, "neutral"), faces,
+                    GetBoolOrDefault(body, "flip", false));
+                SendJson(resp, 200, new { success = true, message = $"已拔模 {result["featureName"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"拔模失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSheetMetalBase(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.InsertSheetMetalBase(GetDouble(body, "thickness"));
+                SendJson(resp, 200, new { success = true, message = $"已创建钣金基体 {result["featureName"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"钣金基体法兰失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleCosmeticThread(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.InsertCosmeticThread(
+                    GetString(body, "face"), GetDouble(body, "diameter"), GetDouble(body, "depth"));
+                SendJson(resp, 200, new { success = true, message = $"已添加装饰螺纹 {result["featureName"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"装饰螺纹失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleCloseSketchNamed(HttpListenerResponse resp)
+        {
+            try
+            {
+                var result = _commands.CloseSketchNamed();
+                SendJson(resp, 200, new { success = true, message = $"已退出草图 {result["sketchName"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"退出草图失败: {ex.Message}" });
             }
         }
 

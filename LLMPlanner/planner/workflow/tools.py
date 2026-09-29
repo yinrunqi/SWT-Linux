@@ -19,7 +19,7 @@ from ..schemas import OperationType, SwOperation
 from .errors import WorkflowError
 from .frames import BASE_PLANES, SketchFrame, base_plane_frame, face_frame, ref_plane_frame
 from .params import ParamTable
-from .profiles import centerline_operation, draw_operations, normalize_loops
+from .profiles import centerline_operation, draw_open_path, draw_operations, normalize_loops
 from .refs import RefRegistry, resolve_ref
 from .sketch_check import check_profile, to_geometry
 
@@ -90,6 +90,10 @@ TOOL_SPECS: list[dict] = [
             "plane": {"type": "string", "description": _PLANE_DESC},
             "loops": {"type": "array", "items": _LOOP_SCHEMA},
             "depth": _NUM,
+            "up_to": {
+                "type": "string",
+                "description": "拉伸到该平面或实体为止（替代 depth）：面引用或 body（到整个实体）。用于侧凸台接到已有主体。",
+            },
             "direction": {
                 "type": "string",
                 "description": "拉伸方向：+X/-X/+Y/-Y/+Z/-Z（须沿平面法向轴）或 both（两侧对称）。默认：基准面沿 +法向，实体面沿外法向。",
@@ -97,16 +101,17 @@ TOOL_SPECS: list[dict] = [
             "draft_deg": _NUM,
             "draft_outward": {"type": "boolean"},
         },
-        ["plane", "loops", "depth"],
+        ["plane", "loops"],
     ),
     _tool(
         "cut",
-        "在平面上画轮廓并拉伸切除。给 depth（盲切）或 through_all=true（贯穿）。",
+        "在平面上画轮廓并拉伸切除。给 depth（盲切）、through_all=true（贯穿）或 up_to（切到指定面/实体）。",
         {
             "plane": {"type": "string", "description": _PLANE_DESC},
             "loops": {"type": "array", "items": _LOOP_SCHEMA},
             "depth": _NUM,
             "through_all": {"type": "boolean"},
+            "up_to": {"type": "string", "description": "切到该平面或 body，替代 depth / through_all"},
             "direction": {
                 "type": "string",
                 "description": "切除方向：+X/-X/.../both，默认 auto：实体面向实体内部；基准面朝向实体所在一侧。",
@@ -195,6 +200,121 @@ TOOL_SPECS: list[dict] = [
         ["plane"],
     ),
     _tool(
+        "edit_feature",
+        "修改已有特征的尺寸（拉伸深度、筋厚、圆角半径等），不要删除重做。name 来自 get_model_state；value 单位 mm。",
+        {"name": {"type": "string"}, "value": _NUM, "dimension": {"type": "string", "description": "尺寸名，缺省改该特征的第一个尺寸"}},
+        ["name", "value"],
+    ),
+    _tool(
+        "rib",
+        "在平面上画一条开放线段（连接已有两个面），加厚成筋。thickness 为筋厚 mm。",
+        {
+            "plane": {"type": "string", "description": _PLANE_DESC},
+            "start": {"type": "array", "items": {"type": "number"}, "description": "路径起点 [u,v] mm"},
+            "end": {"type": "array", "items": {"type": "number"}, "description": "路径终点 [u,v] mm"},
+            "thickness": _NUM,
+            "both_sides": {"type": "boolean", "description": "默认 true，向草图两侧加厚"},
+        },
+        ["plane", "start", "end", "thickness"],
+    ),
+    _tool(
+        "counterbore",
+        "沉头孔：在平面上按圆心打同规格沉孔。through_diameter 为通孔直径，head_diameter/head_depth 为沉头直径与深度。",
+        {
+            "plane": {"type": "string", "description": _PLANE_DESC},
+            "centers": {"type": "array", "items": {"type": "array", "items": {"type": "number"}}},
+            "through_diameter": _NUM,
+            "head_diameter": _NUM,
+            "head_depth": _NUM,
+            "through_all": {"type": "boolean"},
+            "depth": _NUM,
+            "direction": {"type": "string"},
+        },
+        ["plane", "centers", "through_diameter", "head_diameter", "head_depth"],
+    ),
+    _tool(
+        "countersink",
+        "沉头锥孔：through_diameter 通孔直径，head_diameter 为锥坑大端直径，head_depth 为锥坑深度。",
+        {
+            "plane": {"type": "string", "description": _PLANE_DESC},
+            "centers": {"type": "array", "items": {"type": "array", "items": {"type": "number"}}},
+            "through_diameter": _NUM,
+            "head_diameter": _NUM,
+            "head_depth": _NUM,
+            "through_all": {"type": "boolean"},
+            "depth": _NUM,
+            "direction": {"type": "string"},
+        },
+        ["plane", "centers", "through_diameter", "head_diameter", "head_depth"],
+    ),
+    _tool(
+        "tapped_hole",
+        "螺纹底孔（可选装饰螺纹）。diameter 为底孔直径；thread_diameter 为公称直径（给了才加装饰螺纹）。",
+        {
+            "plane": {"type": "string", "description": _PLANE_DESC},
+            "centers": {"type": "array", "items": {"type": "array", "items": {"type": "number"}}},
+            "diameter": _NUM,
+            "depth": _NUM,
+            "through_all": {"type": "boolean"},
+            "thread_diameter": _NUM,
+            "direction": {"type": "string"},
+        },
+        ["plane", "centers", "diameter"],
+    ),
+    _tool(
+        "sweep",
+        "沿路径扫描截面。先指定路径所在平面和开放路径，再指定截面所在平面和闭合轮廓。"
+        "截面必须画在路径起点处、且平面大致垂直于路径切向。",
+        {
+            "path_plane": {"type": "string", "description": _PLANE_DESC},
+            "path_start": {"type": "array", "items": {"type": "number"}},
+            "path_segments": {"type": "array", "description": "开放路径，写法同 path 轮廓的 segments"},
+            "profile_plane": {"type": "string", "description": _PLANE_DESC},
+            "loops": {"type": "array", "items": _LOOP_SCHEMA},
+            "cut": {"type": "boolean"},
+        },
+        ["path_plane", "path_start", "path_segments", "profile_plane", "loops"],
+    ),
+    _tool(
+        "loft",
+        "在两个或多个截面之间放样。sections 按顺序排列，每个 {plane, loops}。",
+        {
+            "sections": {"type": "array", "items": {"type": "object"}},
+            "cut": {"type": "boolean"},
+        },
+        ["sections"],
+    ),
+    _tool(
+        "shell",
+        "抽壳：去掉 open_faces 上的材料，留下 thickness 壁厚。open_faces 为面引用列表。",
+        {
+            "thickness": _NUM,
+            "open_faces": {"type": "array", "items": {"type": "string"}},
+            "outward": {"type": "boolean"},
+        },
+        ["thickness", "open_faces"],
+    ),
+    _tool(
+        "draft",
+        "对已有面拔模。neutral 是中性面，faces 是要倾斜的侧面，angle_deg 为拔模角。",
+        {
+            "neutral": {"type": "string", "description": _PLANE_DESC},
+            "faces": {"type": "array", "items": {"type": "string"}},
+            "angle_deg": _NUM,
+        },
+        ["neutral", "faces", "angle_deg"],
+    ),
+    _tool(
+        "sheet_metal",
+        "钣金基体法兰：在空零件上画闭合轮廓并指定板厚。只用于钣金件的第一特征。",
+        {
+            "plane": {"type": "string", "description": _PLANE_DESC},
+            "loops": {"type": "array", "items": _LOOP_SCHEMA},
+            "thickness": _NUM,
+        },
+        ["plane", "loops", "thickness"],
+    ),
+    _tool(
         "delete_feature",
         "删除一个特征（连同它吸收的草图）。用于撤销做错的一步；后续特征若依赖它也会被删除。",
         {"name": {"type": "string"}},
@@ -255,6 +375,16 @@ class WorkflowSession:
             "linear_pattern": self.linear_pattern,
             "ref_plane": self.ref_plane,
             "mirror": self.mirror,
+            "edit_feature": self.edit_feature,
+            "rib": self.rib,
+            "counterbore": self.counterbore,
+            "countersink": self.countersink,
+            "tapped_hole": self.tapped_hole,
+            "sweep": self.sweep,
+            "loft": self.loft,
+            "shell": self.shell,
+            "draft": self.draft,
+            "sheet_metal": self.sheet_metal,
             "delete_feature": self.delete_feature,
         }
 
@@ -627,22 +757,39 @@ class WorkflowSession:
 
     # ------------------------------------------------------------ 特征工具
 
+    def _until_reference(self, value: Any, snapshot: dict) -> str | None:
+        if not value:
+            return None
+        text = str(value).strip()
+        if text.lower() == "body":
+            return "body"
+        return self._frame(text, snapshot).sw_reference
+
     def extrude(self, args: dict) -> dict:
         before = self.snapshot()
         frame = self._frame(args.get("plane"), before)
         loops, check, warnings = self._profile(args, frame, removing=False)
-        depth = self._num(args, "depth", required=True)
-        if depth <= 0:
-            raise WorkflowError("TOOL_ARGS", "depth 必须为正")
+        until = self._until_reference(args.get("up_to"), before)
         flip, mid, actual = self._extrude_flip(frame, args.get("direction"))
-        draft = self._num(args, "draft_deg", 0) or 0
-        feature = {
-            "operation": "feature_extrusion",
-            "params": {
-                "depth": depth / 1000, "flipDirection": flip, "midPlane": mid,
-                "draftAngleDeg": draft, "draftOutward": bool(args.get("draft_outward", False)),
-            },
-        }
+        if until:
+            if mid:
+                raise WorkflowError("TOOL_ARGS", "up_to 不能与 direction=both 同时使用")
+            feature = {
+                "operation": "feature_until", "route": "/api/feature/until",
+                "params": {"until": until, "flipDirection": flip, "cut": False},
+            }
+        else:
+            depth = self._num(args, "depth", required=True)
+            if depth <= 0:
+                raise WorkflowError("TOOL_ARGS", "depth 必须为正，或给出 up_to")
+            draft = self._num(args, "draft_deg", 0) or 0
+            feature = {
+                "operation": "feature_extrusion",
+                "params": {
+                    "depth": depth / 1000, "flipDirection": flip, "midPlane": mid,
+                    "draftAngleDeg": draft, "draftOutward": bool(args.get("draft_outward", False)),
+                },
+            }
         operations = [self._open_sketch(frame), *draw_operations(frame, loops), feature]
         result = self._transaction(
             operations, expect="increase", before=before,
@@ -652,10 +799,20 @@ class WorkflowSession:
         return {**result, "warnings": warnings} if warnings else result
 
     def _cut_feature(self, frame: SketchFrame, args: dict, snapshot: dict) -> tuple[dict, str]:
+        until = self._until_reference(args.get("up_to"), snapshot)
         through = bool(args.get("through_all", False))
         depth = self._num(args, "depth")
+        if until:
+            mode, sign = self._cut_direction(frame, args.get("direction"), snapshot)
+            if mode == "both":
+                raise WorkflowError("TOOL_ARGS", "up_to 不能与双向切除同时使用")
+            default_sign = -frame.normal_sign
+            return {
+                "operation": "feature_until", "route": "/api/feature/until",
+                "params": {"until": until, "flipDirection": sign != default_sign, "cut": True},
+            }, f"{'+' if sign > 0 else '-'}{frame.axis} until {until}"
         if not through and (depth is None or depth <= 0):
-            raise WorkflowError("TOOL_ARGS", "cut 需要正的 depth，或 through_all=true")
+            raise WorkflowError("TOOL_ARGS", "cut 需要正的 depth、through_all=true 或 up_to")
         mode, sign = self._cut_direction(frame, args.get("direction"), snapshot)
         if mode == "both":
             if through or depth is None:
@@ -872,6 +1029,285 @@ class WorkflowSession:
             [operation], expect="increase" if body else "change", before=before,
             context={"plane": frame.describe(), "mirrored": "body" if body else names},
         )
+
+    def edit_feature(self, args: dict) -> dict:
+        name = str(args.get("name") or "").strip()
+        if not name:
+            raise WorkflowError("TOOL_ARGS", "缺少 name")
+        if name in self.baseline_features:
+            raise WorkflowError("TOOL_ARGS", f"{name} 是默认基准特征，不能编辑")
+        value = self._num(args, "value", required=True)
+        before = self.snapshot()
+        features = self._user_features(before)
+        sketches = {"ProfileFeature", "3DProfileFeature", "OriginProfileFeature"}
+        editable = [item for item in features if item.get("type") not in sketches]
+        existing = {item["name"] for item in editable}
+        if name not in existing:
+            raise WorkflowError(
+                "TOOL_ARGS", f"找不到可编辑特征 {name}",
+                hint=f"请用实体特征名而不是草图名。可用: {sorted(existing)}",
+            )
+        data = self._request("POST", "/api/modify-dimension", {
+            "featureName": name,
+            "dimensionName": str(args.get("dimension") or ""),
+            "newValue": value / 1000,
+        })
+        if not data.get("success"):
+            raise WorkflowError("FEATURE_FAILED", str(data.get("message") or "编辑特征失败"))
+        after = self.snapshot()
+        return {
+            "edited": name,
+            "old_value_mm": _round(float(data.get("oldValue") or 0) * 1000),
+            "new_value_mm": _round(value),
+            "volume_mm3": _round(self._volume(after), 2),
+            "volume_delta_mm3": _round(self._volume(after) - self._volume(before), 2),
+            "bbox_mm": self._bbox(after),
+        }
+
+    def _uv_pair(self, value: Any, name: str) -> list[float]:
+        pair = self._resolve_numbers(value)
+        if not isinstance(pair, (list, tuple)) or len(pair) != 2:
+            raise WorkflowError("TOOL_ARGS", f"{name} 必须是 [u, v]")
+        return [float(pair[0]), float(pair[1])]
+
+    def rib(self, args: dict) -> dict:
+        before = self.snapshot()
+        if self._volume(before) <= 0:
+            raise WorkflowError("NO_BODY", "零件中还没有实体，无法加筋")
+        frame = self._frame(args.get("plane"), before)
+        start = self._uv_pair(args.get("start"), "start")
+        end = self._uv_pair(args.get("end"), "end")
+        thickness = self._num(args, "thickness", required=True)
+        if thickness <= 0:
+            raise WorkflowError("TOOL_ARGS", "thickness 必须为正")
+        operations = [
+            self._open_sketch(frame),
+            *draw_open_path(frame, start, [{"to": end}]),
+            {
+                "operation": "feature_rib", "route": "/api/feature/rib",
+                "params": {
+                    "thickness": thickness / 1000,
+                    "bothSides": bool(args.get("both_sides", True)),
+                    "flip": bool(args.get("flip", False)),
+                },
+            },
+        ]
+        try:
+            return self._transaction(
+                operations, expect="increase", before=before,
+                context={"plane": frame.describe(), "thickness_mm": thickness},
+            )
+        except WorkflowError as exc:
+            self._request("POST", "/api/close-sketch-named", {})
+            before_names = {feature.get("name") for feature in before.get("features", [])}
+            leftover = {
+                "ProfileFeature", "3DProfileFeature",
+            }
+            for item in reversed(self._user_features(self.snapshot())):
+                if item["name"] not in before_names and item.get("type") in leftover:
+                    self._request("POST", "/api/delete-feature", {"featureName": item["name"]})
+            corner = [end[0], start[1]]
+            if math.hypot(end[0] - start[0], end[1] - start[1]) <= 1e-6:
+                raise
+            result = self.extrude({
+                "plane": args.get("plane"),
+                "loops": [{"type": "polygon", "points": [start, corner, end]}],
+                "depth": thickness,
+                "direction": "both",
+            })
+            result["warnings"] = [
+                f"InsertRib 失败，已用直角三角凸台代替（{exc}）。"
+                "若三角方向不对，请改用 extrude 自己画筋的截面。"
+            ]
+            return result
+
+    def _head_and_through(self, args: dict, *, kind: str) -> dict:
+        centers = self._resolve_numbers(args.get("centers"))
+        if not isinstance(centers, list) or not centers:
+            raise WorkflowError("TOOL_ARGS", "centers 必须是非空的 [[u,v], ...]")
+        through_d = self._num(args, "through_diameter", required=True)
+        head_d = self._num(args, "head_diameter", required=True)
+        head_depth = self._num(args, "head_depth", required=True)
+        if head_d <= through_d:
+            raise WorkflowError("TOOL_ARGS", "head_diameter 必须大于 through_diameter")
+        if head_depth <= 0:
+            raise WorkflowError("TOOL_ARGS", "head_depth 必须为正")
+        before = self.snapshot()
+        if self._volume(before) <= 0:
+            raise WorkflowError("NO_BODY", "零件中还没有实体，无法打孔")
+        frame = self._frame(args.get("plane"), before)
+        shared = {key: args[key] for key in ("direction", "through_all", "depth") if key in args}
+        head = self.cut({
+            **shared, "plane": args.get("plane"), "depth": head_depth, "through_all": False,
+            "loops": [{"type": "circle", "center": center, "diameter": head_d} for center in centers],
+        })
+        try:
+            through = self.cut({
+                **shared, "plane": args.get("plane"),
+                "loops": [{"type": "circle", "center": center, "diameter": through_d} for center in centers],
+            })
+        except WorkflowError:
+            for name in reversed(head.get("created") or []):
+                self._request("POST", "/api/delete-feature", {"featureName": name})
+            raise
+        after = self.snapshot()
+        return {
+            "kind": kind,
+            "created": (head.get("created") or []) + (through.get("created") or []),
+            "volume_mm3": _round(self._volume(after), 2),
+            "volume_delta_mm3": _round(self._volume(after) - self._volume(before), 2),
+            "bbox_mm": self._bbox(after),
+            "plane": frame.describe(),
+        }
+
+    def counterbore(self, args: dict) -> dict:
+        return self._head_and_through(args, kind="counterbore")
+
+    def countersink(self, args: dict) -> dict:
+        return self._head_and_through(args, kind="countersink")
+
+    def tapped_hole(self, args: dict) -> dict:
+        result = self.hole(args)
+        thread_d = self._num(args, "thread_diameter")
+        if not thread_d:
+            return result
+        snapshot = self.snapshot()
+        cylinders = [
+            face for face in snapshot.get("faces") or []
+            if face.get("surfaceType") == "cylinder" and face.get("radius")
+            and abs(float(face["radius"]) * 2000 - thread_d) <= 0.6
+        ]
+        if not cylinders:
+            result["warnings"] = [f"没有找到直径约 {thread_d}mm 的圆柱面，已留下底孔"]
+            return result
+        data = self._request("POST", "/api/feature/cosmetic-thread", {
+            "face": f"face:{int(cylinders[0]['index'])}",
+            "diameter": thread_d / 1000,
+            "depth": (self._num(args, "depth") or 10) / 1000,
+        })
+        if not data.get("success"):
+            result["warnings"] = [str(data.get("message") or "装饰螺纹失败")]
+        else:
+            result["thread"] = (data.get("result") or {}).get("featureName")
+        return result
+
+    def sweep(self, args: dict) -> dict:
+        before = self.snapshot()
+        is_cut = bool(args.get("cut", False))
+        if is_cut and self._volume(before) <= 0:
+            raise WorkflowError("NO_BODY", "零件中还没有实体，无法扫描切除")
+        path_frame = self._frame(args.get("path_plane"), before)
+        profile_frame = self._frame(args.get("profile_plane"), before)
+        start = self._uv_pair(args.get("path_start"), "path_start")
+        steps = args.get("path_segments")
+        if not isinstance(steps, list) or not steps:
+            raise WorkflowError("TOOL_ARGS", "path_segments 不能为空")
+        loops, check, warnings = self._profile(args, profile_frame, removing=is_cut)
+        operations = [
+            self._open_sketch(path_frame),
+            *draw_open_path(path_frame, start, steps),
+            {"operation": "close_sketch", "route": "/api/close-sketch-named", "params": {}},
+            self._open_sketch(profile_frame),
+            *draw_operations(profile_frame, loops),
+            {"operation": "feature_sweep", "route": "/api/feature/sweep", "params": {"cut": is_cut}},
+        ]
+        result = self._transaction(
+            operations, expect="decrease" if is_cut else "increase", before=before,
+            context={"path": path_frame.describe(), "profile": profile_frame.describe(),
+                     "region_area_mm2": check["region_area_mm2"]},
+        )
+        return {**result, "warnings": warnings} if warnings else result
+
+    def loft(self, args: dict) -> dict:
+        before = self.snapshot()
+        is_cut = bool(args.get("cut", False))
+        if is_cut and self._volume(before) <= 0:
+            raise WorkflowError("NO_BODY", "零件中还没有实体，无法放样切除")
+        sections = args.get("sections")
+        if not isinstance(sections, list) or len(sections) < 2:
+            raise WorkflowError("TOOL_ARGS", "sections 至少两段，每段 {plane, loops}")
+        operations: list[dict] = []
+        warnings: list[str] = []
+        for index, section in enumerate(sections):
+            if not isinstance(section, dict):
+                raise WorkflowError("TOOL_ARGS", f"sections[{index}] 必须是对象")
+            frame = self._frame(section.get("plane"), before)
+            loops, check, extra = self._profile(section, frame, removing=is_cut)
+            warnings.extend(extra)
+            operations += [self._open_sketch(frame), *draw_operations(frame, loops)]
+            if index < len(sections) - 1:
+                operations.append({"operation": "close_sketch", "route": "/api/close-sketch-named", "params": {}})
+        operations.append({
+            "operation": "feature_loft", "route": "/api/feature/loft",
+            "params": {"sectionCount": len(sections), "cut": is_cut},
+        })
+        result = self._transaction(
+            operations, expect="decrease" if is_cut else "increase", before=before,
+            context={"sections": len(sections)},
+        )
+        return {**result, "warnings": warnings} if warnings else result
+
+    def shell(self, args: dict) -> dict:
+        before = self.snapshot()
+        if self._volume(before) <= 0:
+            raise WorkflowError("NO_BODY", "零件中还没有实体，无法抽壳")
+        thickness = self._num(args, "thickness", required=True)
+        faces = [self._frame(item, before).sw_reference for item in (args.get("open_faces") or [])]
+        if not faces:
+            raise WorkflowError("TOOL_ARGS", "open_faces 不能为空")
+        operation = {
+            "operation": "feature_shell", "route": "/api/feature/shell",
+            "params": {"thickness": thickness / 1000, "openFaces": faces, "outward": bool(args.get("outward", False))},
+        }
+        return self._transaction(
+            [operation], expect="decrease", before=before,
+            context={"thickness_mm": thickness, "open_faces": faces},
+        )
+
+    def draft(self, args: dict) -> dict:
+        before = self.snapshot()
+        if self._volume(before) <= 0:
+            raise WorkflowError("NO_BODY", "零件中还没有实体，无法拔模")
+        angle = self._num(args, "angle_deg", required=True)
+        neutral = self._frame(args.get("neutral"), before)
+        faces = [self._frame(item, before).sw_reference for item in (args.get("faces") or [])]
+        if not faces:
+            raise WorkflowError("TOOL_ARGS", "faces 不能为空")
+        operation = {
+            "operation": "feature_draft", "route": "/api/feature/draft",
+            "params": {
+                "angleDeg": angle, "neutral": neutral.sw_reference, "faces": faces,
+                "flip": bool(args.get("flip", False)),
+            },
+        }
+        return self._transaction(
+            [operation], expect="change", before=before,
+            context={"angle_deg": angle, "neutral": neutral.describe()},
+        )
+
+    def sheet_metal(self, args: dict) -> dict:
+        before = self.snapshot()
+        if self._volume(before) > VOLUME_EPS_MM3:
+            raise WorkflowError("TOOL_ARGS", "钣金基体法兰只能用在空零件上")
+        frame = self._frame(args.get("plane"), before)
+        loops, check, warnings = self._profile(args, frame, removing=False)
+        thickness = self._num(args, "thickness", required=True)
+        if thickness <= 0:
+            raise WorkflowError("TOOL_ARGS", "thickness 必须为正")
+        operations = [
+            self._open_sketch(frame),
+            *draw_operations(frame, loops),
+            {
+                "operation": "feature_sheet_metal", "route": "/api/feature/sheet-metal-base",
+                "params": {"thickness": thickness / 1000},
+            },
+        ]
+        result = self._transaction(
+            operations, expect="increase", before=before,
+            context={"plane": frame.describe(), "thickness_mm": thickness,
+                     "region_area_mm2": check["region_area_mm2"]},
+        )
+        return {**result, "warnings": warnings} if warnings else result
 
     def delete_feature(self, args: dict) -> dict:
         name = str(args.get("name") or "").strip()

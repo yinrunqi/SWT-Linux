@@ -173,7 +173,7 @@ def _end_tangent(segment: dict) -> Point:
     return (-radial[1], radial[0]) if segment["ccw"] else (radial[1], -radial[0])
 
 
-def path(start: Point, steps: Sequence[dict], index: int = 0, pair=None) -> list[dict]:
+def path(start: Point, steps: Sequence[dict], index: int = 0, pair=None, closed: bool = True) -> list[dict]:
     """LLM 写法的路径 → 闭合段序列；末点不回到起点时自动补一条直线。
 
     每步 {"to": [u, v]} 为直线，另加以下之一则为圆弧：
@@ -248,8 +248,10 @@ def path(start: Point, steps: Sequence[dict], index: int = 0, pair=None) -> list
         else:
             segments.append(line(cursor, target))
         cursor = target
-    if _norm(_sub(cursor, tuple(start))) > LENGTH_EPS:
+    if closed and _norm(_sub(cursor, tuple(start))) > LENGTH_EPS:
         segments.append(line(cursor, tuple(start)))
-    if len(segments) < 2 and segments[0]["kind"] == "line":
+    if closed and len(segments) < 2 and segments[0]["kind"] == "line":
         raise WorkflowError("SKETCH_DEGENERATE", f"轮廓 {index} 不能围成区域", loop=index)
+    if not segments:
+        raise WorkflowError("TOOL_ARGS", f"轮廓 {index} 没有有效线段", loop=index)
     return segments

@@ -28,6 +28,11 @@ SYSTEM_PROMPT = """你是一名资深机械设计工程师，正在 SolidWorks �
 - 带圆角的外形（耳片、圆角板、腰形孔、扇形窗口、带圆弧的截面）直接在轮廓里表达：rect/polygon 的 corner_radius、slot、annular_sector 或 path 的圆弧段，而不是先画尖角再补 fillet。
 - 需要在没有现成平面的位置画草图时（悬空的凸台、离开实体表面一段距离的特征），先用 ref_plane 从已有平面偏移出基准面，再把它的名称作为 plane。
 - 对称的特征建好一侧后用 mirror 镜像；整个零件左右对称时也可以先建一半再 mirror(body=true)。
+- 侧凸台、支管接到已有实体时用 extrude(..., up_to=面或 body)，不要估一个 depth。
+- 沉头孔用 counterbore / countersink，螺纹底孔用 tapped_hole；不要拆成两次普通 cut。
+- 筋用 rib（开放线段，连接已有两个面）；弯管、沿路径的实体用 sweep；变截面用 loft。
+- 空心壳体用 shell 抽掉开口面；侧面斜度用 draft，不要靠猜拉伸深度冒充。
+- 钣金平板用 sheet_metal（必须是零件的第一特征）。改已有特征的尺寸用 edit_feature，不要删除重做。
 - fillet/chamfer 一般放在最后，edges 不确定时先用 get_model_state 查看几何。
 
 ## 工作方式
