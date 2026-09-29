@@ -1,0 +1,51 @@
+case: lidless_housing
+prompt: 创建顶部敞开的壳体：外部 100×60×50mm，壁厚和底厚均为 5mm，用抽壳完成。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 零件坐标系由最大平面面的法向建立，不用文件坐标轴；
+# height 为长 50 的轴，top 为两端中敞开的那一端。
+entities:
+  frame: {planar_frame: {extents: [100, 60, 50], height: 50}}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 外部 100×60×50mm
+    hard: true
+    check:
+      - bbox_sorted: [50, 60, 100]
+
+  - id: open_top
+    source: 顶部敞开
+    check:
+      - end_face_area: {frame: frame, side: top, value: 1500}      # 100·60 − 90·50，只剩一圈口沿
+      - end_face_area: {frame: frame, side: bottom, value: 6000}   # 底面完整
+
+  - id: walls
+    source: 壁厚……均为 5mm
+    check:
+      - ray_thickness: {frame: frame, from: cavity_center, dirs: [+long, -long, +mid, -mid], value: 5}
+
+  - id: bottom
+    source: 底厚均为 5mm
+    check:
+      - ray_thickness: {frame: frame, from: cavity_center, dirs: [-height], value: 5}
+      - cavity_depth: {frame: frame, value: 45}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 100·60·50 − 90·50·45 = 97500
+    check:
+      - volume: 97500
+
+ungraded:
+  - source: 用抽壳完成
+    reason: 建法指令，最终几何无法区分；它的几何后果已由 open_top、walls、bottom 覆盖
+
+notes:
+  - 旧 GT 腔深写成 44（体积 102000），应为 45（97500）。

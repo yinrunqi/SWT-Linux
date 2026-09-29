@@ -1,0 +1,52 @@
+case: flange
+prompt: 创建直径 100mm、厚 12mm 的圆形法兰，中心贯穿孔直径 30mm，并在节圆直径 80mm 上均布 6 个直径 8mm 的贯穿孔。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 实体 = 按“同轴、同半径”合并后的曲面（STEP 常把一个圆柱拆成两片）。
+entities:
+  disk:  {cylinder: {d: 100, side: outer}, count: 1}
+  bore:  {cylinder: {d: 30, side: inner}, count: 1}
+  bolts: {cylinder: {d: 8, side: inner}, count: 6}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: disk
+    source: 直径 100mm、厚 12mm 的圆形法兰
+    hard: true
+    check:
+      - exists: disk
+      - extent_along: {axis: disk, value: 12}
+      - bbox_sorted: [12, 100, 100]
+
+  - id: bore
+    source: 中心贯穿孔直径 30mm
+    check:
+      - exists: bore
+      - coaxial: [bore, disk]
+      - through: {holes: bore, along: disk}
+
+  - id: bolt_holes
+    source: 6 个直径 8mm 的贯穿孔
+    check:
+      - exists: bolts
+      - parallel: [bolts, disk]
+      - through: {holes: bolts, along: disk}
+
+  - id: bolt_pattern
+    source: 在节圆直径 80mm 上均布
+    check:
+      - axis_distance: {from: disk, to: bolts, value: 40}
+      - equal_angular: {about: disk, items: bolts}   # 不检查起始角
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: π·12·(50² − 15² − 6·4²) = 82146.9
+    check:
+      - volume: 82146.9
+
+ungraded: []
