@@ -1,0 +1,64 @@
+case: socket_bolt
+prompt: 创建简化内六角圆柱头螺栓：杆径 10mm、杆长 50mm；头部直径 18mm、高 6mm；顶部内六角对边距 8mm、盲孔深 4mm；头杆交界 R0.5mm。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+entities:
+  shaft:  {cylinder: {d: 10, side: outer}, count: 1}
+  head:   {cylinder: {d: 18, side: outer}, count: 1}
+  socket: {prism_pocket: {sides: 6, across_flats: 8}, count: 1}
+  neck:   {torus: {minor_r: 0.5, major_r: 5.5, side: concave}, count: 1}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: shaft
+    source: 杆径 10mm、杆长 50mm
+    hard: true
+    check:
+      - exists: shaft
+      - extent_along: {axis: shaft, of: shaft, value: 50}
+
+  - id: head
+    source: 头部直径 18mm、高 6mm
+    hard: true
+    check:
+      - exists: head
+      - coaxial: [head, shaft]
+      - extent_along: {axis: shaft, of: head, value: 6}
+
+  - id: socket
+    source: 顶部内六角对边距 8mm、盲孔深 4mm
+    check:
+      - exists: socket
+      - coaxial: [socket, shaft]
+      - opens_on: {pocket: socket, face_of: head, side: away_from_shaft}
+      - pocket_depth: {pocket: socket, value: 4, blind: true}
+
+  - id: neck_fillet
+    source: 头杆交界 R0.5mm
+    check:
+      - exists: neck
+      - coaxial: [neck, shaft]
+      - tangent_to: {blend: neck, faces: [shaft, head_underside]}
+
+  - id: bbox
+    source: 由以上尺寸确定
+    check:
+      - bbox_sorted: [18, 18, 56]
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: >-
+      杆 π·5²·50 = 3927.0；头 π·9²·6 = 1526.8；六角孔 (√3/2)·8²·4 = 221.7；
+      R0.5 凹圆角补料 ≈ 1.7 → 5233.8
+    check:
+      - volume: 5233.8
+
+ungraded: []
+
+notes:
+  - 1% 体积容差（±52）远大于 R0.5 圆角的体积（≈1.7～3.0），圆角位置只能靠 neck_fillet 判断。

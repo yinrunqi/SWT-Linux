@@ -1,0 +1,93 @@
+case: phone_stand
+prompt: >-
+  创建一个一体式桌面手机支架，所有结构必须合并为单一实体。底座长110mm、宽78mm、厚8mm；
+  78mm宽的倾斜背板厚6mm，与水平面成74°，从底座上表面升起，成品总高度118mm。
+  底座前端设置贯穿全宽的挡唇，前后厚10mm，高出底座上表面12mm，使成品前端总高度20mm。
+  背板左右两侧各有一个三角加强筋。背板下部中央开一个宽16mm、向下开口高度28mm的充电线U形通槽；
+  背板中上部开3个36×8mm的水平贯穿散热槽，槽中心竖向间距18mm。
+  底面加工两个24×10mm、深1.5mm的防滑垫浅凹槽。
+  最后尽可能对适合的外轮廓做R4mm圆角，同时保持底面平整、支架左右对称。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 坐标系：up = 底面（最大朝下平面）外法向的反向；length/width = 底座截面 110/78 的方向；
+# 左右 = width 方向。
+entities:
+  frame: {base_frame: {bottom: largest_down_planar, extents: {length: 110, width: 78}, height: 8}}
+  plate: {slab: {thickness: 6, rises_from: base_top, reaches_height: 118}, count: 1}
+  lip:   {block: {at_end_of: length, top_height: 20}, count: 1}
+  ribs:  {triangular_web: {joins: [plate, base]}, count: 2}
+
+rubrics:
+  - id: solid
+    source: 所有结构必须合并为单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: base
+    source: 底座长110mm、宽78mm、厚8mm；保持底面平整
+    hard: true
+    check:
+      - section_extents: {frame: frame, height: 4, value: [110, 78]}
+      - bottom_planar: {frame: frame}
+
+  - id: plate
+    source: 78mm宽的倾斜背板厚6mm，与水平面成74°，从底座上表面升起，成品总高度118mm
+    check:
+      - exists: plate
+      - slab_width: {slab: plate, along: width, value: 78}
+      - angle_to_bottom: {slab: plate, value: 74}
+      - extent_along: {axis: up, of: all, value: 118}
+
+  - id: lip
+    source: 底座前端设置贯穿全宽的挡唇，前后厚10mm，高出底座上表面12mm
+    check:
+      - exists: lip
+      - spans: {item: lip, along: width, value: 78}
+      - extent_along: {axis: length, of: lip, value: 10}
+
+  - id: ribs
+    source: 背板左右两侧各有一个三角加强筋
+    check:
+      - exists: ribs
+      - at_both_ends: {items: ribs, of: plate, along: width}
+
+  - id: u_slot
+    source: 背板下部中央开一个宽16mm、向下开口高度28mm的充电线U形通槽
+    check:
+      - through_opening: {in: plate, width: 16, height: 28, open_to: base_top, centered_along: width}
+
+  - id: vents
+    source: 背板中上部开3个36×8mm的水平贯穿散热槽，槽中心竖向间距18mm
+    check:
+      - through_opening: {in: plate, count: 3, long: 36, short: 8, long_along: width}
+      - pitch: {items: vents, along: up, value: 18}
+
+  - id: pads
+    source: 底面加工两个24×10mm、深1.5mm的防滑垫浅凹槽
+    check:
+      - pocket: {on: bottom, count: 2, size: [24, 10], depth: 1.5}
+
+  - id: fillet
+    source: 尽可能对适合的外轮廓做R4mm圆角
+    check:
+      - blend_faces: {radius: 4, min_count: 1}
+
+  - id: symmetry
+    source: 支架左右对称
+    check:
+      - mirror_symmetric: {frame: frame, normal: width, max_xor_rel: 0.001}
+
+  - id: plate_leans_back
+    basis: implied
+    source: 手机支架（手机靠在背板上，挡唇托住底边）
+    check:
+      - tilts_away_from: {slab: plate, item: lip}
+
+ungraded:
+  - source: 背板根部在底座上的前后位置
+    reason: 文字未给出；因此成品总长不检查（旧 GT 的 116 是假设值）
+  - source: 加强筋的具体尺寸、哪些边做圆角
+    reason: 文字只给出定性要求
+  - source: 中上部
+    reason: 散热槽的竖向绝对位置未给出
