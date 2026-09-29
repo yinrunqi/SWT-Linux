@@ -20,7 +20,7 @@ rubrics:
     hard: true
     check:
       - exists: disk
-      - extent_along: {axis: disk, value: 12}
+      - extent_along: {axis: disk, of: disk, value: 12}
       - bbox_sorted: [12, 100, 100]
 
   - id: bore
@@ -28,14 +28,14 @@ rubrics:
     check:
       - exists: bore
       - coaxial: [bore, disk]
-      - through: {holes: bore, along: disk}
+      - through: {holes: bore}
 
   - id: bolt_holes
     source: 6 个直径 8mm 的贯穿孔
     check:
       - exists: bolts
       - parallel: [bolts, disk]
-      - through: {holes: bolts, along: disk}
+      - through: {holes: bolts}
 
   - id: bolt_pattern
     source: 在节圆直径 80mm 上均布

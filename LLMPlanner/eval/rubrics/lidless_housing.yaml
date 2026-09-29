@@ -2,10 +2,10 @@ case: lidless_housing
 prompt: 创建顶部敞开的壳体：外部 100×60×50mm，壁厚和底厚均为 5mm，用抽壳完成。
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
-# 零件坐标系由最大平面面的法向建立，不用文件坐标轴；
-# height 为长 50 的轴，top 为两端中敞开的那一端。
+# 坐标系取自零件自身的主方向，轴按外形尺寸由短到长排列：0 = 高(50)，1 = 宽(60)，2 = 长(100)；
+# 高度正方向指向端面平面面积较小的一端，即敞开端。
 entities:
-  frame: {planar_frame: {extents: [100, 60, 50], height: 50}}
+  frame: {principal_frame: {up: open_end}}
 
 rubrics:
   - id: solid
@@ -23,19 +23,18 @@ rubrics:
   - id: open_top
     source: 顶部敞开
     check:
-      - end_face_area: {frame: frame, side: top, value: 1500}      # 100·60 − 90·50，只剩一圈口沿
-      - end_face_area: {frame: frame, side: bottom, value: 6000}   # 底面完整
+      - extreme_plane_areas: {frame: frame, axis: 0, values: [1500, 6000]}   # 口沿 100·60 − 90·50；底面完整
 
   - id: walls
     source: 壁厚……均为 5mm
     check:
-      - ray_thickness: {frame: frame, from: cavity_center, dirs: [+long, -long, +mid, -mid], value: 5}
+      - ray_thickness: {frame: frame, from: [0.5, 0.5, 0.5], dirs: ["+1", "-1", "+2", "-2"], value: 5}
 
   - id: bottom
     source: 底厚均为 5mm
     check:
-      - ray_thickness: {frame: frame, from: cavity_center, dirs: [-height], value: 5}
-      - cavity_depth: {frame: frame, value: 45}
+      - ray_thickness: {frame: frame, from: [0.5, 0.5, 0.5], dirs: ["-0"], value: 5}
+      - first_hit: {frame: frame, from: [1.0, 0.5, 0.5], dir: "-0", value: 45}
 
   - id: volume
     source: 由以上尺寸完全确定

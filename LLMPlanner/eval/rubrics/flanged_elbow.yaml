@@ -5,7 +5,7 @@ prompt: >-
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 entities:
-  tube:    {torus: {major_r: 40, minor_r: 8}, count: 1}
+  tube:    {torus: {major_r: 40, minor_r: 8, side: outer}, count: 1}
   flanges: {cylinder: {d: 36, side: outer}, count: 2}
 
 rubrics:
@@ -31,17 +31,12 @@ rubrics:
     source: 两端各有外径 36mm、厚 4mm 的圆形法兰
     check:
       - exists: flanges
-      - extent_along: {axis: flanges, value: 4}
+      - extent_along: {axis: flanges, of: flanges, value: 4}
 
-  - id: flange_at_ends
-    source: 两端各有……法兰
+  - id: flange_placement
+    source: 两端各有……法兰，法兰厚度沿管轴线向外凸出
     check:
-      - at_arc_ends: {torus: tube, items: flanges}   # 轴线 = 两端切线，各占一端
-
-  - id: flange_outward
-    source: 法兰厚度沿管轴线向外凸出
-    check:
-      - beyond_end_plane: {torus: tube, items: flanges, from: 0, to: 4}
+      - flanges_at_arc_ends: {torus: tube, items: flanges, outward: [0, 4]}
 
   - id: bbox
     source: 由以上尺寸确定（中心孔不影响外廓）

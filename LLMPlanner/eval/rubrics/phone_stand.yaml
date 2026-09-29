@@ -9,13 +9,11 @@ prompt: >-
   最后尽可能对适合的外轮廓做R4mm圆角，同时保持底面平整、支架左右对称。
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
-# 坐标系：up = 底面（最大朝下平面）外法向的反向；length/width = 底座截面 110/78 的方向；
-# 左右 = width 方向。
+# 底座坐标系：0 = 长(110)，1 = 宽(78，左右方向)，2 = 向上；原点在底面外廓中心。
+# 背板 = 一对反向平行、非水平、面积最大的平面。
 entities:
-  frame: {base_frame: {bottom: largest_down_planar, extents: {length: 110, width: 78}, height: 8}}
-  plate: {slab: {thickness: 6, rises_from: base_top, reaches_height: 118}, count: 1}
-  lip:   {block: {at_end_of: length, top_height: 20}, count: 1}
-  ribs:  {triangular_web: {joins: [plate, base]}, count: 2}
+  base:  {base_frame: {thickness: 8}}
+  plate: {slab: {frame: base, min_area: 1000, max_thickness: 20}, count: 1}
 
 rubrics:
   - id: solid
@@ -28,45 +26,42 @@ rubrics:
     source: 底座长110mm、宽78mm、厚8mm；保持底面平整
     hard: true
     check:
-      - section_extents: {frame: frame, height: 4, value: [110, 78]}
-      - bottom_planar: {frame: frame}
+      - footprint: {frame: base, value: [110, 78]}
+      - bottom_planar: {frame: base, min_fill: 0.7}
 
   - id: plate
     source: 78mm宽的倾斜背板厚6mm，与水平面成74°，从底座上表面升起，成品总高度118mm
     check:
       - exists: plate
-      - slab_width: {slab: plate, along: width, value: 78}
-      - angle_to_bottom: {slab: plate, value: 74}
-      - extent_along: {axis: up, of: all, value: 118}
+      - slab_thickness: {slab: plate, value: 6}
+      - slab_width: {slab: plate, frame: base, value: 78}
+      - angle_to_bottom: {slab: plate, frame: base, value: 74}
+      - total_height: {frame: base, value: 118}
 
   - id: lip
     source: 底座前端设置贯穿全宽的挡唇，前后厚10mm，高出底座上表面12mm
     check:
-      - exists: lip
-      - spans: {item: lip, along: width, value: 78}
-      - extent_along: {axis: length, of: lip, value: 10}
+      - end_block: {frame: base, depth: 10, top: 20, min_fill: 0.9}
 
   - id: ribs
     source: 背板左右两侧各有一个三角加强筋
     check:
-      - exists: ribs
-      - at_both_ends: {items: ribs, of: plate, along: width}
+      - side_ribs: {frame: base, band: 6, min_excess: 200, from_height: 22}   # 从挡唇顶(20)以上量，避免把挡唇算成筋
 
   - id: u_slot
     source: 背板下部中央开一个宽16mm、向下开口高度28mm的充电线U形通槽
     check:
-      - through_opening: {in: plate, width: 16, height: 28, open_to: base_top, centered_along: width}
+      - slab_notch: {slab: plate, frame: base, width: 16, height: 28}
 
   - id: vents
     source: 背板中上部开3个36×8mm的水平贯穿散热槽，槽中心竖向间距18mm
     check:
-      - through_opening: {in: plate, count: 3, long: 36, short: 8, long_along: width}
-      - pitch: {items: vents, along: up, value: 18}
+      - slab_slots: {slab: plate, frame: base, count: 3, long: 36, short: 8, pitch: 18}
 
   - id: pads
     source: 底面加工两个24×10mm、深1.5mm的防滑垫浅凹槽
     check:
-      - pocket: {on: bottom, count: 2, size: [24, 10], depth: 1.5}
+      - bottom_pockets: {frame: base, count: 2, size: [24, 10], depth: 1.5}
 
   - id: fillet
     source: 尽可能对适合的外轮廓做R4mm圆角
@@ -76,18 +71,20 @@ rubrics:
   - id: symmetry
     source: 支架左右对称
     check:
-      - mirror_symmetric: {frame: frame, normal: width, max_xor_rel: 0.001}
+      - mirror_symmetric: {frame: base, normal: 1, max_xor_rel: 0.001}
 
   - id: plate_leans_back
     basis: implied
     source: 手机支架（手机靠在背板上，挡唇托住底边）
     check:
-      - tilts_away_from: {slab: plate, item: lip}
+      - tilts_away_from_lip: {slab: plate, frame: base, lip: {depth: 10, top: 20}}
 
 ungraded:
   - source: 背板根部在底座上的前后位置
     reason: 文字未给出；因此成品总长不检查（旧 GT 的 116 是假设值）
   - source: 加强筋的具体尺寸、哪些边做圆角
-    reason: 文字只给出定性要求
+    reason: 文字只给出定性要求；ribs 只检查左右两端各有一处多出的材料
+  - source: 槽的尺寸按竖直方向还是沿板面量
+    reason: 文字未说明，两种量法任一满足即可
   - source: 中上部
     reason: 散热槽的竖向绝对位置未给出
