@@ -1,0 +1,700 @@
+[
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout4_tools24_result\\soap_dish_r1.step",
+    "case": "soap_dish",
+    "score": 100.0,
+    "passed": 8,
+    "total": 8,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              25.0,
+              75.0,
+              110.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "corners",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 4,
+            "expected": 4
+          },
+          {
+            "check": "parallel_to_frame",
+            "ok": true,
+            "parallel": [
+              true,
+              true,
+              true,
+              true
+            ]
+          },
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                8.0,
+                8.0
+              ],
+              [
+                67.0,
+                8.0
+              ],
+              [
+                67.0,
+                102.0
+              ],
+              [
+                8.0,
+                102.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "open_top",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "extreme_plane",
+            "ok": true,
+            "area": 7900.54
+          },
+          {
+            "check": "first_hit",
+            "ok": true,
+            "measured": 22.0
+          }
+        ]
+      },
+      {
+        "id": "walls",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "ray_thickness",
+            "ok": true,
+            "measured": [
+              3.0,
+              3.0,
+              3.0,
+              3.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bottom",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "ray_thickness",
+            "ok": true,
+            "measured": [
+              3.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "drain_holes",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 15,
+            "expected": 15
+          },
+          {
+            "check": "parallel_to_frame",
+            "ok": true,
+            "parallel": [
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true
+            ]
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          },
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                19.5,
+                91.0
+              ],
+              [
+                55.5,
+                73.0
+              ],
+              [
+                37.5,
+                73.0
+              ],
+              [
+                19.5,
+                73.0
+              ],
+              [
+                37.5,
+                91.0
+              ],
+              [
+                55.5,
+                91.0
+              ],
+              [
+                37.5,
+                19.0
+              ],
+              [
+                55.5,
+                19.0
+              ],
+              [
+                19.5,
+                37.0
+              ],
+              [
+                37.5,
+                37.0
+              ],
+              [
+                55.5,
+                55.0
+              ],
+              [
+                37.5,
+                55.0
+              ],
+              [
+                19.5,
+                55.0
+              ],
+              [
+                55.5,
+                37.0
+              ],
+              [
+                19.5,
+                19.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume_range",
+            "ok": true,
+            "measured": 46593.1,
+            "range": [
+              45659.69,
+              47058.93
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_qwen3_5_397b_a17b_heldout4_tools24_result\\soap_dish_r2.step",
+    "case": "soap_dish",
+    "score": 100.0,
+    "passed": 8,
+    "total": 8,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              25.0,
+              75.0,
+              110.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "corners",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 4,
+            "expected": 4
+          },
+          {
+            "check": "parallel_to_frame",
+            "ok": true,
+            "parallel": [
+              true,
+              true,
+              true,
+              true
+            ]
+          },
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                67.0,
+                8.0
+              ],
+              [
+                67.0,
+                102.0
+              ],
+              [
+                8.0,
+                8.0
+              ],
+              [
+                8.0,
+                102.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "open_top",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "extreme_plane",
+            "ok": true,
+            "area": 7900.54
+          },
+          {
+            "check": "first_hit",
+            "ok": true,
+            "measured": 22.0
+          }
+        ]
+      },
+      {
+        "id": "walls",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "ray_thickness",
+            "ok": true,
+            "measured": [
+              3.0,
+              3.0,
+              3.0,
+              3.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bottom",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "ray_thickness",
+            "ok": true,
+            "measured": [
+              3.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "drain_holes",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 15,
+            "expected": 15
+          },
+          {
+            "check": "parallel_to_frame",
+            "ok": true,
+            "parallel": [
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true
+            ]
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 3.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          },
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                19.5,
+                91.0
+              ],
+              [
+                55.5,
+                73.0
+              ],
+              [
+                37.5,
+                73.0
+              ],
+              [
+                19.5,
+                73.0
+              ],
+              [
+                37.5,
+                91.0
+              ],
+              [
+                55.5,
+                91.0
+              ],
+              [
+                37.5,
+                19.0
+              ],
+              [
+                55.5,
+                19.0
+              ],
+              [
+                19.5,
+                37.0
+              ],
+              [
+                37.5,
+                37.0
+              ],
+              [
+                55.5,
+                55.0
+              ],
+              [
+                37.5,
+                55.0
+              ],
+              [
+                19.5,
+                55.0
+              ],
+              [
+                55.5,
+                37.0
+              ],
+              [
+                19.5,
+                19.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume_range",
+            "ok": true,
+            "measured": 46120.98,
+            "range": [
+              45659.69,
+              47058.93
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
