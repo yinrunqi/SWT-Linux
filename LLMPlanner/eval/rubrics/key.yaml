@@ -37,8 +37,8 @@ rubrics:
   - id: teeth
     source: 在杆的一侧均布 5 个齿槽
     check:
-      - edge_notches: {frame: frame, perp_to: 0, gap: 8, count: 5, exclude: head}
+      - edge_notches: {frame: frame, perp_to: 0, gap: 8, count: 5, exclude: head, equal_pitch: true}
 
 ungraded:
-  - source: 齿槽尺寸、间距、圈孔形状（矩形或长圆）
-    reason: 文字未规定（未说等距），体积无法确定
+  - source: 齿槽尺寸与节距、圈孔形状（矩形或长圆）
+    reason: 文字只要求均布，未给槽宽、节距和圈孔形状，体积无法确定

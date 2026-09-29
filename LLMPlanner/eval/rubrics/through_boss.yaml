@@ -4,9 +4,10 @@ prompt: >-
   在右端面外侧 24mm 处的平行平面上画直径 20mm 的圆，向实体拉伸直到贴上右端面。
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
-# 世界坐标轴（题面给定），原点平移到包围盒最小角；“右端面”取 +X 端面。
+# 世界坐标轴（题面给定）；X 原点在包围盒最小端，Y、Z 原点锚定在长方体的低端大平面上，
+# 凸台伸出端面时不带偏长方体的坐标。“右端面”取 +X 端面。
 entities:
-  w:    {world_frame: {}}
+  w:    {world_frame: {anchor_planes: [1, 2]}}
   boss: {cylinder: {d: 20, side: outer}, count: 1}
 
 rubrics:
@@ -19,9 +20,8 @@ rubrics:
   - id: block
     source: 60×48×36mm 的长方体（60 沿 X，36 沿 Y 为高，48 沿 Z），底面在 Y=0
     hard: true
-    derivation: X 向总长含凸台 60 + 24 = 84
     check:
-      - frame_box: {frame: w, size: [84, 36, 48], world_lo: {1: 0}}
+      - frame_box: {frame: w, world_origin: {1: 0}}
       # 长方体本身沿 X 长 60；凸台若做在另一端，包围盒原点随之平移 24（凸台位置由 boss 条目单独判）
       - line_material: {frame: w, along: 0, at: [null, 1, 1], expect_any: [[[0, 60]], [[24, 84]]]}
       - line_material: {frame: w, along: 1, at: [30, null, 1], expect: [[0, 36]]}
@@ -38,8 +38,10 @@ rubrics:
   - id: boss_on_face
     source: （隐含）凸台整圆落在右端面内
     basis: implied
+    derivation: 凸台不伸出端面时，外形即长方体加凸台：X 向 60 + 24 = 84
     check:
       - axis_coords_in: {frame: w, items: boss, axes: [1, 2], ranges: [[10, 26], [10, 38]]}
+      - frame_box: {frame: w, size: [84, 36, 48]}
 
   - id: volume
     source: 由以上尺寸完全确定

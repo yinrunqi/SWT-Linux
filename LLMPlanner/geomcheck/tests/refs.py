@@ -206,10 +206,11 @@ def vase(neck_r=20.0, lower="flare"):
     return clean(cut(revolve(outer + top), revolve(inner + top_in)))
 
 
-def key(n_teeth=5):
+def key(n_teeth=5, centers=None):
     body = fuse(cyl((0, 0, 0), Z, 10, 2), box(8, -4, 0, 50, 4, 2))
     body = cut(body, box(-5, -2.5, -1, 5, 2.5, 3))
-    notches = [box(c - 1, 2.5, -1, c + 1, 5, 3) for c in (20 + 6 * k for k in range(n_teeth))]
+    centers = centers or [20 + 6 * k for k in range(n_teeth)]
+    notches = [box(c - 1, 2.5, -1, c + 1, 5, 3) for c in centers]
     return clean(cut(body, *notches))
 
 
@@ -416,9 +417,9 @@ def csk_cover(kind="csk", flip_first=False):
     return _recess_plate(90, 70, 12, pos, 8, 14, 4, kind, flip_first)
 
 
-def side_pad(side=+1, length=20.0):
+def side_pad(side=+1, length=20.0, center=(15, 20)):
     x0 = 50 if side > 0 else -length
-    return clean(fuse(box(0, 0, 0, 50, 30, 40), cyl((x0, 15, 20), X, 8, length)))
+    return clean(fuse(box(0, 0, 0, 50, 30, 40), cyl((x0, *center), X, 8, length)))
 
 
 def through_boss(side=+1, length=24.0):

@@ -33,6 +33,7 @@ ALTERNATIVE = [
     ("corner_rib_stand", "upright_from_bottom", lambda: refs.corner_rib_stand(total_h=36)),
     ("storage_box", "outer_loop_only", lambda: refs.storage_box(loops="outer")),
     ("vase", "straight_lower_half", lambda: refs.vase(lower="straight")),
+    ("key", "last_notch_cut_by_tip", lambda: refs.key(centers=[18, 26, 34, 42, 50])),
 ]
 
 # (case, 变体名, 构造函数, 预期失败的条目 id)
@@ -46,6 +47,7 @@ MUTANTS = [
     ("vase", "neck_44", lambda: refs.vase(neck_r=22), {"profile"}),
     ("vase", "max_only_at_bottom", lambda: refs.vase(lower="bottom_max"), {"profile"}),
     ("key", "4_teeth", lambda: refs.key(n_teeth=4), {"teeth"}),
+    ("key", "uneven_pitch", lambda: refs.key(centers=[20, 26, 32, 40, 44]), {"teeth"}),
     ("gear_disc", "10_slots", lambda: refs.gear_disc(n_slots=10), {"slots"}),
     ("pulley", "no_chamfer", lambda: refs.pulley(chamfer=False), {"chamfer"}),
     ("stepped_shaft", "shifted", lambda: refs.stepped_shaft(shift=5), {"centered"}),
@@ -74,6 +76,7 @@ MUTANTS = [
     ("counterbore_plate", "one_flipped", lambda: refs.counterbore_plate(flip_first=True), {"recess"}),
     ("csk_cover", "one_flipped", lambda: refs.csk_cover(flip_first=True), {"recess"}),
     ("side_pad", "boss_on_left", lambda: refs.side_pad(side=-1), {"boss"}),
+    ("side_pad", "boss_overhangs_face", lambda: refs.side_pad(center=(15, 0)), {"boss_on_face"}),
     ("through_boss", "boss_on_left", lambda: refs.through_boss(side=-1), {"boss"}),
     ("sheet_angle", "t_2", lambda: refs.sheet_angle(t=2), {"plate", "volume"}),
     ("square_to_round", "top_d26", lambda: refs.square_to_round(top_r=13), {"top"}),

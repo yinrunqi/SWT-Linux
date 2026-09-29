@@ -217,7 +217,26 @@ def sel_principal_frame(ctx: Ctx, a: dict) -> Frame:
 
 
 def sel_world_frame(ctx: Ctx, a: dict) -> Frame:
-    return _box_frame(ctx.part, np.eye(3))
+    """世界轴坐标系，原点在包围盒最小角。
+
+    ``anchor_planes: [k, ...]``：这些轴上的原点改取主体的低端平面——法向为 −e_k、面积不小于
+    该方向最大平面 1/4 的平面中坐标最小者，使伸出主体的小特征不带偏坐标。
+    """
+    frame = _box_frame(ctx.part, np.eye(3))
+    anchors = a.get("anchor_planes") or []
+    if not anchors:
+        return frame
+    origin = frame.origin.copy()
+    for k in anchors:
+        e = np.eye(3)[k]
+        faces = [s for s in ctx.part.surfs if s.kind == "plane" and abs(float(np.dot(s.axis_d, e))) > 1 - 1e-6]
+        low = [s for s in faces if float(np.dot(s.axis_d, e)) < 0]
+        if not low:
+            continue
+        big = max(s.area for s in faces)
+        origin[k] = min(-s.offset for s in low if s.area >= 0.25 * big)
+    shift = origin - frame.origin
+    return Frame(origin, frame.axes, frame.lo - shift, frame.hi - shift, frame.extra)
 
 
 def sel_axis_frame(ctx: Ctx, a: dict) -> Frame:
@@ -949,12 +968,18 @@ def ck_end_face_shape(ctx: Ctx, a) -> Result:
 
 
 def ck_frame_box(ctx: Ctx, a) -> Result:
-    """frame 下的外形尺寸（size，null 表示不查）与世界坐标下限（world_lo，仅 world_frame）。"""
+    """frame 下的外形尺寸（size，null 表示不查）、世界坐标下限（world_lo）与 frame 原点的世界坐标
+    （world_origin；配合 world_frame 的 anchor_planes 检查主体低端面位置）。仅用于 world_frame。"""
     frame = ctx.frame(a["frame"])
     ok, det = True, {"size": [_r(x) for x in frame.size]}
     for k, v in enumerate(a.get("size") or []):
         if v is not None and not ctx.near(float(frame.size[k]), v):
             ok = False
+    if "world_origin" in a:
+        det["world_origin"] = [_r(x) for x in frame.origin]
+        for k, v in a["world_origin"].items():
+            if not ctx.near(float(frame.origin[int(k)]), v):
+                ok = False
     if "world_lo" in a:
         lo = frame.origin @ frame.axes.T + frame.lo
         det["world_lo"] = [_r(x) for x in lo]
@@ -1322,8 +1347,17 @@ def ck_edge_notches(ctx: Ctx, a) -> Result:
         if segs and segs[-1][1] < s1 - s0 - 1e-6:
             gaps.append((segs[-1][1], s1 - s0))
         counts.append(len(gaps))
-        centers = [(g0 + g1) / 2 for g0, g1 in gaps]
-        pitch.append([_r(x) for x in np.diff(centers)])
+        # 间距取相邻缺口同侧、未被条形端部（或排除区）截断的槽壁之差；两侧都截断时才退回用中点
+        span = s1 - s0
+        pp = []
+        for (a0, a1), (b0, b1) in zip(gaps, gaps[1:]):
+            if a0 > 1e-6 and b0 > 1e-6:
+                pp.append(b0 - a0)
+            elif a1 < span - 1e-6 and b1 < span - 1e-6:
+                pp.append(b1 - a1)
+            else:
+                pp.append((b0 + b1 - a0 - a1) / 2)
+        pitch.append([_r(x) for x in pp])
     k = 0 if counts[0] >= counts[1] else 1
     ok = counts[k] == a["count"] and counts[1 - k] == 0
     if a.get("equal_pitch") and len(pitch[k]) > 1:
