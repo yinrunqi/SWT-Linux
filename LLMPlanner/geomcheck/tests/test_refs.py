@@ -1,4 +1,4 @@
-"""其余 43 道题：参考正例满分且体积与 rubric 推导值一致；每个反例恰好在预期条目上失败。
+"""其余 44 道题：参考正例满分且体积与 rubric 推导值一致；每个反例恰好在预期条目上失败。
 
 运行：venv-occ\\Scripts\\python.exe -m pytest geomcheck/tests -q
 """
@@ -22,6 +22,7 @@ POSITIVE = [
     "fork_end", "three_lug_housing", "pillow_block", "twin_arm_rocker", "clevis_bracket", "diamond_flange",
     "support_seat", "crank", "gusset_bracket", "corner_rib_stand", "open_box", "counterbore_plate", "csk_cover",
     "side_pad", "through_boss", "sheet_angle", "sheet_channel", "square_to_round", "rect_to_circle", "bent_tube",
+    "soap_dish",
 ]
 
 # 题面有两种合理读法的，另一种读法也应满分
@@ -34,6 +35,7 @@ ALTERNATIVE = [
     ("storage_box", "outer_loop_only", lambda: refs.storage_box(loops="outer")),
     ("vase", "straight_lower_half", lambda: refs.vase(lower="straight")),
     ("key", "last_notch_cut_by_tip", lambda: refs.key(centers=[18, 26, 34, 42, 50])),
+    ("soap_dish", "inner_corners_r5", lambda: refs.soap_dish(inner_r=5)),
 ]
 
 # (case, 变体名, 构造函数, 预期失败的条目 id)
@@ -83,6 +85,9 @@ MUTANTS = [
     ("rect_to_circle", "off_axis", lambda: refs.rect_to_circle(offset=3), {"coaxial"}),
     ("bent_tube", "flanges_inward", lambda: refs.bent_tube(inward=True),
      {"tube_path", "flange_placement", "bbox", "volume"}),
+    ("soap_dish", "pitch_20", lambda: refs.soap_dish(pitch=20), {"drain_holes"}),
+    ("soap_dish", "floor_4", lambda: refs.soap_dish(floor=4), {"open_top", "bottom", "volume"}),
+    ("soap_dish", "sharp_corners", lambda: refs.soap_dish(corner_r=0), {"corners", "volume"}),
 ]
 
 
@@ -121,4 +126,4 @@ def test_mutant(case, label, build, expected):
 def test_every_case_has_rubric():
     names = {p.stem for p in RUBRICS.glob("*.yaml")}
     assert names == set(POSITIVE) | {"flange", "flanged_elbow", "lidless_housing", "socket_bolt", "mug", "phone_stand"}
-    assert len(names) == 49
+    assert len(names) == 50

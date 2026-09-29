@@ -1,0 +1,74 @@
+case: soap_dish
+prompt: 创建一个顶部敞开的长方形肥皂盒，单一实体。外部尺寸 110×75×25mm（高 25mm），侧壁厚 3mm，底厚 3mm；外侧四条竖直棱边做 R8mm 圆角。底板上开 15 个直径 5mm 的贯穿排水孔，排成 3 行 × 5 列：沿 110mm 方向 5 列、列距 18mm，沿 75mm 方向 3 行、行距 18mm，孔阵中心与底面中心重合。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 0 = 高(25)，1 = 宽(75)，2 = 长(110)；原点在包围盒角点，底面在 0，敞开端在 25。
+# 底面中心 = (37.5, 55)；孔阵 3 行 × 5 列，避开孔的探测点取 (46.5, 64)。
+entities:
+  frame:   {principal_frame: {up: open_end}}
+  corners: {cylinder: {d: 16, side: outer}, count: 4}
+  holes:   {cylinder: {d: 5, side: inner}, count: 15}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 外部尺寸 110×75×25mm
+    hard: true
+    check:
+      - bbox_sorted: [25, 75, 110]
+
+  - id: corners
+    source: 外侧四条竖直棱边做 R8mm 圆角
+    check:
+      - exists: corners
+      - parallel_to_frame: {frame: frame, items: corners, axis: 0}
+      - axis_positions: {frame: frame, items: corners, axes: [1, 2], expect: [[8, 8], [8, 102], [67, 8], [67, 102]]}
+
+  - id: open_top
+    source: 顶部敞开
+    derivation: 底面 8195.1 − 15 个孔 294.5 = 7900.6；从口部直落到腔底 25 − 3
+    check:
+      - extreme_plane: {frame: frame, axis: 0, side: low, min_area: 7800}
+      - first_hit: {frame: frame, from: [1.0, 0.62, 0.581818], dir: "-0", value: 22}
+
+  - id: walls
+    source: 侧壁厚 3mm
+    check:
+      - ray_thickness: {frame: frame, from: [0.5, 0.5, 0.5], dirs: ["+1", "-1", "+2", "-2"], value: 3}
+
+  - id: bottom
+    source: 底厚 3mm
+    check:
+      - ray_thickness: {frame: frame, from: [0.5, 0.62, 0.581818], dirs: ["-0"], value: 3}
+
+  - id: drain_holes
+    source: 15 个直径 5mm 的贯穿排水孔，3 行 × 5 列，列距、行距 18mm，孔阵中心与底面中心重合
+    check:
+      - exists: holes
+      - parallel_to_frame: {frame: frame, items: holes, axis: 0}
+      - through: {holes: holes}
+      - axis_positions:
+          frame: frame
+          items: holes
+          axes: [1, 2]
+          expect: [[19.5, 19], [19.5, 37], [19.5, 55], [19.5, 73], [19.5, 91],
+                   [37.5, 19], [37.5, 37], [37.5, 55], [37.5, 73], [37.5, 91],
+                   [55.5, 19], [55.5, 37], [55.5, 55], [55.5, 73], [55.5, 91]]
+
+  - id: volume
+    source: 由以上尺寸确定，内侧竖直角的圆角文字未给出
+    derivation: >-
+      外廓 (110·75 − (4 − π)·8²)·25 = 204876.5；
+      腔体 104·69·22 = 157872（内角尖角）至 (104·69 − (4 − π)·5²)·22 = 157399.9（内角 R5，与外角同心）；
+      孔 15·π·2.5²·3 = 883.6；体积 46120.9 至 46593.0
+    check:
+      - volume_range: [46120.9, 46593.0]
+
+ungraded:
+  - source: 腔体内侧的四条竖直角
+    reason: 文字只要求外侧棱边圆角；内角可为尖角，也可为与外角同心的 R5（如抽壳）

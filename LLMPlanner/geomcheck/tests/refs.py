@@ -1,4 +1,4 @@
-"""其余 43 道题的参考实体：按题面尺寸用 OCP 直接构造，Z 轴向上。
+"""其余 44 道题的参考实体：按题面尺寸用 OCP 直接构造，Z 轴向上。
 
 每个构造函数的默认参数给出一个符合题面的正例；个别参数用来生成针对性改错的反例。
 """
@@ -250,6 +250,17 @@ def mounting_plate(window=(40, 20)):
     holes = [cyl((x, y, -1), Z, 3.5, 8) for x in (12, 108) for y in (12, 68)]
     w, h = window
     return clean(cut(body, *holes, box(60 - w / 2, 40 - h / 2, -1, 60 + w / 2, 40 + h / 2, 7)))
+
+
+def soap_dish(floor=3.0, pitch=18.0, inner_r=0.0, corner_r=8.0):
+    body = box(0, 0, 0, 110, 75, 25)
+    if corner_r:
+        body = fillet(body, corner_r, vertical_lines)
+    cavity = box(3, 3, floor, 107, 72, 26)
+    if inner_r:
+        cavity = fillet(cavity, inner_r, vertical_lines)
+    holes = [cyl((55 + i * pitch, 37.5 + j * pitch, -1), Z, 2.5, floor + 2) for i in range(-2, 3) for j in (-1, 0, 1)]
+    return clean(cut(body, cavity, *holes))
 
 
 def stepped_block(hole_from_bottom=False):

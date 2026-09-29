@@ -625,7 +625,23 @@ ADVANCED_CASES = (
         split="heldout3",
     ),
 )
-CASES = CASES + HELDOUT_CASES + COMPLEX_CASES + ADVANCED_CASES
+# 第 50 题（日常物品），题面与 rubric 在首次运行前写定。
+EXTRA_CASES = (
+    TextCase(
+        "soap_dish",
+        "排水肥皂盒",
+        "创建一个顶部敞开的长方形肥皂盒，单一实体。外部尺寸 110×75×25mm（高 25mm），侧壁厚 3mm，底厚 3mm；"
+        "外侧四条竖直棱边做 R8mm 圆角。底板上开 15 个直径 5mm 的贯穿排水孔，排成 3 行 × 5 列："
+        "沿 110mm 方向 5 列、列距 18mm，沿 75mm 方向 3 行、行距 18mm，孔阵中心与底面中心重合。",
+        (25.0, 75.0, 110.0),
+        1.5,
+        # rubric soap_dish：内角尖角 46120.9，内角 R5 46593.0
+        (45650.0, 47050.0),
+        (("cuts", 2), ("fillets", 1)),
+        split="heldout4",
+    ),
+)
+CASES = CASES + HELDOUT_CASES + COMPLEX_CASES + ADVANCED_CASES + EXTRA_CASES
 
 
 HISTORICAL_CASES = (
@@ -1328,7 +1344,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--split",
-        choices=("dev", "heldout", "demo", "heldout2", "demo3", "heldout3", "all"),
+        choices=("dev", "heldout", "demo", "heldout2", "demo3", "heldout3", "heldout4", "all"),
         default="dev",
         help="Case split; heldout cases must never be used to tune prompts, tools or code",
     )
