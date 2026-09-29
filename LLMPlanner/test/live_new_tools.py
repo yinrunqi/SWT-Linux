@@ -127,7 +127,7 @@ def ref_planes(session: WorkflowSession) -> None:
     check("block grown back up to the plate", volume, 16000 + math.pi * 100 * 20 + 1500, 1.0)
     mid = step(session, "ref_plane", {"reference": "right_plane", "offset": -12})
     step(session, "cut", {
-        "plane": mid.get("name") or mid.get("plane"), "through_all": True, "direction": "both",
+        "plane": mid.get("name"), "through_all": True, "direction": "both",
         "loops": [{"type": "circle", "center": [0, 5], "diameter": 4}],
     })
     volume_after, _ = state(session)
