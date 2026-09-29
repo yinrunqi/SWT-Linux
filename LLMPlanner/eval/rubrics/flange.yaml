@@ -45,8 +45,8 @@ rubrics:
 
   - id: volume
     source: 由以上尺寸完全确定
-    derivation: π·12·(50² − 15² − 6·4²) = 82146.9
+    derivation: π·12·(50² − 15² − 6·4²) = 26148π = 82146.4
     check:
-      - volume: 82146.9
+      - volume: 82146.4
 
 ungraded: []
