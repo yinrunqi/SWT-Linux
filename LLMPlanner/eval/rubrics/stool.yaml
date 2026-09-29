@@ -1,0 +1,51 @@
+case: stool
+prompt: 创建四脚板凳：凳面 200×200×20mm；四条圆柱腿直径 20mm、长 150mm，腿中心距相邻边 30mm。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 坐标轴由短到长：0 = 高(170)，1、2 = 凳面两边(200)；原点在包围盒角点。
+# 高度正方向由“端部平面面积较大的一端在低端”确定：凳面顶面（40000）在 0，腿端在 170。
+entities:
+  frame: {principal_frame: {signs: {0: larger_area_low}}}
+  legs:  {cylinder: {d: 20, side: outer}, count: 4}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 凳面 200×200，腿长 150 接在 20 厚的凳面下
+    hard: true
+    derivation: 20 + 150 = 170
+    check:
+      - bbox_sorted: [170, 200, 200]
+
+  - id: seat
+    source: 凳面 200×200×20mm
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 100, 100], expect: [[0, 20]]}
+      - line_material: {frame: frame, along: 1, at: [10, null, 100], expect: [[0, 200]]}
+      - line_material: {frame: frame, along: 2, at: [10, 100, null], expect: [[0, 200]]}
+
+  - id: legs
+    source: 四条圆柱腿直径 20mm、长 150mm
+    check:
+      - exists: legs
+      - parallel_to_frame: {frame: frame, items: legs, axis: 0}
+      - extent_along: {axis: legs, of: legs, value: 150}
+      - line_material: {frame: frame, along: 0, at: [null, 30, 30], expect: [[0, 170]]}
+
+  - id: leg_position
+    source: 腿中心距相邻边 30mm
+    check:
+      - axis_positions: {frame: frame, items: legs, axes: [1, 2], expect: [[30, 30], [30, 170], [170, 30], [170, 170]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 200·200·20 + 4·π·10²·150 = 800000 + 188495.6 = 988495.6
+    check:
+      - volume: 988495.6
+
+ungraded: []

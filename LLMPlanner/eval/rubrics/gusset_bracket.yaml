@@ -1,0 +1,53 @@
+case: gusset_bracket
+prompt: >-
+  创建带筋角码，单一实体。水平底板 60×40mm、厚 6mm；在 60mm 方向的一端立起 40mm 宽、高 30mm、厚 6mm 的立板，
+  立板外侧面与底板该端面齐平。在底板与立板的内侧拐角加一块厚 4mm 的直角筋，筋的两条直角边分别沿底板和立板各 18mm，
+  筋位于 40mm 方向的对称中面。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 底座坐标系：0 = 60mm 方向（+0 指向立板一端），1 = 40mm 方向，2 = 向上；原点在底面外廓中心。
+# 立板占 0 ∈ [24, 30]；内侧拐角在 (0, 2) = (24, 6)；筋为 (6, 6)、(24, 6)、(24, 24) 围成的直角三角形。
+entities:
+  base: {base_frame: {thickness: 6, tall_end: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: base
+    source: 水平底板 60×40mm、厚 6mm
+    hard: true
+    check:
+      - footprint: {frame: base, value: [60, 40]}
+      - line_material: {frame: base, along: 2, at: [0, 15, null], expect: [[0, 6]]}
+
+  - id: upright
+    source: 在 60mm 方向的一端立起 40mm 宽、厚 6mm 的立板，立板外侧面与底板该端面齐平
+    check:
+      - line_material: {frame: base, along: 0, at: [null, 15, 20], expect: [[24, 30]]}
+      - line_material: {frame: base, along: 1, at: [27, null, 20], expect: [[-20, 20]]}
+
+  - id: upright_height
+    source: 高 30mm
+    derivation: 高 30 可读作立板自底板上表面起（总高 36）或自底面起（总高 30）
+    check:
+      - line_material: {frame: base, along: 2, at: [27, 15, null], expect_any: [[[0, 36]], [[0, 30]]]}
+      - bbox_sorted_any: [[36, 40, 60], [30, 40, 60]]
+
+  - id: rib
+    source: 内侧拐角加一块厚 4mm 的直角筋，两条直角边分别沿底板和立板各 18mm，筋位于 40mm 方向的对称中面
+    check:
+      - line_material: {frame: base, along: 1, at: [20, null, 8], expect: [[-2, 2]]}
+      - line_material: {frame: base, along: 2, at: [15, 0, null], expect: [[0, 15]]}
+      - line_material: {frame: base, along: 0, at: [null, 0, 20], expect: [[20, 30]]}
+
+  - id: volume
+    source: 由以上尺寸确定，立板高度有两种读法
+    derivation: 底板 60·40·6 = 14400；立板 6·40·30 = 7200 或 6·40·24 = 5760；筋 ½·18·18·4 = 648
+    check:
+      - volume_range: [20808, 22248]
+
+ungraded: []

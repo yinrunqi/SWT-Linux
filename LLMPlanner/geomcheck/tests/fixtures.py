@@ -140,11 +140,23 @@ def _hex(z0, depth, af=8.0):
     return prism(pts, (0, 0, depth))
 
 
-def bolt(fillet_at="neck"):
+def bolt(fillet_at="neck", socket_depth=4.0, socket_fillet=False):
+    """socket_fillet：六角孔的孔口与孔底棱边也倒 R0.5（复刻 tools24 dev r1）。"""
     body = clean(fuse(cyl((0, 0, 0), (0, 0, 1), 5, 50), cyl((0, 0, 50), (0, 0, 1), 9, 6)))
     pick = {"neck": circle_edge(5, 50), "head_bottom": circle_edge(9, 50), "head_top": circle_edge(9, 56)}[fillet_at]
     body = fillet(body, 0.5, pick)
-    return clean(cut(body, _hex(52, 5)))
+    body = clean(cut(body, _hex(56 - socket_depth, socket_depth + 1)))
+    if socket_fillet:
+        floor = 56 - socket_depth
+
+        def socket_edge(c):
+            if c.GetType() != GeomAbs_Line:
+                return False
+            p0, p1 = c.Value(c.FirstParameter()), c.Value(c.LastParameter())
+            horizontal = abs(p0.Z() - p1.Z()) < 1e-6
+            return horizontal and any(abs(p0.Z() - z) < 1e-6 for z in (floor, 56.0)) and math.hypot(p0.X(), p0.Y()) < 5
+        body = clean(fillet(body, 0.5, socket_edge))
+    return body
 
 
 # ---------------------------------------------------------------- mug

@@ -1,0 +1,53 @@
+case: corner_rib_stand
+prompt: >-
+  创建带筋支架，单一实体。水平底板 80×50mm、厚 8mm；在 80mm 方向的一端立起 50mm 宽、高 36mm、厚 8mm 的立板，
+  立板外侧面与底板该端面齐平。在底板与立板的内侧拐角加一块厚 5mm 的直角筋，筋的两条直角边分别沿底板和立板各 24mm，
+  筋位于 50mm 方向的对称中面。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 底座坐标系：0 = 80mm 方向（+0 指向立板一端），1 = 50mm 方向，2 = 向上；原点在底面外廓中心。
+# 立板占 0 ∈ [32, 40]；内侧拐角在 (0, 2) = (32, 8)；筋为 (8, 8)、(32, 8)、(32, 32) 围成的直角三角形。
+entities:
+  base: {base_frame: {thickness: 8, tall_end: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: base
+    source: 水平底板 80×50mm、厚 8mm
+    hard: true
+    check:
+      - footprint: {frame: base, value: [80, 50]}
+      - line_material: {frame: base, along: 2, at: [0, 20, null], expect: [[0, 8]]}
+
+  - id: upright
+    source: 在 80mm 方向的一端立起 50mm 宽、厚 8mm 的立板，立板外侧面与底板该端面齐平
+    check:
+      - line_material: {frame: base, along: 0, at: [null, 20, 25], expect: [[32, 40]]}
+      - line_material: {frame: base, along: 1, at: [36, null, 25], expect: [[-25, 25]]}
+
+  - id: upright_height
+    source: 高 36mm
+    derivation: 高 36 可读作立板自底板上表面起（总高 44）或自底面起（总高 36）
+    check:
+      - line_material: {frame: base, along: 2, at: [36, 20, null], expect_any: [[[0, 44]], [[0, 36]]]}
+      - bbox_sorted_any: [[44, 50, 80], [36, 50, 80]]
+
+  - id: rib
+    source: 内侧拐角加一块厚 5mm 的直角筋，两条直角边分别沿底板和立板各 24mm，筋位于 50mm 方向的对称中面
+    check:
+      - line_material: {frame: base, along: 1, at: [28, null, 10], expect: [[-2.5, 2.5]]}
+      - line_material: {frame: base, along: 2, at: [20, 0, null], expect: [[0, 20]]}
+      - line_material: {frame: base, along: 0, at: [null, 0, 26], expect: [[26, 40]]}
+
+  - id: volume
+    source: 由以上尺寸确定，立板高度有两种读法
+    derivation: 底板 80·50·8 = 32000；立板 8·50·36 = 14400 或 8·50·28 = 11200；筋 ½·24·24·5 = 1440
+    check:
+      - volume_range: [44640, 47840]
+
+ungraded: []

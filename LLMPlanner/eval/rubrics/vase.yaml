@@ -1,0 +1,51 @@
+case: vase
+prompt: 创建高 150mm 的轴对称空心花瓶：底部平坦，中部最大直径 90mm，瓶颈直径 40mm，瓶口直径 55mm，底厚 10mm。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 回转面多为样条，没有解析轴线：取主方向坐标系中最长轴（高度）穿过包围盒中心的直线作为回转轴。
+# vframe：轴 0 沿回转轴，t = 0 在底部（端部平面面积较大的一端）。
+entities:
+  box:    {principal_frame: {}}
+  axis:   {bbox_axis: {frame: box, axis: 2}}
+  vframe: {axis_frame: {axis: axis, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 高 150mm，中部最大直径 90mm
+    hard: true
+    check:
+      - bbox_sorted: [90, 90, 150]
+
+  - id: axisymmetric
+    source: 轴对称
+    check:
+      - rotation_invariant: {frame: vframe, angle_deg: 37}
+
+  - id: flat_bottom
+    source: 底部平坦
+    check:
+      - extreme_plane: {frame: vframe, axis: 0, side: low, min_area: 100}
+
+  - id: hollow_bottom
+    source: 空心；底厚 10mm
+    check:
+      - line_material: {frame: vframe, along: 0, polar: [0, 0], expect: [[0, 10]]}
+
+  - id: profile
+    source: 中部最大直径 90mm，瓶颈直径 40mm，瓶口直径 55mm
+    derivation: >-
+      外轮廓直径：最大值 90 须在高度 25%–75% 段内取到（文字只要求中部达到最大，
+      不要求底部收窄，最大段可延伸到段外）；其上方最细处 40（瓶颈）；顶端 55。
+      瓶口直径按外径或内径均可
+    check:
+      - revolved_profile: {frame: vframe, max_d: 90, max_at: [0.25, 0.75], neck_d: 40, top_d: 55, top_inner_ok: true}
+
+ungraded:
+  - source: 壁厚与轮廓曲线
+    reason: 文字未给出侧壁厚度和曲线形状，体积无法确定

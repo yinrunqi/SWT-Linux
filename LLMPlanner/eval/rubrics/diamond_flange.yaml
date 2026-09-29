@@ -1,0 +1,75 @@
+case: diamond_flange
+prompt: >-
+  创建菱形法兰座。法兰板厚 8mm，外形由中心 R25mm 圆弧与两侧 R12mm 圆弧（圆心分别距中心 42mm，三个圆心共线）
+  通过公切直线连接而成的凸轮廓；两个 R12mm 圆弧圆心处各开直径 10mm 的贯穿孔。
+  法兰板上方同轴设置直径 34mm 的凸台，凸台顶面距法兰底面 26mm；中心直径 20mm 的孔全长贯通。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# dframe：轴 0 沿凸台轴线，t = 0 在法兰底面；轴 1 指向一侧 R12 圆心。
+entities:
+  center_arc: {cylinder: {d: 50, side: outer}, count: 1}
+  lobes:      {cylinder: {d: 24, side: outer}, count: 2}
+  holes:      {cylinder: {d: 10, side: inner}, count: 2}
+  boss:       {cylinder: {d: 34, side: outer}, count: 1}
+  bore:       {cylinder: {d: 20, side: inner}, count: 1}
+  dframe:     {axis_frame: {axis: boss, low: larger_area, ref: lobes}}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 由以上尺寸确定
+    hard: true
+    derivation: 沿凸台轴线 26；沿三圆心连线 2·(42 + 12) = 108；横向为中心圆弧 50（在 dframe 中量）
+    check:
+      - frame_box: {frame: dframe, size: [26, 108, 50]}
+
+  - id: plate
+    source: 法兰板厚 8mm，外形由中心 R25mm 圆弧与两侧 R12mm 圆弧（圆心距中心 42mm，三圆心共线）通过公切直线连接
+    derivation: >-
+      公切线法向 x 分量 (25 − 12)/42；x = ±21 处半宽 (25 − 21·13/42)/√(1 − (13/42)²) = 19.455
+    check:
+      - exists: center_arc
+      - coaxial: [center_arc, boss]
+      - exists: lobes
+      - axis_distance: {from: boss, to: lobes, value: 42}
+      - equal_angular: {about: boss, items: lobes}
+      - line_material: {frame: dframe, along: 0, polar: [30, 0], expect: [[0, 8]]}
+      - line_material: {frame: dframe, along: 2, at: [4, 21, null], expect: [[-19.455, 19.455]]}
+      - line_material: {frame: dframe, along: 2, at: [4, -21, null], expect: [[-19.455, 19.455]]}
+
+  - id: holes
+    source: 两个 R12mm 圆弧圆心处各开直径 10mm 的贯穿孔
+    check:
+      - exists: holes
+      - coaxial: [holes, lobes]
+      - through: {holes: holes}
+
+  - id: boss
+    source: 法兰板上方同轴设置直径 34mm 的凸台，凸台顶面距法兰底面 26mm
+    check:
+      - exists: boss
+      - extent_along: {axis: boss, of: all, value: 26}
+      - line_material: {frame: dframe, along: 0, polar: [15, 90], expect: [[0, 26]]}
+
+  - id: bore
+    source: 中心直径 20mm 的孔全长贯通
+    check:
+      - exists: bore
+      - coaxial: [bore, boss]
+      - through: {holes: bore}
+      - extent_along: {axis: bore, of: bore, value: 26}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: >-
+      外形面积 2·25²·α + 12²·(π − 2α) + 2·37·√(42² − 13²) = 3710.50，α = asin(13/42)；
+      板 8·(3710.50 − 2·π·5² − π·10²) = 25914.0；凸台 18·π·(17² − 10²) = 10687.7；合计 36601.7
+    check:
+      - volume: 36601.7
+
+ungraded: []

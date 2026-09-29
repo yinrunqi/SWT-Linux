@@ -1,0 +1,62 @@
+case: pulley
+prompt: 创建直径 100mm、厚 20mm 的简化皮带轮，中心贯穿孔直径 25mm，顶部有外径 90mm、内径 70mm、深 10mm 的环槽，外轮缘做 C1mm 倒角。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# pframe：轴 0 沿轮轴，t = 0 在端面平面面积较大的一端（无环槽的底面），环槽开在 t = 20 一侧。
+entities:
+  rim:      {cylinder: {d: 100, side: outer}, count: 1}
+  bore:     {cylinder: {d: 25, side: inner}, count: 1}
+  groove_o: {cylinder: {d: 90, side: inner}, count: 1}
+  groove_i: {cylinder: {d: 70, side: outer}, count: 1}
+  chamfers: {cone: {semi_angle: 45, side: outer, max_r: 50}}
+  pframe:   {axis_frame: {axis: rim, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: wheel
+    source: 直径 100mm、厚 20mm
+    hard: true
+    check:
+      - exists: rim
+      - extent_along: {axis: rim, of: all, value: 20}
+      - bbox_sorted: [20, 100, 100]
+
+  - id: bore
+    source: 中心贯穿孔直径 25mm
+    check:
+      - exists: bore
+      - coaxial: [bore, rim]
+      - through: {holes: bore}
+
+  - id: groove
+    source: 顶部有外径 90mm、内径 70mm、深 10mm 的环槽
+    check:
+      - exists: groove_o
+      - exists: groove_i
+      - coaxial: [groove_o, rim]
+      - coaxial: [groove_i, rim]
+      - radial_material: {frame: pframe, t: 15, expect: [[12.5, 35], [45, 50]]}
+      - radial_material: {frame: pframe, t: 5, expect: [[12.5, 50]]}
+      - line_material: {frame: pframe, along: 0, polar: [40, 0], expect: [[0, 10]]}
+
+  - id: chamfer
+    source: 外轮缘做 C1mm 倒角
+    derivation: 外缘上至少一条圆边为 45° 锥面，径向 1、轴向 1
+    check:
+      - exists: chamfers
+      - cone_size: {cones: chamfers, radial: 1, axial: 1}
+
+  - id: volume
+    source: 由以上尺寸确定，倒一条还是两条外缘边有两种读法
+    derivation: >-
+      π·50²·20 − π·12.5²·20 − π·(45² − 35²)·10 = 122129.4；
+      每条 C1 外缘倒角 2π·(50 − 1/3)·0.5 = 156.0 → 121973.4（一条）/ 121817.4（两条）
+    check:
+      - volume_range: [121817.4, 121973.4]
+
+ungraded: []

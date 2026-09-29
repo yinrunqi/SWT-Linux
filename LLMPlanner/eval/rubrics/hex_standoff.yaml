@@ -1,0 +1,40 @@
+case: hex_standoff
+prompt: M3 六角隔离柱：对边距 8mm、长 20mm 的正六棱柱，两个端面中心各有一个 Ø3.3mm、深 6mm 的螺纹底孔（不做螺纹）。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+entities:
+  holes: {cylinder: {d: 3.3, side: inner}, count: 2}
+  hex:   {prism_pocket: {about: holes, sides: 6, across_flats: 8, side: outer, regular: true}, count: 1}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: hex
+    source: 对边距 8mm、长 20mm 的正六棱柱
+    hard: true
+    derivation: 对角距 8/cos30° = 9.238
+    check:
+      - exists: hex
+      - extent_along: {axis: holes, of: all, value: 20}
+      - bbox_sorted: [8, 9.238, 20]
+
+  - id: holes
+    source: 两个端面中心各有一个 Ø3.3mm、深 6mm 的螺纹底孔
+    check:
+      - exists: holes
+      - coaxial: [holes, holes]
+      - pocket_depth: {pocket: holes, value: 6, blind: true, open_at_extreme: true}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: (√3/2)·8²·20 − 2·π·1.65²·6 = 1108.5 − 102.6 = 1005.9
+    check:
+      - volume: 1005.9
+
+ungraded:
+  - source: 不做螺纹
+    reason: 已由孔为光滑圆柱面体现

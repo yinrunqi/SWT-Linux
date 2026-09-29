@@ -1,0 +1,72 @@
+case: twin_arm_rocker
+prompt: >-
+  创建双臂摇臂，所有结构合并为单一实体。轮毂为直径 30mm、长 40mm 的圆柱，中心有直径 12mm 的贯穿轴孔。
+  两片相同的摇臂板垂直于轮毂轴线，厚度均为 8mm，外侧面分别与轮毂两个端面齐平；
+  摇臂板外形为以轮毂轴线为圆心的 R15mm 圆弧和以距轴线 70mm 处为圆心的 R10mm 圆弧，两圆弧由两条公切直线连接。
+  在 R10mm 圆弧圆心处开直径 8mm 的销孔，贯穿两片摇臂板。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# rframe：轴 0 沿轮毂轴线（t ∈ [0, 40]），轴 1 从轮毂轴线指向臂端圆心，横向坐标以轮毂轴线为 0。
+entities:
+  hub:      {cylinder: {d: 30, side: outer}, count: 1}
+  bore:     {cylinder: {d: 12, side: inner}, count: 1}
+  arm_ends: {cylinder: {d: 20, side: outer}, count: 2}
+  pins:     {cylinder: {d: 8, side: inner}, count: 2}
+  rframe:   {axis_frame: {axis: hub, ref: arm_ends}}
+
+rubrics:
+  - id: solid
+    source: 所有结构合并为单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 由以上尺寸确定
+    hard: true
+    derivation: 沿轮毂轴线 40；从轮毂轴线指向臂端 15 + 70 + 10 = 95；横向 30（公切斜面会使主方向偏转，改在 rframe 中量）
+    check:
+      - frame_box: {frame: rframe, size: [40, 95, 30]}
+
+  - id: hub
+    source: 轮毂为直径 30mm、长 40mm 的圆柱，中心有直径 12mm 的贯穿轴孔
+    check:
+      - exists: hub
+      - extent_along: {axis: hub, of: hub, value: 40}
+      - exists: bore
+      - coaxial: [bore, hub]
+      - through: {holes: bore}
+
+  - id: plates
+    source: 两片相同的摇臂板垂直于轮毂轴线，厚度均为 8mm，外侧面分别与轮毂两个端面齐平
+    check:
+      - exists: arm_ends
+      - parallel: [arm_ends, hub]
+      - line_material: {frame: rframe, along: 0, at: [null, 40, 0], expect: [[0, 8], [32, 40]]}
+
+  - id: profile
+    source: 外形为以轮毂轴线为圆心的 R15mm 圆弧和距轴线 70mm 处为圆心的 R10mm 圆弧，两圆弧由两条公切直线连接
+    derivation: >-
+      公切线法向 x 分量 (15 − 10)/70；x = 35 处半宽 (15 − 35·5/70)/√(1 − (5/70)²) = 12.532
+    check:
+      - axis_distance: {from: hub, to: arm_ends, value: 70}
+      - line_material: {frame: rframe, along: 2, at: [4, 35, null], expect: [[-12.532, 12.532]]}
+      - line_material: {frame: rframe, along: 2, at: [36, 35, null], expect: [[-12.532, 12.532]]}
+      - line_material: {frame: rframe, along: 1, at: [4, null, 0], expect: [[-15, -6], [6, 66], [74, 80]]}
+
+  - id: pin_hole
+    source: 在 R10mm 圆弧圆心处开直径 8mm 的销孔，贯穿两片摇臂板
+    check:
+      - exists: pins
+      - coaxial: [pins, arm_ends]
+      - through: {holes: pins}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: >-
+      板外形面积 ½·15²·(π + 2α) + ½·10²·(π − 2α) + 25·70·cos α = 2264.98，α = asin(5/70)；
+      两板 2·8·(2264.98 − π·6² − π·4²) = 33625.8；两板间轮毂 24·π·(15² − 6²) = 14250.3；合计 47876.1
+    check:
+      - volume: 47876.1
+
+ungraded: []

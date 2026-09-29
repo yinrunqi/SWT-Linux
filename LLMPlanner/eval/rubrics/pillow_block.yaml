@@ -1,0 +1,81 @@
+case: pillow_block
+prompt: >-
+  创建立式轴承座，左右对称，所有结构合并为单一实体。底座 120×40mm、厚 12mm。
+  底座上表面中央立起座体：座体沿底座 40mm 方向全宽，正视轮廓为宽 60mm 的矩形加顶部 R30mm 半圆，
+  半圆圆心距底座底面 45mm。在该圆心处开直径 35mm 的轴承孔，沿 40mm 方向贯穿。
+  底座两端各有一个沿 120mm 方向的安装长圆孔，宽 11mm、两端半圆圆心相距 10mm，
+  长圆孔中心距座体中心 45mm，贯穿底座。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 底座坐标系：0 = 底座长边(120)，1 = 宽(40)，2 = 向上；原点在底面外廓中心。
+entities:
+  base:      {base_frame: {thickness: 12}}
+  crown:     {cylinder: {d: 60, side: outer}, count: 1}
+  bearing:   {cylinder: {d: 35, side: inner}, count: 1}
+  slot_ends: {cylinder: {d: 11, side: inner}, count: 4}
+
+rubrics:
+  - id: solid
+    source: 所有结构合并为单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: base
+    source: 底座 120×40mm、厚 12mm
+    hard: true
+    check:
+      - footprint: {frame: base, value: [120, 40]}
+      - line_material: {frame: base, along: 2, at: [58, 15, null], expect: [[0, 12]]}
+
+  - id: outer
+    source: 由以上尺寸确定
+    derivation: 45 + 30 = 75
+    check:
+      - total_height: {frame: base, value: 75}
+      - bbox_sorted: [40, 75, 120]
+
+  - id: body
+    source: 座体沿底座 40mm 方向全宽，正视轮廓为宽 60mm 的矩形加顶部 R30mm 半圆，半圆圆心距底座底面 45mm
+    derivation: 在 x = 25 处顶高 45 + √(30² − 25²) = 61.583
+    check:
+      - exists: crown
+      - parallel_to_frame: {frame: base, items: crown, axis: 1}
+      - line_material: {frame: base, along: 2, at: [25, 0, null], expect: [[0, 61.583]]}
+      - line_material: {frame: base, along: 0, at: [null, 0, 20], expect: [[-30, 30]]}
+      - line_material: {frame: base, along: 1, at: [0, null, 70], expect: [[-20, 20]]}
+
+  - id: bearing
+    source: 在该圆心处开直径 35mm 的轴承孔，沿 40mm 方向贯穿
+    check:
+      - exists: bearing
+      - coaxial: [bearing, crown]
+      - through: {holes: bearing}
+      - axis_positions: {frame: base, items: bearing, axes: [0, 2], expect: [[0, 45]]}
+      - line_material: {frame: base, along: 2, at: [0, 10, null], expect: [[0, 27.5], [62.5, 75]]}
+
+  - id: slots
+    source: 底座两端各有一个沿 120mm 方向的安装长圆孔，宽 11mm、两端半圆圆心相距 10mm，长圆孔中心距座体中心 45mm，贯穿底座
+    derivation: 端部半圆圆心 x = ±(45 ± 5)；槽沿 x 方向为 [34.5, 55.5]
+    check:
+      - exists: slot_ends
+      - through: {holes: slot_ends}
+      - axis_positions: {frame: base, items: slot_ends, axes: [0, 1], expect: [[-50, 0], [-40, 0], [40, 0], [50, 0]]}
+      - line_material: {frame: base, along: 0, at: [null, 0, 6], expect: [[-60, -55.5], [-34.5, 34.5], [55.5, 60]]}
+      - line_material: {frame: base, along: 2, at: [45, 0, null], expect: []}
+      - line_material: {frame: base, along: 2, at: [45, 6, null], expect: [[0, 12]]}
+
+  - id: symmetry
+    source: 左右对称
+    check:
+      - mirror_symmetric: {frame: base, normal: 0}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: >-
+      底座 120·40·12 − 2·(10·11 + π·5.5²)·12 = 57600 − 4920.8 = 52679.2；
+      座体 (60·33 + π·30²/2 − π·17.5²)·40 = 97264.2；合计 149943.4
+    check:
+      - volume: 149943.4
+
+ungraded: []

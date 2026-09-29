@@ -1,0 +1,47 @@
+case: csk_cover
+prompt: >-
+  创建 90×70×12mm 的盖板，四个沉头孔：通孔直径 8mm，沉头直径 14mm、深 4mm；
+  孔心距相邻两边各 15mm。沉头在板的上表面。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 0 = 厚(12)，1 = 宽(70)，2 = 长(90)；原点在包围盒角点。
+entities:
+  frame: {principal_frame: {}}
+  holes: {cylinder: {d: 8, side: inner}, count: 4}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: plate
+    source: 90×70×12mm 的盖板
+    hard: true
+    check:
+      - bbox_sorted: [12, 70, 90]
+
+  - id: holes
+    source: 通孔直径 8mm；孔心距相邻两边各 15mm
+    check:
+      - exists: holes
+      - parallel_to_frame: {frame: frame, items: holes, axis: 0}
+      - through: {holes: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[15, 15], [15, 75], [55, 15], [55, 75]]}
+
+  - id: recess
+    source: 沉头直径 14mm、深 4mm；沉头在板的上表面
+    derivation: 孔口直径 14；在孔壁外 0.05mm 处从板面量到材料为 4（平底沉孔或锥形沉头均可）；四孔沉头在同一面
+    check:
+      - recess: {holes: holes, top_d: 14, depth: 4}
+
+  - id: volume
+    source: 由以上尺寸确定，沉头形状有两种读法
+    derivation: >-
+      平底沉孔 90·70·12 − 4·(π·4²·8 + π·7²·4) = 75600 − 4071.5 = 71528.5；
+      锥形沉头（Ø14 → Ø8，深 4）4·(π·4²·8 + π·4/3·(7² + 7·4 + 4²)) = 3166.7 → 72433.3
+    check:
+      - volume_range: [71528.5, 72433.3]
+
+ungraded: []

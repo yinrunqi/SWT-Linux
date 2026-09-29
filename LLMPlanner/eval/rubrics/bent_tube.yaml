@@ -1,0 +1,57 @@
+case: bent_tube
+prompt: >-
+  创建带法兰的 90° 弯管。中心线是半径 50mm 的四分之一圆弧；管子外径 20mm、实心。
+  两端各有外径 44mm、厚 5mm 的圆形法兰，法兰厚度沿管轴线向外凸出。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+entities:
+  tube:    {torus: {major_r: 50, minor_r: 10, side: outer}, count: 1}
+  flanges: {cylinder: {d: 44, side: outer}, count: 2}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: tube_path
+    source: 90° 弯管，中心线是半径 50mm 的四分之一圆弧；管子外径 20mm
+    hard: true
+    check:
+      - exists: tube
+      - sweep_angle: {torus: tube, value: 90}
+
+  - id: tube_solid
+    source: 实心
+    check:
+      - material_at: {centerline_of: tube, fractions: [0.25, 0.5, 0.75]}
+
+  - id: flange_size
+    source: 两端各有外径 44mm、厚 5mm 的圆形法兰
+    check:
+      - exists: flanges
+      - extent_along: {axis: flanges, of: flanges, value: 5}
+
+  - id: flange_placement
+    source: 法兰厚度沿管轴线向外凸出
+    check:
+      - flanges_at_arc_ends: {torus: tube, items: flanges, outward: [0, 5]}
+
+  - id: bbox
+    source: 由以上尺寸确定
+    derivation: 一个方向 −5 … 50 + 22 = 72，共 77；法兰直径方向 44
+    check:
+      - bbox_sorted: [44, 77, 77]
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 管 π·10²·(π/2·50) = 24674.0；法兰 2·π·22²·5 = 15205.3；合计 39879.3
+    check:
+      - volume: 39879.3
+
+ungraded: []
+
+notes:
+  - 旧 GT 包围盒 (44, 72, 72) 相当于法兰不向外凸出；旧 GT 体积 36737.7 相当于法兰扣除了管截面。
+    题面没有“中心孔”，法兰向外凸出、实心，应为 (44, 77, 77) 与 39879.3。

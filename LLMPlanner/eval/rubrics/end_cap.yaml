@@ -1,0 +1,50 @@
+case: end_cap
+prompt: 创建圆形端盖：外径 60mm、总高 15mm；从底面向上挖出直径 50mm、深 12mm 的内腔，使顶板厚 3mm；顶板中心打一个直径 8mm 的通孔。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# cframe：轴 0 沿外圆轴线，t = 0 在端部平面面积较大的一端，即顶板外表面（2777 > 底部环面 864）。
+entities:
+  outer:  {cylinder: {d: 60, side: outer}, count: 1}
+  cavity: {cylinder: {d: 50, side: inner}, count: 1}
+  hole:   {cylinder: {d: 8, side: inner}, count: 1}
+  cframe: {axis_frame: {axis: outer, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 外径 60mm、总高 15mm
+    hard: true
+    check:
+      - exists: outer
+      - extent_along: {axis: outer, of: outer, value: 15}
+      - bbox_sorted: [15, 60, 60]
+
+  - id: cavity
+    source: 从底面向上挖出直径 50mm、深 12mm 的内腔，使顶板厚 3mm
+    check:
+      - exists: cavity
+      - coaxial: [cavity, outer]
+      - pocket_depth: {pocket: cavity, value: 12, blind: true, open_at_extreme: true, probe_r: 15}
+      - line_material: {frame: cframe, along: 0, polar: [15, 0], expect: [[0, 3]]}
+      - radial_material: {frame: cframe, t: 9, expect: [[25, 30]]}
+
+  - id: hole
+    source: 顶板中心打一个直径 8mm 的通孔
+    check:
+      - exists: hole
+      - coaxial: [hole, outer]
+      - through: {holes: hole}
+      - radial_material: {frame: cframe, t: 1.5, expect: [[4, 30]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: π·30²·15 − π·25²·12 − π·4²·3 = 42411.5 − 23561.9 − 150.8 = 18698.8
+    check:
+      - volume: 18698.8
+
+ungraded: []

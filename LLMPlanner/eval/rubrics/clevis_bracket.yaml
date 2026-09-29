@@ -1,0 +1,80 @@
+case: clevis_bracket
+prompt: >-
+  创建双耳支座。底板 80×50mm、厚 10mm，四个直径 9mm 的贯穿安装孔，孔心相对底板中心位于 (±30mm, ±17mm)，
+  其中 ±30mm 沿 80mm 方向。底板上表面立起两片相同的耳板：每片厚 10mm（沿 80mm 方向），宽 30mm 与底板 50mm 方向居中，
+  两耳内侧面相距 30mm 且关于底板中心对称；耳板顶端为 R15mm 半圆，圆心距底板上表面 25mm。
+  在该圆心处开直径 12mm 的销孔，沿 80mm 方向贯穿两片耳板。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 底座坐标系：0 = 80mm 方向，1 = 50mm 方向，2 = 向上；原点在底面外廓中心。
+entities:
+  base:  {base_frame: {thickness: 10}}
+  holes: {cylinder: {d: 9, side: inner}, count: 4}
+  ears:  {cylinder: {d: 30, side: outer}, count: 2}
+  pins:  {cylinder: {d: 12, side: inner}, count: 2}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: base
+    source: 底板 80×50mm、厚 10mm
+    hard: true
+    check:
+      - footprint: {frame: base, value: [80, 50]}
+      - line_material: {frame: base, along: 2, at: [0, 20, null], expect: [[0, 10]]}
+
+  - id: outer
+    source: 由以上尺寸确定
+    derivation: 10 + 25 + 15 = 50
+    check:
+      - total_height: {frame: base, value: 50}
+      - bbox_sorted: [50, 50, 80]
+
+  - id: mount_holes
+    source: 四个直径 9mm 的贯穿安装孔，孔心相对底板中心位于 (±30mm, ±17mm)，其中 ±30mm 沿 80mm 方向
+    check:
+      - exists: holes
+      - parallel_to_frame: {frame: base, items: holes, axis: 2}
+      - through: {holes: holes}
+      - axis_positions: {frame: base, items: holes, axes: [0, 1], expect: [[-30, -17], [-30, 17], [30, -17], [30, 17]]}
+
+  - id: ears
+    source: 两片相同的耳板：每片厚 10mm（沿 80mm 方向），宽 30mm 与底板 50mm 方向居中，两耳内侧面相距 30mm 且关于底板中心对称
+    check:
+      - exists: ears
+      - extent_along: {axis: ears, of: ears, value: 10}
+      - line_material: {frame: base, along: 0, at: [null, 0, 20], expect: [[-25, -15], [15, 25]]}
+      - line_material: {frame: base, along: 1, at: [20, null, 20], expect: [[-15, 15]]}
+
+  - id: ear_tops
+    source: 耳板顶端为 R15mm 半圆，圆心距底板上表面 25mm
+    derivation: 在 y = 10 处顶高 35 + √(15² − 10²) = 46.180
+    check:
+      - axis_positions: {frame: base, items: ears, axes: [1, 2], expect: [[0, 35], [0, 35]]}
+      - line_material: {frame: base, along: 2, at: [20, 10, null], expect: [[0, 46.180]]}
+
+  - id: pin_hole
+    source: 在该圆心处开直径 12mm 的销孔，沿 80mm 方向贯穿两片耳板
+    check:
+      - exists: pins
+      - coaxial: [pins, ears]
+      - through: {holes: pins}
+      - line_material: {frame: base, along: 2, at: [20, 0, null], expect: [[0, 29], [41, 50]]}
+
+  - id: symmetry
+    source: 关于底板中心对称
+    check:
+      - mirror_symmetric: {frame: base, normal: 0}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: >-
+      底板 80·50·10 − 4·π·4.5²·10 = 37455.3；每耳 (30·25 + π·15²/2 − π·6²)·10 = 9903.3；合计 57261.9
+    check:
+      - volume: 57261.9
+
+ungraded: []

@@ -1,0 +1,42 @@
+case: hex_nut
+prompt: 创建对边距 30mm、厚 8mm 的正六角螺母，中心有直径 10mm 的贯穿孔，厚度方向关于原点居中。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+entities:
+  bore: {cylinder: {d: 10, side: inner}, count: 1}
+  hex:  {prism_pocket: {about: bore, sides: 6, across_flats: 30, side: outer, regular: true}, count: 1}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: hex
+    source: 对边距 30mm、厚 8mm 的正六角
+    hard: true
+    derivation: 对角距 30/cos30° = 34.641
+    check:
+      - exists: hex
+      - extent_along: {axis: bore, of: all, value: 8}
+      - bbox_sorted: [8, 30, 34.641]
+
+  - id: bore
+    source: 中心有直径 10mm 的贯穿孔
+    check:
+      - exists: bore
+      - through: {holes: bore}
+
+  - id: centered
+    source: 厚度方向关于原点居中
+    check:
+      - origin_centered: {axis: bore}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: (√3/2)·30²·8 − π·5²·8 = 6235.4 − 628.3 = 5607.1
+    check:
+      - volume: 5607.1
+
+ungraded: []

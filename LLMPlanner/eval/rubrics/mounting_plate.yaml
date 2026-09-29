@@ -1,0 +1,50 @@
+case: mounting_plate
+prompt: 安装板 120×80×6mm，四个角做 R8 圆角（竖直棱边），4-Ø7 贯穿孔，孔心距相邻两边各 12mm；板中央开一个 40×20mm 的矩形贯穿窗口。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 0 = 厚(6)，1 = 宽(80)，2 = 长(120)；原点在包围盒角点。
+entities:
+  frame:   {principal_frame: {}}
+  corners: {cylinder: {d: 16, side: outer}, count: 4}
+  holes:   {cylinder: {d: 7, side: inner}, count: 4}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: plate
+    source: 安装板 120×80×6mm
+    hard: true
+    check:
+      - bbox_sorted: [6, 80, 120]
+
+  - id: corners
+    source: 四个角做 R8 圆角（竖直棱边）
+    check:
+      - exists: corners
+      - parallel_to_frame: {frame: frame, items: corners, axis: 0}
+      - axis_positions: {frame: frame, items: corners, axes: [1, 2], expect: [[8, 8], [8, 112], [72, 8], [72, 112]]}
+
+  - id: holes
+    source: 4-Ø7 贯穿孔，孔心距相邻两边各 12mm
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[12, 12], [12, 108], [68, 12], [68, 108]]}
+
+  - id: window
+    source: 板中央开一个 40×20mm 的矩形贯穿窗口
+    derivation: 从板中心沿两个面内方向量无材料范围，为 40 与 20（朝向不限），左右、前后各半相等
+    check:
+      - opening_size: {frame: frame, normal: 0, at: [3, 40, 60], size: [40, 20], through: true, centered: true}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 120·80·6 − 4·(8² − π·8²/4)·6 − 4·π·3.5²·6 − 40·20·6 = 57600 − 329.6 − 923.6 − 4800 = 51546.8
+    check:
+      - volume: 51546.8
+
+ungraded: []

@@ -1,0 +1,60 @@
+case: knob
+prompt: >-
+  创建旋钮：圆柱主体直径 30mm、高 20mm；顶面中央凸起一个直径 10mm、高 5mm 的小圆柱；
+  主体外圆周均布 12 条竖直防滑槽，每条宽 2mm、深 1mm，沿主体全高贯通；底面中央有直径 6mm、深 12mm 的安装盲孔。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# kframe：轴 0 沿主体轴线，t = 0 在底面（端部平面面积较大的一端），主体 t ∈ [0, 20]，凸台 [20, 25]。
+entities:
+  body:   {cylinder: {d: 30, side: outer}, count: 1}
+  cap:    {cylinder: {d: 10, side: outer}, count: 1}
+  hole:   {cylinder: {d: 6, side: inner}, count: 1}
+  kframe: {axis_frame: {axis: body, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: body
+    source: 圆柱主体直径 30mm、高 20mm
+    hard: true
+    check:
+      - exists: body
+      - extent_along: {axis: body, of: body, value: 20}
+      - bbox_sorted: [25, 30, 30]
+
+  - id: cap
+    source: 顶面中央凸起一个直径 10mm、高 5mm 的小圆柱
+    check:
+      - exists: cap
+      - coaxial: [cap, body]
+      - extent_along: {axis: cap, of: cap, value: 5}
+      - radial_material: {frame: kframe, t: 22.5, expect: [[0, 5]]}
+      - line_material: {frame: kframe, along: 0, polar: [4, 0], expect: [[0, 25]]}
+
+  - id: grooves
+    source: 主体外圆周均布 12 条竖直防滑槽，每条宽 2mm、深 1mm，沿主体全高贯通
+    derivation: 半径 14.5 的圆上 12 段等距缺口，弦宽 2；槽中心径向材料止于 14（深 1）且向外敞开；近底、中部、近顶三处都成立
+    check:
+      - angular_openings: {frame: kframe, t_list: [0.3, 10, 19.7], r: 14.5, count: 12, chord: 2, radial: [14, open], identical: true}
+
+  - id: mount_hole
+    source: 底面中央有直径 6mm、深 12mm 的安装盲孔
+    check:
+      - exists: hole
+      - coaxial: [hole, body]
+      - pocket_depth: {pocket: hole, value: 12, blind: true, open_at_extreme: true}
+      - line_material: {frame: kframe, along: 0, polar: [2.9, 0], expect: [[12, 25]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: >-
+      π·15²·20 + π·5²·5 − 12·20·(∫_{-1}^{1}√(225 − y²)dy − 2·14) − π·3²·12
+      = 14137.2 + 392.7 − 474.7 − 339.3 = 13715.9
+    check:
+      - volume: 13715.9
+
+ungraded: []

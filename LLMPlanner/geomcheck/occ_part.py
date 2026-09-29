@@ -46,7 +46,7 @@ from OCP.TopExp import TopExp, TopExp_Explorer
 from OCP.TopLoc import TopLoc_Location
 from OCP.collections import IndexedMap_TopoDS_Shape_TopTools_ShapeMapHasher as ShapeMap
 from OCP.TopoDS import TopoDS, TopoDS_Shape
-from OCP.gp import gp_Ax2, gp_Ax3, gp_Dir, gp_Lin, gp_Pnt, gp_Trsf, gp_Vec
+from OCP.gp import gp_Ax1, gp_Ax2, gp_Ax3, gp_Dir, gp_Lin, gp_Pnt, gp_Trsf, gp_Vec
 
 MESH_DEFLECTION = 0.01
 _ANG_EPS = 1e-4  # rad, 判定平行/同轴的方向容差
@@ -227,7 +227,11 @@ def _same_surface(a: Surf, b: Surf) -> bool:
     if not parallel(a.axis_d, b.axis_d):
         return False
     if a.kind == "cylinder":
-        return line_distance(a.axis_o, a.axis_d, b.axis_o) < _POS_EPS
+        if line_distance(a.axis_o, a.axis_d, b.axis_o) >= _POS_EPS:
+            return False
+        # 同轴同径但轴向不相连的两段（如两端各一个盲孔）分开计数
+        ta, tb = a.points @ a.axis_d, b.points @ a.axis_d
+        return max(ta.min(), tb.min()) <= min(ta.max(), tb.max()) + _POS_EPS
     if a.kind == "cone":
         return abs(a.semi_angle - b.semi_angle) < 1e-3 and np.linalg.norm(a.axis_o - b.axis_o) < _POS_EPS
     return np.linalg.norm(a.axis_o - b.axis_o) < _POS_EPS  # torus
@@ -250,6 +254,22 @@ class Part:
                     break
             else:
                 self.surfs.append(surf)
+        # 贪心合并与面的顺序有关（A、C 不相连，B 把二者接起来）：反复合并直到不再变化
+        merged = True
+        while merged:
+            merged = False
+            for i in range(len(self.surfs)):
+                for j in range(i + 1, len(self.surfs)):
+                    a, b = self.surfs[i], self.surfs[j]
+                    if _same_surface(a, b):
+                        a.area += b.area
+                        a.points = np.vstack([a.points, b.points])
+                        a.n_faces += b.n_faces
+                        del self.surfs[j]
+                        merged = True
+                        break
+                if merged:
+                    break
         pts = [s.points for s in self.surfs if len(s.points)]
         self.points = np.vstack(pts) if pts else np.zeros((0, 3))
         self._classifiers = [BRepClass3d_SolidClassifier(s) for s in self.solids]
@@ -301,14 +321,22 @@ class Part:
         return int(round(s - (v - e + 2 * f - loops) / 2))
 
     def extents(self, axes: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        """在右手正交坐标系 ``axes``（行向量）下的精确包围盒。"""
-        ax3 = gp_Ax3(gp_Pnt(0, 0, 0), _dir(axes[2]), _dir(axes[0]))
+        """在正交坐标系 ``axes``（行向量，可为左手系）下的精确包围盒（世界坐标投影）。"""
+        axes = np.asarray(axes, float)
+        flip = np.linalg.det(axes) < 0
+        rh = axes.copy()
+        if flip:
+            rh[2] = -rh[2]
+        ax3 = gp_Ax3(gp_Pnt(0, 0, 0), _dir(rh[2]), _dir(rh[0]))
         trsf = gp_Trsf()
         trsf.SetTransformation(ax3)
         moved = BRepBuilderAPI_Transform(self.shape, trsf, True).Shape()
         box = Bnd_Box()
         BRepBndLib.AddOptimal_s(moved, box, False, False)
-        return _np(box.CornerMin()), _np(box.CornerMax())
+        lo, hi = _np(box.CornerMin()), _np(box.CornerMax())
+        if flip:
+            lo[2], hi[2] = -hi[2], -lo[2]
+        return lo, hi
 
     # ---- 点 / 线 / 区域查询 ----
     def is_inside(self, p) -> bool:
@@ -337,20 +365,39 @@ class Part:
                 out.append((a, b))
         return out
 
-    def common_volume(self, tool: TopoDS_Shape) -> float:
+    def common_volume(self, tool: TopoDS_Shape | None) -> float:
+        if tool is None:
+            return 0.0
         return _volume(BRepAlgoAPI_Common(self.shape, tool).Shape())
 
     def mirror_xor_volume(self, point, normal) -> float:
         trsf = gp_Trsf()
         trsf.SetMirror(gp_Ax2(_pnt(point), _dir(normal)))
-        mirrored = BRepBuilderAPI_Transform(self.shape, trsf, True).Shape()
-        both = _volume(BRepAlgoAPI_Common(self.shape, mirrored).Shape())
+        return self._xor_with(trsf)
+
+    def rotate_xor_volume(self, point, direction, angle_deg: float) -> float:
+        trsf = gp_Trsf()
+        trsf.SetRotation(gp_Ax1(_pnt(point), _dir(direction)), math.radians(angle_deg))
+        return self._xor_with(trsf)
+
+    def _xor_with(self, trsf: gp_Trsf) -> float:
+        moved = BRepBuilderAPI_Transform(self.shape, trsf, True).Shape()
+        both = _volume(BRepAlgoAPI_Common(self.shape, moved).Shape())
         return 2 * self.volume() - 2 * both
 
 
-def box_tool(origin, axes: np.ndarray, lo, hi) -> TopoDS_Shape:
-    """坐标系 (origin, axes) 中 [lo, hi] 的长方体。axes 为右手正交行向量。"""
+def box_tool(origin, axes: np.ndarray, lo, hi) -> TopoDS_Shape | None:
+    """坐标系 (origin, axes) 中 [lo, hi] 的长方体。axes 为正交行向量（可为左手系）。
+
+    任一边长不为正时返回 None（空盒，common_volume 视为 0）。
+    """
+    axes = np.asarray(axes, float)
     lo, hi = np.asarray(lo, float), np.asarray(hi, float)
+    if np.any(hi - lo <= 1e-9):
+        return None
+    if np.linalg.det(axes) < 0:
+        axes = np.array([axes[0], -axes[1], axes[2]])
+        lo, hi = np.array([lo[0], -hi[1], lo[2]]), np.array([hi[0], -lo[1], hi[2]])
     corner = np.asarray(origin, float) + lo @ axes
     size = hi - lo
     return BRepPrimAPI_MakeBox(gp_Ax2(_pnt(corner), _dir(axes[2]), _dir(axes[0])), *map(float, size)).Shape()

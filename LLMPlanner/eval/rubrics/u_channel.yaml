@@ -1,0 +1,54 @@
+case: u_channel
+prompt: >-
+  创建长 100mm 的 U 形槽：外宽 40mm、外高 30mm，两侧壁厚和底板厚都是 4mm，槽口朝上；
+  底板上沿长度方向打 3 个直径 8mm 的贯穿孔，孔距 30mm，整体在长度方向居中。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 0 = 高(30)，1 = 宽(40)，2 = 长(100)；高度 0 在底面（完整底面 > 两侧壁顶面）。
+entities:
+  frame: {principal_frame: {signs: {0: larger_area_low}}}
+  holes: {cylinder: {d: 8, side: inner}, count: 3}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 长 100mm；外宽 40mm、外高 30mm
+    hard: true
+    check:
+      - bbox_sorted: [30, 40, 100]
+
+  - id: section
+    source: 两侧壁厚和底板厚都是 4mm，槽口朝上
+    check:
+      - line_material: {frame: frame, along: 1, at: [15, null, 35], expect: [[0, 4], [36, 40]]}
+      - line_material: {frame: frame, along: 0, at: [null, 20, 35], expect: [[0, 4]]}
+      - line_material: {frame: frame, along: 0, at: [null, 2, 35], expect: [[0, 30]]}
+      - line_material: {frame: frame, along: 2, at: [2, 2, null], expect: [[0, 100]]}
+
+  - id: holes
+    source: 底板上沿长度方向打 3 个直径 8mm 的贯穿孔，孔距 30mm，整体在长度方向居中
+    derivation: 孔心沿长度为 50 − 30、50、50 + 30；三孔共线（宽度坐标相同）
+    check:
+      - exists: holes
+      - parallel_to_frame: {frame: frame, items: holes, axis: 0}
+      - through: {holes: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[null, 20], [null, 50], [null, 80]], equal: [0]}
+
+  - id: holes_centered
+    source: （隐含）孔位于底板宽度中线
+    basis: implied
+    check:
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[20, 20], [20, 50], [20, 80]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: (40·30 − 32·26)·100 − 3·π·4²·4 = 36800 − 603.2 = 36196.8
+    check:
+      - volume: 36196.8
+
+ungraded: []

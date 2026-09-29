@@ -1,0 +1,47 @@
+case: counterbore_plate
+prompt: >-
+  创建 80×60×10mm 的安装板，四个沉头孔：通孔直径 6mm，沉头直径 11mm、深 3.5mm；
+  孔心距相邻两边各 14mm（即相对板中心位于 (±26mm, ±16mm)）。沉头在板的上表面。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 0 = 厚(10)，1 = 宽(60)，2 = 长(80)；原点在包围盒角点。
+entities:
+  frame: {principal_frame: {}}
+  holes: {cylinder: {d: 6, side: inner}, count: 4}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: plate
+    source: 80×60×10mm 的安装板
+    hard: true
+    check:
+      - bbox_sorted: [10, 60, 80]
+
+  - id: holes
+    source: 通孔直径 6mm；孔心距相邻两边各 14mm
+    check:
+      - exists: holes
+      - parallel_to_frame: {frame: frame, items: holes, axis: 0}
+      - through: {holes: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[14, 14], [14, 66], [46, 14], [46, 66]]}
+
+  - id: recess
+    source: 沉头直径 11mm、深 3.5mm；沉头在板的上表面
+    derivation: 孔口直径 11；在孔壁外 0.05mm 处从板面量到材料为 3.5（平底沉孔或锥形沉头均可）；四孔沉头在同一面
+    check:
+      - recess: {holes: holes, top_d: 11, depth: 3.5}
+
+  - id: volume
+    source: 由以上尺寸确定，沉头形状有两种读法
+    derivation: >-
+      平底沉孔 80·60·10 − 4·(π·3²·6.5 + π·5.5²·3.5) = 48000 − 2065.5 = 45934.5；
+      锥形沉头（Ø11 → Ø6，深 3.5）4·(π·3²·6.5 + π·3.5/3·(5.5² + 5.5·3 + 3²)) = 1552.5 → 46447.5
+    check:
+      - volume_range: [45934.5, 46447.5]
+
+ungraded: []

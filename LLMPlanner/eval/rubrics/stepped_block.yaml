@@ -1,0 +1,51 @@
+case: stepped_block
+prompt: >-
+  创建台阶块：下层 80×50×15mm；上层 40×50×15mm，放在下层的一端，与下层的端面和两个侧面齐平，整体高 30mm。
+  在下层露出的上表面中央打一个直径 10mm、深 8mm 的盲孔。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 0 = 高(30)，1 = 宽(50)，2 = 长(80)。高度 0 在底面（4000 > 顶面 2000）；
+# 长度 0 在高的一端（端面 50·30 = 1500 > 矮端 750）。下层露出的上表面为 2 ∈ [40, 80]、高 15。
+entities:
+  frame: {principal_frame: {signs: {0: larger_area_low, 2: larger_area_low}}}
+  hole:  {cylinder: {d: 10, side: inner}, count: 1}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 下层 80×50，整体高 30mm
+    hard: true
+    check:
+      - bbox_sorted: [30, 50, 80]
+
+  - id: layers
+    source: 下层 80×50×15mm；上层 40×50×15mm，放在下层的一端，与下层的端面和两个侧面齐平
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 10, 20], expect: [[0, 30]]}
+      - line_material: {frame: frame, along: 0, at: [null, 10, 70], expect: [[0, 15]]}
+      - line_material: {frame: frame, along: 1, at: [22, null, 20], expect: [[0, 50]]}
+      - line_material: {frame: frame, along: 2, at: [22, 25, null], expect: [[0, 40]]}
+
+  - id: hole
+    source: 在下层露出的上表面中央打一个直径 10mm、深 8mm 的盲孔
+    derivation: 露出面 40×50 的中心为 (1, 2) = (25, 60)
+    check:
+      - exists: hole
+      - parallel_to_frame: {frame: frame, items: hole, axis: 0}
+      - axis_positions: {frame: frame, items: hole, axes: [1, 2], expect: [[25, 60]]}
+      - pocket_depth: {pocket: hole, value: 8, blind: true}
+      # 孔壁内 0.1mm 处：孔从高 15 的露出面向下 8，底在 7（钻尖锥底在此半径处只深约 0.06）
+      - line_material: {frame: frame, along: 0, at: [null, 25, 64.9], expect: [[0, 7]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 80·50·15 + 40·50·15 − π·5²·8 = 90000 − 628.3 = 89371.7
+    check:
+      - volume: 89371.7
+
+ungraded: []

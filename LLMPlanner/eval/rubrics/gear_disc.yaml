@@ -1,0 +1,42 @@
+case: gear_disc
+prompt: 创建直径 60mm、厚 8mm 的圆盘，中心有直径 12mm 贯穿孔，并在接近外缘处均布 12 个相同的小贯穿槽。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+entities:
+  disk:  {cylinder: {d: 60, side: outer}, count: 1}
+  bore:  {cylinder: {d: 12, side: inner}, count: 1}
+  dframe: {axis_frame: {axis: disk}}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: disk
+    source: 直径 60mm、厚 8mm 的圆盘
+    hard: true
+    check:
+      - exists: disk
+      - extent_along: {axis: disk, of: all, value: 8}
+      - bbox_sorted: [8, 60, 60]
+
+  - id: bore
+    source: 中心有直径 12mm 贯穿孔
+    check:
+      - exists: bore
+      - coaxial: [bore, disk]
+      - through: {holes: bore}
+
+  - id: slots
+    source: 在接近外缘处均布 12 个相同的小贯穿槽
+    derivation: >-
+      在半径 18–29.5 间扫描，找到恰有 12 段无材料弧的圆；三个厚度位置（近两面与中面）都要成立即贯穿；
+      12 段等间距、弧长与径向范围相同；“接近外缘”取槽内沿半径 ≥ 18（孔壁与外缘的中点）
+    check:
+      - angular_openings: {frame: dframe, t_list: [0.3, 4, 7.7], scan_r: [18, 29.5, 0.5], count: 12, identical: true, min_r_in: 18}
+
+ungraded:
+  - source: 槽的形状与尺寸
+    reason: 文字未规定（可为闭合槽或外缘开口），体积无法确定

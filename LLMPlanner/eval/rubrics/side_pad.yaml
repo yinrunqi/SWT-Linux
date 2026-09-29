@@ -1,0 +1,52 @@
+case: side_pad
+prompt: >-
+  创建 50×40×30mm 的长方体（50 沿 X，30 沿 Y 为高，40 沿 Z），底面在 Y=0。
+  在右端面外侧 20mm 处的平行平面上画直径 16mm 的圆，向实体拉伸直到贴上右端面，形成侧凸台。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 世界坐标轴（题面给定），原点平移到包围盒最小角；“右端面”取 +X 端面。
+entities:
+  w:    {world_frame: {}}
+  boss: {cylinder: {d: 16, side: outer}, count: 1}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: block
+    source: 50×40×30mm 的长方体（50 沿 X，30 沿 Y 为高，40 沿 Z），底面在 Y=0
+    hard: true
+    derivation: X 向总长含凸台 50 + 20 = 70
+    check:
+      - frame_box: {frame: w, size: [70, 30, 40], world_lo: {1: 0}}
+      # 长方体本身沿 X 长 50；凸台若做在另一端，包围盒原点随之平移 20（凸台位置由 boss 条目单独判）
+      - line_material: {frame: w, along: 0, at: [null, 1, 1], expect_any: [[[0, 50]], [[20, 70]]]}
+      - line_material: {frame: w, along: 1, at: [25, null, 1], expect: [[0, 30]]}
+      - line_material: {frame: w, along: 2, at: [25, 1, null], expect: [[0, 40]]}
+
+  - id: boss
+    source: 在右端面外侧 20mm 处的平行平面上画直径 16mm 的圆，向实体拉伸直到贴上右端面
+    check:
+      - exists: boss
+      - parallel_to_frame: {frame: w, items: boss, axis: 0}
+      - extent_along: {axis: boss, of: boss, value: 20}
+      - item_range: {frame: w, items: boss, axis: 0, value: [50, 70]}
+
+  - id: boss_on_face
+    source: （隐含）凸台整圆落在右端面内
+    basis: implied
+    check:
+      - axis_coords_in: {frame: w, items: boss, axes: [1, 2], ranges: [[8, 22], [8, 32]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 50·40·30 + π·8²·20 = 60000 + 4021.2 = 64021.2
+    check:
+      - volume: 64021.2
+
+ungraded:
+  - source: 圆在端面上的位置
+    reason: 文字未规定圆心位置

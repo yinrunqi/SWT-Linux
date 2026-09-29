@@ -1,0 +1,44 @@
+case: key
+prompt: 创建厚 2mm 的小型钥匙：外径 20mm 的钥匙圈头、10×5mm 圈孔、42×8mm 钥匙杆，并在杆的一侧均布 5 个齿槽。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 0 = 厚(2)，1 = 头部直径方向(20)，2 = 长度方向。
+entities:
+  frame: {principal_frame: {}}
+  head:  {cylinder: {d: 20, side: outer}, count: 1}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: head
+    source: 厚 2mm；外径 20mm 的钥匙圈头
+    hard: true
+    check:
+      - exists: head
+      - extent_along: {axis: head, of: all, value: 2}
+
+  - id: ring_hole
+    source: 10×5mm 圈孔
+    derivation: 在头部中心沿两个面内方向量无材料范围，分别为 10 与 5（方向不限），并贯穿
+    check:
+      - opening_size: {frame: frame, normal: 0, center: head, size: [10, 5], through: true, centered: true}
+
+  - id: shank
+    source: 42×8mm 钥匙杆
+    derivation: 杆从头部中心起总长 10 + 42 = 52，从头部外缘起 20 + 42 = 62
+    check:
+      - parallel_faces: {frame: frame, perp_to: 0, gap: 8, min_area: 2}
+      - bbox_sorted: [2, 20, [52, 62]]
+
+  - id: teeth
+    source: 在杆的一侧均布 5 个齿槽
+    check:
+      - edge_notches: {frame: frame, perp_to: 0, gap: 8, count: 5, exclude: head}
+
+ungraded:
+  - source: 齿槽尺寸、间距、圈孔形状（矩形或长圆）
+    reason: 文字未规定（未说等距），体积无法确定

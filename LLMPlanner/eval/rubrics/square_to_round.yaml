@@ -1,0 +1,48 @@
+case: square_to_round
+prompt: 创建一个高 40mm 的过渡接管：底面是边长 30mm 的正方形，顶面是直径 24mm 的圆，两截面平行且中心同轴，用放样连接。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 0、1 = 正方形两边方向，2 = 高；高度 0 在端部平面面积较大的一端（正方形 900 > 圆 452.4）。
+entities:
+  frame: {principal_frame: {signs: {2: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 高 40mm；底面边长 30mm
+    hard: true
+    check:
+      - bbox_sorted: [30, 30, 40]
+
+  - id: bottom
+    source: 底面是边长 30mm 的正方形
+    check:
+      - end_face_shape: {frame: frame, axis: 2, side: low, rect: [30, 30]}
+
+  - id: top
+    source: 顶面是直径 24mm 的圆
+    check:
+      - end_face_shape: {frame: frame, axis: 2, side: high, circle_d: 24}
+
+  - id: coaxial
+    source: 两截面平行且中心同轴
+    check:
+      - end_faces_coaxial: {frame: frame, axis: 2}
+
+  - id: loft_body
+    source: （隐含）放样实体：实心，截面由方到圆单调收小
+    basis: implied
+    check:
+      - line_material: {frame: frame, along: 2, at: [15, 15, null], expect: [[0, 40]]}
+      - section_areas: {frame: frame, axis: 2, at: [5, 20, 35], monotone: decreasing}
+
+ungraded:
+  - source: 用放样连接
+    reason: 放样曲面形状与放样选项有关，体积不唯一；只检查端面与同轴
+  - source: 接管
+    reason: 未给壁厚，按实心放样体理解

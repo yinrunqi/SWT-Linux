@@ -1,0 +1,46 @@
+case: spoked_wheel
+prompt: >-
+  创建直径 120mm、厚 10mm 的轮盘，中心轴孔直径 20mm；在轴孔与外缘之间均布 4 个扇形减重孔，
+  每个减重孔是内半径 20mm、外半径 50mm、张角 60° 的扇环，全部贯穿。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+entities:
+  rim:    {cylinder: {d: 120, side: outer}, count: 1}
+  bore:   {cylinder: {d: 20, side: inner}, count: 1}
+  wframe: {axis_frame: {axis: rim}}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: disk
+    source: 直径 120mm、厚 10mm 的轮盘
+    hard: true
+    check:
+      - exists: rim
+      - extent_along: {axis: rim, of: all, value: 10}
+      - bbox_sorted: [10, 120, 120]
+
+  - id: bore
+    source: 中心轴孔直径 20mm
+    check:
+      - exists: bore
+      - coaxial: [bore, rim]
+      - through: {holes: bore}
+
+  - id: sectors
+    source: 均布 4 个扇形减重孔，每个是内半径 20mm、外半径 50mm、张角 60° 的扇环，全部贯穿
+    derivation: 半径 35 的圆上 4 段等距缺口，每段 60°；缺口中心径向无材料区间为 [20, 50]；近两面与中面都成立
+    check:
+      - angular_openings: {frame: wframe, t_list: [0.3, 5, 9.7], r: 35, count: 4, arc_deg: 60, radial: [20, 50], identical: true}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: π·60²·10 − π·10²·10 − 4·(60/360)·π·(50² − 20²)·10 = 113097.3 − 3141.6 − 43982.3 = 65973.4
+    check:
+      - volume: 65973.4
+
+ungraded: []

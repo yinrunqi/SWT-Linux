@@ -1,0 +1,56 @@
+case: l_bracket
+prompt: >-
+  创建厚 5mm 的 L 形角码，两条边宽度均为 30mm：水平边外侧长 50mm，竖直边外侧高 40mm，两边在拐角处连成一体。
+  水平边上沿长度方向打 2 个直径 6mm 的贯穿孔，孔心位于宽度中线、距竖直边外侧面分别 20mm 和 38mm；
+  竖直边上在宽度中线、距底面 25mm 处打 1 个直径 6mm 的贯穿孔。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 0 = 宽(30)，1 = 高(40)，2 = 长(50)；原点在包围盒角点。
+# 高度 0 在底面（水平边外侧 1500 > 竖直边顶端 150）；长度 0 在竖直边外侧面（1200 > 水平边端面 150）。
+entities:
+  frame:   {principal_frame: {signs: {1: larger_area_low, 2: larger_area_low}}}
+  h_holes: {cylinder: {d: 6, side: inner, along: {frame: frame, axis: 1}}, count: 2}
+  v_hole:  {cylinder: {d: 6, side: inner, along: {frame: frame, axis: 2}}, count: 1}
+
+rubrics:
+  - id: solid
+    source: 两边在拐角处连成一体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 宽度均为 30mm：水平边外侧长 50mm，竖直边外侧高 40mm
+    hard: true
+    check:
+      - bbox_sorted: [30, 40, 50]
+
+  - id: l_shape
+    source: 厚 5mm 的 L 形
+    check:
+      - line_material: {frame: frame, along: 1, at: [15, null, 25], expect: [[0, 5]]}
+      - line_material: {frame: frame, along: 2, at: [15, 30, null], expect: [[0, 5]]}
+      - line_material: {frame: frame, along: 2, at: [8, 2.5, null], expect: [[0, 50]]}
+      - line_material: {frame: frame, along: 1, at: [8, null, 2.5], expect: [[0, 40]]}
+
+  - id: h_holes
+    source: 水平边上 2 个直径 6mm 的贯穿孔，孔心位于宽度中线、距竖直边外侧面分别 20mm 和 38mm
+    check:
+      - exists: h_holes
+      - through: {holes: h_holes}
+      - axis_positions: {frame: frame, items: h_holes, axes: [0, 2], expect: [[15, 20], [15, 38]]}
+
+  - id: v_hole
+    source: 竖直边上在宽度中线、距底面 25mm 处 1 个直径 6mm 的贯穿孔
+    check:
+      - exists: v_hole
+      - through: {holes: v_hole}
+      - axis_positions: {frame: frame, items: v_hole, axes: [0, 1], expect: [[15, 25]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: (50·5 + 35·5)·30 − 3·π·3²·5 = 12750 − 424.1 = 12325.9
+    check:
+      - volume: 12325.9
+
+ungraded: []

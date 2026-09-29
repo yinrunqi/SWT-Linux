@@ -1,0 +1,30 @@
+case: sheet_angle
+prompt: 创建钣金平板：轮廓 70×40mm，板厚 1.5mm。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+entities:
+  frame: {principal_frame: {}}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: plate
+    source: 轮廓 70×40mm，板厚 1.5mm
+    hard: true
+    check:
+      - bbox_sorted: [1.5, 40, 70]
+      - extreme_plane_areas: {frame: frame, axis: 0, values: [2800, 2800]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 70·40·1.5 = 4200
+    check:
+      - volume: 4200
+
+ungraded:
+  - source: 钣金
+    reason: 建法指令，最终几何无法区分

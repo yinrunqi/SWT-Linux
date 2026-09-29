@@ -1,0 +1,56 @@
+case: link_bar
+prompt: >-
+  创建厚 6mm 的连杆：两端是直径 24mm 的圆头，两圆心相距 80mm，中间用宽 14mm 的杆身连接，整体是一个外轮廓；
+  两个圆心处各有一个直径 10mm 的贯穿孔。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 0 = 厚(6)，1 = 宽(24)，2 = 长(104)。
+entities:
+  frame: {principal_frame: {}}
+  heads: {cylinder: {d: 24, side: outer}, count: 2}
+  holes: {cylinder: {d: 10, side: inner}, count: 2}
+
+rubrics:
+  - id: solid
+    source: 整体是一个外轮廓
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 厚 6mm；两端直径 24mm 的圆头，两圆心相距 80mm
+    hard: true
+    derivation: 80 + 24 = 104
+    check:
+      - bbox_sorted: [6, 24, 104]
+      - extent_along: {axis: heads, of: all, value: 6}
+
+  - id: heads
+    source: 两端是直径 24mm 的圆头，两圆心相距 80mm
+    check:
+      - exists: heads
+      - parallel: [heads, heads]
+      - pair_distance: {items: heads, value: 80}
+
+  - id: bar
+    source: 中间用宽 14mm 的杆身连接
+    derivation: 杆身两侧面相距 14，中面通过两圆心
+    check:
+      - parallel_faces: {frame: frame, perp_to: 0, gap: 14, min_area: 50, mid_contains: heads}
+
+  - id: holes
+    source: 两个圆心处各有一个直径 10mm 的贯穿孔
+    check:
+      - exists: holes
+      - coaxial: [holes, heads]
+      - through: {holes: holes}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: >-
+      (2·π·12² + 80·14 − 2·∫_{-7}^{7}√(144 − y²)dy − 2·π·5²)·6
+      = (904.78 + 1120 − 315.83 − 157.08)·6 = 9311.2
+    check:
+      - volume: 9311.2
+
+ungraded: []

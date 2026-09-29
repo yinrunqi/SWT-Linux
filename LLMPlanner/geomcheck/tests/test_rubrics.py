@@ -31,6 +31,8 @@ CASES = [
     ("socket_bolt", "ok", fx.bolt, set()),
     ("socket_bolt", "run1_fillet_head_bottom", lambda: fx.bolt("head_bottom"), {"neck_fillet"}),
     ("socket_bolt", "run2_fillet_head_top", lambda: fx.bolt("head_top"), {"neck_fillet"}),
+    ("socket_bolt", "tools24_socket_edges_filleted", lambda: fx.bolt(socket_fillet=True), set()),
+    ("socket_bolt", "socket_depth_3", lambda: fx.bolt(socket_depth=3), {"socket", "volume"}),
     ("mug", "ok", fx.mug, set()),
     ("mug", "run1_half_ring_into_cavity", lambda: fx.mug("run1"),
      {"handle_ring", "cavity_clear", "handle_orientation"}),

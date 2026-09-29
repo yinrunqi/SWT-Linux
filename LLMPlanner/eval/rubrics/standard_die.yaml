@@ -1,0 +1,43 @@
+case: standard_die
+prompt: 创建边长 20mm 的标准六面骰子，全部棱边 R1.5mm；六面分别为 1 至 6 点、相对面点数和为 7；点为直径 3mm、深 1.5mm 的凹坑。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+entities:
+  frame: {principal_frame: {}}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: cube
+    source: 边长 20mm
+    hard: true
+    check:
+      - bbox_sorted: [20, 20, 20]
+
+  - id: edge_fillets
+    source: 全部棱边 R1.5mm
+    derivation: 12 条棱各一张 R1.5 凸圆柱面（角部为球面，不计数）
+    check:
+      - blend_faces: {radius: 1.5, side: outer, min_count: 12}
+
+  - id: pips
+    source: 六面分别为 1 至 6 点、相对面点数和为 7；点为直径 3mm、深 1.5mm 的凹坑
+    derivation: 凹坑取 Ø3 的内凹球面或平底圆柱；按离哪个外表面最近归面
+    check:
+      - pits: {frame: frame, diameter: 3, depth: 1.5, counts: [1, 2, 3, 4, 5, 6], opposite_sum: 7}
+
+  - id: volume
+    source: 由以上尺寸确定，凹坑形状有两种读法
+    derivation: >-
+      圆角后立方体 8000 − 12·(1 − π/4)·1.5²·17 − 8·(1.5³ − π·1.5³/6) = 7888.6；
+      21 个点：半球 21·(2/3)π·1.5³ = 148.4 → 7740.2；平底圆柱 21·π·1.5²·1.5 = 222.7 → 7665.9
+    check:
+      - volume_range: [7665.9, 7740.2]
+
+ungraded:
+  - source: 点的排布
+    reason: 各面点阵的具体位置与朝向不唯一，只检查每面点数

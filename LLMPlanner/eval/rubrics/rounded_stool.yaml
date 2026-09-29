@@ -1,0 +1,60 @@
+case: rounded_stool
+prompt: 创建四脚板凳：凳面 200×200×20mm；四条圆柱腿直径 20mm、长 150mm，距边 30mm；凳面顶部四条边做 R5mm 圆角。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 同 stool：0 = 高，凳面顶面在 0（圆角后顶面 190×190 仍远大于腿端面积）。
+entities:
+  frame: {principal_frame: {signs: {0: larger_area_low}}}
+  legs:  {cylinder: {d: 20, side: outer}, count: 4}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 凳面 200×200，腿长 150 接在 20 厚的凳面下
+    hard: true
+    derivation: 20 + 150 = 170
+    check:
+      - bbox_sorted: [170, 200, 200]
+
+  - id: seat
+    source: 凳面 200×200×20mm
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 100, 100], expect: [[0, 20]]}
+      - line_material: {frame: frame, along: 1, at: [10, null, 100], expect: [[0, 200]]}
+      - line_material: {frame: frame, along: 2, at: [10, 100, null], expect: [[0, 200]]}
+
+  - id: legs
+    source: 四条圆柱腿直径 20mm、长 150mm
+    check:
+      - exists: legs
+      - parallel_to_frame: {frame: frame, items: legs, axis: 0}
+      - extent_along: {axis: legs, of: legs, value: 150}
+      - line_material: {frame: frame, along: 0, at: [null, 30, 30], expect: [[0, 170]]}
+
+  - id: leg_position
+    source: 距边 30mm
+    check:
+      - axis_positions: {frame: frame, items: legs, axes: [1, 2], expect: [[30, 30], [30, 170], [170, 30], [170, 170]]}
+
+  - id: top_fillet
+    source: 凳面顶部四条边做 R5mm 圆角
+    derivation: 四条边各一张 R5 凸圆柱面，全部位于凳面顶面 5mm 以内
+    check:
+      - blend_faces: {radius: 5, side: outer, min_count: 4, near: {frame: frame, axis: 0, side: low, within: 5}}
+      # 圆角截面：边上 45° 处距两面各 5 − 5·cos45° = 1.464
+      - line_material: {frame: frame, along: 0, at: [null, 1.464, 100], expect: [[1.464, 20]]}
+
+  - id: volume
+    source: 由以上尺寸确定
+    derivation: >-
+      988495.6 − 4·(1 − π/4)·5²·200 + 4·(2 − π/2 − 1/3)·5³（角部两圆角去料区重叠）
+      = 988495.6 − 4292.0 + 48.0 = 984251.5
+    check:
+      - volume: 984251.5
+
+ungraded: []

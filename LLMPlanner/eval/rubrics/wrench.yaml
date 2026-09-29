@@ -1,0 +1,56 @@
+case: wrench
+prompt: 创建厚 8mm 的单头扳手：头部外径 40mm、中心正六角卡口对边距 13mm；手柄长 120mm、宽 15mm，并与头部可靠合并。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 0 = 厚(8)，1 = 头部直径方向(40)，2 = 长度方向。
+entities:
+  frame: {principal_frame: {}}
+  head:  {cylinder: {d: 40, side: outer}, count: 1}
+  hex:   {prism_pocket: {about: head, sides: 6, across_flats: 13, regular: true}, count: 1}
+
+rubrics:
+  - id: solid
+    source: 并与头部可靠合并
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: head
+    source: 厚 8mm；头部外径 40mm
+    hard: true
+    check:
+      - exists: head
+      - extent_along: {axis: head, of: all, value: 8}
+
+  - id: hex_opening
+    source: 中心正六角卡口对边距 13mm
+    derivation: 六个侧面到头部轴线距离均为 6.5，法向相隔 60°，并贯穿
+    check:
+      - exists: hex
+      - through: {holes: hex}
+
+  - id: handle
+    source: 手柄长 120mm、宽 15mm
+    derivation: 手柄从头部中心算起总长 20 + 120 = 140；从头部外缘接出为 160（仅线接触）；取区间
+    check:
+      - parallel_faces: {frame: frame, perp_to: 0, gap: 15, min_area: 100}
+      - bbox_sorted: [8, 40, [140, 160]]
+
+  - id: handle_centered
+    source: （隐含）手柄沿头部中心线伸出
+    basis: implied
+    check:
+      - parallel_faces: {frame: frame, perp_to: 0, gap: 15, min_area: 100, mid_contains: head}
+
+  - id: volume
+    source: 由以上尺寸确定，手柄起点有不同读法
+    derivation: >-
+      头部 π·20²·8 = 10053.1，六角孔 (√3/2)·13²·8 = 1170.9；
+      手柄从中心起：15·120 − ∫_{-7.5}^{7.5}√(400 − y²)dy = 1800 − 292.8，×8 = 12057.5 → 20939.7；
+      手柄几乎不与头部重叠：+1800·8 = 14400 → 23282.2
+    check:
+      - volume_range: [20939.7, 23282.2]
+
+ungraded:
+  - source: 手柄端部形状、卡口朝向
+    reason: 文字未规定

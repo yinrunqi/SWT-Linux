@@ -1,0 +1,88 @@
+case: fork_end
+prompt: >-
+  创建叉形接头，所有结构合并为单一实体。杆部为直径 20mm、长 35mm 的圆柱；
+  杆部顶端连接一个 40×24mm、高 10mm 的叉根方块，杆部轴线穿过方块中心。
+  叉根顶面伸出两片相同的叉耳：每片厚 8mm，外侧面与叉根 40mm 方向的两个端面齐平（两耳间开口 24mm），
+  耳宽 24mm 与叉根等宽，耳端为 R12mm 半圆，半圆圆心距叉根顶面 18mm。
+  在半圆圆心处沿厚度方向开一个直径 10mm 的横销孔，贯穿两片叉耳；
+  杆部底端面中心有直径 6.8mm、深 20mm 的螺纹底孔（不做螺纹）。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# fframe：轴 0 沿杆部轴线，t = 0 在杆部底端（叉耳顶端是圆弧、无平面）；
+# 轴 1 沿横销孔方向（叉根 40mm 方向），轴 2 为 24mm 方向；横向坐标以杆部轴线为 0。
+# 于是杆 t ∈ [0, 35]，叉根 [35, 45]，半圆圆心 t = 63，耳顶 75；两耳位于 |x| ∈ [12, 20]。
+entities:
+  shank:  {cylinder: {d: 20, side: outer}, count: 1}
+  ears:   {cylinder: {d: 24, side: outer}, count: 2}
+  pin:    {cylinder: {d: 10, side: inner}, count: 2}
+  tap:    {cylinder: {d: 6.8, side: inner}, count: 1}
+  fframe: {axis_frame: {axis: shank, ref_dir: pin, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: 所有结构合并为单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 由以上尺寸确定
+    hard: true
+    derivation: 35 + 10 + 18 + 12 = 75；40；24
+    check:
+      - bbox_sorted: [24, 40, 75]
+
+  - id: shank
+    source: 杆部为直径 20mm、长 35mm 的圆柱
+    check:
+      - exists: shank
+      - extent_along: {axis: shank, of: shank, value: 35}
+
+  - id: block
+    source: 杆部顶端连接一个 40×24mm、高 10mm 的叉根方块，杆部轴线穿过方块中心
+    check:
+      - line_material: {frame: fframe, along: 0, at: [null, 0, 8], expect: [[0, 45]]}
+      - line_material: {frame: fframe, along: 1, at: [40, null, 0], expect: [[-20, 20]]}
+      - line_material: {frame: fframe, along: 2, at: [40, 0, null], expect: [[-12, 12]]}
+
+  - id: ears
+    source: 两片相同的叉耳：每片厚 8mm，外侧面与叉根 40mm 方向的两个端面齐平（两耳间开口 24mm），耳宽 24mm
+    check:
+      - exists: ears
+      - extent_along: {axis: ears, of: ears, value: 8}
+      - line_material: {frame: fframe, along: 1, at: [60, null, 8], expect: [[-20, -12], [12, 20]]}
+      - line_material: {frame: fframe, along: 2, at: [50, 16, null], expect: [[-12, 12]]}
+
+  - id: ear_tips
+    source: 耳端为 R12mm 半圆，半圆圆心距叉根顶面 18mm
+    derivation: 在 y = 10 处耳顶高 63 + √(12² − 10²) = 69.633
+    check:
+      - line_material: {frame: fframe, along: 0, at: [null, 16, 10], expect: [[35, 69.633]]}
+
+  - id: pin_hole
+    source: 在半圆圆心处沿厚度方向开一个直径 10mm 的横销孔，贯穿两片叉耳
+    check:
+      - exists: pin
+      - coaxial: [pin, ears]
+      - through: {holes: pin}
+      - line_material: {frame: fframe, along: 0, at: [null, 16, 0], expect: [[35, 58], [68, 75]]}
+
+  - id: tap_hole
+    source: 杆部底端面中心有直径 6.8mm、深 20mm 的螺纹底孔
+    check:
+      - exists: tap
+      - coaxial: [tap, shank]
+      - pocket_depth: {pocket: tap, value: 20, blind: true, open_at_extreme: true}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: >-
+      杆 π·10²·35 = 10995.6；叉根 40·24·10 = 9600；
+      每耳 (24·18 + π·12²/2 − π·5²)·8 = 4637.2；螺纹底孔 π·3.4²·20 = 726.3；
+      合计 10995.6 + 9600 + 2·4637.2 − 726.3 = 29143.7
+    check:
+      - volume: 29143.7
+
+ungraded:
+  - source: 不做螺纹
+    reason: 已由孔为光滑圆柱面体现

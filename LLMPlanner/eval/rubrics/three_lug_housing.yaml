@@ -1,0 +1,89 @@
+case: three_lug_housing
+prompt: >-
+  创建三耳法兰轴承座。法兰厚 10mm，外形为半径 32mm 的圆盘加 3 个沿圆周 120° 均布的径向安装耳：
+  每个耳宽 22mm，两侧边平行于径向，端部为与侧边相切的 R11mm 半圆，半圆圆心距中心 48mm，
+  并在该圆心处开直径 9mm 的贯穿安装孔。法兰上方同轴设置直径 46mm 的轮毂，轮毂顶面距法兰底面 38mm。
+  中心轴承孔直径 30mm 全长贯通，轮毂顶端再加工直径 38mm、深 9mm 的轴承座沉孔。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# hframe：轴 0 沿轮毂轴线，t = 0 在法兰底面（端部平面面积较大的一端）；方位角 0° 指向某一个耳。
+entities:
+  disk:      {cylinder: {d: 64, side: outer}, count: 1}
+  lug_ends:  {cylinder: {d: 22, side: outer}, count: 3}
+  lug_holes: {cylinder: {d: 9, side: inner}, count: 3}
+  hub:       {cylinder: {d: 46, side: outer}, count: 1}
+  bore:      {cylinder: {d: 30, side: inner}, count: 1}
+  cbore:     {cylinder: {d: 38, side: inner}, count: 1}
+  hframe:    {axis_frame: {axis: hub, low: larger_area, ref: lug_ends}}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 由以上尺寸确定
+    hard: true
+    derivation: 沿一个耳方向 48 + 11 + (32 与 −48·cos60° − 11 = −35 取大者 35) = 94；垂直方向 2·(48·sin60° + 11) = 105.138
+    check:
+      - bbox_sorted: [38, 94, 105.138]
+
+  - id: flange
+    source: 法兰厚 10mm，外形为半径 32mm 的圆盘
+    check:
+      - exists: disk
+      - coaxial: [disk, hub]
+      - line_material: {frame: hframe, along: 0, polar: [31, 60], expect: [[0, 10]]}
+      - line_material: {frame: hframe, along: 0, polar: [36, 60], expect: []}
+
+  - id: lugs
+    source: 3 个沿圆周 120° 均布的径向安装耳：耳宽 22mm，两侧边平行于径向，端部为与侧边相切的 R11mm 半圆，半圆圆心距中心 48mm
+    check:
+      - exists: lug_ends
+      - axis_distance: {from: hub, to: lug_ends, value: 48}
+      - equal_angular: {about: hub, items: lug_ends}
+      - parallel_faces: {frame: hframe, perp_to: 0, gap: 22, min_area: 50, min_pairs: 3}
+      - line_material: {frame: hframe, along: 0, polar: [40, 0], expect: [[0, 10]]}
+
+  - id: lug_holes
+    source: 并在该圆心处开直径 9mm 的贯穿安装孔
+    check:
+      - exists: lug_holes
+      - coaxial: [lug_holes, lug_ends]
+      - through: {holes: lug_holes}
+
+  - id: hub
+    source: 法兰上方同轴设置直径 46mm 的轮毂，轮毂顶面距法兰底面 38mm
+    check:
+      - exists: hub
+      - extent_along: {axis: hub, of: all, value: 38}
+      - line_material: {frame: hframe, along: 0, polar: [21, 60], expect: [[0, 38]]}
+
+  - id: bore
+    source: 中心轴承孔直径 30mm 全长贯通
+    check:
+      - exists: bore
+      - coaxial: [bore, hub]
+      - through: {holes: bore}
+      - line_material: {frame: hframe, along: 0, polar: [0, 0], expect: []}
+
+  - id: counterbore
+    source: 轮毂顶端再加工直径 38mm、深 9mm 的轴承座沉孔
+    check:
+      - exists: cbore
+      - coaxial: [cbore, hub]
+      - extent_along: {axis: cbore, of: cbore, value: 9}
+      - line_material: {frame: hframe, along: 0, polar: [17, 60], expect: [[0, 29]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: >-
+      每耳伸出圆盘部分 22·48 − ∫_{-11}^{11}√(32² − y²)dy + π·11²/2 = 1056 − 689.88 + 190.07 = 556.19；
+      法兰 (π·32² + 3·556.19 − 3·π·4.5² − π·15²)·10 = 39878.4；
+      轮毂 π·(23² − 15²)·28 − π·(19² − 15²)·9 = 26741.2 − 3845.3 = 22895.9；合计 62774.4
+    check:
+      - volume: 62774.4
+
+ungraded: []

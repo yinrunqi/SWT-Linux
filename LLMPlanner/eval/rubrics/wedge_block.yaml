@@ -1,0 +1,48 @@
+case: wedge_block
+prompt: 创建斜楔块：长 60mm、宽 30mm，一端高 20mm、另一端高 5mm，上表面是连续的平斜面，底面平整。
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 0 = 高(20)，1 = 宽(30)，2 = 长(60)。高度 0 在底面；长度 0 在高端（端面 600 > 矮端 150）。
+entities:
+  frame: {principal_frame: {signs: {0: larger_area_low, 2: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: （隐含）一个零件
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 长 60mm、宽 30mm，一端高 20mm
+    hard: true
+    check:
+      - bbox_sorted: [20, 30, 60]
+
+  - id: ends
+    source: 一端高 20mm、另一端高 5mm
+    derivation: 高端端面 20·30 = 600（法向 −2），矮端端面 5·30 = 150（法向 +2）
+    check:
+      - planar_face: {frame: frame, axis: 2, angle: 180, area: 600}
+      - planar_face: {frame: frame, axis: 2, angle: 0, area: 150}
+
+  - id: slope
+    source: 上表面是连续的平斜面
+    derivation: 倾角 atan(15/60) = 14.036°，面积 30·√(60² + 15²) = 1855.4；沿长度 10、50 处高 17.5、7.5
+    check:
+      - planar_face: {frame: frame, axis: 0, angle: 14.036, area: 1855.4}
+      - line_material: {frame: frame, along: 0, at: [null, 15, 10], expect: [[0, 17.5]]}
+      - line_material: {frame: frame, along: 0, at: [null, 15, 50], expect: [[0, 7.5]]}
+
+  - id: bottom
+    source: 底面平整
+    check:
+      - planar_face: {frame: frame, axis: 0, angle: 180, area: 1800}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: (20 + 5)/2·60·30 = 22500
+    check:
+      - volume: 22500
+
+ungraded: []
