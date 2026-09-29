@@ -687,6 +687,25 @@ def _close_documents(sw_url: str) -> dict:
     )
 
 
+def _save_artifacts(sw_url: str, stem: Path | None) -> dict:
+    """Keep the native part and a STEP copy so later metrics need no re-modeling."""
+    if stem is None:
+        return {}
+    stem.parent.mkdir(parents=True, exist_ok=True)
+    saved: dict[str, Any] = {}
+    for key, route, field, suffix in (
+        ("step", "/api/export-step", "stepPath", ".step"),
+        ("sldprt", "/api/save-part-as", "savePath", ".SLDPRT"),
+    ):
+        path = stem.with_suffix(suffix).resolve()
+        try:
+            _post_json(f"{sw_url}{route}", {field: str(path)}, timeout=120)
+            saved[key] = str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
+        except Exception as exc:
+            saved[f"{key}_error"] = str(exc)
+    return saved
+
+
 def _observation(sw_url: str) -> dict:
     observer = SwObserver(base_url=sw_url)
     try:
@@ -986,6 +1005,7 @@ def run_one(
     strict_orientation: bool = False,
     action_level: str = "L0",
     max_llm_calls: int = 40,
+    artifact_stem: Path | None = None,
 ) -> dict:
     started = time.perf_counter()
     cleanup_before = _close_documents(sw_url)
@@ -1034,6 +1054,7 @@ def run_one(
         trace["final_observation"] = observation
         sketch_stats = _sketch_stats(sw_url)
         trace["sketch_stats"] = sketch_stats
+        artifacts = _save_artifacts(sw_url, artifact_stem)
         scoring_v1 = score_case_v1(case, payload, observation)
         scoring = score_case_v2(
             case,
@@ -1071,6 +1092,7 @@ def run_one(
             "duration_seconds": round(time.perf_counter() - started, 2),
             "cleanup_before": cleanup_before,
             "error": None,
+            "artifacts": artifacts,
             "trace": trace,
         }
     except Exception as exc:
@@ -1080,6 +1102,10 @@ def run_one(
             except Exception:
                 observation = {}
         trace["final_observation"] = observation or None
+        try:
+            artifacts = _save_artifacts(sw_url, artifact_stem) if observation.get("volume_mm3") else {}
+        except Exception:
+            artifacts = {}
         return {
             "case_id": case.case_id,
             "name": case.name,
@@ -1091,6 +1117,7 @@ def run_one(
             "duration_seconds": round(time.perf_counter() - started, 2),
             "cleanup_before": cleanup_before,
             "error": str(exc),
+            "artifacts": artifacts,
             "trace": trace,
         }
     finally:
@@ -1305,6 +1332,12 @@ def main() -> int:
         default="dev",
         help="Case split; heldout cases must never be used to tune prompts, tools or code",
     )
+    parser.add_argument(
+        "--no-save-artifacts",
+        dest="save_artifacts",
+        action="store_false",
+        help="Do not keep each run's SLDPRT and STEP under eval/artifacts/<result name>/",
+    )
     args = parser.parse_args()
     if args.rescore:
         report = rescore_report(args.rescore, args.output or args.rescore, args.strict_orientation)
@@ -1349,6 +1382,10 @@ def main() -> int:
             strict_orientation=args.strict_orientation,
             action_level=args.action_level,
             max_llm_calls=args.max_llm_calls,
+            artifact_stem=(
+                ROOT / "eval" / "artifacts" / output.stem / f"{case.case_id}_r{repeat + 1}"
+                if args.save_artifacts else None
+            ),
         )
         result["repeat"] = repeat
         results.append(result)
