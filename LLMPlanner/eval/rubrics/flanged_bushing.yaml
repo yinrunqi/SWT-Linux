@@ -1,5 +1,9 @@
 case: flanged_bushing
 prompt: 创建带法兰的衬套：套筒外径 20mm、内径 12mm、总长 30mm；一端带外径 36mm、厚 5mm 的法兰，法兰厚度计入总长；内孔全长贯通。
+prompt_en: >-
+  Create a flanged bushing: sleeve outer diameter 20mm, inner diameter 12mm, overall length 30mm; one end has
+  a flange with an outer diameter of 36mm and a thickness of 5mm, the flange thickness being included in the
+  overall length; the bore runs through the full length.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 entities:

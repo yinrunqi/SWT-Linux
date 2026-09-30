@@ -1,5 +1,11 @@
 case: soap_dish
 prompt: 创建一个顶部敞开的长方形肥皂盒，单一实体。外部尺寸 110×75×25mm（高 25mm），侧壁厚 3mm，底厚 3mm；外侧四条竖直棱边做 R8mm 圆角。底板上开 15 个直径 5mm 的贯穿排水孔，排成 3 行 × 5 列：沿 110mm 方向 5 列、列距 18mm，沿 75mm 方向 3 行、行距 18mm，孔阵中心与底面中心重合。
+prompt_en: >-
+  Create an open-top rectangular soap dish as a single solid body. Outer dimensions 110×75×25mm (25mm tall),
+  side wall thickness 3mm, bottom thickness 3mm; R8mm fillets on the four outer vertical edges. Make 15 drain
+  through holes of 5mm diameter in the bottom plate, arranged in 3 rows × 5 columns: 5 columns along the 110mm
+  direction at a column pitch of 18mm, and 3 rows along the 75mm direction at a row pitch of 18mm, with the
+  center of the hole array coinciding with the center of the bottom face.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 0 = 高(25)，1 = 宽(75)，2 = 长(110)；原点在包围盒角点，底面在 0，敞开端在 25。

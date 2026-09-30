@@ -1,5 +1,9 @@
 case: end_cap
 prompt: 创建圆形端盖：外径 60mm、总高 15mm；从底面向上挖出直径 50mm、深 12mm 的内腔，使顶板厚 3mm；顶板中心打一个直径 8mm 的通孔。
+prompt_en: >-
+  Create a circular end cap with an outer diameter of 60mm and an overall height of 15mm; hollow out a cavity
+  50mm in diameter and 12mm deep upward from the bottom face, leaving a top plate 3mm thick; make an
+  8mm-diameter through hole at the center of the top plate.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # cframe：轴 0 沿外圆轴线，t = 0 在端部平面面积较大的一端，即顶板外表面（2777 > 底部环面 864）。

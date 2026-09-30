@@ -4,6 +4,13 @@ prompt: >-
   立板在底座 50mm 方向居中，正视轮廓为宽 50mm 的矩形加顶部 R25mm 半圆，半圆圆心距底座底面 40mm；
   在该圆心处开直径 24mm 的轴孔，沿立板厚度方向贯穿。
   底座上在 100mm 方向中线上、距中心 38mm 处左右各开一个直径 10mm 的贯穿孔。
+prompt_en: >-
+  Create a shaft support block with all features merged into a single solid body. The base is 100×50mm and
+  10mm thick; a 20mm-thick upright plate rises from the center of the top face of the base, centered in the
+  50mm direction of the base; its front-view profile is a 50mm-wide rectangle topped by an R25mm semicircle
+  whose center is 40mm from the bottom face of the base. At that center, make a 24mm-diameter shaft hole
+  through the upright plate in its thickness direction. In the base, on the centerline along the 100mm
+  direction, make one 10mm-diameter through hole on each side, 38mm from the center.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 底座坐标系：0 = 100mm 方向，1 = 50mm 方向（立板厚度方向），2 = 向上；原点在底面外廓中心。

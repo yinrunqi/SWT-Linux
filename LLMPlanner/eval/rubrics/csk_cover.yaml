@@ -2,6 +2,10 @@ case: csk_cover
 prompt: >-
   创建 90×70×12mm 的盖板，四个沉头孔：通孔直径 8mm，沉头直径 14mm、深 4mm；
   孔心距相邻两边各 15mm。沉头在板的上表面。
+prompt_en: >-
+  Create a 90×70×12mm cover plate with four counterbored holes: through-hole diameter 8mm, counterbore
+  diameter 14mm and depth 4mm; the hole centers are 15mm from the two adjacent edges. The counterbores are on
+  the top face of the plate.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 0 = 厚(12)，1 = 宽(70)，2 = 长(90)；原点在包围盒角点。

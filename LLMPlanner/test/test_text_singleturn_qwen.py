@@ -1,6 +1,39 @@
+import re
+from collections import Counter
 from pathlib import Path
 
-from eval.eval_text_singleturn_qwen import CASES, score_case
+import yaml
+
+from eval.eval_text_singleturn_qwen import CASES, PROMPTS_EN, case_prompt, score_case
+from planner.skill_registry import SkillRegistry, SkillSelector
+
+LLM_ROOT = Path(__file__).parents[1]
+
+
+def test_every_case_has_english_prompt_with_same_numbers():
+    assert set(PROMPTS_EN) == {case.case_id for case in CASES}
+    number = re.compile(r"\d+(?:\.\d+)?")
+    for case in CASES:
+        english = case_prompt(case, "en")
+        assert not re.search(r"[\u3000-\u303f\u4e00-\u9fff\uff00-\uffef]", english), case.case_id
+        assert Counter(number.findall(english)) == Counter(number.findall(case.prompt)), case.case_id
+        assert case_prompt(case, "zh") == case.prompt
+
+
+def test_rubric_english_prompts_match_eval_cases():
+    for path in (LLM_ROOT / "eval" / "rubrics").glob("*.yaml"):
+        rubric = yaml.safe_load(path.read_text(encoding="utf-8"))
+        assert rubric["prompt_en"] == PROMPTS_EN[rubric["case"]], path.name
+
+
+def test_english_prompts_add_no_recipe_skills():
+    registry = SkillRegistry(LLM_ROOT / "planner" / "skills")
+    registry.load()
+    selector = SkillSelector(registry)
+    for case in CASES:
+        chinese = {skill.name for skill in selector.select(case.prompt)}
+        english = {skill.name for skill in selector.select(PROMPTS_EN[case.case_id])}
+        assert english <= chinese, case.case_id
 
 
 def test_all_new_benchmark_prompts_match_web_catalog():

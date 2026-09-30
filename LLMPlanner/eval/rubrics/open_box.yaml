@@ -1,5 +1,8 @@
 case: open_box
 prompt: 创建顶部敞开的盒体：外部 80×50×40mm，壁厚和底厚均为 4mm，用抽壳完成。
+prompt_en: >-
+  Create an open-top box: outer dimensions 80×50×40mm, a wall thickness and a bottom thickness of 4mm each,
+  made with a shell feature.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 0 = 高(40)，1 = 宽(50)，2 = 长(80)；底面（完整）在 0，敞开端在 40。

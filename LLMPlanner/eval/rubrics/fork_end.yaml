@@ -6,6 +6,16 @@ prompt: >-
   耳宽 24mm 与叉根等宽，耳端为 R12mm 半圆，半圆圆心距叉根顶面 18mm。
   在半圆圆心处沿厚度方向开一个直径 10mm 的横销孔，贯穿两片叉耳；
   杆部底端面中心有直径 6.8mm、深 20mm 的螺纹底孔（不做螺纹）。
+prompt_en: >-
+  Create a fork end; all features are merged into a single solid body. The shank is a cylinder 20mm in
+  diameter and 35mm long; the top end of the shank joins a 40×24mm fork-root block 10mm high, with the shank
+  axis passing through the center of the block. Two identical fork lugs extend from the top face of the fork
+  root: each lug is 8mm thick, with its outer face flush with one of the two end faces of the fork root in the
+  40mm direction (leaving a 24mm opening between the lugs); each lug is 24mm wide, the same width as the fork
+  root, and ends in an R12mm semicircle whose center is 18mm from the top face of the fork root. At the
+  semicircle centers, make a 10mm-diameter cross pin hole in the thickness direction, through both lugs; the
+  center of the bottom end face of the shank has a 6.8mm-diameter tap pilot hole, 20mm deep (threads not
+  modeled).
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # fframe：轴 0 沿杆部轴线，t = 0 在杆部底端（叉耳顶端是圆弧、无平面）；

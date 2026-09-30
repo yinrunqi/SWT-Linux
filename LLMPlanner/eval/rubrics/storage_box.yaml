@@ -1,5 +1,8 @@
 case: storage_box
 prompt: 创建顶部敞开的长方形收纳盒，外部 120×80×50mm，壁厚和底厚均为 8mm，顶部开口边做 R3mm 圆角。
+prompt_en: >-
+  Create an open-top rectangular storage box with outer dimensions of 120×80×50mm, a wall thickness and a
+  bottom thickness of 8mm each, and R3mm fillets on the edges of the top opening.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 0 = 高(50)，1 = 宽(80)，2 = 长(120)；底面（完整 9600）在高度 0，敞开端在 50。

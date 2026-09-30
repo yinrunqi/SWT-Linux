@@ -1,5 +1,8 @@
 case: key
 prompt: 创建厚 2mm 的小型钥匙：外径 20mm 的钥匙圈头、10×5mm 圈孔、42×8mm 钥匙杆，并在杆的一侧均布 5 个齿槽。
+prompt_en: >-
+  Create a small key 2mm thick: a key-ring head with an outer diameter of 20mm, a 10×5mm ring hole and a
+  42×8mm key blade, with 5 evenly spaced tooth notches along one side of the blade.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 0 = 厚(2)，1 = 头部直径方向(20)，2 = 长度方向。

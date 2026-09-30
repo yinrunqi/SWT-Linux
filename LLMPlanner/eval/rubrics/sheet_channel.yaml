@@ -1,5 +1,7 @@
 case: sheet_channel
 prompt: 创建钣金平板：轮廓 90×50mm，板厚 1.2mm。
+prompt_en: >-
+  Create a flat sheet-metal plate: outline 90×50mm, sheet thickness 1.2mm.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 entities:

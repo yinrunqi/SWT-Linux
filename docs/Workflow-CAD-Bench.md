@@ -63,7 +63,7 @@ Linux 和 macOS 上把 `venv-occ\Scripts\python.exe` 换成 `venv-occ/bin/python
 ```powershell
 # 1) 环境已按第 0 节配好
 
-# 2) 导出 50 个任务：每行一个 {"case", "kind", "prompt"}
+# 2) 导出 50 个任务：每行一个 {"case", "kind", "prompt"}；加 --lang en 导出英文题面
 venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench tasks --output tasks.jsonl
 
 # 3) 用你的系统逐题建模，把结果导出为 STEP：
@@ -94,7 +94,7 @@ ALL  tasks=50 runs=100 score=... ci95=[..., ...] pass@1=... pass@2=... core_form
 
 ### 2.1 来源与格式
 
-任务的唯一来源是 `LLMPlanner/eval/rubrics/<case>.yaml`，每个文件的 `prompt` 字段就是交给建模系统的原文（中文）。`geomcheck.bench tasks` 只是把这些字段导出成 JSONL。
+任务的唯一来源是 `LLMPlanner/eval/rubrics/<case>.yaml`，每个文件的 `prompt` 字段就是交给建模系统的原文（中文）。`prompt_en` 字段是逐句对应的英文版本：数值、单位和歧义程度与中文一致，rubric 的 `ungraded` 项在英文里同样不写明，打分规则不变。`geomcheck.bench tasks` 只是把这些字段导出成 JSONL（`--lang en` 导出 `prompt_en`）；`eval_text_singleturn_qwen.py --lang en` 用英文题面跑评测，结果文件名带 `_en` 后缀。
 
 题面只给目标尺寸和功能细节，不给 API 序列、坐标布局或建模步骤，例如：
 

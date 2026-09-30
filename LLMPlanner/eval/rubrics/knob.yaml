@@ -2,6 +2,11 @@ case: knob
 prompt: >-
   创建旋钮：圆柱主体直径 30mm、高 20mm；顶面中央凸起一个直径 10mm、高 5mm 的小圆柱；
   主体外圆周均布 12 条竖直防滑槽，每条宽 2mm、深 1mm，沿主体全高贯通；底面中央有直径 6mm、深 12mm 的安装盲孔。
+prompt_en: >-
+  Create a knob: a cylindrical body 30mm in diameter and 20mm tall; a small cylinder 10mm in diameter and 5mm
+  tall protrudes from the center of the top face; 12 vertical grip grooves are evenly spaced around the outer
+  circumference of the body, each 2mm wide and 1mm deep, running through the full height of the body; the
+  center of the bottom face has a blind mounting hole 6mm in diameter and 12mm deep.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # kframe：轴 0 沿主体轴线，t = 0 在底面（端部平面面积较大的一端），主体 t ∈ [0, 20]，凸台 [20, 25]。

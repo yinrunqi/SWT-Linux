@@ -1,5 +1,9 @@
 case: pulley
 prompt: 创建直径 100mm、厚 20mm 的简化皮带轮，中心贯穿孔直径 25mm，顶部有外径 90mm、内径 70mm、深 10mm 的环槽，外轮缘做 C1mm 倒角。
+prompt_en: >-
+  Create a simplified pulley 100mm in diameter and 20mm thick, with a 25mm-diameter central through hole; the
+  top has an annular groove with an outer diameter of 90mm, an inner diameter of 70mm and a depth of 10mm;
+  apply a C1mm chamfer to the outer rim.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # pframe：轴 0 沿轮轴，t = 0 在端面平面面积较大的一端（无环槽的底面），环槽开在 t = 20 一侧。

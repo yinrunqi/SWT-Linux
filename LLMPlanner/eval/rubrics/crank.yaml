@@ -5,6 +5,14 @@ prompt: >-
   和以距轴线 60mm 处为圆心的 R11mm 圆弧，两圆弧由公切直线连接。
   在 R11mm 圆弧圆心处、臂与轮毂齐平的那一侧，凸起直径 22mm、高 15mm 的曲柄销座；
   销座中心开直径 10mm 的孔，贯穿销座和曲柄臂。
+prompt_en: >-
+  Create a crank with all features merged into a single solid body. The hub is a cylinder 36mm in diameter and
+  24mm long with a 16mm-diameter central through bore. The crank arm is perpendicular to the hub axis and 10mm
+  thick, with one side face flush with one end face of the hub; the arm outline consists of an R18mm arc
+  centered on the hub axis and an R11mm arc centered 60mm from the axis, the two arcs connected by common
+  tangent lines. At the center of the R11mm arc, on the side where the arm is flush with the hub, a crank pin
+  boss 22mm in diameter and 15mm high protrudes; a 10mm-diameter hole at the center of the boss passes through
+  both the boss and the crank arm.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # kframe：轴 0 沿轮毂轴线，t = 0 在端部平面面积较大的一端，即轮毂不与臂齐平的端面

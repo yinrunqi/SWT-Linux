@@ -3,6 +3,13 @@ prompt: >-
   创建带筋角码，单一实体。水平底板 60×40mm、厚 6mm；在 60mm 方向的一端立起 40mm 宽、高 30mm、厚 6mm 的立板，
   立板外侧面与底板该端面齐平。在底板与立板的内侧拐角加一块厚 4mm 的直角筋，筋的两条直角边分别沿底板和立板各 18mm，
   筋位于 40mm 方向的对称中面。
+prompt_en: >-
+  Create a ribbed angle bracket as a single solid body. The horizontal base plate is 60×40mm and 6mm thick; at
+  one end in the 60mm direction, an upright plate 40mm wide, 30mm high and 6mm thick stands up, with its outer
+  face flush with that end face of the base plate. At the inner corner between the base plate and the upright
+  plate, add a 4mm-thick right-triangle rib whose two perpendicular sides extend 18mm each, along the base
+  plate and along the upright plate respectively; the rib lies on the mid-plane of symmetry in the 40mm
+  direction.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 底座坐标系：0 = 60mm 方向（+0 指向立板一端），1 = 40mm 方向，2 = 向上；原点在底面外廓中心。

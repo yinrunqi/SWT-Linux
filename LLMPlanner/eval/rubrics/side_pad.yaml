@@ -2,6 +2,10 @@ case: side_pad
 prompt: >-
   创建 50×40×30mm 的长方体（50 沿 X，30 沿 Y 为高，40 沿 Z），底面在 Y=0。
   在右端面外侧 20mm 处的平行平面上画直径 16mm 的圆，向实体拉伸直到贴上右端面，形成侧凸台。
+prompt_en: >-
+  Create a 50×40×30mm block (50 along X, 30 along Y as the height, 40 along Z), with its bottom face at Y=0.
+  On a plane parallel to the right end face and 20mm outside it, sketch a 16mm-diameter circle and extrude it
+  toward the solid until it meets the right end face, forming a side boss.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 世界坐标轴（题面给定）；X 原点在包围盒最小端，Y、Z 原点锚定在长方体的低端大平面上，

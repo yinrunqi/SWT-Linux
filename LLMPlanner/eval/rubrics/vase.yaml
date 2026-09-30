@@ -1,5 +1,8 @@
 case: vase
 prompt: 创建高 150mm 的轴对称空心花瓶：底部平坦，中部最大直径 90mm，瓶颈直径 40mm，瓶口直径 55mm，底厚 10mm。
+prompt_en: >-
+  Create an axisymmetric hollow vase 150mm tall: flat bottom, a maximum diameter of 90mm in the middle, a neck
+  diameter of 40mm, a mouth diameter of 55mm and a bottom thickness of 10mm.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 回转面多为样条，没有解析轴线：取主方向坐标系中最长轴（高度）穿过包围盒中心的直线作为回转轴。

@@ -1,5 +1,8 @@
 case: hex_nut
 prompt: 创建对边距 30mm、厚 8mm 的正六角螺母，中心有直径 10mm 的贯穿孔，厚度方向关于原点居中。
+prompt_en: >-
+  Create a regular hexagon nut 30mm across flats and 8mm thick, with a 10mm-diameter through hole at the
+  center, centered on the origin in the thickness direction.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 entities:
