@@ -79,6 +79,8 @@ LLMPlanner/log/**
 LLMPlanner/datasets/cad1k/raw/**
 # AutoMate 原始数据（CC0，体积大）只放本地，入库的只有统计结果
 LLMPlanner/datasets/automate/raw/**
+# Fusion 360 Gallery Assembly（仅限非商业研究，不得再分发）只放本地
+LLMPlanner/datasets/fusion360_assembly/raw/**
 
 # SolidWorks 打开文档时生成的临时锁文件，以及装配体冒烟脚本的本地输出
 LLMPlanner/**/~$*

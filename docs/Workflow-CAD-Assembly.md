@@ -37,7 +37,7 @@ L1（可选 spur_gear）→ 接口 rubric
 
 自检：`check_interference`、`check_motion`。`finish` 要求已经保存，并且最近一次 `check_motion` 通过。
 
-配方在 `LLMPlanner/planner/skills/recipes/`：`assembly_gear_train.md`、`assembly_crank_slider.md`、`assembly_ground_dof.md`、`assembly_motion_check.md`。这四份是针对试点手写的；从 AutoMate 近十万个真实装配里挖出的通用规则与待补缺口见 [Workflow-CAD-Assembly-Mining.md](Workflow-CAD-Assembly-Mining.md)。
+配方在 `LLMPlanner/planner/skills/recipes/`：`assembly_gear_train.md`、`assembly_crank_slider.md`、`assembly_ground_dof.md`、`assembly_motion_check.md`。这四份是针对试点手写的；从 AutoMate（近十万个装配）和 Fusion 360 Gallery（8,251 个装配）挖出的通用规则与待补缺口见 [Workflow-CAD-Assembly-Mining.md](Workflow-CAD-Assembly-Mining.md)。
 
 C# 端点在 `/api/asmwf/*`（`SwCommands.AssemblyWorkflow.cs`）：按组件面序号或默认基准面选实体、加配合、Motion Study 驱动与逐帧采样。
 

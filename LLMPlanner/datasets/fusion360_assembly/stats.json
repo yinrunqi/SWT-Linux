@@ -1,0 +1,944 @@
+{
+  "source": "Fusion 360 Gallery Assembly Dataset a1.0.0 (Autodesk), non-commercial research license",
+  "counts": {
+    "assemblies": 8251,
+    "with_joints": 1684,
+    "has_ground_connected_motion": 1049,
+    "motion_with_inferred_ground": 424,
+    "static_only": 635
+  },
+  "joint_type": {
+    "FASTENED": {
+      "n": 7744,
+      "pct": 59.71
+    },
+    "REVOLUTE": {
+      "n": 3641,
+      "pct": 28.07
+    },
+    "SLIDER": {
+      "n": 829,
+      "pct": 6.39
+    },
+    "CYLINDRICAL": {
+      "n": 589,
+      "pct": 4.54
+    },
+    "PLANAR": {
+      "n": 97,
+      "pct": 0.75
+    },
+    "BALL": {
+      "n": 42,
+      "pct": 0.32
+    },
+    "PIN_SLOT": {
+      "n": 28,
+      "pct": 0.22
+    }
+  },
+  "as_built_joint_type": {
+    "FASTENED": {
+      "n": 2138,
+      "pct": 75.28
+    },
+    "REVOLUTE": {
+      "n": 509,
+      "pct": 17.92
+    },
+    "SLIDER": {
+      "n": 150,
+      "pct": 5.28
+    },
+    "CYLINDRICAL": {
+      "n": 28,
+      "pct": 0.99
+    },
+    "BALL": {
+      "n": 11,
+      "pct": 0.39
+    },
+    "PLANAR": {
+      "n": 2,
+      "pct": 0.07
+    },
+    "PIN_SLOT": {
+      "n": 2,
+      "pct": 0.07
+    }
+  },
+  "joint_interface_top": {
+    "FASTENED": {
+      "Circle@Center|Circle@Center": {
+        "n": 2279,
+        "pct": 29.43
+      },
+      "Plane@Center|Plane@Center": {
+        "n": 1331,
+        "pct": 17.19
+      },
+      "Circle@Center|Plane@Center": {
+        "n": 505,
+        "pct": 6.52
+      },
+      "Cylinder@End|Cylinder@Start": {
+        "n": 394,
+        "pct": 5.09
+      },
+      "Arc@Center|Circle@Center": {
+        "n": 290,
+        "pct": 3.74
+      },
+      "Plane@Middle|Plane@Middle": {
+        "n": 283,
+        "pct": 3.65
+      },
+      "Circle@Center|Cylinder@Start": {
+        "n": 280,
+        "pct": 3.62
+      },
+      "Line@Middle|Line@Middle": {
+        "n": 258,
+        "pct": 3.33
+      }
+    },
+    "REVOLUTE": {
+      "Circle@Center|Circle@Center": {
+        "n": 1267,
+        "pct": 34.8
+      },
+      "Circle@Center|Plane@Center": {
+        "n": 301,
+        "pct": 8.27
+      },
+      "Plane@Center|Plane@Center": {
+        "n": 273,
+        "pct": 7.5
+      },
+      "Arc@Center|Circle@Center": {
+        "n": 207,
+        "pct": 5.69
+      },
+      "Cylinder@End|Cylinder@Start": {
+        "n": 200,
+        "pct": 5.49
+      },
+      "Cylinder@Middle|Cylinder@Middle": {
+        "n": 160,
+        "pct": 4.39
+      },
+      "Circle@Center|Cylinder@Start": {
+        "n": 145,
+        "pct": 3.98
+      },
+      "Circle@Center|Cylinder@End": {
+        "n": 142,
+        "pct": 3.9
+      }
+    },
+    "SLIDER": {
+      "Circle@Center|Circle@Center": {
+        "n": 201,
+        "pct": 24.25
+      },
+      "Plane@Center|Plane@Center": {
+        "n": 201,
+        "pct": 24.25
+      },
+      "Circle@Center|Plane@Center": {
+        "n": 44,
+        "pct": 5.31
+      },
+      "Plane@Middle|Plane@Middle": {
+        "n": 38,
+        "pct": 4.58
+      },
+      "Cylinder@End|Cylinder@End": {
+        "n": 34,
+        "pct": 4.1
+      },
+      "Cylinder@End|Cylinder@Start": {
+        "n": 32,
+        "pct": 3.86
+      },
+      "Cylinder@Middle|Cylinder@Start": {
+        "n": 30,
+        "pct": 3.62
+      },
+      "Plane@Center|Plane@Middle": {
+        "n": 24,
+        "pct": 2.9
+      }
+    },
+    "CYLINDRICAL": {
+      "Circle@Center|Circle@Center": {
+        "n": 134,
+        "pct": 22.75
+      },
+      "Cylinder@Middle|Cylinder@Middle": {
+        "n": 46,
+        "pct": 7.81
+      },
+      "Cylinder@End|Cylinder@Middle": {
+        "n": 45,
+        "pct": 7.64
+      },
+      "Cylinder@Middle|Cylinder@Start": {
+        "n": 37,
+        "pct": 6.28
+      },
+      "Circle@Center|Plane@Center": {
+        "n": 34,
+        "pct": 5.77
+      },
+      "Cylinder@End|Cylinder@Start": {
+        "n": 34,
+        "pct": 5.77
+      },
+      "Arc@Center|Circle@Center": {
+        "n": 32,
+        "pct": 5.43
+      },
+      "Plane@Center|Plane@Center": {
+        "n": 31,
+        "pct": 5.26
+      }
+    },
+    "PLANAR": {
+      "Plane@Center|Plane@Center": {
+        "n": 32,
+        "pct": 32.99
+      },
+      "Circle@Center|Circle@Center": {
+        "n": 20,
+        "pct": 20.62
+      },
+      "Circle@Center|Plane@Center": {
+        "n": 5,
+        "pct": 5.15
+      },
+      "Plane@Center|Plane@Start": {
+        "n": 5,
+        "pct": 5.15
+      },
+      "Plane@Center|Plane@Middle": {
+        "n": 4,
+        "pct": 4.12
+      },
+      "Plane@Middle|Plane@Middle": {
+        "n": 3,
+        "pct": 3.09
+      },
+      "Cylinder@Middle|Cylinder@Middle": {
+        "n": 3,
+        "pct": 3.09
+      },
+      "Cylinder@End|Cylinder@Start": {
+        "n": 3,
+        "pct": 3.09
+      }
+    },
+    "BALL": {
+      "Sphere@Center|Sphere@Center": {
+        "n": 25,
+        "pct": 59.52
+      },
+      "Cylinder@End|Sphere@Center": {
+        "n": 6,
+        "pct": 14.29
+      },
+      "Sphere@Center|Torus@Center": {
+        "n": 3,
+        "pct": 7.14
+      },
+      "Cylinder@Start|Sphere@Center": {
+        "n": 3,
+        "pct": 7.14
+      },
+      "Circle@Center|Sphere@Center": {
+        "n": 2,
+        "pct": 4.76
+      },
+      "Circle@Center|Plane@Middle": {
+        "n": 1,
+        "pct": 2.38
+      },
+      "Circle@Center|Circle@Center": {
+        "n": 1,
+        "pct": 2.38
+      },
+      "Cone@Start|Sphere@Center": {
+        "n": 1,
+        "pct": 2.38
+      }
+    },
+    "PIN_SLOT": {
+      "Circle@Center|Plane@Center": {
+        "n": 4,
+        "pct": 14.29
+      },
+      "Circle@Center|Cylinder@Start": {
+        "n": 3,
+        "pct": 10.71
+      },
+      "Cylinder@Middle|Cylinder@Middle": {
+        "n": 3,
+        "pct": 10.71
+      },
+      "Circle@Center|Cylinder@Middle": {
+        "n": 3,
+        "pct": 10.71
+      },
+      "Plane@Center|Plane@Center": {
+        "n": 2,
+        "pct": 7.14
+      },
+      "Cylinder@End|Cylinder@Middle": {
+        "n": 2,
+        "pct": 7.14
+      },
+      "Cylinder@Middle|Cylinder@Start": {
+        "n": 2,
+        "pct": 7.14
+      },
+      "Cylinder@Middle|Plane@Center": {
+        "n": 1,
+        "pct": 3.57
+      }
+    }
+  },
+  "limit_enabled_pct": {
+    "REVOLUTE": 8.8,
+    "SLIDER": 31.1,
+    "CYLINDRICAL": 7.7,
+    "PIN_SLOT": 5.0,
+    "PLANAR": 0.5,
+    "BALL": 10.1
+  },
+  "grounding_method": {
+    "none": {
+      "n": 762,
+      "pct": 45.25
+    },
+    "grounded": {
+      "n": 699,
+      "pct": 41.51
+    },
+    "+root_joint": {
+      "n": 214,
+      "pct": 12.71
+    },
+    "grounded+root_joint": {
+      "n": 9,
+      "pct": 0.53
+    }
+  },
+  "grounded_rank_by_volume": {
+    "0": {
+      "n": 311,
+      "pct": 56.55
+    },
+    "1": {
+      "n": 94,
+      "pct": 17.09
+    },
+    "3": {
+      "n": 82,
+      "pct": 14.91
+    },
+    "2": {
+      "n": 63,
+      "pct": 11.45
+    }
+  },
+  "grounded_rank_by_insert_order": {
+    "0": {
+      "n": 225,
+      "pct": 61.64
+    },
+    "3": {
+      "n": 77,
+      "pct": 21.1
+    },
+    "1": {
+      "n": 42,
+      "pct": 11.51
+    },
+    "2": {
+      "n": 21,
+      "pct": 5.75
+    }
+  },
+  "first_inserted_is_grounded": {
+    "True": {
+      "n": 264,
+      "pct": 52.49
+    },
+    "False": {
+      "n": 239,
+      "pct": 47.51
+    }
+  },
+  "order": {
+    "growth_from_ground_timeline": 0.852,
+    "growth_from_ground_random": 0.7623,
+    "n_assemblies": 973,
+    "joint_type_mean_rank_0first_1last": {
+      "REVOLUTE": {
+        "n": 3512,
+        "mean": 0.4884
+      },
+      "FASTENED": {
+        "n": 8400,
+        "mean": 0.5032
+      },
+      "SLIDER": {
+        "n": 771,
+        "mean": 0.4863
+      },
+      "CYLINDRICAL": {
+        "n": 562,
+        "mean": 0.5305
+      },
+      "PIN_SLOT": {
+        "n": 29,
+        "mean": 0.5373
+      },
+      "PLANAR": {
+        "n": 56,
+        "mean": 0.6355
+      },
+      "BALL": {
+        "n": 32,
+        "mean": 0.4647
+      }
+    },
+    "loop_closing_joint_mean_rank": 0.6873,
+    "tree_joint_mean_rank": 0.4883,
+    "n_loop_closing": 271
+  },
+  "pair_combo_top": {
+    "REVOLUTE+REVOLUTE": {
+      "n": 22,
+      "pct": 73.33
+    },
+    "SLIDER+SLIDER": {
+      "n": 4,
+      "pct": 13.33
+    },
+    "CYLINDRICAL+CYLINDRICAL": {
+      "n": 1,
+      "pct": 3.33
+    },
+    "PLANAR+REVOLUTE": {
+      "n": 1,
+      "pct": 3.33
+    },
+    "CYLINDRICAL+SLIDER": {
+      "n": 1,
+      "pct": 3.33
+    },
+    "REVOLUTE+REVOLUTE+REVOLUTE": {
+      "n": 1,
+      "pct": 3.33
+    }
+  },
+  "grubler_mobility_ground_component": {
+    "1": {
+      "n": 346,
+      "pct": 32.98
+    },
+    "6": {
+      "n": 218,
+      "pct": 20.78
+    },
+    "2": {
+      "n": 200,
+      "pct": 19.07
+    },
+    "3": {
+      "n": 91,
+      "pct": 8.67
+    },
+    "4": {
+      "n": 74,
+      "pct": 7.05
+    },
+    "5": {
+      "n": 47,
+      "pct": 4.48
+    },
+    "-3": {
+      "n": 39,
+      "pct": 3.72
+    },
+    "-2": {
+      "n": 15,
+      "pct": 1.43
+    },
+    "-1": {
+      "n": 12,
+      "pct": 1.14
+    },
+    "0": {
+      "n": 7,
+      "pct": 0.67
+    }
+  },
+  "independent_loops_per_assembly": {
+    "0": {
+      "n": 956,
+      "pct": 91.13
+    },
+    "1": {
+      "n": 45,
+      "pct": 4.29
+    },
+    "2": {
+      "n": 18,
+      "pct": 1.72
+    },
+    "5": {
+      "n": 15,
+      "pct": 1.43
+    },
+    "4": {
+      "n": 8,
+      "pct": 0.76
+    },
+    "3": {
+      "n": 7,
+      "pct": 0.67
+    }
+  },
+  "loop_length": {
+    "4": {
+      "n": 148,
+      "pct": 63.25
+    },
+    "6": {
+      "n": 40,
+      "pct": 17.09
+    },
+    "3": {
+      "n": 24,
+      "pct": 10.26
+    },
+    "5": {
+      "n": 17,
+      "pct": 7.26
+    },
+    "8": {
+      "n": 5,
+      "pct": 2.14
+    }
+  },
+  "loop_signature_top": {
+    "REVOLUTE|REVOLUTE|REVOLUTE|REVOLUTE": {
+      "n": 48,
+      "pct": 20.96
+    },
+    "REVOLUTE|REVOLUTE|REVOLUTE|SLIDER": {
+      "n": 31,
+      "pct": 13.54
+    },
+    "CYLINDRICAL|REVOLUTE|REVOLUTE|SLIDER": {
+      "n": 16,
+      "pct": 6.99
+    },
+    "CYLINDRICAL|CYLINDRICAL|REVOLUTE|REVOLUTE": {
+      "n": 13,
+      "pct": 5.68
+    },
+    "CYLINDRICAL|REVOLUTE|REVOLUTE|REVOLUTE|REVOLUTE|REVOLUTE": {
+      "n": 11,
+      "pct": 4.8
+    },
+    "REVOLUTE|REVOLUTE|REVOLUTE|REVOLUTE|REVOLUTE|REVOLUTE": {
+      "n": 10,
+      "pct": 4.37
+    },
+    "CYLINDRICAL|REVOLUTE|REVOLUTE|REVOLUTE": {
+      "n": 9,
+      "pct": 3.93
+    },
+    "CYLINDRICAL|CYLINDRICAL|CYLINDRICAL|CYLINDRICAL": {
+      "n": 7,
+      "pct": 3.06
+    },
+    "REVOLUTE|REVOLUTE|REVOLUTE|REVOLUTE|SLIDER|SLIDER": {
+      "n": 6,
+      "pct": 2.62
+    },
+    "REVOLUTE|REVOLUTE|REVOLUTE|REVOLUTE|SLIDER": {
+      "n": 5,
+      "pct": 2.18
+    },
+    "CYLINDRICAL|CYLINDRICAL|REVOLUTE|REVOLUTE|REVOLUTE": {
+      "n": 5,
+      "pct": 2.18
+    },
+    "REVOLUTE|REVOLUTE|REVOLUTE": {
+      "n": 4,
+      "pct": 1.75
+    },
+    "CYLINDRICAL|PLANAR|REVOLUTE": {
+      "n": 4,
+      "pct": 1.75
+    },
+    "CYLINDRICAL|CYLINDRICAL|REVOLUTE|SLIDER": {
+      "n": 4,
+      "pct": 1.75
+    },
+    "REVOLUTE|REVOLUTE|REVOLUTE+REVOLUTE|SLIDER": {
+      "n": 4,
+      "pct": 1.75
+    },
+    "CYLINDRICAL|CYLINDRICAL|REVOLUTE|REVOLUTE|REVOLUTE|REVOLUTE": {
+      "n": 4,
+      "pct": 1.75
+    },
+    "REVOLUTE|SLIDER|SLIDER": {
+      "n": 4,
+      "pct": 1.75
+    },
+    "REVOLUTE|REVOLUTE|REVOLUTE|REVOLUTE|REVOLUTE": {
+      "n": 3,
+      "pct": 1.31
+    },
+    "REVOLUTE|REVOLUTE|SLIDER|SLIDER": {
+      "n": 3,
+      "pct": 1.31
+    },
+    "CYLINDRICAL|PIN_SLOT|REVOLUTE": {
+      "n": 3,
+      "pct": 1.31
+    }
+  },
+  "joint_depth_from_ground": {
+    "1": {
+      "n": 2551,
+      "pct": 56.39
+    },
+    "2": {
+      "n": 1119,
+      "pct": 24.73
+    },
+    "3": {
+      "n": 440,
+      "pct": 9.73
+    },
+    "4": {
+      "n": 194,
+      "pct": 4.29
+    },
+    "6": {
+      "n": 120,
+      "pct": 2.65
+    },
+    "5": {
+      "n": 100,
+      "pct": 2.21
+    }
+  },
+  "chain_to_ground_top": {
+    "REVOLUTE": {
+      "n": 1584,
+      "pct": 38.54
+    },
+    "REVOLUTE > REVOLUTE": {
+      "n": 646,
+      "pct": 15.72
+    },
+    "SLIDER": {
+      "n": 638,
+      "pct": 15.52
+    },
+    "REVOLUTE > REVOLUTE > REVOLUTE": {
+      "n": 236,
+      "pct": 5.74
+    },
+    "CYLINDRICAL": {
+      "n": 221,
+      "pct": 5.38
+    },
+    "SLIDER > REVOLUTE": {
+      "n": 108,
+      "pct": 2.63
+    },
+    "CYLINDRICAL > CYLINDRICAL": {
+      "n": 83,
+      "pct": 2.02
+    },
+    "REVOLUTE > CYLINDRICAL": {
+      "n": 57,
+      "pct": 1.39
+    },
+    "PLANAR": {
+      "n": 56,
+      "pct": 1.36
+    },
+    "REVOLUTE > SLIDER": {
+      "n": 55,
+      "pct": 1.34
+    },
+    "SLIDER > SLIDER": {
+      "n": 48,
+      "pct": 1.17
+    },
+    "CYLINDRICAL > CYLINDRICAL > CYLINDRICAL": {
+      "n": 39,
+      "pct": 0.95
+    },
+    "SLIDER > REVOLUTE > REVOLUTE": {
+      "n": 37,
+      "pct": 0.9
+    },
+    "REVOLUTE+REVOLUTE > REVOLUTE": {
+      "n": 29,
+      "pct": 0.71
+    },
+    "SLIDER > SLIDER > SLIDER": {
+      "n": 28,
+      "pct": 0.68
+    },
+    "SLIDER > CYLINDRICAL": {
+      "n": 27,
+      "pct": 0.66
+    },
+    "CYLINDRICAL > REVOLUTE": {
+      "n": 26,
+      "pct": 0.63
+    },
+    "REVOLUTE+REVOLUTE": {
+      "n": 19,
+      "pct": 0.46
+    },
+    "BALL": {
+      "n": 19,
+      "pct": 0.46
+    },
+    "REVOLUTE > REVOLUTE > CYLINDRICAL": {
+      "n": 15,
+      "pct": 0.36
+    }
+  },
+  "first_joint_to_ground": {
+    "REVOLUTE": {
+      "n": 1584,
+      "pct": 62.09
+    },
+    "SLIDER": {
+      "n": 638,
+      "pct": 25.01
+    },
+    "CYLINDRICAL": {
+      "n": 221,
+      "pct": 8.66
+    },
+    "PLANAR": {
+      "n": 56,
+      "pct": 2.2
+    },
+    "REVOLUTE+REVOLUTE": {
+      "n": 19,
+      "pct": 0.74
+    },
+    "BALL": {
+      "n": 19,
+      "pct": 0.74
+    },
+    "PIN_SLOT": {
+      "n": 11,
+      "pct": 0.43
+    },
+    "CYLINDRICAL+SLIDER": {
+      "n": 1,
+      "pct": 0.04
+    },
+    "SLIDER+SLIDER": {
+      "n": 1,
+      "pct": 0.04
+    },
+    "REVOLUTE+REVOLUTE+REVOLUTE": {
+      "n": 1,
+      "pct": 0.04
+    }
+  },
+  "contact_surface_pairs_top": {
+    "Plane+Plane": {
+      "n": 79933,
+      "pct": 57.06
+    },
+    "Cylinder+Cylinder": {
+      "n": 28801,
+      "pct": 20.56
+    },
+    "Cylinder+Plane": {
+      "n": 9366,
+      "pct": 6.69
+    },
+    "Nurbs+Nurbs": {
+      "n": 8711,
+      "pct": 6.22
+    },
+    "Nurbs+Plane": {
+      "n": 2981,
+      "pct": 2.13
+    },
+    "Plane+Torus": {
+      "n": 2316,
+      "pct": 1.65
+    },
+    "Cylinder+Nurbs": {
+      "n": 1690,
+      "pct": 1.21
+    },
+    "Cylinder+Torus": {
+      "n": 1279,
+      "pct": 0.91
+    },
+    "Cone+Cone": {
+      "n": 838,
+      "pct": 0.6
+    },
+    "Torus+Torus": {
+      "n": 766,
+      "pct": 0.55
+    }
+  },
+  "hole_types_top": {
+    "RoundHoleWithThroughBottom": {
+      "n": 109280,
+      "pct": 78.79
+    },
+    "RoundHoleWithBlindBottom": {
+      "n": 20942,
+      "pct": 15.1
+    },
+    "CounterboreThroughHole": {
+      "n": 2902,
+      "pct": 2.09
+    },
+    "CountersunkHoleWithThroughBottom": {
+      "n": 2336,
+      "pct": 1.68
+    },
+    "TaperedRoundHoleWithThroughBottom": {
+      "n": 1241,
+      "pct": 0.89
+    },
+    "RoundBlindHoleWithConicalBottom": {
+      "n": 715,
+      "pct": 0.52
+    },
+    "CountersunkHoleWithBlindBottom": {
+      "n": 565,
+      "pct": 0.41
+    },
+    "CounterboreBlindHole": {
+      "n": 311,
+      "pct": 0.22
+    },
+    "RoundBlindHoleWithTaperedBottom": {
+      "n": 102,
+      "pct": 0.07
+    },
+    "RoundBlindHoleWithSphericalBottom": {
+      "n": 95,
+      "pct": 0.07
+    },
+    "TaperedRoundHoleWithBlindBottom": {
+      "n": 86,
+      "pct": 0.06
+    },
+    "CountersunkBlindHoleWithConicalBottom": {
+      "n": 78,
+      "pct": 0.06
+    }
+  },
+  "industries_with_joints": {
+    "Product Design & Manufacturing": {
+      "n": 1477,
+      "pct": 77.61
+    },
+    "Other Industries": {
+      "n": 159,
+      "pct": 8.36
+    },
+    "Architecture, Engineering & Construction": {
+      "n": 157,
+      "pct": 8.25
+    },
+    "Media & Entertainment": {
+      "n": 56,
+      "pct": 2.94
+    },
+    "Civil Infrastructure": {
+      "n": 54,
+      "pct": 2.84
+    }
+  },
+  "categories_with_joints": {
+    "Mechanical Engineering": {
+      "n": 1025,
+      "pct": 39.99
+    },
+    "Product Design": {
+      "n": 257,
+      "pct": 10.03
+    },
+    "Machine design": {
+      "n": 141,
+      "pct": 5.5
+    },
+    "Tools": {
+      "n": 129,
+      "pct": 5.03
+    },
+    "Miscellaneous": {
+      "n": 128,
+      "pct": 4.99
+    },
+    "Electronics": {
+      "n": 99,
+      "pct": 3.86
+    },
+    "Automotive": {
+      "n": 83,
+      "pct": 3.24
+    },
+    "Toys": {
+      "n": 77,
+      "pct": 3.0
+    },
+    "Robotics": {
+      "n": 73,
+      "pct": 2.85
+    },
+    "Furniture + Household": {
+      "n": 63,
+      "pct": 2.46
+    },
+    "Design": {
+      "n": 54,
+      "pct": 2.11
+    },
+    "Wood Working": {
+      "n": 53,
+      "pct": 2.07
+    },
+    "Engineering": {
+      "n": 47,
+      "pct": 1.83
+    },
+    "Sport": {
+      "n": 37,
+      "pct": 1.44
+    },
+    "Architecture": {
+      "n": 30,
+      "pct": 1.17
+    }
+  }
+}
