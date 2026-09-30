@@ -1,0 +1,4546 @@
+{
+  "summary": {
+    "n": 4,
+    "part_pass_rate": 1.0,
+    "assembly_score": 20.0,
+    "motion_score": 17.5,
+    "e2e": 0.0
+  },
+  "by_workflow": {
+    "v1": {
+      "all": {
+        "n": 2,
+        "part_pass_rate": 1.0,
+        "assembly_score": 20.0,
+        "motion_score": 17.5,
+        "e2e": 0.0
+      },
+      "two_stage_gearbox": {
+        "n": 2,
+        "part_pass_rate": 1.0,
+        "assembly_score": 20.0,
+        "motion_score": 17.5,
+        "e2e": 0.0
+      }
+    },
+    "v2": {
+      "all": {
+        "n": 2,
+        "part_pass_rate": 1.0,
+        "assembly_score": 20.0,
+        "motion_score": 17.5,
+        "e2e": 0.0
+      },
+      "two_stage_gearbox": {
+        "n": 2,
+        "part_pass_rate": 1.0,
+        "assembly_score": 20.0,
+        "motion_score": 17.5,
+        "e2e": 0.0
+      }
+    }
+  },
+  "recipes": {
+    "v1": [
+      "assembly_ground_dof.md",
+      "assembly_gear_train.md",
+      "assembly_crank_slider.md",
+      "assembly_motion_check.md"
+    ],
+    "v2": [
+      "assembly_topology.md",
+      "assembly_joint_mapping.md",
+      "assembly_coupling.md",
+      "assembly_linkage.md",
+      "assembly_motion_check.md"
+    ]
+  },
+  "results": [
+    {
+      "case_id": "two_stage_gearbox",
+      "condition": "gold",
+      "repeat": 1,
+      "workflow": "v1",
+      "parts": [],
+      "assembly": {
+        "status": "max_llm_calls",
+        "static": {
+          "component_count": 8,
+          "saved": false
+        },
+        "static_score": 20.0,
+        "motion": {
+          "passed": false,
+          "score": 35.0,
+          "interference_frames": [
+            {
+              "frame": 1,
+              "count": 3,
+              "volume_mm3": 157.82160454740898
+            },
+            {
+              "frame": 2,
+              "count": 4,
+              "volume_mm3": 248.07879524005025
+            },
+            {
+              "frame": 3,
+              "count": 3,
+              "volume_mm3": 146.58751681007112
+            },
+            {
+              "frame": 4,
+              "count": 3,
+              "volume_mm3": 17.18876841701038
+            },
+            {
+              "frame": 5,
+              "count": 4,
+              "volume_mm3": 188.63605884968325
+            },
+            {
+              "frame": 6,
+              "count": 4,
+              "volume_mm3": 291.6034479643775
+            },
+            {
+              "frame": 7,
+              "count": 5,
+              "volume_mm3": 162.71031870772956
+            },
+            {
+              "frame": 8,
+              "count": 3,
+              "volume_mm3": 62.301530324317596
+            },
+            {
+              "frame": 9,
+              "count": 4,
+              "volume_mm3": 222.63795124246562
+            },
+            {
+              "frame": 10,
+              "count": 4,
+              "volume_mm3": 333.2849894604273
+            },
+            {
+              "frame": 11,
+              "count": 5,
+              "volume_mm3": 188.0143128724794
+            },
+            {
+              "frame": 12,
+              "count": 5,
+              "volume_mm3": 95.70419453919556
+            }
+          ],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_sweep_deg": -882.253,
+            "output_ratio": 1.1034,
+            "expected_ratio": 0.16666666666666666,
+            "same_direction": true
+          },
+          "clearance": [
+            {
+              "pair": [
+                "input_pinion",
+                "lay_wheel"
+              ],
+              "mm": null,
+              "ok": false
+            },
+            {
+              "pair": [
+                "lay_pinion",
+                "output_wheel"
+              ],
+              "mm": null,
+              "ok": false
+            }
+          ]
+        },
+        "token_usage": {
+          "prompt_tokens": 897993,
+          "completion_tokens": 6506,
+          "total_tokens": 904499,
+          "calls": 50
+        },
+        "llm_calls": 50,
+        "duration_seconds": 374.44,
+        "aliases": {
+          "housing": "housing-1",
+          "input_shaft": "input_shaft-1",
+          "lay_shaft": "lay_shaft-1",
+          "output_shaft": "output_shaft-1",
+          "input_pinion": "input_pinion-1",
+          "lay_wheel": "lay_wheel-1",
+          "lay_pinion": "lay_pinion-1",
+          "output_wheel": "output_wheel-1"
+        },
+        "agent_last_motion": {
+          "passed": false,
+          "frames": 24,
+          "duration": 6.0,
+          "interference_frames": [
+            {
+              "frame": 1,
+              "time": 0.2608695652173913,
+              "count": 5,
+              "volume_mm3": 253.4036,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 2,
+              "time": 0.5217391304347826,
+              "count": 5,
+              "volume_mm3": 266.2838,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 3,
+              "time": 0.782608695652174,
+              "count": 4,
+              "volume_mm3": 174.1938,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 4,
+              "time": 1.0434782608695652,
+              "count": 6,
+              "volume_mm3": 451.0893,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 5,
+              "time": 1.3043478260869563,
+              "count": 6,
+              "volume_mm3": 361.9909,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 6,
+              "time": 1.565217391304348,
+              "count": 5,
+              "volume_mm3": 310.5158,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 7,
+              "time": 1.826086956521739,
+              "count": 6,
+              "volume_mm3": 473.7526,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 8,
+              "time": 2.0869565217391304,
+              "count": 5,
+              "volume_mm3": 237.3778,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 9,
+              "time": 2.347826086956522,
+              "count": 5,
+              "volume_mm3": 217.9444,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 10,
+              "time": 2.608695652173913,
+              "count": 4,
+              "volume_mm3": 302.814,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 11,
+              "time": 2.869565217391304,
+              "count": 3,
+              "volume_mm3": 40.1987,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 12,
+              "time": 3.130434782608696,
+              "count": 4,
+              "volume_mm3": 198.892,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 13,
+              "time": 3.391304347826087,
+              "count": 4,
+              "volume_mm3": 330.1296,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 14,
+              "time": 3.652173913043478,
+              "count": 4,
+              "volume_mm3": 151.0875,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 15,
+              "time": 3.9130434782608696,
+              "count": 4,
+              "volume_mm3": 421.7754,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 16,
+              "time": 4.173913043478261,
+              "count": 4,
+              "volume_mm3": 456.7288,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 17,
+              "time": 4.434782608695652,
+              "count": 4,
+              "volume_mm3": 262.2649,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 18,
+              "time": 4.695652173913044,
+              "count": 4,
+              "volume_mm3": 479.6399,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 19,
+              "time": 4.956521739130435,
+              "count": 4,
+              "volume_mm3": 351.6564,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 20,
+              "time": 5.217391304347826,
+              "count": 4,
+              "volume_mm3": 165.7164,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 21,
+              "time": 5.478260869565218,
+              "count": 5,
+              "volume_mm3": 321.2892,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 22,
+              "time": 5.739130434782608,
+              "count": 4,
+              "volume_mm3": 121.5595,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 23,
+              "time": 6,
+              "count": 5,
+              "volume_mm3": 95.7042,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ]
+              ]
+            }
+          ],
+          "moved": [
+            "input_pinion-1",
+            "lay_wheel-1",
+            "output_wheel-1",
+            "lay_pinion-1",
+            "input_shaft-1",
+            "lay_shaft-1",
+            "output_shaft-1"
+          ],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_angles_deg": [
+              0.0,
+              149.47,
+              -61.07,
+              88.4,
+              -122.13,
+              27.34,
+              176.8,
+              -33.73,
+              115.74,
+              -94.79,
+              54.67,
+              -155.86,
+              -6.39,
+              143.07,
+              -67.46,
+              82.01,
+              -128.52,
+              20.94,
+              170.41,
+              -40.12,
+              109.35,
+              -101.19,
+              48.28,
+              -162.25
+            ],
+            "sample_ratio": 1.0
+          }
+        },
+        "joints": [
+          {
+            "kind": "revolute",
+            "a": "housing-1",
+            "b": "input_shaft-1",
+            "mates": [
+              "同心1",
+              "重合1"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "housing-1",
+            "b": "lay_shaft-1",
+            "mates": [
+              "同心2",
+              "重合2"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "housing-1",
+            "b": "output_shaft-1",
+            "mates": [
+              "同心3",
+              "重合3"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "input_pinion-1",
+            "b": "input_shaft-1",
+            "mates": [
+              "同心4"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "lay_wheel-1",
+            "b": "lay_shaft-1",
+            "mates": [
+              "同心5"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "lay_pinion-1",
+            "b": "lay_shaft-1",
+            "mates": [
+              "同心6"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "output_wheel-1",
+            "b": "output_shaft-1",
+            "mates": [
+              "同心7",
+              "距离4"
+            ]
+          }
+        ]
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\housing.SLDPRT",
+            "name": "housing",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "housing"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\input_shaft.SLDPRT",
+            "name": "input_shaft",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\lay_shaft.SLDPRT",
+            "name": "lay_shaft",
+            "at": [
+              54,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\output_shaft.SLDPRT",
+            "name": "output_shaft",
+            "at": [
+              126,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "housing:face:6",
+            "b": "input_shaft:face:0",
+            "face_a": "housing:face:0",
+            "face_b": "input_shaft:face:1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "housing:face:7",
+            "b": "lay_shaft:face:0",
+            "face_a": "housing:face:0",
+            "face_b": "lay_shaft:face:1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "housing:face:8",
+            "b": "output_shaft:face:0",
+            "face_a": "housing:face:0",
+            "face_b": "output_shaft:face:1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\input_pinion.SLDPRT",
+            "name": "input_pinion",
+            "at": [
+              0,
+              0,
+              15
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "input_pinion",
+            "shaft": "input_shaft",
+            "diameter": 10,
+            "offset": 15,
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\lay_wheel.SLDPRT",
+            "name": "lay_wheel",
+            "at": [
+              54,
+              0,
+              15
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "lay_wheel",
+            "shaft": "lay_shaft",
+            "diameter": 10,
+            "offset": 15,
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "input_pinion",
+            "b": "lay_wheel",
+            "teeth_a": 12,
+            "teeth_b": 24,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_NO_EFFECT",
+          "message": "[FEATURE_NO_EFFECT] 中心距 54.00 mm 与 m(z1+z2)/2=0.02 mm 差 53.98 mm，先把齿轮装到正确的轴上再啮合"
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "input_pinion",
+            "b": "lay_wheel",
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_NO_EFFECT",
+          "message": "[FEATURE_NO_EFFECT] 中心距 54.00 mm 与 m(z1+z2)/2=10.00 mm 差 44.00 mm，先把齿轮装到正确的轴上再啮合"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "input_pinion",
+            "b": "lay_wheel",
+            "module": 3,
+            "teeth_a": 12,
+            "teeth_b": 24,
+            "reverse": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\lay_pinion.SLDPRT",
+            "name": "lay_pinion",
+            "at": [
+              54,
+              0,
+              35
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "lay_pinion",
+            "shaft": "lay_shaft",
+            "diameter": 10,
+            "offset": 35,
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\output_wheel.SLDPRT",
+            "name": "output_wheel",
+            "at": [
+              126,
+              0,
+              35
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "output_wheel",
+            "shaft": "output_shaft",
+            "diameter": 10,
+            "offset": 35,
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "lay_pinion",
+            "b": "output_wheel",
+            "module": 3,
+            "teeth_a": 12,
+            "teeth_b": 36,
+            "reverse": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "input_shaft",
+            "driver_ref": "input_shaft:face:0",
+            "sweep_deg": 360,
+            "frames": 24,
+            "expect_moving": [
+              "input_shaft",
+              "input_pinion",
+              "lay_shaft",
+              "lay_wheel",
+              "lay_pinion",
+              "output_shaft",
+              "output_wheel"
+            ],
+            "expect_fixed": [
+              "housing"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合4"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合5"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "gear",
+            "a": "input_pinion:face:290",
+            "b": "input_shaft:face:0",
+            "ratio_numerator": 1,
+            "ratio_denominator": 1,
+            "reverse": false
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "gear",
+            "a": "lay_wheel:face:530",
+            "b": "lay_shaft:face:0",
+            "ratio_numerator": 1,
+            "ratio_denominator": 1,
+            "reverse": false
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "gear",
+            "a": "lay_pinion:face:290",
+            "b": "lay_shaft:face:0",
+            "ratio_numerator": 1,
+            "ratio_denominator": 1,
+            "reverse": false
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "gear",
+            "a": "output_wheel:face:794",
+            "b": "output_shaft:face:0",
+            "ratio_numerator": 1,
+            "ratio_denominator": 1,
+            "reverse": false
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "input_shaft",
+            "driver_ref": "input_shaft:face:0",
+            "sweep_deg": 360,
+            "frames": 24,
+            "expect_moving": [
+              "input_shaft",
+              "input_pinion",
+              "lay_shaft",
+              "lay_wheel",
+              "lay_pinion",
+              "output_shaft",
+              "output_wheel"
+            ],
+            "expect_fixed": [
+              "housing"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合3"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合6"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合7"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合8"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合9"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合10"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "input_pinion:plane:front",
+            "b": "input_shaft:plane:front",
+            "align": "aligned"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "input_pinion:plane:front",
+            "b": "input_shaft:plane:front",
+            "align": "aligned"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "lay_wheel:plane:front",
+            "b": "lay_shaft:plane:front",
+            "align": "aligned"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离3"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 20.0,
+      "motion_score": 35.0,
+      "e2e": false
+    },
+    {
+      "case_id": "two_stage_gearbox",
+      "condition": "gold",
+      "repeat": 1,
+      "workflow": "v2",
+      "parts": [],
+      "assembly": {
+        "status": "max_llm_calls",
+        "static": {
+          "component_count": 8,
+          "saved": false
+        },
+        "static_score": 20.0,
+        "motion": {
+          "passed": false,
+          "score": 35.0,
+          "interference_frames": [
+            {
+              "frame": 1,
+              "count": 3,
+              "volume_mm3": 157.82160454740531
+            },
+            {
+              "frame": 2,
+              "count": 4,
+              "volume_mm3": 248.07879524005438
+            },
+            {
+              "frame": 3,
+              "count": 3,
+              "volume_mm3": 146.5875168100919
+            },
+            {
+              "frame": 4,
+              "count": 3,
+              "volume_mm3": 17.188768417050152
+            },
+            {
+              "frame": 5,
+              "count": 4,
+              "volume_mm3": 188.63605884978352
+            },
+            {
+              "frame": 6,
+              "count": 4,
+              "volume_mm3": 291.60344796451676
+            },
+            {
+              "frame": 7,
+              "count": 5,
+              "volume_mm3": 162.71031870790605
+            },
+            {
+              "frame": 8,
+              "count": 3,
+              "volume_mm3": 62.30153032450395
+            },
+            {
+              "frame": 9,
+              "count": 4,
+              "volume_mm3": 222.6379512426704
+            },
+            {
+              "frame": 10,
+              "count": 4,
+              "volume_mm3": 333.28498946064036
+            },
+            {
+              "frame": 11,
+              "count": 5,
+              "volume_mm3": 188.0143128726931
+            },
+            {
+              "frame": 12,
+              "count": 5,
+              "volume_mm3": 95.70419453945559
+            }
+          ],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_sweep_deg": -882.253,
+            "output_ratio": 1.1034,
+            "expected_ratio": 0.16666666666666666,
+            "same_direction": true
+          },
+          "clearance": [
+            {
+              "pair": [
+                "input_pinion",
+                "lay_wheel"
+              ],
+              "mm": null,
+              "ok": false
+            },
+            {
+              "pair": [
+                "lay_pinion",
+                "output_wheel"
+              ],
+              "mm": null,
+              "ok": false
+            }
+          ]
+        },
+        "token_usage": {
+          "prompt_tokens": 1398237,
+          "completion_tokens": 10736,
+          "total_tokens": 1408973,
+          "calls": 50
+        },
+        "llm_calls": 50,
+        "duration_seconds": 385.35,
+        "aliases": {
+          "housing": "housing-1",
+          "input_shaft": "input_shaft-1",
+          "lay_shaft": "lay_shaft-1",
+          "output_shaft": "output_shaft-1",
+          "input_pinion": "input_pinion-1",
+          "lay_wheel": "lay_wheel-1",
+          "lay_pinion": "lay_pinion-1",
+          "output_wheel": "output_wheel-1"
+        },
+        "agent_last_motion": {
+          "passed": false,
+          "frames": 24,
+          "duration": 6.0,
+          "interference_frames": [
+            {
+              "frame": 1,
+              "time": 0.2608695652173913,
+              "count": 5,
+              "volume_mm3": 253.4036,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 2,
+              "time": 0.5217391304347826,
+              "count": 5,
+              "volume_mm3": 266.2838,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 3,
+              "time": 0.782608695652174,
+              "count": 4,
+              "volume_mm3": 174.1938,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 4,
+              "time": 1.0434782608695652,
+              "count": 6,
+              "volume_mm3": 451.0893,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 5,
+              "time": 1.3043478260869563,
+              "count": 6,
+              "volume_mm3": 361.9909,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 6,
+              "time": 1.565217391304348,
+              "count": 5,
+              "volume_mm3": 310.5158,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 7,
+              "time": 1.826086956521739,
+              "count": 6,
+              "volume_mm3": 473.7526,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 8,
+              "time": 2.0869565217391304,
+              "count": 5,
+              "volume_mm3": 237.3778,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 9,
+              "time": 2.347826086956522,
+              "count": 5,
+              "volume_mm3": 217.9444,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 10,
+              "time": 2.608695652173913,
+              "count": 4,
+              "volume_mm3": 302.814,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 11,
+              "time": 2.869565217391304,
+              "count": 3,
+              "volume_mm3": 40.1987,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 12,
+              "time": 3.130434782608696,
+              "count": 4,
+              "volume_mm3": 198.892,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 13,
+              "time": 3.391304347826087,
+              "count": 4,
+              "volume_mm3": 330.1296,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 14,
+              "time": 3.652173913043478,
+              "count": 4,
+              "volume_mm3": 151.0875,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 15,
+              "time": 3.9130434782608696,
+              "count": 4,
+              "volume_mm3": 421.7754,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 16,
+              "time": 4.173913043478261,
+              "count": 4,
+              "volume_mm3": 456.7288,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 17,
+              "time": 4.434782608695652,
+              "count": 4,
+              "volume_mm3": 262.2649,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 18,
+              "time": 4.695652173913044,
+              "count": 4,
+              "volume_mm3": 479.6399,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 19,
+              "time": 4.956521739130435,
+              "count": 4,
+              "volume_mm3": 351.6564,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 20,
+              "time": 5.217391304347826,
+              "count": 4,
+              "volume_mm3": 165.7164,
+              "pairs": [
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 21,
+              "time": 5.478260869565218,
+              "count": 5,
+              "volume_mm3": 321.2892,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 22,
+              "time": 5.739130434782608,
+              "count": 4,
+              "volume_mm3": 121.5595,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ]
+              ]
+            },
+            {
+              "frame": 23,
+              "time": 6,
+              "count": 5,
+              "volume_mm3": 95.7042,
+              "pairs": [
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ],
+                [
+                  "input_pinion-1",
+                  "lay_wheel-1"
+                ],
+                [
+                  "lay_pinion-1",
+                  "output_wheel-1"
+                ]
+              ]
+            }
+          ],
+          "moved": [
+            "input_shaft-1",
+            "lay_shaft-1",
+            "input_pinion-1",
+            "lay_wheel-1",
+            "lay_pinion-1",
+            "output_wheel-1",
+            "output_shaft-1"
+          ],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_angles_deg": [
+              0.0,
+              149.47,
+              -61.07,
+              88.4,
+              -122.13,
+              27.34,
+              176.8,
+              -33.73,
+              115.74,
+              -94.79,
+              54.67,
+              -155.86,
+              -6.39,
+              143.07,
+              -67.46,
+              82.01,
+              -128.52,
+              20.94,
+              170.41,
+              -40.12,
+              109.35,
+              -101.19,
+              48.28,
+              -162.25
+            ],
+            "sample_ratio": 1.0
+          }
+        },
+        "joints": [
+          {
+            "kind": "mate:concentric",
+            "a": "housing-1",
+            "b": "input_shaft-1",
+            "mates": [
+              "同心7"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "housing-1",
+            "b": "lay_shaft-1",
+            "mates": [
+              "同心8"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "housing-1",
+            "b": "output_shaft-1",
+            "mates": [
+              "同心9"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "housing-1",
+            "b": "input_shaft-1",
+            "mates": [
+              "重合4"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "housing-1",
+            "b": "lay_shaft-1",
+            "mates": [
+              "重合5"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "housing-1",
+            "b": "output_shaft-1",
+            "mates": [
+              "重合6"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "input_shaft-1",
+            "b": "input_pinion-1",
+            "mates": [
+              "同心11"
+            ]
+          },
+          {
+            "kind": "mate:distance",
+            "a": "housing-1",
+            "b": "input_pinion-1",
+            "mates": [
+              "距离1"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "lay_shaft-1",
+            "b": "lay_wheel-1",
+            "mates": [
+              "同心13"
+            ]
+          },
+          {
+            "kind": "mate:distance",
+            "a": "housing-1",
+            "b": "lay_wheel-1",
+            "mates": [
+              "距离2"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "lay_shaft-1",
+            "b": "lay_pinion-1",
+            "mates": [
+              "同心15"
+            ]
+          },
+          {
+            "kind": "mate:distance",
+            "a": "housing-1",
+            "b": "lay_pinion-1",
+            "mates": [
+              "距离3"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "output_shaft-1",
+            "b": "output_wheel-1",
+            "mates": [
+              "同心17"
+            ]
+          },
+          {
+            "kind": "mate:distance",
+            "a": "housing-1",
+            "b": "output_wheel-1",
+            "mates": [
+              "距离4"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "input_shaft-1",
+            "b": "input_pinion-1",
+            "mates": [
+              "同心19"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "lay_shaft-1",
+            "b": "lay_wheel-1",
+            "mates": [
+              "同心20"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "lay_shaft-1",
+            "b": "lay_pinion-1",
+            "mates": [
+              "同心21"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "output_shaft-1",
+            "b": "output_wheel-1",
+            "mates": [
+              "同心22"
+            ]
+          }
+        ]
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\housing.SLDPRT",
+            "name": "housing"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 服务器出现意外情况。 (异常来自 HRESULT:0x80010105 (RPC_E_SERVERFAULT))"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\housing.SLDPRT",
+            "name": "housing"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "housing"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\input_shaft.SLDPRT",
+            "name": "input_shaft"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\lay_shaft.SLDPRT",
+            "name": "lay_shaft"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\output_shaft.SLDPRT",
+            "name": "output_shaft"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "housing:cyl(d=10.4, near=[0,0])",
+            "b": "input_shaft:cyl(d=10)",
+            "face_a": "housing:face(+Z, outermost)",
+            "face_b": "input_shaft:face(-Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "housing:cyl(d=10.4, near=[54,0])",
+            "b": "lay_shaft:cyl(d=10)",
+            "face_a": "housing:face(+Z, outermost)",
+            "face_b": "lay_shaft:face(-Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "housing:cyl(d=10.4, near=[126,0])",
+            "b": "output_shaft:cyl(d=10)",
+            "face_a": "housing:face(+Z, outermost)",
+            "face_b": "output_shaft:face(-Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "housing:cyl(d=10.4, near=[0,0])",
+            "b": "input_shaft:cyl(d=10)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 选择 housing-1 的基准面 front 失败"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "housing:cyl(d=10.4, near=[54,0])",
+            "b": "lay_shaft:cyl(d=10)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 选择 housing-1 的基准面 front 失败"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "housing:cyl(d=10.4, near=[126,0])",
+            "b": "output_shaft:cyl(d=10)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 选择 housing-1 的基准面 front 失败"
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "housing:cyl(d=10.4, near=[0,0])",
+            "b": "input_shaft:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "housing:cyl(d=10.4, near=[54,0])",
+            "b": "lay_shaft:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "housing:cyl(d=10.4, near=[126,0])",
+            "b": "output_shaft:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 3
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "housing:face(+Z, largest)",
+            "b": "input_shaft:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "housing:face(+Z, largest)",
+            "b": "lay_shaft:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "housing:face(+Z, largest)",
+            "b": "output_shaft:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 3
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\input_pinion.SLDPRT",
+            "name": "input_pinion"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\lay_wheel.SLDPRT",
+            "name": "lay_wheel"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\lay_pinion.SLDPRT",
+            "name": "lay_pinion"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\output_wheel.SLDPRT",
+            "name": "output_wheel"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "input_pinion",
+            "shaft": "input_shaft",
+            "lock_rotation": true,
+            "offset": 15
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 选择 input_pinion-1 的基准面 front 失败"
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "input_shaft:cyl(d=10)",
+            "b": "input_pinion:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "distance",
+            "a": "housing:face(+Z, largest)",
+            "b": "input_pinion:face(-Z, outermost)",
+            "distance": 15
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "input_shaft:cyl(d=10)",
+            "b": "input_pinion:cyl(d=10)",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "lay_shaft:cyl(d=10)",
+            "b": "lay_wheel:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "distance",
+            "a": "housing:face(+Z, largest)",
+            "b": "lay_wheel:face(-Z, outermost)",
+            "distance": 15
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "lay_shaft:cyl(d=10)",
+            "b": "lay_wheel:cyl(d=10)",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "lay_shaft:cyl(d=10)",
+            "b": "lay_pinion:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "distance",
+            "a": "housing:face(+Z, largest)",
+            "b": "lay_pinion:face(-Z, outermost)",
+            "distance": 25
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "lay_shaft:cyl(d=10)",
+            "b": "lay_pinion:cyl(d=10)",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "output_shaft:cyl(d=10)",
+            "b": "output_wheel:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "distance",
+            "a": "housing:face(+Z, largest)",
+            "b": "output_wheel:face(-Z, outermost)",
+            "distance": 25
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "output_shaft:cyl(d=10)",
+            "b": "output_wheel:cyl(d=10)",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "input_pinion",
+            "b": "lay_wheel",
+            "teeth_a": 12,
+            "teeth_b": 24,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_NO_EFFECT",
+          "message": "[FEATURE_NO_EFFECT] 中心距 54.00 mm 与 m(z1+z2)/2=0.02 mm 差 53.98 mm，先把齿轮装到正确的轴上再啮合"
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "input_pinion",
+            "b": "lay_wheel",
+            "module": 3,
+            "teeth_a": 12,
+            "teeth_b": 24,
+            "reverse": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "lay_pinion",
+            "b": "output_wheel",
+            "module": 3,
+            "teeth_a": 12,
+            "teeth_b": 36,
+            "reverse": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 1
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "input_shaft",
+            "driver_ref": "input_shaft:cyl(d=10)",
+            "sweep_deg": 360,
+            "frames": 24,
+            "expect_moving": [
+              "input_shaft",
+              "input_pinion",
+              "lay_shaft",
+              "lay_wheel",
+              "lay_pinion",
+              "output_shaft",
+              "output_wheel"
+            ],
+            "expect_fixed": [
+              "housing"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "input_pinion",
+            "b": "lay_wheel",
+            "module": 3,
+            "teeth_a": 12,
+            "teeth_b": 24,
+            "reverse": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "lay_pinion",
+            "b": "output_wheel",
+            "module": 3,
+            "teeth_a": 12,
+            "teeth_b": 36,
+            "reverse": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "input_shaft",
+            "driver_ref": "input_shaft:cyl(d=10)",
+            "sweep_deg": 360,
+            "frames": 24,
+            "expect_moving": [
+              "input_shaft",
+              "input_pinion",
+              "lay_shaft",
+              "lay_wheel",
+              "lay_pinion",
+              "output_shaft",
+              "output_wheel"
+            ],
+            "expect_fixed": [
+              "housing"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心12"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心14"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心16"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心18"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合3"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合4"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "input_pinion",
+            "b": "lay_wheel",
+            "module": 3,
+            "teeth_a": 12,
+            "teeth_b": 24,
+            "reverse": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "lay_pinion",
+            "b": "output_wheel",
+            "module": 3,
+            "teeth_a": 12,
+            "teeth_b": 36,
+            "reverse": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "input_shaft:cyl(d=10)",
+            "b": "input_pinion:cyl(d=10)",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "lay_shaft:cyl(d=10)",
+            "b": "lay_wheel:cyl(d=10)",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "lay_shaft:cyl(d=10)",
+            "b": "lay_pinion:cyl(d=10)",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "output_shaft:cyl(d=10)",
+            "b": "output_wheel:cyl(d=10)",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "input_shaft",
+            "driver_ref": "input_shaft:cyl(d=10)",
+            "sweep_deg": 360,
+            "frames": 24,
+            "expect_moving": [
+              "input_shaft",
+              "input_pinion",
+              "lay_shaft",
+              "lay_wheel",
+              "lay_pinion",
+              "output_shaft",
+              "output_wheel"
+            ],
+            "expect_fixed": [
+              "housing"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合5"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合6"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "input_pinion",
+            "b": "lay_wheel",
+            "teeth_a": 12,
+            "teeth_b": 24,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_NO_EFFECT",
+          "message": "[FEATURE_NO_EFFECT] 中心距 54.00 mm 与 m(z1+z2)/2=0.02 mm 差 53.98 mm，先把齿轮装到正确的轴上再啮合"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 20.0,
+      "motion_score": 35.0,
+      "e2e": false
+    },
+    {
+      "case_id": "two_stage_gearbox",
+      "condition": "gold",
+      "repeat": 2,
+      "workflow": "v1",
+      "parts": [],
+      "assembly": {
+        "status": "max_llm_calls",
+        "static": {
+          "component_count": 8,
+          "saved": false
+        },
+        "static_score": 20.0,
+        "motion": {
+          "passed": false,
+          "score": 0.0,
+          "error": "服务器出现意外情况。 (异常来自 HRESULT:0x80010105 (RPC_E_SERVERFAULT))"
+        },
+        "token_usage": {
+          "prompt_tokens": 831902,
+          "completion_tokens": 6522,
+          "total_tokens": 838424,
+          "calls": 50
+        },
+        "llm_calls": 50,
+        "duration_seconds": 175.92,
+        "aliases": {
+          "housing": "housing-1",
+          "input_shaft": "input_shaft-1",
+          "lay_shaft": "lay_shaft-1",
+          "output_shaft": "output_shaft-1",
+          "input_pinion": "input_pinion-1",
+          "lay_wheel": "lay_wheel-1",
+          "lay_pinion": "lay_pinion-1",
+          "output_wheel": "output_wheel-1"
+        },
+        "agent_last_motion": null,
+        "joints": [
+          {
+            "kind": "revolute",
+            "a": "input_shaft-1",
+            "b": "housing-1",
+            "mates": [
+              "同心1",
+              "重合1"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "lay_shaft-1",
+            "b": "housing-1",
+            "mates": [
+              "同心2",
+              "重合2"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "output_shaft-1",
+            "b": "housing-1",
+            "mates": [
+              "同心3",
+              "重合3"
+            ]
+          }
+        ]
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\housing.SLDPRT",
+            "name": "housing"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 服务器出现意外情况。 (异常来自 HRESULT:0x80010105 (RPC_E_SERVERFAULT))"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\housing.SLDPRT",
+            "name": "housing",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "housing"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\input_shaft.SLDPRT",
+            "name": "input_shaft",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\lay_shaft.SLDPRT",
+            "name": "lay_shaft",
+            "at": [
+              54,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\output_shaft.SLDPRT",
+            "name": "output_shaft",
+            "at": [
+              126,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "input_shaft:cyl(d=10)",
+            "b": "housing:cyl(d=10.4, near=[0,0])",
+            "face_a": "input_shaft:face:1",
+            "face_b": "housing:face:0"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "lay_shaft:cyl(d=10)",
+            "b": "housing:cyl(d=10.4, near=[54,0])",
+            "face_a": "lay_shaft:face:1",
+            "face_b": "housing:face:0"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "output_shaft:cyl(d=10)",
+            "b": "housing:cyl(d=10.4, near=[126,0])",
+            "face_a": "output_shaft:face:1",
+            "face_b": "housing:face:0"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\input_pinion.SLDPRT",
+            "name": "input_pinion",
+            "at": [
+              0,
+              0,
+              15
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "input_pinion",
+            "shaft": "input_shaft",
+            "diameter": 10,
+            "offset": 15,
+            "lock_rotation": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 选择 input_pinion-1 的基准面 front 失败"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "input_pinion:cyl(d=10)",
+            "b": "input_shaft:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "input_pinion:face:1",
+            "b": "input_shaft:face:1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "gear",
+            "a": "input_shaft:cyl(d=10)",
+            "b": "input_pinion:cyl(d=10)",
+            "ratio_numerator": 1,
+            "ratio_denominator": 1,
+            "reverse": false
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 服务器出现意外情况。 (异常来自 HRESULT:0x80010105 (RPC_E_SERVERFAULT))"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "gear",
+            "a": "input_shaft:cyl(d=10)",
+            "b": "input_pinion:cyl(d=10)",
+            "ratio_numerator": 1,
+            "ratio_denominator": 1,
+            "reverse": false
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 服务器出现意外情况。 (异常来自 HRESULT:0x80010105 (RPC_E_SERVERFAULT))"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\lay_wheel.SLDPRT",
+            "name": "lay_wheel",
+            "at": [
+              54,
+              0,
+              15
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "lay_wheel:cyl(d=10)",
+            "b": "lay_shaft:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "lay_wheel:face:1",
+            "b": "lay_shaft:face:1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "gear",
+            "a": "lay_shaft:cyl(d=10)",
+            "b": "lay_wheel:cyl(d=10)",
+            "ratio_numerator": 1,
+            "ratio_denominator": 1,
+            "reverse": false
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 服务器出现意外情况。 (异常来自 HRESULT:0x80010105 (RPC_E_SERVERFAULT))"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\lay_pinion.SLDPRT",
+            "name": "lay_pinion",
+            "at": [
+              54,
+              0,
+              35
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "lay_pinion:cyl(d=10)",
+            "b": "lay_shaft:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "lay_pinion:face:1",
+            "b": "lay_shaft:face:1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合6"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "distance",
+            "a": "lay_pinion:face:1",
+            "b": "lay_shaft:face:1",
+            "distance": 20
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\output_wheel.SLDPRT",
+            "name": "output_wheel",
+            "at": [
+              126,
+              0,
+              35
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "output_wheel:cyl(d=10)",
+            "b": "output_shaft:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "output_wheel:face:1",
+            "b": "output_shaft:face:1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "input_pinion",
+            "b": "lay_wheel",
+            "teeth_a": 12,
+            "teeth_b": 24,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_NO_EFFECT",
+          "message": "[FEATURE_NO_EFFECT] 中心距 54.00 mm 与 m(z1+z2)/2=0.02 mm 差 53.98 mm，先把齿轮装到正确的轴上再啮合"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "input_pinion",
+            "b": "lay_wheel",
+            "teeth_a": 12,
+            "teeth_b": 24,
+            "module": 3,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 服务器出现意外情况。 (异常来自 HRESULT:0x80010105 (RPC_E_SERVERFAULT))"
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "gear",
+            "a": "input_pinion:cyl(d=10)",
+            "b": "lay_wheel:cyl(d=10)",
+            "ratio_numerator": 12,
+            "ratio_denominator": 24,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] gear 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合3"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "parallel",
+            "a": "input_pinion:face:0",
+            "b": "input_shaft:face:1",
+            "align": "aligned"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "parallel",
+            "a": "lay_wheel:face:0",
+            "b": "lay_shaft:face:1",
+            "align": "aligned"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "parallel",
+            "a": "lay_pinion:face:0",
+            "b": "lay_shaft:face:1",
+            "align": "aligned"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "parallel",
+            "a": "output_wheel:face:0",
+            "b": "output_shaft:face:1",
+            "align": "aligned"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "gear",
+            "a": "input_pinion:cyl(d=10)",
+            "b": "lay_wheel:cyl(d=10)",
+            "ratio_numerator": 12,
+            "ratio_denominator": 24,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] gear 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "gear",
+            "a": "input_shaft:cyl(d=10)",
+            "b": "lay_shaft:cyl(d=10)",
+            "ratio_numerator": 12,
+            "ratio_denominator": 24,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 服务器出现意外情况。 (异常来自 HRESULT:0x80010105 (RPC_E_SERVERFAULT))"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 20.0,
+      "motion_score": 0.0,
+      "e2e": false
+    },
+    {
+      "case_id": "two_stage_gearbox",
+      "condition": "gold",
+      "repeat": 2,
+      "workflow": "v2",
+      "parts": [],
+      "assembly": {
+        "status": "max_llm_calls",
+        "static": {
+          "component_count": 6,
+          "saved": false
+        },
+        "static_score": 20.0,
+        "motion": {
+          "passed": false,
+          "score": 0.0,
+          "error": "服务器出现意外情况。 (异常来自 HRESULT:0x80010105 (RPC_E_SERVERFAULT))"
+        },
+        "token_usage": {
+          "prompt_tokens": 1059402,
+          "completion_tokens": 6715,
+          "total_tokens": 1066117,
+          "calls": 50
+        },
+        "llm_calls": 50,
+        "duration_seconds": 164.34,
+        "aliases": {
+          "housing": "housing-1",
+          "input_shaft": "input_shaft-1",
+          "lay_shaft": "lay_shaft-1",
+          "output_shaft": "output_shaft-1",
+          "input_pinion": "input_pinion-1",
+          "lay_wheel": "lay_wheel-1"
+        },
+        "agent_last_motion": null,
+        "joints": [
+          {
+            "kind": "mate:concentric",
+            "a": "housing-1",
+            "b": "input_shaft-1",
+            "mates": [
+              "同心4"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "input_shaft-1",
+            "b": "housing-1",
+            "mates": [
+              "重合2"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "housing-1",
+            "b": "lay_shaft-1",
+            "mates": [
+              "同心5"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "lay_shaft-1",
+            "b": "housing-1",
+            "mates": [
+              "重合3"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "housing-1",
+            "b": "output_shaft-1",
+            "mates": [
+              "同心6"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "output_shaft-1",
+            "b": "housing-1",
+            "mates": [
+              "重合4"
+            ]
+          },
+          {
+            "kind": "mate:distance",
+            "a": "input_pinion-1",
+            "b": "housing-1",
+            "mates": [
+              "距离1"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "lay_shaft-1",
+            "b": "lay_wheel-1",
+            "mates": [
+              "同心10"
+            ]
+          },
+          {
+            "kind": "mate:distance",
+            "a": "lay_wheel-1",
+            "b": "housing-1",
+            "mates": [
+              "距离2"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "lay_shaft-1",
+            "b": "lay_wheel-1",
+            "mates": [
+              "同心11"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "input_shaft-1",
+            "b": "input_pinion-1",
+            "mates": [
+              "同心13"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "input_shaft-1",
+            "b": "input_pinion-1",
+            "mates": [
+              "同心14"
+            ]
+          }
+        ]
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\housing.SLDPRT",
+            "name": "housing"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 服务器出现意外情况。 (异常来自 HRESULT:0x80010105 (RPC_E_SERVERFAULT))"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\housing.SLDPRT",
+            "name": "housing"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "housing"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\input_shaft.SLDPRT",
+            "name": "input_shaft",
+            "at": [
+              0,
+              0,
+              10
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "housing:cyl(d=10.4, near=[0,0])",
+            "b": "input_shaft:cyl(d=10)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 选择 housing-1 的基准面 front 失败"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "housing:cyl(d=10.4, near=[0,0])",
+            "b": "input_shaft:cyl(d=10)",
+            "face_a": "housing:face(+Z, largest)",
+            "face_b": "input_shaft:face(-Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "housing:cyl(d=10.4, near=[0,0])",
+            "b": "input_shaft:cyl(d=10)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 选择 housing-1 的基准面 front 失败"
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "housing:cyl(d=10.4, near=[0,0])",
+            "b": "input_shaft:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "input_shaft:face(-Z, outermost)",
+            "b": "housing:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\lay_shaft.SLDPRT",
+            "name": "lay_shaft",
+            "at": [
+              54,
+              0,
+              10
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "housing:cyl(d=10.4, near=[54,0])",
+            "b": "lay_shaft:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "lay_shaft:face(-Z, outermost)",
+            "b": "housing:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\output_shaft.SLDPRT",
+            "name": "output_shaft",
+            "at": [
+              126,
+              0,
+              10
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "housing:cyl(d=10.4, near=[126,0])",
+            "b": "output_shaft:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "output_shaft:face(-Z, outermost)",
+            "b": "housing:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\input_pinion.SLDPRT",
+            "name": "input_pinion",
+            "at": [
+              0,
+              0,
+              25
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "input_pinion",
+            "shaft": "input_shaft",
+            "lock_rotation": true,
+            "offset": 15
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 选择 input_pinion-1 的基准面 front 失败"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "input_shaft:cyl(d=10)",
+            "b": "input_pinion:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "distance",
+            "a": "input_pinion:face(-Z, outermost)",
+            "b": "housing:face(+Z, largest)",
+            "distance": 15
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "input_shaft:cyl(d=10)",
+            "b": "input_pinion:cyl(d=10)",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\gearbox\\lay_wheel.SLDPRT",
+            "name": "lay_wheel",
+            "at": [
+              54,
+              0,
+              25
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "lay_shaft:cyl(d=10)",
+            "b": "lay_wheel:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "distance",
+            "a": "lay_wheel:face(-Z, outermost)",
+            "b": "housing:face(+Z, largest)",
+            "distance": 15
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "lay_shaft:cyl(d=10)",
+            "b": "lay_wheel:cyl(d=10)",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "input_pinion",
+            "b": "lay_wheel",
+            "teeth_a": 12,
+            "teeth_b": 24,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_NO_EFFECT",
+          "message": "[FEATURE_NO_EFFECT] 中心距 54.00 mm 与 m(z1+z2)/2=0.02 mm 差 53.98 mm，先把齿轮装到正确的轴上再啮合"
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "input_pinion",
+            "b": "lay_wheel",
+            "teeth_a": 12,
+            "teeth_b": 24,
+            "module": 3,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 服务器出现意外情况。 (异常来自 HRESULT:0x80010105 (RPC_E_SERVERFAULT))"
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "input_pinion",
+            "b": "lay_wheel",
+            "module": 3,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_NO_EFFECT",
+          "message": "[FEATURE_NO_EFFECT] 中心距 54.00 mm 与 m(z1+z2)/2=30.00 mm 差 24.00 mm，先把齿轮装到正确的轴上再啮合"
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "input_pinion",
+            "b": "lay_wheel",
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_NO_EFFECT",
+          "message": "[FEATURE_NO_EFFECT] 中心距 54.00 mm 与 m(z1+z2)/2=10.00 mm 差 44.00 mm，先把齿轮装到正确的轴上再啮合"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "gear",
+            "a": "input_shaft:cyl(d=10)",
+            "b": "lay_shaft:cyl(d=10)",
+            "ratio_numerator": 24,
+            "ratio_denominator": 12,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 服务器出现意外情况。 (异常来自 HRESULT:0x80010105 (RPC_E_SERVERFAULT))"
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "gear",
+            "a": "input_shaft:cyl(d=10)",
+            "b": "lay_shaft:cyl(d=10)",
+            "ratio_numerator": 24,
+            "ratio_denominator": 12,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] gear 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "gear",
+            "a": "input_pinion:cyl(d=10)",
+            "b": "lay_wheel:cyl(d=10)",
+            "ratio_numerator": 24,
+            "ratio_denominator": 12,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 服务器出现意外情况。 (异常来自 HRESULT:0x80010105 (RPC_E_SERVERFAULT))"
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "gear",
+            "a": "input_pinion:cyl(d=10)",
+            "b": "lay_wheel:cyl(d=10)",
+            "ratio_numerator": 24,
+            "ratio_denominator": 12,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] gear 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 3
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心8"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心9"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "input_shaft:cyl(d=10)",
+            "b": "input_pinion:cyl(d=10)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 选择 input_shaft-1 的基准面 front 失败"
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "input_shaft:cyl(d=10)",
+            "b": "input_pinion:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "input_shaft:cyl(d=10)",
+            "b": "input_pinion:cyl(d=10)",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "input_pinion",
+            "b": "lay_wheel",
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_NO_EFFECT",
+          "message": "[FEATURE_NO_EFFECT] 中心距 54.00 mm 与 m(z1+z2)/2=10.00 mm 差 44.00 mm，先把齿轮装到正确的轴上再啮合"
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "gear",
+            "a": "input_shaft:cyl(d=10)",
+            "b": "lay_shaft:cyl(d=10)",
+            "ratio_numerator": 24,
+            "ratio_denominator": 12,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] gear 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合4"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "gear",
+            "a": "input_shaft:face:0",
+            "b": "lay_shaft:face:0",
+            "ratio_numerator": 24,
+            "ratio_denominator": 12,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 服务器出现意外情况。 (异常来自 HRESULT:0x80010105 (RPC_E_SERVERFAULT))"
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 20.0,
+      "motion_score": 0.0,
+      "e2e": false
+    }
+  ],
+  "model": "Qwen3.5-397B-A17B"
+}

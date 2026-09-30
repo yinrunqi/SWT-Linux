@@ -1,0 +1,6231 @@
+{
+  "summary": {
+    "n": 4,
+    "part_pass_rate": 1.0,
+    "assembly_score": 20.0,
+    "motion_score": 12.5,
+    "e2e": 0.0
+  },
+  "by_workflow": {
+    "v1": {
+      "all": {
+        "n": 2,
+        "part_pass_rate": 1.0,
+        "assembly_score": 20.0,
+        "motion_score": 12.5,
+        "e2e": 0.0
+      },
+      "single_cylinder_engine": {
+        "n": 2,
+        "part_pass_rate": 1.0,
+        "assembly_score": 20.0,
+        "motion_score": 12.5,
+        "e2e": 0.0
+      }
+    },
+    "v2": {
+      "all": {
+        "n": 2,
+        "part_pass_rate": 1.0,
+        "assembly_score": 20.0,
+        "motion_score": 12.5,
+        "e2e": 0.0
+      },
+      "single_cylinder_engine": {
+        "n": 2,
+        "part_pass_rate": 1.0,
+        "assembly_score": 20.0,
+        "motion_score": 12.5,
+        "e2e": 0.0
+      }
+    }
+  },
+  "recipes": {
+    "v1": [
+      "assembly_ground_dof.md",
+      "assembly_gear_train.md",
+      "assembly_crank_slider.md",
+      "assembly_motion_check.md"
+    ],
+    "v2": [
+      "assembly_topology.md",
+      "assembly_joint_mapping.md",
+      "assembly_coupling.md",
+      "assembly_linkage.md",
+      "assembly_motion_check.md"
+    ]
+  },
+  "results": [
+    {
+      "case_id": "single_cylinder_engine",
+      "condition": "gold",
+      "repeat": 1,
+      "workflow": "v1",
+      "parts": [],
+      "assembly": {
+        "status": "max_llm_calls",
+        "static": {
+          "component_count": 7,
+          "saved": false
+        },
+        "static_score": 20.0,
+        "motion": {
+          "passed": false,
+          "score": 0.0,
+          "error": "'camshaft'"
+        },
+        "token_usage": {
+          "prompt_tokens": 1110518,
+          "completion_tokens": 9723,
+          "total_tokens": 1120241,
+          "calls": 50
+        },
+        "llm_calls": 50,
+        "duration_seconds": 282.81,
+        "aliases": {
+          "frame": "frame-1",
+          "crank_shaft": "crank_shaft-1",
+          "crank": "crank-1",
+          "crank_pin": "crank_pin-1",
+          "rod": "rod-1",
+          "piston_pin": "piston_pin-1",
+          "piston": "piston-1"
+        },
+        "agent_last_motion": {
+          "passed": false,
+          "frames": 24,
+          "duration": 1.0,
+          "interference_frames": [
+            {
+              "frame": 0,
+              "time": 0,
+              "count": 3,
+              "volume_mm3": 2473.2759,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 1,
+              "time": 0.043478260869565216,
+              "count": 1,
+              "volume_mm3": 1174.3306,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 2,
+              "time": 0.08695652173913043,
+              "count": 1,
+              "volume_mm3": 429.3139,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 3,
+              "time": 0.13043478260869565,
+              "count": 1,
+              "volume_mm3": 468.9488,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 4,
+              "time": 0.17391304347826086,
+              "count": 1,
+              "volume_mm3": 640.1397,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 5,
+              "time": 0.21739130434782608,
+              "count": 1,
+              "volume_mm3": 420.4973,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 6,
+              "time": 0.2608695652173913,
+              "count": 2,
+              "volume_mm3": 2483.8808,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 7,
+              "time": 0.30434782608695654,
+              "count": 1,
+              "volume_mm3": 420.6603,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 8,
+              "time": 0.34782608695652173,
+              "count": 1,
+              "volume_mm3": 588.1197,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 9,
+              "time": 0.391304347826087,
+              "count": 1,
+              "volume_mm3": 486.6032,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 10,
+              "time": 0.43478260869565216,
+              "count": 1,
+              "volume_mm3": 425.5357,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 11,
+              "time": 0.4782608695652174,
+              "count": 2,
+              "volume_mm3": 1445.5352,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 12,
+              "time": 0.5217391304347826,
+              "count": 1,
+              "volume_mm3": 420.4244,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 13,
+              "time": 0.5652173913043478,
+              "count": 1,
+              "volume_mm3": 971.4329,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 14,
+              "time": 0.6086956521739131,
+              "count": 1,
+              "volume_mm3": 434.6591,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 15,
+              "time": 0.6521739130434783,
+              "count": 1,
+              "volume_mm3": 455.0668,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 16,
+              "time": 0.6956521739130435,
+              "count": 1,
+              "volume_mm3": 708.6485,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 17,
+              "time": 0.7391304347826086,
+              "count": 1,
+              "volume_mm3": 420.4286,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 18,
+              "time": 0.782608695652174,
+              "count": 2,
+              "volume_mm3": 2189.8705,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 19,
+              "time": 0.8260869565217391,
+              "count": 1,
+              "volume_mm3": 421.3222,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 20,
+              "time": 0.8695652173913043,
+              "count": 1,
+              "volume_mm3": 547.906,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 21,
+              "time": 0.9130434782608696,
+              "count": 1,
+              "volume_mm3": 509.4547,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 22,
+              "time": 0.9565217391304348,
+              "count": 1,
+              "volume_mm3": 423.0024,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ]
+              ]
+            },
+            {
+              "frame": 23,
+              "time": 1,
+              "count": 2,
+              "volume_mm3": 1761.9527,
+              "pairs": [
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "rod-1"
+                ]
+              ]
+            }
+          ],
+          "moved": [
+            "crank-1",
+            "crank_pin-1",
+            "crank_shaft-1",
+            "rod-1",
+            "piston-1",
+            "piston_pin-1"
+          ],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_angles_deg": [
+              -162.25,
+              149.47,
+              -61.07,
+              88.4,
+              -122.13,
+              27.34,
+              176.8,
+              -33.73,
+              115.74,
+              -94.79,
+              54.67,
+              -155.86,
+              -6.39,
+              143.07,
+              -67.46,
+              82.01,
+              -128.52,
+              20.94,
+              170.41,
+              -40.12,
+              109.35,
+              -101.19,
+              48.28,
+              -162.25
+            ]
+          }
+        },
+        "joints": [
+          {
+            "kind": "revolute",
+            "a": "frame-1",
+            "b": "crank_shaft-1",
+            "mates": [
+              "同心1",
+              "重合1"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "crank-1",
+            "b": "crank_shaft-1",
+            "mates": [
+              "同心2",
+              "距离1",
+              "齿轮配合1"
+            ]
+          }
+        ]
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\frame.SLDPRT",
+            "name": "frame",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "frame"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\crank_shaft.SLDPRT",
+            "name": "crank_shaft",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "frame:cyl(d=10.4)",
+            "b": "crank_shaft:cyl(d=10)",
+            "face_a": "frame:face(0, largest)",
+            "face_b": "crank_shaft:face(1, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\crank.SLDPRT",
+            "name": "crank",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "crank",
+            "shaft": "crank_shaft",
+            "diameter": 10,
+            "lock_rotation": true,
+            "offset": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\crank_pin.SLDPRT",
+            "name": "crank_pin",
+            "at": [
+              25,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "crank_pin",
+            "shaft": "crank",
+            "diameter": 11.314,
+            "lock_rotation": false,
+            "offset": 0
+          },
+          "ok": false,
+          "error_code": "REF",
+          "message": "没有圆柱面"
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "crank:cyl(d=11.314)",
+            "b": "crank_pin:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "crank:face(0, largest)",
+            "b": "crank_pin:face(1, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\rod.SLDPRT",
+            "name": "rod",
+            "at": [
+              25,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "rod:cyl(d=10)",
+            "b": "crank_pin:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "rod:face(0, largest)",
+            "b": "crank_pin:face(1, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\piston_pin.SLDPRT",
+            "name": "piston_pin",
+            "at": [
+              90,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "rod:cyl(d=12.124)",
+            "b": "piston_pin:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "rod:face(0, largest)",
+            "b": "piston_pin:face(1, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\piston.SLDPRT",
+            "name": "piston",
+            "at": [
+              90,
+              50,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "piston:cyl(d=10)",
+            "b": "piston_pin:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "piston:face(0, largest)",
+            "b": "piston_pin:face(1, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "parallel",
+            "a": "piston:face(2, largest)",
+            "b": "frame:face(5, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "crank_slider",
+          "args": {
+            "frame": "frame",
+            "crank": "crank",
+            "rod": "rod",
+            "slider": "piston",
+            "crank_bore": 10,
+            "crank_pin": 11.314,
+            "rod_big": 10,
+            "rod_small": 12.124,
+            "slider_pin": 10
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "平行1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "crank_shaft",
+            "driver_ref": "crank_shaft:cyl(d=10)",
+            "sweep_deg": 360,
+            "frames": 24,
+            "rpm": 60
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合5"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合4"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合3"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心6"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "parallel",
+            "a": "piston:face(0, largest)",
+            "b": "frame:face(5, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "piston:plane(front)",
+            "b": "frame:plane(front)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "piston:cyl(d=10)",
+            "b": "piston_pin:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "crank_shaft",
+            "driver_ref": "crank_shaft:cyl(d=10)",
+            "sweep_deg": 360,
+            "frames": 24,
+            "rpm": 60
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "crank:face(0, largest)",
+            "b": "crank_pin:face(1, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "rod:face(0, largest)",
+            "b": "crank_pin:face(1, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "crank_shaft",
+            "driver_ref": "crank_shaft:cyl(d=10)",
+            "sweep_deg": 360,
+            "frames": 24,
+            "rpm": 60
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合9"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 20.0,
+      "motion_score": 0.0,
+      "e2e": false
+    },
+    {
+      "case_id": "single_cylinder_engine",
+      "condition": "gold",
+      "repeat": 1,
+      "workflow": "v2",
+      "parts": [],
+      "assembly": {
+        "status": "max_llm_calls",
+        "static": {
+          "component_count": 11,
+          "saved": false
+        },
+        "static_score": 20.0,
+        "motion": {
+          "passed": false,
+          "score": 25.0,
+          "interference_frames": [
+            {
+              "frame": 0,
+              "count": 15,
+              "volume_mm3": 70886.43398931845
+            },
+            {
+              "frame": 1,
+              "count": 15,
+              "volume_mm3": 62689.78302751392
+            },
+            {
+              "frame": 2,
+              "count": 15,
+              "volume_mm3": 61594.667433451315
+            },
+            {
+              "frame": 3,
+              "count": 15,
+              "volume_mm3": 66244.53806875988
+            },
+            {
+              "frame": 4,
+              "count": 16,
+              "volume_mm3": 73683.50060019834
+            },
+            {
+              "frame": 5,
+              "count": 15,
+              "volume_mm3": 69847.53175811072
+            },
+            {
+              "frame": 6,
+              "count": 15,
+              "volume_mm3": 62342.45179504146
+            },
+            {
+              "frame": 7,
+              "count": 15,
+              "volume_mm3": 61750.02444715743
+            },
+            {
+              "frame": 8,
+              "count": 15,
+              "volume_mm3": 67315.5936355556
+            },
+            {
+              "frame": 9,
+              "count": 16,
+              "volume_mm3": 73888.64057997333
+            },
+            {
+              "frame": 10,
+              "count": 15,
+              "volume_mm3": 68751.70307060714
+            },
+            {
+              "frame": 11,
+              "count": 15,
+              "volume_mm3": 62055.126236601005
+            },
+            {
+              "frame": 12,
+              "count": 15,
+              "volume_mm3": 61956.59120634003
+            }
+          ],
+          "stuck": [
+            "camshaft"
+          ],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_sweep_deg": -882.253,
+            "stroke_mm": 47.95,
+            "expected_stroke_mm": 50
+          }
+        },
+        "token_usage": {
+          "prompt_tokens": 1251175,
+          "completion_tokens": 6354,
+          "total_tokens": 1257529,
+          "calls": 50
+        },
+        "llm_calls": 50,
+        "duration_seconds": 190.27,
+        "aliases": {
+          "frame": "frame-1",
+          "crank_shaft": "crank_shaft-1",
+          "crank": "crank-1",
+          "crank_pin": "crank_pin-1",
+          "rod": "rod-1",
+          "piston": "piston-1",
+          "piston_pin": "piston_pin-1",
+          "flywheel": "flywheel-1",
+          "crank_gear": "crank_gear-1",
+          "camshaft": "camshaft-1",
+          "cam_gear": "cam_gear-1"
+        },
+        "agent_last_motion": null,
+        "joints": [
+          {
+            "kind": "revolute",
+            "a": "crank_shaft-1",
+            "b": "frame-1",
+            "mates": [
+              "同心9",
+              "重合8"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "crank-1",
+            "b": "crank_shaft-1",
+            "mates": [
+              "同心10",
+              "距离2"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "crank-1",
+            "b": "crank_pin-1",
+            "mates": [
+              "同心11",
+              "重合9"
+            ]
+          },
+          {
+            "kind": "slider",
+            "a": "piston-1",
+            "b": "frame-1",
+            "mates": [
+              "重合11"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "piston-1",
+            "b": "piston_pin-1",
+            "mates": [
+              "同心15",
+              "重合12"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "rod-1",
+            "b": "crank_pin-1",
+            "mates": [
+              "同心16",
+              "重合13"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "rod-1",
+            "b": "piston_pin-1",
+            "mates": [
+              "同心17",
+              "重合14"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "flywheel-1",
+            "b": "crank_shaft-1",
+            "mates": [
+              "同心18",
+              "距离4"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "crank_gear-1",
+            "b": "crank_shaft-1",
+            "mates": [
+              "同心19",
+              "距离5"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "cam_gear-1",
+            "b": "camshaft-1",
+            "mates": [
+              "同心20",
+              "距离6"
+            ]
+          }
+        ]
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\frame.SLDPRT",
+            "name": "frame",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "frame"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\crank_shaft.SLDPRT",
+            "name": "crank_shaft",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "frame:cyl(d=50)",
+            "b": "crank_shaft:cyl(d=50)",
+            "face_a": "frame:face(+Z, outermost)",
+            "face_b": "crank_shaft:face(-Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "REF",
+          "message": "没有圆柱面"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "crank_shaft:cyl(d=10)",
+            "b": "frame:cyl(d=10.4)",
+            "face_a": "crank_shaft:face(-Z, outermost)",
+            "face_b": "frame:face(+Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "crank_shaft:cyl(d=10)",
+            "b": "frame:cyl(d=10.4)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 1
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\crank.SLDPRT",
+            "name": "crank",
+            "at": [
+              0,
+              0,
+              20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "crank",
+            "shaft": "crank_shaft",
+            "diameter": 10,
+            "lock_rotation": true,
+            "offset": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\crank_pin.SLDPRT",
+            "name": "crank_pin",
+            "at": [
+              25,
+              0,
+              20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "crank:cyl(d=11.314)",
+            "b": "crank_pin:cyl(d=11.314)"
+          },
+          "ok": false,
+          "error_code": "REF",
+          "message": "没有圆柱面"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "crank:face:29",
+            "b": "crank_pin:face:0"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\rod.SLDPRT",
+            "name": "rod",
+            "at": [
+              25,
+              0,
+              20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "rod:face:28",
+            "b": "crank_pin:face:0"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\piston.SLDPRT",
+            "name": "piston",
+            "at": [
+              0,
+              50,
+              20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\piston_pin.SLDPRT",
+            "name": "piston_pin",
+            "at": [
+              0,
+              90,
+              20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "piston:face:3",
+            "b": "piston_pin:face:0"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "slider_joint",
+          "args": {
+            "a": "piston:face:2",
+            "b": "frame:face:5",
+            "guide_a": "piston:plane:front",
+            "guide_b": "frame:plane:front"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] concentric 配合失败: errStatus=0（未知原因）"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "slider",
+            "a": "piston:face:2",
+            "b": "frame:face:5",
+            "guide_a": "piston:plane:front",
+            "guide_b": "frame:plane:front"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "check_dof",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "crank_slider",
+          "args": {
+            "frame": "frame",
+            "crank": "crank_shaft",
+            "rod": "rod",
+            "slider": "piston",
+            "frame_bore": 10.4,
+            "crank_bore": 10,
+            "crank_pin": 10,
+            "rod_big": 10,
+            "rod_small": 10,
+            "slider_pin": 10
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] concentric 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心3"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心4"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合3"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心5"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合4"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心6"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合5"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "crank_shaft:cyl(d=10)",
+            "b": "frame:cyl(d=10.4)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "crank",
+            "shaft": "crank_shaft",
+            "diameter": 10,
+            "lock_rotation": true,
+            "offset": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "crank:face:29",
+            "b": "crank_pin:face:0"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "crank_slider",
+          "args": {
+            "frame": "frame",
+            "crank": "crank_shaft",
+            "rod": "rod",
+            "slider": "piston",
+            "frame_bore": 10.4,
+            "crank_bore": 10,
+            "crank_pin": 10,
+            "rod_big": 10,
+            "rod_small": 10,
+            "slider_pin": 10
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心12"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合10"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "piston:face:3",
+            "b": "piston_pin:face:0"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心13"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离3"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "rod:face:28",
+            "b": "crank_pin:face:0"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心14"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "rod:face:29",
+            "b": "piston_pin:face:0"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\flywheel.SLDPRT",
+            "name": "flywheel",
+            "at": [
+              0,
+              0,
+              -20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "flywheel",
+            "shaft": "crank_shaft",
+            "diameter": 10,
+            "lock_rotation": true,
+            "offset": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\crank_gear.SLDPRT",
+            "name": "crank_gear",
+            "at": [
+              0,
+              0,
+              -30
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "crank_gear",
+            "shaft": "crank_shaft",
+            "diameter": 10,
+            "lock_rotation": true,
+            "offset": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\camshaft.SLDPRT",
+            "name": "camshaft",
+            "at": [
+              72,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\cam_gear.SLDPRT",
+            "name": "cam_gear",
+            "at": [
+              72,
+              0,
+              -30
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "cam_gear",
+            "shaft": "camshaft",
+            "diameter": 10,
+            "lock_rotation": true,
+            "offset": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 20.0,
+      "motion_score": 25.0,
+      "e2e": false
+    },
+    {
+      "case_id": "single_cylinder_engine",
+      "condition": "gold",
+      "repeat": 2,
+      "workflow": "v1",
+      "parts": [],
+      "assembly": {
+        "status": "max_llm_calls",
+        "static": {
+          "component_count": 12,
+          "saved": false
+        },
+        "static_score": 20.0,
+        "motion": {
+          "passed": false,
+          "score": 25.0,
+          "interference_frames": [
+            {
+              "frame": 0,
+              "count": 27,
+              "volume_mm3": 130378.10839711962
+            },
+            {
+              "frame": 1,
+              "count": 20,
+              "volume_mm3": 69565.84012178118
+            },
+            {
+              "frame": 2,
+              "count": 19,
+              "volume_mm3": 69637.18592976217
+            },
+            {
+              "frame": 3,
+              "count": 19,
+              "volume_mm3": 69588.95766942755
+            },
+            {
+              "frame": 4,
+              "count": 19,
+              "volume_mm3": 69566.68744909762
+            },
+            {
+              "frame": 5,
+              "count": 20,
+              "volume_mm3": 69696.62104341936
+            },
+            {
+              "frame": 6,
+              "count": 21,
+              "volume_mm3": 69748.66695624407
+            },
+            {
+              "frame": 7,
+              "count": 20,
+              "volume_mm3": 69675.53927445276
+            },
+            {
+              "frame": 8,
+              "count": 20,
+              "volume_mm3": 69662.68814317137
+            },
+            {
+              "frame": 9,
+              "count": 20,
+              "volume_mm3": 69722.07619180507
+            },
+            {
+              "frame": 10,
+              "count": 20,
+              "volume_mm3": 69668.934875253
+            },
+            {
+              "frame": 11,
+              "count": 19,
+              "volume_mm3": 69544.91889638161
+            },
+            {
+              "frame": 12,
+              "count": 20,
+              "volume_mm3": 69568.50959045086
+            }
+          ],
+          "stuck": [
+            "crank",
+            "piston_pin"
+          ],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_sweep_deg": -882.253,
+            "stroke_mm": 0.0,
+            "expected_stroke_mm": 50
+          }
+        },
+        "token_usage": {
+          "prompt_tokens": 1039321,
+          "completion_tokens": 10077,
+          "total_tokens": 1049398,
+          "calls": 50
+        },
+        "llm_calls": 50,
+        "duration_seconds": 286.5,
+        "aliases": {
+          "frame": "frame-1",
+          "crank_shaft": "crank_shaft-1",
+          "crank": "crank-1",
+          "rod": "rod-1",
+          "crank_pin": "crank_pin-1",
+          "piston": "piston-1",
+          "piston_pin": "piston_pin-1",
+          "flywheel": "flywheel-2",
+          "crank_gear": "crank_gear-1",
+          "camshaft": "camshaft-1",
+          "cam_gear": "cam_gear-1",
+          "cam": "cam-1"
+        },
+        "agent_last_motion": {
+          "passed": false,
+          "frames": 24,
+          "duration": 6.0,
+          "interference_frames": [
+            {
+              "frame": 0,
+              "time": 0,
+              "count": 21,
+              "volume_mm3": 69472.5856,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 1,
+              "time": 0.2608695652173913,
+              "count": 21,
+              "volume_mm3": 69741.7425,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 2,
+              "time": 0.5217391304347826,
+              "count": 20,
+              "volume_mm3": 69595.7289,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 3,
+              "time": 0.782608695652174,
+              "count": 19,
+              "volume_mm3": 69567.7019,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 4,
+              "time": 1.0434782608695652,
+              "count": 20,
+              "volume_mm3": 69691.6555,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 5,
+              "time": 1.3043478260869563,
+              "count": 20,
+              "volume_mm3": 69563.9897,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 6,
+              "time": 1.565217391304348,
+              "count": 20,
+              "volume_mm3": 69660.08,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 7,
+              "time": 1.826086956521739,
+              "count": 19,
+              "volume_mm3": 69610.7352,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 8,
+              "time": 2.0869565217391304,
+              "count": 20,
+              "volume_mm3": 69656.019,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 9,
+              "time": 2.347826086956522,
+              "count": 20,
+              "volume_mm3": 69566.1817,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 10,
+              "time": 2.608695652173913,
+              "count": 20,
+              "volume_mm3": 69689.2497,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 11,
+              "time": 2.869565217391304,
+              "count": 19,
+              "volume_mm3": 69570.7919,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 12,
+              "time": 3.130434782608696,
+              "count": 20,
+              "volume_mm3": 69592.0528,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 13,
+              "time": 3.391304347826087,
+              "count": 21,
+              "volume_mm3": 69746.9861,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 14,
+              "time": 3.652173913043478,
+              "count": 21,
+              "volume_mm3": 69472.6673,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 15,
+              "time": 3.9130434782608696,
+              "count": 22,
+              "volume_mm3": 69736.3474,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 16,
+              "time": 4.173913043478261,
+              "count": 20,
+              "volume_mm3": 69599.5299,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 17,
+              "time": 4.434782608695652,
+              "count": 19,
+              "volume_mm3": 69564.6802,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 18,
+              "time": 4.695652173913044,
+              "count": 20,
+              "volume_mm3": 69694.1246,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 19,
+              "time": 4.956521739130435,
+              "count": 20,
+              "volume_mm3": 69561.9367,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 20,
+              "time": 5.217391304347826,
+              "count": 20,
+              "volume_mm3": 69663.9599,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 21,
+              "time": 5.478260869565218,
+              "count": 19,
+              "volume_mm3": 69610.8762,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 22,
+              "time": 5.739130434782608,
+              "count": 21,
+              "volume_mm3": 69652.0941,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ]
+              ]
+            },
+            {
+              "frame": 23,
+              "time": 6,
+              "count": 20,
+              "volume_mm3": 69568.5096,
+              "pairs": [
+                [
+                  "frame-1",
+                  "flywheel-1"
+                ],
+                [
+                  "flywheel-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "cam_gear-1",
+                  "cam-1"
+                ],
+                [
+                  "piston-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "crank-1"
+                ],
+                [
+                  "crank-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "rod-1",
+                  "piston-1"
+                ],
+                [
+                  "piston_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "flywheel-1"
+                ],
+                [
+                  "frame-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "cam_gear-1"
+                ],
+                [
+                  "crank-1",
+                  "rod-1"
+                ],
+                [
+                  "camshaft-1",
+                  "cam-1"
+                ],
+                [
+                  "rod-1",
+                  "flywheel-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "rod-1",
+                  "crank_gear-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "crank_gear-1"
+                ]
+              ]
+            }
+          ],
+          "moved": [
+            "crank_shaft-1",
+            "camshaft-1",
+            "flywheel-1",
+            "crank_gear-1",
+            "cam_gear-1",
+            "cam-1"
+          ],
+          "stuck": [
+            "piston_pin-1",
+            "crank_pin-1",
+            "crank-1",
+            "piston-1",
+            "rod-1"
+          ],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_angles_deg": [
+              0.0,
+              149.47,
+              -61.07,
+              88.4,
+              -122.13,
+              27.34,
+              176.8,
+              -33.73,
+              115.74,
+              -94.79,
+              54.67,
+              -155.86,
+              -6.39,
+              143.07,
+              -67.46,
+              82.01,
+              -128.52,
+              20.94,
+              170.41,
+              -40.12,
+              109.35,
+              -101.19,
+              48.28,
+              -162.25
+            ],
+            "sample_ratio": -0.0
+          }
+        },
+        "joints": [
+          {
+            "kind": "revolute",
+            "a": "crank_shaft-1",
+            "b": "frame-1",
+            "mates": [
+              "同心1",
+              "重合1"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "crank_gear-1",
+            "b": "crank_shaft-1",
+            "mates": [
+              "同心8",
+              "重合8",
+              "齿轮配合2"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "cam_gear-1",
+            "b": "camshaft-1",
+            "mates": [
+              "同心9",
+              "重合9",
+              "齿轮配合3"
+            ]
+          },
+          {
+            "kind": "coupling:gear",
+            "a": "crank_gear-1",
+            "b": "cam_gear-1",
+            "mates": [
+              "齿轮配合4"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "cam-1",
+            "b": "camshaft-1",
+            "mates": [
+              "同心10",
+              "重合10",
+              "齿轮配合5"
+            ]
+          }
+        ]
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\frame.SLDPRT",
+            "name": "frame",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "frame"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\crank_shaft.SLDPRT",
+            "name": "crank_shaft",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "crank_shaft:cyl(d=20)",
+            "b": "frame:cyl(d=20)",
+            "face_a": "crank_shaft:plane(front)",
+            "face_b": "frame:plane(front)"
+          },
+          "ok": false,
+          "error_code": "REF",
+          "message": "没有圆柱面"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "crank_shaft:cyl(d=10)",
+            "b": "frame:cyl(d=10.4)",
+            "face_a": "crank_shaft:plane(front)",
+            "face_b": "frame:plane(front)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\crank.SLDPRT",
+            "name": "crank",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "crank:cyl(d=10)",
+            "b": "crank_shaft:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "crank:plane(front)",
+            "b": "crank_shaft:plane(front)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\rod.SLDPRT",
+            "name": "rod",
+            "at": [
+              25,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\crank_pin.SLDPRT",
+            "name": "crank_pin",
+            "at": [
+              25,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "crank_pin:cyl(d=10)",
+            "b": "crank:cyl(d=11.314)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "crank_pin:plane(front)",
+            "b": "crank:plane(front)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "rod:cyl(d=10)",
+            "b": "crank_pin:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "rod:plane(front)",
+            "b": "crank:plane(front)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\piston.SLDPRT",
+            "name": "piston",
+            "at": [
+              90,
+              50,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\piston_pin.SLDPRT",
+            "name": "piston_pin",
+            "at": [
+              90,
+              50,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "piston_pin:cyl(d=10)",
+            "b": "rod:cyl(d=12.124)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "piston_pin:cyl(d=10)",
+            "b": "piston:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "piston_pin:plane(front)",
+            "b": "rod:plane(front)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "piston:plane(front)",
+            "b": "rod:plane(front)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\flywheel.SLDPRT",
+            "name": "flywheel",
+            "at": [
+              0,
+              0,
+              -10
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "flywheel",
+            "shaft": "crank_shaft",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\crank_gear.SLDPRT",
+            "name": "crank_gear",
+            "at": [
+              0,
+              0,
+              10
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "crank_gear",
+            "shaft": "crank_shaft",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\camshaft.SLDPRT",
+            "name": "camshaft",
+            "at": [
+              72,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\cam_gear.SLDPRT",
+            "name": "cam_gear",
+            "at": [
+              72,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "cam_gear",
+            "shaft": "camshaft",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "crank_gear",
+            "b": "cam_gear",
+            "teeth_a": 16,
+            "teeth_b": 32,
+            "reverse": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_NO_EFFECT",
+          "message": "[FEATURE_NO_EFFECT] 中心距 72.00 mm 与 m(z1+z2)/2=0.02 mm 差 71.98 mm，先把齿轮装到正确的轴上再啮合"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "crank_gear",
+            "b": "cam_gear",
+            "teeth_a": 16,
+            "teeth_b": 32,
+            "module": 3,
+            "reverse": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\cam.SLDPRT",
+            "name": "cam",
+            "at": [
+              72,
+              0,
+              10
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "cam",
+            "shaft": "camshaft",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "crank_shaft",
+            "driver_ref": "crank_shaft:cyl(d=10)",
+            "sweep_deg": 360,
+            "frames": 24,
+            "expect_moving": [
+              "crank",
+              "crank_pin",
+              "rod",
+              "piston_pin",
+              "piston",
+              "flywheel",
+              "crank_gear",
+              "cam_gear",
+              "camshaft",
+              "cam"
+            ],
+            "expect_fixed": [
+              "frame"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心7"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合7"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\flywheel.SLDPRT",
+            "name": "flywheel",
+            "at": [
+              0,
+              0,
+              -20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "flywheel",
+            "shaft": "crank_shaft",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心11"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合11"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "齿轮配合6"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 20.0,
+      "motion_score": 25.0,
+      "e2e": false
+    },
+    {
+      "case_id": "single_cylinder_engine",
+      "condition": "gold",
+      "repeat": 2,
+      "workflow": "v2",
+      "parts": [],
+      "assembly": {
+        "status": "max_llm_calls",
+        "static": {
+          "component_count": 7,
+          "saved": false
+        },
+        "static_score": 20.0,
+        "motion": {
+          "passed": false,
+          "score": 0.0,
+          "error": "'camshaft'"
+        },
+        "token_usage": {
+          "prompt_tokens": 1264213,
+          "completion_tokens": 12828,
+          "total_tokens": 1277041,
+          "calls": 50
+        },
+        "llm_calls": 50,
+        "duration_seconds": 256.9,
+        "aliases": {
+          "frame": "frame-1",
+          "crank_shaft": "crank_shaft-1",
+          "crank": "crank-1",
+          "crank_pin": "crank_pin-1",
+          "rod": "rod-1",
+          "piston_pin": "piston_pin-1",
+          "piston": "piston-1"
+        },
+        "agent_last_motion": {
+          "passed": false,
+          "frames": 20,
+          "duration": 6.0,
+          "interference_frames": [
+            {
+              "frame": 0,
+              "time": 0,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 1,
+              "time": 0.3157894736842105,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 2,
+              "time": 0.631578947368421,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 3,
+              "time": 0.9473684210526316,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 4,
+              "time": 1.263157894736842,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 5,
+              "time": 1.5789473684210529,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 6,
+              "time": 1.894736842105263,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 7,
+              "time": 2.210526315789474,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 8,
+              "time": 2.526315789473684,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 9,
+              "time": 2.8421052631578947,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 10,
+              "time": 3.1578947368421053,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 11,
+              "time": 3.473684210526316,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 12,
+              "time": 3.789473684210526,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 13,
+              "time": 4.105263157894737,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 14,
+              "time": 4.421052631578948,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 15,
+              "time": 4.7368421052631575,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 16,
+              "time": 5.052631578947368,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 17,
+              "time": 5.368421052631579,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 18,
+              "time": 5.684210526315789,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            },
+            {
+              "frame": 19,
+              "time": 6,
+              "count": 5,
+              "volume_mm3": 14756.5327,
+              "pairs": [
+                [
+                  "frame-1",
+                  "rod-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "crank_pin-1"
+                ],
+                [
+                  "crank_shaft-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank_pin-1",
+                  "piston_pin-1"
+                ],
+                [
+                  "crank-1",
+                  "piston-1"
+                ]
+              ]
+            }
+          ],
+          "moved": [
+            "crank_pin-1",
+            "crank_shaft-1",
+            "crank-1"
+          ],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_angles_deg": [
+              0.0,
+              -179.07,
+              1.87,
+              -177.2,
+              3.74,
+              -175.33,
+              5.6,
+              -173.46,
+              7.47,
+              -171.59,
+              9.34,
+              -169.73,
+              11.21,
+              -167.86,
+              13.08,
+              -165.99,
+              14.94,
+              -164.12,
+              16.81,
+              -162.25
+            ]
+          }
+        },
+        "joints": [
+          {
+            "kind": "revolute",
+            "a": "crank_shaft-1",
+            "b": "frame-1",
+            "mates": [
+              "同心11",
+              "重合13"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "crank-1",
+            "b": "crank_shaft-1",
+            "mates": [
+              "同心12",
+              "距离3"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "crank_pin-1",
+            "b": "crank-1",
+            "mates": [
+              "同心14",
+              "重合15"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "rod-1",
+            "b": "crank_pin-1",
+            "mates": [
+              "同心15",
+              "重合16"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "rod-1",
+            "b": "piston_pin-1",
+            "mates": [
+              "同心16",
+              "重合17"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "piston-1",
+            "b": "piston_pin-1",
+            "mates": [
+              "同心17",
+              "重合18"
+            ]
+          }
+        ]
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\frame.SLDPRT",
+            "name": "frame",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "frame"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\crank_shaft.SLDPRT",
+            "name": "crank_shaft",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "crank_shaft:cyl(d=20)",
+            "b": "frame:cyl(d=20)",
+            "face_a": "crank_shaft:face(+Z, outermost)",
+            "face_b": "frame:face(+Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "REF",
+          "message": "没有圆柱面"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "crank_shaft:cyl(d=10)",
+            "b": "frame:cyl(d=10.4)",
+            "face_a": "crank_shaft:face(+Z, outermost)",
+            "face_b": "frame:face(+Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 1
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\crank.SLDPRT",
+            "name": "crank",
+            "at": [
+              0,
+              0,
+              10
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "crank",
+            "shaft": "crank_shaft",
+            "diameter": 10,
+            "lock_rotation": true,
+            "offset": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 1
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\crank_pin.SLDPRT",
+            "name": "crank_pin",
+            "at": [
+              0,
+              25,
+              10
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "crank_pin:cyl(d=10)",
+            "b": "crank:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\rod.SLDPRT",
+            "name": "rod",
+            "at": [
+              0,
+              50,
+              10
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "rod:cyl(d=10)",
+            "b": "crank_pin:cyl(d=10)",
+            "face_a": "rod:face(+Z, outermost)",
+            "face_b": "crank_pin:face(+Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\piston_pin.SLDPRT",
+            "name": "piston_pin",
+            "at": [
+              0,
+              75,
+              10
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "piston_pin:cyl(d=10)",
+            "b": "rod:cyl(d=10, near=[0, 75])"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\engine\\piston.SLDPRT",
+            "name": "piston",
+            "at": [
+              0,
+              75,
+              10
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "piston:cyl(d=10)",
+            "b": "piston_pin:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "slider_joint",
+          "args": {
+            "a": "piston:cyl(d=24)",
+            "b": "frame:cyl(d=24)",
+            "guide_a": "piston:face(+Z, outermost)",
+            "guide_b": "frame:face(+Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "REF",
+          "message": "没有圆柱面"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "slider",
+            "a": "piston:face(+Y, largest)",
+            "b": "frame:face(+Y, largest)",
+            "guide_a": "piston:face(+Z, outermost)",
+            "guide_b": "frame:face(+Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "REF",
+          "message": "没有法向接近 +1Y 的平面"
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 1
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "slider",
+            "a": "piston:cyl(d=24)",
+            "b": "frame:face(+Y, largest)",
+            "guide_a": "piston:face(+Z, outermost)",
+            "guide_b": "frame:face(+Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心5"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合4"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "rod:cyl(d=10, near=[90, 0])",
+            "b": "piston_pin:cyl(d=10)",
+            "face_a": "rod:face(+Z, outermost)",
+            "face_b": "piston_pin:face(+Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "slider",
+            "a": "piston:cyl(d=24)",
+            "b": "frame:face(5)",
+            "guide_a": "piston:face(+Z, outermost)",
+            "guide_b": "frame:face(+Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 1
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "close_loop",
+          "args": {
+            "type": "slider",
+            "a": "piston:cyl(d=24)",
+            "b": "frame:face(5)",
+            "guide_a": "piston:face(+Z, outermost)",
+            "guide_b": "frame:face(+Z, outermost)",
+            "minimal": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "slider",
+            "a": "piston:cyl(d=24)",
+            "b": "frame:component",
+            "guide_a": "piston:face(+Z, outermost)",
+            "guide_b": "frame:face(+Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=0（未知原因）"
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "crank_shaft",
+            "driver_ref": "crank_shaft:cyl(d=10)",
+            "sweep_deg": 360,
+            "frames": 20
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心3"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心4"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合3"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心6"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合5"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心7"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合7"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "crank_slider",
+          "args": {
+            "frame": "frame",
+            "crank": "crank",
+            "rod": "rod",
+            "slider": "piston",
+            "crank_bore": 10,
+            "crank_pin": 10,
+            "frame_bore": 10.4,
+            "rod_big": 10,
+            "rod_small": 10,
+            "slider_pin": 10
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 1
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心8"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合11"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心9"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心10"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合12"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "crank_shaft:cyl(d=10)",
+            "b": "frame:cyl(d=10.4)",
+            "face_a": "crank_shaft:face(+Z, outermost)",
+            "face_b": "frame:face(+Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "crank",
+            "shaft": "crank_shaft",
+            "diameter": 10,
+            "lock_rotation": true,
+            "offset": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "crank_pin:cyl(d=10)",
+            "b": "crank:cyl(d=10, near=[25, 0])"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心13"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合14"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "crank_pin:cyl(d=10)",
+            "b": "crank:cyl(d=11.314)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "rod:cyl(d=10)",
+            "b": "crank_pin:cyl(d=10)",
+            "face_a": "rod:face(+Z, outermost)",
+            "face_b": "crank_pin:face(+Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "rod:cyl(d=12.124)",
+            "b": "piston_pin:cyl(d=10)",
+            "face_a": "rod:face(+Z, outermost)",
+            "face_b": "piston_pin:face(+Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "piston:cyl(d=10)",
+            "b": "piston_pin:cyl(d=10)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 1
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "slider",
+            "a": "piston:cyl(d=24)",
+            "b": "frame:face(5)",
+            "guide_a": "piston:face(+Z, outermost)",
+            "guide_b": "frame:face(+Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "close_loop",
+          "args": {
+            "type": "slider",
+            "a": "piston:cyl(d=24)",
+            "b": "frame:face(5)",
+            "guide_a": "piston:face(+Z, outermost)",
+            "guide_b": "frame:face(+Z, outermost)",
+            "minimal": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "planar",
+            "a": "piston:face(0)",
+            "b": "frame:face(0)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 20.0,
+      "motion_score": 0.0,
+      "e2e": false
+    }
+  ],
+  "model": "Qwen3.5-397B-A17B"
+}

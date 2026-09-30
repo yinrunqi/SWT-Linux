@@ -37,9 +37,41 @@ L1（可选 spur_gear）→ 接口 rubric
 
 自检：`check_interference`、`check_motion`。`finish` 要求已经保存，并且最近一次 `check_motion` 通过。
 
-配方在 `LLMPlanner/planner/skills/recipes/`：`assembly_gear_train.md`、`assembly_crank_slider.md`、`assembly_ground_dof.md`、`assembly_motion_check.md`。这四份是针对试点手写的；从 AutoMate（近十万个装配）和 Fusion 360 Gallery（8,251 个装配）挖出的通用规则与待补缺口见 [Workflow-CAD-Assembly-Mining.md](Workflow-CAD-Assembly-Mining.md)。
+### 2.1 两套工具与配方（v1 / v2）
 
-C# 端点在 `/api/asmwf/*`（`SwCommands.AssemblyWorkflow.cs`）：按组件面序号或默认基准面选实体、加配合、Motion Study 驱动与逐帧采样。
+系统提示词两版完全相同，只换工具表和配方，评测器也相同（`--workflow v1|v2|both`）。
+
+| | v1（原试点） | v2（按挖掘结果补齐） |
+|---|---|---|
+| 配方 | `assembly_ground_dof`、`assembly_gear_train`、`assembly_crank_slider`、`assembly_motion_check` | `assembly_topology`（G1 选地、G3 从地生长、G6 自由度预算）、`assembly_joint_mapping`（G2 关节→配合映射表）、`assembly_coupling`（G5）、`assembly_linkage`（G4 闭环）、`assembly_motion_check` |
+| `mate` 类型 | 重合、同心、平行、距离、角度、齿轮 | 另加槽口、齿条小齿轮、螺旋、线性耦合、锁定；同心可 `lock_rotation`，距离可带上下限 |
+| 引用 | 面、基准面 | 另加 `edge(line, +X, longest)`、`sphere`、`component` |
+| 宏工具 | `mount_on_shaft`（轴上固定用 1:1 齿轮配合）、`revolute_joint`、`slider_joint`、`mesh_gears`、`crank_slider` | 同左，`mount_on_shaft` 改用同心锁定旋转；新增 `joint`（fixed/revolute/slider/cylindrical/planar/ball/pin_slot）、`close_loop`（先最小配合，过定义就回滚）、`rack_pinion`、`screw_pair`、`linear_coupler`、`check_dof`（Grübler 估算 + 浮动/冗余/未接地） |
+
+v2 的规则都来自 AutoMate 与 Fusion 360 Gallery 的统计，不来自试点案例，见 [Workflow-CAD-Assembly-Mining.md](Workflow-CAD-Assembly-Mining.md)。离线单测：`venv\Scripts\python.exe -m pytest test\test_assembly_workflow_v2.py -q`。
+
+### 2.2 C# 端
+
+端点在 `/api/asmwf/*`（`SwCommands.AssemblyWorkflow.cs`）：按组件面、边序号或默认基准面选实体，加配合，Motion Study 驱动与逐帧采样。
+
+机械配合实测（`eval/assembly_scratch/smoke_mechanical_mates.py`，结果在 `mechanical_mates_smoke.json`）：
+
+| 配合 | 实测 | 期望 |
+|---|---|---|
+| 齿条小齿轮（节圆 36 mm） | 每转 113.097 mm | π·36 = 113.097 mm |
+| 线性耦合（分子 1、分母 2） | b 的位移 / a 的位移 = 2.0 | 2.0 |
+| 螺旋（导程 2 mm） | 每转 2.0 mm | 2.0 mm |
+| 槽口、锁定、同心锁定旋转、球面同心、距离限位 | 全部建立，errorCode 0 | — |
+
+实现上踩过的坑：
+
+- 进程外 COM 每次调用都会触发界面刷新。一个 291 面齿轮列面要 240 s；所有 asmwf 操作包在 `ISldWorks.CommandInProgress = true` 里之后降到 1.3 s。
+- 锁定配合走 `CreateMateData` 会报 errorStatus=4，改走选择 + `AddMate5(swMateLOCK)`。
+- `IRackPinionMateFeatureData.set_EntitiesToMate(role, entity)` 是按角色逐个设置单个实体，传数组会 InvalidCast。
+- 槽口、螺旋设置 `EntitiesToMate` 总报 errorStatus=4，改用 Mark=1 预选。预选路径下 `CreateMate` 会忽略数据对象上的数值参数，所以建好后要用 `ModifyDefinition` 写回。螺旋导程连 `ModifyDefinition` 也写不进去，要直接改配合特征上的尺寸 `D1`。
+- `/api/sketch/circle` 不关草图推理。圆画在齿廓折线之后，圆周点会吸到齿廓上，孔径从 5 mm 变成 4.738 mm。标准零件改为先画孔（没有全局改动，以免影响 L1 结果复现）。
+- `/api/sketch/slot` 退化成矩形，槽口配合认不出。测试件改为矩形切除加两端圆孔切除。
+- Animation 的旋转马达不严格按 rpm 转：10 rpm 实测约 47 rpm，1 rpm 实测约 6.9 rpm。传动比、行程都要按驱动件实际转角来算（评测器本来就这样算），帧要足够密，才能无歧义地展开角度。
 
 `spur_gear` 只在装配零件生成会话里通过 `WorkflowSession(extra_tools=["spur_gear"])` 打开，50 题和困难子集的 24 工具结果可以复现。
 
@@ -99,6 +131,30 @@ venv-occ\Scripts\python.exe -m pytest geomcheck/tests/test_assembly_refs.py geom
 ### 5.2 LLM 试点
 
 以 `eval/assembly_scratch_result.json` 为准。标准零件用 `build_standard_parts.py` 生成；完整 `--condition all --repeats 2` 按第 4 节命令跑。
+
+### 5.3 v1 / v2 前后对比（gold 条件，2026-09-30）
+
+配方和工具先冻结，再跑两试点 × 2 次 × v1/v2。系统提示词、评测器、调用预算（装配 50 次 LLM 调用）都相同，v1、v2 在每次重复里交替运行。原始结果在 `eval/assembly_workflow_compare*.json`，汇总在 `eval/assembly_workflow_compare_summary.json`（`eval/assembly_scratch/summarize_workflow_compare.py` 生成）。
+
+减速箱第 2 次重复时，两个版本的运动采样都遇到 SolidWorks `RPC_E_SERVERFAULT`，随后 SolidWorks 整个 COM 断开。这属于评测基础设施故障，不计入平均；重启 SolidWorks 后补跑了一次。
+
+| 案例 / 版本 | 有效次数 | 运动通过 | 平均运动分 | 平均静态分 | 已保存 | 用满调用预算 |
+|---|---|---|---|---|---|---|
+| 减速箱 v1 | 2 | 0 | 35.0 | 20.0 | 0 | 2 |
+| 减速箱 v2 | 2 | 0 | 35.0 | 35.0 | 1 | 2 |
+| 发动机 v1 | 2 | 0 | 12.5 | 20.0 | 0 | 2 |
+| 发动机 v2 | 2 | 0 | 12.5 | 20.0 | 0 | 2 |
+
+结论：在这个预算下，v2 没有带来可测的提升。
+
+- 减速箱：四次有效运行的运动测量完全相同：驱动件扫过 −882°，输出传动比 1.103（期望 0.167），每帧都有齿面干涉。v2 把轴上固定从 1:1 齿轮配合换成同心锁定旋转，只剩两个真正的齿轮配合，Animation 仍然保持不了齿数比。第 5.1 节的判断成立：瓶颈在 Animation 求解器，不在配合写法上。v2 有一次在预算内保存了装配（静态分 50）。
+- 发动机：两个版本各有一次运动分 25、一次 0 分。0 分的两次都是没来得及插入凸轮轴，评测器找不到该零件。差别在性质上：v2 第 1 次的活塞真的动了，行程 47.95 mm（期望 50，容差 2 mm，差 0.05 mm 未过）；v1 第 2 次曲柄和活塞销都卡住，行程 0。样本太少，不能据此下结论。
+- 八次运行全部用满 50 次调用。v2 的工具调用更多（50–72 次对 50–52 次），失败调用也更多（6–17 次对 2–12 次）。v2 用到了 `joint`、`check_dof`，发动机上还用过一次 `close_loop`。
+
+对比中发现的工具问题（为保持结果可复现，没有在对比后修改）：
+
+- `mesh_gears` 不给 `module` 时，把中心距校验算成了 0.02 mm，报 FEATURE_NO_EFFECT。应改为从齿轮几何推断模数，或者明确要求必填。
+- 评测器在缺少规格中某个零件时直接抛 KeyError，运动分记为 0。应改为把缺件单独列出。
 
 ## 6. 已知局限
 

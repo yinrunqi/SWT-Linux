@@ -192,22 +192,24 @@ Onshape 的一个 mate 就是一个关节，SolidWorks 通常要 1 到 3 个标�
 
 **领域**：有关节的装配中，77.6% 标注为 Product Design & Manufacturing；类别前几位是 Mechanical Engineering 40.0%、Product Design 10.0%、Machine design 5.5%、Tools 5.0%。
 
-## 由统计导出的通用装配 workflow（草案，尚未写成配方）
+## 由统计导出的通用装配 workflow（已写成 v2 配方与工具）
 
-| 步骤 | 规则 | 证据 | 对应现有配方或工具 |
+| 步骤 | 规则 | 证据 | 对应配方或工具（v2） |
 |---|---|---|---|
-| G1 选地 | 最大的块或板件为地，第一个插入并显式固定 | 第 3 节；Fusion 中 56.6% 为最大件、61.6% 最先插入 | `assembly_ground_dof` |
-| G2 按关节建模 | 每对零件先定关节语义，再按映射表展开成 SolidWorks 配合，去掉冗余；旋转副默认“柱面同心 + 端面重合”，滑动副默认加行程限位 | 第 4 节、映射表、Fusion 接口与限位统计 | `revolute_joint`、`slider_joint`；需补 pin-slot、ball、fastened 的展开和滑动限位 |
-| G3 从地生长 | 以地为根逐个零件“插入并连接”，不要先插完所有零件再统一加配合；三层以内覆盖 80–90% | 第 5 节；Fusion 时间线 0.852 对随机 0.762 | 新配方 `assembly_topology` |
-| G4 最后闭环 | 开链建完后再加闭合关节；闭环机构用运动学位姿加逐帧干涉检查验证 | 第 5 节回路表；Fusion 闭合关节排在 68.7% 处 | `assembly_crank_slider`；需补四连杆、平行连杆 |
-| G5 加耦合 | 在已有运动副上加齿轮、齿条、螺旋、线性关系 | 第 6 节 | `mesh_gears`；需补齿条、螺旋、线性 |
-| G6 预算自由度 | 每步之后用 Grübler 估算，要求与规格中的目标活动度一致；多出来的是浮动，少了的是冗余 | 第 7 节；两个数据集中都有约 20% 的装配有零件浮动 | `assembly_ground_dof`，改为定量检查 |
-| G7 运动验证 | 驱动输入关节、采样、检查干涉和传动比 | 第 8 节（数据不提供，我们自己加） | `assembly_motion_check` |
+| G1 选地 | 最大的块或板件为地，第一个插入并显式固定 | 第 3 节；Fusion 中 56.6% 为最大件、61.6% 最先插入 | `assembly_topology`、`ground_component` |
+| G2 按关节建模 | 每对零件先定关节语义，再按映射表展开成 SolidWorks 配合，去掉冗余；旋转副默认“柱面同心 + 端面重合”，滑动副默认加行程限位 | 第 4 节、映射表、Fusion 接口与限位统计 | `assembly_joint_mapping`、`joint`（fixed/revolute/slider/cylindrical/planar/ball/pin_slot，滑动副可带 `limit_min/limit_max`） |
+| G3 从地生长 | 以地为根逐个零件“插入并连接”，不要先插完所有零件再统一加配合；三层以内覆盖 80–90% | 第 5 节；Fusion 时间线 0.852 对随机 0.762 | `assembly_topology` |
+| G4 最后闭环 | 开链建完后再加闭合关节；闭环机构用运动学位姿加逐帧干涉检查验证 | 第 5 节回路表；Fusion 闭合关节排在 68.7% 处 | `assembly_linkage`、`close_loop`（先最小配合，过定义回滚） |
+| G5 加耦合 | 在已有运动副上加齿轮、齿条、螺旋、线性关系 | 第 6 节 | `assembly_coupling`、`mesh_gears`、`rack_pinion`、`screw_pair`、`linear_coupler` |
+| G6 预算自由度 | 每步之后用 Grübler 估算，要求与规格中的目标活动度一致；多出来的是浮动，少了的是冗余 | 第 7 节；两个数据集中都有约 20% 的装配有零件浮动 | `assembly_topology`、`check_dof` |
+| G7 运动验证 | 驱动输入关节、采样、检查干涉和传动比 | 第 8 节（数据不提供，我们自己加） | `assembly_motion_check`、`check_motion` |
 
-补齐这套 workflow 所需的工程量：
+v1 与 v2 在减速箱、发动机两个试点上的对比见 [Workflow-CAD-Assembly.md](Workflow-CAD-Assembly.md) 第 5.3 节。
 
-- C# 端新增配合类型：槽口（`swMateSLOT`）、齿条小齿轮（`swMateRACKPINION`）、螺旋（`swMateSCREW`）、线性耦合（`swMateLINEARCOUPLER`）、锁定（`swMateLOCK`）。
-- 宏工具：`pin_slot_joint`、`ball_joint`、`rack_pinion`、`screw_pair`、`linear_coupler`、`close_loop`。
+已补齐的工程量（2026-09-30）：
+
+- C# 端新增配合类型：槽口（`swMateSLOT`）、齿条小齿轮（`swMateRACKPINION`）、螺旋（`swMateSCREW`）、线性耦合（`swMateLINEARCOUPLER`）、锁定（`swMateLOCK`），另加同心锁定旋转和距离限位。每种都在 SolidWorks 里实测过。
+- 宏工具：`joint`（pin_slot、ball 等关节类型都在其中）、`rack_pinion`、`screw_pair`、`linear_coupler`、`close_loop`、`check_dof`。
 - 配方：`assembly_topology`（覆盖 G1、G3、G6）、`assembly_joint_mapping`（G2）、`assembly_coupling`（G5）、`assembly_linkage`（G4 的四连杆和平行连杆）。
 
 ## 局限
@@ -223,5 +225,5 @@ Onshape 的一个 mate 就是一个关节，SolidWorks 通常要 1 到 3 个标�
 
 ## 下一步候选
 
-1. 按上表补齐 C# 配合类型、宏工具和四份新配方，再用冻结的配方在两个试点上做前后对比。
+1. （已完成）按上表补齐 C# 配合类型、宏工具和四份新配方，用冻结的配方在两个试点上做前后对比。
 2. 下载 STEP 几何的一个子集（比如只取有可动关节、且零件数 ≤ 20 的装配），挖完整的接口级规则：孔轴直径匹配、端面接触、键槽对齐。
