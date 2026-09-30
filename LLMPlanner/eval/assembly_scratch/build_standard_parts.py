@@ -64,11 +64,12 @@ def gear(path: Path, teeth: int, module_m: float, thick: float, bore: float) -> 
     outline, _ = generate_involute_outline(tooth_count=teeth, module_m=module_m, pressure_angle_deg=30)
     call("/api/new-part")
     call("/api/select-plane", {"index": 0})
+    # 轴孔圆必须先画：sketch/circle 不关草图推理，画在齿廓之后圆周点会吸到齿廓上，孔径变小
+    call("/api/sketch/circle", {"cx": 0, "cy": 0, "radius": bore})
     call("/api/sketch/polyline", {
         "points": [{"x": x, "y": y} for x, y in outline[:-1]],
         "closed": True,
     }, timeout=300)
-    call("/api/sketch/circle", {"cx": 0, "cy": 0, "radius": bore})
     call("/api/feature/extrusion", {"depth": thick})
     call("/api/save-part-as", {"savePath": str(path)})
     export_pair(path)

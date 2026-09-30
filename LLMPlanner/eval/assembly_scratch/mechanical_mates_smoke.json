@@ -1,0 +1,233 @@
+{
+ "rackpinion": {
+  "pinion_turns": -9.7482,
+  "rack_travel_mm": -1102.5,
+  "travel_per_rev_mm": 113.097,
+  "expected_per_rev_mm": 113.097
+ },
+ "linearcoupler": {
+  "rack2_travel_mm": -2205.0,
+  "ratio": 2.0
+ },
+ "distance_limit": {
+  "distanceMin": 0,
+  "distanceMax": 0.03
+ },
+ "mates_1": [
+  {
+   "name": "同心1",
+   "type": "MateConcentric",
+   "suppressed": false,
+   "errorCode": 0,
+   "warning": false,
+   "components": [
+    "base-1",
+    "shaft-1"
+   ],
+   "mateType": 1,
+   "lockRotation": false
+  },
+  {
+   "name": "重合1",
+   "type": "MateCoincident",
+   "suppressed": false,
+   "errorCode": 0,
+   "warning": false,
+   "components": [
+    "base-1",
+    "shaft-1"
+   ],
+   "mateType": 0
+  },
+  {
+   "name": "锁定1",
+   "type": "MateLock",
+   "suppressed": false,
+   "errorCode": 0,
+   "warning": false,
+   "components": [
+    "shaft-1",
+    "pinion-1"
+   ],
+   "mateType": 16,
+   "kind": "lock"
+  },
+  {
+   "name": "重合2",
+   "type": "MateCoincident",
+   "suppressed": false,
+   "errorCode": 0,
+   "warning": false,
+   "components": [
+    "base-1",
+    "rack-1"
+   ],
+   "mateType": 0
+  },
+  {
+   "name": "距离1",
+   "type": "MateDistanceDim",
+   "suppressed": false,
+   "errorCode": 0,
+   "warning": false,
+   "components": [
+    "rack-1",
+    "base-1"
+   ],
+   "mateType": 5,
+   "distance": 0.018
+  },
+  {
+   "name": "重合3",
+   "type": "MateCoincident",
+   "suppressed": false,
+   "errorCode": 0,
+   "warning": false,
+   "components": [
+    "base-1",
+    "rack-2"
+   ],
+   "mateType": 0
+  },
+  {
+   "name": "距离2",
+   "type": "MateDistanceDim",
+   "suppressed": false,
+   "errorCode": 0,
+   "warning": false,
+   "components": [
+    "rack-2",
+    "base-1"
+   ],
+   "mateType": 5,
+   "distance": 0.06
+  },
+  {
+   "name": "LimitDistance1",
+   "type": "MateLimitDistanceDim",
+   "suppressed": false,
+   "errorCode": 0,
+   "warning": false,
+   "components": [
+    "rack-1",
+    "base-1"
+   ],
+   "mateType": 5,
+   "distance": 0,
+   "distanceMin": 0,
+   "distanceMax": 0.03
+  }
+ ],
+ "screw": {
+  "nut_turns": -9.7482,
+  "nut_travel_z_mm": 19.4965,
+  "lead_mm": -2.0,
+  "expected_lead_mm": 2.0
+ },
+ "concentric_lock_rotation": true,
+ "sphere_faces": 1,
+ "mates_2": [
+  {
+   "name": "螺旋1",
+   "type": "MateScrew",
+   "suppressed": false,
+   "errorCode": 0,
+   "warning": false,
+   "components": [
+    "screw-1",
+    "nut-1"
+   ],
+   "mateType": 17,
+   "kind": "screw",
+   "revolutionType": 1,
+   "revolutionValue": 0.002,
+   "reverse": false
+  },
+  {
+   "name": "槽口1",
+   "type": "MateSlot",
+   "suppressed": false,
+   "errorCode": 0,
+   "warning": false,
+   "components": [
+    "slotplate-1",
+    "pin-1"
+   ],
+   "mateType": 21,
+   "kind": "slot",
+   "constraint": 0
+  },
+  {
+   "name": "重合1",
+   "type": "MateCoincident",
+   "suppressed": false,
+   "errorCode": 0,
+   "warning": false,
+   "components": [
+    "slotplate-1",
+    "pin-1"
+   ],
+   "mateType": 0
+  },
+  {
+   "name": "同心1",
+   "type": "MateConcentric",
+   "suppressed": false,
+   "errorCode": 0,
+   "warning": false,
+   "components": [
+    "shaft-1",
+    "nut-2"
+   ],
+   "mateType": 1,
+   "lockRotation": true
+  },
+  {
+   "name": "同心2",
+   "type": "MateConcentric",
+   "suppressed": false,
+   "errorCode": 0,
+   "warning": false,
+   "components": [
+    "ball-1",
+    "ball-2"
+   ],
+   "mateType": 1,
+   "lockRotation": false
+  }
+ ],
+ "components_2": [
+  {
+   "name": "pin-1",
+   "constrainedStatus": 2
+  },
+  {
+   "name": "nut-1",
+   "constrainedStatus": 2
+  },
+  {
+   "name": "screw-1",
+   "constrainedStatus": 3
+  },
+  {
+   "name": "slotplate-1",
+   "constrainedStatus": 3
+  },
+  {
+   "name": "shaft-1",
+   "constrainedStatus": 3
+  },
+  {
+   "name": "nut-2",
+   "constrainedStatus": 2
+  },
+  {
+   "name": "ball-1",
+   "constrainedStatus": 3
+  },
+  {
+   "name": "ball-2",
+   "constrainedStatus": 2
+  }
+ ]
+}

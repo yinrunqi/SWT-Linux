@@ -53,10 +53,12 @@ class AssemblyAgent:
         max_tokens: int = 8000,
         temperature: float = 0.0,
         max_stalls: int = 2,
+        tools: list[dict] | None = None,
     ):
         self.client = client
         self.model = model
         self.session = session
+        self.tools = tools or TOOL_SPECS
         self.max_llm_calls = max_llm_calls
         self.max_tokens = max_tokens
         self.temperature = temperature
@@ -78,7 +80,7 @@ class AssemblyAgent:
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
-                    tools=TOOL_SPECS,
+                    tools=self.tools,
                     tool_choice="auto",
                     temperature=self.temperature,
                     max_tokens=self.max_tokens,

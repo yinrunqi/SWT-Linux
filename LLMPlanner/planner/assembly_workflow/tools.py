@@ -175,3 +175,169 @@ TOOL_SPECS: list[dict] = [
         ["summary"],
     ),
 ]
+
+# ------------------------------------------------------------------ v2：数据挖掘补齐的配合与宏工具
+
+_REF_V2 = {
+    "type": "string",
+    "description": _REF["description"] + (
+        "另外：edge(line, +X, longest) / edge(circle, d=10)：零件局部坐标下的直线/圆边，edge:7 为边序号；"
+        "sphere 或 sphere(d=16)：球面；component：整个组件（lock 用）。"
+    ),
+}
+_MATE_TYPES_V2 = [
+    "coincident", "concentric", "parallel", "distance", "angle", "gear",
+    "slot", "rack_pinion", "screw", "linear_coupler", "lock",
+]
+_JOINT_TYPES = ["fixed", "revolute", "cylindrical", "slider", "planar", "ball", "pin_slot"]
+
+
+def _v2_spec(spec: dict) -> dict:
+    name = spec["function"]["name"]
+    if name == "mate":
+        return _tool(
+            "mate",
+            "在两个引用之间加一条 SolidWorks 配合（底层原语，优先用 joint 等宏工具）。"
+            "coincident / concentric / parallel / distance / angle / gear 同前；"
+            "concentric 加 lock_rotation=true 表示键连接（不能相对转动）；"
+            "distance 给 distance_min / distance_max 即为限位距离（行程限位）；"
+            "slot：a=槽口面，b=销的圆柱面；rack_pinion：a=齿条运动方向的直线边，b=小齿轮圆柱面，给 pitch_diameter（mm）"
+            "或 travel_per_rev（mm/转）；screw：a=螺杆圆柱，b=螺母孔，给 lead（mm/转）；"
+            "linear_coupler 请用 linear_coupler 工具；lock：a/b 只写组件名，两者整体锁死。",
+            {
+                "type": {"type": "string", "enum": _MATE_TYPES_V2},
+                "a": _REF_V2,
+                "b": _REF_V2,
+                "align": _ALIGN,
+                "distance": _NUM,
+                "distance_min": _NUM,
+                "distance_max": _NUM,
+                "angle_deg": _NUM,
+                "ratio_numerator": _NUM,
+                "ratio_denominator": _NUM,
+                "reverse": {"type": "boolean"},
+                "lock_rotation": {"type": "boolean"},
+                "pitch_diameter": _NUM,
+                "travel_per_rev": _NUM,
+                "lead": _NUM,
+                "slot_constraint": {"type": "string", "enum": ["free", "center", "distance", "percent"]},
+            },
+            ["type", "a", "b"],
+        )
+    if name == "mount_on_shaft":
+        return _tool(
+            "mount_on_shaft",
+            "把零件套到轴上：同心 + 轴向定位（默认用双方前视基准面，offset 为沿轴 mm）。"
+            "lock_rotation=true 时同心配合锁定旋转，相当于键连接，零件与轴成为一个刚体。",
+            spec["function"]["parameters"]["properties"],
+            ["part", "shaft"],
+        )
+    params = spec["function"]["parameters"]
+    properties = {key: (_REF_V2 if value is _REF else value) for key, value in params["properties"].items()}
+    return _tool(name, spec["function"]["description"], properties, params["required"])
+
+
+TOOL_SPECS_V2: list[dict] = [_v2_spec(spec) for spec in TOOL_SPECS] + [
+    _tool(
+        "joint",
+        "按机构关节建一组 SolidWorks 配合（先想关节，再落到配合）。type："
+        "fixed（a/b 为圆柱引用时=同心锁转+端面贴合；只给组件名时=lock 整体锁死）；"
+        "revolute（同心 + face_a/face_b 贴合或 offset 距离）；cylindrical（只同心，可转可沿轴滑）；"
+        "slider（a/b 两圆柱同心或两平面贴合，再用 guide_a/guide_b 止转；给 limit_min/limit_max 与 travel_a/travel_b 加行程限位）；"
+        "planar（两平面贴合）；ball（两球面同心）；pin_slot（a=槽口面，b=销圆柱，再 face_a/face_b 贴合）。",
+        {
+            "type": {"type": "string", "enum": _JOINT_TYPES},
+            "a": _REF_V2,
+            "b": _REF_V2,
+            "face_a": _REF_V2,
+            "face_b": _REF_V2,
+            "offset": _NUM,
+            "guide_a": _REF_V2,
+            "guide_b": _REF_V2,
+            "travel_a": _REF_V2,
+            "travel_b": _REF_V2,
+            "limit_min": _NUM,
+            "limit_max": _NUM,
+            "slot_constraint": {"type": "string", "enum": ["free", "center"]},
+        },
+        ["type", "a", "b"],
+    ),
+    _tool(
+        "close_loop",
+        "闭环机构的最后一个关节（两端都已经连到固定件）。默认 minimal=true 只加必要约束"
+        "（revolute 只同心、pin_slot 只加槽口，slider 圆柱导向时不加止转面），避免平面闭环的冗余约束；"
+        "若出现过定义会撤销并改用完整关节再试，返回每次尝试的结果。参数同 joint。",
+        {
+            "type": {"type": "string", "enum": _JOINT_TYPES},
+            "a": _REF_V2,
+            "b": _REF_V2,
+            "face_a": _REF_V2,
+            "face_b": _REF_V2,
+            "offset": _NUM,
+            "guide_a": _REF_V2,
+            "guide_b": _REF_V2,
+            "minimal": {"type": "boolean"},
+        },
+        ["type", "a", "b"],
+    ),
+    _tool(
+        "rack_pinion",
+        "齿条-小齿轮耦合：齿条已有滑动关节、小齿轮已有转动关节后再加。"
+        "pitch_diameter（mm）或 module + teeth；默认齿条取最长直线边、小齿轮取第一个圆柱面（轴孔）。",
+        {
+            "rack": {"type": "string"},
+            "pinion": {"type": "string"},
+            "pitch_diameter": _NUM,
+            "module": _NUM,
+            "teeth": {"type": "integer"},
+            "rack_edge": _REF_V2,
+            "pinion_ref": _REF_V2,
+            "reverse": {"type": "boolean"},
+        },
+        ["rack", "pinion"],
+    ),
+    _tool(
+        "screw_pair",
+        "螺旋副：螺杆与螺母同轴，并按导程把转动与轴向移动耦合（本身已含同心，不要再另加 concentric）。"
+        "缺省自动找两者直径相同的圆柱面。",
+        {
+            "screw": {"type": "string"},
+            "nut": {"type": "string"},
+            "lead": {"type": "number", "description": "导程 mm/转"},
+            "screw_ref": _REF_V2,
+            "nut_ref": _REF_V2,
+            "reverse": {"type": "boolean"},
+        },
+        ["screw", "nut", "lead"],
+    ),
+    _tool(
+        "linear_coupler",
+        "两个滑动件的位移按比例联动：ratio = b 的位移 / a 的位移。两者都要已有滑动关节。"
+        "默认各取最长直线边作方向，参考件默认固定件。",
+        {
+            "a": {"type": "string"},
+            "b": {"type": "string"},
+            "ratio": _NUM,
+            "reverse": {"type": "boolean"},
+            "edge_a": _REF_V2,
+            "edge_b": _REF_V2,
+            "reference": {"type": "string"},
+        },
+        ["a", "b"],
+    ),
+    _tool(
+        "check_dof",
+        "自由度预算（Grübler）：按已建关节与耦合估算机构活动度，列出悬空、未接地、过定义的组件。"
+        "expected_mobility 给出设计活动度（如单输入机构为 1）时会比对。",
+        {"expected_mobility": {"type": "integer"}},
+        [],
+    ),
+]
+
+
+def tool_specs(workflow: str) -> list[dict]:
+    return TOOL_SPECS_V2 if workflow == "v2" else TOOL_SPECS
+
+
+def tool_names(workflow: str) -> set[str]:
+    return {spec["function"]["name"] for spec in tool_specs(workflow)}

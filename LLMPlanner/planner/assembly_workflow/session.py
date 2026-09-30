@@ -10,9 +10,26 @@ import requests
 
 from planner.workflow.errors import WorkflowError
 
-from .refs import RefError, resolve_on_faces, split_ref
+from .refs import RefError, needs_edges, resolve_on_edges, resolve_on_faces, split_ref
 
 CONSTRAINED = {0: "unknown", 1: "under", 2: "fully", 3: "over"}
+
+# 关节保留的自由度：(空间, 平面)；平面列为 None 表示不是平面关节
+JOINT_DOF = {
+    "revolute": (1, 1),
+    "slider": (1, 1),
+    "cylindrical": (2, 1),
+    "pin_slot": (2, 2),
+    "planar": (3, 3),
+    "ball": (3, None),
+    "screw": (1, None),
+}
+
+
+def LINEAR_COUPLER_RATIO(ratio: float) -> tuple[float, float]:
+    """b 的位移 / a 的位移 = ratio 时 SolidWorks 线性耦合的 (分子, 分母)。
+    实测（smoke_mechanical_mates.py）：分子 1、分母 2 时 b 的位移是 a 的 2 倍。"""
+    return 1.0, float(ratio)
 
 
 def _round(value, digits=3):
@@ -33,18 +50,36 @@ def translation_mm(matrix: list[float]) -> list[float]:
 
 
 class AssemblySession:
-    def __init__(self, base_url: str = "http://localhost:5100", timeout: float = 180):
+    def __init__(
+        self,
+        base_url: str = "http://localhost:5100",
+        timeout: float = 180,
+        *,
+        workflow: str = "v1",
+        allowed_tools: set[str] | None = None,
+    ):
+        if workflow not in ("v1", "v2"):
+            raise ValueError(f"未知 workflow {workflow}")
         self.base_url = base_url.rstrip("/")
         self.http = requests.Session()
         self.timeout = timeout
+        self.workflow = workflow
+        self.allowed_tools = allowed_tools
         self.aliases: dict[str, str] = {}
         self.mate_names: list[str] = []
+        self.joints: list[dict] = []
         self.last_motion: dict | None = None
         self.saved = False
         self.has_assembly = False
         self.assembly_path = ""
         self.log: list[dict] = []
         self._handlers = {
+            "joint": self.joint,
+            "rack_pinion": self.rack_pinion,
+            "screw_pair": self.screw_pair,
+            "linear_coupler": self.linear_coupler,
+            "close_loop": self.close_loop,
+            "check_dof": self.check_dof,
             "get_assembly_state": self.get_assembly_state,
             "insert_component": self.insert_component,
             "ground_component": self.ground_component,
@@ -90,6 +125,7 @@ class AssemblySession:
         self.assembly_path = path
         self.aliases.clear()
         self.mate_names.clear()
+        self.joints.clear()
         self.last_motion = None
         self.saved = False
         return data
@@ -98,7 +134,7 @@ class AssemblySession:
         args = args or {}
         entry = {"tool": name, "args": args}
         try:
-            if name not in self._handlers:
+            if name not in self._handlers or (self.allowed_tools is not None and name not in self.allowed_tools):
                 raise WorkflowError("TOOL_ARGS", f"未知工具 {name}")
             if name != "finish" and not self.has_assembly:
                 raise WorkflowError("NO_PART", "还没有装配体，先新建")
@@ -133,9 +169,15 @@ class AssemblySession:
             body["radius"] = radius
         return self.asmwf("component-faces", body).get("faces") or []
 
+    def edges(self, component: str, kind: str = "all") -> list[dict]:
+        body = {"component": self.resolve_name(component), "kind": kind, "maxEdges": 400}
+        return self.asmwf("component-edges", body).get("edges") or []
+
     def resolve_ref(self, text: str) -> tuple[str, str]:
         component, selector = split_ref(text) if ":" in (text or "") else (text, "plane(front)")
         sw_name = self.resolve_name(component)
+        if needs_edges(selector):
+            return sw_name, resolve_on_edges(selector, self.edges(sw_name))
         parsed_radius = None
         try:
             from .refs import parse_selector
@@ -174,9 +216,15 @@ class AssemblySession:
         for item in raw:
             name = item["name"]
             faces = self.asmwf("component-faces", {"component": name, "maxFaces": 80}).get("faces") or []
-            cylinders, planes = [], []
+            cylinders, planes, spheres = [], [], []
             for face in faces:
-                if face.get("surfaceType") == "cylinder" and face.get("radius") is not None:
+                if face.get("surfaceType") == "sphere" and face.get("radius") is not None:
+                    spheres.append({
+                        "ref": f"face:{face['index']}",
+                        "diameter_mm": _round(float(face["radius"]) * 2000),
+                        "center_mm": _round([v * 1000 for v in face.get("center") or [0, 0, 0]]),
+                    })
+                elif face.get("surfaceType") == "cylinder" and face.get("radius") is not None:
                     cylinders.append({
                         "ref": f"face:{face['index']}",
                         "diameter_mm": _round(float(face["radius"]) * 2000),
@@ -191,7 +239,7 @@ class AssemblySession:
                     })
             cylinders.sort(key=lambda c: c["diameter_mm"] or 0)
             planes.sort(key=lambda p: -(p["area_mm2"] or 0))
-            components.append({
+            summary = {
                 "alias": alias_of.get(name),
                 "name": name,
                 "fixed": item.get("isFixed"),
@@ -199,8 +247,11 @@ class AssemblySession:
                 "origin_mm": _round(translation_mm(item.get("transform") or [0] * 12)),
                 "cylinders": cylinders[:8],
                 "planes": planes[:6],
-            })
-        return {
+            }
+            if self.workflow == "v2" and spheres:
+                summary["spheres"] = spheres[:4]
+            components.append(summary)
+        state = {
             "components": components,
             "mates": [
                 {
@@ -221,6 +272,14 @@ class AssemblySession:
                 "stuck": self.last_motion.get("stuck"),
             },
         }
+        if self.workflow == "v2":
+            alias = {sw: al for al, sw in self.aliases.items()}
+            state["joints"] = [
+                {"kind": e["kind"], "a": alias.get(e["a"], e["a"]), "b": alias.get(e["b"], e["b"]),
+                 "mates": e["mates"], **({"loop": True} if e.get("loop") else {})}
+                for e in self.joints
+            ]
+        return state
 
     # ------------------------------------------------------------ 放置 / 配合
 
@@ -272,15 +331,79 @@ class AssemblySession:
             extra["ratioDenominator"] = float(args.get("ratio_denominator") or 1)
         if args.get("reverse") is not None:
             extra["reverse"] = bool(args["reverse"])
-        return self._mate(kind, str(args["a"]), str(args["b"]), **extra)
+        a, b = str(args["a"]), str(args["b"])
+        if self.workflow == "v2":
+            kind = kind.replace("-", "_")
+            extra.update(self._mechanical_args(kind, args))
+            if kind == "lock":
+                a = a if ":" in a else f"{a}:component"
+                b = b if ":" in b else f"{b}:component"
+        result = self._mate(kind, a, b, **extra)
+        if self.workflow == "v2":
+            self._record_joint(f"mate:{kind}", a, b, [result])
+        return result
+
+    @staticmethod
+    def _mechanical_args(kind: str, args: dict) -> dict:
+        extra: dict[str, Any] = {}
+        if kind == "concentric" and args.get("lock_rotation"):
+            extra["lockRotation"] = True
+        if kind == "distance" and (args.get("distance_min") is not None or args.get("distance_max") is not None):
+            low = float(args.get("distance_min") if args.get("distance_min") is not None else 0)
+            high = float(args.get("distance_max") if args.get("distance_max") is not None else low)
+            extra["distanceMin"] = low / 1000
+            extra["distanceMax"] = high / 1000
+            if args.get("distance") is None:
+                extra["distance"] = low / 1000
+        if kind == "rack_pinion":
+            if args.get("pitch_diameter") is not None:
+                extra["pitchDiameter"] = float(args["pitch_diameter"]) / 1000
+            elif args.get("travel_per_rev") is not None:
+                extra["travelPerRevolution"] = float(args["travel_per_rev"]) / 1000
+        if kind == "screw" and args.get("lead") is not None:
+            extra["lead"] = float(args["lead"]) / 1000
+        if kind == "slot" and args.get("slot_constraint"):
+            extra["slotConstraint"] = str(args["slot_constraint"])
+        return extra
 
     def delete_mate(self, args: dict) -> dict:
         name = str(args.get("name") or "")
         self.asmwf("delete-mate", {"name": name})
         if name in self.mate_names:
             self.mate_names.remove(name)
+        self._forget_mates([name])
         self.saved = False
         return {"deleted": name}
+
+    # ------------------------------------------------------------ 关节登记
+
+    def _component_of(self, ref: str) -> str:
+        return self.resolve_name(split_ref(ref)[0] if ":" in ref else ref)
+
+    def _record_joint(self, kind: str, a: str, b: str, mates: list[dict], **extra) -> dict:
+        entry = {
+            "kind": kind,
+            "a": self._component_of(a),
+            "b": self._component_of(b),
+            "mates": [m["name"] for m in mates],
+            **extra,
+        }
+        self.joints.append(entry)
+        return entry
+
+    def _forget_mates(self, names: list[str]) -> None:
+        gone = set(names)
+        kept = []
+        for entry in self.joints:
+            entry["mates"] = [m for m in entry["mates"] if m not in gone]
+            if entry["mates"]:
+                kept.append(entry)
+        self.joints[:] = kept
+
+    def _rollback(self, created: list[dict]) -> None:
+        names = [item["name"] for item in created]
+        self._rollback_mates(names)
+        self._forget_mates(names)
 
     # ------------------------------------------------------------ 宏工具
 
@@ -289,9 +412,13 @@ class AssemblySession:
         diameter = args.get("diameter")
         cyl_a = f"{part}:cyl(d={diameter})" if diameter else f"{part}:cyl(i=0)"
         cyl_b = f"{shaft}:cyl(d={diameter})" if diameter else f"{shaft}:cyl(i=0)"
+        keyed = bool(args.get("lock_rotation"))
         created = []
         try:
-            created.append(self._mate("concentric", cyl_a, cyl_b, align="aligned"))
+            if keyed and self.workflow == "v2":
+                created.append(self._mate("concentric", cyl_a, cyl_b, align="aligned", lockRotation=True))
+            else:
+                created.append(self._mate("concentric", cyl_a, cyl_b, align="aligned"))
             offset = args.get("offset")
             if offset is None:
                 created.append(self._mate("coincident", f"{part}:plane(front)", f"{shaft}:plane(front)", align="aligned"))
@@ -300,11 +427,12 @@ class AssemblySession:
                     "distance", f"{part}:plane(front)", f"{shaft}:plane(front)",
                     distance=float(offset) / 1000, align="aligned",
                 ))
-            if args.get("lock_rotation"):
+            if keyed and self.workflow == "v1":
                 created.append(self._mate("gear", cyl_a, cyl_b, ratioNumerator=1, ratioDenominator=1, reverse=False))
         except Exception:
-            self._rollback_mates([item["name"] for item in created])
+            self._rollback(created)
             raise
+        self._record_joint("fixed" if keyed else "revolute", part, shaft, created)
         return {"mates": created}
 
     def revolute_joint(self, args: dict) -> dict:
@@ -315,8 +443,9 @@ class AssemblySession:
             face_b = args.get("face_b") or f"{split_ref(args['b'])[0]}:plane(front)"
             created.append(self._mate("coincident", face_a, face_b, align="aligned"))
         except Exception:
-            self._rollback_mates([item["name"] for item in created])
+            self._rollback(created)
             raise
+        self._record_joint("revolute", str(args["a"]), str(args["b"]), created)
         return {"mates": created}
 
     def slider_joint(self, args: dict) -> dict:
@@ -325,8 +454,9 @@ class AssemblySession:
             created.append(self._mate("concentric", str(args["a"]), str(args["b"]), align="closest"))
             created.append(self._mate("coincident", str(args["guide_a"]), str(args["guide_b"]), align="aligned"))
         except Exception:
-            self._rollback_mates([item["name"] for item in created])
+            self._rollback(created)
             raise
+        self._record_joint("slider", str(args["a"]), str(args["b"]), created)
         return {"mates": created}
 
     def _gear_tip_radius(self, component: str) -> tuple[str, float, list[float]]:
@@ -380,6 +510,7 @@ class AssemblySession:
             "gear", f"{a}:cyl(i=0)", f"{b}:cyl(i=0)",
             ratioNumerator=int(teeth_a), ratioDenominator=int(teeth_b), reverse=reverse,
         )
+        self._record_joint("coupling:gear", a, b, [mate])
         return {
             "mate": mate,
             "teeth": [int(teeth_a), int(teeth_b)],
@@ -414,9 +545,273 @@ class AssemblySession:
             ))
             created.append(self._mate("coincident", f"{slider}:plane(right)", f"{frame}:plane(right)", align="aligned"))
         except Exception:
-            self._rollback_mates([item["name"] for item in created])
+            self._rollback(created)
             raise
+        self._record_joint("revolute", crank, frame, created[0:2])
+        self._record_joint("revolute", rod, crank, created[2:4])
+        self._record_joint("revolute", rod, slider, created[4:5])
+        self._record_joint("slider", slider, frame, created[5:6])
         return {"mates": created}
+
+    # ------------------------------------------------------------ v2：关节映射与耦合
+
+    @staticmethod
+    def _is_cylinder_ref(ref: str) -> bool:
+        selector = split_ref(ref)[1].lower() if ":" in ref else ""
+        return selector.startswith(("cyl", "bore"))
+
+    def _statuses(self) -> dict[str, str]:
+        return {
+            c["name"]: CONSTRAINED.get(int(c.get("constrainedStatus") or 0), "unknown")
+            for c in self.asmwf("components").get("components") or []
+        }
+
+    def _joint_mates(self, kind: str, args: dict, *, minimal: bool = False) -> list[dict]:
+        a, b = str(args["a"]), str(args["b"])
+        comp_a = split_ref(a)[0] if ":" in a else a
+        comp_b = split_ref(b)[0] if ":" in b else b
+        face_a = args.get("face_a") or f"{comp_a}:plane(front)"
+        face_b = args.get("face_b") or f"{comp_b}:plane(front)"
+        created: list[dict] = []
+        try:
+            if kind == "fixed":
+                if ":" in a and ":" in b:
+                    created.append(self._mate("concentric", a, b, align="closest", lockRotation=True))
+                    if args.get("offset") is None:
+                        created.append(self._mate("coincident", face_a, face_b, align="aligned"))
+                    else:
+                        created.append(self._mate("distance", face_a, face_b,
+                                                  distance=float(args["offset"]) / 1000, align="aligned"))
+                else:
+                    created.append(self._mate("lock", f"{a}:component", f"{b}:component"))
+            elif kind in ("revolute", "cylindrical"):
+                created.append(self._mate("concentric", a, b, align="closest"))
+                if kind == "revolute" and not minimal:
+                    if args.get("offset") is None:
+                        created.append(self._mate("coincident", face_a, face_b, align="aligned"))
+                    else:
+                        created.append(self._mate("distance", face_a, face_b,
+                                                  distance=float(args["offset"]) / 1000, align="aligned"))
+            elif kind == "slider":
+                primary = "concentric" if self._is_cylinder_ref(a) and self._is_cylinder_ref(b) else "coincident"
+                created.append(self._mate(primary, a, b, align="closest" if primary == "concentric" else "aligned"))
+                if not minimal or primary == "coincident":
+                    if not args.get("guide_a") or not args.get("guide_b"):
+                        raise WorkflowError("TOOL_ARGS", "slider 需要 guide_a/guide_b（再约束一个面，只留沿一条轴的平移）")
+                    created.append(self._mate("coincident", str(args["guide_a"]), str(args["guide_b"]), align="aligned"))
+                if args.get("limit_min") is not None or args.get("limit_max") is not None:
+                    if not args.get("travel_a") or not args.get("travel_b"):
+                        raise WorkflowError("TOOL_ARGS", "行程限位需要 travel_a/travel_b（两个垂直于运动方向的面）")
+                    low = float(args.get("limit_min") or 0) / 1000
+                    high = float(args["limit_max"]) / 1000 if args.get("limit_max") is not None else low
+                    created.append(self._mate("distance", str(args["travel_a"]), str(args["travel_b"]),
+                                              distance=low, distanceMin=low, distanceMax=high))
+            elif kind == "planar":
+                created.append(self._mate("coincident", a, b, align="aligned"))
+            elif kind == "ball":
+                sa = a if ":" in a else f"{a}:sphere"
+                sb = b if ":" in b else f"{b}:sphere"
+                created.append(self._mate("concentric", sa, sb, align="closest"))
+            elif kind == "pin_slot":
+                created.append(self._mate("slot", a, b, slotConstraint=str(args.get("slot_constraint") or "free")))
+                if not minimal:
+                    created.append(self._mate("coincident", face_a, face_b, align="aligned"))
+            else:
+                raise WorkflowError("TOOL_ARGS", f"未知关节类型 {kind}")
+        except Exception:
+            self._rollback(created)
+            raise
+        return created
+
+    def joint(self, args: dict) -> dict:
+        kind = str(args.get("type") or "").lower()
+        created = self._joint_mates(kind, args)
+        entry = self._record_joint(kind, str(args["a"]), str(args["b"]), created)
+        return {"joint": kind, "components": [entry["a"], entry["b"]], "mates": created}
+
+    def close_loop(self, args: dict) -> dict:
+        kind = str(args.get("type") or "revolute").lower()
+        a_name = self._component_of(str(args["a"]))
+        b_name = self._component_of(str(args["b"]))
+        connected = self._connected_to_ground()
+        warning = None
+        if not (a_name in connected and b_name in connected):
+            warning = "两端并非都已经连到固定件，这不是闭环关节；普通连接请用 joint"
+        attempts = []
+        for minimal in (bool(args.get("minimal", True)), False):
+            try:
+                created = self._joint_mates(kind, args, minimal=minimal)
+            except WorkflowError as exc:
+                attempts.append({"minimal": minimal, "error": exc.to_dict().get("message")})
+                if minimal is False or not args.get("minimal", True):
+                    raise
+                continue
+            over = [n for n, s in self._statuses().items() if s == "over"]
+            if over:
+                self._rollback(created)
+                attempts.append({"minimal": minimal, "over_defined": over})
+                continue
+            entry = self._record_joint(kind, str(args["a"]), str(args["b"]), created, loop=True, minimal=minimal)
+            return {
+                "joint": kind,
+                "minimal": minimal,
+                "components": [entry["a"], entry["b"]],
+                "mates": created,
+                "attempts": attempts,
+                **({"warning": warning} if warning else {}),
+            }
+        raise WorkflowError("FEATURE_FAILED", f"闭环关节无法建立: {attempts}")
+
+    def _connected_to_ground(self) -> set[str]:
+        components = self.asmwf("components").get("components") or []
+        reached = {c["name"] for c in components if c.get("isFixed")}
+        changed = True
+        while changed:
+            changed = False
+            for entry in self.joints:
+                pair = {entry["a"], entry["b"]}
+                if pair & reached and not pair <= reached:
+                    reached |= pair
+                    changed = True
+        return reached
+
+    def _coupling_precheck(self, *names: str) -> list[str]:
+        statuses = self._statuses()
+        return [n for n in names if statuses.get(n) == "fully"]
+
+    def rack_pinion(self, args: dict) -> dict:
+        rack, pinion = str(args["rack"]), str(args["pinion"])
+        if args.get("pitch_diameter") is not None:
+            pitch = float(args["pitch_diameter"])
+        elif args.get("module") is not None and args.get("teeth") is not None:
+            pitch = float(args["module"]) * int(args["teeth"])
+        else:
+            raise WorkflowError("TOOL_ARGS", "rack_pinion 需要 pitch_diameter（mm）或 module + teeth")
+        rack_ref = str(args.get("rack_edge") or f"{rack}:edge(line, longest)")
+        pinion_ref = str(args.get("pinion_ref") or f"{pinion}:cyl(i=0)")
+        locked = self._coupling_precheck(self.resolve_name(rack), self.resolve_name(pinion))
+        if locked:
+            raise WorkflowError("FEATURE_NO_EFFECT", f"{locked} 已完全约束；耦合要加在已有的滑动/转动关节上")
+        mate = self._mate("rackpinion", rack_ref, pinion_ref, pitchDiameter=pitch / 1000,
+                          reverse=bool(args.get("reverse", False)))
+        self._record_joint("coupling:rack_pinion", rack_ref, pinion_ref, [mate])
+        return {"mate": mate, "pitch_diameter_mm": pitch, "travel_per_rev_mm": _round(math.pi * pitch)}
+
+    def _matching_cylinders(self, a: str, b: str) -> tuple[str, str]:
+        ca = [f for f in self.faces(a) if f.get("surfaceType") == "cylinder" and f.get("radius")]
+        cb = [f for f in self.faces(b) if f.get("surfaceType") == "cylinder" and f.get("radius")]
+        pairs = [
+            (abs(float(x["radius"]) - float(y["radius"])), float(x["radius"]), x, y)
+            for x in ca for y in cb if abs(float(x["radius"]) - float(y["radius"])) < 3e-4
+        ]
+        if not pairs:
+            raise WorkflowError("TOOL_ARGS", f"{a} 与 {b} 没有直径相同的圆柱面，请显式给引用")
+        _, _, x, y = min(pairs, key=lambda item: (item[0], item[1]))
+        return f"{a}:face:{x['index']}", f"{b}:face:{y['index']}"
+
+    def screw_pair(self, args: dict) -> dict:
+        screw, nut = str(args["screw"]), str(args["nut"])
+        lead = float(args["lead"])
+        if lead <= 0:
+            raise WorkflowError("TOOL_ARGS", "lead（导程 mm/转）必须为正")
+        if args.get("screw_ref") and args.get("nut_ref"):
+            ref_a, ref_b = str(args["screw_ref"]), str(args["nut_ref"])
+        else:
+            ref_a, ref_b = self._matching_cylinders(screw, nut)
+        mate = self._mate("screw", ref_a, ref_b, lead=lead / 1000, reverse=bool(args.get("reverse", False)))
+        self._record_joint("screw", ref_a, ref_b, [mate])
+        return {"mate": mate, "lead_mm": lead}
+
+    def linear_coupler(self, args: dict) -> dict:
+        a, b = str(args["a"]), str(args["b"])
+        ratio = float(args.get("ratio") or 1.0)
+        if ratio <= 0:
+            raise WorkflowError("TOOL_ARGS", "ratio 必须为正（b 的位移 / a 的位移）")
+        edge_a = str(args.get("edge_a") or f"{a}:edge(line, longest)")
+        edge_b = str(args.get("edge_b") or f"{b}:edge(line, longest)")
+        locked = self._coupling_precheck(self._component_of(edge_a), self._component_of(edge_b))
+        if locked:
+            raise WorkflowError("FEATURE_NO_EFFECT", f"{locked} 已完全约束；耦合要加在已有的滑动关节上")
+        ca, ra = self.resolve_ref(edge_a)
+        cb, rb = self.resolve_ref(edge_b)
+        end_a = {"component": ca, "ref": ra}
+        end_b = {"component": cb, "ref": rb}
+        if args.get("reference"):
+            end_a["referenceComponent"] = end_b["referenceComponent"] = self.resolve_name(str(args["reference"]))
+        numerator, denominator = LINEAR_COUPLER_RATIO(ratio)
+        result = self.asmwf("mate", {
+            "type": "linearcoupler", "a": end_a, "b": end_b,
+            "ratioNumerator": numerator, "ratioDenominator": denominator,
+            "reverse": bool(args.get("reverse", False)),
+        })
+        self.mate_names.append(result["name"])
+        self.saved = False
+        mate = {"name": result["name"], "type": "linearcoupler", "a": f"{ca}:{ra}", "b": f"{cb}:{rb}"}
+        self._record_joint("coupling:linear", edge_a, edge_b, [mate])
+        return {"mate": mate, "ratio": ratio, "reference": result.get("referenceComponents")}
+
+    def check_dof(self, args: dict) -> dict:
+        components = self.asmwf("components").get("components") or []
+        statuses = {c["name"]: CONSTRAINED.get(int(c.get("constrainedStatus") or 0), "unknown") for c in components}
+        fixed = {c["name"] for c in components if c.get("isFixed")}
+        # 固定件与 fixed 关节连成的刚体组算作一个构件
+        parent = {c["name"]: c["name"] for c in components}
+
+        def find(x: str) -> str:
+            while parent[x] != x:
+                parent[x] = parent[parent[x]]
+                x = parent[x]
+            return x
+
+        def union(x: str, y: str) -> None:
+            if x in parent and y in parent:
+                parent[find(x)] = find(y)
+
+        ground = next(iter(fixed), None)
+        for name in fixed:
+            union(name, ground)
+        for entry in self.joints:
+            if entry["kind"] == "fixed":
+                union(entry["a"], entry["b"])
+        bodies = {find(n) for n in parent}
+        joints, couplings, unknown = [], [], []
+        for entry in self.joints:
+            kind = entry["kind"]
+            if kind == "fixed":
+                continue
+            if kind.startswith("coupling:"):
+                couplings.append(kind.split(":", 1)[1])
+            elif kind in JOINT_DOF:
+                if find(entry["a"]) != find(entry["b"]):
+                    joints.append(kind)
+            else:
+                unknown.append(kind)
+        n = len(bodies)
+        spatial = 6 * (n - 1) - sum(6 - JOINT_DOF[k][0] for k in joints) - len(couplings)
+        planar_ok = all(JOINT_DOF[k][1] is not None for k in joints)
+        planar = (3 * (n - 1) - sum(3 - JOINT_DOF[k][1] for k in joints) - len(couplings)) if planar_ok else None
+        linked = self._connected_to_ground()
+        floating = sorted(
+            name for name in parent
+            if name not in linked and not any(name in (e["a"], e["b"]) for e in self.joints)
+        )
+        report = {
+            "bodies": n,
+            "joints": joints,
+            "couplings": couplings,
+            "mobility_spatial": spatial,
+            "mobility_planar": planar,
+            "unknown_mates": unknown,
+            "floating": floating,
+            "over_defined": sorted(n for n, s in statuses.items() if s == "over"),
+            "not_grounded": sorted(set(parent) - linked),
+        }
+        expected = args.get("expected_mobility")
+        if expected is not None:
+            actual = planar if planar is not None else spatial
+            report["expected_mobility"] = int(expected)
+            report["matches_expected"] = actual == int(expected)
+        return report
 
     # ------------------------------------------------------------ 检查 / 收尾
 

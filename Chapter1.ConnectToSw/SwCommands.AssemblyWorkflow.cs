@@ -25,6 +25,21 @@ namespace Chapter1.ConnectToSw
         public Dictionary<string, object> AssemblyWorkflowCall(string op, Dictionary<string, object> body)
         {
             EnsureActiveAssembly();
+            // 进程外 API 每次调用后 SolidWorks 都会刷新界面；逐面读几何时这会让一次查询拖到几分钟。
+            bool wasInProgress = _swApp.CommandInProgress;
+            _swApp.CommandInProgress = true;
+            try
+            {
+                return AssemblyWorkflowDispatch(op, body);
+            }
+            finally
+            {
+                _swApp.CommandInProgress = wasInProgress;
+            }
+        }
+
+        private Dictionary<string, object> AssemblyWorkflowDispatch(string op, Dictionary<string, object> body)
+        {
             switch (op)
             {
                 case "components":
@@ -35,6 +50,11 @@ namespace Chapter1.ConnectToSw
                         (int)Num(body, "maxFaces", 400),
                         Flag(body, "includeOther", false),
                         Num(body, "radius", -1));
+                case "component-edges":
+                    return GetComponentEdges(
+                        Str(body, "component"),
+                        (int)Num(body, "maxEdges", 200),
+                        body.ContainsKey("kind") ? Convert.ToString(body["kind"]) : "all");
                 case "mates":
                     return new Dictionary<string, object> { ["mates"] = DescribeMates() };
                 case "mate":
@@ -99,12 +119,32 @@ namespace Chapter1.ConnectToSw
 
         // ------------------------------------------------------------ 组件与几何
 
+        /// <summary>
+        /// 组件的实体。优先取零件文档里的实体：在装配体上下文逐面读几何的 COM 往返极慢
+        /// （几百个面的齿轮要几分钟），零件上下文则很快；面/边序号两者一致。
+        /// 要在装配体里选中或作为马达参考时，用 InAssembly 换算成装配体上下文实体。
+        /// </summary>
+        private static object[] ComponentBodies(IComponent2 component)
+        {
+            if (component.GetModelDoc2() is IPartDoc part)
+            {
+                var partBodies = part.GetBodies2((int)swBodyType_e.swSolidBody, true) as object[];
+                if (partBodies != null && partBodies.Length > 0) return partBodies;
+            }
+            object bodyInfo;
+            return component.GetBodies3((int)swBodyType_e.swSolidBody, out bodyInfo) as object[] ?? new object[0];
+        }
+
+        private static T InAssembly<T>(IComponent2 component, T entity) where T : class
+        {
+            return component.GetCorrespondingEntity(entity) as T ?? entity;
+        }
+
         private List<IFace2> ComponentFaceList(IComponent2 component)
         {
             var faces = new List<IFace2>();
-            object bodyInfo;
-            var bodies = component.GetBodies3((int)swBodyType_e.swSolidBody, out bodyInfo) as object[];
-            foreach (var bodyObject in bodies ?? new object[0])
+            var bodies = ComponentBodies(component);
+            foreach (var bodyObject in bodies)
             {
                 var list = (bodyObject as IBody2)?.GetFaces() as object[];
                 if (list == null) continue;
@@ -115,6 +155,22 @@ namespace Chapter1.ConnectToSw
                 }
             }
             return faces;
+        }
+
+        private List<IEdge> ComponentEdgeList(IComponent2 component)
+        {
+            var edges = new List<IEdge>();
+            foreach (var bodyObject in ComponentBodies(component))
+            {
+                var list = (bodyObject as IBody2)?.GetEdges() as object[];
+                if (list == null) continue;
+                foreach (var edgeObject in list)
+                {
+                    var edge = edgeObject as IEdge;
+                    if (edge != null) edges.Add(edge);
+                }
+            }
+            return edges;
         }
 
         private static double[] ComponentTransformArray(IComponent2 component)
@@ -151,8 +207,10 @@ namespace Chapter1.ConnectToSw
         public Dictionary<string, object> GetComponentFaces(
             string componentName, int maxFaces, bool includeOther, double radiusFilter = -1)
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             var component = FindAssemblyComponent(componentName);
             var faces = ComponentFaceList(component);
+            long listed = watch.ElapsedMilliseconds;
             var cylinders = new List<Dictionary<string, object>>();
             var planes = new List<Dictionary<string, object>>();
             var others = new List<Dictionary<string, object>>();
@@ -162,11 +220,17 @@ namespace Chapter1.ConnectToSw
                 var surface = face.IGetSurface();
                 bool planar = surface != null && surface.IsPlane();
                 bool cylinder = surface != null && surface.IsCylinder();
-                if (!planar && !cylinder && !includeOther) continue;
+                bool sphere = surface != null && !planar && !cylinder && surface.IsSphere();
+                if (!planar && !cylinder && !sphere && !includeOther) continue;
+                bool other = !planar && !cylinder && !sphere;
+                // 平面与其他面排在圆柱/球面之后，超过 maxFaces 的必然被截掉，不再逐面读几何（齿轮有上千个齿面）。
+                if ((planar || other) && radiusFilter >= 0) continue;
+                if (planar && planes.Count >= Math.Max(maxFaces, 1)) continue;
+                if (other && others.Count >= Math.Max(maxFaces, 1)) continue;
                 var item = new Dictionary<string, object>
                 {
                     ["index"] = index,
-                    ["surfaceType"] = planar ? "plane" : (cylinder ? "cylinder" : "other"),
+                    ["surfaceType"] = planar ? "plane" : cylinder ? "cylinder" : sphere ? "sphere" : "other",
                 };
                 try { item["area"] = Convert.ToDouble(face.GetArea()); } catch { }
                 try
@@ -177,7 +241,6 @@ namespace Chapter1.ConnectToSw
                 catch { }
                 if (planar)
                 {
-                    if (radiusFilter >= 0) continue;
                     var normal = face.Normal as double[];
                     if (normal != null && normal.Length >= 3) item["normal"] = normal.Take(3).ToArray();
                     var plane = surface.PlaneParams as double[];
@@ -200,9 +263,18 @@ namespace Chapter1.ConnectToSw
                     if (radiusFilter >= 0 && cylinders.Count >= Math.Max(maxFaces, 1))
                         break;
                 }
-                else if (radiusFilter >= 0)
+                else if (sphere)
                 {
-                    continue;
+                    var sp = surface.SphereParams as double[];
+                    if (sp != null && sp.Length >= 4)
+                    {
+                        item["center"] = sp.Take(3).ToArray();
+                        item["radius"] = sp[3];
+                    }
+                    if (radiusFilter >= 0 && item.ContainsKey("radius")
+                        && Math.Abs(Convert.ToDouble(item["radius"]) - radiusFilter) > 2e-4)
+                        continue;
+                    cylinders.Add(item);
                 }
                 else
                 {
@@ -211,12 +283,74 @@ namespace Chapter1.ConnectToSw
             }
             // 齿轮有大量齿面；圆柱面（轴孔）必须优先返回，否则配合选不到中心孔。
             var items = cylinders.Concat(planes).Concat(others).Take(Math.Max(maxFaces, 1)).ToList();
+            Console.WriteLine(
+                $"[SwCommands] component-faces {componentName}: {faces.Count} faces, list {listed} ms, total {watch.ElapsedMilliseconds} ms");
             return new Dictionary<string, object>
             {
                 ["component"] = componentName,
                 ["faceCount"] = faces.Count,
                 ["transform"] = ComponentTransformArray(component),
                 ["faces"] = items,
+            };
+        }
+
+        /// <summary>
+        /// 组件的边列表。index 是组件实体上的全局边序号；line 给出端点与单位方向，circle 给出圆心、轴向与半径。
+        /// kind 为 line / circle / all。坐标为零件坐标系（与 faces 相同，需乘 transform 才是装配坐标）。
+        /// </summary>
+        public Dictionary<string, object> GetComponentEdges(string componentName, int maxEdges, string kind)
+        {
+            var component = FindAssemblyComponent(componentName);
+            var edges = ComponentEdgeList(component);
+            string filter = (kind ?? "all").ToLowerInvariant();
+            var items = new List<Dictionary<string, object>>();
+            for (int index = 0; index < edges.Count && items.Count < Math.Max(maxEdges, 1); index++)
+            {
+                var curve = edges[index].GetCurve() as ICurve;
+                if (curve == null) continue;
+                bool line = curve.IsLine();
+                bool circle = !line && curve.IsCircle();
+                if (filter == "line" && !line) continue;
+                if (filter == "circle" && !circle) continue;
+                if (filter == "all" && !line && !circle) continue;
+                var item = new Dictionary<string, object>
+                {
+                    ["index"] = index,
+                    ["curveType"] = line ? "line" : "circle",
+                };
+                if (line)
+                {
+                    var start = (edges[index].GetStartVertex() as IVertex)?.GetPoint() as double[];
+                    var end = (edges[index].GetEndVertex() as IVertex)?.GetPoint() as double[];
+                    if (start != null && end != null && start.Length >= 3 && end.Length >= 3)
+                    {
+                        double dx = end[0] - start[0], dy = end[1] - start[1], dz = end[2] - start[2];
+                        double length = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                        item["start"] = start.Take(3).ToArray();
+                        item["end"] = end.Take(3).ToArray();
+                        item["length"] = length;
+                        if (length > 1e-12)
+                            item["direction"] = new[] { dx / length, dy / length, dz / length };
+                    }
+                }
+                else
+                {
+                    var cp = curve.CircleParams as double[];
+                    if (cp != null && cp.Length >= 7)
+                    {
+                        item["center"] = cp.Take(3).ToArray();
+                        item["axis"] = cp.Skip(3).Take(3).ToArray();
+                        item["radius"] = cp[6];
+                    }
+                }
+                items.Add(item);
+            }
+            return new Dictionary<string, object>
+            {
+                ["component"] = componentName,
+                ["edgeCount"] = edges.Count,
+                ["transform"] = ComponentTransformArray(component),
+                ["edges"] = items,
             };
         }
 
@@ -229,9 +363,19 @@ namespace Chapter1.ConnectToSw
         {
             var component = FindAssemblyComponent(componentName);
             string text = (reference ?? "").Trim();
+            var model = (IModelDoc2)_activeAssembly;
+            if (text == "" || text.ToLowerInvariant() == "component")
+            {
+                var componentSelect = ((ISelectionMgr)model.SelectionManager).CreateSelectData();
+                componentSelect.Mark = mark;
+                if (!component.Select4(append, componentSelect, false))
+                    throw new InvalidOperationException($"选择组件 {componentName} 失败");
+                return;
+            }
             int colon = text.IndexOf(':');
             if (colon <= 0)
-                throw new ArgumentException($"引用 {reference} 应写成 face:i、plane:front|top|right 或 bore:auto");
+                throw new ArgumentException(
+                    $"引用 {reference} 应写成 face:i、edge:i、plane:front|top|right、bore:auto 或 component");
             string kind = text.Substring(0, colon).ToLowerInvariant();
             string value = text.Substring(colon + 1).Trim().ToLowerInvariant();
             if (kind == "bore")
@@ -239,7 +383,18 @@ namespace Chapter1.ConnectToSw
                 FindMotorCylinderFace(component, append);
                 return;
             }
-            var model = (IModelDoc2)_activeAssembly;
+            if (kind == "edge")
+            {
+                var edges = ComponentEdgeList(component);
+                int edgeIndex = int.Parse(value);
+                if (edgeIndex < 0 || edgeIndex >= edges.Count)
+                    throw new ArgumentException($"组件 {componentName} 没有边 {edgeIndex}（共 {edges.Count} 条）");
+                var edgeSelect = ((ISelectionMgr)model.SelectionManager).CreateSelectData();
+                edgeSelect.Mark = mark;
+                if (!((IEntity)InAssembly(component, edges[edgeIndex])).Select4(append, edgeSelect))
+                    throw new InvalidOperationException($"选择 {componentName} 的 edge:{edgeIndex} 失败");
+                return;
+            }
             if (kind == "face")
             {
                 var faces = ComponentFaceList(component);
@@ -248,7 +403,7 @@ namespace Chapter1.ConnectToSw
                     throw new ArgumentException($"组件 {componentName} 没有面 {index}（共 {faces.Count} 个）");
                 var selectData = ((ISelectionMgr)model.SelectionManager).CreateSelectData();
                 selectData.Mark = mark;
-                if (!((IEntity)faces[index]).Select4(append, selectData))
+                if (!((IEntity)InAssembly(component, faces[index])).Select4(append, selectData))
                     throw new InvalidOperationException($"选择 {componentName} 的 face:{index} 失败");
                 return;
             }
@@ -261,6 +416,23 @@ namespace Chapter1.ConnectToSw
                 return;
             }
             throw new ArgumentException($"未知引用类型 {kind}");
+        }
+
+        /// <summary>
+        /// 把引用解析为装配体上下文中的实体对象（供 CreateMateData 的 EntitiesToMate 使用）：
+        /// 先按 SelectComponentRef 选中，再从选择集取回，保证拿到的是组件实例上的代理实体。
+        /// </summary>
+        private object ResolveComponentEntity(string componentName, string reference)
+        {
+            ClearAssemblySelection();
+            SelectComponentRef(componentName, reference, false, 0);
+            var manager = (ISelectionMgr)((IModelDoc2)_activeAssembly).SelectionManager;
+            int count = manager.GetSelectedObjectCount2(-1);
+            object entity = count > 0 ? manager.GetSelectedObject6(count, -1) : null;
+            ClearAssemblySelection();
+            if (entity == null)
+                throw new InvalidOperationException($"无法取得 {componentName} 上的实体 {reference}");
+            return entity;
         }
 
         private List<IFeature> MateFeatures()
@@ -321,6 +493,54 @@ namespace Chapter1.ConnectToSw
                     item["gearRatioDenominator"] = gear.GearRatioDenominator;
                     item["reverse"] = gear.Reverse;
                 }
+                var definition = feature.GetDefinition();
+                if (definition is IRackPinionMateFeatureData rack)
+                {
+                    item["kind"] = "rackpinion";
+                    item["diameterType"] = rack.DiameterType;
+                    item["diameterValue"] = rack.DiameterVal;
+                    item["reverse"] = rack.Reverse;
+                }
+                else if (definition is IScrewMateFeatureData screw)
+                {
+                    item["kind"] = "screw";
+                    item["revolutionType"] = screw.RevolutionType;
+                    item["revolutionValue"] = screw.RevolutionVal;
+                    item["reverse"] = screw.Reverse;
+                }
+                else if (definition is ILinearCouplerMateFeatureData coupler)
+                {
+                    item["kind"] = "linearcoupler";
+                    item["ratioNumerator"] = coupler.CouplerRatioNumerator;
+                    item["ratioDenominator"] = coupler.CouplerRatioDenominator;
+                    item["reverse"] = coupler.Reverse;
+                }
+                else if (definition is ISlotMateFeatureData slot)
+                {
+                    item["kind"] = "slot";
+                    item["constraint"] = slot.Constraint;
+                }
+                else if (definition is ILockMateFeatureData)
+                {
+                    item["kind"] = "lock";
+                }
+                else if (definition is IConcentricMateFeatureData concentric)
+                {
+                    item["lockRotation"] = concentric.LockRotation;
+                }
+                else if (definition is IDistanceMateFeatureData distance)
+                {
+                    try
+                    {
+                        item["distance"] = distance.Distance;
+                        if (distance.MaximumDistance != distance.MinimumDistance)
+                        {
+                            item["distanceMin"] = distance.MinimumDistance;
+                            item["distanceMax"] = distance.MaximumDistance;
+                        }
+                    }
+                    catch { }
+                }
                 result.Add(item);
             }
             return result;
@@ -335,13 +555,18 @@ namespace Chapter1.ConnectToSw
             { "distance", swMateType_e.swMateDISTANCE },
             { "angle", swMateType_e.swMateANGLE },
             { "gear", swMateType_e.swMateGEAR },
+            // CreateMateData(LOCK) 传组件对象会报 errorStatus=4；选中两个组件再 AddMate5 可以
+            { "lock", swMateType_e.swMateLOCK },
         };
 
         public Dictionary<string, object> AddWorkflowMate(Dictionary<string, object> body)
         {
-            string typeName = Str(body, "type").ToLowerInvariant();
+            string typeName = Str(body, "type").ToLowerInvariant().Replace("_", "");
+            if (MechanicalMateTypes.ContainsKey(typeName))
+                return AddMechanicalMate(typeName, body);
             if (!MateTypes.ContainsKey(typeName))
-                throw new ArgumentException($"不支持的配合类型 {typeName}，可选 {string.Join("/", MateTypes.Keys)}");
+                throw new ArgumentException(
+                    $"不支持的配合类型 {typeName}，可选 {string.Join("/", MateTypes.Keys.Concat(MechanicalMateTypes.Keys))}");
             var a = Obj(body, "a");
             var b = Obj(body, "b");
             string alignText = body.ContainsKey("align") ? Convert.ToString(body["align"]).ToLowerInvariant() : "closest";
@@ -352,6 +577,14 @@ namespace Chapter1.ConnectToSw
             double numerator = Num(body, "ratioNumerator", 1.0);
             double denominator = Num(body, "ratioDenominator", 1.0);
             bool reverse = Flag(body, "reverse", false);
+            bool lockRotation = typeName == "concentric" && Flag(body, "lockRotation", false);
+            double distanceMax = Num(body, "distanceMax", distance);
+            double distanceMin = Num(body, "distanceMin", distance);
+            bool limit = typeName == "distance" && distanceMax > distanceMin + 1e-9;
+            if (typeName == "distance" && distanceMax < distanceMin - 1e-9)
+                throw new ArgumentException("distanceMax 不能小于 distanceMin");
+            if (limit && (distance < distanceMin - 1e-9 || distance > distanceMax + 1e-9))
+                distance = Math.Min(Math.Max(distance, distanceMin), distanceMax);
 
             var before = new HashSet<string>(MateFeatures().Select(f => f.Name));
             ClearAssemblySelection();
@@ -360,10 +593,10 @@ namespace Chapter1.ConnectToSw
             int errStatus = 0;
             _activeAssembly.AddMate5(
                 (int)MateTypes[typeName], align, flip,
-                distance, distance, distance,
+                distance, limit ? distanceMax : distance, limit ? distanceMin : distance,
                 numerator, denominator,
                 angle, angle, angle,
-                false, false, 0, out errStatus);
+                false, lockRotation, 0, out errStatus);
             ClearAssemblySelection();
             var added = MateFeatures().Where(f => !before.Contains(f.Name)).ToList();
             if (errStatus != (int)swAddMateError_e.swAddMateError_NoError || added.Count == 0)
@@ -393,12 +626,277 @@ namespace Chapter1.ConnectToSw
                 DeleteMateByName(name);
                 throw new InvalidOperationException($"{typeName} 配合建立后求解失败 (errorCode={errorCode})，已撤销");
             }
-            return new Dictionary<string, object>
+            var result = new Dictionary<string, object>
             {
                 ["name"] = mateFeature.Name,
                 ["type"] = typeName,
                 ["warning"] = warning,
             };
+            if (lockRotation) result["lockRotation"] = true;
+            if (limit)
+            {
+                result["distanceMin"] = distanceMin;
+                result["distanceMax"] = distanceMax;
+            }
+            return result;
+        }
+
+        private static readonly Dictionary<string, swMateType_e> MechanicalMateTypes = new Dictionary<string, swMateType_e>
+        {
+            { "slot", swMateType_e.swMateSLOT },
+            { "rackpinion", swMateType_e.swMateRACKPINION },
+            { "screw", swMateType_e.swMateSCREW },
+            { "linearcoupler", swMateType_e.swMateLINEARCOUPLER },
+        };
+
+        private string ReferenceComponentName(Dictionary<string, object> end)
+        {
+            if (end.ContainsKey("referenceComponent") && end["referenceComponent"] != null)
+                return Convert.ToString(end["referenceComponent"]);
+            foreach (var item in _activeAssembly.GetComponents(true) as object[] ?? new object[0])
+            {
+                var component = item as IComponent2;
+                if (component != null && component.IsFixed()) return component.Name2;
+            }
+            throw new InvalidOperationException("线性耦合需要参考组件：请给 referenceComponent，或先固定一个基座组件");
+        }
+
+        /// <summary>
+        /// 机械配合（槽口、齿条小齿轮、螺旋、线性耦合、锁定）走 CreateMateData/CreateMate：
+        /// 这些类型在 AddMate5 里没有对应的参数位（直径、导程、耦合比、槽口约束）。
+        /// a/b 的 ref 语义：
+        ///   slot         a=槽口面，b=销的圆柱面/轴
+        ///   rackpinion   a=齿条上沿运动方向的直线边，b=小齿轮的圆柱面或圆边
+        ///   screw        a=螺杆圆柱面，b=螺母孔圆柱面
+        ///   linearcoupler a/b=各自运动方向上的直线边或平面，referenceComponent=测量位移的参考组件（默认固定件）
+        /// 锁定配合走 AddMate5（见 MateTypes）。
+        /// </summary>
+        private Dictionary<string, object> AddMechanicalMate(string typeName, Dictionary<string, object> body)
+        {
+            var a = Obj(body, "a");
+            var b = Obj(body, "b");
+            string aName = Str(a, "component");
+            string bName = Str(b, "component");
+            string aRef = a.ContainsKey("ref") && a["ref"] != null ? Convert.ToString(a["ref"]) : "component";
+            string bRef = b.ContainsKey("ref") && b["ref"] != null ? Convert.ToString(b["ref"]) : "component";
+            string alignText = body.ContainsKey("align") ? Convert.ToString(body["align"]).ToLowerInvariant() : "closest";
+            int align = alignText == "aligned" ? 0 : alignText == "anti" ? 1 : 2;
+            bool reverse = Flag(body, "reverse", false);
+
+            var before = new HashSet<string>(MateFeatures().Select(f => f.Name));
+            object data = _activeAssembly.CreateMateData((int)MechanicalMateTypes[typeName]);
+            if (data == null)
+                throw new InvalidOperationException($"CreateMateData({typeName}) 返回空");
+            var info = new Dictionary<string, object>();
+            try
+            {
+                FillMechanicalMateData(typeName, data, body, a, b, aName, bName, aRef, bRef, align, reverse, info);
+            }
+            catch (InvalidCastException)
+            {
+                int dataType = -1;
+                try { dataType = ((IMateFeatureData)data).TypeName; } catch { }
+                var supported = new[]
+                {
+                    typeof(ISlotMateFeatureData), typeof(IRackPinionMateFeatureData), typeof(IScrewMateFeatureData),
+                    typeof(ILinearCouplerMateFeatureData), typeof(IGearMateFeatureData), typeof(IMateFeatureData),
+                }.Where(t => t.IsInstanceOfType(data)).Select(t => t.Name);
+                throw new InvalidOperationException(
+                    $"CreateMateData({typeName}) 返回的数据类型不符: TypeName={dataType}, 支持接口={string.Join(",", supported)}");
+            }
+            return FinishMechanicalMate(typeName, data, before, info);
+        }
+
+        private void FillMechanicalMateData(
+            string typeName, object data, Dictionary<string, object> body,
+            Dictionary<string, object> a, Dictionary<string, object> b,
+            string aName, string bName, string aRef, string bRef, int align, bool reverse,
+            Dictionary<string, object> info)
+        {
+            switch (typeName)
+            {
+                case "slot":
+                {
+                    var slotData = (ISlotMateFeatureData)data;
+                    PreselectMatePair(aName, aRef, bName, bRef, info);
+                    slotData.MateAlignment = align;
+                    string constraint = body.ContainsKey("slotConstraint")
+                        ? Convert.ToString(body["slotConstraint"]).ToLowerInvariant() : "free";
+                    int constraintValue = constraint == "center" || constraint == "centered" ? 1
+                        : constraint == "distance" ? 2 : constraint == "percent" ? 3 : 0;
+                    bool flip = Flag(body, "flip", false);
+                    double distance = Num(body, "distance", 0.0);
+                    double percent = Num(body, "percent", 50.0) / 100.0;
+                    Action<ISlotMateFeatureData> apply = target =>
+                    {
+                        target.Constraint = constraintValue;
+                        if (constraintValue == 2) target.Distance = distance;
+                        if (constraintValue == 3) target.Percent = percent;
+                        target.FlipDirection = flip;
+                    };
+                    apply(slotData);
+                    info[PostEditKey] = (Action<object>)(definition => apply((ISlotMateFeatureData)definition));
+                    info["slotConstraint"] = constraint;
+                    break;
+                }
+                case "rackpinion":
+                {
+                    var rackData = (IRackPinionMateFeatureData)data;
+                    rackData.set_EntitiesToMate(
+                        (int)swRackPinionMateEntityType_e.swRackPinionMateEntityType_Rack,
+                        ResolveComponentEntity(aName, aRef));
+                    rackData.set_EntitiesToMate(
+                        (int)swRackPinionMateEntityType_e.swRackPinionMateEntityType_Pinion,
+                        ResolveComponentEntity(bName, bRef));
+                    bool travel = body.ContainsKey("travelPerRevolution");
+                    double value = travel ? Num(body, "travelPerRevolution", 0) : Num(body, "pitchDiameter", 0);
+                    if (value <= 0)
+                        throw new ArgumentException("rackpinion 需要 pitchDiameter（米）或 travelPerRevolution（米/转）");
+                    rackData.DiameterType = travel
+                        ? (int)swRackPinionMateDistanceOptions_e.swRackTravelPerRevolution
+                        : (int)swRackPinionMateDistanceOptions_e.swPinionPitchDiameter;
+                    rackData.DiameterVal = value;
+                    rackData.Reverse = reverse;
+                    info[travel ? "travelPerRevolution" : "pitchDiameter"] = value;
+                    break;
+                }
+                case "screw":
+                {
+                    var screwData = (IScrewMateFeatureData)data;
+                    double lead = Num(body, "lead", 0);
+                    if (lead <= 0) throw new ArgumentException("screw 需要 lead（导程，米/转）");
+                    PreselectMatePair(aName, aRef, bName, bRef, info);
+                    Action<IScrewMateFeatureData> apply = target =>
+                    {
+                        target.RevolutionType = (int)swScrewMateDistanceOptions_e.swDistancePerRevolution;
+                        target.RevolutionVal = lead;
+                        target.Reverse = reverse;
+                    };
+                    apply(screwData);
+                    screwData.MateAlignment = align;
+                    info[PostEditKey] = (Action<object>)(definition => apply((IScrewMateFeatureData)definition));
+                    info["lead"] = lead;
+                    break;
+                }
+                case "linearcoupler":
+                {
+                    var couplerData = (ILinearCouplerMateFeatureData)data;
+                    string refA = ReferenceComponentName(a);
+                    string refB = ReferenceComponentName(b);
+                    couplerData.MateEntity1 = ResolveComponentEntity(aName, aRef);
+                    couplerData.MateEntity2 = ResolveComponentEntity(bName, bRef);
+                    couplerData.ReferenceComponent1 = FindAssemblyComponent(refA);
+                    couplerData.ReferenceComponent2 = FindAssemblyComponent(refB);
+                    double numerator = Num(body, "ratioNumerator", 1.0);
+                    double denominator = Num(body, "ratioDenominator", 1.0);
+                    if (numerator <= 0 || denominator <= 0)
+                        throw new ArgumentException("耦合比分子分母必须为正");
+                    couplerData.CouplerRatioNumerator = numerator;
+                    couplerData.CouplerRatioDenominator = denominator;
+                    couplerData.Reverse = reverse;
+                    info["referenceComponents"] = new[] { refA, refB };
+                    info["ratio"] = numerator / denominator;
+                    break;
+                }
+            }
+        }
+
+        private const string PreselectedKey = "__preselected";
+        private const string PostEditKey = "__postEdit";
+
+        /// <summary>
+        /// 槽口、螺旋：赋值 EntitiesToMate 在 SW 2025 上总报 errorStatus=4，改用 Mark=1 预选；
+        /// 而预选路径下 CreateMate 会忽略数据对象上的数值参数（螺旋导程回落为默认 1mm/转），
+        /// 所以建好后再用 ModifyDefinition 写回参数（见 PostEditKey）。
+        /// </summary>
+        /// <summary>
+        /// 螺旋导程：RevolutionVal 经 ModifyDefinition 写不进去（仍是默认 1mm/转），
+        /// 它实际存为配合特征上的一个尺寸，所以回退为直接改该尺寸的 SystemValue。返回最终导程（米/转）。
+        /// </summary>
+        private double ApplyScrewLead(IFeature mateFeature, double lead)
+        {
+            double Current() => ((IScrewMateFeatureData)mateFeature.GetDefinition()).RevolutionVal;
+            if (Math.Abs(Current() - lead) < 1e-9) return lead;
+            var display = mateFeature.GetFirstDisplayDimension() as IDisplayDimension;
+            while (display != null)
+            {
+                var dimension = display.GetDimension2(0);
+                if (dimension != null)
+                {
+                    dimension.SetSystemValue3(lead, (int)swSetValueInConfiguration_e.swSetValue_InAllConfigurations, null);
+                    Console.WriteLine($"[SwCommands] screw 导程尺寸 {dimension.FullName} -> {lead}");
+                }
+                display = mateFeature.GetNextDisplayDimension(display) as IDisplayDimension;
+            }
+            ((IModelDoc2)_activeAssembly).EditRebuild3();
+            double applied = Current();
+            if (Math.Abs(applied - lead) > 1e-9)
+                Console.WriteLine($"[SwCommands] screw 导程未能写入: 期望 {lead}，实际 {applied}");
+            return applied;
+        }
+
+        private void PreselectMatePair(string aName, string aRef, string bName, string bRef, Dictionary<string, object> info)
+        {
+            ClearAssemblySelection();
+            SelectComponentRef(aName, aRef, false, 1);
+            SelectComponentRef(bName, bRef, true, 1);
+            info[PreselectedKey] = true;
+        }
+
+        private Dictionary<string, object> FinishMechanicalMate(
+            string typeName, object data, HashSet<string> before, Dictionary<string, object> info)
+        {
+            if (!info.Remove(PreselectedKey)) ClearAssemblySelection();
+            Action<object> postEdit = null;
+            if (info.TryGetValue(PostEditKey, out var postEditValue))
+            {
+                postEdit = (Action<object>)postEditValue;
+                info.Remove(PostEditKey);
+            }
+            var created = _activeAssembly.CreateMate(data) as IFeature;
+            ClearAssemblySelection();
+            var added = MateFeatures().Where(f => !before.Contains(f.Name)).ToList();
+            int errorStatus = 0;
+            try { errorStatus = ((IMateFeatureData)data).ErrorStatus; } catch { }
+            if (created == null || added.Count == 0)
+            {
+                foreach (var feature in added) DeleteMateByName(feature.Name);
+                string reason = errorStatus == 3 ? "对齐方式不可行" : errorStatus == 4 ? "所选实体不能构成该配合"
+                    : errorStatus == 5 ? "装配过定义（与已有配合冲突）" : "未知原因";
+                throw new InvalidOperationException($"{typeName} 配合失败: errorStatus={errorStatus}（{reason}）");
+            }
+            var mateFeature = created ?? added[added.Count - 1];
+            if (postEdit != null)
+            {
+                object definition = mateFeature.GetDefinition();
+                postEdit(definition);
+                if (!mateFeature.ModifyDefinition(definition, _activeAssembly, null))
+                {
+                    string name = mateFeature.Name;
+                    DeleteMateByName(name);
+                    throw new InvalidOperationException($"{typeName} 配合参数写回失败，已撤销");
+                }
+            }
+            if (typeName == "screw" && info.TryGetValue("lead", out var leadValue))
+                info["leadApplied"] = ApplyScrewLead(mateFeature, Convert.ToDouble(leadValue));
+            ((IModelDoc2)_activeAssembly).EditRebuild3();
+            bool warning = false;
+            int errorCode = 0;
+            try { errorCode = mateFeature.GetErrorCode2(out warning); } catch { }
+            if (errorCode != 0)
+            {
+                string name = mateFeature.Name;
+                DeleteMateByName(name);
+                throw new InvalidOperationException($"{typeName} 配合建立后求解失败 (errorCode={errorCode})，已撤销");
+            }
+            var result = new Dictionary<string, object>
+            {
+                ["name"] = mateFeature.Name,
+                ["type"] = typeName,
+                ["warning"] = warning,
+            };
+            foreach (var pair in info) result[pair.Key] = pair.Value;
+            return result;
         }
 
         public Dictionary<string, object> DeleteMateByName(string name)
@@ -449,8 +947,8 @@ namespace Chapter1.ConnectToSw
                 int index = int.Parse(text.Substring(5));
                 if (index < 0 || index >= faces.Count)
                     throw new ArgumentException($"组件 {componentName} 没有面 {index}");
-                face = faces[index];
-                var surface = face.IGetSurface();
+                face = InAssembly(component, faces[index]);
+                var surface = faces[index].IGetSurface();
                 if (surface == null || !surface.IsCylinder())
                     throw new ArgumentException($"face:{index} 不是圆柱面，不能作为旋转马达参考");
             }

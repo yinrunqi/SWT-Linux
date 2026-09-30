@@ -30,16 +30,27 @@ def _load_case(name: str) -> dict:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
-def _recipes() -> str:
-    chunks = []
-    for fname in (
+RECIPE_SETS = {
+    # v1：手写的场景配方（齿轮系、曲柄滑块）
+    "v1": (
         "assembly_ground_dof.md",
         "assembly_gear_train.md",
         "assembly_crank_slider.md",
         "assembly_motion_check.md",
-    ):
-        chunks.append((RECIPES / fname).read_text(encoding="utf-8"))
-    return "\n\n".join(chunks)
+    ),
+    # v2：由 AutoMate / Fusion 360 统计导出的通用配方，运动验证沿用同一份
+    "v2": (
+        "assembly_topology.md",
+        "assembly_joint_mapping.md",
+        "assembly_coupling.md",
+        "assembly_linkage.md",
+        "assembly_motion_check.md",
+    ),
+}
+
+
+def _recipes(workflow: str = "v1") -> str:
+    return "\n\n".join((RECIPES / fname).read_text(encoding="utf-8") for fname in RECIPE_SETS[workflow])
 
 
 def _close(sw: str) -> None:
@@ -121,19 +132,23 @@ def assemble(
     sw: str,
     model: str,
     max_llm_calls: int,
+    workflow: str = "v1",
 ) -> dict:
     from planner.assembly_workflow.agent import AssemblyAgent
     from planner.assembly_workflow.session import AssemblySession
+    from planner.assembly_workflow.tools import tool_names, tool_specs
     from geomcheck.assembly_motion import analyze_frames, clearance_mm, sample_motion
 
     dest.parent.mkdir(parents=True, exist_ok=True)
     _close(sw)
-    session = AssemblySession(base_url=sw)
+    session = AssemblySession(base_url=sw, workflow=workflow, allowed_tools=tool_names(workflow))
     session.start_assembly(str(dest))
     listing = "\n".join(f"- {role}: {path}" for role, path in parts.items())
-    goal = _recipes() + "\n\n" + case["assembly"]["prompt"] + "\n\n零件文件：\n" + listing
+    goal = _recipes(workflow) + "\n\n" + case["assembly"]["prompt"] + "\n\n零件文件：\n" + listing
     started = time.perf_counter()
-    outcome = AssemblyAgent(_openai(), model, session, max_llm_calls=max_llm_calls).run(goal)
+    outcome = AssemblyAgent(
+        _openai(), model, session, max_llm_calls=max_llm_calls, tools=tool_specs(workflow),
+    ).run(goal)
     motion = None
     static = {"component_count": len(session.aliases), "saved": session.saved}
     try:
@@ -176,12 +191,14 @@ def assemble(
         "duration_seconds": round(time.perf_counter() - started, 2),
         "aliases": outcome.get("aliases"),
         "tool_calls": outcome["tool_calls"],
+        "agent_last_motion": outcome.get("last_motion"),
+        "joints": session.joints,
     }
 
 
-def run_condition(case: dict, condition: str, repeat: int, args) -> dict:
+def run_condition(case: dict, condition: str, repeat: int, args, workflow: str = "v1") -> dict:
     case_id = case["case_id"]
-    out = Path(args.output_dir) / case_id / f"{condition}_r{repeat}"
+    out = Path(args.output_dir) / workflow / case_id / f"{condition}_r{repeat}"
     out.mkdir(parents=True, exist_ok=True)
     part_results = []
     parts: dict[str, Path] = {}
@@ -209,14 +226,14 @@ def run_condition(case: dict, condition: str, repeat: int, args) -> dict:
                 parts[role] = generated[role]
         if condition == "e2e" and not all(item["accepted"] for item in part_results):
             return {
-                "case_id": case_id, "condition": condition, "repeat": repeat,
+                "case_id": case_id, "condition": condition, "repeat": repeat, "workflow": workflow,
                 "parts": part_results, "assembly": None,
                 "part_pass_rate": _rate(part_results),
                 "assembly_score": 0, "motion_score": 0, "e2e": False,
             }
     assembly = assemble(
         case, parts, out / f"{case_id}.SLDASM",
-        sw=args.sw, model=args.model, max_llm_calls=args.max_asm_calls,
+        sw=args.sw, model=args.model, max_llm_calls=args.max_asm_calls, workflow=workflow,
     )
     part_rate = 1.0 if condition == "gold" else _rate(part_results)
     motion_score = float((assembly.get("motion") or {}).get("score") or 0)
@@ -225,6 +242,7 @@ def run_condition(case: dict, condition: str, repeat: int, args) -> dict:
         "case_id": case_id,
         "condition": condition,
         "repeat": repeat,
+        "workflow": workflow,
         "parts": part_results,
         "assembly": {k: v for k, v in assembly.items() if k != "tool_calls"},
         "tool_calls": assembly.get("tool_calls"),
@@ -258,6 +276,8 @@ def main() -> None:
     parser.add_argument("--cases", default="gearbox,engine")
     parser.add_argument("--condition", default="gold", choices=["gold", "gen", "e2e", "all"])
     parser.add_argument("--repeats", type=int, default=2)
+    parser.add_argument("--workflow", default="v1", choices=["v1", "v2", "both"],
+                        help="v1=手写场景配方与原工具集；v2=数据导出的通用配方与扩展工具集")
     parser.add_argument("--model", default=MODEL)
     parser.add_argument("--sw", default="http://localhost:5100")
     parser.add_argument("--max-part-calls", type=int, default=40)
@@ -273,22 +293,46 @@ def main() -> None:
         elif token in ("engine", "single_cylinder_engine"):
             names.append("engine")
     conditions = ["gold", "gen", "e2e"] if args.condition == "all" else [args.condition]
+    workflows = ["v1", "v2"] if args.workflow == "both" else [args.workflow]
     rows = []
+
+    def write() -> dict:
+        report = {
+            "summary": summarize(rows),
+            "by_workflow": {
+                wf: {
+                    "all": summarize([r for r in rows if r["workflow"] == wf]),
+                    **{
+                        cid: summarize([r for r in rows if r["workflow"] == wf and r["case_id"] == cid])
+                        for cid in sorted({r["case_id"] for r in rows})
+                    },
+                }
+                for wf in workflows
+            },
+            "recipes": {wf: list(RECIPE_SETS[wf]) for wf in workflows},
+            "results": rows,
+            "model": args.model,
+        }
+        Path(args.output).write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+        return report
+
     for name in names:
         case = _load_case(name)
         for condition in conditions:
             for repeat in range(1, args.repeats + 1):
-                print(f"=== {case['case_id']} {condition} r{repeat} ===", flush=True)
-                row = run_condition(case, condition, repeat, args)
-                rows.append(row)
-                print(
-                    f"  parts={row['part_pass_rate']} static={row['assembly_score']} "
-                    f"motion={row['motion_score']} e2e={row['e2e']}",
-                    flush=True,
-                )
-    report = {"summary": summarize(rows), "results": rows, "model": args.model}
-    Path(args.output).write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps(report["summary"], ensure_ascii=False))
+                # 同一 case / 重复内交替 v1、v2，减少 SolidWorks 状态漂移造成的系统偏差
+                for workflow in workflows:
+                    print(f"=== {case['case_id']} {condition} r{repeat} {workflow} ===", flush=True)
+                    row = run_condition(case, condition, repeat, args, workflow)
+                    rows.append(row)
+                    print(
+                        f"  parts={row['part_pass_rate']} static={row['assembly_score']} "
+                        f"motion={row['motion_score']} e2e={row['e2e']}",
+                        flush=True,
+                    )
+                    write()
+    report = write()
+    print(json.dumps(report["by_workflow"], ensure_ascii=False))
 
 
 if __name__ == "__main__":
