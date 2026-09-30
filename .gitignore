@@ -77,6 +77,8 @@ LLMPlanner/log/**
 
 # CAD-1K 原始数据未声明 license，只保留在本地，不入库（派生统计 stats.json 可入库）
 LLMPlanner/datasets/cad1k/raw/**
+# AutoMate 原始数据（CC0，体积大）只放本地，入库的只有统计结果
+LLMPlanner/datasets/automate/raw/**
 
 # SolidWorks 打开文档时生成的临时锁文件，以及装配体冒烟脚本的本地输出
 LLMPlanner/**/~$*

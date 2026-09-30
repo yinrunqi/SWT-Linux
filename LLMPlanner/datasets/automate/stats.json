@@ -1,0 +1,1540 @@
+{
+  "source": "AutoMate (Jones et al. 2021), Zenodo 7776208, CC0",
+  "mates": {
+    "n_mates_raw": 1292016,
+    "mate_type": {
+      "FASTENED": {
+        "n": 700824,
+        "pct": 54.24
+      },
+      "PLANAR": {
+        "n": 284866,
+        "pct": 22.05
+      },
+      "REVOLUTE": {
+        "n": 126150,
+        "pct": 9.76
+      },
+      "CYLINDRICAL": {
+        "n": 92465,
+        "pct": 7.16
+      },
+      "SLIDER": {
+        "n": 52105,
+        "pct": 4.03
+      },
+      "PARALLEL": {
+        "n": 25684,
+        "pct": 1.99
+      },
+      "BALL": {
+        "n": 5905,
+        "pct": 0.46
+      },
+      "PIN_SLOT": {
+        "n": 4017,
+        "pct": 0.31
+      }
+    },
+    "part_class": {
+      "block": {
+        "n": 152468,
+        "pct": 33.73
+      },
+      "plate": {
+        "n": 91424,
+        "pct": 20.23
+      },
+      "rod": {
+        "n": 71177,
+        "pct": 15.75
+      },
+      "disc": {
+        "n": 61770,
+        "pct": 13.67
+      },
+      "compact": {
+        "n": 49331,
+        "pct": 10.91
+      },
+      "toothed_disc": {
+        "n": 25778,
+        "pct": 5.7
+      },
+      "unknown": {
+        "n": 19,
+        "pct": 0.0
+      }
+    },
+    "pair_to_mate_type": {
+      "block+block": {
+        "n": 214186,
+        "types": {
+          "FASTENED": {
+            "n": 115947,
+            "pct": 54.13
+          },
+          "PLANAR": {
+            "n": 51994,
+            "pct": 24.28
+          },
+          "REVOLUTE": {
+            "n": 19667,
+            "pct": 9.18
+          },
+          "CYLINDRICAL": {
+            "n": 12281,
+            "pct": 5.73
+          },
+          "SLIDER": {
+            "n": 8170,
+            "pct": 3.81
+          }
+        }
+      },
+      "block+rod": {
+        "n": 115900,
+        "types": {
+          "FASTENED": {
+            "n": 62749,
+            "pct": 54.14
+          },
+          "PLANAR": {
+            "n": 23225,
+            "pct": 20.04
+          },
+          "REVOLUTE": {
+            "n": 11885,
+            "pct": 10.25
+          },
+          "CYLINDRICAL": {
+            "n": 8843,
+            "pct": 7.63
+          },
+          "SLIDER": {
+            "n": 5966,
+            "pct": 5.15
+          }
+        }
+      },
+      "block+disc": {
+        "n": 102190,
+        "types": {
+          "FASTENED": {
+            "n": 58433,
+            "pct": 57.18
+          },
+          "PLANAR": {
+            "n": 18360,
+            "pct": 17.97
+          },
+          "REVOLUTE": {
+            "n": 10149,
+            "pct": 9.93
+          },
+          "CYLINDRICAL": {
+            "n": 8755,
+            "pct": 8.57
+          },
+          "SLIDER": {
+            "n": 4086,
+            "pct": 4.0
+          }
+        }
+      },
+      "block+plate": {
+        "n": 93527,
+        "types": {
+          "FASTENED": {
+            "n": 48688,
+            "pct": 52.06
+          },
+          "PLANAR": {
+            "n": 27374,
+            "pct": 29.27
+          },
+          "REVOLUTE": {
+            "n": 7226,
+            "pct": 7.73
+          },
+          "CYLINDRICAL": {
+            "n": 4655,
+            "pct": 4.98
+          },
+          "SLIDER": {
+            "n": 3071,
+            "pct": 3.28
+          }
+        }
+      },
+      "block+compact": {
+        "n": 92076,
+        "types": {
+          "FASTENED": {
+            "n": 52750,
+            "pct": 57.29
+          },
+          "PLANAR": {
+            "n": 15770,
+            "pct": 17.13
+          },
+          "REVOLUTE": {
+            "n": 9244,
+            "pct": 10.04
+          },
+          "CYLINDRICAL": {
+            "n": 7360,
+            "pct": 7.99
+          },
+          "SLIDER": {
+            "n": 4445,
+            "pct": 4.83
+          }
+        }
+      },
+      "rod+rod": {
+        "n": 87417,
+        "types": {
+          "FASTENED": {
+            "n": 46157,
+            "pct": 52.8
+          },
+          "PLANAR": {
+            "n": 22437,
+            "pct": 25.67
+          },
+          "REVOLUTE": {
+            "n": 6690,
+            "pct": 7.65
+          },
+          "CYLINDRICAL": {
+            "n": 5697,
+            "pct": 6.52
+          },
+          "SLIDER": {
+            "n": 3842,
+            "pct": 4.4
+          }
+        }
+      },
+      "plate+plate": {
+        "n": 86718,
+        "types": {
+          "FASTENED": {
+            "n": 42445,
+            "pct": 48.95
+          },
+          "PLANAR": {
+            "n": 31600,
+            "pct": 36.44
+          },
+          "REVOLUTE": {
+            "n": 4931,
+            "pct": 5.69
+          },
+          "CYLINDRICAL": {
+            "n": 3001,
+            "pct": 3.46
+          },
+          "PARALLEL": {
+            "n": 2240,
+            "pct": 2.58
+          }
+        }
+      },
+      "disc+disc": {
+        "n": 70199,
+        "types": {
+          "FASTENED": {
+            "n": 39370,
+            "pct": 56.08
+          },
+          "PLANAR": {
+            "n": 12649,
+            "pct": 18.02
+          },
+          "REVOLUTE": {
+            "n": 6987,
+            "pct": 9.95
+          },
+          "CYLINDRICAL": {
+            "n": 6732,
+            "pct": 9.59
+          },
+          "SLIDER": {
+            "n": 2554,
+            "pct": 3.64
+          }
+        }
+      },
+      "disc+rod": {
+        "n": 56496,
+        "types": {
+          "FASTENED": {
+            "n": 32178,
+            "pct": 56.96
+          },
+          "PLANAR": {
+            "n": 9446,
+            "pct": 16.72
+          },
+          "REVOLUTE": {
+            "n": 5684,
+            "pct": 10.06
+          },
+          "CYLINDRICAL": {
+            "n": 5315,
+            "pct": 9.41
+          },
+          "SLIDER": {
+            "n": 2474,
+            "pct": 4.38
+          }
+        }
+      },
+      "compact+disc": {
+        "n": 52106,
+        "types": {
+          "FASTENED": {
+            "n": 29331,
+            "pct": 56.29
+          },
+          "PLANAR": {
+            "n": 8723,
+            "pct": 16.74
+          },
+          "REVOLUTE": {
+            "n": 5218,
+            "pct": 10.01
+          },
+          "CYLINDRICAL": {
+            "n": 5118,
+            "pct": 9.82
+          },
+          "SLIDER": {
+            "n": 2341,
+            "pct": 4.49
+          }
+        }
+      },
+      "compact+rod": {
+        "n": 50155,
+        "types": {
+          "FASTENED": {
+            "n": 28584,
+            "pct": 56.99
+          },
+          "PLANAR": {
+            "n": 8014,
+            "pct": 15.98
+          },
+          "REVOLUTE": {
+            "n": 5116,
+            "pct": 10.2
+          },
+          "CYLINDRICAL": {
+            "n": 4277,
+            "pct": 8.53
+          },
+          "SLIDER": {
+            "n": 2824,
+            "pct": 5.63
+          }
+        }
+      },
+      "compact+compact": {
+        "n": 49982,
+        "types": {
+          "FASTENED": {
+            "n": 29305,
+            "pct": 58.63
+          },
+          "PLANAR": {
+            "n": 8308,
+            "pct": 16.62
+          },
+          "REVOLUTE": {
+            "n": 4669,
+            "pct": 9.34
+          },
+          "CYLINDRICAL": {
+            "n": 3846,
+            "pct": 7.69
+          },
+          "SLIDER": {
+            "n": 2308,
+            "pct": 4.62
+          }
+        }
+      },
+      "plate+rod": {
+        "n": 43701,
+        "types": {
+          "FASTENED": {
+            "n": 22678,
+            "pct": 51.89
+          },
+          "PLANAR": {
+            "n": 12125,
+            "pct": 27.75
+          },
+          "REVOLUTE": {
+            "n": 3673,
+            "pct": 8.4
+          },
+          "CYLINDRICAL": {
+            "n": 2585,
+            "pct": 5.92
+          },
+          "SLIDER": {
+            "n": 1484,
+            "pct": 3.4
+          }
+        }
+      },
+      "disc+plate": {
+        "n": 38807,
+        "types": {
+          "FASTENED": {
+            "n": 21215,
+            "pct": 54.67
+          },
+          "PLANAR": {
+            "n": 9834,
+            "pct": 25.34
+          },
+          "REVOLUTE": {
+            "n": 3203,
+            "pct": 8.25
+          },
+          "CYLINDRICAL": {
+            "n": 2307,
+            "pct": 5.94
+          },
+          "SLIDER": {
+            "n": 1240,
+            "pct": 3.2
+          }
+        }
+      },
+      "block+toothed_disc": {
+        "n": 23985,
+        "types": {
+          "FASTENED": {
+            "n": 11947,
+            "pct": 49.81
+          },
+          "PLANAR": {
+            "n": 4317,
+            "pct": 18.0
+          },
+          "REVOLUTE": {
+            "n": 3506,
+            "pct": 14.62
+          },
+          "CYLINDRICAL": {
+            "n": 2294,
+            "pct": 9.56
+          },
+          "SLIDER": {
+            "n": 1142,
+            "pct": 4.76
+          }
+        }
+      },
+      "compact+plate": {
+        "n": 23475,
+        "types": {
+          "FASTENED": {
+            "n": 12861,
+            "pct": 54.79
+          },
+          "PLANAR": {
+            "n": 4707,
+            "pct": 20.05
+          },
+          "REVOLUTE": {
+            "n": 2507,
+            "pct": 10.68
+          },
+          "CYLINDRICAL": {
+            "n": 1826,
+            "pct": 7.78
+          },
+          "SLIDER": {
+            "n": 886,
+            "pct": 3.77
+          }
+        }
+      },
+      "disc+toothed_disc": {
+        "n": 15783,
+        "types": {
+          "FASTENED": {
+            "n": 7827,
+            "pct": 49.59
+          },
+          "PLANAR": {
+            "n": 2815,
+            "pct": 17.84
+          },
+          "REVOLUTE": {
+            "n": 2176,
+            "pct": 13.79
+          },
+          "CYLINDRICAL": {
+            "n": 1845,
+            "pct": 11.69
+          },
+          "SLIDER": {
+            "n": 656,
+            "pct": 4.16
+          }
+        }
+      },
+      "rod+toothed_disc": {
+        "n": 13157,
+        "types": {
+          "FASTENED": {
+            "n": 7089,
+            "pct": 53.88
+          },
+          "PLANAR": {
+            "n": 1988,
+            "pct": 15.11
+          },
+          "REVOLUTE": {
+            "n": 1845,
+            "pct": 14.02
+          },
+          "CYLINDRICAL": {
+            "n": 1186,
+            "pct": 9.01
+          },
+          "SLIDER": {
+            "n": 721,
+            "pct": 5.48
+          }
+        }
+      },
+      "compact+toothed_disc": {
+        "n": 12032,
+        "types": {
+          "FASTENED": {
+            "n": 6374,
+            "pct": 52.98
+          },
+          "PLANAR": {
+            "n": 1966,
+            "pct": 16.34
+          },
+          "REVOLUTE": {
+            "n": 1652,
+            "pct": 13.73
+          },
+          "CYLINDRICAL": {
+            "n": 1210,
+            "pct": 10.06
+          },
+          "SLIDER": {
+            "n": 515,
+            "pct": 4.28
+          }
+        }
+      },
+      "toothed_disc+toothed_disc": {
+        "n": 11075,
+        "types": {
+          "FASTENED": {
+            "n": 4862,
+            "pct": 43.9
+          },
+          "REVOLUTE": {
+            "n": 2512,
+            "pct": 22.68
+          },
+          "PLANAR": {
+            "n": 1954,
+            "pct": 17.64
+          },
+          "CYLINDRICAL": {
+            "n": 965,
+            "pct": 8.71
+          },
+          "SLIDER": {
+            "n": 440,
+            "pct": 3.97
+          }
+        }
+      },
+      "plate+toothed_disc": {
+        "n": 8712,
+        "types": {
+          "FASTENED": {
+            "n": 4198,
+            "pct": 48.19
+          },
+          "PLANAR": {
+            "n": 2191,
+            "pct": 25.15
+          },
+          "REVOLUTE": {
+            "n": 1177,
+            "pct": 13.51
+          },
+          "CYLINDRICAL": {
+            "n": 634,
+            "pct": 7.28
+          },
+          "SLIDER": {
+            "n": 301,
+            "pct": 3.46
+          }
+        }
+      },
+      "block+unknown": {
+        "n": 7817,
+        "types": {
+          "FASTENED": {
+            "n": 4299,
+            "pct": 55.0
+          },
+          "PLANAR": {
+            "n": 1414,
+            "pct": 18.09
+          },
+          "REVOLUTE": {
+            "n": 1388,
+            "pct": 17.76
+          },
+          "CYLINDRICAL": {
+            "n": 424,
+            "pct": 5.42
+          },
+          "SLIDER": {
+            "n": 141,
+            "pct": 1.8
+          }
+        }
+      },
+      "disc+unknown": {
+        "n": 5290,
+        "types": {
+          "FASTENED": {
+            "n": 2502,
+            "pct": 47.3
+          },
+          "REVOLUTE": {
+            "n": 1559,
+            "pct": 29.47
+          },
+          "PLANAR": {
+            "n": 667,
+            "pct": 12.61
+          },
+          "CYLINDRICAL": {
+            "n": 366,
+            "pct": 6.92
+          },
+          "PARALLEL": {
+            "n": 118,
+            "pct": 2.23
+          }
+        }
+      },
+      "unknown+unknown": {
+        "n": 5247,
+        "types": {
+          "FASTENED": {
+            "n": 2396,
+            "pct": 45.66
+          },
+          "REVOLUTE": {
+            "n": 1264,
+            "pct": 24.09
+          },
+          "PLANAR": {
+            "n": 1052,
+            "pct": 20.05
+          },
+          "CYLINDRICAL": {
+            "n": 291,
+            "pct": 5.55
+          },
+          "PARALLEL": {
+            "n": 126,
+            "pct": 2.4
+          }
+        }
+      },
+      "compact+unknown": {
+        "n": 3742,
+        "types": {
+          "FASTENED": {
+            "n": 2082,
+            "pct": 55.64
+          },
+          "REVOLUTE": {
+            "n": 758,
+            "pct": 20.26
+          },
+          "PLANAR": {
+            "n": 493,
+            "pct": 13.17
+          },
+          "CYLINDRICAL": {
+            "n": 246,
+            "pct": 6.57
+          },
+          "PARALLEL": {
+            "n": 75,
+            "pct": 2.0
+          }
+        }
+      }
+    },
+    "size_ratio_small_over_large_median": {
+      "FASTENED": 0.53,
+      "SLIDER": 0.547,
+      "REVOLUTE": 0.533,
+      "PARALLEL": 0.6,
+      "PLANAR": 0.595,
+      "CYLINDRICAL": 0.513,
+      "PIN_SLOT": 0.57,
+      "BALL": 0.553
+    }
+  },
+  "assemblies": {
+    "counts": {
+      "assemblies": 97817,
+      "has_ground_connected_motion": 64543,
+      "motion_with_inferred_ground": 31001,
+      "static_only": 33274,
+      "dup": 25140
+    },
+    "ground_connected_motion_pct": 65.98,
+    "n_occurrences_hist_bin5": {
+      "0": 32845,
+      "5": 23679,
+      "10": 10929,
+      "15": 6064,
+      "20": 3905,
+      "25": 2800,
+      "30": 2206,
+      "35": 1560,
+      "40": 1282,
+      "45": 1040,
+      "50": 11507
+    },
+    "n_mates_hist_bin5": {
+      "0": 48235,
+      "5": 19029,
+      "10": 8684,
+      "15": 5054,
+      "20": 3176,
+      "25": 2246,
+      "30": 1648,
+      "35": 1274,
+      "40": 1065,
+      "45": 828,
+      "50": 6578
+    },
+    "n_subassemblies_top_level": {
+      "0": {
+        "n": 95192,
+        "pct": 77.42
+      },
+      "5": {
+        "n": 10337,
+        "pct": 8.41
+      },
+      "1": {
+        "n": 6104,
+        "pct": 4.96
+      },
+      "2": {
+        "n": 4516,
+        "pct": 3.67
+      },
+      "3": {
+        "n": 3823,
+        "pct": 3.11
+      },
+      "4": {
+        "n": 2985,
+        "pct": 2.43
+      }
+    },
+    "uses_mate_groups": {
+      "False": {
+        "n": 84051,
+        "pct": 85.93
+      },
+      "True": {
+        "n": 13766,
+        "pct": 14.07
+      }
+    },
+    "grounding_method": {
+      "none": {
+        "n": 54307,
+        "pct": 55.52
+      },
+      "fixed": {
+        "n": 43510,
+        "pct": 44.48
+      }
+    },
+    "single_fixed_rank_by_volume": {
+      "0": {
+        "n": 15447,
+        "pct": 51.06
+      },
+      "3": {
+        "n": 6673,
+        "pct": 22.06
+      },
+      "1": {
+        "n": 5258,
+        "pct": 17.38
+      },
+      "2": {
+        "n": 2872,
+        "pct": 9.49
+      }
+    },
+    "single_fixed_rank_by_mate_degree": {
+      "0": {
+        "n": 12754,
+        "pct": 42.16
+      },
+      "3": {
+        "n": 9063,
+        "pct": 29.96
+      },
+      "1": {
+        "n": 5146,
+        "pct": 17.01
+      },
+      "2": {
+        "n": 3287,
+        "pct": 10.87
+      }
+    },
+    "single_fixed_shape_class": {
+      "block": {
+        "n": 9828,
+        "pct": 34.52
+      },
+      "plate": {
+        "n": 6383,
+        "pct": 22.42
+      },
+      "rod": {
+        "n": 3460,
+        "pct": 12.15
+      },
+      "disc": {
+        "n": 3251,
+        "pct": 11.42
+      },
+      "compact": {
+        "n": 3030,
+        "pct": 10.64
+      },
+      "toothed_disc": {
+        "n": 2324,
+        "pct": 8.16
+      },
+      "unknown": {
+        "n": 197,
+        "pct": 0.69
+      }
+    },
+    "mates_per_occurrence_pair": {
+      "1": {
+        "n": 1553988,
+        "pct": 91.32
+      },
+      "2": {
+        "n": 103620,
+        "pct": 6.09
+      },
+      "3": {
+        "n": 42459,
+        "pct": 2.5
+      },
+      "4": {
+        "n": 1621,
+        "pct": 0.1
+      }
+    },
+    "pair_combo_top": {
+      "PLANAR+PLANAR": {
+        "n": 35137,
+        "pct": 23.2
+      },
+      "CYLINDRICAL+PLANAR": {
+        "n": 32336,
+        "pct": 21.35
+      },
+      "PLANAR+PLANAR+PLANAR": {
+        "n": 31808,
+        "pct": 21.0
+      },
+      "PLANAR+SLIDER": {
+        "n": 13192,
+        "pct": 8.71
+      },
+      "REVOLUTE+REVOLUTE": {
+        "n": 7286,
+        "pct": 4.81
+      },
+      "CYLINDRICAL+CYLINDRICAL+PLANAR": {
+        "n": 5402,
+        "pct": 3.57
+      },
+      "PARALLEL+PLANAR": {
+        "n": 3411,
+        "pct": 2.25
+      },
+      "PLANAR+REVOLUTE": {
+        "n": 2522,
+        "pct": 1.66
+      },
+      "CYLINDRICAL+PARALLEL+PLANAR": {
+        "n": 2470,
+        "pct": 1.63
+      },
+      "CYLINDRICAL+CYLINDRICAL": {
+        "n": 2236,
+        "pct": 1.48
+      },
+      "SLIDER+SLIDER": {
+        "n": 1419,
+        "pct": 0.94
+      },
+      "CYLINDRICAL+PLANAR+PLANAR": {
+        "n": 1405,
+        "pct": 0.93
+      },
+      "CYLINDRICAL+PARALLEL": {
+        "n": 1380,
+        "pct": 0.91
+      },
+      "PARALLEL+PARALLEL": {
+        "n": 1363,
+        "pct": 0.9
+      },
+      "PARALLEL+REVOLUTE": {
+        "n": 1265,
+        "pct": 0.84
+      },
+      "CYLINDRICAL+REVOLUTE": {
+        "n": 998,
+        "pct": 0.66
+      },
+      "PARALLEL+PLANAR+PLANAR": {
+        "n": 970,
+        "pct": 0.64
+      },
+      "PLANAR+PLANAR+PLANAR+PLANAR": {
+        "n": 600,
+        "pct": 0.4
+      },
+      "PLANAR+REVOLUTE+REVOLUTE": {
+        "n": 431,
+        "pct": 0.28
+      },
+      "PARALLEL+SLIDER": {
+        "n": 405,
+        "pct": 0.27
+      }
+    },
+    "mate_order_growth_from_ground": {
+      "mean": 0.8281,
+      "random_order_mean": 0.8277,
+      "n": 65576
+    },
+    "grubler_mobility_ground_component": {
+      "1": {
+        "n": 13654,
+        "pct": 21.15
+      },
+      "-3": {
+        "n": 13474,
+        "pct": 20.88
+      },
+      "6": {
+        "n": 10760,
+        "pct": 16.67
+      },
+      "2": {
+        "n": 7973,
+        "pct": 12.35
+      },
+      "3": {
+        "n": 6470,
+        "pct": 10.02
+      },
+      "4": {
+        "n": 4123,
+        "pct": 6.39
+      },
+      "0": {
+        "n": 2514,
+        "pct": 3.9
+      },
+      "-2": {
+        "n": 2118,
+        "pct": 3.28
+      },
+      "-1": {
+        "n": 2003,
+        "pct": 3.1
+      },
+      "5": {
+        "n": 1454,
+        "pct": 2.25
+      }
+    },
+    "independent_loops_per_assembly": {
+      "0": {
+        "n": 50497,
+        "pct": 78.26
+      },
+      "1": {
+        "n": 5320,
+        "pct": 8.24
+      },
+      "5": {
+        "n": 3873,
+        "pct": 6.0
+      },
+      "2": {
+        "n": 2437,
+        "pct": 3.78
+      },
+      "3": {
+        "n": 1372,
+        "pct": 2.13
+      },
+      "4": {
+        "n": 1028,
+        "pct": 1.59
+      }
+    },
+    "loop_length": {
+      "3": {
+        "n": 33789,
+        "pct": 44.71
+      },
+      "4": {
+        "n": 19135,
+        "pct": 25.32
+      },
+      "5": {
+        "n": 8438,
+        "pct": 11.17
+      },
+      "8": {
+        "n": 5723,
+        "pct": 7.57
+      },
+      "6": {
+        "n": 5587,
+        "pct": 7.39
+      },
+      "7": {
+        "n": 2898,
+        "pct": 3.83
+      }
+    },
+    "loop_signature_top": {
+      "PLANAR|PLANAR+PLANAR|PLANAR+PLANAR+PLANAR": {
+        "n": 4414,
+        "pct": 6.59
+      },
+      "PLANAR|PLANAR+SLIDER|SLIDER": {
+        "n": 3792,
+        "pct": 5.66
+      },
+      "PLANAR|PLANAR|PLANAR+PLANAR": {
+        "n": 3162,
+        "pct": 4.72
+      },
+      "PLANAR|PLANAR+PLANAR|PLANAR+PLANAR": {
+        "n": 2486,
+        "pct": 3.71
+      },
+      "PLANAR|PLANAR|PLANAR": {
+        "n": 2427,
+        "pct": 3.63
+      },
+      "CYLINDRICAL|CYLINDRICAL+PLANAR|PLANAR": {
+        "n": 2380,
+        "pct": 3.55
+      },
+      "REVOLUTE|REVOLUTE|REVOLUTE|REVOLUTE": {
+        "n": 2056,
+        "pct": 3.07
+      },
+      "PLANAR|PLANAR|PLANAR+PLANAR+PLANAR": {
+        "n": 1654,
+        "pct": 2.47
+      },
+      "CYLINDRICAL|CYLINDRICAL|PLANAR": {
+        "n": 1458,
+        "pct": 2.18
+      },
+      "PLANAR|PLANAR|PLANAR+PLANAR|PLANAR+PLANAR": {
+        "n": 1409,
+        "pct": 2.1
+      },
+      "PLANAR|PLANAR|PLANAR|PLANAR+PLANAR": {
+        "n": 1368,
+        "pct": 2.04
+      },
+      "PLANAR|PLANAR|PLANAR|PLANAR": {
+        "n": 939,
+        "pct": 1.4
+      },
+      "PLANAR|PLANAR|PLANAR+PLANAR|PLANAR+PLANAR+PLANAR": {
+        "n": 858,
+        "pct": 1.28
+      },
+      "PLANAR|SLIDER|SLIDER": {
+        "n": 650,
+        "pct": 0.97
+      },
+      "PLANAR|PLANAR|PLANAR|PLANAR+PLANAR|PLANAR+PLANAR": {
+        "n": 645,
+        "pct": 0.96
+      },
+      "PLANAR|PLANAR|PLANAR|PLANAR|PLANAR+PLANAR": {
+        "n": 581,
+        "pct": 0.87
+      },
+      "CYLINDRICAL|REVOLUTE|REVOLUTE|REVOLUTE": {
+        "n": 528,
+        "pct": 0.79
+      },
+      "PARALLEL|REVOLUTE|REVOLUTE": {
+        "n": 478,
+        "pct": 0.71
+      },
+      "PLANAR|PLANAR+PLANAR|PLANAR+PLANAR+PLANAR|PLANAR+PLANAR+PLANAR": {
+        "n": 470,
+        "pct": 0.7
+      },
+      "REVOLUTE|REVOLUTE|REVOLUTE|SLIDER": {
+        "n": 467,
+        "pct": 0.7
+      },
+      "CYLINDRICAL|CYLINDRICAL|PLANAR|PLANAR": {
+        "n": 448,
+        "pct": 0.67
+      },
+      "CYLINDRICAL|CYLINDRICAL|REVOLUTE|REVOLUTE": {
+        "n": 445,
+        "pct": 0.66
+      },
+      "PLANAR|PLANAR+PLANAR|PLANAR+PLANAR|PLANAR+PLANAR+PLANAR": {
+        "n": 445,
+        "pct": 0.66
+      },
+      "PLANAR|PLANAR|PLANAR|PLANAR+PLANAR+PLANAR": {
+        "n": 438,
+        "pct": 0.65
+      },
+      "PLANAR|PLANAR|PLANAR|PLANAR+PLANAR|PLANAR+PLANAR+PLANAR": {
+        "n": 409,
+        "pct": 0.61
+      },
+      "REVOLUTE|REVOLUTE|REVOLUTE|REVOLUTE|REVOLUTE|REVOLUTE": {
+        "n": 363,
+        "pct": 0.54
+      },
+      "CYLINDRICAL|PLANAR|PLANAR": {
+        "n": 347,
+        "pct": 0.52
+      },
+      "PLANAR|PLANAR|PLANAR+PLANAR+PLANAR|PLANAR+PLANAR+PLANAR": {
+        "n": 337,
+        "pct": 0.5
+      },
+      "PLANAR|PLANAR|PLANAR+PLANAR|PLANAR+PLANAR|PLANAR+PLANAR+PLANAR": {
+        "n": 328,
+        "pct": 0.49
+      },
+      "CYLINDRICAL|REVOLUTE|REVOLUTE|SLIDER": {
+        "n": 326,
+        "pct": 0.49
+      }
+    },
+    "joint_depth_from_ground": {
+      "1": {
+        "n": 164884,
+        "pct": 43.53
+      },
+      "2": {
+        "n": 87904,
+        "pct": 23.21
+      },
+      "3": {
+        "n": 51120,
+        "pct": 13.5
+      },
+      "6": {
+        "n": 34844,
+        "pct": 9.2
+      },
+      "4": {
+        "n": 25082,
+        "pct": 6.62
+      },
+      "5": {
+        "n": 14925,
+        "pct": 3.94
+      }
+    },
+    "chain_to_ground_top": {
+      "REVOLUTE": {
+        "n": 48506,
+        "pct": 15.96
+      },
+      "PLANAR": {
+        "n": 28948,
+        "pct": 9.53
+      },
+      "SLIDER": {
+        "n": 24107,
+        "pct": 7.93
+      },
+      "REVOLUTE > REVOLUTE": {
+        "n": 16485,
+        "pct": 5.42
+      },
+      "CYLINDRICAL": {
+        "n": 13815,
+        "pct": 4.55
+      },
+      "PLANAR+PLANAR+PLANAR": {
+        "n": 9802,
+        "pct": 3.23
+      },
+      "PLANAR+PLANAR": {
+        "n": 9374,
+        "pct": 3.08
+      },
+      "PLANAR > PLANAR": {
+        "n": 7715,
+        "pct": 2.54
+      },
+      "CYLINDRICAL+PLANAR": {
+        "n": 6612,
+        "pct": 2.18
+      },
+      "REVOLUTE > REVOLUTE > REVOLUTE": {
+        "n": 6020,
+        "pct": 1.98
+      },
+      "PARALLEL": {
+        "n": 5931,
+        "pct": 1.95
+      },
+      "SLIDER > SLIDER": {
+        "n": 3712,
+        "pct": 1.22
+      },
+      "SLIDER > REVOLUTE": {
+        "n": 3303,
+        "pct": 1.09
+      },
+      "PLANAR > PLANAR > PLANAR": {
+        "n": 2913,
+        "pct": 0.96
+      },
+      "PLANAR+PLANAR+PLANAR > PLANAR+PLANAR+PLANAR > PLANAR+SLIDER": {
+        "n": 2835,
+        "pct": 0.93
+      },
+      "PLANAR+PLANAR+PLANAR > PLANAR+PLANAR+PLANAR > SLIDER": {
+        "n": 2833,
+        "pct": 0.93
+      },
+      "CYLINDRICAL > CYLINDRICAL": {
+        "n": 2684,
+        "pct": 0.88
+      },
+      "PLANAR+SLIDER": {
+        "n": 2532,
+        "pct": 0.83
+      },
+      "PLANAR+PLANAR > PLANAR": {
+        "n": 2499,
+        "pct": 0.82
+      },
+      "PLANAR+PLANAR+PLANAR > PLANAR+PLANAR+PLANAR": {
+        "n": 2379,
+        "pct": 0.78
+      },
+      "REVOLUTE > SLIDER": {
+        "n": 2183,
+        "pct": 0.72
+      },
+      "PLANAR+PLANAR+PLANAR > PLANAR": {
+        "n": 2025,
+        "pct": 0.67
+      },
+      "PLANAR > PLANAR+PLANAR": {
+        "n": 1929,
+        "pct": 0.63
+      },
+      "CYLINDRICAL+PLANAR > CYLINDRICAL+PLANAR": {
+        "n": 1723,
+        "pct": 0.57
+      },
+      "PIN_SLOT": {
+        "n": 1657,
+        "pct": 0.55
+      },
+      "BALL": {
+        "n": 1649,
+        "pct": 0.54
+      },
+      "PLANAR > PLANAR+PLANAR+PLANAR": {
+        "n": 1564,
+        "pct": 0.51
+      },
+      "CYLINDRICAL+CYLINDRICAL+PLANAR": {
+        "n": 1551,
+        "pct": 0.51
+      },
+      "REVOLUTE > CYLINDRICAL": {
+        "n": 1460,
+        "pct": 0.48
+      },
+      "CYLINDRICAL > REVOLUTE": {
+        "n": 1455,
+        "pct": 0.48
+      }
+    },
+    "first_joint_to_ground": {
+      "REVOLUTE": {
+        "n": 48506,
+        "pct": 29.42
+      },
+      "PLANAR": {
+        "n": 28948,
+        "pct": 17.56
+      },
+      "SLIDER": {
+        "n": 24107,
+        "pct": 14.62
+      },
+      "CYLINDRICAL": {
+        "n": 13815,
+        "pct": 8.38
+      },
+      "PLANAR+PLANAR+PLANAR": {
+        "n": 9802,
+        "pct": 5.94
+      },
+      "PLANAR+PLANAR": {
+        "n": 9374,
+        "pct": 5.69
+      },
+      "CYLINDRICAL+PLANAR": {
+        "n": 6612,
+        "pct": 4.01
+      },
+      "PARALLEL": {
+        "n": 5931,
+        "pct": 3.6
+      },
+      "PLANAR+SLIDER": {
+        "n": 2532,
+        "pct": 1.54
+      },
+      "PIN_SLOT": {
+        "n": 1657,
+        "pct": 1.0
+      },
+      "BALL": {
+        "n": 1649,
+        "pct": 1.0
+      },
+      "CYLINDRICAL+CYLINDRICAL+PLANAR": {
+        "n": 1551,
+        "pct": 0.94
+      }
+    },
+    "moving_occurrence_shape_class": {
+      "block": {
+        "n": 194816,
+        "pct": 32.85
+      },
+      "disc": {
+        "n": 103864,
+        "pct": 17.51
+      },
+      "rod": {
+        "n": 96630,
+        "pct": 16.29
+      },
+      "compact": {
+        "n": 90822,
+        "pct": 15.31
+      },
+      "plate": {
+        "n": 71353,
+        "pct": 12.03
+      },
+      "toothed_disc": {
+        "n": 26142,
+        "pct": 4.41
+      },
+      "unknown": {
+        "n": 9440,
+        "pct": 1.59
+      }
+    },
+    "toothed_disc_state": {
+      "rigid_or_floating": {
+        "n": 37112,
+        "pct": 58.67
+      },
+      "moving": {
+        "n": 26142,
+        "pct": 41.33
+      }
+    },
+    "relations_per_assembly": {
+      "0": {
+        "n": 93351,
+        "pct": 95.43
+      },
+      "1": {
+        "n": 2527,
+        "pct": 2.58
+      },
+      "2": {
+        "n": 924,
+        "pct": 0.94
+      },
+      "3": {
+        "n": 450,
+        "pct": 0.46
+      },
+      "5": {
+        "n": 331,
+        "pct": 0.34
+      },
+      "4": {
+        "n": 234,
+        "pct": 0.24
+      }
+    },
+    "relation_type": {
+      "GEAR": {
+        "n": 6184,
+        "pct": 64.09
+      },
+      "SCREW": {
+        "n": 1868,
+        "pct": 19.36
+      },
+      "RACK_AND_PINION": {
+        "n": 1038,
+        "pct": 10.76
+      },
+      "LINEAR": {
+        "n": 559,
+        "pct": 5.79
+      }
+    },
+    "relation_on_mate_types_top": {
+      "GEAR:REVOLUTE+REVOLUTE": {
+        "n": 5738,
+        "pct": 59.47
+      },
+      "SCREW:CYLINDRICAL": {
+        "n": 1832,
+        "pct": 18.99
+      },
+      "RACK_AND_PINION:REVOLUTE+SLIDER": {
+        "n": 965,
+        "pct": 10.0
+      },
+      "LINEAR:SLIDER+SLIDER": {
+        "n": 477,
+        "pct": 4.94
+      },
+      "GEAR:CYLINDRICAL+REVOLUTE": {
+        "n": 232,
+        "pct": 2.4
+      },
+      "GEAR:CYLINDRICAL+CYLINDRICAL": {
+        "n": 182,
+        "pct": 1.89
+      },
+      "LINEAR:CYLINDRICAL+CYLINDRICAL": {
+        "n": 40,
+        "pct": 0.41
+      },
+      "SCREW:SLIDER": {
+        "n": 20,
+        "pct": 0.21
+      },
+      "LINEAR:CYLINDRICAL+SLIDER": {
+        "n": 20,
+        "pct": 0.21
+      },
+      "RACK_AND_PINION:CYLINDRICAL+REVOLUTE": {
+        "n": 18,
+        "pct": 0.19
+      },
+      "RACK_AND_PINION:PLANAR+REVOLUTE": {
+        "n": 16,
+        "pct": 0.17
+      },
+      "RACK_AND_PINION:CYLINDRICAL+SLIDER": {
+        "n": 14,
+        "pct": 0.15
+      },
+      "GEAR:FASTENED+REVOLUTE": {
+        "n": 11,
+        "pct": 0.11
+      },
+      "SCREW:FASTENED": {
+        "n": 9,
+        "pct": 0.09
+      },
+      "LINEAR:PLANAR+PLANAR": {
+        "n": 8,
+        "pct": 0.08
+      },
+      "SCREW:REVOLUTE": {
+        "n": 7,
+        "pct": 0.07
+      },
+      "RACK_AND_PINION:PARALLEL+REVOLUTE": {
+        "n": 7,
+        "pct": 0.07
+      },
+      "LINEAR:PIN_SLOT+PIN_SLOT": {
+        "n": 7,
+        "pct": 0.07
+      },
+      "RACK_AND_PINION:PIN_SLOT+REVOLUTE": {
+        "n": 6,
+        "pct": 0.06
+      },
+      "RACK_AND_PINION:SLIDER+SLIDER": {
+        "n": 4,
+        "pct": 0.04
+      }
+    }
+  }
+}
