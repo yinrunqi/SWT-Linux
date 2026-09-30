@@ -72,6 +72,8 @@ LLMPlanner/**/.llm_cache/**
 LLMPlanner/log/**
 LLMPlanner/**/*.log
 LLMPlanner/eval/artifacts/**
+LLMPlanner/eval/assembly_scratch/gold_parts/**
+LLMPlanner/log/**
 
 # CAD-1K 原始数据未声明 license，只保留在本地，不入库（派生统计 stats.json 可入库）
 LLMPlanner/datasets/cad1k/raw/**

@@ -15,6 +15,7 @@ from typing import Any, Callable
 import requests
 
 from ..executor import SwExecutor
+from ..gears import generate_involute_outline
 from ..schemas import OperationType, SwOperation
 from .errors import WorkflowError
 from .frames import BASE_PLANES, SketchFrame, base_plane_frame, face_frame, ref_plane_frame
@@ -329,6 +330,35 @@ TOOL_SPECS: list[dict] = [
 ]
 TOOL_NAMES = {spec["function"]["name"] for spec in TOOL_SPECS}
 
+SPUR_GEAR_SPEC = _tool(
+    "spur_gear",
+    "一次建成渐开线直齿轮：轴线沿草图平面法向（默认 front_plane，即 +Z），"
+    "原点在轴线，从 Z=0 向 +Z 拉伸齿宽。中心轴孔与齿形在同一特征里完成。"
+    "只在装配零件生成会话中可用；50 题核心工具集不包含它。",
+    {
+        "module": _NUM,
+        "teeth": {"type": "integer", "description": "齿数，≥10"},
+        "face_width": _NUM,
+        "bore": _NUM,
+        "pressure_angle_deg": _NUM,
+        "phase_deg": _NUM,
+        "plane": {"type": "string", "description": "默认 front_plane（XY，法向 +Z）"},
+        "keyway_width": _NUM,
+        "keyway_depth": _NUM,
+    },
+    ["module", "teeth", "face_width", "bore"],
+)
+EXTRA_TOOL_SPECS = {"spur_gear": SPUR_GEAR_SPEC}
+
+
+def tool_specs(extra_tools: list[str] | None = None) -> list[dict]:
+    specs = list(TOOL_SPECS)
+    for name in extra_tools or []:
+        if name not in EXTRA_TOOL_SPECS:
+            raise ValueError(f"未知的附加工具 {name}")
+        specs.append(EXTRA_TOOL_SPECS[name])
+    return specs
+
 
 def _axis_sign(text: str) -> tuple[str, int]:
     value = str(text).strip().upper()
@@ -351,6 +381,7 @@ class WorkflowSession:
         base_url: str = "http://localhost:5100",
         executor: SwExecutor | None = None,
         timeout: float = 120,
+        extra_tools: list[str] | None = None,
     ):
         self.base_url = base_url.rstrip("/")
         self.http = requests.Session()
@@ -387,6 +418,9 @@ class WorkflowSession:
             "sheet_metal": self.sheet_metal,
             "delete_feature": self.delete_feature,
         }
+        extra_tools = extra_tools or []
+        if "spur_gear" in extra_tools:
+            self._handlers["spur_gear"] = self.spur_gear
 
     # ------------------------------------------------------------ HTTP
 
@@ -1329,9 +1363,65 @@ class WorkflowSession:
             "bbox_mm": self._bbox(after),
         }
 
+    def spur_gear(self, args: dict) -> dict:
+        if self._volume(self.snapshot()) > VOLUME_EPS_MM3:
+            raise WorkflowError("TOOL_ARGS", "spur_gear 只能用在空零件上，请先建新零件")
+        module = self._num(args, "module", required=True)
+        teeth = int(self._num(args, "teeth", required=True))
+        face_width = self._num(args, "face_width", required=True)
+        bore = self._num(args, "bore", required=True)
+        pressure = self._num(args, "pressure_angle_deg", 30) or 30
+        phase = self._num(args, "phase_deg", 0) or 0
+        if teeth < 10 or module <= 0 or face_width <= 0 or bore <= 0:
+            raise WorkflowError("TOOL_ARGS", "teeth≥10，module/face_width/bore 必须为正")
+        outline, params = generate_involute_outline(
+            tooth_count=teeth,
+            phase_angle_deg=phase,
+            module_m=module / 1000,
+            pressure_angle_deg=pressure,
+        )
+        loops = [
+            {"type": "polygon", "points": [[x * 1000, y * 1000] for x, y in outline[:-1]]},
+            {"type": "circle", "center": [0, 0], "diameter": bore},
+        ]
+        result = self.extrude({
+            "plane": args.get("plane") or "front_plane",
+            "loops": loops,
+            "depth": face_width,
+        })
+        key_w = self._num(args, "keyway_width")
+        key_d = self._num(args, "keyway_depth")
+        if key_w and key_d:
+            cut = self.cut({
+                "plane": args.get("plane") or "front_plane",
+                "loops": [{
+                    "type": "rect",
+                    "center": [0, bore / 2 + key_d / 2 - 0.05],
+                    "size": [key_w, key_d + 0.1],
+                }],
+                "through_all": True,
+            })
+            result = {**result, "keyway": cut.get("created")}
+        result["gear"] = {
+            "teeth": teeth,
+            "module_mm": module,
+            "pitch_diameter_mm": _round(params["pitchRadius"] * 2000),
+            "tip_diameter_mm": _round(params["outerRadius"] * 2000),
+            "root_diameter_mm": _round(params["rootRadius"] * 2000),
+            "bore_mm": bore,
+            "face_width_mm": face_width,
+            "pressure_angle_deg": pressure,
+            "phase_deg": phase,
+        }
+        return result
+
+
 def dumps_result(result: dict, limit: int = 6000) -> str:
     text = json.dumps(result, ensure_ascii=False, default=str)
     return text if len(text) <= limit else text[:limit] + "…(截断)"
 
 
-__all__ = ["TOOL_SPECS", "TOOL_NAMES", "WorkflowSession", "dumps_result", "BASE_PLANES"]
+__all__ = [
+    "TOOL_SPECS", "TOOL_NAMES", "EXTRA_TOOL_SPECS", "SPUR_GEAR_SPEC",
+    "WorkflowSession", "dumps_result", "tool_specs", "BASE_PLANES",
+]

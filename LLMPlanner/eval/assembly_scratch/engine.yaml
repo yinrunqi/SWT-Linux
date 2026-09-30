@@ -1,0 +1,88 @@
+case_id: single_cylinder_engine
+title: 单缸曲柄滑块发动机（含 2:1 正时齿轮）
+crank_radius_mm: 25
+rod_length_mm: 90
+stroke_mm: 50
+bore_mm: 10
+module_mm: 3
+
+parts:
+  - id: frame
+    extra_tools: []
+    prompt: |
+      创建发动机机体：在 front_plane 上画矩形，X 从 -50 到 50 mm，Y 从 -50 到 160 mm，向 +Z 拉伸 8 mm。
+      在 (0,0) 开直径 10.4 mm 贯穿孔（主轴承）。原点在该孔轴线。不要抽壳。
+  - id: crank
+    extra_tools: []
+    prompt: |
+      创建曲柄：在 front_plane 上画两端圆头的连杆外形，两孔中心距 25 mm，宽度 16 mm，
+      两端各一个直径 10 mm 贯穿孔，向 +Z 拉伸 6 mm。原点在大端孔（曲轴孔）中心。
+  - id: rod
+    extra_tools: []
+    prompt: |
+      创建连杆：两端圆头，两孔中心距 90 mm，宽度 14 mm，两端直径 10 mm 贯穿孔，向 +Z 拉伸 6 mm。
+      原点在大端孔中心。
+  - id: piston
+    extra_tools: []
+    prompt: |
+      创建活塞：轴线沿 Z，外径 24 mm，长 30 mm，中心贯穿孔直径 10 mm。从 Z=0 向 +Z 拉伸。
+  - id: pin
+    extra_tools: []
+    prompt: |
+      创建销轴：直径 10 mm，长 40 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+  - id: flywheel
+    extra_tools: []
+    prompt: |
+      创建飞轮：外径 60 mm，厚 8 mm，中心孔直径 10 mm，轴线沿 Z。
+  - id: crank_gear
+    extra_tools: [spur_gear]
+    prompt: |
+      创建渐开线直齿轮，模数 3 mm，齿数 16，压力角 30°，齿宽 10 mm，轴孔直径 10 mm，轴线沿 Z。优先 spur_gear。
+  - id: cam_gear
+    extra_tools: [spur_gear]
+    prompt: |
+      创建渐开线直齿轮，模数 3 mm，齿数 32，压力角 30°，齿宽 10 mm，轴孔直径 10 mm，轴线沿 Z。优先 spur_gear。
+  - id: camshaft
+    extra_tools: []
+    prompt: |
+      创建凸轮轴：直径 10 mm，长 50 mm，轴线沿 Z。
+  - id: cam
+    extra_tools: []
+    prompt: |
+      创建偏心凸轮：外径 28 mm、厚 8 mm 的圆盘，中心孔直径 10 mm，孔心相对外圆圆心沿 +X 偏心 4 mm。轴线沿 Z。
+
+gold_roles:
+  frame: frame
+  crank: crank
+  rod: rod
+  piston: piston
+  crank_shaft: pin
+  crank_pin: pin
+  piston_pin: pin
+  flywheel: flywheel
+  crank_gear: crank_gear
+  cam_gear: cam_gear
+  camshaft: camshaft
+  cam: cam
+
+assembly:
+  prompt: |
+    装配单缸曲柄滑块机构，并加上 2:1 正时齿轮。不要把插入坐标当作最终位姿。
+    - frame 固定。主轴承孔在原点，活塞应沿 +Y 往复。
+    - 曲轴销穿过机体主轴承孔与曲柄大端，曲柄可绕 Z 转动。
+    - 曲柄销、连杆、活塞销组成曲柄滑块；活塞（或活塞销）只能沿机体 +Y 移动。
+    - 飞轮、曲柄正时齿轮与曲柄 1:1 同向。
+    - 16 齿曲柄齿轮与 32 齿凸轮齿轮外啮合（中心距 72 mm），凸轮轴和凸轮与凸轮齿轮 1:1 同向。
+    - 曲柄转一圈，活塞行程应为 50 mm；凸轮轴反向半速。
+    对曲轴做 check_motion（一整圈），确认无穿模后再保存。
+
+motion:
+  driver: crank_shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_stroke_mm: 50
+  timing_ratio: 2.0
+  expect_fixed: [frame]
+  expect_moving: [crank, piston_pin, camshaft]
+  max_interference: 0

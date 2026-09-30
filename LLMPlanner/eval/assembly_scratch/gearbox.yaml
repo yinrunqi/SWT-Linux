@@ -1,0 +1,79 @@
+case_id: two_stage_gearbox
+title: 双级圆柱齿轮减速箱
+module_mm: 3
+pressure_angle_deg: 30
+face_width_mm: 10
+bore_mm: 10
+shaft_length_mm: 50
+hole_mm: 10.4
+centers_mm: [[0, 0], [54, 0], [126, 0]]
+
+parts:
+  - id: housing
+    extra_tools: []
+    prompt: |
+      创建减速箱底板：在 front_plane（XY）上画矩形，X 从 -30 到 160 mm，Y 从 -40 到 40 mm，
+      向 +Z 拉伸 10 mm。板上三个贯穿孔直径 10.4 mm，圆心分别在 (0,0)、(54,0)、(126,0) mm。
+      零件原点在 (0,0)，孔轴沿 Z。不要倒角。
+  - id: shaft
+    extra_tools: []
+    prompt: |
+      创建光轴：轴线沿 Z，在 front_plane 上画直径 10 mm 的圆，向 +Z 拉伸 50 mm。
+      原点在轴线，一端在 Z=0。不要倒角、不要键槽。
+  - id: pinion_z12
+    extra_tools: [spur_gear]
+    prompt: |
+      创建渐开线直齿轮。轴线沿 Z，齿宽中面一侧从 Z=0 向 +Z。
+      模数 3 mm，齿数 12，压力角 30°，齿宽 10 mm，中心轴孔直径 10 mm。
+      优先用 spur_gear。不要键槽。
+  - id: wheel_z24
+    extra_tools: [spur_gear]
+    prompt: |
+      创建渐开线直齿轮。轴线沿 Z，从 Z=0 向 +Z 拉伸。
+      模数 3 mm，齿数 24，压力角 30°，齿宽 10 mm，中心轴孔直径 10 mm。优先用 spur_gear。
+  - id: pinion_z12b
+    extra_tools: [spur_gear]
+    prompt: |
+      创建渐开线直齿轮。轴线沿 Z，从 Z=0 向 +Z 拉伸。
+      模数 3 mm，齿数 12，压力角 30°，齿宽 10 mm，中心轴孔直径 10 mm。优先用 spur_gear。
+  - id: wheel_z36
+    extra_tools: [spur_gear]
+    prompt: |
+      创建渐开线直齿轮。轴线沿 Z，从 Z=0 向 +Z 拉伸。
+      模数 3 mm，齿数 36，压力角 30°，齿宽 10 mm，中心轴孔直径 10 mm。优先用 spur_gear。
+
+gold_roles:
+  housing: housing
+  input_shaft: shaft
+  lay_shaft: shaft
+  output_shaft: shaft
+  input_pinion: pinion_z12
+  lay_wheel: wheel_z24
+  lay_pinion: pinion_z12b
+  output_wheel: wheel_z36
+
+assembly:
+  prompt: |
+    把下列零件装配成双级外啮合圆柱齿轮减速箱。不要按给定坐标当最终位姿，用配合定位。
+    - housing 是底板，三个孔从左到右分别是输入轴、中间轴、输出轴轴承孔，孔距 54 mm 与 72 mm。
+    - 三根轴分别装进三个孔，轴相对底板可转动。
+    - 12 齿输入齿轮装在输入轴上并与轴一起转，轴向大约离开底板 15 mm。
+    - 24 齿大齿轮与 12 齿小齿轮都装在中间轴上并与轴一起转；24 齿与输入 12 齿同一层外啮合，12 齿小齿轮再向外错开一层。
+    - 36 齿大齿轮装在输出轴上，与中间轴 12 齿小齿轮外啮合。
+    - 总减速比 6:1：输入轴转一圈，输出轴转 1/6 圈，两级外啮合所以输出与输入转向相同。
+    完成后对输入轴做 check_motion（一整圈），确认齿轮联动、无穿模，再保存。
+
+motion:
+  driver: input_shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_ratio: 6.0
+  expect_same_direction: true
+  expect_fixed: [housing]
+  expect_moving: [input_shaft, output_shaft, input_pinion, output_wheel]
+  max_interference: 0
+  clearance_pairs:
+    - [input_pinion, lay_wheel]
+    - [lay_pinion, output_wheel]
+  clearance_mm: [0.02, 2.0]

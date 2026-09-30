@@ -92,6 +92,7 @@
     <Compile Include="SwCommands.Advanced.cs" />
     <Compile Include="SwCommands.Composite.cs" />
     <Compile Include="SwCommands.Assembly.cs" />
+    <Compile Include="SwCommands.AssemblyWorkflow.cs" />
     <Compile Include="TutorialExamples.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

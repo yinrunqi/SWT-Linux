@@ -1,0 +1,17 @@
+case: cam
+tolerance: {length_mm: 0.3, angle_deg: 1.0, volume_rel: 0.08}
+entities:
+  od: {cylinder: {d: 28, side: outer}, count: 1}
+  bore: {cylinder: {d: 10, side: inner}, count: 1}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: eccentric
+    hard: true
+    check:
+      - exists: od
+      - exists: bore
+      - axis_distance: {from: od, to: bore, value: 4}
+      - extent_along: {axis: od, of: all, value: 8}

@@ -1,0 +1,21 @@
+case: housing
+tolerance: {length_mm: 0.2, angle_deg: 1.0, volume_rel: 0.03}
+entities:
+  plate: {slab: {axis: Z, thickness: 10}}
+  h0: {cylinder: {d: 10.4, side: inner}}
+  h1: {cylinder: {d: 10.4, side: inner}}
+  holes: {cylinder: {d: 10.4, side: inner}, count: 3}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: thickness
+    hard: true
+    check:
+      - bbox_sorted: [10, 80, 190]
+  - id: holes
+    hard: true
+    check:
+      - exists: holes
+      - through: {holes: holes}

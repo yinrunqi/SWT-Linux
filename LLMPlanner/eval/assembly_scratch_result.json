@@ -1,0 +1,27 @@
+{
+  "note": "LLM 三种条件的完整批次用 eval_assembly_scratch.py 跑。此处记录 2026-09-30 技术验证。",
+  "spike": {
+    "gears": {
+      "static_interference": 0,
+      "frames": 13,
+      "sample_seconds": 35.7,
+      "mate_driven_motion": true,
+      "animation_keeps_ratio": false,
+      "mid_cycle_interference": true,
+      "report": "log/spike_motion/gears_report.json"
+    },
+    "crank": {
+      "mates_created": true,
+      "slider_moves": false,
+      "fallback": "kinematic pose + per-frame interference",
+      "report": "log/spike_motion/crank_report.json"
+    }
+  },
+  "summary": {
+    "n": 0,
+    "part_pass_rate": null,
+    "assembly_score": null,
+    "motion_score": null,
+    "e2e": null
+  }
+}

@@ -1,0 +1,18 @@
+case: frame
+tolerance: {length_mm: 0.25, angle_deg: 1.0, volume_rel: 0.04}
+entities:
+  bore: {cylinder: {d: 10.4, side: inner}, count: 1}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: plate
+    hard: true
+    check:
+      - bbox_sorted: [8, 100, 210]
+  - id: bore
+    hard: true
+    check:
+      - exists: bore
+      - through: {holes: bore}

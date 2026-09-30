@@ -472,8 +472,27 @@ namespace Chapter1.ConnectToSw
                     break;
 
                 default:
+                    if (path.StartsWith("/api/asmwf/"))
+                    {
+                        RequirePost(method, resp, () => HandleAssemblyWorkflow(path.Substring("/api/asmwf/".Length), req, resp));
+                        break;
+                    }
                     SendJson(resp, 404, new { success = false, message = $"未知端点: {path}" });
                     break;
+            }
+        }
+
+        private static void HandleAssemblyWorkflow(string op, HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var result = _commands.AssemblyWorkflowCall(op, ReadJsonBody(req));
+                SendJson(resp, 200, new { success = true, message = op, result });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[错误] asmwf/{op} 失败: {ex.Message}\n{ex.StackTrace}");
+                SendJson(resp, 500, new { success = false, message = ex.Message });
             }
         }
 

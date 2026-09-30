@@ -10,7 +10,7 @@ import json
 import time
 from typing import Any
 
-from .tools import TOOL_SPECS, WorkflowSession, dumps_result
+from .tools import TOOL_SPECS, WorkflowSession, dumps_result, tool_specs
 
 SYSTEM_PROMPT = """你是一名资深机械设计工程师，正在 SolidWorks 中用工具逐步建出用户描述的零件。
 
@@ -66,6 +66,7 @@ class WorkflowAgent:
         max_tokens: int = 8000,
         temperature: float = 0.0,
         max_stalls: int = 2,
+        extra_tools: list[str] | None = None,
     ):
         self.client = client
         self.model = model
@@ -74,6 +75,7 @@ class WorkflowAgent:
         self.max_tokens = max_tokens
         self.temperature = temperature
         self.max_stalls = max_stalls
+        self.tools = tool_specs(extra_tools)
 
     def run(self, goal: str) -> dict:
         started = time.perf_counter()
@@ -91,7 +93,7 @@ class WorkflowAgent:
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
-                    tools=TOOL_SPECS,
+                    tools=self.tools,
                     tool_choice="auto",
                     temperature=self.temperature,
                     max_tokens=self.max_tokens,
