@@ -38,8 +38,8 @@ from .skill_registry import SkillRegistry, SkillSelector, build_system_prompt, d
 # 默认配置
 # ============================================================
 
-# 默认模型：gpt-4o 支持结构化输出（Structured Outputs）
-DEFAULT_MODEL = "gpt-4o"
+# 默认模型：TT Switch 网关上的 gemini-3.5-flash（.env 未指定模型时使用）
+DEFAULT_MODEL = "gemini-3.5-flash"
 
 
 def _resolve_model_env(
@@ -49,7 +49,7 @@ def _resolve_model_env(
 ) -> str:
     """按环境变量优先级解析模型名：prefer_env > fallback_env > default。
     Vision 用 VISION_MODEL；Plan 用 PLAN_MODEL；两者都不设时统一读 PLANNER_MODEL，
-    最后回退到 DEFAULT_MODEL(gpt-4o)。
+    最后回退到 DEFAULT_MODEL。
     """
     return (
         os.getenv(prefer_env)

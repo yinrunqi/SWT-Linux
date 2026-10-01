@@ -25,7 +25,8 @@
     <div class="settings-row">
       <label for="provider-select">API 服务</label>
       <select id="provider-select">
-        <option value="aiping" selected>AI Ping（当前）</option>
+        <option value="ttswitch" selected>TT Switch 本地网关（当前）</option>
+        <option value="aiping">AI Ping（备用）</option>
         <option value="juheai">juheai（备用）</option>
         <option value="custom">自定义 OpenAI 兼容接口</option>
       </select>
@@ -47,12 +48,13 @@
     </div>
     <div class="settings-row">
       <label for="base-url">Base URL <span class="hint">（可选；留空使用服务端 .env）</span></label>
-      <input id="base-url" type="text" value="https://aiping.cn/api/v1" placeholder="https://api.openai.com/v1">
+      <input id="base-url" type="text" value="http://127.0.0.1:4200/native" placeholder="https://api.openai.com/v1">
     </div>
     <div class="settings-row">
       <label for="vision-model-select">视觉模型 <span class="hint">（识别三视图/图片）</span></label>
       <select id="vision-model-select">
-        <option value="GLM-4.6V" selected>GLM-4.6V（AI Ping，本次选择，待项目实测）</option>
+        <option value="gemini-3.5-flash" selected>gemini-3.5-flash（TT Switch，默认）</option>
+        <option value="GLM-4.6V">GLM-4.6V（AI Ping）</option>
         <option value="basic/claude-sonnet-5">claude-sonnet-5（juheai，C1 键盘实测）</option>
         <option value="gpt-4o">gpt-4o（B01~B22 实测，简单零件够用）</option>
       </select>
@@ -60,15 +62,16 @@
     <div class="settings-row">
       <label for="plan-model-select">规划模型 <span class="hint">（生成建模步骤）</span></label>
       <select id="plan-model-select">
-        <option value="Qwen3.5-397B-A17B" selected>Qwen3.5-397B-A17B（AI Ping，本次选择，待项目实测）</option>
+        <option value="gemini-3.5-flash" selected>gemini-3.5-flash（TT Switch，默认）</option>
+        <option value="Qwen3.5-397B-A17B">Qwen3.5-397B-A17B（AI Ping）</option>
         <option value="basic/claude-sonnet-5">claude-sonnet-5（juheai，复合规划已实测）</option>
         <option value="gpt-4o">gpt-4o（B01~B22 实测，简单零件够用）</option>
       </select>
     </div>
     <div class="settings-row">
       <p class="hint" style="margin: 4px 0 0 0; font-size: 12px; color: #888;">
-        💡 当前默认使用 AI Ping：Vision 为 <b>GLM-4.6V</b>，Plan 为 <b>Qwen3.5-397B-A17B</b>。
-        原 juheai 可通过“API 服务”一键切回；API Key 留空时使用服务端 .env 中对应配置。
+        💡 当前默认使用本机 TT Switch 网关：Vision 与 Plan 均为 <b>gemini-3.5-flash</b>（网关需先启动，见 tt_switch_api_examples/README.md）。
+        AI Ping、juheai 可通过“API 服务”一键切换；API Key 留空时使用服务端 .env 中对应配置。
       </p>
     </div>
   </div>

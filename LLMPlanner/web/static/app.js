@@ -21,6 +21,11 @@ const baseUrlEl = document.getElementById("base-url");
 const visionModelEl = document.getElementById("vision-model-select");
 const planModelEl = document.getElementById("plan-model-select");
 const PROVIDER_DEFAULTS = {
+  ttswitch: {
+    baseUrl: "http://127.0.0.1:4200/native",
+    visionModel: "gemini-3.5-flash",
+    planModel: "gemini-3.5-flash",
+  },
   aiping: {
     baseUrl: "https://aiping.cn/api/v1",
     visionModel: "GLM-4.6V",
@@ -116,8 +121,8 @@ settingsToggle.addEventListener("click", () => {
 
 // ---- localStorage 持久化设置 ----
 function loadSettings() {
-  // 首次切换到 AI Ping 时备份旧浏览器配置，并采用新的 HTML 默认值。
-  const settingsVersion = "aiping-v1";
+  // 默认服务变更（现为 TT Switch）时备份旧浏览器配置，并采用新的 HTML 默认值。
+  const settingsVersion = "ttswitch-v1";
   if (localStorage.getItem("sw_settings_version") !== settingsVersion) {
     for (const key of ["sw_api_key", "sw_base_url", "sw_vision_model", "sw_plan_model"]) {
       const oldValue = localStorage.getItem(key);
@@ -131,14 +136,14 @@ function loadSettings() {
     localStorage.removeItem("sw_max_turns");
     localStorage.setItem("sw_agent_settings_version", agentSettingsVersion);
   }
-  providerEl.value = localStorage.getItem("sw_provider") || "aiping";
+  providerEl.value = localStorage.getItem("sw_provider") || "ttswitch";
   modeEl.value = localStorage.getItem("sw_mode") || "single_turn";
   maxTurnsEl.value = localStorage.getItem("sw_max_turns") || "";
   apiKeyEl.value = localStorage.getItem("sw_api_key") || "";
-  // base_url 用 HTML value 的 AI Ping 默认值作为空值时的兜底
+  // base_url 用 HTML value 的默认值作为空值时的兜底
   const savedBase = localStorage.getItem("sw_base_url");
   if (savedBase !== null) baseUrlEl.value = savedBase;
-  // Vision/Plan 模型独立记忆，缺省采用 HTML 中选定的 AI Ping 模型。
+  // Vision/Plan 模型独立记忆，缺省采用 HTML 中选定的模型。
   const savedVision = localStorage.getItem("sw_vision_model");
   if (savedVision) visionModelEl.value = savedVision;
   const savedPlan = localStorage.getItem("sw_plan_model");

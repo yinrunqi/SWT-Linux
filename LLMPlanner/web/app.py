@@ -21,11 +21,22 @@ from flask_cors import CORS
 
 from load_env import ensure_test_env_loaded
 from planner.agent_loop import MultiTurnAgent
-from planner.llm_client import SwLLMClient
+from planner.llm_client import DEFAULT_MODEL, SwLLMClient
 from planner.executor import SwExecutor
 from planner.schemas import SwModelingPlan
 
 ensure_test_env_loaded()
+
+# 浏览器里选的 API 服务 → 服务端 .env 中对应的 Key / Base URL 变量；
+# ttswitch（默认）与自定义接口用 OPENAI_*。
+_PROVIDER_ENV = {
+    "aiping": ("AIPING_API_KEY", "AIPING_BASE_URL"),
+    "juheai": ("JUHEAI_API_KEY", "JUHEAI_BASE_URL"),
+}
+
+
+def _provider_env(provider: str) -> tuple[str, str]:
+    return _PROVIDER_ENV.get(provider, ("OPENAI_API_KEY", "OPENAI_BASE_URL"))
 
 # ============================================================
 # Flask App
@@ -342,22 +353,13 @@ def load_gearbox_animation():
 def run_two_stage_gearbox():
     """Run the parameterized multi-turn gearbox demo from a clean session."""
     data = request.get_json(force=True) or {}
-    provider = data.get("provider", "aiping").strip()
-    key_env = (
-        "JUHEAI_API_KEY"
-        if provider == "juheai"
-        else "OPENAI_API_KEY"
-    )
-    url_env = (
-        "JUHEAI_BASE_URL"
-        if provider == "juheai"
-        else "OPENAI_BASE_URL"
-    )
+    provider = data.get("provider", "ttswitch").strip()
+    key_env, url_env = _provider_env(provider)
     api_key = data.get("api_key", "").strip() or os.getenv(key_env, "")
     base_url = data.get("base_url", "").strip() or os.getenv(url_env, "")
     plan_model = (
         data.get("plan_model", "").strip()
-        or os.getenv("PLAN_MODEL", "gpt-4o")
+        or os.getenv("PLAN_MODEL", DEFAULT_MODEL)
     )
     vision_model = (
         data.get("vision_model", "").strip()
@@ -470,22 +472,13 @@ def run_two_stage_gearbox():
 def run_single_cylinder_engine():
     """Run the multi-turn crank-slider engine assembly and validation."""
     data = request.get_json(force=True) or {}
-    provider = data.get("provider", "aiping").strip()
-    key_env = (
-        "JUHEAI_API_KEY"
-        if provider == "juheai"
-        else "OPENAI_API_KEY"
-    )
-    url_env = (
-        "JUHEAI_BASE_URL"
-        if provider == "juheai"
-        else "OPENAI_BASE_URL"
-    )
+    provider = data.get("provider", "ttswitch").strip()
+    key_env, url_env = _provider_env(provider)
     api_key = data.get("api_key", "").strip() or os.getenv(key_env, "")
     base_url = data.get("base_url", "").strip() or os.getenv(url_env, "")
     plan_model = (
         data.get("plan_model", "").strip()
-        or os.getenv("PLAN_MODEL", "gpt-4o")
+        or os.getenv("PLAN_MODEL", DEFAULT_MODEL)
     )
     vision_model = (
         data.get("vision_model", "").strip()
@@ -664,22 +657,13 @@ def set_engine_animation_pose():
 def run_adjustable_desk_lamp():
     """Build and machine-check the multi-turn adjustable desk lamp."""
     data = request.get_json(force=True) or {}
-    provider = data.get("provider", "aiping").strip()
-    key_env = (
-        "JUHEAI_API_KEY"
-        if provider == "juheai"
-        else "OPENAI_API_KEY"
-    )
-    url_env = (
-        "JUHEAI_BASE_URL"
-        if provider == "juheai"
-        else "OPENAI_BASE_URL"
-    )
+    provider = data.get("provider", "ttswitch").strip()
+    key_env, url_env = _provider_env(provider)
     api_key = data.get("api_key", "").strip() or os.getenv(key_env, "")
     base_url = data.get("base_url", "").strip() or os.getenv(url_env, "")
     plan_model = (
         data.get("plan_model", "").strip()
-        or os.getenv("PLAN_MODEL", "gpt-4o")
+        or os.getenv("PLAN_MODEL", DEFAULT_MODEL)
     )
     vision_model = (
         data.get("vision_model", "").strip()
@@ -886,22 +870,13 @@ def set_lamp_animation_pose():
 def run_radial_folding_umbrella():
     """Build and machine-check the multi-turn radial umbrella."""
     data = request.get_json(force=True) or {}
-    provider = data.get("provider", "aiping").strip()
-    key_env = (
-        "JUHEAI_API_KEY"
-        if provider == "juheai"
-        else "OPENAI_API_KEY"
-    )
-    url_env = (
-        "JUHEAI_BASE_URL"
-        if provider == "juheai"
-        else "OPENAI_BASE_URL"
-    )
+    provider = data.get("provider", "ttswitch").strip()
+    key_env, url_env = _provider_env(provider)
     api_key = data.get("api_key", "").strip() or os.getenv(key_env, "")
     base_url = data.get("base_url", "").strip() or os.getenv(url_env, "")
     plan_model = (
         data.get("plan_model", "").strip()
-        or os.getenv("PLAN_MODEL", "gpt-4o")
+        or os.getenv("PLAN_MODEL", DEFAULT_MODEL)
     )
     vision_model = (
         data.get("vision_model", "").strip()
@@ -1101,22 +1076,13 @@ def set_umbrella_animation_pose():
 def run_cordless_drill():
     """Build and machine-check the multi-turn cordless drill."""
     data = request.get_json(force=True) or {}
-    provider = data.get("provider", "aiping").strip()
-    key_env = (
-        "JUHEAI_API_KEY"
-        if provider == "juheai"
-        else "OPENAI_API_KEY"
-    )
-    url_env = (
-        "JUHEAI_BASE_URL"
-        if provider == "juheai"
-        else "OPENAI_BASE_URL"
-    )
+    provider = data.get("provider", "ttswitch").strip()
+    key_env, url_env = _provider_env(provider)
     api_key = data.get("api_key", "").strip() or os.getenv(key_env, "")
     base_url = data.get("base_url", "").strip() or os.getenv(url_env, "")
     plan_model = (
         data.get("plan_model", "").strip()
-        or os.getenv("PLAN_MODEL", "gpt-4o")
+        or os.getenv("PLAN_MODEL", DEFAULT_MODEL)
     )
     vision_model = (
         data.get("vision_model", "").strip()
@@ -1344,22 +1310,13 @@ def set_drill_animation_pose():
 def run_household_sewing_machine():
     """Build and machine-check the multi-turn household sewing machine."""
     data = request.get_json(force=True) or {}
-    provider = data.get("provider", "aiping").strip()
-    key_env = (
-        "JUHEAI_API_KEY"
-        if provider == "juheai"
-        else "OPENAI_API_KEY"
-    )
-    url_env = (
-        "JUHEAI_BASE_URL"
-        if provider == "juheai"
-        else "OPENAI_BASE_URL"
-    )
+    provider = data.get("provider", "ttswitch").strip()
+    key_env, url_env = _provider_env(provider)
     api_key = data.get("api_key", "").strip() or os.getenv(key_env, "")
     base_url = data.get("base_url", "").strip() or os.getenv(url_env, "")
     plan_model = (
         data.get("plan_model", "").strip()
-        or os.getenv("PLAN_MODEL", "gpt-4o")
+        or os.getenv("PLAN_MODEL", DEFAULT_MODEL)
     )
     vision_model = (
         data.get("vision_model", "").strip()
@@ -1604,22 +1561,13 @@ def set_sewing_machine_animation_pose():
 def run_film_projector():
     """Run the multi-turn vintage film projector assembly challenge."""
     data = request.get_json(force=True) or {}
-    provider = data.get("provider", "aiping").strip()
-    key_env = (
-        "JUHEAI_API_KEY"
-        if provider == "juheai"
-        else "OPENAI_API_KEY"
-    )
-    url_env = (
-        "JUHEAI_BASE_URL"
-        if provider == "juheai"
-        else "OPENAI_BASE_URL"
-    )
+    provider = data.get("provider", "ttswitch").strip()
+    key_env, url_env = _provider_env(provider)
     api_key = data.get("api_key", "").strip() or os.getenv(key_env, "")
     base_url = data.get("base_url", "").strip() or os.getenv(url_env, "")
     plan_model = (
         data.get("plan_model", "").strip()
-        or os.getenv("PLAN_MODEL", "gpt-4o")
+        or os.getenv("PLAN_MODEL", DEFAULT_MODEL)
     )
     vision_model = (
         data.get("vision_model", "").strip()
@@ -1868,7 +1816,7 @@ def run():
       "base_url": "https://...",   (可选)
       "vision_model": "basic/claude-sonnet-5",  (可选，Vision 阶段模型)
       "plan_model":   "basic/claude-sonnet-5",  (可选，Plan 阶段模型)
-      "model": "gpt-4o",           (旧协议兼容，Vision + Plan 共用此模型)
+      "model": "gemini-3.5-flash", (旧协议兼容，Vision + Plan 共用此模型)
       "mode": "single_turn",       (可选: single_turn / multi_turn)
       "action_level": "L0",        (可选: L0 原子操作 / L1 工程师级工具 + 闭环 Agent；L1 时 max_turns 为 LLM 调用上限)
       "max_turns": 8,              (multi_turn 可选)
@@ -1879,9 +1827,8 @@ def run():
     """
     data = request.get_json(force=True)
     instruction = data.get("instruction", "").strip()
-    provider = data.get("provider", "aiping").strip()
-    key_env = "JUHEAI_API_KEY" if provider == "juheai" else "OPENAI_API_KEY"
-    url_env = "JUHEAI_BASE_URL" if provider == "juheai" else "OPENAI_BASE_URL"
+    provider = data.get("provider", "ttswitch").strip()
+    key_env, url_env = _provider_env(provider)
     # 浏览器可覆盖服务端配置；留空时使用 LLMPlanner/.env，避免把 Key 存入浏览器。
     api_key = data.get("api_key", "").strip() or os.getenv(key_env, "")
     base_url = data.get("base_url", "").strip() or os.getenv(url_env, "")
@@ -1892,9 +1839,9 @@ def run():
     plan_model = data.get("plan_model", "").strip()
     legacy_model = data.get("model", "").strip()
     if not vision_model:
-        vision_model = legacy_model or os.getenv("VISION_MODEL", "gpt-4o")
+        vision_model = legacy_model or os.getenv("VISION_MODEL", DEFAULT_MODEL)
     if not plan_model:
-        plan_model = legacy_model or os.getenv("PLAN_MODEL", "gpt-4o")
+        plan_model = legacy_model or os.getenv("PLAN_MODEL", DEFAULT_MODEL)
     mode = data.get("mode", "single_turn").strip().lower()
     if mode not in ("single_turn", "multi_turn"):
         return jsonify({"success": False, "error": f"未知 mode: {mode}"}), 400

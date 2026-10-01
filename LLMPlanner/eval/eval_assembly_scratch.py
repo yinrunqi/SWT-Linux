@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -22,7 +23,7 @@ ensure_test_env_loaded()
 CASES_DIR = ROOT / "eval" / "assembly_scratch"
 RUBRIC_DIR = CASES_DIR / "rubrics"
 RECIPES = ROOT / "planner" / "skills" / "recipes"
-MODEL = "Qwen3.5-397B-A17B"
+MODEL = os.environ.get("PLAN_MODEL") or os.environ.get("PLANNER_MODEL") or "gemini-3.5-flash"
 
 
 def _load_case(name: str) -> dict:

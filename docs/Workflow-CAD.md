@@ -133,12 +133,14 @@ copy .env.example .env      # 在 LLMPlanner 目录下执行
 然后编辑 `.env`（它已被 git 忽略，不要提交）：
 
 ```ini
-OPENAI_API_KEY=<你的 key>
-OPENAI_BASE_URL=<你的 OpenAI 兼容地址，例如 https://aiping.cn/api/v1>
-PLAN_MODEL=Qwen3.5-397B-A17B        # 规划 / Agent 用的模型名，按你的服务商填写
-VISION_MODEL=GLM-4.6V               # 只在三视图输入时使用
+OPENAI_API_KEY=sk-ttsw-local                    # 默认：本机 TT Switch 网关
+OPENAI_BASE_URL=http://127.0.0.1:4200/native    # 换别的 OpenAI 兼容服务时改这两项
+PLAN_MODEL=gemini-3.5-flash                     # 规划 / Agent 用的模型名
+VISION_MODEL=gemini-3.5-flash                   # 只在三视图输入时使用
 SW_API_URL=http://localhost:5100
 ```
+
+TT Switch 网关的启动方式和可用模型见 `tt_switch_api_examples/README.md`。电脑重启后网关不会自动运行，连接被拒绝时先启动它。AI Ping、juheai 的配置可以分别写在 `AIPING_*`、`JUHEAI_*` 里备用，Web 设置里可以切换。
 
 请求里也可以临时指定 `api_key`、`base_url` 和 `plan_model`，会覆盖 `.env` 中的值。评测结果里的 `spent_yuan`（费用）依赖我们本机的 AI Ping 余额查询脚本，在别的机器上会是 `null`，不影响运行。需要的话，可以用结果里的 `token_usage` 乘以服务商的单价自己算。
 
