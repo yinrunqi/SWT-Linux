@@ -65,12 +65,29 @@ def _openai():
     import os
     from openai import OpenAI
 
-    return OpenAI(
+    client = OpenAI(
         api_key=os.environ["OPENAI_API_KEY"],
         base_url=os.environ.get("OPENAI_BASE_URL") or None,
         timeout=180,
         max_retries=2,
     )
+    # 网关上游偶发以 400 model_param_invalid 拒收同一请求，重放即可通过；SDK 不重试 400。
+    create = client.chat.completions.create
+
+    def create_with_retry(**kwargs):
+        for delay in (5, 15, 30, 60, 120, 180, 300):
+            try:
+                return create(**kwargs)
+            except Exception as exc:
+                print(f"  [LLM retry in {delay}s] {type(exc).__name__}: {str(exc)[:120]}")
+                if os.environ.get("EVAL_DUMP_REJECTED"):
+                    Path(os.environ["EVAL_DUMP_REJECTED"]).write_text(
+                        json.dumps(kwargs, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
+                time.sleep(delay)
+        return create(**kwargs)
+
+    client.chat.completions.create = create_with_retry
+    return client
 
 
 ASSEMBLY_RUBRIC_DIR = CASES_DIR / "assembly_rubrics"
@@ -95,7 +112,10 @@ def _grade_step(step: Path, rubric_path: Path) -> dict:
     from geomcheck.occ_part import Part
     from geomcheck.rubric import evaluate, load_rubric
 
-    return evaluate(load_rubric(rubric_path), Part.from_step(step))
+    try:
+        return evaluate(load_rubric(rubric_path), Part.from_step(step))
+    except Exception as exc:
+        return {"accepted": False, "score": 0.0, "error": f"{type(exc).__name__}: {exc}"}
 
 
 def generate_part(
@@ -219,7 +239,7 @@ def assemble(
 
 def run_condition(case: dict, condition: str, repeat: int, args, workflow: str = "v1") -> dict:
     case_id = case["case_id"]
-    out = Path(args.output_dir) / workflow / case_id / f"{condition}_r{repeat}"
+    out = Path(args.output_dir).resolve() / workflow / case_id / f"{condition}_r{repeat}"
     out.mkdir(parents=True, exist_ok=True)
     part_results = []
     parts: dict[str, Path] = {}
