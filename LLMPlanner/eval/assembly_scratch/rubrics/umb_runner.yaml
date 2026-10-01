@@ -1,0 +1,19 @@
+case: umb_runner
+tolerance: {length_mm: 0.25, angle_deg: 1.0, volume_rel: 0.04}
+entities:
+  bore: {cylinder: {d: 10.4, side: inner}, count: 1}
+  hinges: {cylinder: {d: 4, side: inner}, count: 2}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: shape
+    hard: true
+    check:
+      - bbox_sorted: [16, 24, 46]
+      - exists: bore
+      - through: {holes: bore}
+      - exists: hinges
+      - through: {holes: hinges}
+      - pair_distance: {items: hinges, value: 30}

@@ -80,6 +80,8 @@ v2 的规则都来自 AutoMate 与 Fusion 360 Gallery 的统计，不来自试�
 
 `spur_gear` 只在装配零件生成会话里通过 `WorkflowSession(extra_tools=["spur_gear"])` 打开，50 题和困难子集的 24 工具结果可以复现。
 
+额外零件工具集 v2（`EXTRA_TOOLSET_VERSION`）增加了 `internal_gear`：渐开线内齿圈，齿槽轮廓就是外齿轮齿形把齿顶高、齿根高对调（齿顶圆 r − m，齿根圆 r + 1.15m，齿隙 0.05m），`phase_deg` 是某个齿圈轮齿中心的方位角。装配工具 `mesh_gears` 增加了 `internal: true`：b 是齿圈，中心距必须是 m(z_b − z_a)/2，只转动外齿轮 a 去对齐相位，默认 `reverse=false`（同向）。实测 SolidWorks 的齿轮配合能正确处理行星架：太阳 12 / 行星 18 / 齿圈 48 固定时，行星架转速比 0.2、同向、零干涉。v1 的结果（只有 `spur_gear`）不受影响，测例清单和工具集版本见 [Workflow-CAD-Bench-Assembly.md](Workflow-CAD-Bench-Assembly.md)。
+
 ## 3. 评测协议
 
 测例与评分规格的完整说明（含新增测例的流程）见 [Workflow-CAD-Bench-Assembly.md](Workflow-CAD-Bench-Assembly.md)。本节是摘要。

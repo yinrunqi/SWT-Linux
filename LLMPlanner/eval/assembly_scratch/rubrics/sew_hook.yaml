@@ -1,0 +1,17 @@
+case: sew_hook
+tolerance: {length_mm: 0.25, angle_deg: 1.0, volume_rel: 0.05}
+entities:
+  rim: {cylinder: {d: 40, side: outer}, count: 1}
+  bore: {cylinder: {d: 10, side: inner}, count: 1}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: size
+    hard: true
+    check:
+      - exists: rim
+      - exists: bore
+      - coaxial: [rim, bore]
+      - extent_along: {axis: rim, of: all, value: 8}

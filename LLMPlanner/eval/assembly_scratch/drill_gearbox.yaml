@@ -1,0 +1,85 @@
+case_id: drill_planetary_gearbox
+title: 电钻两级行星减速器（齿圈固定，行星架输出，总传动比 20）
+# 源自旧示例电钻：保留两级行星——第一级太阳 12 / 行星 18 / 齿圈 48（i=5），
+# 第二级太阳 15 / 行星 15 / 齿圈 45（i=4），第一级行星架带第二级太阳轮。模数 1.2，两级中心距都是 18 mm。
+# 每级只留一个行星轮：多个行星轮只分载、不改运动链，而 SolidWorks 求解冗余齿轮闭环时单步要几分钟。
+# 去掉电机、离合、夹头、外壳等。轴线沿 Z；轴向分层：机座 z∈[0,6]，第一级 [6,16]，行星架一 [16,20]，
+# 第二级 [20,30]，行星架二 [30,34]，输出轴 [30,52]。
+module_mm: 1.2
+orbit_radius_mm: 18
+total_ratio: 20
+
+parts:
+  - id: drill_housing
+    extra_tools: []
+    prompt: |
+      创建机座板：在 front_plane 上画矩形，X、Y 都从 -40 到 40 mm，向 +Z 拉伸 6 mm，
+      在原点开直径 4.4 mm 贯穿孔（输入轴轴承）。
+  - id: drill_ring48
+    extra_tools: [internal_gear]
+    prompt: |
+      创建渐开线内齿圈：模数 1.2 mm，齿数 48，压力角 30°，齿宽 10 mm，外径 70 mm，轴线沿 Z。优先 internal_gear。
+  - id: drill_ring45
+    extra_tools: [internal_gear]
+    prompt: |
+      创建渐开线内齿圈：模数 1.2 mm，齿数 45，压力角 30°，齿宽 10 mm，外径 66 mm，轴线沿 Z。优先 internal_gear。
+  - id: drill_sun12
+    extra_tools: [spur_gear]
+    prompt: |
+      创建渐开线直齿轮，模数 1.2 mm，齿数 12，压力角 30°，齿宽 10 mm，轴孔直径 4 mm，轴线沿 Z。优先 spur_gear。
+  - id: drill_planet18
+    extra_tools: [spur_gear]
+    prompt: |
+      创建渐开线直齿轮，模数 1.2 mm，齿数 18，压力角 30°，齿宽 10 mm，轴孔直径 4 mm，轴线沿 Z。优先 spur_gear。
+  - id: drill_gear15
+    extra_tools: [spur_gear]
+    prompt: |
+      创建渐开线直齿轮，模数 1.2 mm，齿数 15，压力角 30°，齿宽 10 mm，轴孔直径 4 mm，轴线沿 Z。优先 spur_gear。
+  - id: drill_carrier
+    extra_tools: []
+    prompt: |
+      创建行星架：外径 48 mm、厚 4 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+      开 2 个直径 4 mm 贯穿孔：圆心 (0,0) 与 (18,0)。
+  - id: drill_shaft
+    extra_tools: []
+    prompt: |
+      创建轴：直径 4 mm，长 22 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+
+gold_roles:
+  housing: drill_housing
+  ring1: drill_ring48
+  ring2: drill_ring45
+  input_shaft: drill_shaft
+  sun1: drill_sun12
+  planet1: drill_planet18
+  carrier1: drill_carrier
+  sun2: drill_gear15
+  planet2: drill_gear15
+  carrier2: drill_carrier
+  output_shaft: drill_shaft
+
+assembly:
+  prompt: |
+    装配电钻两级行星减速器。不要把插入坐标当作最终位姿。所有轴线沿 Z，与 housing 的轴承孔同轴。
+    - housing 固定；ring1（48 齿）、ring2（45 齿）与 housing 固定：ring1 贴 housing 前面（z∈[6,16]），ring2 在 z∈[20,30]。
+    - input_shaft 穿过 housing 轴承孔绕 Z 转动（z∈[-6,16]），sun1（12 齿）固定在 input_shaft 上（z∈[6,16]）。
+    - carrier1 绕主轴线转动（z∈[16,20]）；planet1（18 齿）绕 carrier1 偏心 18 mm 的孔转动（z∈[6,16]），
+      同时与 sun1 外啮合、与 ring1 内啮合。
+    - sun2（15 齿）固定在 carrier1 上（z∈[20,30]）。carrier2 绕主轴线转动（z∈[30,34]）；
+      planet2（15 齿）绕 carrier2 的偏心孔转动（z∈[20,30]），同时与 sun2 外啮合、与 ring2 内啮合。
+    - output_shaft 固定在 carrier2 上（z∈[30,52]）。
+    - 总传动比 20：input_shaft 转 20 圈 output_shaft 同向转 1 圈；第一级行星架转速为输入的 1/5。
+    - 注意每个行星轮的啮合相位，各齿轮互不穿模。
+    对 input_shaft 做 check_motion（一整圈），确认无穿模后再保存。
+
+motion:
+  driver: input_shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed: [housing]
+  expect_moving: [sun1, planet1, carrier1, planet2, carrier2]
+  ratios:
+    - {role: carrier1, ratio: 5, same_direction: true}
+    - {role: carrier2, ratio: 20, same_direction: true}
+  max_interference: 0

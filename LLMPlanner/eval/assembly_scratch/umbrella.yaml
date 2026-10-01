@@ -1,0 +1,81 @@
+case_id: folding_umbrella
+title: 折叠伞骨架（滑动下巢驱动的对称双伞骨，多位姿评测）
+# 源自旧示例 radial_folding_umbrella_spec.json：保留中棒-上巢-下巢-伞骨-撑杆的核心连杆，
+# 8 组伞骨缩为对称的 2 组（每组都是同一个滑块-四杆闭环），去掉伞面、伞柄、卡簧等。
+# 坐标（中棒局部系，轴线 Z）：上巢铰轴在 z=340、离轴 18 mm；下巢铰轴离轴 15 mm；伞骨上撑杆铰孔距上巢铰 120 mm，撑杆 160 mm。
+# 分层（沿铰轴方向）：上巢 |y|≤8、伞骨 8≤|y|≤12、下巢 |y|≤12、撑杆 12≤|y|≤16。
+hub_pivot_mm: [18, 340]
+runner_pivot_r_mm: 15
+rib_attach_mm: 120
+stretcher_mm: 160
+
+parts:
+  - id: umb_shaft
+    extra_tools: []
+    prompt: |
+      创建伞中棒：直径 10 mm、长 400 mm 的圆棒，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+  - id: umb_hub
+    extra_tools: []
+    prompt: |
+      创建上巢：长方体 X 从 -26 到 26、Y 从 -8 到 8、Z 从 -10 到 10 mm（在 front_plane 上画矩形后两侧对称拉伸 20 mm）。
+      沿 Z 开直径 10 mm 贯穿中心孔；沿 Y 在 (X=18, Z=0) 和 (X=-18, Z=0) 各开一个直径 4 mm 贯穿铰孔。
+  - id: umb_runner
+    extra_tools: []
+    prompt: |
+      创建下巢：长方体 X 从 -23 到 23、Y 从 -12 到 12、Z 从 -8 到 8 mm（两侧对称拉伸 16 mm）。
+      沿 Z 开直径 10.4 mm 贯穿中心孔（在中棒上滑动）；沿 Y 在 (X=15, Z=0) 和 (X=-15, Z=0) 各开一个直径 4 mm 贯穿铰孔。
+  - id: umb_rib
+    extra_tools: []
+    prompt: |
+      创建伞骨：在 front_plane 上画两端圆头的长条，X 从 0 到 300 mm（两端半圆圆心分别在 X=0 和 X=300），宽 8 mm，
+      向 +Z 拉伸 4 mm。在 (0,0) 和 (120,0) 各开一个直径 4 mm 贯穿孔。原点在 (0,0) 孔中心（上巢铰孔）。
+  - id: umb_stretcher
+    extra_tools: []
+    prompt: |
+      创建撑杆：两端圆头长条，两孔中心距 160 mm，宽 8 mm，两端直径 4 mm 贯穿孔，向 +Z 拉伸 4 mm。原点在一个孔中心。
+
+gold_roles:
+  shaft: umb_shaft
+  hub: umb_hub
+  runner: umb_runner
+  rib_a: umb_rib
+  rib_b: umb_rib
+  stretcher_a: umb_stretcher
+  stretcher_b: umb_stretcher
+
+assembly:
+  prompt: |
+    装配折叠伞骨架（两组对称伞骨）。不要把插入坐标当作最终位姿。
+    - shaft 固定，轴线沿 Z，下端在 Z=0。
+    - hub 套在 shaft 上并与之固定，hub 的两个铰孔轴线在 z=340（hub 的 front_plane 与 shaft 底端相距 340 mm）。
+    - runner 套在 shaft 上，只能沿 shaft 滑动（不能绕 shaft 转，由两组撑杆约束）。
+    - rib_a、rib_b 的 (0,0) 孔分别铰接在 hub 两侧铰孔上，贴在 hub 的 ±Y 侧面，伞骨朝外（远离中棒）。
+    - stretcher_a、stretcher_b 一端铰接在 runner 两侧铰孔上（贴 runner 的 ±Y 侧面），另一端铰接在同侧伞骨的 (120,0) 孔上。
+    - 整机只有一个自由度：runner 上下滑动带动伞骨张合。不要限制 runner 位置。各件互不穿模。装好后保存。
+
+motion:
+  mode: poses
+  frame: shaft
+  expect_fixed: [shaft]
+  tolerance_mm: 1.5
+  max_interference: 0
+  # 伞骨尖端取伞骨局部 (300,0,2)（厚度中面），在中棒系里量轴向高度 z 与离轴距离 r_xy（与伞骨朝向哪个方位无关）。
+  poses:
+    - name: open
+      set:
+        - {type: offset, a: "runner:plane(front)", b: "shaft:plane(front)", offset_mm: 209.65}
+      points:
+        - {role: rib_a, local: [300, 0, 2], expect: {z: 277.63, r_xy: 311.6}}
+        - {role: rib_b, local: [300, 0, 2], expect: {z: 277.63, r_xy: 311.6}}
+    - name: half
+      set:
+        - {type: offset, a: "runner:plane(front)", b: "shaft:plane(front)", offset_mm: 121.42}
+      points:
+        - {role: rib_a, local: [300, 0, 2], expect: {z: 127.87, r_xy: 230.35}}
+        - {role: rib_b, local: [300, 0, 2], expect: {z: 127.87, r_xy: 230.35}}
+    - name: closed
+      set:
+        - {type: offset, a: "runner:plane(front)", b: "shaft:plane(front)", offset_mm: 65.08}
+      points:
+        - {role: rib_a, local: [300, 0, 2], expect: {z: 46.56, r_xy: 80.99}}
+        - {role: rib_b, local: [300, 0, 2], expect: {z: 46.56, r_xy: 80.99}}

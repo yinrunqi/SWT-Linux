@@ -1,0 +1,81 @@
+case_id: film_projector_drive
+title: 电影放映机传动（快门同步齿轮系 + 输片减速齿轮）
+# 源自旧示例放映机。旧示例的四槽槽轮（间歇运动）无法用配合表达，按约定换成齿轮系：
+# 主动轴 24 齿经 18 齿惰轮带 24 齿快门轮（快门与主动轴 1:1 同向），主动轴上的 16 齿小齿轮带 64 齿输片齿轮（4:1 反向）。
+# 去掉灯箱、镜头、片盘等。所有转轴沿 Z；机体板 z∈[0,8]；第一层齿轮 z∈[10,18]，第二层 z∈[20,28]，快门盘在 z∈[30,33]，输片鼓在板后。
+module_mm: 1.5
+
+parts:
+  - id: proj_frame
+    extra_tools: []
+    prompt: |
+      创建机体板：在 front_plane 上画矩形，X 从 -60 到 90 mm，Y 从 -120 到 40 mm，向 +Z 拉伸 8 mm。
+      开四个直径 10.4 mm 贯穿轴承孔：(0,0) 主动轴，(31.5,0) 惰轮轴，(63,0) 快门轴，(0,-60) 输片轴。
+      原点在主动轴孔轴线。不要抽壳。
+  - id: proj_shaft
+    extra_tools: []
+    prompt: |
+      创建轴：直径 10 mm，长 50 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+  - id: proj_gear24
+    extra_tools: [spur_gear]
+    prompt: |
+      创建渐开线直齿轮，模数 1.5 mm，齿数 24，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z。优先 spur_gear。
+  - id: proj_idler18
+    extra_tools: [spur_gear]
+    prompt: |
+      创建渐开线直齿轮，模数 1.5 mm，齿数 18，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z。优先 spur_gear。
+  - id: proj_pinion16
+    extra_tools: [spur_gear]
+    prompt: |
+      创建渐开线直齿轮，模数 1.5 mm，齿数 16，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z。优先 spur_gear。
+  - id: proj_gear64
+    extra_tools: [spur_gear]
+    prompt: |
+      创建渐开线直齿轮，模数 1.5 mm，齿数 64，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z。优先 spur_gear。
+  - id: proj_shutter
+    extra_tools: []
+    prompt: |
+      创建快门盘：外径 50 mm、厚 3 mm 的圆盘，轴线沿 Z，中心孔直径 10 mm；
+      在 (15,0) 与 (-15,0) 各开一个直径 12 mm 的贯穿透光窗。
+  - id: proj_sprocket
+    extra_tools: []
+    prompt: |
+      创建输片鼓：外径 30 mm、长 16 mm 的圆柱，轴线沿 Z，中心贯穿孔直径 10 mm。
+
+gold_roles:
+  frame: proj_frame
+  drive_shaft: proj_shaft
+  drive_gear: proj_gear24
+  drive_pinion: proj_pinion16
+  idler_shaft: proj_shaft
+  idler_gear: proj_idler18
+  shutter_shaft: proj_shaft
+  shutter_gear: proj_gear24
+  shutter: proj_shutter
+  sprocket_shaft: proj_shaft
+  sprocket_gear: proj_gear64
+  sprocket: proj_sprocket
+
+assembly:
+  prompt: |
+    装配电影放映机传动。不要把插入坐标当作最终位姿。
+    - frame 固定。四根轴分别穿过 frame 的四个轴承孔、各自绕 Z 转动：drive_shaft (0,0)、idler_shaft (31.5,0)、
+      shutter_shaft (63,0)、sprocket_shaft (0,-60)。
+    - 第一层（板前，同一轴向层）：drive_gear 在 drive_shaft 上，idler_gear 在 idler_shaft 上，shutter_gear 在 shutter_shaft 上；
+      24 齿 drive_gear 与 18 齿 idler_gear 外啮合，idler_gear 再与 24 齿 shutter_gear 外啮合，快门与主动轴 1:1 同向。
+    - 第二层（第一层之外）：drive_pinion（16 齿）在 drive_shaft 上，与 sprocket_shaft 上的 64 齿 sprocket_gear 外啮合，输片轴 4:1 反向减速。
+    - shutter 快门盘装在 shutter_shaft 最外端；sprocket 输片鼓装在 sprocket_shaft 板后一端。
+    - 每个齿轮、快门盘、输片鼓都与各自的轴 1:1 同转。各件互不穿模。
+    对 drive_shaft 做 check_motion（一整圈），确认无穿模后再保存。
+
+motion:
+  driver: drive_shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed: [frame]
+  expect_moving: [idler_gear, shutter, sprocket]
+  ratios:
+    - {role: shutter, ratio: 1, same_direction: true}
+    - {role: sprocket, ratio: 4, same_direction: false}
+  max_interference: 0

@@ -1,0 +1,87 @@
+case_id: adjustable_desk_lamp
+title: 可调台灯（三自由度平面臂，多位姿评测）
+# 源自 SolidWorksTutorial 旧示例 adjustable_desk_lamp_spec.json：保留底座-下臂-上臂-灯头的转动链，
+# 去掉配重、弹簧、灯罩等装饰件。三个铰接都绕 Z，臂按层叠放（底座 z∈[0,8]，下臂 [8,13]，上臂 [13,18]，灯头 [18,23]）。
+shoulder_mm: [0, 60]
+lower_arm_mm: 120
+upper_arm_mm: 105
+pin_d_mm: 5
+
+parts:
+  - id: lamp_base
+    extra_tools: []
+    prompt: |
+      创建台灯底座立板：在 front_plane 上画矩形，X 从 -60 到 60 mm，Y 从 -10 到 70 mm，向 +Z 拉伸 8 mm。
+      在 (0,60) 开直径 5.2 mm 贯穿孔（肩部铰孔）。不要抽壳。
+  - id: lamp_lower_arm
+    extra_tools: []
+    prompt: |
+      创建台灯下臂：在 front_plane 上画两端圆头的长条，两孔中心距 120 mm，宽度 12 mm，
+      两端各一个直径 5 mm 贯穿孔，向 +Z 拉伸 5 mm。原点在其中一个孔的中心，另一孔在 +X 方向。
+  - id: lamp_upper_arm
+    extra_tools: []
+    prompt: |
+      创建台灯上臂：两端圆头长条，两孔中心距 105 mm，宽度 12 mm，两端直径 5 mm 贯穿孔，向 +Z 拉伸 5 mm。
+      原点在其中一个孔的中心，另一孔在 +X 方向。
+  - id: lamp_shade
+    extra_tools: []
+    prompt: |
+      创建灯头板：在 front_plane 上画矩形，X 从 -7 到 45 mm，Y 从 -8 到 8 mm，向 +Z 拉伸 5 mm。
+      在原点开直径 5 mm 贯穿孔（腕部铰孔）。
+  - id: lamp_pin
+    extra_tools: []
+    prompt: |
+      创建铰销：直径 5 mm，长 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+
+gold_roles:
+  base: lamp_base
+  lower_arm: lamp_lower_arm
+  upper_arm: lamp_upper_arm
+  shade: lamp_shade
+  shoulder_pin: lamp_pin
+  elbow_pin: lamp_pin
+  wrist_pin: lamp_pin
+
+assembly:
+  prompt: |
+    装配一盏三自由度可调台灯。不要把插入坐标当作最终位姿。
+    - base 固定。肩部铰孔在 base 的 (0,60)，所有铰接轴都沿 Z。
+    - shoulder_pin 固定在 base 的肩部铰孔里；lower_arm 一端套在 shoulder_pin 上绕 Z 转动，贴在 base 前面（+Z 侧）。
+    - elbow_pin 固定在 lower_arm 另一端孔里；upper_arm 一端套在 elbow_pin 上绕 Z 转动，贴在 lower_arm 前面。
+    - wrist_pin 固定在 upper_arm 另一端孔里；shade 的铰孔套在 wrist_pin 上绕 Z 转动，贴在 upper_arm 前面。
+    - 三个转角都保持自由（整机活动度 3），不要加限制转角的配合，不要把臂固定在某个角度。
+    - 各臂互不穿模。装好后保存。
+
+motion:
+  mode: poses
+  frame: base
+  expect_fixed: [base]
+  tolerance_mm: 1.5
+  max_interference: 0
+  # 点位在 base 局部坐标系取；x 取绝对值，容许整机左右镜像摆放。
+  # 臂取两孔中点（与零件正装/反装无关）。
+  poses:
+    - name: reach_low
+      set:
+        - {type: angle, a: "lower_arm:plane(top)", b: "base:plane(top)", angle_deg: 30,
+           points: [{role: lower_arm, local: [60, 0, 0], expect: {x: 51.96, y: 90.0}, abs: [x]}]}
+        - {type: angle, a: "upper_arm:plane(top)", b: "lower_arm:plane(top)", angle_deg: 35,
+           points: [{role: upper_arm, local: [52.5, 0, 0], expect: {x: 126.11, y: 167.58}, abs: [x]}]}
+        - {type: angle, a: "shade:plane(top)", b: "upper_arm:plane(top)", angle_deg: 15,
+           points: [{role: shade, local: [40, 0, 0], expect: {x: 174.01, y: 245.8}, abs: [x]}]}
+    - name: reach_mid
+      set:
+        - {type: angle, a: "lower_arm:plane(top)", b: "base:plane(top)", angle_deg: 60,
+           points: [{role: lower_arm, local: [60, 0, 0], expect: {x: 30.0, y: 111.96}, abs: [x]}]}
+        - {type: angle, a: "upper_arm:plane(top)", b: "lower_arm:plane(top)", angle_deg: 35,
+           points: [{role: upper_arm, local: [52.5, 0, 0], expect: {x: 107.58, y: 186.11}, abs: [x]}]}
+        - {type: angle, a: "shade:plane(top)", b: "upper_arm:plane(top)", angle_deg: 30,
+           points: [{role: shade, local: [40, 0, 0], expect: {x: 195.01, y: 204.81}, abs: [x]}]}
+    - name: reach_high
+      set:
+        - {type: angle, a: "lower_arm:plane(top)", b: "base:plane(top)", angle_deg: 82,
+           points: [{role: lower_arm, local: [60, 0, 0], expect: {x: 8.35, y: 119.42}, abs: [x]}]}
+        - {type: angle, a: "upper_arm:plane(top)", b: "lower_arm:plane(top)", angle_deg: 50,
+           points: [{role: upper_arm, local: [52.5, 0, 0], expect: {x: 61.22, y: 206.65}, abs: [x]}]}
+        - {type: angle, a: "shade:plane(top)", b: "upper_arm:plane(top)", angle_deg: 45,
+           points: [{role: shade, local: [40, 0, 0], expect: {x: 144.72, y: 225.48}, abs: [x]}]}

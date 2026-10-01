@@ -6,6 +6,7 @@ import copy
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -128,6 +129,57 @@ def test_gearbox_faults_are_caught():
     out = evaluate(moved, mates, aliases, rubric)
     bad = next(c for c in out["couplings"] if c["pair"] == ["lay_pinion", "output_wheel"])
     assert bad["center_ok"] is False and bad["center_distance_mm"] == 76.0
+
+
+def test_internal_gear_center_distance_and_direction():
+    """定轴内啮合：太阳轮 12 齿与行星轮 18 齿外啮合，行星轮与 48 齿齿圈内啮合，m=1.2，中心距都是 18 mm。"""
+    comps = [_comp("frame-1", fixed=True, status=3), _comp("sun-1"), _comp("planet-1", 0.018), _comp("ring-1")]
+    m = []
+    m += revolute("sun-1", "frame-1", 0)
+    m += revolute("planet-1", "frame-1", 0.018)
+    m += revolute("ring-1", "frame-1", 0, z=0.01)
+    m.append(gear("sun-1", "planet-1", 0, 0.018, 12, 18))
+    internal = gear("planet-1", "ring-1", 0.018, 0, 18, 48)
+    internal["reverse"] = False
+    m.append(internal)
+    aliases = {c["name"][:-2]: c["name"] for c in comps}
+    rubric = {
+        "case_id": "t", "ground": "frame", "mobility": 1,
+        "bodies": {"frame": ["frame"], "sun": ["sun"], "planet": ["planet"], "ring": ["ring"]},
+        "joints": [{"bodies": [b, "frame"], "type": "revolute"} for b in ("sun", "planet", "ring")],
+        "couplings": [
+            {"type": "gear", "a": "sun", "b": "planet", "teeth": [12, 18], "module_mm": 1.2, "external": True},
+            {"type": "gear", "a": "planet", "b": "ring", "teeth": [18, 48], "module_mm": 1.2, "external": False},
+        ],
+    }
+    out = evaluate(comps, m, aliases, rubric)
+    assert out["score"] == 100, out
+    ring = out["couplings"][1]
+    assert ring["expected_mm"] == pytest.approx(18.0) and ring["center_ok"]
+
+    internal["reverse"] = True
+    out = evaluate(comps, m, aliases, rubric)
+    assert out["couplings"][1]["direction_ok"] is False
+
+
+def test_planetary_gear_rolling_constraint():
+    """单级行星：太阳 12、行星 18（装在转动的行星架上，x=18mm）、齿圈 48 固定在机架上。
+    活动度 1；太阳轮锁死时整机锁死（按绝对转角耦合会错算出行星架仍可转）。"""
+    from geomcheck.assembly_rubric import _global_mobility
+
+    comps = [_comp("frame-1", fixed=True, status=3), _comp("sun-1"), _comp("carrier-1"), _comp("planet-1", 0.018)]
+    m = []
+    m += revolute("sun-1", "frame-1", 0)
+    m += revolute("carrier-1", "frame-1", 0, z=0.016)
+    m += revolute("planet-1", "carrier-1", 0.018, z=0.016)
+    m.append(gear("sun-1", "planet-1", 0, 0.018, 12, 18))
+    ring = gear("planet-1", "frame-1", 0.018, 0, 18, 48)
+    ring["reverse"] = False
+    m.append(ring)
+    names = [c["name"] for c in comps]
+    assert _global_mobility(names, {"frame-1"}, m)["mobility"] == 1
+    locked = m + keyed("sun-1", "frame-1", 0, 0.004)
+    assert _global_mobility(names, {"frame-1"}, locked)["mobility"] == 0
 
 
 def test_crank_slider_engine():

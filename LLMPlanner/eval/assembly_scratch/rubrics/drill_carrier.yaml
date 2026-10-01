@@ -1,0 +1,24 @@
+case: drill_carrier
+tolerance: {length_mm: 0.25, angle_deg: 1.0, volume_rel: 0.03}
+entities:
+  rim: {cylinder: {d: 48, side: outer}, count: 1}
+  holes: {cylinder: {d: 4, side: inner}, count: 2}
+  tframe: {axis_frame: {axis: rim}}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: size
+    hard: true
+    check:
+      - exists: rim
+      - extent_along: {axis: rim, of: all, value: 4}
+  - id: holes
+    hard: true
+    check:
+      # 中心孔与行星销孔同为 4 mm：半径 18 圆上恰有 1 个孔，体积再锁定另一个在中心
+      - exists: holes
+      - through: {holes: holes}
+      - angular_openings: {frame: tframe, t_list: [2], r: 18, count: 1}
+      - volume: 7137.7

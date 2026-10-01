@@ -1,0 +1,19 @@
+case: drill_ring45
+tolerance: {length_mm: 0.25, angle_deg: 1.0, volume_rel: 0.08}
+entities:
+  rim: {cylinder: {d: 66, side: outer}, count: 1}
+  tframe: {axis_frame: {axis: rim}}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: rim
+    hard: true
+    check:
+      - exists: rim
+      - extent_along: {axis: rim, of: all, value: 10}
+  - id: teeth
+    hard: true
+    check:
+      - angular_openings: {frame: tframe, t_list: [5], scan_r: [26.4, 28.2, 0.15], count: 45, identical: true}

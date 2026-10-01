@@ -500,7 +500,57 @@ class AssemblySession:
         origin = [float(tf[9]), float(tf[10]), float(tf[11])]
         return sw, float(tip["radius"]), origin, tf
 
+    def _mesh_internal(self, args: dict) -> dict:
+        a, b = str(args["a"]), str(args["b"])
+        if args.get("teeth_a") is None or args.get("teeth_b") is None or args.get("module") is None:
+            raise WorkflowError("TOOL_ARGS", "内啮合必须给 teeth_a、teeth_b、module")
+        za, zb, module_m = int(args["teeth_a"]), int(args["teeth_b"]), float(args["module"]) / 1000
+        if zb <= za:
+            raise WorkflowError("TOOL_ARGS", "内啮合时 b 是内齿圈，teeth_b 应大于 teeth_a")
+        sw_a, _, o_a, _ = self._gear_tip_radius(a)
+        sw_b, _, o_b, tf_b = self._gear_tip_radius(b)
+        cd = math.hypot(o_a[0] - o_b[0], o_a[1] - o_b[1])
+        expected = module_m * (zb - za) / 2
+        if abs(cd - expected) > 0.0015:
+            raise WorkflowError(
+                "FEATURE_NO_EFFECT",
+                f"中心距 {cd*1000:.2f} mm 与 m(z2−z1)/2={expected*1000:.2f} mm 差 {abs(cd-expected)*1000:.2f} mm，"
+                "先把齿轮装到正确的轴上再啮合",
+                center_distance_mm=round(cd * 1000, 3),
+                expected_mm=round(expected * 1000, 3),
+            )
+        # 齿圈局部 0° 方向是轮齿。找离中心连线最近的齿圈齿槽，按分度圆弧长相等换算到外齿轮上，
+        # 转外齿轮 a 让它的齿落进该齿槽（齿圈不动）。角度约定同外啮合分支。
+        pitch_a, pitch_b = 2 * math.pi / za, 2 * math.pi / zb
+        theta = math.atan2(o_a[1] - o_b[1], o_a[0] - o_b[0])
+        alpha_b = -math.radians(angle_about_z(tf_b))
+        frac = ((alpha_b + pitch_b / 2 - theta) / pitch_b) % 1.0
+        alpha_a = theta + frac * pitch_a
+        phase_applied = self._ok(self._request("POST", "/api/assembly/set-component-pose", {
+            "componentName": sw_a,
+            "x": o_a[0], "y": o_a[1], "z": o_a[2],
+            "axisX": 0, "axisY": 0, "axisZ": 1,
+            "angleDeg": -math.degrees(alpha_a),
+        }))
+        reverse = False if args.get("reverse") is None else bool(args["reverse"])
+        mate = self._mate(
+            "gear", f"{a}:cyl(i=0)", f"{b}:cyl(i=0)",
+            ratioNumerator=za, ratioDenominator=zb, reverse=reverse,
+        )
+        self._record_joint("coupling:gear", a, b, [mate])
+        return {
+            "mate": mate,
+            "internal": True,
+            "teeth": [za, zb],
+            "module_mm": _round(module_m * 1000),
+            "center_distance_mm": _round(cd * 1000),
+            "reverse": reverse,
+            "phase_applied": phase_applied,
+        }
+
     def mesh_gears(self, args: dict) -> dict:
+        if args.get("internal"):
+            return self._mesh_internal(args)
         a, b = str(args["a"]), str(args["b"])
         sw_a, r_a, o_a, tf_a = self._gear_tip_radius(a)
         sw_b, r_b, o_b, _ = self._gear_tip_radius(b)

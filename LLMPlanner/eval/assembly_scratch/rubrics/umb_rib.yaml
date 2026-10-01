@@ -1,0 +1,16 @@
+case: umb_rib
+tolerance: {length_mm: 0.25, angle_deg: 1.0, volume_rel: 0.06}
+entities:
+  holes: {cylinder: {d: 4, side: inner}, count: 2}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: holes
+    hard: true
+    check:
+      - exists: holes
+      - pair_distance: {items: holes, value: 120}
+      - through: {holes: holes}
+      - bbox_sorted: [4, 8, 308]

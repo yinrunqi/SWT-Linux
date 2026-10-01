@@ -17,6 +17,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from load_env import ensure_test_env_loaded
+from planner.workflow.tools import EXTRA_TOOLSET_VERSION
 
 ensure_test_env_loaded()
 
@@ -27,9 +28,24 @@ LLM_CALL_LOG: list[dict] = []
 MODEL = os.environ.get("PLAN_MODEL") or os.environ.get("PLANNER_MODEL") or "gemini-3.5-flash"
 
 
+# 测例 yaml 文件名 → case_id；命令行两种都认
+CASE_FILES = {
+    "gearbox": "two_stage_gearbox",
+    "engine": "single_cylinder_engine",
+    "desk_lamp": "adjustable_desk_lamp",
+    "umbrella": "folding_umbrella",
+    "drill_gearbox": "drill_planetary_gearbox",
+    "sewing_machine": "sewing_machine_drive",
+    "projector": "film_projector_drive",
+}
+CASE_ALIASES = {case_id: name for name, case_id in CASE_FILES.items()}
+
+
 def _load_case(name: str) -> dict:
     path = CASES_DIR / f"{name}.yaml"
-    return yaml.safe_load(path.read_text(encoding="utf-8"))
+    case = yaml.safe_load(path.read_text(encoding="utf-8"))
+    case.setdefault("gold_dir", name)
+    return case
 
 
 RECIPE_SETS = {
@@ -184,11 +200,11 @@ def assemble(
     model: str,
     max_llm_calls: int,
     workflow: str = "v1",
+    max_tokens: int = 8000,
 ) -> dict:
     from planner.assembly_workflow.agent import AssemblyAgent
     from planner.assembly_workflow.session import AssemblySession
     from planner.assembly_workflow.tools import tool_names, tool_specs
-    from geomcheck.assembly_motion import analyze_frames, clearance_mm, sample_motion
 
     dest.parent.mkdir(parents=True, exist_ok=True)
     _close(sw)
@@ -199,7 +215,8 @@ def assemble(
     started = time.perf_counter()
     LLM_CALL_LOG.clear()
     outcome = AssemblyAgent(
-        _openai(), model, session, max_llm_calls=max_llm_calls, tools=tool_specs(workflow),
+        _openai(), model, session, max_llm_calls=max_llm_calls, max_tokens=max_tokens,
+        tools=tool_specs(workflow),
     ).run(goal)
     messages = outcome.get("messages") or []
     dest.with_name("agent_messages.json").write_text(
@@ -209,41 +226,22 @@ def assemble(
         for i, m in enumerate(messages)
         if m.get("role") == "assistant" and (m.get("content") or "").strip()
     ]
-    motion = None
     static = {"component_count": len(session.aliases), "saved": session.saved}
     rubric = score_assembly_rubric(session, case)
     try:
-        spec = case["motion"]
-        driver_role = spec["driver"]
-        driver = session.aliases.get(driver_role) or session.resolve_name(driver_role)
-        faces = session.faces(driver)
-        from planner.assembly_workflow.refs import resolve_on_faces
-        ref = resolve_on_faces("cyl(i=0)", faces)
-        sampled = sample_motion(sw, spec, driver, ref)
-        motion = analyze_frames(sampled.get("frames") or [], spec, session.aliases,
-                                sampled.get("interference_frames"))
-        if spec.get("clearance_pairs"):
-            lo, hi = spec.get("clearance_mm") or [0.02, 2.0]
-            gaps = []
-            frame0 = (sampled.get("frames") or [{}])[0].get("transforms") or {}
-            for a, b in spec["clearance_pairs"]:
-                pa, pb = parts[a].with_suffix(".step"), parts[b].with_suffix(".step")
-                sa, sb = session.aliases.get(a), session.aliases.get(b)
-                if not (pa.is_file() and pb.is_file() and sa and sb):
-                    continue
-                gap = clearance_mm(pa, pb, frame0[sa], frame0[sb])
-                gaps.append({"pair": [a, b], "mm": None if gap is None else round(gap, 4),
-                             "ok": gap is not None and lo <= gap <= hi})
-            motion["clearance"] = gaps
-            if gaps and not all(item["ok"] for item in gaps):
-                motion["passed"] = False
-                motion["score"] = max(0.0, motion["score"] - 10)
+        motion = _motion(session, case["motion"], parts, sw)
     except Exception as exc:
         motion = {"passed": False, "score": 0.0, "error": str(exc)}
-    session.save_assembly({})
+    # SolidWorks 卡死后装配文档可能已丢失：记为基础设施错误，不让整批评测中断
+    infra_error = None
+    try:
+        session.save_assembly({})
+    except Exception as exc:
+        infra_error = f"save_assembly: {exc}"
     _close(sw)
     return {
         "status": outcome["status"],
+        "infra_error": infra_error,
         "static": static,
         "rubric": rubric,
         "static_score": (rubric or {}).get("score", 0.0),
@@ -260,6 +258,41 @@ def assemble(
     }
 
 
+def _motion(session, spec: dict, parts: dict[str, Path], sw: str) -> dict:
+    """mode: motor（默认，马达驱动整周回转）或 poses（逐位姿临时配合）。"""
+    from geomcheck.assembly_motion import analyze_frames, clearance_mm, run_poses, sample_motion
+
+    if spec.get("mode") == "poses":
+        return run_poses(session, spec)
+    driver_role = spec["driver"]
+    driver = session.aliases.get(driver_role) or session.resolve_name(driver_role)
+    faces = session.faces(driver)
+    from planner.assembly_workflow.refs import resolve_on_faces
+    ref = resolve_on_faces("cyl(i=0)", faces)
+    sampled = sample_motion(sw, spec, driver, ref)
+    motion = analyze_frames(sampled.get("frames") or [], spec, session.aliases,
+                            sampled.get("interference_frames"))
+    if spec.get("clearance_pairs"):
+        lo, hi = spec.get("clearance_mm") or [0.02, 2.0]
+        gaps = []
+        frame0 = (sampled.get("frames") or [{}])[0].get("transforms") or {}
+        for a, b in spec["clearance_pairs"]:
+            if a not in parts or b not in parts:
+                continue
+            pa, pb = parts[a].with_suffix(".step"), parts[b].with_suffix(".step")
+            sa, sb = session.aliases.get(a), session.aliases.get(b)
+            if not (pa.is_file() and pb.is_file() and sa and sb):
+                continue
+            gap = clearance_mm(pa, pb, frame0[sa], frame0[sb])
+            gaps.append({"pair": [a, b], "mm": None if gap is None else round(gap, 4),
+                         "ok": gap is not None and lo <= gap <= hi})
+        motion["clearance"] = gaps
+        if gaps and not all(item["ok"] for item in gaps):
+            motion["passed"] = False
+            motion["score"] = max(0.0, motion["score"] - 10)
+    return motion
+
+
 def run_condition(case: dict, condition: str, repeat: int, args, workflow: str = "v1") -> dict:
     case_id = case["case_id"]
     out = Path(args.output_dir).resolve() / workflow / case_id / f"{condition}_r{repeat}"
@@ -267,7 +300,7 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
     part_results = []
     parts: dict[str, Path] = {}
     if condition == "gold":
-        gold = CASES_DIR / "gold_parts" / ("gearbox" if "gearbox" in case_id else "engine")
+        gold = CASES_DIR / "gold_parts" / case["gold_dir"]
         for role, filename in case["gold_roles"].items():
             path = gold / f"{role}.SLDPRT"
             if not path.is_file():
@@ -298,6 +331,7 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
     assembly = assemble(
         case, parts, out / f"{case_id}.SLDASM",
         sw=args.sw, model=args.model, max_llm_calls=args.max_asm_calls, workflow=workflow,
+        max_tokens=args.asm_max_tokens,
     )
     part_rate = 1.0 if condition == "gold" else _rate(part_results)
     motion_score = float((assembly.get("motion") or {}).get("score") or 0)
@@ -346,16 +380,17 @@ def main() -> None:
     parser.add_argument("--sw", default="http://localhost:5100")
     parser.add_argument("--max-part-calls", type=int, default=40)
     parser.add_argument("--max-asm-calls", type=int, default=50)
+    parser.add_argument("--asm-max-tokens", type=int, default=8000)
     parser.add_argument("--output-dir", default=str(ROOT / "eval" / "artifacts" / "assembly_scratch"))
     parser.add_argument("--output", default=str(ROOT / "eval" / "assembly_scratch_result.json"))
     args = parser.parse_args()
     names = []
     for token in args.cases.split(","):
         token = token.strip()
-        if token in ("gearbox", "two_stage_gearbox"):
-            names.append("gearbox")
-        elif token in ("engine", "single_cylinder_engine"):
-            names.append("engine")
+        name = CASE_ALIASES.get(token, token)
+        if not (CASES_DIR / f"{name}.yaml").is_file():
+            parser.error(f"未知测例 {token}，可选：{', '.join(CASE_FILES)}")
+        names.append(name)
     conditions = ["gold", "gen", "e2e"] if args.condition == "all" else [args.condition]
     workflows = ["v1", "v2"] if args.workflow == "both" else [args.workflow]
     rows = []
@@ -376,6 +411,8 @@ def main() -> None:
             "recipes": {wf: list(RECIPE_SETS[wf]) for wf in workflows},
             "results": rows,
             "model": args.model,
+            "asm_max_tokens": args.asm_max_tokens,
+            "extra_toolset": EXTRA_TOOLSET_VERSION,
         }
         Path(args.output).write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
         return report

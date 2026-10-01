@@ -25,15 +25,12 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import yaml  # noqa: E402
-
 from eval.assembly_scratch.build_standard_parts import call  # noqa: E402
-from eval.eval_assembly_scratch import CASES_DIR, score_assembly_rubric  # noqa: E402
-from geomcheck.assembly_motion import analyze_frames, sample_motion  # noqa: E402
-from planner.assembly_workflow.refs import resolve_on_faces  # noqa: E402
+from eval.eval_assembly_scratch import CASE_ALIASES, CASES_DIR, _load_case, _motion, score_assembly_rubric  # noqa: E402
 from planner.assembly_workflow.session import AssemblySession  # noqa: E402
 
-CASE_FILES = {"two_stage_gearbox": "gearbox", "single_cylinder_engine": "engine"}
+# case_id → 测例 yaml 文件名
+CASE_FILES = dict(CASE_ALIASES)
 SW = "http://localhost:5100"
 SW_EXE = os.environ.get(
     "SOLIDWORKS_EXE", r"C:\Program Files\softwares\solidworks2025\Corp\SOLIDWORKS\SLDWORKS.exe")
@@ -78,10 +75,7 @@ def rescore(path: Path, case: dict, aliases: dict[str, str]) -> dict:
     spec = case["motion"]
     hung = None
     try:
-        driver = session.aliases[spec["driver"]]
-        ref = resolve_on_faces("cyl(i=0)", session.faces(driver))
-        sampled = sample_motion(SW, spec, driver, ref)
-        motion = analyze_frames(sampled["frames"], spec, session.aliases, sampled.get("interference_frames"))
+        motion = _motion(session, spec, {}, SW)
     except requests.RequestException as exc:
         hung = exc
         motion = {"passed": False, "score": 0.0, "error": f"{type(exc).__name__}: {exc}"}
@@ -124,9 +118,11 @@ def main() -> None:
     parser.add_argument("pairs", nargs="*", help="结果 JSON=artifacts 目录")
     parser.add_argument("--reference", action="store_true")
     parser.add_argument("--out", required=True)
+    parser.add_argument("--cases", default="", help="只跑这些 case_id 或文件名（逗号分隔），默认全部")
     args = parser.parse_args()
-    cases = {cid: yaml.safe_load((CASES_DIR / f"{f}.yaml").read_text(encoding="utf-8"))
-             for cid, f in CASE_FILES.items()}
+    wanted = {t.strip() for t in args.cases.split(",") if t.strip()}
+    cases = {cid: _load_case(f) for cid, f in CASE_FILES.items()
+             if not wanted or cid in wanted or f in wanted}
     out = Path(args.out).resolve()
     rows = json.loads(out.read_text(encoding="utf-8"))["rows"] if out.is_file() else []
     done = {(r["case_id"], r["workflow"], r.get("repeat"), r.get("source")) for r in rows}
@@ -143,7 +139,11 @@ def main() -> None:
             if not path.is_file():
                 print("skip", path)
                 continue
-            aliases = {role: f"{role}-1" for role in cases[cid]["gold_roles"]}
+            alias_file = path.with_suffix(".aliases.json")
+            if alias_file.is_file():
+                aliases = json.loads(alias_file.read_text(encoding="utf-8"))
+            else:
+                aliases = {role: f"{role}-1" for role in cases[cid]["gold_roles"]}
             row = {"case_id": cid, "workflow": "reference", **rescore_with_retry(path, cases[cid], aliases)}
             rows.append(row)
             print(cid, "reference", row["assembly_score"], row["motion_score"], flush=True)
@@ -155,7 +155,7 @@ def main() -> None:
             if r.get("condition", "gold") != "gold" or not (r.get("assembly") or {}).get("aliases"):
                 continue
             cid = r["case_id"]
-            if (cid, r["workflow"], r["repeat"], result_file) in done:
+            if cid not in cases or (cid, r["workflow"], r["repeat"], result_file) in done:
                 continue
             path = (Path(art_dir) / r["workflow"] / cid / f"gold_r{r['repeat']}" / f"{cid}.SLDASM").resolve()
             if not path.is_file():

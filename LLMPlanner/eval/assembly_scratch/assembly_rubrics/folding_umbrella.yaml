@@ -1,0 +1,23 @@
+# 装配级 rubric：角色名与 umbrella.yaml 的 gold_roles 一致。
+case_id: folding_umbrella
+ground: shaft
+mobility: 1
+
+bodies:
+  shaft: [shaft, hub]
+  runner: [runner]
+  rib_a: [rib_a]
+  rib_b: [rib_b]
+  stretcher_a: [stretcher_a]
+  stretcher_b: [stretcher_b]
+
+joints:
+  # 下巢只套在中棒上是圆柱副，绕轴转动由两组撑杆闭环锁住
+  - {bodies: [runner, shaft], type: [cylindrical, slider]}
+  - {bodies: [rib_a, shaft], type: revolute}
+  - {bodies: [rib_b, shaft], type: revolute}
+  - {bodies: [stretcher_a, runner], type: revolute}
+  - {bodies: [stretcher_b, runner], type: revolute}
+  # 闭环的最后一个铰：只写同轴（圆柱副）也等效转动副
+  - {bodies: [stretcher_a, rib_a], type: [revolute, cylindrical]}
+  - {bodies: [stretcher_b, rib_b], type: [revolute, cylindrical]}

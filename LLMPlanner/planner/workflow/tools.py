@@ -15,7 +15,7 @@ from typing import Any, Callable
 import requests
 
 from ..executor import SwExecutor
-from ..gears import generate_involute_outline
+from ..gears import generate_internal_cavity, generate_involute_outline
 from ..schemas import OperationType, SwOperation
 from .errors import WorkflowError
 from .frames import BASE_PLANES, SketchFrame, base_plane_frame, face_frame, ref_plane_frame
@@ -348,7 +348,25 @@ SPUR_GEAR_SPEC = _tool(
     },
     ["module", "teeth", "face_width", "bore"],
 )
-EXTRA_TOOL_SPECS = {"spur_gear": SPUR_GEAR_SPEC}
+INTERNAL_GEAR_SPEC = _tool(
+    "internal_gear",
+    "一次建成渐开线内齿圈：外圆为环体外径，内孔为齿槽轮廓（齿顶圆 = 分度圆 − 模数）。"
+    "轴线沿草图平面法向（默认 front_plane，即 +Z），原点在轴线，从 Z=0 向 +Z 拉伸齿宽。"
+    "只在装配零件生成会话中可用；50 题核心工具集不包含它。",
+    {
+        "module": _NUM,
+        "teeth": {"type": "integer", "description": "齿数，≥24"},
+        "face_width": _NUM,
+        "outer_diameter": {"type": "number", "description": "齿圈外径，须大于齿根圆直径 + 2 倍模数"},
+        "pressure_angle_deg": _NUM,
+        "phase_deg": _NUM,
+        "plane": {"type": "string", "description": "默认 front_plane（XY，法向 +Z）"},
+    },
+    ["module", "teeth", "face_width", "outer_diameter"],
+)
+EXTRA_TOOL_SPECS = {"spur_gear": SPUR_GEAR_SPEC, "internal_gear": INTERNAL_GEAR_SPEC}
+# 装配零件附加工具集的版本：v1 = {spur_gear}；v2 加入 internal_gear。结果文件按此标注。
+EXTRA_TOOLSET_VERSION = "v2"
 
 
 def tool_specs(extra_tools: list[str] | None = None) -> list[dict]:
@@ -421,6 +439,8 @@ class WorkflowSession:
         extra_tools = extra_tools or []
         if "spur_gear" in extra_tools:
             self._handlers["spur_gear"] = self.spur_gear
+        if "internal_gear" in extra_tools:
+            self._handlers["internal_gear"] = self.internal_gear
 
     # ------------------------------------------------------------ HTTP
 
@@ -1409,6 +1429,45 @@ class WorkflowSession:
             "tip_diameter_mm": _round(params["outerRadius"] * 2000),
             "root_diameter_mm": _round(params["rootRadius"] * 2000),
             "bore_mm": bore,
+            "face_width_mm": face_width,
+            "pressure_angle_deg": pressure,
+            "phase_deg": phase,
+        }
+        return result
+
+    def internal_gear(self, args: dict) -> dict:
+        if self._volume(self.snapshot()) > VOLUME_EPS_MM3:
+            raise WorkflowError("TOOL_ARGS", "internal_gear 只能用在空零件上，请先建新零件")
+        module = self._num(args, "module", required=True)
+        teeth = int(self._num(args, "teeth", required=True))
+        face_width = self._num(args, "face_width", required=True)
+        outer = self._num(args, "outer_diameter", required=True)
+        pressure = self._num(args, "pressure_angle_deg", 30) or 30
+        phase = self._num(args, "phase_deg", 0) or 0
+        if teeth < 24 or module <= 0 or face_width <= 0:
+            raise WorkflowError("TOOL_ARGS", "teeth≥24，module/face_width 必须为正")
+        cavity, params = generate_internal_cavity(
+            tooth_count=teeth, phase_angle_deg=phase, module_m=module / 1000, pressure_angle_deg=pressure,
+        )
+        root_d = params["rootRadius"] * 2000
+        if outer < root_d + 2 * module:
+            raise WorkflowError("TOOL_ARGS", f"outer_diameter 至少 {root_d + 2 * module:.2f} mm（齿根圆 + 2 倍模数）")
+        result = self.extrude({
+            "plane": args.get("plane") or "front_plane",
+            "loops": [
+                {"type": "circle", "center": [0, 0], "diameter": outer},
+                {"type": "polygon", "points": [[x * 1000, y * 1000] for x, y in cavity[:-1]]},
+            ],
+            "depth": face_width,
+        })
+        result["gear"] = {
+            "internal": True,
+            "teeth": teeth,
+            "module_mm": module,
+            "pitch_diameter_mm": _round(params["pitchRadius"] * 2000),
+            "tip_diameter_mm": _round(params["tipRadius"] * 2000),
+            "root_diameter_mm": _round(root_d),
+            "outer_diameter_mm": outer,
             "face_width_mm": face_width,
             "pressure_angle_deg": pressure,
             "phase_deg": phase,

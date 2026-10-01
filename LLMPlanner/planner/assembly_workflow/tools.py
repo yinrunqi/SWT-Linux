@@ -113,14 +113,17 @@ TOOL_SPECS: list[dict] = [
     _tool(
         "mesh_gears",
         "外啮合一对直齿轮：从几何估计模数与齿数，检查中心距，必要时旋转从动轮到啮合相位，再建立反向齿轮配合。"
-        "可显式给出 teeth_a/teeth_b/module；缺省则从齿顶圆与中心距反推。",
+        "可显式给出 teeth_a/teeth_b/module；缺省则从齿顶圆与中心距反推。"
+        "internal=true 为内啮合：b 是内齿圈，必须给 teeth_a/teeth_b/module，中心距按 m(z_b−z_a)/2 检查，"
+        "旋转的是外齿轮 a（齿圈常为固定件），默认同向（reverse=false）。",
         {
-            "a": {"type": "string", "description": "主动齿轮别名或组件名"},
-            "b": {"type": "string", "description": "从动齿轮"},
+            "a": {"type": "string", "description": "主动齿轮别名或组件名；内啮合时为外齿轮"},
+            "b": {"type": "string", "description": "从动齿轮；内啮合时为内齿圈"},
             "teeth_a": {"type": "integer"},
             "teeth_b": {"type": "integer"},
             "module": _NUM,
             "reverse": {"type": "boolean"},
+            "internal": {"type": "boolean"},
         },
         ["a", "b"],
     ),

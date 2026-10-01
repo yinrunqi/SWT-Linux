@@ -2,28 +2,49 @@
 
 本文是装配评测的规格说明：有哪些测例、每个测例怎么打分、怎么新增测例。装配 workflow 本身（工具、配方、实现中踩过的坑、试点过程）见 [Workflow-CAD-Assembly.md](Workflow-CAD-Assembly.md)。
 
-当前有两个测例：
+当前有七个测例。后五个由 SolidWorksTutorial 旧示例（台灯、雨伞、电钻、缝纫机、放映机）转换而来：只保留核心运动链，去掉装饰件，每个 6–16 个组件。
 
-| case_id | 规格 | 机构 | 零件数 | 目标活动度 |
-|---|---|---|---|---|
-| `two_stage_gearbox` | `eval/assembly_scratch/gearbox.yaml` | 双级外啮合圆柱齿轮减速箱 6:1 | 8 | 1 |
-| `single_cylinder_engine` | `eval/assembly_scratch/engine.yaml` | 单缸曲柄滑块 + 2:1 正时齿轮 + 凸轮 | 12 | 1 |
+| case_id | `--cases` 名 | 机构 | 组件数 | 目标活动度 | 运动检查 |
+|---|---|---|---|---|---|
+| `two_stage_gearbox` | `gearbox` | 双级外啮合圆柱齿轮减速箱 6:1 | 8 | 1 | 马达 |
+| `single_cylinder_engine` | `engine` | 单缸曲柄滑块 + 2:1 正时齿轮 + 凸轮 | 12 | 1 | 马达 |
+| `adjustable_desk_lamp` | `desk_lamp` | 三铰平面臂（底座–下臂–上臂–灯头） | 7 | 3 | 多位姿 |
+| `folding_umbrella` | `umbrella` | 中棒 + 滑动下巢 + 两组伞骨/撑杆闭环 | 7 | 1 | 多位姿 |
+| `drill_planetary_gearbox` | `drill_gearbox` | 两级行星（内齿圈固定，行星架输出）20:1 | 11 | 1 | 马达 |
+| `sewing_machine_drive` | `sewing_machine` | 针杆曲柄滑块 + 2:1 旋梭齿轮 + 送布曲柄摇杆 | 15 | 1 | 马达 |
+| `film_projector_drive` | `projector` | 惰轮带快门 1:1 + 输片 4:1 减速 | 12 | 1 | 马达 |
 
-下文路径都相对 `LLMPlanner/`。
+规格文件是 `eval/assembly_scratch/<--cases 名>.yaml`。下文路径都相对 `LLMPlanner/`。
+
+转换时的取舍：
+
+- 放映机旧示例的四槽槽轮（间歇运动）无法用配合表达，换成"惰轮带快门同步 + 小齿轮带输片减速"的齿轮系。
+- 电钻每级只留一个行星轮。多个行星轮只分担载荷、不改变运动链；而且 SolidWorks 求解冗余的齿轮闭环时，单步就要几分钟，超过智能体每次工具调用 180 s 的超时。
+- 台灯是 3 自由度，没有单一驱动件，雨伞的驱动是下巢的直线滑动。两者都用多位姿模式检查（4.4 节）。
+
+零件工具集按版本标注（`planner/workflow/tools.py` 的 `EXTRA_TOOLSET_VERSION`，结果 JSON 里记为 `extra_toolset`）：
+
+| 版本 | 额外零件工具 | 装配工具变化 |
+|---|---|---|
+| v1 | `spur_gear` | — |
+| v2 | `spur_gear`、`internal_gear`（渐开线内齿圈） | `mesh_gears` 增加 `internal: true`（内啮合中心距与相位） |
+
+6.1 节及更早的结果都是 v1 跑的。v2 只新增工具，原有工具的行为不变。
 
 ## 1. 评测流程
 
 一次评测对应一个 (测例, 条件, 工作流版本, 重复序号)，由 `eval/eval_assembly_scratch.py` 驱动：
 
 1. 准备零件。
-   - `gold`：直接用 `eval/assembly_scratch/gold_parts/{gearbox,engine}/` 里的标准零件（`build_standard_parts.py` 生成）。
-   - `gen`：智能体按 `parts[].prompt` 逐个从零建零件，用零件接口 rubric 判合格。
+   - `gold`：直接用 `eval/assembly_scratch/gold_parts/<--cases 名>/` 里的标准零件（`build_standard_parts.py` 生成）。
+   - `gen`：智能体按 `parts[].prompt` 逐个从零建零件，用零件接口 rubric 判合格。每个零件只开放它 `extra_tools` 里列出的额外工具。
    - `e2e`：同 `gen`，但只要有零件不合格就不进入装配，整条记 0 分。
 2. 装配。装配智能体拿到 `assembly.prompt`、配方和零件路径列表，在 50 次 LLM 调用预算内装配并保存。插入坐标不算最终位姿，必须靠配合定位。
 3. 评分。智能体结束后，评测器自己打开装配体评分，不采用智能体自报的结果：
    - 装配 rubric（第 3 节），只读配合与位姿；
    - 运动检查（第 4 节），由评测器加马达、采样。
 4. 汇总。结果写到 `eval/assembly_scratch_result.json`，装配体和零件存在 `eval/artifacts/assembly_scratch/<workflow>/<case>/<condition>_r<repeat>/`。
+   如果评分后保存装配体失败（比如 SolidWorks 在某次工具调用中卡死、活动文档随后丢失），该行的 `infra_error` 字段写明原因，整批评测不中断。这类行的分数不可信，汇总前要剔除并补跑。
 
 角色映射：规格里的 `gold_roles` 把装配角色（如 `lay_shaft`）映射到零件 id（如 `shaft`）。同一个零件可以出现在多个角色上，例如三根轴、三根销。智能体插入组件时给的名字记在 `aliases`（角色 → SolidWorks 组件名），评分全部按角色进行。
 
@@ -53,9 +74,16 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 | 锁定 | 6 行 |
 | 螺旋 | 同心 4 行 + 平移与转动按导程耦合 1 行 |
 | 同轴 1:1 同向齿轮 | 绕轴转动 1 行（等价于键连接，兼容 v1 的写法） |
-| 其他齿轮 | 不进两两关节，只在全局活动度里加耦合行 |
+| 其他齿轮 | 不进两两关节，只在全局活动度里加一行节点无滑滚动约束（见下） |
 | 限位距离 | 不减少瞬时自由度 |
 | 槽口 | 未建模；齿条小齿轮、线性耦合不计入活动度（在 `skipped` 里列出） |
+
+齿轮耦合行按节点 p 处两齿面切向速度相等来写：行向量为 [t, p×t]，t = u_a × u（u 是两轴连心方向），作用在两齿轮的相对旋量上。
+
+- 外啮合时 p 在两轴之间，按半径比 k = r_a/r_b 分点；内啮合时 p 在外分点上。
+- 两轴同轴、或者内啮合且 k = 1 时退化，改用绝对角速度行 num·(u_a·ω_a) − den·(u_b·ω_b)。
+- 固定轴齿轮系的两种写法秩相同，所以减速箱、发动机的分数不变。
+- 行星架转动时，只有滚动写法才正确：绝对角速度写法会把行星轮的公转也算进齿数比，活动度对不上。
 
 ### 3.2 六项检查
 
@@ -63,7 +91,7 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 |---|---|---|
 | `rigid_groups` 刚体分组 | 20 | 两两约束零空间维数为 0 的零件用并查集合成刚体组，固定件也并在一起。`bodies` 里每个角色都要落在本组、且不和别的组合并；`flex` 里的角色恰好落在允许的一组。按通过比例计分 |
 | `joints` 关节类型 | 25 | 每对组之间的全部直接配合合起来求零空间，分为 fixed / slider / revolute / screw / cylindrical / planar / ball / free 等，看是否在允许列表里。按通过比例计分 |
-| `mobility` 活动度 | 15 | 非固定件拼成全局约束矩阵，齿轮配合加耦合行 num·(u_a·ω_a) − den·(u_b·ω_b)，瞬时活动度 = 6·N − rank，必须等于 `mobility`。全对或全错 |
+| `mobility` 活动度 | 15 | 非固定件拼成全局约束矩阵，每个齿轮配合加一行滚动约束（3.1 节），瞬时活动度 = 6·N − rank，必须等于 `mobility`。全对或全错 |
 | `grounded` 接地与浮动件 | 10 | `ground` 角色必须固定，否则 0 分。从固定件出发、沿非耦合配合走不到的组件算浮动件，按非浮动组件的比例计分 |
 | `not_over_defined` 过定义 | 10 | 任一组件约束状态属于过定义类，或任一配合 `errorCode` ≠ 0，就是 0 分 |
 | `couplings` 齿轮耦合 | 20 | 每对齿轮 4 小项各占 1/4，各对取平均（见 3.3） |
@@ -74,12 +102,12 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 
 1. 两齿轮所在的刚体组之间存在一个非 1:1 同向的齿轮配合。
 2. 齿数比正确。约定 ω(第二个实体) = ω(第一个实体)·分子/分母，实体顺序就是选择顺序。第一个实体属于 a 组时，期望比是 z_a/z_b，否则是 z_b/z_a。
-3. 转向正确：`reverse == external`（外啮合反向）。这一项只在第 1 项成立时才算。
-4. 中心距：由两齿轮的位姿算 |Δt⊥u|，要等于 m(z1+z2)/2，误差不超过 `center_distance_tol_mm`（0.2 mm），并且两轴平行。
+3. 转向正确：`reverse == external`（外啮合反向，内啮合同向）。这一项只在第 1 项成立时才算。
+4. 中心距：由两齿轮的位姿算 |Δt⊥u|，外啮合要等于 m(z1+z2)/2，内啮合（rubric 里 `external: false`）要等于 m|z1−z2|/2，误差不超过 `center_distance_tol_mm`（0.2 mm），并且两轴平行。
 
 齿轮配合语义按实测结果统一，见 Workflow-CAD-Assembly.md §2.2：SolidWorks 的 `Reverse=false` 才是反向转，读回的分子、分母与 `AddMate5` 相反。C# 的 `mates` 读回时已经换算成上面的约定。
 
-### 3.4 两个测例的 rubric
+### 3.4 各测例的 rubric
 
 减速箱（`two_stage_gearbox.yaml`）：
 
@@ -96,9 +124,60 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 - 关节：crank–frame、rod–crank、piston–rod、cam–frame 为 revolute。piston–frame 允许 slider 或 planar：它是闭环的最后一个关节，活塞的 z 和倾斜已由连杆链确定，只写一个面重合时单看这一对是平面副，整体等效滑块；
 - 耦合：crank_gear–cam_gear 16/32，模数 3，外啮合，中心距 72 mm。
 
+台灯（`adjustable_desk_lamp.yaml`）：
+
+- `ground: base`，`mobility: 3`；
+- 刚体组：base、lower_arm、upper_arm、shade 各自一组；
+- `flex`：三根铰销各自固定在相邻两组中的任一组；
+- 关节：lower_arm–base、upper_arm–lower_arm、shade–upper_arm 为 revolute。
+
+雨伞（`folding_umbrella.yaml`）：
+
+- `ground: shaft`，`mobility: 1`；
+- 刚体组：shaft = {shaft, hub}，runner、rib_a、rib_b、stretcher_a、stretcher_b 各自一组；
+- 关节：
+  - runner–shaft 允许 cylindrical 或 slider：只套在中棒上是圆柱副，它绕轴的转动由两组撑杆闭环锁住；
+  - 伞骨对上巢、撑杆对下巢都是 revolute；
+  - 撑杆远端–伞骨中孔是闭环的最后一个铰，允许 revolute 或 cylindrical。
+
+电钻（`drill_planetary_gearbox.yaml`）：
+
+- `ground: housing`，`mobility: 1`；
+- 刚体组：frame = {housing, ring1, ring2}、input = {input_shaft, sun1}、planet1、carrier1 = {carrier1, sun2}、planet2、output = {carrier2, output_shaft}；
+- 关节：input、carrier1、output 对 frame，planet1 对 carrier1，planet2 对 output，全部 revolute；
+- 耦合：模数 1.2，中心距都是 18 mm，共四对：
+  - sun1–planet1 12/18，外啮合；
+  - planet1–ring1 18/48，内啮合；
+  - sun2–planet2 15/15，外啮合；
+  - planet2–ring2 15/45，内啮合。
+
+缝纫机（`sewing_machine_drive.yaml`）：
+
+- `ground: frame`，`mobility: 1`；
+- 刚体组：frame = {frame, rocker_pin}、main = {main_shaft, crank, main_gear, feed_crank}、needle_rod、needle_bar、hook = {hook_shaft, hook_gear, hook}、feed_coupler、feed_rocker；
+- `flex`：crank_pin ∈ {main, rod}，needle_pin ∈ {needle, rod}；
+- 关节：
+  - needle–frame 允许 slider 或 planar（理由同发动机的活塞）；
+  - coupler–rocker 允许 revolute 或 cylindrical（四杆闭环的最后一个铰）；
+  - 其余为 revolute；
+- 耦合：main_gear–hook_gear 40/20，模数 1.5，外啮合，中心距 45 mm。
+
+放映机（`film_projector_drive.yaml`）：
+
+- `ground: frame`，`mobility: 1`；
+- 刚体组：drive = {drive_shaft, drive_gear, drive_pinion}、idler = {idler_shaft, idler_gear}、shutter = {shutter_shaft, shutter_gear, shutter}、sprocket = {sprocket_shaft, sprocket_gear, sprocket}；
+- 关节：四组对 frame 都是 revolute；
+- 耦合：模数 1.5，都是外啮合：
+  - drive_gear–idler_gear 24/18，中心距 31.5 mm；
+  - idler_gear–shutter_gear 18/24，中心距 31.5 mm；
+  - drive_pinion–sprocket_gear 16/64，中心距 60 mm。
+
 ## 4. 运动检查
 
-实现：`geomcheck/assembly_motion.py`（`sample_motion` + `analyze_frames`）。参数来自规格里的 `motion` 段。
+实现：`geomcheck/assembly_motion.py`。参数来自规格里的 `motion` 段，有两种模式：
+
+- 马达模式（默认）：`sample_motion` + `analyze_frames`，见 4.1–4.3 节；
+- 多位姿模式（`mode: poses`）：`run_poses` + `analyze_poses`，见 4.4 节。
 
 ### 4.1 采样
 
@@ -115,22 +194,53 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 | 干涉 | −40 | 任一干涉帧的干涉数大于 `max_interference`（0） |
 | 卡住 | −20 | `expect_moving` 里有零件在中间帧和末帧都相对首帧没动 |
 | 固定件漂移 | −15 | `expect_fixed` 里有零件位姿变化超过 1e-4 |
-| 传动比 | −15 | 末个 `expect_moving` 零件的转角 / 驱动转角，与 1/`expect_ratio` 相差超过 0.08；`expect_same_direction` 时还要求同向 |
-| 行程 | −15 | 活塞销 Y 坐标的极差，与 `expect_stroke_mm` 相差超过 2 mm |
+| 传动比 | −15 | 有 `ratios` 列表时：每项 `role` 的转角 / 驱动转角与 1/`ratio` 的相对误差超过 8%，或转向与 `same_direction` 不符；任一项不对就扣。没有 `ratios` 时沿用旧写法：末个 `expect_moving` 零件的比值与 1/`expect_ratio` 相差超过 0.08，`expect_same_direction` 时还要求同向 |
+| 行程 | −15 | `stroke_role`（默认 piston_pin）在 `stroke_axis`（默认 y）上坐标的极差，与 `expect_stroke_mm` 相差超过 2 mm |
 | 正时 | −15 | `timing_driven` 转角 / 驱动转角，与 1/`timing_ratio` 相差超过 0.08；`timing_opposite` 时还要求反向 |
 | 齿隙（可选） | −10 | `clearance_pairs` 里各对零件在首帧的 OCC 最小距离不在 `clearance_mm` 范围内 |
 
 扣分项全部不触发才算 `passed`。如果规格要求的角色在装配体里不存在，或者采样出错，运动分记 0，并在 `error` 里写明原因。
 
-### 4.3 两个测例的运动规格
+"卡住"只比较中间帧和末帧。如果某零件在采样时长内恰好转回首帧位置，会被误判为卡住；目前各测例的转速比都避开了这种情况。
 
-| | 减速箱 | 发动机 |
+### 4.3 马达模式各测例的运动规格
+
+| | 驱动件 | 固定件 | 应运动 | 运动学 | 齿隙 |
+|---|---|---|---|---|---|
+| 减速箱 | input_shaft | housing | input_shaft, output_shaft, input_pinion, output_wheel | 输出/输入 = 1/6，同向 | 两对啮合齿轮 0.02–2.0 mm |
+| 发动机 | crank_shaft | frame | crank, piston_pin, camshaft | 活塞行程 50 mm；凸轮轴/曲轴 = 1/2，反向 | — |
+| 电钻 | input_shaft | housing | sun1, planet1, carrier1, planet2, carrier2 | carrier1 = 1/5、carrier2 = 1/20，都同向 | — |
+| 缝纫机 | main_shaft | frame | crank, needle_bar, hook, feed_rocker | needle_pin 沿 Y 行程 36 mm；hook = 2 倍速，反向 | — |
+| 放映机 | drive_shaft | frame | idler_gear, shutter, sprocket | shutter = 1:1 同向；sprocket = 1/4，反向 | — |
+
+### 4.4 多位姿模式
+
+用于没有单一转动驱动件的机构：台灯有 3 个自由度，雨伞的输入是下巢的直线滑动。评测器把装配体依次摆到 `poses` 里的每个位姿，检查关键点的位置。
+
+每个位姿的流程：
+
+1. 按运动链顺序逐项加临时配合（`set`）：
+   - `angle`：两个面之间的角度；
+   - `offset`：带符号的面距（a 面落在 b 面法向正侧多少 mm）；
+   - `distance`：不带符号的距离。
+2. 角度配合的方向有歧义，评测器按顺序试四种变体：不翻转、翻转、反向对齐、翻转 + 反向对齐。每试一种，就用该项所附的 `points` 量一次，取第一个通过的；都不通过时取误差最小的那个。没选中的变体先删掉，再试下一种，免得前后两种互相冲突。
+3. 所有项加完后，统一判定全部点位。点位的写法：
+   - 在 `frame` 角色的局部坐标系里量；
+   - `local` 是该零件局部坐标系里的点；
+   - `expect` 可以写 x、y、z，也可以写离轴距离 r_xy、r_xz、r_yz；
+   - `abs` 里列出的坐标按绝对值比较，用来容许整机左右镜像摆放；
+   - 误差不超过 `tolerance_mm`（1.5 mm）才算对。
+4. 做一次静态干涉检查，并检查 `expect_fixed` 是否漂移。最后删掉本位姿的全部临时配合。
+
+一个位姿要满足四个条件才算通过：临时配合全部建成、点位全对、干涉数不超过 `max_interference`、固定件没有漂移。运动分 = 100 × 通过的位姿数 / 位姿总数。
+
+在雨伞这样的闭环里，SolidWorks 有时会把不带 flip 的距离配合直接判为过定义，哪怕距离就等于当前值。评测器遇到这种情况会改用 flip 重建，再核对落在哪一侧。这个回退只在评测器里，智能体用的 `joint` 工具不变。
+
+| | 台灯 | 雨伞 |
 |---|---|---|
-| 驱动件 | input_shaft | crank_shaft |
-| 固定件 | housing | frame |
-| 应运动 | input_shaft, output_shaft, input_pinion, output_wheel | crank, piston_pin, camshaft |
-| 运动学 | 输出/输入 = 1/6，同向 | 活塞行程 50 mm；凸轮轴/曲轴 = 1/2，反向 |
-| 齿隙 | 两对啮合齿轮 0.02–2.0 mm | — |
+| 参考系 | base | shaft |
+| 位姿 | 3 个：(肩, 肘, 腕) = (30°, 35°, 15°)、(60°, 35°, 30°)、(82°, 50°, 45°) | 3 个：下巢距中棒底面 209.65、121.42、65.08 mm（张开、半开、收拢） |
+| 检查点 | 两臂两孔中点、灯头末端；x 取绝对值 | 两根伞骨尖端 (300, 0, 2)，量轴向高度 z 和离轴距离 r_xy |
 
 ## 5. 指标
 
@@ -145,20 +255,31 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 
 ## 6. 阳性对照与重评分
 
-改评测器之前，先保证参考装配体是满分。`eval/assembly_scratch/build_reference_assemblies.py` 用宏工具按规格手工搭了两个参考装配体：`gold_parts/reference_{gearbox,engine}.SLDASM`，这两个文件不入库。当前结果（`eval/assembly_reference_rescore.json`）：
+改评测器之前，先保证参考装配体是满分。`eval/assembly_scratch/build_reference_assemblies.py` 用宏工具按规格手工给每个测例搭了一个参考装配体：`gold_parts/reference_<--cases 名>.SLDASM`，这些文件不入库。当前结果（`eval/assembly_reference_rescore.json`，2026-10-02，滚动约束 rubric）：
 
 | 参考装配体 | 装配 rubric | 运动分 | 关键测量 |
 |---|---|---|---|
-| 减速箱 | 100 | 100 | 中间轴 −0.5000，输出 +0.1667；中心距 54 / 72 mm；零干涉 |
-| 发动机 | 100 | 100 | 行程 49.998 mm；凸轮轴 −0.5000（反向）；中心距 72 mm；零干涉 |
+| 减速箱 | 100 | 100 | 输出 +0.1667；中心距 54 / 72 mm；零干涉 |
+| 发动机 | 100 | 100 | 行程 49.998 mm；凸轮轴 0.5（反向）；中心距 72 mm；零干涉 |
+| 台灯 | 100 | 100 | 活动度 3；3 个位姿点位最大误差 0.004 mm；零干涉 |
+| 雨伞 | 100 | 100 | 3 个位姿伞骨尖端最大误差 0.012 mm；零干涉 |
+| 电钻 | 100 | 100 | carrier1 0.2、carrier2 0.05，都同向；四对齿轮中心距都是 18 mm；零干涉 |
+| 缝纫机 | 100 | 100 | 针杆行程 35.998 mm；旋梭 2 倍速反向；中心距 45 mm；零干涉 |
+| 放映机 | 100 | 100 | 快门 1.0 同向；输片 0.25 反向；中心距 31.5 / 31.5 / 60 mm；零干涉 |
 
-如果参考装配体不是满分，先查评测器或标准零件，不要先怀疑智能体。
+如果参考装配体不是满分，先查评测器或标准零件，不要先怀疑智能体。重新生成标准零件后，参考装配体也要重建：它引用的零件变了，旧的配合可能还在，但运动已经不对。这次发动机的阳性对照就是这样掉到 65 分的（曲柄、连杆、凸轮在参考装配体之后重建过），重建参考装配体后恢复 100。
+
+搭这五个参考装配体时，评测器和标准零件做了这些修正：
+
+- 电钻第二级（15/15/45 齿）：行星轮要转 12° 才能与齿圈啮合，这时朝太阳轮一侧正好是齿，所以太阳轮二插入时就要转好 12°。
+- 缝纫机：送布连杆会扫过主轴轴线，最近距离只有 0.07 mm。所以轴从 40 mm 缩短为 32 mm（主轴 z∈[-18,14]，不伸进连杆那一层），旋梭盘移到 [-20,-12]，并在装配提示里写明各层的 z 范围。
+- 雨伞 -Y 侧的伞骨、撑杆：同轴配合会把杆件的 +Z 转到 +Y，杆件前视面再与 -Y 面同向重合就会过定义。参考装配体里改用反向距离配合；智能体可以用别的面写出等价的约束。
 
 `eval/assembly_scratch/rescore_assemblies.py` 不重跑智能体，只用当前评测器给已保存的装配体重新打分。遇到 SolidWorks 无响应时，它会自动重启 SolidWorks 和服务并重试一次；`--out` 里已有的行会跳过。
 
-### 6.1 gen 条件结果（claude-sonnet-5，workflow v2，2026-10-01）
+### 6.1 gen 条件结果（claude-sonnet-5，workflow v2，零件工具集 v1，2026-10-01）
 
-结果在 `eval/assembly_gen_sonnet5_v2.json`，每个测例跑 2 次。
+结果在 `eval/assembly_gen_sonnet5_v2.json`，每个测例跑 2 次。这一轮早于五个新测例，也早于滚动约束 rubric；固定轴齿轮系在两种 rubric 下分数相同，所以表中数字仍然有效。
 
 | 测例 | 轮次 | 零件合格率 | 装配 rubric | 运动分 | e2e | 装配智能体 |
 |---|---|---|---|---|---|---|
@@ -173,6 +294,7 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 - 停滞的原因：每次 LLM 调用的 `finish_reason` 现在记在结果的 `llm_calls_detail` 里，被判停滞的调用全部是 `finish_reason=length`，输出正好 8000 token，可见文字和工具调用都是 0。也就是说，模型把 `max_tokens=8000` 全部花在了隐藏的思考上，答案还没写出来就被截断，智能体把它当成"没有调用工具"。重跑结果在 `eval/assembly_gen_sonnet5_v2_engine_trace.json`：r1 是 11 次调用、最后 3 次截断；r2 是 35 次调用、其中 11 次截断，装配 rubric 分别为 18.1 和 46.67，与第一次一致。
 - 发动机 r2 的另一个问题出在模型自身：它反复按 `cyl(d=24)` 去找机体上的缸孔，但机体是一块平板，没有这个孔，活塞的滑动副应该用平面来约束。
 - 现在每行结果里有装配阶段的工具调用记录 `tool_calls`、智能体的文字回复 `agent_texts` 和每次调用的 `llm_calls_detail`；完整对话保存在产物目录的 `agent_messages.json`。
+- 为排除截断，又把装配阶段的 `max_tokens` 放大到 32000（`--asm-max-tokens 32000`）重跑发动机，产物在 `eval/artifacts/assembly_gen_sonnet5_tok32k/`。r1 第 31 次工具调用（`joint`）时 SolidWorks 卡死，HTTP 等满 180 s 超时，之后活动装配文档丢失，剩下约 25 次调用全部报"没有活动的装配体文档"，保存时脚本崩溃，r2 没有跑。这是基础设施故障，不是模型结果；harness 已改为记 `infra_error` 后继续，需要在 SolidWorks 空闲时重跑。
 - 同期用 TT Switch 跑 gemini-3.5-flash / gemini-3.1-pro 时，多轮工具调用的请求会间歇性返回 `400 model_param_invalid`，有时几分钟内全部被拒。这是网关上游的问题，所以没有 Gemini 的结果。
 
 ## 7. 命令
@@ -191,13 +313,17 @@ venv\Scripts\python.exe -X utf8 eval\assembly_scratch\rescore_assemblies.py --re
 
 # 正式评测（--condition gold|gen|e2e|all，--workflow v1|v2|both）
 venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --cases gearbox,engine --condition gold --workflow both --repeats 2
+venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --cases desk_lamp,umbrella,drill_gearbox,sewing_machine,projector --condition gen --workflow v2
+
+# 只重评部分测例的阳性对照（参数是 case_id）
+venv\Scripts\python.exe -X utf8 eval\assembly_scratch\rescore_assemblies.py --reference --cases folding_umbrella --out eval\assembly_reference_rescore.json
 
 # 重评分已保存的装配体：结果 JSON=artifacts 目录，可给多组
 venv\Scripts\python.exe -X utf8 eval\assembly_scratch\rescore_assemblies.py --out eval\assembly_rescore.json `
     eval\assembly_scratch_result.json=eval\artifacts\assembly_scratch
 
 # 离线单测（不占 SolidWorks）
-venv\Scripts\python.exe -m pytest test\test_assembly_rubric.py test\test_assembly_workflow_v2.py -q
+venv\Scripts\python.exe -m pytest test\test_assembly_rubric.py test\test_assembly_motion.py test\test_assembly_workflow_v2.py -q
 ```
 
 ## 8. 新增测例
@@ -209,12 +335,13 @@ venv\Scripts\python.exe -m pytest test\test_assembly_rubric.py test\test_assembl
    - `parts`：每个零件的 `id`、`prompt`、`extra_tools`；
    - `gold_roles`：角色 → 零件 id；
    - `assembly.prompt`：只描述功能和约束关系，不给最终坐标；
-   - `motion`：`driver`、`expect_fixed`、`expect_moving`，再按机构选用 `expect_ratio`/`expect_same_direction`、`expect_stroke_mm`、`timing_*`、`clearance_pairs`。
+   - `motion`：马达模式写 `driver`、`expect_fixed`、`expect_moving`，再按机构选用 `ratios`（或旧的 `expect_ratio`/`expect_same_direction`）、`expect_stroke_mm` + `stroke_role`/`stroke_axis`、`timing_*`、`clearance_pairs`；多位姿模式写 `mode: poses`、`frame`、`expect_fixed`、`tolerance_mm`、`poses`。
+   - 可选 `gold_dir`：标准零件目录名，默认等于规格文件名。
 2. 零件接口 rubric `eval/assembly_scratch/rubrics/<part_id>.yaml`，每个零件 id 一份。
 3. 装配 rubric `eval/assembly_scratch/assembly_rubrics/<case_id>.yaml`：`ground`、`mobility`、`bodies`、可选的 `flex`、`joints`（type 可以是列表）、`couplings`、`center_distance_tol_mm`。
 4. 标准零件：在 `build_standard_parts.py` 里加生成函数。画圆一律带 `noInference: true`，生成后用 OCC 核对孔径和孔位。
-5. 参考装配体：在 `build_reference_assemblies.py` 里用宏工具搭一份，要求装配 rubric 和运动分都是 100、静态和逐帧都零干涉、零件在几何上真的装在一起（检查位姿，不能只看运动学）。
-6. 登记：`eval_assembly_scratch.py` 的 `--cases` 名称映射和 gold 零件目录，`rescore_assemblies.py` 的 `CASE_FILES`。
+5. 参考装配体：在 `build_reference_assemblies.py` 里用宏工具搭一份，要求装配 rubric 和运动分都是 100、静态和逐帧都零干涉、零件在几何上真的装在一起（检查位姿，不能只看运动学）。同一零件用在多个角色上时，组件名不是 `<角色>-1`，`_finish` 会把角色 → 组件名另存为 `reference_<name>.aliases.json`，`rescore_assemblies.py --reference` 优先读它。
+6. 登记：只需在 `eval_assembly_scratch.py` 的 `CASE_FILES`（规格文件名 → case_id）里加一行，`rescore_assemblies.py` 直接复用。
 
 约束：
 
@@ -226,6 +353,10 @@ venv\Scripts\python.exe -m pytest test\test_assembly_rubric.py test\test_assembl
 
 - 活动度是瞬时值。奇异位形（比如曲柄滑块的死点）下会偏高；参考装配体都避开了死点。
 - 槽口配合未建模；齿条小齿轮、线性耦合只出现在 `skipped` 里，不计入活动度。
-- 运动检查依赖 Animation，Motion Analysis 插件本机未加载。目前只支持旋转马达驱动，驱动件的转角按绕 Z 轴的转角读取，所以所有测例的转动轴都要沿装配 Z 轴。
+- 马达模式依赖 Animation，Motion Analysis 插件本机未加载。目前只支持旋转马达驱动，驱动件的转角按绕 Z 轴的转角读取，所以马达模式测例的转动轴都要沿装配 Z 轴。直线输入或多自由度的机构改用多位姿模式。
 - 中心距和齿相位按齿轮零件的原点和局部 Z 轴计算，要求齿轮零件原点在轴线上。
 - SolidWorks 偶尔会满载数分钟、不响应。正式评测里出现这种情况会记成采样错误，需要人工识别为基础设施故障后补跑。
+- 齿轮多的装配体建起来很慢。搭参考装配体时，电钻用了约 14 分钟，缝纫机约 19 分钟，大部分时间是请求在等 SolidWorks 主线程，单次最长停了约 6 分钟；而同一个装配体重新打开后评分只要 1 分钟左右。智能体每次工具调用的超时是 180 s，这两个测例的 gen/e2e 结果里要留意 `infra_error` 和超时。
+- 渐开线齿形用折线近似：每个齿约 22 段，48 齿的内齿圈约有 1060 个面，取面列表一次要 1–4 s。
+- 内啮合的齿相位：`mesh_gears` 只转动外齿轮那一侧。如果它与刚性固连在别的行星架上的太阳轮相啮合，事后转动不会带动太阳轮，需要在插入时就把太阳轮转到正确相位（参考装配体里第二级太阳轮转了 12°）。
+- 多位姿模式只检查 `poses` 里列出的离散位姿，不检查位姿之间的连续运动。

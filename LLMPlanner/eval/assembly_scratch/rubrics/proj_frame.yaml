@@ -1,0 +1,15 @@
+case: proj_frame
+tolerance: {length_mm: 0.25, angle_deg: 1.0, volume_rel: 0.04}
+entities:
+  bearings: {cylinder: {d: 10.4, side: inner}, count: 4}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: shape
+    hard: true
+    check:
+      - bbox_sorted: [8, 150, 160]
+      - exists: bearings
+      - through: {holes: bearings}

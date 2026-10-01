@@ -1,0 +1,21 @@
+# 装配级 rubric：角色名与 desk_lamp.yaml 的 gold_roles 一致。
+case_id: adjustable_desk_lamp
+ground: base
+mobility: 3
+
+bodies:
+  base: [base]
+  lower_arm: [lower_arm]
+  upper_arm: [upper_arm]
+  shade: [shade]
+
+# 铰销固定在任一侧、在另一侧转动都对；两侧都转（浮动销）会多出绕自身轴线的空转，不接受。
+flex:
+  shoulder_pin: [base, lower_arm]
+  elbow_pin: [lower_arm, upper_arm]
+  wrist_pin: [upper_arm, shade]
+
+joints:
+  - {bodies: [lower_arm, base], type: revolute}
+  - {bodies: [upper_arm, lower_arm], type: revolute}
+  - {bodies: [shade, upper_arm], type: revolute}

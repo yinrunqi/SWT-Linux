@@ -1,0 +1,35 @@
+# 装配级 rubric：角色名与 sewing_machine.yaml 的 gold_roles 一致。
+case_id: sewing_machine_drive
+ground: frame
+mobility: 1
+
+bodies:
+  frame: [frame, rocker_pin]
+  main: [main_shaft, crank, main_gear, feed_crank]
+  rod: [needle_rod]
+  needle: [needle_bar]
+  hook: [hook_shaft, hook_gear, hook]
+  coupler: [feed_coupler]
+  rocker: [feed_rocker]
+
+# 销轴固定在任一侧、在另一侧转动都对（同 single_cylinder_engine）
+flex:
+  crank_pin: [main, rod]
+  needle_pin: [needle, rod]
+
+joints:
+  - {bodies: [main, frame], type: revolute}
+  - {bodies: [rod, main], type: revolute}
+  - {bodies: [needle, rod], type: revolute}
+  # 曲柄滑块闭环的最后一个关节：只写一个面重合（单看是平面副）也等效滑块
+  - {bodies: [needle, frame], type: [slider, planar]}
+  - {bodies: [hook, frame], type: revolute}
+  - {bodies: [coupler, main], type: revolute}
+  - {bodies: [rocker, frame], type: revolute}
+  # 四杆闭环的最后一个铰：只写同轴（圆柱副）也等效转动副
+  - {bodies: [coupler, rocker], type: [revolute, cylindrical]}
+
+couplings:
+  - {type: gear, a: main_gear, b: hook_gear, teeth: [40, 20], module_mm: 1.5, external: true}
+
+center_distance_tol_mm: 0.2

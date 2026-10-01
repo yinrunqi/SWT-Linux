@@ -1,0 +1,115 @@
+case_id: sewing_machine_drive
+title: 缝纫机主传动（针杆曲柄滑块 + 2:1 旋梭齿轮 + 送布四杆）
+# 源自旧示例缝纫机：保留主轴驱动的三条运动链——针杆曲柄滑块（曲柄 18、连杆 65、行程 36）、
+# 主轴齿轮 40 齿带旋梭齿轮 20 齿（旋梭二倍速反转）、送布曲柄摇杆四杆（曲柄 12、连杆 50、摇杆 36、机架 45）。
+# 去掉压脚、挑线、外壳等。所有转轴沿 Z；机体板 z∈[0,8]，针杆机构在板前（+Z），齿轮、旋梭、四杆在板后。
+crank_radius_mm: 18
+rod_length_mm: 65
+stroke_mm: 36
+module_mm: 1.5
+
+parts:
+  - id: sew_frame
+    extra_tools: []
+    prompt: |
+      创建机体板：在 front_plane 上画矩形，X 从 -80 到 70 mm，Y 从 -40 到 140 mm，向 +Z 拉伸 8 mm。
+      开三个贯穿孔：(0,0) 直径 10.4 mm（主轴承），(-45,0) 直径 10.4 mm（旋梭轴承），(36,-27) 直径 6.4 mm（摇杆销孔）。
+      原点在主轴承孔轴线。不要抽壳。
+  - id: sew_shaft
+    extra_tools: []
+    prompt: |
+      创建轴：直径 10 mm，长 32 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+  - id: sew_crank
+    extra_tools: []
+    prompt: |
+      创建针杆曲柄：两端圆头长条，两孔中心距 18 mm，宽 16 mm，两端各一个直径 10 mm 贯穿孔，向 +Z 拉伸 6 mm。
+      原点在其中一个孔中心。
+  - id: sew_pin
+    extra_tools: []
+    prompt: |
+      创建销轴：直径 10 mm，长 20 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+  - id: sew_rod
+    extra_tools: []
+    prompt: |
+      创建针杆连杆：两端圆头长条，两孔中心距 65 mm，宽 14 mm，两端直径 10 mm 贯穿孔，向 +Z 拉伸 6 mm。原点在一个孔中心。
+  - id: sew_needle_bar
+    extra_tools: []
+    prompt: |
+      创建针杆滑块：外径 20 mm、长 30 mm 的圆柱，轴线沿 Z，中心贯穿孔直径 10 mm，从 Z=0 向 +Z 拉伸。
+  - id: sew_main_gear
+    extra_tools: [spur_gear]
+    prompt: |
+      创建渐开线直齿轮，模数 1.5 mm，齿数 40，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z。优先 spur_gear。
+  - id: sew_hook_gear
+    extra_tools: [spur_gear]
+    prompt: |
+      创建渐开线直齿轮，模数 1.5 mm，齿数 20，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z。优先 spur_gear。
+  - id: sew_hook
+    extra_tools: []
+    prompt: |
+      创建旋梭盘：外径 40 mm、厚 8 mm 的圆盘，中心孔直径 10 mm，轴线沿 Z。
+  - id: sew_feed_crank
+    extra_tools: []
+    prompt: |
+      创建送布曲柄：两端圆头长条，两孔中心距 12 mm，宽 14 mm，向 +Z 拉伸 6 mm。
+      原点孔直径 10 mm（套主轴），另一端孔直径 6 mm，两孔都贯穿。
+  - id: sew_coupler
+    extra_tools: []
+    prompt: |
+      创建送布连杆：两端圆头长条，两孔中心距 50 mm，宽 10 mm，两端直径 6 mm 贯穿孔，向 +Z 拉伸 6 mm。原点在一个孔中心。
+  - id: sew_rocker
+    extra_tools: []
+    prompt: |
+      创建送布摇杆：两端圆头长条，两孔中心距 36 mm，宽 10 mm，两端直径 6 mm 贯穿孔，向 +Z 拉伸 6 mm。原点在一个孔中心。
+  - id: sew_rocker_pin
+    extra_tools: []
+    prompt: |
+      创建摇杆销：直径 6 mm，长 38 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+
+gold_roles:
+  frame: sew_frame
+  main_shaft: sew_shaft
+  crank: sew_crank
+  crank_pin: sew_pin
+  needle_rod: sew_rod
+  needle_pin: sew_pin
+  needle_bar: sew_needle_bar
+  main_gear: sew_main_gear
+  hook_gear: sew_hook_gear
+  hook_shaft: sew_shaft
+  hook: sew_hook
+  feed_crank: sew_feed_crank
+  feed_coupler: sew_coupler
+  feed_rocker: sew_rocker
+  rocker_pin: sew_rocker_pin
+
+assembly:
+  prompt: |
+    装配缝纫机主传动。不要把插入坐标当作最终位姿。
+    - frame 固定。主轴承孔在原点，针杆滑块应沿 frame 的 +Y 往复。
+    - main_shaft 穿过主轴承孔，绕 Z 转动；crank 大端、main_gear、feed_crank 的 10 mm 孔都与 main_shaft 1:1 同转。
+    - crank_pin 固定在 crank 小端；needle_rod 一端绕 crank_pin 转，另一端绕 needle_pin 转；
+      needle_pin 固定在 needle_bar 的中心孔里；needle_bar 只能沿 frame 的 Y 方向移动。曲柄转一圈针杆行程 36 mm。
+    - hook_shaft 穿过 (-45,0) 的旋梭轴承孔绕 Z 转动，hook_gear 与 hook 与 hook_shaft 1:1 同转。
+      40 齿 main_gear 与 20 齿 hook_gear 外啮合（中心距 45 mm），旋梭二倍速反转。
+    - rocker_pin 固定在 (36,-27) 的摇杆销孔里；feed_rocker 一端绕 rocker_pin 转；
+      feed_coupler 一端绕 feed_crank 的 6 mm 孔转，另一端绕 feed_rocker 另一端孔转，组成曲柄摇杆四杆。
+    - 针杆机构放在板前（+Z），齿轮、旋梭、送布四杆放在板后（−Z），各层互不穿模。frame 占 z∈[0,8]，各件轴向位置：
+      板前 crank [8,14]、needle_rod [14,20]、needle_bar [20,50]；
+      板后 main_gear 与 hook_gear [-12,-4]、feed_crank [-18,-12]、feed_coupler [-24,-18]、feed_rocker [-30,-24]、hook [-20,-12]；
+      main_shaft [-18,14]（不能伸进 feed_coupler 那层，否则连杆扫过主轴）、hook_shaft [-20,12]。
+    对 main_shaft 做 check_motion（一整圈），确认无穿模后再保存。
+
+motion:
+  driver: main_shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed: [frame]
+  expect_moving: [crank, needle_bar, hook, feed_rocker]
+  expect_stroke_mm: 36
+  stroke_role: needle_pin
+  stroke_axis: y
+  ratios:
+    - {role: hook, ratio: 0.5, same_direction: false}
+  max_interference: 0

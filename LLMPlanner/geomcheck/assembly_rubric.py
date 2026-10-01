@@ -196,6 +196,30 @@ class _DSU:
             self.parent[self.find(a)] = self.find(b)
 
 
+def _gear_rolling_row(mate: dict, ea, eb) -> np.ndarray | None:
+    """齿轮配合的旋量约束行 t·(v + ω×p)，p 为节点、t 为节点切向。轴线重合时返回 None（退回转速比约束）。
+    约定 ω_b/ω_a = num/den = r_a/r_b；reverse 表示外啮合（两轴同向时），两轴反向时含义互换。"""
+    (_, pa, ua), (_, pb, ub) = ea, eb
+    d = pb - pa
+    d = d - np.dot(d, ua) * ua
+    dist = float(np.linalg.norm(d))
+    if dist < 1e-9:
+        return None
+    u = d / dist
+    k = float(mate.get("gearRatioNumerator") or 1) / float(mate.get("gearRatioDenominator") or 1)
+    external = bool(mate.get("reverse")) != (float(np.dot(ua, ub)) < 0)
+    if external:
+        p = pa + u * dist * k / (1 + k)
+    elif abs(k - 1) < 1e-9:
+        return None
+    elif k < 1:  # b 是内齿圈
+        p = pa - u * dist * k / (1 - k)
+    else:  # a 是内齿圈
+        p = pa + u * dist * k / (k - 1)
+    t = _unit(np.cross(ua, u))
+    return np.concatenate([t, np.cross(p, t)])
+
+
 def _mate_pair(mate: dict) -> tuple[str, str] | None:
     comps = [c for c in (mate.get("components") or []) if c]
     if len(comps) < 2 or comps[0] == comps[1]:
@@ -227,13 +251,21 @@ def _global_mobility(names: list[str], fixed: set[str], mates: list[dict]) -> di
         if mtype == GEAR and not local:
             ents = [x for x in (_entity(e) for e in mate.get("entities") or []) if x]
             if len(ents) >= 2:
-                num = float(mate.get("gearRatioNumerator") or 1)
-                den = float(mate.get("gearRatioDenominator") or 1)
+                r = _gear_rolling_row(mate, ents[0], ents[1])
                 row = np.zeros(6 * len(free))
-                if a in col:
-                    row[6 * col[a] + 3:6 * col[a] + 6] += num * ents[0][2]
-                if b in col:
-                    row[6 * col[b] + 3:6 * col[b] + 6] -= den * ents[1][2]
+                if r is not None:
+                    # 节点处无滑滚动：两齿轮在节点的切向线速度相等（行星架转动时也成立）
+                    if b in col:
+                        row[6 * col[b]:6 * col[b] + 6] += r
+                    if a in col:
+                        row[6 * col[a]:6 * col[a] + 6] -= r
+                else:
+                    num = float(mate.get("gearRatioNumerator") or 1)
+                    den = float(mate.get("gearRatioDenominator") or 1)
+                    if a in col:
+                        row[6 * col[a] + 3:6 * col[a] + 6] += num * ents[0][2]
+                    if b in col:
+                        row[6 * col[b] + 3:6 * col[b] + 6] -= den * ents[1][2]
                 rows.append(row)
         elif mtype in (RACKPINION, LINEARCOUPLER):
             skipped.append({"mate": mate.get("name"), "reason": "耦合未计入活动度"})
@@ -345,7 +377,7 @@ def evaluate(components: list[dict], mates: list[dict], aliases: dict[str, str],
             for c in components if int(c.get("constrainedStatus") or 0) in OVER_STATUS}
     over_ok = not over and not broken
 
-    # 6) 耦合：齿轮配合 + 齿数比 + 外啮合方向 + 中心距
+    # 6) 耦合：齿轮配合 + 齿数比 + 啮合方向（外啮合反向、内啮合同向）+ 中心距
     coupling_checks = []
     tol = float(rubric.get("center_distance_tol_mm", 0.2))
     for spec in rubric.get("couplings") or []:
@@ -378,7 +410,9 @@ def evaluate(components: list[dict], mates: list[dict], aliases: dict[str, str],
             ua, ub = _unit(ta[6:9]), _unit(tb[6:9])
             d = (tb[9:12] - ta[9:12]) * 1000
             dist = float(np.linalg.norm(d - np.dot(d, ua) * ua))
-            expected_cd = float(spec["module_mm"]) * (za + zb) / 2
+            # 内啮合（external: false）中心距是齿数差的一半
+            internal = spec.get("external") is False
+            expected_cd = float(spec["module_mm"]) * (abs(za - zb) if internal else (za + zb)) / 2
             check["center_distance_mm"] = round(dist, 3)
             check["expected_mm"] = expected_cd
             check["center_ok"] = bool(abs(dist - expected_cd) <= tol and abs(abs(np.dot(ua, ub)) - 1) < 1e-4)

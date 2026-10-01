@@ -1,0 +1,15 @@
+case: drill_housing
+tolerance: {length_mm: 0.25, angle_deg: 1.0, volume_rel: 0.04}
+entities:
+  bearing: {cylinder: {d: 4.4, side: inner}, count: 1}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: shape
+    hard: true
+    check:
+      - bbox_sorted: [6, 80, 80]
+      - exists: bearing
+      - through: {holes: bearing}
