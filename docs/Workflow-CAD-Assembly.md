@@ -82,6 +82,8 @@ v2 的规则都来自 AutoMate 与 Fusion 360 Gallery 的统计，不来自试�
 
 ## 3. 评测协议
 
+测例与评分规格的完整说明（含新增测例的流程）见 [Workflow-CAD-Bench-Assembly.md](Workflow-CAD-Bench-Assembly.md)。本节是摘要。
+
 规格：`LLMPlanner/eval/assembly_scratch/{gearbox,engine}.yaml`。
 
 零件接口 rubric：`eval/assembly_scratch/rubrics/`。
