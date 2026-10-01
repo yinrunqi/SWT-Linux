@@ -23,6 +23,7 @@ ensure_test_env_loaded()
 CASES_DIR = ROOT / "eval" / "assembly_scratch"
 RUBRIC_DIR = CASES_DIR / "rubrics"
 RECIPES = ROOT / "planner" / "skills" / "recipes"
+LLM_CALL_LOG: list[dict] = []
 MODEL = os.environ.get("PLAN_MODEL") or os.environ.get("PLANNER_MODEL") or "gemini-3.5-flash"
 
 
@@ -74,17 +75,28 @@ def _openai():
     # 网关上游偶发以 400 model_param_invalid 拒收同一请求，重放即可通过；SDK 不重试 400。
     create = client.chat.completions.create
 
+    def logged(**kwargs):
+        response = create(**kwargs)
+        choice = response.choices[0]
+        LLM_CALL_LOG.append({
+            "finish_reason": choice.finish_reason,
+            "completion_tokens": getattr(response.usage, "completion_tokens", None),
+            "n_tool_calls": len(choice.message.tool_calls or []),
+            "text_chars": len(choice.message.content or ""),
+        })
+        return response
+
     def create_with_retry(**kwargs):
         for delay in (5, 15, 30, 60, 120, 180, 300):
             try:
-                return create(**kwargs)
+                return logged(**kwargs)
             except Exception as exc:
                 print(f"  [LLM retry in {delay}s] {type(exc).__name__}: {str(exc)[:120]}")
                 if os.environ.get("EVAL_DUMP_REJECTED"):
                     Path(os.environ["EVAL_DUMP_REJECTED"]).write_text(
                         json.dumps(kwargs, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
                 time.sleep(delay)
-        return create(**kwargs)
+        return logged(**kwargs)
 
     client.chat.completions.create = create_with_retry
     return client
@@ -185,9 +197,18 @@ def assemble(
     listing = "\n".join(f"- {role}: {path}" for role, path in parts.items())
     goal = _recipes(workflow) + "\n\n" + case["assembly"]["prompt"] + "\n\n零件文件：\n" + listing
     started = time.perf_counter()
+    LLM_CALL_LOG.clear()
     outcome = AssemblyAgent(
         _openai(), model, session, max_llm_calls=max_llm_calls, tools=tool_specs(workflow),
     ).run(goal)
+    messages = outcome.get("messages") or []
+    dest.with_name("agent_messages.json").write_text(
+        json.dumps(messages, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
+    agent_texts = [
+        {"turn": i, "text": m.get("content") or "", "with_tools": bool(m.get("tool_calls"))}
+        for i, m in enumerate(messages)
+        if m.get("role") == "assistant" and (m.get("content") or "").strip()
+    ]
     motion = None
     static = {"component_count": len(session.aliases), "saved": session.saved}
     rubric = score_assembly_rubric(session, case)
@@ -232,6 +253,8 @@ def assemble(
         "duration_seconds": round(time.perf_counter() - started, 2),
         "aliases": outcome.get("aliases"),
         "tool_calls": outcome["tool_calls"],
+        "agent_texts": agent_texts,
+        "llm_calls_detail": list(LLM_CALL_LOG),
         "agent_last_motion": outcome.get("last_motion"),
         "joints": session.joints,
     }
