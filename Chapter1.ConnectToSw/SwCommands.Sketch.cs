@@ -172,7 +172,7 @@ namespace Chapter1.ConnectToSw
         /// 圆心坐标为模型空间 3D 坐标（单位：米），自动变换到草图坐标系。
         /// 半径在草图平面内保持不变。cz 可选。
         /// </summary>
-        public void SketchCircle(double cx, double cy, double radius, double cz = 0)
+        public void SketchCircle(double cx, double cy, double radius, double cz = 0, bool noInference = false)
         {
             EnsureActiveDoc();
             double sx, sy;
@@ -187,7 +187,25 @@ namespace Chapter1.ConnectToSw
             // 进而生成无效的零半径圆，切除/拉伸失败。
             double sketchRadius = radius;
 
-            ActiveDoc.SketchManager.CreateCircle(sx, sy, 0, sx + sketchRadius, sy, 0);
+            var sketchManager = ActiveDoc.SketchManager;
+            bool previousAddToDb = sketchManager.AddToDB;
+            bool previousDisplayWhenAdded = sketchManager.DisplayWhenAdded;
+            try
+            {
+                // 推理会把圆心/圆周点吸到已有圆的象限点或折线上，圆心和半径都可能被改。
+                // 默认保持原行为（L1 结果要能复现），调用方显式要 noInference 才关掉推理。
+                if (noInference)
+                {
+                    sketchManager.AddToDB = true;
+                    sketchManager.DisplayWhenAdded = false;
+                }
+                sketchManager.CreateCircle(sx, sy, 0, sx + sketchRadius, sy, 0);
+            }
+            finally
+            {
+                sketchManager.AddToDB = previousAddToDb;
+                sketchManager.DisplayWhenAdded = previousDisplayWhenAdded;
+            }
             RecordSketchCircle(cx, cy, cz, radius);
             Console.WriteLine($"[SwCommands] 绘制圆: 模型圆心({cx},{cy},{cz}), 半径 {radius}，草图圆心({sx:F4},{sy:F4}), 草图半径 {sketchRadius:F4}");
         }

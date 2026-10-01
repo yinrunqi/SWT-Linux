@@ -83,6 +83,8 @@ motion:
   rpm: 10
   expect_stroke_mm: 50
   timing_ratio: 2.0
+  timing_driven: camshaft
+  timing_opposite: true
   expect_fixed: [frame]
   expect_moving: [crank, piston_pin, camshaft]
   max_interference: 0

@@ -69,9 +69,14 @@ v2 的规则都来自 AutoMate 与 Fusion 360 Gallery 的统计，不来自试�
 - 锁定配合走 `CreateMateData` 会报 errorStatus=4，改走选择 + `AddMate5(swMateLOCK)`。
 - `IRackPinionMateFeatureData.set_EntitiesToMate(role, entity)` 是按角色逐个设置单个实体，传数组会 InvalidCast。
 - 槽口、螺旋设置 `EntitiesToMate` 总报 errorStatus=4，改用 Mark=1 预选。预选路径下 `CreateMate` 会忽略数据对象上的数值参数，所以建好后要用 `ModifyDefinition` 写回。螺旋导程连 `ModifyDefinition` 也写不进去，要直接改配合特征上的尺寸 `D1`。
-- `/api/sketch/circle` 不关草图推理。圆画在齿廓折线之后，圆周点会吸到齿廓上，孔径从 5 mm 变成 4.738 mm。标准零件改为先画孔（没有全局改动，以免影响 L1 结果复现）。
+- `/api/sketch/circle` 默认不关草图推理：圆心和圆周点会吸到已有圆的象限点或折线上。齿轮孔曾从 5 mm 变成 4.738 mm；连杆第二个孔变成 r 5.657 / 6.062；偏心凸轮的孔变成 r 4，外圆圆心也跑了。现在可以传 `noInference: true`，在 `AddToDB` 下画圆。标准零件全部用这个参数，默认行为不变，以免影响 L1 结果复现。
 - `/api/sketch/slot` 退化成矩形，槽口配合认不出。测试件改为矩形切除加两端圆孔切除。
-- Animation 的旋转马达不严格按 rpm 转：10 rpm 实测约 47 rpm，1 rpm 实测约 6.9 rpm。传动比、行程都要按驱动件实际转角来算（评测器本来就这样算），帧要足够密，才能无歧义地展开角度。
+- 齿轮配合语义（用 Animation 量转角实测）：`AddMate5` 的分子:分母就是 ω_b/ω_a（a 为先选的实体），但 SolidWorks 的 `Reverse=false` 才是反向转。`IGearMateFeatureData` 读回的分子/分母与 `AddMate5` 相反，原样 `ModifyDefinition` 写回会把齿轮比颠倒。旧实现在要求 `reverse=true` 时走了这条路，所以此前所有 agent 的齿轮配合都是同向、比值颠倒。现在对外统一为「分子:分母 = a 齿数 : b 齿数，reverse=true 表示外啮合反向」，`mates` 读回也按这个约定。
+- 距离配合不分正负，SolidWorks 按求解结果任选一侧。实测 `align=aligned` 总把 a 放在 b 面法向的负侧，于是 `mount_on_shaft`/`joint` 的 `offset` 把齿轮装到轴外 15 mm 处、把曲柄装在离曲轴端面 34 mm 的空中，运动学照样对、几何是错的。现在 `offset` 有符号，表示 a 面相对 b 面沿 b 面法向的距离。建好后用配合实体几何量一下，反了就带 `flip` 重建。
+- `mesh_gears` 原来固定给从动轮转半个齿距，只在中心连线沿 X、主动轮未转时成立；发动机正时齿轮（连线斜 16°）因此有齿面干涉。现在按中心连线方向和主动轮当前转角计算从动轮相位（零件局部 0° 是齿）。
+- `IMateEntity2.ReferenceType` 才是几何类型（0 点、1 线、2 圆、3 平面、4 圆柱、5 球、7 圆锥）；`ReferenceType2` 返回选择类型。`EntityParams` 是装配坐标下的点(3)、方向(3)、半径1、半径2（米）。
+- Animation 能正确解齿轮系和曲柄滑块闭环（见 5.4），但旋转马达不按 rpm 转：10 rpm 实测 47–95 rpm。传动比、行程都按驱动件实际转角算；13 帧时相邻帧转角超过 180°，展开会混叠，所以运动学改用 121 帧密采样，干涉仍只在 13 帧上做。
+- 偶尔在配合求解或删除 Motion Study 后，SolidWorks 单核满载几分钟，服务无响应（同一装配体一次 65 s、一次 7 min，不是确定性的）。批量重评分脚本遇到这种情况会自动重启 SolidWorks 和服务，并重试一次。
 
 `spur_gear` 只在装配零件生成会话里通过 `WorkflowSession(extra_tools=["spur_gear"])` 打开，50 题和困难子集的 24 工具结果可以复现。
 
@@ -81,14 +86,26 @@ v2 的规则都来自 AutoMate 与 Fusion 360 Gallery 的统计，不来自试�
 
 零件接口 rubric：`eval/assembly_scratch/rubrics/`。
 
+装配 rubric（`geomcheck/assembly_rubric.py`，规格在 `eval/assembly_scratch/assembly_rubrics/{case_id}.yaml`），替代原来的静态分（原规则：保存 50 + 每个组件 20，基本只看「存没存」）。只读配合定义和组件位姿，不跑 Motion Study：
+
+- 每个配合按实体几何（`ReferenceType` + `EntityParams`）写成两零件相对旋量 (v, ω) 上的线性约束行：面–面、同心（`lockRotation` 再加一行）、线/点–面、平行、垂直/角度、锁定、螺旋；同轴 1:1 同向齿轮视为锁转；限位距离不减少瞬时自由度。
+- 刚体组：两两约束的零空间维数为 0 的零件并成一组，再与 rubric 的 `bodies` 对照（`flex` 里的零件，比如销，可以归任一侧）。权重 20。
+- 关节类型：两组之间所有直接配合合起来求零空间，分成 fixed / slider / revolute / screw / cylindrical / planar / ball，和 `joints` 逐对比较。权重 25。
+- 活动度：所有非固定件拼成全局约束矩阵，再加齿轮耦合行 num·(u_a·ω_a) − den·(u_b·ω_b)，求瞬时活动度 6·N − rank，与目标值比较（等价于 `check_dof`，但不依赖 agent 调用它）。权重 15。
+- 接地与浮动件：要求的零件固定；从固定件出发、沿非耦合配合到不了的零件算浮动件。权重 10。
+- 过定义：组件约束状态为过定义类，或配合 `errorCode` ≠ 0。权重 10。
+- 齿轮耦合：每对齿轮各 1/4 分，分别看两组之间有没有齿轮配合、按选择顺序的齿数比、外啮合反向，以及按位姿算的中心距 |Δt⊥u| 是否等于 m(z1+z2)/2（容差 0.2 mm）且轴线平行。权重 20。
+
 运动检查（`geomcheck/assembly_motion.py`）由评测器驱动，不采用 Agent 自称的结果：
 
-- 在规格指定的主动件上加旋转马达，采一整圈；
-- 每一帧做 SolidWorks 原生干涉检测；
+- 在规格指定的主动件上加旋转马达（Animation），密采 121 帧算运动学，另采 13 帧做 SolidWorks 原生干涉检测；
 - 核对传动比或活塞行程、固定件是否移动、本该联动的件是否在动；
+- 发动机另查正时：凸轮轴/曲轴转角比 0.5 且反向（`timing_driven`、`timing_opposite`），不过扣 15；
 - 可选：用 OCC 算啮合齿轮的最小距离（有间隙且不相交）。
 
-指标：零件合格率、装配静态分、运动分、端到端成功率。
+两个参考装配体（`build_reference_assemblies.py`，用宏工具按规格搭的阳性对照）的装配 rubric 和运动分都是 100。评测器改动以它们满分为前提。
+
+指标：零件合格率、装配 rubric 分（`static_score` 字段沿用旧名）、运动分、端到端成功率。
 
 ## 4. 命令
 
@@ -106,7 +123,17 @@ venv\Scripts\python.exe -X utf8 eval\assembly_scratch\build_standard_parts.py al
 
 # 评测（gold / gen / e2e / all；每条件 repeats 次）
 venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --condition gold --cases gearbox --repeats 1
+
+# 参考装配体（阳性对照）与不重跑 agent 的重评分
+venv\Scripts\python.exe -X utf8 eval\assembly_scratch\build_reference_assemblies.py all
+venv\Scripts\python.exe -X utf8 eval\assembly_scratch\rescore_assemblies.py --reference --out eval\assembly_reference_rescore.json
+venv\Scripts\python.exe -X utf8 eval\assembly_scratch\rescore_assemblies.py --out eval\assembly_workflow_rescore.json `
+    eval\assembly_workflow_compare.json=eval\artifacts\assembly_scratch `
+    eval\assembly_workflow_compare_engine.json=eval\artifacts\assembly_scratch `
+    eval\assembly_workflow_compare_gearbox_rerun.json=eval\artifacts\assembly_scratch_rerun
 ```
+
+装配 rubric 与 workflow 的离线单测：`venv\Scripts\python.exe -m pytest test\test_assembly_rubric.py test\test_assembly_workflow_v2.py -q`。
 
 离线单测（不占 SolidWorks）：
 
@@ -128,6 +155,8 @@ venv-occ\Scripts\python.exe -m pytest geomcheck/tests/test_assembly_refs.py geom
 
 `spike_mate_driven_motion.py crank`：配合都能加上。Motion Study 转动曲柄时，活塞销的 Y 坐标一直是 0，连杆也不摆。Animation 求解器解不了这个闭环。发动机评测按计划退回：由评测器按曲柄滑块公式写位姿，再逐帧做干涉检查，并在结果里标明。详细帧数据在 `LLMPlanner/log/spike_motion/`。
 
+> 更正（2026-10-01）：本节两条「Animation 解不了」的结论不成立，见 5.4。齿轮系保持不了齿数比，是齿轮配合语义写错（同向、比值颠倒）加上 13 帧角度混叠造成的。用宏工具搭的曲柄滑块参考装配体在 Animation 下行程和正时都精确。这里的 spike 当时为什么不动，没有再复查。
+
 ### 5.2 LLM 试点
 
 以 `eval/assembly_scratch_result.json` 为准。标准零件用 `build_standard_parts.py` 生成；完整 `--condition all --repeats 2` 按第 4 节命令跑。
@@ -147,7 +176,7 @@ venv-occ\Scripts\python.exe -m pytest geomcheck/tests/test_assembly_refs.py geom
 
 结论：在这个预算下，v2 没有带来可测的提升。
 
-- 减速箱：四次有效运行的运动测量完全相同：驱动件扫过 −882°，输出传动比 1.103（期望 0.167），每帧都有齿面干涉。v2 把轴上固定从 1:1 齿轮配合换成同心锁定旋转，只剩两个真正的齿轮配合，Animation 仍然保持不了齿数比。第 5.1 节的判断成立：瓶颈在 Animation 求解器，不在配合写法上。v2 有一次在预算内保存了装配（静态分 50）。
+- 减速箱：四次有效运行的运动测量完全相同：驱动件扫过 −882°，输出传动比 1.103（期望 0.167），每帧都有齿面干涉。当时判断瓶颈在 Animation 求解器，这个判断是错的，见 5.4。v2 有一次在预算内保存了装配（静态分 50）。
 - 发动机：两个版本各有一次运动分 25、一次 0 分。0 分的两次都是没来得及插入凸轮轴，评测器找不到该零件。差别在性质上：v2 第 1 次的活塞真的动了，行程 47.95 mm（期望 50，容差 2 mm，差 0.05 mm 未过）；v1 第 2 次曲柄和活塞销都卡住，行程 0。样本太少，不能据此下结论。
 - 八次运行全部用满 50 次调用。v2 的工具调用更多（50–72 次对 50–52 次），失败调用也更多（6–17 次对 2–12 次）。v2 用到了 `joint`、`check_dof`，发动机上还用过一次 `close_loop`。
 
@@ -156,9 +185,34 @@ venv-occ\Scripts\python.exe -m pytest geomcheck/tests/test_assembly_refs.py geom
 - `mesh_gears` 不给 `module` 时，把中心距校验算成了 0.02 mm，报 FEATURE_NO_EFFECT。应改为从齿轮几何推断模数，或者明确要求必填。
 - 评测器在缺少规格中某个零件时直接抛 KeyError，运动分记为 0。应改为把缺件单独列出。
 
+### 5.4 装配 rubric 与「运动分卡在 35」的原因（2026-10-01）
+
+减速箱四次运行都卡在 35 分，原因不在 Animation，而是工具和评测器自身的问题。按影响排序：
+
+1. 齿轮配合写反（工具）：见 2.2。要求外啮合时，旧实现走 `ModifyDefinition` 把齿轮比颠倒，转向也变成同向。agent 拿到的运动反馈因此一直是错的。重评分时，10 个装配体里只有 3 个最后还留着齿轮配合（其中 2 个比值写反）。
+2. 13 帧混叠（评测器与 `check_motion`）：马达实际转速是名义值的 5–10 倍，相邻帧转角超过 180°，展开后的比值是假的。不同运行的配合写法不同，测出的却是同一个 1.103，就是混叠所致。`check_motion` 回给 agent 的 `sample_ratio` 也因此没有意义。现在改为 121 帧密采样，按帧展开转角，回给 agent 的是每个零件相对驱动件的比值。
+3. 标准零件本身有缺陷：连杆、曲柄的第二个孔和凸轮孔被草图推理画偏（见 2.2），之前所有发动机 gold 运行都用的这批零件。已用 `noInference` 重建。
+4. `offset` 的方向和 `mesh_gears` 的相位（工具）：见 2.2。这两项不影响运动学比值，但会造成悬空零件和齿面干涉。
+
+修正后，两个参考装配体的 Animation 测量都是精确的。减速箱：中间轴 −0.5000，输出 +0.1667。发动机：行程 49.998 mm（期望 50），凸轮轴 −0.5000（反向），13 帧零干涉。装配 rubric 和运动分都是 100（`eval/assembly_reference_rescore.json`）。
+
+用新评测器给 5.3 里保存下来的 10 个 agent 装配体重评分（不重跑 agent，`eval/assembly_workflow_rescore.json`）。减速箱多了补跑那一组，第 2 次重复当时遇到的基础设施故障也不影响重评分。
+
+| 案例 / 版本 | 次数 | 平均装配 rubric | 平均运动分 | 主要扣分 |
+|---|---|---|---|---|
+| 减速箱 v1 | 3 | 65.2 | 38.3 | 齿轮与轴不成刚体（键连接配合缺失），缺齿轮配合，活动度 5–15 |
+| 减速箱 v2 | 3 | 61.7 | 30.0 | 缺齿轮配合或比值写反，活动度 2–7 |
+| 发动机 v1 | 2 | 38.2 | 5.0 | 连杆/活塞关节缺失，凸轮轴组浮动，正时比 2.0（写反） |
+| 发动机 v2 | 2 | 39.8 | 12.5 | 一次凸轮轴组浮动、无正时齿轮配合；一次曲柄组整体浮动 |
+
+装配 rubric 能直接指出错在哪一对零件、哪个关节或哪个耦合，不再是「存没存」的二值信号。不同运行之间也能拉开差距：减速箱从统一的 20 分变成 57.5–68，发动机变成 18.1–61.5。
+
+注意：这 10 个装配体是用旧工具搭的（齿轮配合写反、offset 方向、相位、`check_motion` 混叠）。现在的分数只说明当时的装配哪里错，不能用来比较修正后的 v1 / v2。要公平对比，需要在冻结的新工具上重跑 gold 试点。
+
 ## 6. 已知局限
 
-- Motion Study 的动画求解器对闭环机构可能比开式齿轮系更脆。若曲柄滑块 spike 失败，发动机会退回「按配合关系推算位姿 + 逐帧干涉」，并在结果里标明。
+- Animation 的马达转速和名义 rpm 不一致，评测必须密采样。Motion Analysis 需要 SOLIDWORKS Motion 插件，本机没有加载；Basic Motion 不驱动配合。
+- 装配 rubric 的约束行只覆盖常见低副和齿轮；槽口未建模，齿条小齿轮/线性耦合不计入活动度（结果里列在 `skipped`）。
 - 齿轮配合仍要求零件上有可识别的中心孔圆柱面。
 - 默认基准面名按中文 SolidWorks（前视/上视/右视）。
 - 不针对某个试点案例改提示词或工具实现。

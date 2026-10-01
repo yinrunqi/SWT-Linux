@@ -1,0 +1,2156 @@
+{
+  "rows": [
+    {
+      "case_id": "two_stage_gearbox",
+      "workflow": "v1",
+      "repeat": 1,
+      "source": "eval\\assembly_workflow_compare.json",
+      "old_assembly_score": 20.0,
+      "old_motion_score": 35.0,
+      "old_motion_error": null,
+      "assembly": "eval\\artifacts\\assembly_scratch\\v1\\two_stage_gearbox\\gold_r1\\two_stage_gearbox.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 60.0,
+      "motion_score": 45.0,
+      "rubric": {
+        "score": 60.0,
+        "parts": {
+          "rigid_groups": 0.5,
+          "joints": 1.0,
+          "mobility": 0.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 0.25
+        },
+        "rigid_groups": [
+          {
+            "role": "housing",
+            "body": "housing",
+            "ok": true
+          },
+          {
+            "role": "input_shaft",
+            "body": "input",
+            "ok": true
+          },
+          {
+            "role": "input_pinion",
+            "body": "input",
+            "ok": false
+          },
+          {
+            "role": "lay_shaft",
+            "body": "lay",
+            "ok": true
+          },
+          {
+            "role": "lay_wheel",
+            "body": "lay",
+            "ok": false
+          },
+          {
+            "role": "lay_pinion",
+            "body": "lay",
+            "ok": false
+          },
+          {
+            "role": "output_shaft",
+            "body": "output",
+            "ok": true
+          },
+          {
+            "role": "output_wheel",
+            "body": "output",
+            "ok": false
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "input",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "lay",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "output",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 10,
+          "target": 1,
+          "ok": false,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [
+          "重合5",
+          "重合6"
+        ],
+        "couplings": [
+          {
+            "pair": [
+              "input_pinion",
+              "lay_wheel"
+            ],
+            "mate": null,
+            "center_distance_mm": 54.0,
+            "expected_mm": 54.0,
+            "center_ok": true,
+            "score": 0.25
+          },
+          {
+            "pair": [
+              "lay_pinion",
+              "output_wheel"
+            ],
+            "mate": null,
+            "center_distance_mm": 72.0,
+            "expected_mm": 72.0,
+            "center_ok": true,
+            "score": 0.25
+          }
+        ]
+      },
+      "motion": {
+        "passed": false,
+        "score": 45.0,
+        "interference_frames": [
+          {
+            "frame": 1,
+            "count": 3,
+            "volume_mm3": 157.82160454740898
+          },
+          {
+            "frame": 2,
+            "count": 4,
+            "volume_mm3": 248.07879524005025
+          },
+          {
+            "frame": 3,
+            "count": 3,
+            "volume_mm3": 146.58751681007112
+          },
+          {
+            "frame": 4,
+            "count": 3,
+            "volume_mm3": 17.18876841701038
+          },
+          {
+            "frame": 5,
+            "count": 4,
+            "volume_mm3": 188.63605884968325
+          },
+          {
+            "frame": 6,
+            "count": 4,
+            "volume_mm3": 291.60344796437755
+          },
+          {
+            "frame": 7,
+            "count": 5,
+            "volume_mm3": 162.71031870772956
+          },
+          {
+            "frame": 8,
+            "count": 3,
+            "volume_mm3": 62.301530324317596
+          },
+          {
+            "frame": 9,
+            "count": 4,
+            "volume_mm3": 222.63795124246562
+          },
+          {
+            "frame": 10,
+            "count": 4,
+            "volume_mm3": 333.2849894604273
+          },
+          {
+            "frame": 11,
+            "count": 5,
+            "volume_mm3": 188.0143128724794
+          },
+          {
+            "frame": 12,
+            "count": 5,
+            "volume_mm3": 95.70419453919556
+          }
+        ],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 71.62,
+          "output_max_step_deg": 69.72,
+          "output_ratio": 0.9735,
+          "expected_ratio": 0.16666666666666666,
+          "same_direction": true
+        }
+      },
+      "seconds": 37.3
+    },
+    {
+      "case_id": "two_stage_gearbox",
+      "workflow": "v2",
+      "repeat": 1,
+      "source": "eval\\assembly_workflow_compare.json",
+      "old_assembly_score": 20.0,
+      "old_motion_score": 35.0,
+      "old_motion_error": null,
+      "assembly": "eval\\artifacts\\assembly_scratch\\v2\\two_stage_gearbox\\gold_r1\\two_stage_gearbox.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 60.0,
+      "motion_score": 45.0,
+      "rubric": {
+        "score": 60.0,
+        "parts": {
+          "rigid_groups": 0.5,
+          "joints": 1.0,
+          "mobility": 0.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 0.25
+        },
+        "rigid_groups": [
+          {
+            "role": "housing",
+            "body": "housing",
+            "ok": true
+          },
+          {
+            "role": "input_shaft",
+            "body": "input",
+            "ok": true
+          },
+          {
+            "role": "input_pinion",
+            "body": "input",
+            "ok": false
+          },
+          {
+            "role": "lay_shaft",
+            "body": "lay",
+            "ok": true
+          },
+          {
+            "role": "lay_wheel",
+            "body": "lay",
+            "ok": false
+          },
+          {
+            "role": "lay_pinion",
+            "body": "lay",
+            "ok": false
+          },
+          {
+            "role": "output_shaft",
+            "body": "output",
+            "ok": true
+          },
+          {
+            "role": "output_wheel",
+            "body": "output",
+            "ok": false
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "input",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "lay",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "output",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 7,
+          "target": 1,
+          "ok": false,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [
+          "同心19",
+          "同心20",
+          "同心21",
+          "同心22"
+        ],
+        "couplings": [
+          {
+            "pair": [
+              "input_pinion",
+              "lay_wheel"
+            ],
+            "mate": null,
+            "center_distance_mm": 54.0,
+            "expected_mm": 54.0,
+            "center_ok": true,
+            "score": 0.25
+          },
+          {
+            "pair": [
+              "lay_pinion",
+              "output_wheel"
+            ],
+            "mate": null,
+            "center_distance_mm": 72.0,
+            "expected_mm": 72.0,
+            "center_ok": true,
+            "score": 0.25
+          }
+        ]
+      },
+      "motion": {
+        "passed": false,
+        "score": 45.0,
+        "interference_frames": [
+          {
+            "frame": 1,
+            "count": 3,
+            "volume_mm3": 157.82160454740531
+          },
+          {
+            "frame": 2,
+            "count": 4,
+            "volume_mm3": 248.07879524005438
+          },
+          {
+            "frame": 3,
+            "count": 3,
+            "volume_mm3": 146.5875168100919
+          },
+          {
+            "frame": 4,
+            "count": 3,
+            "volume_mm3": 17.188768417050152
+          },
+          {
+            "frame": 5,
+            "count": 4,
+            "volume_mm3": 188.63605884978352
+          },
+          {
+            "frame": 6,
+            "count": 4,
+            "volume_mm3": 291.60344796451676
+          },
+          {
+            "frame": 7,
+            "count": 5,
+            "volume_mm3": 162.71031870790605
+          },
+          {
+            "frame": 8,
+            "count": 3,
+            "volume_mm3": 62.30153032450395
+          },
+          {
+            "frame": 9,
+            "count": 4,
+            "volume_mm3": 222.6379512426704
+          },
+          {
+            "frame": 10,
+            "count": 4,
+            "volume_mm3": 333.28498946064036
+          },
+          {
+            "frame": 11,
+            "count": 5,
+            "volume_mm3": 188.0143128726931
+          },
+          {
+            "frame": 12,
+            "count": 5,
+            "volume_mm3": 95.70419453945559
+          }
+        ],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 71.62,
+          "output_max_step_deg": 69.72,
+          "output_ratio": 0.9735,
+          "expected_ratio": 0.16666666666666666,
+          "same_direction": true
+        }
+      },
+      "seconds": 43.1
+    },
+    {
+      "case_id": "two_stage_gearbox",
+      "workflow": "v1",
+      "repeat": 2,
+      "source": "eval\\assembly_workflow_compare.json",
+      "old_assembly_score": 20.0,
+      "old_motion_score": 0.0,
+      "old_motion_error": "服务器出现意外情况。 (异常来自 HRESULT:0x80010105 (RPC_E_SERVERFAULT))",
+      "assembly": "eval\\artifacts\\assembly_scratch\\v1\\two_stage_gearbox\\gold_r2\\two_stage_gearbox.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 67.5,
+      "motion_score": 25.0,
+      "rubric": {
+        "score": 67.5,
+        "parts": {
+          "rigid_groups": 0.5,
+          "joints": 1.0,
+          "mobility": 0.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 0.625
+        },
+        "rigid_groups": [
+          {
+            "role": "housing",
+            "body": "housing",
+            "ok": true
+          },
+          {
+            "role": "input_shaft",
+            "body": "input",
+            "ok": true
+          },
+          {
+            "role": "input_pinion",
+            "body": "input",
+            "ok": false
+          },
+          {
+            "role": "lay_shaft",
+            "body": "lay",
+            "ok": true
+          },
+          {
+            "role": "lay_wheel",
+            "body": "lay",
+            "ok": false
+          },
+          {
+            "role": "lay_pinion",
+            "body": "lay",
+            "ok": false
+          },
+          {
+            "role": "output_shaft",
+            "body": "output",
+            "ok": true
+          },
+          {
+            "role": "output_wheel",
+            "body": "output",
+            "ok": false
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "input",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "lay",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "output",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 5,
+          "target": 1,
+          "ok": false,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": [
+          {
+            "pair": [
+              "input_pinion",
+              "lay_wheel"
+            ],
+            "mate": "齿轮配合4",
+            "ratio": [
+              12.0,
+              24.0
+            ],
+            "ratio_ok": true,
+            "direction_ok": true,
+            "center_distance_mm": 54.0,
+            "expected_mm": 54.0,
+            "center_ok": true,
+            "score": 1.0
+          },
+          {
+            "pair": [
+              "lay_pinion",
+              "output_wheel"
+            ],
+            "mate": null,
+            "center_distance_mm": 72.0,
+            "expected_mm": 72.0,
+            "center_ok": true,
+            "score": 0.25
+          }
+        ]
+      },
+      "motion": {
+        "passed": false,
+        "score": 25.0,
+        "interference_frames": [
+          {
+            "frame": 0,
+            "count": 3,
+            "volume_mm3": 6288.300753303715
+          },
+          {
+            "frame": 1,
+            "count": 3,
+            "volume_mm3": 6288.300753303715
+          },
+          {
+            "frame": 2,
+            "count": 3,
+            "volume_mm3": 6288.300753303715
+          },
+          {
+            "frame": 3,
+            "count": 3,
+            "volume_mm3": 6288.300753303715
+          },
+          {
+            "frame": 4,
+            "count": 3,
+            "volume_mm3": 6288.300753303715
+          },
+          {
+            "frame": 5,
+            "count": 3,
+            "volume_mm3": 6288.300753303715
+          },
+          {
+            "frame": 6,
+            "count": 3,
+            "volume_mm3": 6288.300753303715
+          },
+          {
+            "frame": 7,
+            "count": 3,
+            "volume_mm3": 6288.300753303715
+          },
+          {
+            "frame": 8,
+            "count": 3,
+            "volume_mm3": 6288.300753303715
+          },
+          {
+            "frame": 9,
+            "count": 3,
+            "volume_mm3": 6288.300753303715
+          },
+          {
+            "frame": 10,
+            "count": 3,
+            "volume_mm3": 6288.300753303715
+          },
+          {
+            "frame": 11,
+            "count": 3,
+            "volume_mm3": 6288.300753303715
+          },
+          {
+            "frame": 12,
+            "count": 3,
+            "volume_mm3": 6288.300753303715
+          }
+        ],
+        "stuck": [
+          "output_shaft",
+          "input_pinion",
+          "output_wheel"
+        ],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 28.65,
+          "output_max_step_deg": 0.0,
+          "output_ratio": 0.0,
+          "expected_ratio": 0.16666666666666666,
+          "same_direction": false
+        }
+      },
+      "seconds": 48.3
+    },
+    {
+      "case_id": "two_stage_gearbox",
+      "workflow": "v2",
+      "repeat": 2,
+      "source": "eval\\assembly_workflow_compare.json",
+      "old_assembly_score": 20.0,
+      "old_motion_score": 0.0,
+      "old_motion_error": "服务器出现意外情况。 (异常来自 HRESULT:0x80010105 (RPC_E_SERVERFAULT))",
+      "assembly": "eval\\artifacts\\assembly_scratch\\v2\\two_stage_gearbox\\gold_r2\\two_stage_gearbox.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 57.5,
+      "motion_score": 0.0,
+      "rubric": {
+        "score": 57.5,
+        "parts": {
+          "rigid_groups": 0.5,
+          "joints": 1.0,
+          "mobility": 0.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 0.125
+        },
+        "rigid_groups": [
+          {
+            "role": "housing",
+            "body": "housing",
+            "ok": true
+          },
+          {
+            "role": "input_shaft",
+            "body": "input",
+            "ok": true
+          },
+          {
+            "role": "input_pinion",
+            "body": "input",
+            "ok": false
+          },
+          {
+            "role": "lay_shaft",
+            "body": "lay",
+            "ok": true
+          },
+          {
+            "role": "lay_wheel",
+            "body": "lay",
+            "ok": false
+          },
+          {
+            "role": "lay_pinion",
+            "body": "lay",
+            "ok": false
+          },
+          {
+            "role": "output_shaft",
+            "body": "output",
+            "ok": true
+          },
+          {
+            "role": "output_wheel",
+            "body": "output",
+            "ok": false
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "input",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "lay",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "output",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 2,
+          "target": 1,
+          "ok": false,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": [
+          {
+            "pair": [
+              "input_pinion",
+              "lay_wheel"
+            ],
+            "mate": null,
+            "center_distance_mm": 54.0,
+            "expected_mm": 54.0,
+            "center_ok": true,
+            "score": 0.25
+          },
+          {
+            "pair": [
+              "lay_pinion",
+              "output_wheel"
+            ],
+            "mate": null,
+            "score": 0.0
+          }
+        ]
+      },
+      "motion": {
+        "passed": false,
+        "score": 0.0,
+        "error": "KeyError: 'output_wheel'"
+      },
+      "seconds": 35.9
+    },
+    {
+      "case_id": "single_cylinder_engine",
+      "workflow": "v1",
+      "repeat": 1,
+      "source": "eval\\assembly_workflow_compare_engine.json",
+      "old_assembly_score": 20.0,
+      "old_motion_score": 0.0,
+      "old_motion_error": "'camshaft'",
+      "assembly": "eval\\artifacts\\assembly_scratch\\v1\\single_cylinder_engine\\gold_r1\\single_cylinder_engine.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 31.9,
+      "motion_score": 0.0,
+      "rubric": {
+        "score": 31.9,
+        "parts": {
+          "rigid_groups": 0.417,
+          "joints": 0.2,
+          "mobility": 0.0,
+          "grounded": 0.857,
+          "not_over_defined": 1.0,
+          "couplings": 0.0
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "crank_shaft",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "crank",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "flywheel",
+            "body": "crank",
+            "ok": false
+          },
+          {
+            "role": "crank_gear",
+            "body": "crank",
+            "ok": false
+          },
+          {
+            "role": "rod",
+            "body": "rod",
+            "ok": true
+          },
+          {
+            "role": "piston",
+            "body": "piston",
+            "ok": true
+          },
+          {
+            "role": "camshaft",
+            "body": "cam",
+            "ok": false
+          },
+          {
+            "role": "cam_gear",
+            "body": "cam",
+            "ok": false
+          },
+          {
+            "role": "cam",
+            "body": "cam",
+            "ok": false
+          },
+          {
+            "role": "crank_pin",
+            "body": "crank|rod",
+            "ok": false
+          },
+          {
+            "role": "piston_pin",
+            "body": "piston|rod",
+            "ok": false
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "crank",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "rod",
+              "crank"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "free",
+            "ok": false
+          },
+          {
+            "bodies": [
+              "piston",
+              "rod"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "free",
+            "ok": false
+          },
+          {
+            "bodies": [
+              "piston",
+              "frame"
+            ],
+            "expected": [
+              "slider",
+              "planar"
+            ],
+            "actual": "free",
+            "ok": false
+          },
+          {
+            "bodies": [
+              "cam",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": null,
+            "ok": false
+          }
+        ],
+        "mobility": {
+          "actual": 13,
+          "target": 1,
+          "ok": false,
+          "skipped": []
+        },
+        "floating": [
+          "piston"
+        ],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [
+          "平行2",
+          "重合7",
+          "同心8",
+          "重合8"
+        ],
+        "couplings": [
+          {
+            "pair": [
+              "crank_gear",
+              "cam_gear"
+            ],
+            "mate": null,
+            "score": 0.0
+          }
+        ]
+      },
+      "motion": {
+        "passed": false,
+        "score": 0.0,
+        "error": "KeyError: 'camshaft'"
+      },
+      "seconds": 175.5
+    },
+    {
+      "case_id": "single_cylinder_engine",
+      "workflow": "v2",
+      "repeat": 1,
+      "source": "eval\\assembly_workflow_compare_engine.json",
+      "old_assembly_score": 20.0,
+      "old_motion_score": 25.0,
+      "old_motion_error": null,
+      "assembly": "eval\\artifacts\\assembly_scratch\\v2\\single_cylinder_engine\\gold_r1\\single_cylinder_engine.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 61.52,
+      "motion_score": 25.0,
+      "rubric": {
+        "score": 61.52,
+        "parts": {
+          "rigid_groups": 0.917,
+          "joints": 0.8,
+          "mobility": 0.0,
+          "grounded": 0.818,
+          "not_over_defined": 1.0,
+          "couplings": 0.25
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "crank_shaft",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "crank",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "flywheel",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "crank_gear",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "rod",
+            "body": "rod",
+            "ok": true
+          },
+          {
+            "role": "piston",
+            "body": "piston",
+            "ok": true
+          },
+          {
+            "role": "camshaft",
+            "body": "cam",
+            "ok": true
+          },
+          {
+            "role": "cam_gear",
+            "body": "cam",
+            "ok": true
+          },
+          {
+            "role": "cam",
+            "body": "cam",
+            "ok": false
+          },
+          {
+            "role": "crank_pin",
+            "body": "crank|rod",
+            "ok": true
+          },
+          {
+            "role": "piston_pin",
+            "body": "piston|rod",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "crank",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "rod",
+              "crank"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "piston",
+              "rod"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "piston",
+              "frame"
+            ],
+            "expected": [
+              "slider",
+              "planar"
+            ],
+            "actual": "planar",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "cam",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "free",
+            "ok": false
+          }
+        ],
+        "mobility": {
+          "actual": 7,
+          "target": 1,
+          "ok": false,
+          "skipped": []
+        },
+        "floating": [
+          "cam_gear",
+          "camshaft"
+        ],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": [
+          {
+            "pair": [
+              "crank_gear",
+              "cam_gear"
+            ],
+            "mate": null,
+            "center_distance_mm": 72.0,
+            "expected_mm": 72.0,
+            "center_ok": true,
+            "score": 0.25
+          }
+        ]
+      },
+      "motion": {
+        "passed": false,
+        "score": 25.0,
+        "interference_frames": [
+          {
+            "frame": 0,
+            "count": 7,
+            "volume_mm3": 50608.79733384093
+          },
+          {
+            "frame": 1,
+            "count": 7,
+            "volume_mm3": 50608.797333840914
+          },
+          {
+            "frame": 2,
+            "count": 6,
+            "volume_mm3": 50399.94556724537
+          },
+          {
+            "frame": 3,
+            "count": 7,
+            "volume_mm3": 50608.797333840914
+          },
+          {
+            "frame": 4,
+            "count": 7,
+            "volume_mm3": 50608.7973338409
+          },
+          {
+            "frame": 5,
+            "count": 7,
+            "volume_mm3": 50608.79733384092
+          },
+          {
+            "frame": 6,
+            "count": 7,
+            "volume_mm3": 50608.79733384094
+          },
+          {
+            "frame": 7,
+            "count": 7,
+            "volume_mm3": 50608.79733384093
+          },
+          {
+            "frame": 8,
+            "count": 7,
+            "volume_mm3": 50608.797333840914
+          },
+          {
+            "frame": 9,
+            "count": 7,
+            "volume_mm3": 50608.797333840914
+          },
+          {
+            "frame": 10,
+            "count": 7,
+            "volume_mm3": 50608.79733384092
+          },
+          {
+            "frame": 11,
+            "count": 7,
+            "volume_mm3": 50608.797333840885
+          },
+          {
+            "frame": 12,
+            "count": 7,
+            "volume_mm3": 50608.7973338409
+          }
+        ],
+        "stuck": [
+          "crank",
+          "camshaft"
+        ],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 71.62,
+          "timing_ratio_measured": 0.0,
+          "timing_ratio_expected": 0.5,
+          "timing_max_step_deg": 0.0,
+          "timing_opposite": false,
+          "stroke_mm": 48.363,
+          "expected_stroke_mm": 50
+        }
+      },
+      "seconds": 40.7
+    },
+    {
+      "case_id": "single_cylinder_engine",
+      "workflow": "v1",
+      "repeat": 2,
+      "source": "eval\\assembly_workflow_compare_engine.json",
+      "old_assembly_score": 20.0,
+      "old_motion_score": 25.0,
+      "old_motion_error": null,
+      "assembly": "eval\\artifacts\\assembly_scratch\\v1\\single_cylinder_engine\\gold_r2\\single_cylinder_engine.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 44.49,
+      "motion_score": 10.0,
+      "rubric": {
+        "score": 44.49,
+        "parts": {
+          "rigid_groups": 0.667,
+          "joints": 0.2,
+          "mobility": 0.0,
+          "grounded": 0.615,
+          "not_over_defined": 1.0,
+          "couplings": 0.5
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "crank_shaft",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "crank",
+            "body": "crank",
+            "ok": false
+          },
+          {
+            "role": "flywheel",
+            "body": "crank",
+            "ok": false
+          },
+          {
+            "role": "crank_gear",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "rod",
+            "body": "rod",
+            "ok": true
+          },
+          {
+            "role": "piston",
+            "body": "piston",
+            "ok": true
+          },
+          {
+            "role": "camshaft",
+            "body": "cam",
+            "ok": true
+          },
+          {
+            "role": "cam_gear",
+            "body": "cam",
+            "ok": true
+          },
+          {
+            "role": "cam",
+            "body": "cam",
+            "ok": true
+          },
+          {
+            "role": "crank_pin",
+            "body": "crank|rod",
+            "ok": false
+          },
+          {
+            "role": "piston_pin",
+            "body": "piston|rod",
+            "ok": false
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "crank",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "rod",
+              "crank"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "free",
+            "ok": false
+          },
+          {
+            "bodies": [
+              "piston",
+              "rod"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "planar",
+            "ok": false
+          },
+          {
+            "bodies": [
+              "piston",
+              "frame"
+            ],
+            "expected": [
+              "slider",
+              "planar"
+            ],
+            "actual": "free",
+            "ok": false
+          },
+          {
+            "bodies": [
+              "cam",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "free",
+            "ok": false
+          }
+        ],
+        "mobility": {
+          "actual": 23,
+          "target": 1,
+          "ok": false,
+          "skipped": []
+        },
+        "floating": [
+          "cam",
+          "cam_gear",
+          "camshaft",
+          "flywheel",
+          "flywheel-1"
+        ],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": [
+          {
+            "pair": [
+              "crank_gear",
+              "cam_gear"
+            ],
+            "mate": "齿轮配合4",
+            "ratio": [
+              32.0,
+              16.0
+            ],
+            "ratio_ok": false,
+            "direction_ok": false,
+            "center_distance_mm": 72.0,
+            "expected_mm": 72.0,
+            "center_ok": true,
+            "score": 0.5
+          }
+        ]
+      },
+      "motion": {
+        "passed": false,
+        "score": 10.0,
+        "interference_frames": [
+          {
+            "frame": 0,
+            "count": 9,
+            "volume_mm3": 54297.00648235204
+          },
+          {
+            "frame": 1,
+            "count": 10,
+            "volume_mm3": 54272.06816074721
+          },
+          {
+            "frame": 2,
+            "count": 9,
+            "volume_mm3": 54284.66342266159
+          },
+          {
+            "frame": 3,
+            "count": 9,
+            "volume_mm3": 54331.37316745531
+          },
+          {
+            "frame": 4,
+            "count": 9,
+            "volume_mm3": 54374.66697262839
+          },
+          {
+            "frame": 5,
+            "count": 10,
+            "volume_mm3": 54371.728228652944
+          },
+          {
+            "frame": 6,
+            "count": 11,
+            "volume_mm3": 54404.58388565812
+          },
+          {
+            "frame": 7,
+            "count": 10,
+            "volume_mm3": 54456.23309622389
+          },
+          {
+            "frame": 8,
+            "count": 10,
+            "volume_mm3": 54436.0841651404
+          },
+          {
+            "frame": 9,
+            "count": 10,
+            "volume_mm3": 54375.253308819985
+          },
+          {
+            "frame": 10,
+            "count": 10,
+            "volume_mm3": 54349.700044464626
+          },
+          {
+            "frame": 11,
+            "count": 9,
+            "volume_mm3": 54358.22704449252
+          },
+          {
+            "frame": 12,
+            "count": 10,
+            "volume_mm3": 54302.8604018896
+          }
+        ],
+        "stuck": [
+          "crank",
+          "piston_pin"
+        ],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 71.62,
+          "timing_ratio_measured": 2.0,
+          "timing_ratio_expected": 0.5,
+          "timing_max_step_deg": 143.24,
+          "timing_opposite": false,
+          "stroke_mm": 0.0,
+          "expected_stroke_mm": 50
+        }
+      },
+      "seconds": 48.8
+    },
+    {
+      "case_id": "single_cylinder_engine",
+      "workflow": "v2",
+      "repeat": 2,
+      "source": "eval\\assembly_workflow_compare_engine.json",
+      "old_assembly_score": 20.0,
+      "old_motion_score": 0.0,
+      "old_motion_error": "'camshaft'",
+      "assembly": "eval\\artifacts\\assembly_scratch\\v2\\single_cylinder_engine\\gold_r2\\single_cylinder_engine.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 18.1,
+      "motion_score": 0.0,
+      "rubric": {
+        "score": 18.1,
+        "parts": {
+          "rigid_groups": 0.333,
+          "joints": 0.0,
+          "mobility": 0.0,
+          "grounded": 0.143,
+          "not_over_defined": 1.0,
+          "couplings": 0.0
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "crank_shaft",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "crank",
+            "body": "crank",
+            "ok": false
+          },
+          {
+            "role": "flywheel",
+            "body": "crank",
+            "ok": false
+          },
+          {
+            "role": "crank_gear",
+            "body": "crank",
+            "ok": false
+          },
+          {
+            "role": "rod",
+            "body": "rod",
+            "ok": true
+          },
+          {
+            "role": "piston",
+            "body": "piston",
+            "ok": true
+          },
+          {
+            "role": "camshaft",
+            "body": "cam",
+            "ok": false
+          },
+          {
+            "role": "cam_gear",
+            "body": "cam",
+            "ok": false
+          },
+          {
+            "role": "cam",
+            "body": "cam",
+            "ok": false
+          },
+          {
+            "role": "crank_pin",
+            "body": "crank|rod",
+            "ok": false
+          },
+          {
+            "role": "piston_pin",
+            "body": "piston|rod",
+            "ok": false
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "crank",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "free",
+            "ok": false
+          },
+          {
+            "bodies": [
+              "rod",
+              "crank"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "free",
+            "ok": false
+          },
+          {
+            "bodies": [
+              "piston",
+              "rod"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "free",
+            "ok": false
+          },
+          {
+            "bodies": [
+              "piston",
+              "frame"
+            ],
+            "expected": [
+              "slider",
+              "planar"
+            ],
+            "actual": "free",
+            "ok": false
+          },
+          {
+            "bodies": [
+              "cam",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": null,
+            "ok": false
+          }
+        ],
+        "mobility": {
+          "actual": 36,
+          "target": 1,
+          "ok": false,
+          "skipped": []
+        },
+        "floating": [
+          "crank",
+          "crank_pin",
+          "crank_shaft",
+          "piston",
+          "piston_pin",
+          "rod"
+        ],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [
+          "同心11",
+          "重合13",
+          "同心12",
+          "距离3",
+          "同心14",
+          "重合15",
+          "同心15",
+          "重合16",
+          "同心16",
+          "重合17",
+          "同心17",
+          "重合18"
+        ],
+        "couplings": [
+          {
+            "pair": [
+              "crank_gear",
+              "cam_gear"
+            ],
+            "mate": null,
+            "score": 0.0
+          }
+        ]
+      },
+      "motion": {
+        "passed": false,
+        "score": 0.0,
+        "error": "KeyError: 'camshaft'"
+      },
+      "seconds": 30.7
+    },
+    {
+      "case_id": "two_stage_gearbox",
+      "workflow": "v1",
+      "repeat": 1,
+      "source": "eval\\assembly_workflow_compare_gearbox_rerun.json",
+      "old_assembly_score": 20.0,
+      "old_motion_score": 35.0,
+      "old_motion_error": null,
+      "assembly": "eval\\artifacts\\assembly_scratch_rerun\\v1\\two_stage_gearbox\\gold_r1\\two_stage_gearbox.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 68.0,
+      "motion_score": 45.0,
+      "rubric": {
+        "score": 68.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 0.0,
+          "grounded": 0.8,
+          "not_over_defined": 1.0,
+          "couplings": 0.25
+        },
+        "rigid_groups": [
+          {
+            "role": "housing",
+            "body": "housing",
+            "ok": true
+          },
+          {
+            "role": "input_shaft",
+            "body": "input",
+            "ok": true
+          },
+          {
+            "role": "input_pinion",
+            "body": "input",
+            "ok": true
+          },
+          {
+            "role": "lay_shaft",
+            "body": "lay",
+            "ok": true
+          },
+          {
+            "role": "lay_wheel",
+            "body": "lay",
+            "ok": true
+          },
+          {
+            "role": "lay_pinion",
+            "body": "lay",
+            "ok": true
+          },
+          {
+            "role": "output_shaft",
+            "body": "output",
+            "ok": true
+          },
+          {
+            "role": "output_wheel",
+            "body": "output",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "input",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "lay",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "output",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 15,
+          "target": 1,
+          "ok": false,
+          "skipped": []
+        },
+        "floating": [
+          "housing_temp",
+          "housing_temp2"
+        ],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [
+          "齿轮配合7",
+          "齿轮配合8"
+        ],
+        "couplings": [
+          {
+            "pair": [
+              "input_pinion",
+              "lay_wheel"
+            ],
+            "mate": null,
+            "center_distance_mm": 54.0,
+            "expected_mm": 54.0,
+            "center_ok": true,
+            "score": 0.25
+          },
+          {
+            "pair": [
+              "lay_pinion",
+              "output_wheel"
+            ],
+            "mate": null,
+            "center_distance_mm": 72.0,
+            "expected_mm": 72.0,
+            "center_ok": true,
+            "score": 0.25
+          }
+        ]
+      },
+      "motion": {
+        "passed": false,
+        "score": 45.0,
+        "interference_frames": [
+          {
+            "frame": 0,
+            "count": 3,
+            "volume_mm3": 448354.6201182238
+          },
+          {
+            "frame": 1,
+            "count": 6,
+            "volume_mm3": 448512.4417227712
+          },
+          {
+            "frame": 2,
+            "count": 7,
+            "volume_mm3": 448602.6989134638
+          },
+          {
+            "frame": 3,
+            "count": 6,
+            "volume_mm3": 448501.20763503393
+          },
+          {
+            "frame": 4,
+            "count": 6,
+            "volume_mm3": 448371.80888664076
+          },
+          {
+            "frame": 5,
+            "count": 7,
+            "volume_mm3": 448543.2561770735
+          },
+          {
+            "frame": 6,
+            "count": 7,
+            "volume_mm3": 448646.2235661882
+          },
+          {
+            "frame": 7,
+            "count": 8,
+            "volume_mm3": 448517.3304369315
+          },
+          {
+            "frame": 8,
+            "count": 6,
+            "volume_mm3": 448416.9216485484
+          },
+          {
+            "frame": 9,
+            "count": 7,
+            "volume_mm3": 448577.25806946657
+          },
+          {
+            "frame": 10,
+            "count": 7,
+            "volume_mm3": 448687.9051076844
+          },
+          {
+            "frame": 11,
+            "count": 8,
+            "volume_mm3": 448542.6344310963
+          },
+          {
+            "frame": 12,
+            "count": 8,
+            "volume_mm3": 448450.32431276323
+          }
+        ],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 71.62,
+          "output_max_step_deg": 69.72,
+          "output_ratio": 0.9735,
+          "expected_ratio": 0.16666666666666666,
+          "same_direction": true
+        }
+      },
+      "seconds": 211.0
+    },
+    {
+      "case_id": "two_stage_gearbox",
+      "workflow": "v2",
+      "repeat": 1,
+      "source": "eval\\assembly_workflow_compare_gearbox_rerun.json",
+      "old_assembly_score": 50.0,
+      "old_motion_score": 35.0,
+      "old_motion_error": null,
+      "assembly": "eval\\artifacts\\assembly_scratch_rerun\\v2\\two_stage_gearbox\\gold_r1\\two_stage_gearbox.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 67.5,
+      "motion_score": 45.0,
+      "rubric": {
+        "score": 67.5,
+        "parts": {
+          "rigid_groups": 0.75,
+          "joints": 1.0,
+          "mobility": 0.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 0.375
+        },
+        "rigid_groups": [
+          {
+            "role": "housing",
+            "body": "housing",
+            "ok": true
+          },
+          {
+            "role": "input_shaft",
+            "body": "input",
+            "ok": true
+          },
+          {
+            "role": "input_pinion",
+            "body": "input",
+            "ok": true
+          },
+          {
+            "role": "lay_shaft",
+            "body": "lay",
+            "ok": true
+          },
+          {
+            "role": "lay_wheel",
+            "body": "lay",
+            "ok": true
+          },
+          {
+            "role": "lay_pinion",
+            "body": "lay",
+            "ok": false
+          },
+          {
+            "role": "output_shaft",
+            "body": "output",
+            "ok": true
+          },
+          {
+            "role": "output_wheel",
+            "body": "output",
+            "ok": false
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "input",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "lay",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "output",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 2,
+          "target": 1,
+          "ok": false,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [
+          "重合9"
+        ],
+        "couplings": [
+          {
+            "pair": [
+              "input_pinion",
+              "lay_wheel"
+            ],
+            "mate": "齿轮配合1",
+            "ratio": [
+              24.0,
+              12.0
+            ],
+            "ratio_ok": false,
+            "direction_ok": false,
+            "center_distance_mm": 54.0,
+            "expected_mm": 54.0,
+            "center_ok": true,
+            "score": 0.5
+          },
+          {
+            "pair": [
+              "lay_pinion",
+              "output_wheel"
+            ],
+            "mate": null,
+            "center_distance_mm": 72.0,
+            "expected_mm": 72.0,
+            "center_ok": true,
+            "score": 0.25
+          }
+        ]
+      },
+      "motion": {
+        "passed": false,
+        "score": 45.0,
+        "interference_frames": [
+          {
+            "frame": 0,
+            "count": 1,
+            "volume_mm3": 4514.866459696004
+          },
+          {
+            "frame": 1,
+            "count": 3,
+            "volume_mm3": 10850.276553760637
+          },
+          {
+            "frame": 2,
+            "count": 4,
+            "volume_mm3": 10835.405595009894
+          },
+          {
+            "frame": 3,
+            "count": 2,
+            "volume_mm3": 10848.950745465932
+          },
+          {
+            "frame": 4,
+            "count": 2,
+            "volume_mm3": 10848.43465408657
+          },
+          {
+            "frame": 5,
+            "count": 3,
+            "volume_mm3": 10830.817061694395
+          },
+          {
+            "frame": 6,
+            "count": 2,
+            "volume_mm3": 10838.059320609766
+          },
+          {
+            "frame": 7,
+            "count": 3,
+            "volume_mm3": 10820.409333611186
+          },
+          {
+            "frame": 8,
+            "count": 4,
+            "volume_mm3": 10819.171429767815
+          },
+          {
+            "frame": 9,
+            "count": 3,
+            "volume_mm3": 10863.777987283775
+          },
+          {
+            "frame": 10,
+            "count": 4,
+            "volume_mm3": 10869.831202659205
+          },
+          {
+            "frame": 11,
+            "count": 3,
+            "volume_mm3": 10848.054912073498
+          },
+          {
+            "frame": 12,
+            "count": 3,
+            "volume_mm3": 10830.512144234432
+          }
+        ],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 71.62,
+          "output_max_step_deg": 69.72,
+          "output_ratio": 0.9735,
+          "expected_ratio": 0.16666666666666666,
+          "same_direction": true
+        }
+      },
+      "seconds": 48.3
+    }
+  ]
+}

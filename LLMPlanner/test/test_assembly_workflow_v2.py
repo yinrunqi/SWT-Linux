@@ -55,14 +55,15 @@ class FakeSession(AssemblySession):
         self.has_assembly = True
         self.sent: list[tuple[str, dict]] = []
         self.components = {
-            "base-1": {"isFixed": True, "status": 2},
-            "shaft-1": {"isFixed": False, "status": 1},
-            "gear-1": {"isFixed": False, "status": 1},
-            "rack-1": {"isFixed": False, "status": 1},
-            "nut-1": {"isFixed": False, "status": 1},
+            "base-1": {"isFixed": True, "status": 3},
+            "shaft-1": {"isFixed": False, "status": 2},
+            "gear-1": {"isFixed": False, "status": 2},
+            "rack-1": {"isFixed": False, "status": 2},
+            "nut-1": {"isFixed": False, "status": 2},
         }
         self.aliases = {name.split("-")[0]: name for name in self.components}
         self._count = 0
+        self.created: dict[str, dict] = {}
 
     def asmwf(self, op: str, body: dict | None = None) -> dict:
         body = body or {}
@@ -81,9 +82,20 @@ class FakeSession(AssemblySession):
             return {"edges": EDGES}
         if op == "mate":
             self._count += 1
+            self.created[f"m{self._count}"] = body
             return {"name": f"m{self._count}", "type": body["type"]}
         if op == "delete-mate":
+            self.created.pop(body["name"], None)
             return {"deleted": body["name"]}
+        if op == "mates":
+            # 和实测的 SolidWorks 一样：距离配合不翻转时 a 落在 b 面法向的负侧
+            out = []
+            for name, mate in self.created.items():
+                d = float(mate.get("distance") or 0) * (1 if mate.get("flip") else -1)
+                out.append({"name": name, "entities": [
+                    {"refType": 3, "params": [0, 0, d, 0, 0, 1]}, {"refType": 3, "params": [0, 0, 0, 0, 0, 1]},
+                ]})
+            return {"mates": out}
         raise AssertionError(op)
 
     def mates_sent(self) -> list[dict]:
@@ -100,6 +112,13 @@ def test_joint_mapping_expansions():
     sent = s.mates_sent()
     assert out["ok"] and sent[0]["type"] == "concentric" and sent[0]["lockRotation"] is True
     assert sent[1]["type"] == "distance" and sent[1]["distance"] == pytest.approx(0.015)
+    # 落在负侧 → 撤销后翻转重建
+    assert sent[2]["type"] == "distance" and sent[2]["flip"] is True
+    assert "m4" not in s.created and out["mates"][1]["name"] == "m5"
+    s.sent.clear()
+    out = s.call("joint", {"type": "revolute", "a": "shaft:cyl(d=10)", "b": "base:cyl(d=10)", "offset": -26})
+    assert out["ok"] and [m["type"] for m in s.mates_sent()] == ["concentric", "distance"]
+    assert s.mates_sent()[1]["distance"] == pytest.approx(0.026) and "flip" not in s.mates_sent()[1]
     s.sent.clear()
     out = s.call("joint", {"type": "fixed", "a": "gear", "b": "shaft"})
     assert out["ok"] and s.mates_sent()[0]["type"] == "lock"
@@ -148,7 +167,7 @@ def test_couplings_and_dof_budget():
 
 def test_coupling_refuses_locked_end():
     s = FakeSession()
-    s.components["rack-1"]["status"] = 2
+    s.components["rack-1"]["status"] = 3
     out = s.call("rack_pinion", {"rack": "rack", "pinion": "gear", "pitch_diameter": 36})
     assert not out["ok"] and out["error"]["code"] == "FEATURE_NO_EFFECT"
 

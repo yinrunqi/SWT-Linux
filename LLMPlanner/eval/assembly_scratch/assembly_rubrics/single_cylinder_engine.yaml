@@ -1,0 +1,31 @@
+# 装配级 rubric：只看装配体本身的约束结构，不看智能体用了哪些工具。
+# 角色名与 engine.yaml 的 gold_roles 一致。
+case_id: single_cylinder_engine
+ground: frame
+mobility: 1
+
+bodies:
+  frame: [frame]
+  crank: [crank_shaft, crank, flywheel, crank_gear]
+  rod: [rod]
+  piston: [piston]
+  cam: [camshaft, cam_gear, cam]
+
+# 销轴既可以固定在一端、在另一端转，也可以两端都转（浮动销）；
+# 浮动销在平面 Grübler 里会多一个绕自身轴线的空转，所以这里只接受固定在一端。
+flex:
+  crank_pin: [crank, rod]
+  piston_pin: [piston, rod]
+
+joints:
+  - {bodies: [crank, frame], type: revolute}
+  - {bodies: [rod, crank], type: revolute}
+  - {bodies: [piston, rod], type: revolute}
+  # 闭环的最后一个关节：活塞的 z 和倾斜已由连杆链定下，只写一个面重合（单看这一对是平面副）也等效滑块
+  - {bodies: [piston, frame], type: [slider, planar]}
+  - {bodies: [cam, frame], type: revolute}
+
+couplings:
+  - {type: gear, a: crank_gear, b: cam_gear, teeth: [16, 32], module_mm: 3, external: true}
+
+center_distance_tol_mm: 0.2

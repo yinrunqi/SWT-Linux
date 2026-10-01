@@ -1,0 +1,352 @@
+{
+  "rows": [
+    {
+      "case_id": "two_stage_gearbox",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_gearbox.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "housing",
+            "body": "housing",
+            "ok": true
+          },
+          {
+            "role": "input_shaft",
+            "body": "input",
+            "ok": true
+          },
+          {
+            "role": "input_pinion",
+            "body": "input",
+            "ok": true
+          },
+          {
+            "role": "lay_shaft",
+            "body": "lay",
+            "ok": true
+          },
+          {
+            "role": "lay_wheel",
+            "body": "lay",
+            "ok": true
+          },
+          {
+            "role": "lay_pinion",
+            "body": "lay",
+            "ok": true
+          },
+          {
+            "role": "output_shaft",
+            "body": "output",
+            "ok": true
+          },
+          {
+            "role": "output_wheel",
+            "body": "output",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "input",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "lay",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "output",
+              "housing"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": [
+          {
+            "pair": [
+              "input_pinion",
+              "lay_wheel"
+            ],
+            "mate": "齿轮配合1",
+            "ratio": [
+              12.0,
+              24.0
+            ],
+            "ratio_ok": true,
+            "direction_ok": true,
+            "center_distance_mm": 54.0,
+            "expected_mm": 54.0,
+            "center_ok": true,
+            "score": 1.0
+          },
+          {
+            "pair": [
+              "lay_pinion",
+              "output_wheel"
+            ],
+            "mate": "齿轮配合2",
+            "ratio": [
+              12.0,
+              36.0
+            ],
+            "ratio_ok": true,
+            "direction_ok": true,
+            "center_distance_mm": 72.0,
+            "expected_mm": 72.0,
+            "center_ok": true,
+            "score": 1.0
+          }
+        ]
+      },
+      "motion": {
+        "passed": true,
+        "score": 100.0,
+        "interference_frames": [],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 42.97,
+          "output_max_step_deg": 7.16,
+          "output_ratio": 0.1667,
+          "expected_ratio": 0.16666666666666666,
+          "same_direction": true
+        }
+      },
+      "seconds": 46.9
+    },
+    {
+      "case_id": "single_cylinder_engine",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_engine.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "crank_shaft",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "crank",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "flywheel",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "crank_gear",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "rod",
+            "body": "rod",
+            "ok": true
+          },
+          {
+            "role": "piston",
+            "body": "piston",
+            "ok": true
+          },
+          {
+            "role": "camshaft",
+            "body": "cam",
+            "ok": true
+          },
+          {
+            "role": "cam_gear",
+            "body": "cam",
+            "ok": true
+          },
+          {
+            "role": "cam",
+            "body": "cam",
+            "ok": true
+          },
+          {
+            "role": "crank_pin",
+            "body": "crank|rod",
+            "ok": true
+          },
+          {
+            "role": "piston_pin",
+            "body": "piston|rod",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "crank",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "rod",
+              "crank"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "piston",
+              "rod"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "piston",
+              "frame"
+            ],
+            "expected": [
+              "slider",
+              "planar"
+            ],
+            "actual": "planar",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "cam",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": [
+          {
+            "pair": [
+              "crank_gear",
+              "cam_gear"
+            ],
+            "mate": "齿轮配合1",
+            "ratio": [
+              16.0,
+              32.0
+            ],
+            "ratio_ok": true,
+            "direction_ok": true,
+            "center_distance_mm": 72.0,
+            "expected_mm": 72.0,
+            "center_ok": true,
+            "score": 1.0
+          }
+        ]
+      },
+      "motion": {
+        "passed": true,
+        "score": 100.0,
+        "interference_frames": [],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 28.65,
+          "timing_ratio_measured": 0.5,
+          "timing_ratio_expected": 0.5,
+          "timing_max_step_deg": 14.32,
+          "timing_opposite": true,
+          "stroke_mm": 49.998,
+          "expected_stroke_mm": 50
+        }
+      },
+      "seconds": 53.6
+    }
+  ]
+}

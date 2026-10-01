@@ -69,7 +69,8 @@ namespace Chapter1.ConnectToSw
                         body.ContainsKey("ref") ? Convert.ToString(body["ref"]) : null,
                         Num(body, "rpm", 10),
                         Num(body, "durationSeconds", 6),
-                        Flag(body, "reverse", false));
+                        Flag(body, "reverse", false),
+                        StudyTypeCode(body.ContainsKey("studyType") ? Convert.ToString(body["studyType"]) : "animation"));
                 case "motion-sample":
                     return SampleMotion(
                         Nums(body, "times"),
@@ -83,6 +84,17 @@ namespace Chapter1.ConnectToSw
         }
 
         // ------------------------------------------------------------ 参数解析
+
+        private static int StudyTypeCode(string name)
+        {
+            switch ((name ?? "animation").Trim().ToLowerInvariant())
+            {
+                case "animation": return (int)swMotionStudyType_e.swMotionStudyTypeAssembly;
+                case "basic": return (int)swMotionStudyType_e.swMotionStudyTypePhysicalSimulation;
+                case "motion": return (int)swMotionStudyType_e.swMotionStudyTypeCosmosMotion;
+                default: throw new ArgumentException($"studyType 只能是 animation / basic / motion: {name}");
+            }
+        }
 
         private static string Str(Dictionary<string, object> body, string key)
         {
@@ -187,7 +199,10 @@ namespace Chapter1.ConnectToSw
                 var component = item as IComponent2;
                 if (component == null) continue;
                 int status = 1;
+                var watch = System.Diagnostics.Stopwatch.StartNew();
                 try { status = component.GetConstrainedStatus(); } catch { }
+                if (watch.ElapsedMilliseconds > 1000)
+                    Console.WriteLine($"[SwCommands] GetConstrainedStatus {component.Name2}: {watch.ElapsedMilliseconds} ms");
                 result.Add(new Dictionary<string, object>
                 {
                     ["name"] = component.Name2,
@@ -477,21 +492,30 @@ namespace Chapter1.ConnectToSw
                 if (mate != null)
                 {
                     var components = new List<string>();
+                    var entities = new List<Dictionary<string, object>>();
                     for (int i = 0; i < mate.GetMateEntityCount(); i++)
                     {
                         var entity = mate.MateEntity(i);
                         var owner = entity?.ReferenceComponent;
                         if (owner != null) components.Add(owner.Name2);
+                        if (entity == null) continue;
+                        // swMateEntity2ReferenceType_e；EntityParams 为装配坐标下的 点(3) 方向(3) 半径1 半径2（米）
+                        var described = new Dictionary<string, object> { ["component"] = owner?.Name2 };
+                        try { described["refType"] = entity.ReferenceType; } catch { }
+                        try { described["params"] = entity.EntityParams as double[]; } catch { }
+                        entities.Add(described);
                     }
                     item["components"] = components.ToArray();
+                    item["entities"] = entities.ToArray();
                     item["mateType"] = mate.Type;
                 }
                 var gear = feature.GetDefinition() as IGearMateFeatureData;
                 if (gear != null)
                 {
-                    item["gearRatioNumerator"] = gear.GearRatioNumerator;
-                    item["gearRatioDenominator"] = gear.GearRatioDenominator;
-                    item["reverse"] = gear.Reverse;
+                    // 与 mate 操作同一约定（见 AddWorkflowMate）：读回的分子/分母与 AddMate5 相反，Reverse=false 才是反向
+                    item["gearRatioNumerator"] = gear.GearRatioDenominator;
+                    item["gearRatioDenominator"] = gear.GearRatioNumerator;
+                    item["reverse"] = !gear.Reverse;
                 }
                 var definition = feature.GetDefinition();
                 if (definition is IRackPinionMateFeatureData rack)
@@ -577,6 +601,11 @@ namespace Chapter1.ConnectToSw
             double numerator = Num(body, "ratioNumerator", 1.0);
             double denominator = Num(body, "ratioDenominator", 1.0);
             bool reverse = Flag(body, "reverse", false);
+            // 对外约定：ratioNumerator:ratioDenominator = a 的齿数 : b 的齿数（ω_b = ω_a·num/den），
+            // reverse=true 表示两者反向转（外啮合）。实测（Animation 量转角）：AddMate5 的齿轮比就是这个含义，
+            // 但 SolidWorks 的 Reverse=false 才是反向；IGearMateFeatureData 读回的分子/分母与 AddMate5 相反。
+            bool gear = typeName == "gear";
+            bool swReverse = gear ? !reverse : reverse;
             bool lockRotation = typeName == "concentric" && Flag(body, "lockRotation", false);
             double distanceMax = Num(body, "distanceMax", distance);
             double distanceMin = Num(body, "distanceMin", distance);
@@ -610,9 +639,12 @@ namespace Chapter1.ConnectToSw
             if (typeName == "gear")
             {
                 var data = mateFeature.GetDefinition() as IGearMateFeatureData;
-                if (data != null && data.Reverse != reverse)
+                if (data != null && data.Reverse != swReverse)
                 {
-                    data.Reverse = reverse;
+                    // 读回的比值是反的，原样写回会把齿轮比颠倒，所以写回前换回来
+                    data.GearRatioNumerator = numerator;
+                    data.GearRatioDenominator = denominator;
+                    data.Reverse = swReverse;
                     mateFeature.ModifyDefinition(data, (IModelDoc2)_activeAssembly, null);
                 }
             }
@@ -932,7 +964,8 @@ namespace Chapter1.ConnectToSw
         /// 否则回退到组件上最大的 Z 向圆柱面。已有马达会被改为新的定义。
         /// </summary>
         public Dictionary<string, object> CreateRotaryDrive(
-            string componentName, string reference, double rpm, double durationSeconds, bool reverse)
+            string componentName, string reference, double rpm, double durationSeconds, bool reverse,
+            int studyType = (int)swMotionStudyType_e.swMotionStudyTypeAssembly)
         {
             if (rpm <= 0 || durationSeconds <= 0)
                 throw new ArgumentException("rpm 与 durationSeconds 必须为正");
@@ -958,6 +991,12 @@ namespace Chapter1.ConnectToSw
             }
 
             var study = EnsureMotionStudy();
+            if (study.StudyType != studyType)
+            {
+                study.StudyType = studyType;
+                if (study.StudyType != studyType)
+                    throw new InvalidOperationException($"Motion Study 类型无法设为 {studyType}（需要 SOLIDWORKS Motion 插件）");
+            }
             if (_activeMotionMotor == null)
             {
                 foreach (var featureObject in study.GetMotionFeatures() as object[] ?? new object[0])
@@ -995,9 +1034,21 @@ namespace Chapter1.ConnectToSw
             }
             if (!study.SetDuration(durationSeconds))
                 throw new InvalidOperationException($"Motion Study 时长设置失败: {durationSeconds}s");
+            bool calculated = false;
+            long calculateMs = 0;
+            if (studyType != (int)swMotionStudyType_e.swMotionStudyTypeAssembly)
+            {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                calculated = study.Calculate();
+                calculateMs = watch.ElapsedMilliseconds;
+                Console.WriteLine($"[SwCommands] Motion Study 计算 type={studyType}: {calculated}, {calculateMs} ms");
+            }
             return new Dictionary<string, object>
             {
                 ["studyName"] = study.Name,
+                ["studyType"] = study.StudyType,
+                ["calculated"] = calculated,
+                ["calculateMs"] = calculateMs,
                 ["motor"] = _activeMotionMotor.Name,
                 ["component"] = componentName,
                 ["rpm"] = rpm,

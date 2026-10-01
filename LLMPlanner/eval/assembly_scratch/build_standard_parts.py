@@ -41,7 +41,7 @@ def plate(path: Path, x0, y0, x1, y1, holes, thick) -> None:
     call("/api/select-plane", {"index": 0})
     call("/api/sketch/rectangle", {"x1": x0, "y1": y0, "x2": x1, "y2": y1})
     for cx, cy, r in holes:
-        call("/api/sketch/circle", {"cx": cx, "cy": cy, "radius": r})
+        call("/api/sketch/circle", {"noInference": True, "cx": cx, "cy": cy, "radius": r})
     call("/api/feature/extrusion", {"depth": thick})
     call("/api/save-part-as", {"savePath": str(path)})
     export_pair(path)
@@ -51,9 +51,9 @@ def plate(path: Path, x0, y0, x1, y1, holes, thick) -> None:
 def cylinder(path: Path, radius, length, bore=0.0, cx=0.0) -> None:
     call("/api/new-part")
     call("/api/select-plane", {"index": 0})
-    call("/api/sketch/circle", {"cx": cx, "cy": 0, "radius": radius})
     if bore:
-        call("/api/sketch/circle", {"cx": 0, "cy": 0, "radius": bore})
+        call("/api/sketch/circle", {"noInference": True, "cx": 0, "cy": 0, "radius": bore})
+    call("/api/sketch/circle", {"noInference": True, "cx": cx, "cy": 0, "radius": radius})
     call("/api/feature/extrusion", {"depth": length})
     call("/api/save-part-as", {"savePath": str(path)})
     export_pair(path)
@@ -64,8 +64,7 @@ def gear(path: Path, teeth: int, module_m: float, thick: float, bore: float) -> 
     outline, _ = generate_involute_outline(tooth_count=teeth, module_m=module_m, pressure_angle_deg=30)
     call("/api/new-part")
     call("/api/select-plane", {"index": 0})
-    # 轴孔圆必须先画：sketch/circle 不关草图推理，画在齿廓之后圆周点会吸到齿廓上，孔径变小
-    call("/api/sketch/circle", {"cx": 0, "cy": 0, "radius": bore})
+    call("/api/sketch/circle", {"noInference": True, "cx": 0, "cy": 0, "radius": bore})
     call("/api/sketch/polyline", {
         "points": [{"x": x, "y": y} for x, y in outline[:-1]],
         "closed": True,
@@ -88,8 +87,8 @@ def link(path: Path, length, width, hole_r, thick) -> None:
     call("/api/new-part")
     call("/api/select-plane", {"index": 0})
     call("/api/sketch/polyline", {"points": [{"x": x, "y": y} for x, y in points], "closed": True})
-    call("/api/sketch/circle", {"cx": 0, "cy": 0, "radius": hole_r})
-    call("/api/sketch/circle", {"cx": length, "cy": 0, "radius": hole_r})
+    call("/api/sketch/circle", {"noInference": True, "cx": 0, "cy": 0, "radius": hole_r})
+    call("/api/sketch/circle", {"noInference": True, "cx": length, "cy": 0, "radius": hole_r})
     call("/api/feature/extrusion", {"depth": thick})
     call("/api/save-part-as", {"savePath": str(path)})
     export_pair(path)

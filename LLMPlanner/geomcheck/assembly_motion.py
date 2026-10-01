@@ -27,16 +27,23 @@ def unwrap(degrees: list[float]) -> list[float]:
     return out
 
 
-def analyze_frames(frames: list[dict], spec: dict, aliases: dict[str, str]) -> dict:
+def _max_step(degrees: list[float]) -> float:
+    return max((abs((b - a + 180) % 360 - 180) for a, b in zip(degrees, degrees[1:])), default=0.0)
+
+
+def analyze_frames(
+    frames: list[dict], spec: dict, aliases: dict[str, str], interference_frames: list[dict] | None = None,
+) -> dict:
     def name(role: str) -> str:
         return aliases[role]
 
     driver = name(spec["driver"])
     first, last = frames[0]["transforms"], frames[-1]["transforms"]
-    driver_angles = unwrap([_angle_z(frame["transforms"][driver]) for frame in frames])
+    raw_driver = [_angle_z(frame["transforms"][driver]) for frame in frames]
+    driver_angles = unwrap(raw_driver)
     sweep = driver_angles[-1] - driver_angles[0]
     inter_frames = []
-    for index, frame in enumerate(frames):
+    for index, frame in enumerate(interference_frames if interference_frames is not None else frames):
         inter = frame.get("interference") or {}
         if int(inter.get("interferenceCount") or 0) > int(spec.get("max_interference") or 0):
             inter_frames.append({
@@ -66,11 +73,17 @@ def analyze_frames(frames: list[dict], spec: dict, aliases: dict[str, str]) -> d
         if max_delta > 1e-4:
             drifted.append(role)
 
-    kinematics: dict[str, Any] = {"driver_sweep_deg": round(sweep, 3)}
+    kinematics: dict[str, Any] = {
+        "driver_sweep_deg": round(sweep, 3),
+        "frames": len(frames),
+        "driver_max_step_deg": round(_max_step(raw_driver), 2),
+    }
     ratio_ok = True
     if spec.get("expect_ratio") and spec.get("expect_moving"):
         output = name(spec["expect_moving"][-1])
-        out_angles = unwrap([_angle_z(frame["transforms"][output]) for frame in frames])
+        raw_out = [_angle_z(frame["transforms"][output]) for frame in frames]
+        kinematics["output_max_step_deg"] = round(_max_step(raw_out), 2)
+        out_angles = unwrap(raw_out)
         measured = abs((out_angles[-1] - out_angles[0]) / (sweep or 1e-9))
         expected = 1.0 / float(spec["expect_ratio"])
         kinematics["output_ratio"] = round(measured, 4)
@@ -79,6 +92,23 @@ def analyze_frames(frames: list[dict], spec: dict, aliases: dict[str, str]) -> d
         if spec.get("expect_same_direction"):
             kinematics["same_direction"] = (out_angles[-1] - out_angles[0]) * sweep > 0
             ratio_ok = ratio_ok and kinematics["same_direction"]
+
+    timing_ok = True
+    if spec.get("timing_ratio") and spec.get("timing_driven"):
+        driven = name(spec["timing_driven"])
+        raw_t = [_angle_z(frame["transforms"][driven]) for frame in frames]
+        t_angles = unwrap(raw_t)
+        travel = t_angles[-1] - t_angles[0]
+        measured = abs(travel / (sweep or 1e-9))
+        expected = 1.0 / float(spec["timing_ratio"])
+        kinematics["timing_ratio_measured"] = round(measured, 4)
+        kinematics["timing_ratio_expected"] = expected
+        kinematics["timing_max_step_deg"] = round(_max_step(raw_t), 2)
+        timing_ok = abs(measured - expected) <= 0.08
+        if spec.get("timing_opposite") is not None:
+            opposite = travel * sweep < 0
+            kinematics["timing_opposite"] = opposite
+            timing_ok = timing_ok and opposite == bool(spec["timing_opposite"])
 
     stroke_ok = True
     if spec.get("expect_stroke_mm"):
@@ -89,7 +119,7 @@ def analyze_frames(frames: list[dict], spec: dict, aliases: dict[str, str]) -> d
         kinematics["expected_stroke_mm"] = spec["expect_stroke_mm"]
         stroke_ok = abs(stroke - float(spec["expect_stroke_mm"])) <= 2.0
 
-    passed = not inter_frames and not stuck and not drifted and ratio_ok and stroke_ok
+    passed = not inter_frames and not stuck and not drifted and ratio_ok and stroke_ok and timing_ok
     score = 100.0
     if inter_frames:
         score -= 40
@@ -100,6 +130,8 @@ def analyze_frames(frames: list[dict], spec: dict, aliases: dict[str, str]) -> d
     if not ratio_ok:
         score -= 15
     if not stroke_ok:
+        score -= 15
+    if not timing_ok:
         score -= 15
     return {
         "passed": passed,
@@ -125,12 +157,20 @@ def sample_motion(base_url: str, spec: dict, driver_sw: str, driver_ref: str) ->
     rpm = float(spec.get("rpm") or 10)
     sweep = float(spec.get("sweep_deg") or 360)
     frames = max(3, int(spec.get("frames") or 13))
+    dense = max(frames, int(spec.get("dense_frames") or 121))
     duration = abs(sweep) / (rpm * 6)
     post("/api/asmwf/motion-drive", {
         "component": driver_sw, "ref": driver_ref, "rpm": rpm, "durationSeconds": duration,
     })
-    times = [duration * i / (frames - 1) for i in range(frames)]
-    return post("/api/asmwf/motion-sample", {"times": times, "interference": True})
+    # Animation 的马达并不按 rpm 转（实测快 5~10 倍），帧稀了角度会混叠，比值就算错。
+    # 运动学用密采样，逐帧干涉检测较慢，只在稀疏帧上做。
+    kinematic = post("/api/asmwf/motion-sample", {
+        "times": [duration * i / (dense - 1) for i in range(dense)], "interference": False,
+    })
+    sparse = post("/api/asmwf/motion-sample", {
+        "times": [duration * i / (frames - 1) for i in range(frames)], "interference": True,
+    })
+    return {"frames": kinematic.get("frames") or [], "interference_frames": sparse.get("frames") or []}
 
 
 def clearance_mm(step_a: Path, step_b: Path, matrix_a, matrix_b) -> float | None:

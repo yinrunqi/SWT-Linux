@@ -78,7 +78,7 @@ TOOL_SPECS: list[dict] = [
     ),
     _tool(
         "mount_on_shaft",
-        "把零件套到轴上：同心 + 轴向定位（默认用双方前视基准面，offset 为沿轴 mm）。",
+        "把零件套到轴上：同心 + 轴向定位（默认用双方前视基准面，offset 为零件前视面相对轴前视面沿其法向的 mm，可为负）。",
         {
             "part": {"type": "string"},
             "shaft": {"type": "string"},
@@ -227,7 +227,7 @@ def _v2_spec(spec: dict) -> dict:
     if name == "mount_on_shaft":
         return _tool(
             "mount_on_shaft",
-            "把零件套到轴上：同心 + 轴向定位（默认用双方前视基准面，offset 为沿轴 mm）。"
+            "把零件套到轴上：同心 + 轴向定位（默认用双方前视基准面，offset 为零件前视面相对轴前视面沿其法向的 mm，可为负）。"
             "lock_rotation=true 时同心配合锁定旋转，相当于键连接，零件与轴成为一个刚体。",
             spec["function"]["parameters"]["properties"],
             ["part", "shaft"],
@@ -242,7 +242,7 @@ TOOL_SPECS_V2: list[dict] = [_v2_spec(spec) for spec in TOOL_SPECS] + [
         "joint",
         "按机构关节建一组 SolidWorks 配合（先想关节，再落到配合）。type："
         "fixed（a/b 为圆柱引用时=同心锁转+端面贴合；只给组件名时=lock 整体锁死）；"
-        "revolute（同心 + face_a/face_b 贴合或 offset 距离）；cylindrical（只同心，可转可沿轴滑）；"
+        "revolute（同心 + face_a/face_b 贴合，或给 offset：face_a 相对 face_b 沿其法向的 mm，可为负）；cylindrical（只同心，可转可沿轴滑）；"
         "slider（a/b 两圆柱同心或两平面贴合，再用 guide_a/guide_b 止转；给 limit_min/limit_max 与 travel_a/travel_b 加行程限位）；"
         "planar（两平面贴合）；ball（两球面同心）；pin_slot（a=槽口面，b=销圆柱，再 face_a/face_b 贴合）。",
         {

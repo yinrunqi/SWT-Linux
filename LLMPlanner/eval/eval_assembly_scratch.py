@@ -72,6 +72,24 @@ def _openai():
     )
 
 
+ASSEMBLY_RUBRIC_DIR = CASES_DIR / "assembly_rubrics"
+
+
+def score_assembly_rubric(session, case: dict) -> dict | None:
+    """装配级 rubric（关节 / 活动度 / 浮动件 / 过定义 / 齿轮中心距），替代旧的“保存且 ≥3 件”静态分。"""
+    from geomcheck.assembly_rubric import evaluate
+
+    path = ASSEMBLY_RUBRIC_DIR / f"{case['case_id']}.yaml"
+    if not path.is_file():
+        return None
+    try:
+        components = session.asmwf("components").get("components") or []
+        mates = session.asmwf("mates").get("mates") or []
+        return evaluate(components, mates, session.aliases, yaml.safe_load(path.read_text(encoding="utf-8")))
+    except Exception as exc:
+        return {"score": 0.0, "error": str(exc)}
+
+
 def _grade_step(step: Path, rubric_path: Path) -> dict:
     from geomcheck.occ_part import Part
     from geomcheck.rubric import evaluate, load_rubric
@@ -151,6 +169,7 @@ def assemble(
     ).run(goal)
     motion = None
     static = {"component_count": len(session.aliases), "saved": session.saved}
+    rubric = score_assembly_rubric(session, case)
     try:
         spec = case["motion"]
         driver_role = spec["driver"]
@@ -159,7 +178,8 @@ def assemble(
         from planner.assembly_workflow.refs import resolve_on_faces
         ref = resolve_on_faces("cyl(i=0)", faces)
         sampled = sample_motion(sw, spec, driver, ref)
-        motion = analyze_frames(sampled.get("frames") or [], spec, session.aliases)
+        motion = analyze_frames(sampled.get("frames") or [], spec, session.aliases,
+                                sampled.get("interference_frames"))
         if spec.get("clearance_pairs"):
             lo, hi = spec.get("clearance_mm") or [0.02, 2.0]
             gaps = []
@@ -180,11 +200,11 @@ def assemble(
         motion = {"passed": False, "score": 0.0, "error": str(exc)}
     session.save_assembly({})
     _close(sw)
-    static_score = 50.0 if static["saved"] and static["component_count"] >= 3 else 20.0
     return {
         "status": outcome["status"],
         "static": static,
-        "static_score": static_score,
+        "rubric": rubric,
+        "static_score": (rubric or {}).get("score", 0.0),
         "motion": motion,
         "token_usage": outcome["token_usage"],
         "llm_calls": outcome["llm_calls"],

@@ -715,7 +715,7 @@ namespace Chapter1.ConnectToSw
                 if (radius <= 0)
                     throw new ArgumentOutOfRangeException("radius", "半径必须为正数");
 
-                _commands.SketchCircle(cx, cy, radius, cz);
+                _commands.SketchCircle(cx, cy, radius, cz, GetBoolOrDefault(body, "noInference", false));
                 SendJson(resp, 200, new { success = true, message = $"绘制圆: 圆心({cx}, {cy}, {cz}), 半径 {radius}" });
             }
             catch (KeyNotFoundException ex)

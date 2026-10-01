@@ -12,7 +12,10 @@ from planner.workflow.errors import WorkflowError
 
 from .refs import RefError, needs_edges, resolve_on_edges, resolve_on_faces, split_ref
 
-CONSTRAINED = {0: "unknown", 1: "under", 2: "fully", 3: "over"}
+# swConstrainedStatus_e
+CONSTRAINED = {
+    1: "unknown", 2: "under", 3: "fully", 4: "over", 5: "no_solution", 6: "invalid", 7: "autosolve_off",
+}
 
 # 关节保留的自由度：(空间, 平面)；平面列为 None 表示不是平面关节
 JOINT_DOF = {
@@ -196,6 +199,35 @@ class AssemblySession:
         self.mate_names.append(result["name"])
         self.saved = False
         return {"name": result["name"], "type": kind, "a": f"{ca}:{ra}", "b": f"{cb}:{rb}"}
+
+    def _mate_side(self, name: str) -> float | None:
+        """(a 面上一点 − b 面上一点)·b 面法向，单位 m。"""
+        for mate in self.asmwf("mates").get("mates") or []:
+            if mate.get("name") != name:
+                continue
+            ents = [e.get("params") for e in mate.get("entities") or []]
+            if len(ents) < 2 or any(p is None or len(p) < 6 for p in ents):
+                return None
+            pa, pb, nb = np.array(ents[0][:3]), np.array(ents[1][:3]), np.array(ents[1][3:6])
+            return float(np.dot(pa - pb, nb / (np.linalg.norm(nb) or 1)))
+        return None
+
+    def _offset_mate(self, face_a: str, face_b: str, offset_mm: float) -> dict:
+        """a 面落在 b 面法向正侧 offset mm 处（负值落在反侧）。
+        距离配合本身不分正负，SolidWorks 按求解结果随便选一侧，所以建好后量一下，反了就翻转重建。"""
+        want = float(offset_mm) / 1000
+        mate = self._mate("distance", face_a, face_b, distance=abs(want), align="aligned")
+        if abs(want) < 1e-9:
+            return mate
+        side = self._mate_side(mate["name"])
+        if side is not None and side * want < 0:
+            self._rollback_mates([mate["name"]])
+            mate = self._mate("distance", face_a, face_b, distance=abs(want), align="aligned", flip=True)
+            side = self._mate_side(mate["name"])
+            if side is not None and side * want < 0:
+                self._rollback_mates([mate["name"]])
+                raise WorkflowError("FEATURE_NO_EFFECT", f"{face_a} 无法放到 {face_b} 的 {offset_mm} mm 一侧")
+        return mate
 
     def _rollback_mates(self, names: list[str]) -> None:
         for name in reversed(names):
@@ -423,10 +455,7 @@ class AssemblySession:
             if offset is None:
                 created.append(self._mate("coincident", f"{part}:plane(front)", f"{shaft}:plane(front)", align="aligned"))
             else:
-                created.append(self._mate(
-                    "distance", f"{part}:plane(front)", f"{shaft}:plane(front)",
-                    distance=float(offset) / 1000, align="aligned",
-                ))
+                created.append(self._offset_mate(f"{part}:plane(front)", f"{shaft}:plane(front)", offset))
             if keyed and self.workflow == "v1":
                 created.append(self._mate("gear", cyl_a, cyl_b, ratioNumerator=1, ratioDenominator=1, reverse=False))
         except Exception:
@@ -459,7 +488,7 @@ class AssemblySession:
         self._record_joint("slider", str(args["a"]), str(args["b"]), created)
         return {"mates": created}
 
-    def _gear_tip_radius(self, component: str) -> tuple[str, float, list[float]]:
+    def _gear_tip_radius(self, component: str) -> tuple[str, float, list[float], list[float]]:
         sw = self.resolve_name(component)
         info = self.asmwf("component-faces", {"component": sw, "maxFaces": 400})
         faces = info.get("faces") or []
@@ -469,12 +498,12 @@ class AssemblySession:
         tip = max(cyls, key=lambda f: float(f["radius"]))
         tf = info.get("transform") or [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]
         origin = [float(tf[9]), float(tf[10]), float(tf[11])]
-        return sw, float(tip["radius"]), origin
+        return sw, float(tip["radius"]), origin, tf
 
     def mesh_gears(self, args: dict) -> dict:
         a, b = str(args["a"]), str(args["b"])
-        sw_a, r_a, o_a = self._gear_tip_radius(a)
-        sw_b, r_b, o_b = self._gear_tip_radius(b)
+        sw_a, r_a, o_a, tf_a = self._gear_tip_radius(a)
+        sw_b, r_b, o_b, _ = self._gear_tip_radius(b)
         cd = math.hypot(o_a[0] - o_b[0], o_a[1] - o_b[1])
         teeth_a = args.get("teeth_a")
         teeth_b = args.get("teeth_b")
@@ -496,15 +525,20 @@ class AssemblySession:
                 center_distance_mm=round(cd * 1000, 3),
                 expected_mm=round(expected * 1000, 3),
             )
-        # 偶数齿从动轮错开半个齿距，避免齿顶对齿顶
-        phase_applied = None
-        if int(teeth_b) % 2 == 0:
-            phase_applied = self._ok(self._request("POST", "/api/assembly/set-component-pose", {
-                "componentName": sw_b,
-                "x": o_b[0], "y": o_b[1], "z": o_b[2],
-                "axisX": 0, "axisY": 0, "axisZ": 1,
-                "angleDeg": 180.0 / int(teeth_b),
-            }))
+        # 齿轮零件在局部 0° 方向上是齿。按中心连线方向和 a 当前转角摆 b，
+        # 让 a 的齿正对 b 的齿槽；中心连线不沿 X 时只错半个齿距不够。
+        # set-component-pose 的角度与 Transform 读出的角度同号，物理转向与之相反（行向量约定）。
+        pitch_a, pitch_b = 2 * math.pi / int(teeth_a), 2 * math.pi / int(teeth_b)
+        theta = math.atan2(o_b[1] - o_a[1], o_b[0] - o_a[0])
+        alpha_a = -math.radians(angle_about_z(tf_a))
+        phase_a = ((theta - alpha_a) / pitch_a) % 1.0
+        alpha_b = theta + math.pi - pitch_b * (0.5 - phase_a)
+        phase_applied = self._ok(self._request("POST", "/api/assembly/set-component-pose", {
+            "componentName": sw_b,
+            "x": o_b[0], "y": o_b[1], "z": o_b[2],
+            "axisX": 0, "axisY": 0, "axisZ": 1,
+            "angleDeg": -math.degrees(alpha_b),
+        }))
         reverse = True if args.get("reverse") is None else bool(args["reverse"])
         mate = self._mate(
             "gear", f"{a}:cyl(i=0)", f"{b}:cyl(i=0)",
@@ -537,8 +571,7 @@ class AssemblySession:
                 "concentric", f"{rod}:cyl(d={big}, near=[0,0])", f"{crank}:cyl(d={pin}, near=[{args.get('throw', 25)},0])",
                 align="closest",
             ))
-            created.append(self._mate("distance", f"{rod}:plane(front)", f"{frame}:plane(front)",
-                                     distance=0.008, align="aligned"))
+            created.append(self._offset_mate(f"{rod}:plane(front)", f"{frame}:plane(front)", 8))
             created.append(self._mate(
                 "concentric", f"{rod}:cyl(d={small})", f"{slider}:cyl(d={args.get('slider_pin') or small})",
                 align="closest",
@@ -580,8 +613,7 @@ class AssemblySession:
                     if args.get("offset") is None:
                         created.append(self._mate("coincident", face_a, face_b, align="aligned"))
                     else:
-                        created.append(self._mate("distance", face_a, face_b,
-                                                  distance=float(args["offset"]) / 1000, align="aligned"))
+                        created.append(self._offset_mate(face_a, face_b, args["offset"]))
                 else:
                     created.append(self._mate("lock", f"{a}:component", f"{b}:component"))
             elif kind in ("revolute", "cylindrical"):
@@ -590,8 +622,7 @@ class AssemblySession:
                     if args.get("offset") is None:
                         created.append(self._mate("coincident", face_a, face_b, align="aligned"))
                     else:
-                        created.append(self._mate("distance", face_a, face_b,
-                                                  distance=float(args["offset"]) / 1000, align="aligned"))
+                        created.append(self._offset_mate(face_a, face_b, args["offset"]))
             elif kind == "slider":
                 primary = "concentric" if self._is_cylinder_ref(a) and self._is_cylinder_ref(b) else "coincident"
                 created.append(self._mate(primary, a, b, align="closest" if primary == "concentric" else "aligned"))
@@ -881,13 +912,22 @@ class AssemblySession:
                         item.get("components") for item in (inter.get("interferences") or [])
                     ],
                 })
-        driver_angles = [angle_about_z(frame["transforms"][driver]) for frame in raw_frames]
-        kinematics = {"driver_angles_deg": [_round(v, 2) for v in driver_angles]}
+        # Animation 的马达实际转速比 rpm 快好几倍，稀疏帧的角度会混叠；转角比用密采样逐帧展开后再算
+        dense = self.asmwf("motion-sample", {
+            "times": [duration * i / 120 for i in range(121)], "interference": False,
+        }).get("frames") or raw_frames
+
+        def turned(name: str) -> float:
+            angles = [angle_about_z(frame["transforms"][name]) for frame in dense]
+            return sum((b - a + 180) % 360 - 180 for a, b in zip(angles, angles[1:]))
+
+        d_in = turned(driver) or 1e-9
+        kinematics = {"driver_turned_deg": _round(d_in, 1)}
         if expect_moving:
-            other = expect_moving[0]
-            other_angles = [angle_about_z(frame["transforms"][other]) for frame in raw_frames]
-            d_in = (driver_angles[-1] - driver_angles[0]) or 1e-9
-            kinematics["sample_ratio"] = _round((other_angles[-1] - other_angles[0]) / d_in, 4)
+            alias = {sw: role for role, sw in self.aliases.items()}
+            kinematics["sample_ratio"] = {
+                alias.get(name, name): _round(turned(name) / d_in, 4) for name in expect_moving
+            }
         passed = not inter_frames and not stuck_expected and not drifted
         report = {
             "passed": passed,

@@ -1,0 +1,24 @@
+# 装配级 rubric：只看装配体本身的约束结构，不看智能体用了哪些工具。
+# 角色名与 gearbox.yaml 的 gold_roles 一致。
+case_id: two_stage_gearbox
+ground: housing
+mobility: 1
+
+# 刚体组：组内零件应当彼此固连（fixed）。flex 里的零件可以归入其中任一组。
+bodies:
+  housing: [housing]
+  input: [input_shaft, input_pinion]
+  lay: [lay_shaft, lay_wheel, lay_pinion]
+  output: [output_shaft, output_wheel]
+
+# 组间关节；type 可以是列表，表示几种写法都算对
+joints:
+  - {bodies: [input, housing], type: revolute}
+  - {bodies: [lay, housing], type: revolute}
+  - {bodies: [output, housing], type: revolute}
+
+couplings:
+  - {type: gear, a: input_pinion, b: lay_wheel, teeth: [12, 24], module_mm: 3, external: true}
+  - {type: gear, a: lay_pinion, b: output_wheel, teeth: [12, 36], module_mm: 3, external: true}
+
+center_distance_tol_mm: 0.2
