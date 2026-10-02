@@ -1,0 +1,99 @@
+case: honeycomb_panel
+prompt: >-
+  创建一块蜂窝减重面板，单一实体，Z 轴向上。面板外形 200×120mm、厚 10mm（x ∈ [−100, 100]、y ∈ [−60, 60]、z = 0~10），
+  四个竖直角棱倒 R10mm 圆角。从上表面向下铣出 43 个正六边形盲槽，槽深 7mm（槽底板厚 3mm），六边形对边距 16mm，
+  每个六边形都有一对对边平行于 Y 轴（即两个顶点分别指向 ±Y）。六边形按蜂窝排列成 5 行：中间一行（y = 0）9 个，
+  中心 x = 0、±19、±38、±57、±76；y = ±16.454mm 的两行各 8 个，中心 x = ±9.5、±28.5、±47.5、±66.5；
+  y = ±32.909mm 的两行与中间一行相同（各 9 个），相邻六边形之间的筋宽都是 3mm。面板四角在 (±90, ±50) 处
+  各开一个直径 8.5mm 的安装通孔（与角部圆角同心）。
+prompt_en: >-
+  Create a honeycomb lightweight panel as a single solid body, with the Z axis pointing up. The panel is
+  200×120mm and 10mm thick (x ∈ [−100, 100], y ∈ [−60, 60], z = 0~10), and its four vertical corner edges are
+  rounded with R10mm fillets. From the top face, mill 43 regular-hexagon blind pockets, 7mm deep (leaving a 3mm
+  floor); each hexagon is 16mm across flats and has one pair of opposite sides parallel to the Y axis (so two of
+  its vertices point toward ±Y). The hexagons are arranged as a honeycomb in 5 rows: the middle row (y = 0) has
+  9 pockets centered at x = 0, ±19, ±38, ±57, ±76; the two rows at y = ±16.454mm have 8 pockets each, centered
+  at x = ±9.5, ±28.5, ±47.5, ±66.5; the two rows at y = ±32.909mm are the same as the middle row (9 each); the
+  rib between adjacent hexagons is 3mm wide everywhere. At the four corners of the panel, at (±90, ±50), there
+  is an 8.5mm-diameter through mounting hole in each corner (concentric with the corner fillet).
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：主方向坐标系，原点在外形包围盒最小角。轴 0 沿板厚，底面（面积较大的一端）为 t = 0；
+# 轴 1 沿 120mm 边（frame 坐标 = y + 60），轴 2 沿 200mm 边（= x + 100）。零件关于 x、y 两个中面都对称。
+entities:
+  holes:    {cylinder: {d: 8.5, side: inner}, count: 4}
+  frame:    {principal_frame: {signs: {0: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 200×120mm、厚 10mm
+    hard: true
+    check:
+      - bbox_sorted: [10, 120, 200]
+
+  - id: pocket_depth
+    source: 槽深 7mm，槽底板厚 3mm
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 60, 100], expect: [[0, 3]]}
+      - line_material: {frame: frame, along: 0, at: [null, 60, 109.5], expect: [[0, 10]]}
+
+  - id: middle_row
+    source: y = 0 一行 9 个，中心 x = 0、±19、±38、±57、±76，对边距 16mm（对边平行于 Y），筋宽 3mm
+    derivation: 每个六边形在 y = 0 上占 x ± 8
+    check:
+      - line_material: {frame: frame, along: 2, at: [6, 60, null],
+                        expect: [[0, 16], [32, 35], [51, 54], [70, 73], [89, 92], [108, 111], [127, 130],
+                                 [146, 149], [165, 168], [184, 200]]}
+
+  - id: offset_rows
+    source: y = ±16.454 两行各 8 个，中心 x = ±9.5、±28.5、±47.5、±66.5
+    check:
+      - line_material: {frame: frame, along: 2, at: [6, 76.454, null],
+                        expect: [[0, 25.5], [41.5, 44.5], [60.5, 63.5], [79.5, 82.5], [98.5, 101.5], [117.5, 120.5],
+                                 [136.5, 139.5], [155.5, 158.5], [174.5, 200]]}
+      - line_material: {frame: frame, along: 2, at: [6, 43.546, null],
+                        expect: [[0, 25.5], [41.5, 44.5], [60.5, 63.5], [79.5, 82.5], [98.5, 101.5], [117.5, 120.5],
+                                 [136.5, 139.5], [155.5, 158.5], [174.5, 200]]}
+
+  - id: outer_rows
+    source: y = ±32.909 两行与中间一行相同
+    check:
+      - line_material: {frame: frame, along: 2, at: [6, 92.909, null],
+                        expect: [[0, 16], [32, 35], [51, 54], [70, 73], [89, 92], [108, 111], [127, 130],
+                                 [146, 149], [165, 168], [184, 200]]}
+      - line_material: {frame: frame, along: 2, at: [6, 27.091, null],
+                        expect: [[0, 16], [32, 35], [51, 54], [70, 73], [89, 92], [108, 111], [127, 130],
+                                 [146, 149], [165, 168], [184, 200]]}
+
+  - id: hex_orientation
+    source: 顶点指向 ±Y（外接圆半径 16/√3 = 9.238）
+    derivation: x = 0 沿 Y：第 0、±2 行在 x = 0 处有六边形，各占 y ± 9.238；第 ±1 行的六边形不经过 x = 0
+    check:
+      - line_material: {frame: frame, along: 1, at: [6, null, 100],
+                        expect: [[0, 17.853], [36.329, 50.762], [69.238, 83.671], [102.147, 120]]}
+
+  - id: corners
+    source: 四个竖直角棱倒 R10mm 圆角
+    check:
+      - blend_faces: {radius: 10, side: outer, min_count: 4}
+
+  - id: mount_holes
+    source: (±90, ±50) 处直径 8.5mm 安装通孔
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[10, 10], [10, 190], [110, 10], [110, 190]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 170139.3
+    check:
+      - volume: 170139.3
+
+ungraded: []

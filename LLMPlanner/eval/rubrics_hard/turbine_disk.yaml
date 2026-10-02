@@ -1,0 +1,106 @@
+case: turbine_disk
+prompt: >-
+  创建一个航空发动机涡轮盘，单一实体，所有回转结构同轴。以盘底面为 0、沿轴线向上量：中心轮毂是外径 90mm、内径 40mm、
+  高 40mm 的圆筒（0~40mm），内孔两端各倒 1×1mm 的 45° 倒角；轮毂外侧是一块厚 10mm 的辐板（15~25mm），
+  从半径 45mm 延伸到半径 100mm；辐板外缘连着轮缘：内半径 100mm、外半径 130mm、高 30mm（5~35mm）的圆环。
+  辐板与轮毂、辐板与轮缘相交处的四条环形凹角都倒 R5mm 圆角。辐板上在直径 140mm 的圆上均布 10 个直径 10mm 的
+  轴向减重通孔。轮缘外周均布 30 个沿轴向贯穿轮缘的燕尾榫槽：每个槽关于自身的径向中线对称，槽底是距轴线 112mm、
+  宽 16mm 的平面（垂直于径向中线），两侧壁为直线、向外收窄，在距轴线 130mm 处槽宽 10mm（外口窄、底部宽）；
+  每个减重孔都正好位于相邻两个榫槽的角平分线上。
+prompt_en: >-
+  Create an aero-engine turbine disk as a single solid body; all revolved features are coaxial. Measuring upward
+  along the axis from the bottom face of the disk at 0: the central hub is a tube with an outer diameter of 90mm,
+  an inner diameter of 40mm and a height of 40mm (0~40mm), with a 1×1mm 45° chamfer at both ends of the bore.
+  Outside the hub is a 10mm-thick web (15~25mm) running from radius 45mm to radius 100mm; the outer edge of the
+  web joins the rim, an annulus with an inner radius of 100mm, an outer radius of 130mm and a height of 30mm
+  (5~35mm). The four circular concave corners where the web meets the hub and the rim are rounded with R5mm
+  fillets. The web has 10 axial lightening through holes of 10mm diameter evenly spaced on a 140mm-diameter
+  circle. The periphery of the rim has 30 evenly spaced dovetail slots running axially through the rim: each slot
+  is symmetric about its own radial centerline; the slot bottom is a 16mm-wide flat (perpendicular to the radial
+  centerline) 112mm from the axis, and the two side walls are straight and narrow outward, so that the slot is
+  10mm wide at 130mm from the axis (narrow at the mouth, wide at the bottom). Each lightening hole lies exactly
+  on the bisector between two adjacent slots.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿轴线，t = 0 在一个端面（零件关于中面对称）；轴 1 指向某一个减重孔。
+# 减重孔在 36°k，榫槽在 6° + 12°k。
+entities:
+  bore:      {cylinder: {d: 40, side: inner}, count: 1}
+  holes:     {cylinder: {d: 10, side: inner}, count: 10}
+  chamfers:  {cone: {semi_angle: 45, side: inner, max_r: 21}, count: 2}
+  frame:     {axis_frame: {axis: bore, low: larger_area, ref: holes}}
+
+rubrics:
+  - id: solid
+    source: 单一实体，所有回转结构同轴
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 轮缘外径 260mm；轮毂高 40mm
+    hard: true
+    check:
+      - bbox_sorted: [40, 260, 260]
+      - extent_along: {axis: bore, of: all, value: 40}
+
+  - id: hub
+    source: 外径 90、内径 40mm、高 40mm 的轮毂，内孔两端 1×1mm 倒角
+    check:
+      - exists: bore
+      - through: {holes: bore}
+      - line_material: {frame: frame, along: 0, polar: [30, 18], expect: [[0, 40]]}
+      - exists: chamfers
+      - coaxial: [chamfers, bore]
+      - cone_size: {cones: chamfers, radial: 1, axial: 1}
+
+  - id: web
+    source: 厚 10mm 的辐板（15~25mm），半径 45 到 100mm
+    derivation: 18° 方位在两个减重孔正中间
+    check:
+      - line_material: {frame: frame, along: 0, polar: [70, 18], expect: [[15, 25]]}
+      - radial_material: {frame: frame, t: 8, deg: 0, expect: [[20, 45], [100, 130]]}
+
+  - id: rim
+    source: 轮缘内半径 100、外半径 130mm、高 30mm（5~35mm）
+    derivation: 0° 方位在两个榫槽（±6°）正中间
+    check:
+      - line_material: {frame: frame, along: 0, polar: [120, 0], expect: [[5, 35]]}
+      - line_material: {frame: frame, along: 0, polar: [105, 30], expect: [[5, 35]]}
+
+  - id: fillets
+    source: 辐板与轮毂、轮缘相交的四条环形凹角 R5mm 圆角
+    check:
+      - blend_faces: {radius: 5, side: inner, min_count: 4}
+
+  - id: lightening_holes
+    source: 直径 140mm 圆上均布 10 个直径 10mm 的轴向通孔
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_distance: {from: bore, to: holes, value: 70}
+      - equal_angular: {about: bore, items: holes}
+      - radial_material: {frame: frame, t: 20, deg: 0, expect: [[20, 65], [75, 130]]}
+
+  - id: slots
+    source: 30 个均布燕尾榫槽，槽底距轴线 112mm，贯穿轮缘
+    derivation: 6° 方位是榫槽中线，沿径向从 112mm 起到外缘全空
+    check:
+      - radial_material: {frame: frame, t: 20, deg: 6, expect: [[20, 112]]}
+      - line_material: {frame: frame, along: 0, polar: [120, 6], expect: []}
+
+  - id: dovetail
+    source: 槽底宽 16mm，侧壁为直线、向外收窄，距轴线 130mm 处槽宽 10mm
+    derivation: >-
+      侧壁 y = 8 − (x − 112)/6；与半径 114mm 圆的交点弦长 15.42，与半径 128mm 圆的交点弦长 10.70
+    check:
+      - angular_openings: {frame: frame, t: 20, r: 114, count: 30, chord: 15.42}
+      - angular_openings: {frame: frame, t: 20, r: 128, count: 30, chord: 10.70}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 896539.2
+    check:
+      - volume: 896539.2
+
+ungraded: []

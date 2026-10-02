@@ -1,0 +1,117 @@
+case: spiral_staircase
+prompt: >-
+  创建一座旋转楼梯模型，单一实体，Z 轴竖直向上。底座是直径 300mm、厚 10mm 的圆盘（z = 0~10mm），圆心在原点。
+  中心立柱是直径 60mm 的圆柱，从 z = 0 一直到 z = 280mm，柱顶是半径 30mm 的半球（顶点 z = 310mm）。
+  立柱周围有 12 级台阶，每级台阶是以立柱轴线为圆心、外半径 140mm（内侧一直连到立柱）、圆心角 30°、厚 8mm 的扇形板。
+  从上往下看，第 1 级台阶占方位角 0°~30°（方位角从 +X 轴量起、逆时针为正），之后每一级都比前一级逆时针转过 30°、
+  升高 20mm：第 k 级（k = 1~12）占方位角 30(k−1)°~30k°，上表面高 z = 30 + 20(k−1) mm。每级台阶的上表面上立一根
+  直径 8mm、高 90mm 的栏杆柱，柱轴线位于该级台阶的角平分线上、距立柱轴线 130mm。底座上开一个直径 20mm 的进线通孔，
+  孔心在 (100, 0)；另在半径 130mm 的圆上、方位角 45°、135°、225°、315° 处开 4 个直径 12mm 的地脚螺栓通孔。
+prompt_en: >-
+  Create a spiral staircase model as a single solid body, with the Z axis pointing up. The base is a disc
+  300mm in diameter and 10mm thick (z = 0~10mm), centered at the origin. The central column is a 60mm-diameter
+  cylinder running from z = 0 to z = 280mm, topped by a hemisphere of radius 30mm (apex at z = 310mm). Around
+  the column there are 12 steps; each step is a sector plate centered on the column axis, with an outer radius
+  of 140mm (its inner side joins the column), a central angle of 30° and a thickness of 8mm. Viewed from above,
+  step 1 occupies azimuth 0°~30° (azimuth measured from the +X axis, counterclockwise positive), and each
+  following step is rotated 30° counterclockwise and raised 20mm relative to the previous one: step k
+  (k = 1~12) occupies azimuth 30(k−1)°~30k° and its top surface is at z = 30 + 20(k−1) mm. On the top surface of
+  each step stands a baluster post 8mm in diameter and 90mm high, whose axis lies on the bisector of that step,
+  130mm from the column axis. The base has a 20mm-diameter through cable hole centered at (100, 0), and 4 through
+  anchor-bolt holes of 12mm diameter on a circle of radius 130mm at azimuths 45°, 135°, 225° and 315°.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿立柱轴线向上，t = 0 在底座底面（两端平面面积较大的一端）；轴 1 指向进线孔（+X），
+# 轴 2 = 轴 0 × 轴 1（+Y），方位角从轴 1 转向轴 2 为正，即俯视逆时针。
+entities:
+  column:   {cylinder: {d: 60, side: outer}}
+  dome:     {sphere: {d: 60, side: outer}, count: 1}
+  cable:    {cylinder: {d: 20, side: inner}, count: 1}
+  anchors:  {cylinder: {d: 12, side: inner}, count: 4}
+  posts:    {cylinder: {d: 8, side: outer}, count: 12}
+  frame:    {axis_frame: {axis: column, low: larger_area, ref: cable}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: height
+    source: 最高的第 12 级台阶上表面 z = 250，栏杆柱高 90mm，顶端 z = 340mm
+    hard: true
+    check:
+      - extent_along: {axis: column, of: all, value: 340}
+      - bbox_sorted: [300, 300, 340]
+
+  - id: base
+    source: 直径 300mm、厚 10mm 的底座圆盘
+    check:
+      - radial_material: {frame: frame, t: 5, deg: 90, expect: [[0, 150]]}
+
+  - id: column
+    source: 直径 60mm 立柱从 0 到 280mm，柱顶半径 30mm 的半球（顶点 310mm）
+    derivation: 半球上 z = 295 处半径 √(30² − 15²) = 25.981
+    check:
+      - exists: dome
+      - radial_material: {frame: frame, t: 265, deg: 90, expect: [[0, 30]]}
+      - radial_material: {frame: frame, t: 295, deg: 90, expect: [[0, 25.981]]}
+      - line_material: {frame: frame, along: 0, polar: [0, 0], expect: [[0, 310]]}
+
+  - id: steps_low
+    source: 第 k 级台阶占方位角 30(k−1)°~30k°，上表面 z = 30 + 20(k−1)，厚 8mm（第 1~6 级）
+    derivation: 半径 100mm、各级角平分线方位上只穿过底座和该级台阶
+    check:
+      - line_material: {frame: frame, along: 0, polar: [100, 15], expect: [[0, 10], [22, 30]]}
+      - line_material: {frame: frame, along: 0, polar: [100, 45], expect: [[0, 10], [42, 50]]}
+      - line_material: {frame: frame, along: 0, polar: [100, 75], expect: [[0, 10], [62, 70]]}
+      - line_material: {frame: frame, along: 0, polar: [100, 105], expect: [[0, 10], [82, 90]]}
+      - line_material: {frame: frame, along: 0, polar: [100, 135], expect: [[0, 10], [102, 110]]}
+      - line_material: {frame: frame, along: 0, polar: [100, 165], expect: [[0, 10], [122, 130]]}
+
+  - id: steps_high
+    source: 第 7~12 级台阶
+    check:
+      - line_material: {frame: frame, along: 0, polar: [100, 195], expect: [[0, 10], [142, 150]]}
+      - line_material: {frame: frame, along: 0, polar: [100, 225], expect: [[0, 10], [162, 170]]}
+      - line_material: {frame: frame, along: 0, polar: [100, 255], expect: [[0, 10], [182, 190]]}
+      - line_material: {frame: frame, along: 0, polar: [100, 285], expect: [[0, 10], [202, 210]]}
+      - line_material: {frame: frame, along: 0, polar: [100, 315], expect: [[0, 10], [222, 230]]}
+      - line_material: {frame: frame, along: 0, polar: [100, 345], expect: [[0, 10], [242, 250]]}
+
+  - id: step_shape
+    source: 外半径 140mm、内侧连到立柱的 30° 扇形
+    check:
+      - radial_material: {frame: frame, t: 26, deg: 15, expect: [[0, 140]]}
+      - radial_material: {frame: frame, t: 246, deg: 345, expect: [[0, 140]]}
+      - radial_material: {frame: frame, t: 26, deg: 31, expect: [[0, 30]]}
+
+  - id: posts
+    source: 每级台阶上表面立一根直径 8mm、高 90mm 的栏杆柱，位于角平分线上、距立柱轴线 130mm
+    derivation: 柱从台阶底面起与台阶连成一段：第 1 级 [22, 120]、第 7 级 [142, 240]、第 12 级 [242, 340]
+    check:
+      - exists: posts
+      - axis_distance: {from: column, to: posts, value: 130}
+      - line_material: {frame: frame, along: 0, polar: [130, 15], expect: [[0, 10], [22, 120]]}
+      - line_material: {frame: frame, along: 0, polar: [130, 195], expect: [[0, 10], [142, 240]]}
+      - line_material: {frame: frame, along: 0, polar: [130, 345], expect: [[0, 10], [242, 340]]}
+
+  - id: base_holes
+    source: 底座上 (100, 0) 处直径 20mm 进线通孔；半径 130mm、45°/135°/225°/315° 处 4 个直径 12mm 地脚螺栓通孔
+    check:
+      - exists: cable
+      - through: {holes: cable}
+      - axis_distance: {from: column, to: cable, value: 100}
+      - exists: anchors
+      - through: {holes: anchors}
+      - axis_positions: {frame: frame, items: anchors, axes: [1, 2],
+                         expect: [[91.924, 91.924], [-91.924, 91.924], [-91.924, -91.924], [91.924, -91.924]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 2043417.5
+    check:
+      - volume: 2043417.5
+
+ungraded: []

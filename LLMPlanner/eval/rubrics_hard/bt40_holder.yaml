@@ -1,0 +1,118 @@
+case: bt40_holder
+prompt: >-
+  创建一个 BT40 刀柄（简化），单一实体，所有回转结构同轴。以锥柄大端面（法兰端面）为 0、指向锥柄小端为正方向沿轴线量：
+  锥柄是 7:24 的圆锥（长度每 24mm 直径变化 7mm），大端直径 44.45mm 在 0 处，长 65.4mm（到 65.4 处）。
+  法兰是直径 63mm 的圆盘，位于 −15.9~0；法兰外圆柱面上有一圈 60° V 形槽：槽中心在 −8，槽底直径 56mm（深 3.5mm），
+  两个槽侧面都与端面成 30°（两侧面夹角 60°）。法兰上沿一条直径对称地开两个驱动键槽：键槽宽 16.1mm，
+  槽底平面距轴线 23.5mm，沿轴向贯穿整个法兰厚度。法兰朝刀具一侧的端面（−15.9 处）上，在距轴线 25mm、
+  与两个键槽各相差 90° 的方位，有一个直径 8mm、深 6mm 的定向盲孔。刀具端是直径 40mm 的圆柱，从 −15.9 延伸到 −60，
+  末端外缘倒 1×1mm 的 45° 倒角。从刀具端面沿轴线钻直径 20mm、深 50mm 的平底装刀孔（孔底在 −10）；
+  从锥柄小端面沿轴线钻直径 14mm、深 30mm 的平底拉钉孔（孔底在 35.4）；两个孔底之间用直径 6mm 的中心冷却孔贯通。
+prompt_en: >-
+  Create a (simplified) BT40 tool holder as a single solid body; all revolved features are coaxial. Measure along
+  the axis from the large-end face of the taper (the flange face) at 0, positive toward the small end of the
+  taper: the shank is a 7:24 cone (the diameter changes by 7mm per 24mm of length) with a large-end diameter of
+  44.45mm at 0 and a length of 65.4mm (to 65.4). The flange is a 63mm-diameter disk at −15.9~0; its outer
+  cylindrical face carries a 60° V-groove centered at −8 with a groove-bottom diameter of 56mm (3.5mm deep), both
+  groove flanks making 30° with the end face (60° between the flanks). Two drive slots are cut through the
+  flange symmetrically about one diameter: each slot is 16.1mm wide, its flat bottom is 23.5mm from the axis, and
+  it runs axially through the full flange thickness. On the tool-side face of the flange (at −15.9), 25mm from the
+  axis and at 90° from both drive slots, there is an 8mm-diameter, 6mm-deep orientation blind hole. The tool end is
+  a 40mm-diameter cylinder running from −15.9 to −60, with a 1×1mm 45° chamfer on its outer edge at the end.
+  From the tool-end face, drill a flat-bottomed tool bore of 20mm diameter and 50mm depth along the axis (bottom at
+  −10); from the small-end face of the taper, drill a flat-bottomed retention-knob bore of 14mm diameter and 30mm
+  depth along the axis (bottom at 35.4); connect the two bore bottoms with a 6mm-diameter central coolant hole.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿轴线，t = 0 在刀具端面（两端平面面积较大的一端），即 t = 题面坐标 + 60；轴 1 指向定向孔，
+# 两个键槽在 ±90°。
+entities:
+  bore:      {cylinder: {d: 20, side: inner}, count: 1}
+  knob:      {cylinder: {d: 14, side: inner}, count: 1}
+  coolant:   {cylinder: {d: 6, side: inner}, count: 1}
+  key:       {cylinder: {d: 8, side: inner}, count: 1}
+  taper:     {cone: {semi_angle: 8.297, side: outer}, count: 1}
+  vgroove:   {cone: {semi_angle: 60}, count: 2}
+  chamfer:   {cone: {semi_angle: 45, side: outer, max_r: 20}, count: 1}
+  frame:     {axis_frame: {axis: bore, low: larger_area, ref: key}}
+
+rubrics:
+  - id: solid
+    source: 单一实体，所有回转结构同轴
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 法兰直径 63mm；从刀具端 −60 到锥柄小端 65.4，总长 125.4mm
+    hard: true
+    check:
+      - bbox_sorted: [60.908, 63, 125.4]
+      - extent_along: {axis: bore, of: all, value: 125.4}
+
+  - id: taper
+    source: 7:24 圆锥，大端直径 44.45mm，长 65.4mm
+    derivation: 半锥角 atan(7/48) = 8.297°；30 处半径 22.225 − 30·7/48 = 17.85，60 处 13.475
+    check:
+      - exists: taper
+      - coaxial: [taper, bore]
+      - radial_material: {frame: frame, t: 90, deg: 45, expect: [[3, 17.85]]}
+      - radial_material: {frame: frame, t: 120, deg: 45, expect: [[7, 13.475]]}
+
+  - id: flange
+    source: 直径 63mm 法兰，位于 −15.9~0
+    check:
+      - radial_material: {frame: frame, t: 58, deg: 45, expect: [[3, 31.5]]}
+      - line_material: {frame: frame, along: 0, polar: [30, 0], expect: [[44.1, 50.845], [53.155, 60]]}
+
+  - id: v_groove
+    source: 槽中心 −8、槽底直径 56mm 的 60° V 形槽
+    derivation: >-
+      半径 r 处槽半宽 (r − 28)·tan30°：r = 31 时 1.732（−9.732~−6.268），r = 30 时 1.155（−9.155~−6.845）
+    check:
+      - exists: vgroove
+      - radial_material: {frame: frame, t: 52, deg: 45, expect: [[3, 28]]}
+      - line_material: {frame: frame, along: 0, polar: [31, 45], expect: [[44.1, 50.268], [53.732, 60]]}
+
+  - id: drive_slots
+    source: 两个宽 16.1mm、槽底距轴线 23.5mm 的驱动键槽，贯穿法兰，与定向孔相差 90°
+    derivation: 距轴线 28mm 的弦上，法兰 ±√(31.5² − 28²) = ±14.431，键槽占 ±8.05
+    check:
+      - radial_material: {frame: frame, t: 46, deg: 90, expect: [[10, 23.5]]}
+      - radial_material: {frame: frame, t: 46, deg: -90, expect: [[10, 23.5]]}
+      - line_material: {frame: frame, along: 1, at: [46, null, 28], expect: [[-14.431, -8.05], [8.05, 14.431]]}
+      - line_material: {frame: frame, along: 0, polar: [27, 90], expect: []}
+
+  - id: key_hole
+    source: 法兰刀具侧端面上距轴线 25mm 的直径 8mm、深 6mm 定向盲孔
+    check:
+      - exists: key
+      - axis_distance: {from: bore, to: key, value: 25}
+      - pocket_depth: {pocket: key, value: 6}
+
+  - id: tool_end
+    source: 直径 40mm 圆柱从 −15.9 到 −60，末端 1×1mm 倒角
+    check:
+      - radial_material: {frame: frame, t: 20, deg: 0, expect: [[10, 20]]}
+      - exists: chamfer
+      - cone_size: {cones: chamfer, radial: 1, axial: 1}
+
+  - id: bores
+    source: 直径 20mm、深 50mm 装刀孔；直径 14mm、深 30mm 拉钉孔；直径 6mm 中心冷却孔贯通
+    check:
+      - exists: bore
+      - exists: knob
+      - exists: coolant
+      - coaxial: [knob, bore]
+      - coaxial: [coolant, bore]
+      - pocket_depth: {pocket: bore, value: 50, probe_r: 5}
+      - pocket_depth: {pocket: knob, value: 30, probe_r: 5}
+      - line_material: {frame: frame, along: 0, polar: [0, 0], expect: []}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 142138.2
+    check:
+      - volume: 142138.2
+
+ungraded: []

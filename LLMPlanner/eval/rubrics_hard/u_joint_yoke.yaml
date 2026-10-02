@@ -1,0 +1,107 @@
+case: u_joint_yoke
+prompt: >-
+  创建一个万向节叉，单一实体，Z 轴向上。底部轮毂是直径 50mm、高 45mm 的圆柱（z = 0~45），其上是直径 80mm、
+  厚 10mm 的法兰盘（z = 45~55）。法兰上竖起两片叉臂，关于 YZ 平面对称：每片叉臂是厚 12mm（X 方向）、宽 40mm
+  （y ∈ [−20, 20]）的竖板，内侧面分别在 x = ±24（两叉臂内侧间距 48mm），即 x ∈ [24, 36] 和 x ∈ [−36, −24]，
+  从 z = 45 升到 z = 90，顶端做成以 (z = 90, y = 0) 为圆心、半径 20mm 的半圆（轴线沿 X）。两片叉臂在 z = 90、
+  y = 0 处同轴开直径 22mm、轴线沿 X 的十字轴承孔，贯穿两片叉臂。轮毂中心沿轴线开直径 25mm 的通孔
+  （贯穿轮毂和法兰），孔内在 +Y 一侧有一条宽 8mm 的通长键槽，键槽底面距轴线 15.8mm。轮毂在 z = 20 处从 +Y 方向
+  沿 −Y 钻一个直径 6.8mm 的紧定螺钉孔，穿过轮毂壁通到中心孔（键槽中间）。每片叉臂外侧面上，在 z = 90、
+  y = ±14.5 处各有 2 个直径 5mm、深 10mm、轴线沿 X 的轴承盖螺纹底孔（共 4 个）。
+prompt_en: >-
+  Create a universal-joint yoke as a single solid body, with the Z axis pointing up. The bottom hub is a cylinder
+  50mm in diameter and 45mm high (z = 0~45), topped by a flange disk 80mm in diameter and 10mm thick (z = 45~55).
+  Two yoke arms rise from the flange, symmetric about the YZ plane: each arm is an upright plate 12mm thick (in X)
+  and 40mm wide (y ∈ [−20, 20]) with its inner face at x = ±24 (48mm between the inner faces), i.e.
+  x ∈ [24, 36] and x ∈ [−36, −24], rising from z = 45 to z = 90, with a semicircular top of radius 20mm centered
+  at (z = 90, y = 0) (axis along X). Both arms have a coaxial 22mm-diameter cross-bearing bore along X at z = 90,
+  y = 0, through both arms. The hub has a 25mm-diameter through bore along its axis (through the hub and the
+  flange); the bore has a full-length 8mm-wide keyway on its +Y side whose bottom face is 15.8mm from the axis. At
+  z = 20, drill a 6.8mm-diameter set-screw hole from the +Y side along −Y, through the hub wall into the bore (in
+  the middle of the keyway). The outer face of each arm has 2 tapping holes for the bearing cap, 5mm in diameter,
+  10mm deep, with axes along X, at z = 90, y = ±14.5 (4 in total).
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿轮毂孔轴线向上，t = 0 在轮毂底面 z = 0；轴 1 指向紧定螺钉孔（+Y），轴 2 = 轴 0 × 轴 1（−X）。
+# frame 坐标 = (z, y, −x)。
+entities:
+  bore:     {cylinder: {d: 25, side: inner}, count: 1}
+  setscrew: {cylinder: {d: 6.8, side: inner}, count: 1}
+  # 十字轴承孔在两片叉臂里各一段
+  cross:    {cylinder: {d: 22, side: inner}, count: 2}
+  taps:     {cylinder: {d: 5, side: inner}, count: 4}
+  frame:    {axis_frame: {axis: bore, low: larger_area, ref_dir: setscrew, ref_dir_toward: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 法兰直径 80mm；叉臂顶 z = 90 + 20 = 110
+    hard: true
+    check:
+      - bbox_sorted: [80, 80, 110]
+      - extent_along: {axis: bore, of: all, value: 110}
+
+  - id: hub_flange
+    source: 直径 50mm、高 45mm 轮毂；直径 80mm、厚 10mm 法兰（z = 45~55）
+    check:
+      - line_material: {frame: frame, along: 0, polar: [20, 180], expect: [[0, 55]]}
+      - radial_material: {frame: frame, t: 50, deg: 45, expect: [[12.5, 40]]}
+      - radial_material: {frame: frame, t: 10, deg: 180, expect: [[12.5, 25]]}
+
+  - id: bore_keyway
+    source: 直径 25mm 通孔，+Y 侧宽 8mm 通长键槽，槽底距轴线 15.8mm
+    derivation: y = 14、z = 10 沿 X：轮毂弦 ±√(25² − 14²) = ±20.712，键槽占 ±4
+    check:
+      - exists: bore
+      - through: {holes: bore}
+      - radial_material: {frame: frame, t: 10, deg: 0, expect: [[15.8, 25]]}
+      - radial_material: {frame: frame, t: 50, deg: 0, expect: [[15.8, 40]]}
+      - line_material: {frame: frame, along: 2, at: [10, 14, null], expect: [[-20.712, -4], [4, 20.712]]}
+
+  - id: set_screw
+    source: z = 20 处从 +Y 沿 −Y 的直径 6.8mm 紧定螺钉孔，通到中心孔
+    check:
+      - exists: setscrew
+      - parallel_to_frame: {frame: frame, items: setscrew, axis: 1}
+      - radial_material: {frame: frame, t: 20, deg: 0, expect: []}
+
+  - id: arms
+    source: 两片厚 12mm、宽 40mm 的叉臂，内侧面 x = ±24，从 z = 45 升到 90，顶端 R20 半圆
+    derivation: y = 0、x = −30 沿 Z：法兰与叉臂连成 45~79，十字孔占 79~101
+    check:
+      - line_material: {frame: frame, along: 2, at: [70, 0, null], expect: [[-36, -24], [24, 36]]}
+      - line_material: {frame: frame, along: 0, at: [null, 0, 30], expect: [[45, 79], [101, 110]]}
+      - line_material: {frame: frame, along: 0, at: [null, 0, -30], expect: [[45, 79], [101, 110]]}
+      - line_material: {frame: frame, along: 1, at: [70, null, 30], expect: [[-20, 20]]}
+
+  - id: cross_bore
+    source: z = 90、y = 0 处直径 22mm、轴线沿 X 的十字轴承孔，贯穿两片叉臂
+    derivation: z = 100、x = −30 沿 Y：顶端半圆 ±√(20² − 10²) = ±17.321，孔 ±√(11² − 10²) = ±4.583
+    check:
+      - exists: cross
+      - parallel_to_frame: {frame: frame, items: cross, axis: 2}
+      - axis_positions: {frame: frame, items: cross, axes: [0, 1], expect: [[90, 0], [90, 0]]}
+      - line_material: {frame: frame, along: 1, at: [100, null, 30], expect: [[-17.321, -4.583], [4.583, 17.321]]}
+      - line_material: {frame: frame, along: 2, at: [90, 0, null], expect: []}
+
+  - id: cap_taps
+    source: 每片叉臂外侧面 z = 90、y = ±14.5 处 2 个直径 5mm、深 10mm 的螺纹底孔
+    check:
+      - exists: taps
+      - parallel_to_frame: {frame: frame, items: taps, axis: 2}
+      - axis_positions: {frame: frame, items: taps, axes: [0, 1],
+                         expect: [[90, 14.5], [90, -14.5], [90, 14.5], [90, -14.5]]}
+      - pocket_depth: {pocket: taps, value: 10}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 148584.2
+    check:
+      - volume: 148584.2
+
+ungraded: []

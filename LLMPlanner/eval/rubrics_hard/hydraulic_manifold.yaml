@@ -1,0 +1,105 @@
+case: hydraulic_manifold
+prompt: >-
+  创建一个液压阀块，单一实体，Z 轴向上。阀块是 100×80×60mm 的长方体（x ∈ [−50, 50]、y ∈ [−40, 40]、z = 0~60），
+  内部有一组相互贯通的油道：P 口从顶面 (−25, 0) 处向下钻直径 12mm、深 40mm 的孔（孔底在 z = 20），孔口有直径 20mm、
+  深 3mm 的沉孔；主油道从 −X 端面在 y = 0、z = 20 处沿 +X 钻直径 10mm 的孔，一直钻到 x = 20，与 P 孔相交；
+  主油道入口有直径 16mm、深 8mm 的工艺堵头沉孔。A 口从 +Y 端面在 x = 10、z = 20 处沿 −Y 钻直径 10mm、深 40mm 的孔，
+  孔底到 y = 0，与主油道相交。T 口从底面 (25, −15) 处向上钻直径 14mm、深 45mm 的孔（孔底在 z = 45）；
+  从 +X 端面在 y = −15、z = 35 处沿 −X 钻直径 10mm、深 30mm 的横孔，与 T 孔相交。四角 (±40, ±30) 处有 4 个
+  直径 9mm 的安装通孔；顶面上绕 P 口在 (−25 ± 16, ±16) 处有 4 个直径 4.2mm、深 10mm 的螺纹底孔（阀安装螺钉孔）。
+prompt_en: >-
+  Create a hydraulic manifold block as a single solid body, with the Z axis pointing up. The block is a
+  100×80×60mm box (x ∈ [−50, 50], y ∈ [−40, 40], z = 0~60) with a network of intersecting oil passages inside.
+  Port P: from the top face at (−25, 0), drill a 12mm-diameter hole 40mm deep downward (bottom at z = 20), with a
+  20mm-diameter, 3mm-deep counterbore at its mouth. Main gallery: from the −X end face at y = 0, z = 20, drill a
+  10mm-diameter hole along +X all the way to x = 20, intersecting the P hole; the gallery entrance has a
+  16mm-diameter, 8mm-deep counterbore for a plug. Port A: from the +Y face at x = 10, z = 20, drill a
+  10mm-diameter hole 40mm deep along −Y, reaching y = 0 and intersecting the main gallery. Port T: from the bottom
+  face at (25, −15), drill a 14mm-diameter hole 45mm deep upward (bottom at z = 45); from the +X end face at
+  y = −15, z = 35, drill a 10mm-diameter cross hole 30mm deep along −X, intersecting the T hole. The four corners
+  have 4 mounting through holes of 9mm diameter at (±40, ±30); the top face has 4 tapping holes of 4.2mm diameter
+  and 10mm depth around port P at (−25 ± 16, ±16) for the valve mounting screws.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿 P 孔轴线向上，t = 0 在底面（两端平面面积较大的一端），原点在 (−25, 0, 0)；
+# 轴 1 指向主油道堵头一侧（−X），轴 2 = 轴 0 × 轴 1（−Y）。frame 坐标 = (z, −(x + 25), −y)。
+entities:
+  p_port:   {cylinder: {d: 12, side: inner}, count: 1}
+  p_cbore:  {cylinder: {d: 20, side: inner}, count: 1}
+  plug:     {cylinder: {d: 16, side: inner}, count: 1}
+  t_port:   {cylinder: {d: 14, side: inner}, count: 1}
+  mounts:   {cylinder: {d: 9, side: inner}, count: 4}
+  taps:     {cylinder: {d: 4.2, side: inner}, count: 4}
+  frame:    {axis_frame: {axis: p_port, low: larger_area, ref_dir: plug, ref_dir_toward: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 100×80×60mm 长方体
+    hard: true
+    check:
+      - bbox_sorted: [60, 80, 100]
+
+  - id: p_port
+    source: 顶面 (−25, 0) 处直径 12mm、深 40mm 的 P 孔，孔口直径 20mm、深 3mm 沉孔
+    derivation: P 孔轴线上，孔底 z = 20 落在主油道（z = 15~25）里，只剩 z = 0~15 的材料
+    check:
+      - exists: p_port
+      - exists: p_cbore
+      - coaxial: [p_cbore, p_port]
+      - line_material: {frame: frame, along: 0, polar: [0, 0], expect: [[0, 15]]}
+      - pocket_depth: {pocket: p_cbore, value: 3, probe_r: 8}
+
+  - id: gallery
+    source: −X 端面 y = 0、z = 20 处直径 10mm 主油道钻到 x = 20；入口直径 16mm、深 8mm 堵头沉孔
+    check:
+      - exists: plug
+      - parallel_to_frame: {frame: frame, items: plug, axis: 1}
+      - axis_positions: {frame: frame, items: plug, axes: [0, 2], expect: [[20, 0]]}
+      - line_material: {frame: frame, along: 1, at: [20, null, 0], expect: [[-75, -45]]}
+      - pocket_depth: {pocket: plug, value: 8, probe_r: 6.5}
+
+  - id: a_port
+    source: +Y 端面 x = 10、z = 20 处直径 10mm、深 40mm 的 A 孔，到 y = 0 与主油道相交
+    derivation: x = 10、z = 20 沿 Y：y ∈ [−5, 40] 是 A 孔与主油道
+    check:
+      - line_material: {frame: frame, along: 2, at: [20, -35, null], expect: [[5, 40]]}
+
+  - id: t_port
+    source: 底面 (25, −15) 处直径 14mm、深 45mm 的 T 孔；+X 端面 y = −15、z = 35 处直径 10mm、深 30mm 横孔
+    derivation: y = −15、z = 35 沿 X：T 孔占 x ∈ [18, 32]，横孔从 x = 50 到 20，连成 x ∈ [18, 50]
+    check:
+      - exists: t_port
+      - axis_positions: {frame: frame, items: t_port, axes: [1, 2], expect: [[-50, 15]]}
+      - pocket_depth: {pocket: t_port, value: 45}
+      - line_material: {frame: frame, along: 0, at: [null, -50, 15], expect: [[45, 60]]}
+      - line_material: {frame: frame, along: 1, at: [35, null, 15], expect: [[-43, 25]]}
+
+  - id: mounts
+    source: (±40, ±30) 处 4 个直径 9mm 安装通孔
+    check:
+      - exists: mounts
+      - through: {holes: mounts}
+      - axis_positions: {frame: frame, items: mounts, axes: [1, 2],
+                         expect: [[-65, 30], [-65, -30], [15, 30], [15, -30]]}
+
+  - id: valve_taps
+    source: 顶面 (−25 ± 16, ±16) 处 4 个直径 4.2mm、深 10mm 螺纹底孔
+    check:
+      - exists: taps
+      - axis_positions: {frame: frame, items: taps, axes: [1, 2],
+                         expect: [[16, 16], [16, -16], [-16, 16], [-16, -16]]}
+      - pocket_depth: {pocket: taps, value: 10}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 441811.3
+    check:
+      - volume: 441811.3
+
+ungraded: []

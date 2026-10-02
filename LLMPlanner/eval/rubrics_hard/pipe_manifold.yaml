@@ -1,0 +1,128 @@
+case: pipe_manifold
+prompt: >-
+  创建一个带三个支管的分配歧管，单一实体。主管沿 X 轴，轴线过原点，是外径 60mm、内径 48mm 的圆管，从 x = 0 到 x = 300mm，
+  两端敞开。主管两端各有一块直径 140mm、厚 16mm 的圆形法兰（x = 0~16 和 284~300mm），法兰中心孔与主管内孔相同；
+  每块法兰在直径 110mm 的圆上均布 8 个直径 14mm 的螺栓通孔，螺栓孔与竖直方向（Z 轴）错开 22.5°（即正上、正下方都没有螺栓孔）。
+  主管上方（+Z）在 x = 75、150、225mm 处各竖直伸出一根支管：外径 40mm、内径 30mm，支管顶端距主管轴线 120mm，
+  支管内孔向下与主管内孔贯通；每根支管顶端有一块直径 90mm、厚 12mm 的圆形法兰（顶面距主管轴线 120mm），
+  法兰上在直径 70mm 的圆上开 4 个直径 11mm 的螺栓通孔，孔位于支管轴线沿 X、Y 两个方向的 45° 斜线上（即 4 孔与 X 轴成 45°）。
+  主管正下方（−Z）在 x = 150mm 处有一个外径 30mm 的排污凸台，凸台底面距主管轴线 50mm，中心开直径 12mm 的排污孔，
+  向上与主管内孔贯通。
+prompt_en: >-
+  Create a distribution manifold with three branch pipes as a single solid body. The main pipe runs along the
+  X axis with its axis through the origin; it is a tube with an outer diameter of 60mm and an inner diameter of
+  48mm, from x = 0 to x = 300mm, open at both ends. Each end of the main pipe has a circular flange 140mm in
+  diameter and 16mm thick (x = 0~16 and 284~300mm), whose center hole is the same as the bore of the main pipe;
+  each flange has 8 through bolt holes of 14mm diameter evenly spaced on a 110mm-diameter circle, rotated 22.5°
+  from the vertical direction (Z axis), so that there is no bolt hole directly above or below the axis. On top of
+  the main pipe (+Z), at x = 75, 150 and 225mm, a branch pipe rises vertically: outer diameter 40mm, inner
+  diameter 30mm, with its top 120mm from the main-pipe axis, and its bore opens downward into the bore of the
+  main pipe. The top of each branch has a circular flange 90mm in diameter and 12mm thick (its top face 120mm
+  from the main-pipe axis), with 4 through bolt holes of 11mm diameter on a 70mm-diameter circle, located on the
+  45° diagonals between the X and Y directions around the branch axis (that is, the 4 holes are at 45° to the
+  X axis). Directly below the main pipe (−Z), at x = 150mm, there is a drain boss with an outer diameter of 30mm
+  whose bottom face is 50mm from the main-pipe axis, with a 12mm-diameter drain hole at its center that opens
+  upward into the bore of the main pipe.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿主管轴线（零件关于 x = 150 镜像对称，正负不影响探测）；轴 1 指向排污孔（−Z），
+# 所以支管在轴 1 的负方向；轴 2 = 轴 0 × 轴 1（沿 ±Y，零件关于 XZ 面对称）。
+entities:
+  main:     {cylinder: {d: 60, side: outer}}
+  bore:     {cylinder: {d: 48, side: inner}}
+  branches: {cylinder: {d: 40, side: outer}, count: 3}
+  drain:    {cylinder: {d: 12, side: inner}, count: 1}
+  boss:     {cylinder: {d: 30, side: outer}, count: 1}
+  fbolts:   {cylinder: {d: 14, side: inner}, count: 16}
+  bbolts:   {cylinder: {d: 11, side: inner}, count: 12}
+  frame:    {axis_frame: {axis: main, low: larger_area, ref_dir: drain, ref_dir_toward: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主管长 300mm；法兰直径 140mm；支管顶面距主管轴线 120mm，主管法兰下缘距轴线 70mm
+    hard: true
+    check:
+      - bbox_sorted: [140, 190, 300]
+      - extent_along: {axis: main, of: all, value: 300}
+
+  - id: main_pipe
+    source: 外径 60mm、内径 48mm 的主管，从 0 到 300mm，两端敞开
+    check:
+      - exists: bore
+      - coaxial: [bore, main]
+      - line_material: {frame: frame, along: 0, polar: [27, 90], expect: [[0, 300]]}
+      - line_material: {frame: frame, along: 0, polar: [0, 0], expect: []}
+      - radial_material: {frame: frame, t: 40, deg: 90, expect: [[24, 30]]}
+
+  - id: end_flanges
+    source: 两端直径 140mm、厚 16mm 的法兰
+    check:
+      - radial_material: {frame: frame, t: 8, deg: 0, expect: [[24, 70]]}
+      - radial_material: {frame: frame, t: 292, deg: 180, expect: [[24, 70]]}
+      - line_material: {frame: frame, along: 0, polar: [65, 90], expect: [[0, 16], [284, 300]]}
+
+  - id: flange_bolts
+    source: 每块法兰直径 110mm 圆上均布 8 个直径 14mm 螺栓通孔，与竖直方向错开 22.5°
+    check:
+      - exists: fbolts
+      - through: {holes: fbolts}
+      - axis_distance: {from: main, to: fbolts, value: 55}
+      - angular_openings: {frame: frame, t: 8, r: 55, count: 8, chord: 14}
+      - radial_material: {frame: frame, t: 8, deg: 22.5, expect: [[24, 48], [62, 70]]}
+
+  - id: branches
+    source: x = 75、150、225mm 处竖直向上的三根支管，外径 40mm、内径 30mm，顶端距主管轴线 120mm
+    derivation: >-
+      支管在轴 1 负方向；x = 92.5（支管壁内）竖直穿过：支管壁从主管内壁 −24 一直到顶 −120，下方是主管底壁 [24, 30]
+    check:
+      - exists: branches
+      - parallel_to_frame: {frame: frame, items: branches, axis: 1}
+      - axis_positions: {frame: frame, items: branches, axes: [0, 2], expect: [[75, 0], [150, 0], [225, 0]]}
+      - line_material: {frame: frame, along: 1, at: [92.5, null, 0], expect: [[-120, -24], [24, 30]]}
+
+  - id: branch_bores
+    source: 支管内孔向下与主管内孔贯通
+    check:
+      - line_material: {frame: frame, along: 1, at: [75, null, 0], expect: [[24, 30]]}
+      - line_material: {frame: frame, along: 1, at: [225, null, 0], expect: [[24, 30]]}
+
+  - id: branch_flanges
+    source: 支管顶端直径 90mm、厚 12mm 的法兰，顶面距主管轴线 120mm
+    derivation: x = 115 距两侧支管轴线 40、35mm，都在法兰 R45 之内、支管 R20 之外
+    check:
+      - line_material: {frame: frame, along: 1, at: [115, null, 0], expect: [[-120, -108], [-30, -24], [24, 30]]}
+
+  - id: branch_bolts
+    source: 支管法兰直径 70mm 圆上 4 个直径 11mm 螺栓通孔，与 X 轴成 45°
+    derivation: 孔心相对支管轴线 (±24.749, ±24.749)
+    check:
+      - exists: bbolts
+      - through: {holes: bbolts}
+      - axis_positions: {frame: frame, items: bbolts, axes: [0, 2],
+                         expect: [[50.251, 24.749], [50.251, -24.749], [99.749, 24.749], [99.749, -24.749],
+                                  [125.251, 24.749], [125.251, -24.749], [174.749, 24.749], [174.749, -24.749],
+                                  [200.251, 24.749], [200.251, -24.749], [249.749, 24.749], [249.749, -24.749]]}
+
+  - id: drain
+    source: 主管正下方 x = 150mm 处外径 30mm 的排污凸台，底面距主管轴线 50mm，中心直径 12mm 排污孔与主管内孔贯通
+    derivation: x = 160 竖直穿过：主管底壁与凸台连成 [24, 50]；上方是 x = 150 支管的内孔
+    check:
+      - exists: boss
+      - exists: drain
+      - coaxial: [drain, boss]
+      - line_material: {frame: frame, along: 1, at: [160, null, 0], expect: [[24, 50]]}
+      - line_material: {frame: frame, along: 1, at: [150, null, 0], expect: []}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 977670.4
+    check:
+      - volume: 977670.4
+
+ungraded: []

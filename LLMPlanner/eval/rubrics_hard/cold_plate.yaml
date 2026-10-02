@@ -1,0 +1,120 @@
+case: cold_plate
+prompt: >-
+  创建一块带蛇形流道的液冷板，单一实体，Z 轴向上。板外形 170×100mm、厚 12mm（x ∈ [−85, 85]、y ∈ [−50, 50]、z = 0~12）。
+  从上表面向下铣一条宽 10mm、深 7mm（槽底 z = 5）的蛇形流道，流道中心线如下：起点 (−55, −36)，沿 +X 直线到 (55, −36)，
+  以 (55, −27) 为圆心、半径 9mm 向 +X 一侧绕半圈到 (55, −18)，沿 −X 直线到 (−55, −18)，以 (−55, −9) 为圆心向 −X 一侧
+  绕半圈到 (−55, 0)，沿 +X 到 (55, 0)，以 (55, 9) 为圆心向 +X 一侧绕半圈到 (55, 18)，沿 −X 到 (−55, 18)，
+  以 (−55, 27) 为圆心向 −X 一侧绕半圈到 (−55, 36)，最后沿 +X 到终点 (55, 36)；流道两端是半圆端头。
+  进液口：从 −X 端面在 y = −36、z = 8 处沿 +X 钻直径 6mm、深 30mm 的孔，正好通到流道起点；
+  出液口：从 +X 端面在 y = 36、z = 8 处沿 −X 钻直径 5mm、深 30mm 的孔，通到流道终点。
+  上表面环绕流道有一圈密封槽：槽宽 3mm、深 2mm，槽中心线是以原点为中心、146×90mm、四角 R8mm 的圆角矩形。
+  板上在 (±79, −40)、(±79, 0)、(±79, 40) 处开 6 个直径 5.5mm 的安装通孔；板底面中心有一个直径 4mm、深 4mm 的测温盲孔。
+prompt_en: >-
+  Create a liquid cold plate with a serpentine channel as a single solid body, with the Z axis pointing up. The
+  plate is 170×100mm and 12mm thick (x ∈ [−85, 85], y ∈ [−50, 50], z = 0~12). From the top face, mill a
+  serpentine channel 10mm wide and 7mm deep (channel floor at z = 5), whose centerline is: start at
+  (−55, −36), go straight along +X to (55, −36), make a half turn of radius 9mm about (55, −27) on the +X side
+  to (55, −18), go straight along −X to (−55, −18), make a half turn about (−55, −9) on the −X side to (−55, 0),
+  go along +X to (55, 0), make a half turn about (55, 9) on the +X side to (55, 18), go along −X to (−55, 18),
+  make a half turn about (−55, 27) on the −X side to (−55, 36), and finally go along +X to the end point
+  (55, 36); both ends of the channel are semicircular. Inlet: from the −X end face, at y = −36, z = 8, drill a
+  6mm-diameter hole 30mm deep along +X, reaching exactly the start of the channel. Outlet: from the +X end face,
+  at y = 36, z = 8, drill a 5mm-diameter hole 30mm deep along −X, reaching the end of the channel. The top face
+  has a sealing groove around the channel: 3mm wide and 2mm deep, whose centerline is a 146×90mm rounded
+  rectangle centered at the origin with R8mm corners. The plate has 6 through mounting holes of 5.5mm diameter
+  at (±79, −40), (±79, 0) and (±79, 40), and a 4mm-diameter, 4mm-deep blind hole for a temperature sensor at the
+  center of the bottom face.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿测温孔轴线向上，t = 0 在底面（两端平面面积较大的一端），原点在 (0, 0, 0)；
+# 轴 1 指向进液口一侧（−X），轴 2 = 轴 0 × 轴 1（−Y）。frame 坐标 = (z, −x, −y)。
+entities:
+  sensor:   {cylinder: {d: 4, side: inner}, count: 1}
+  inlet:    {cylinder: {d: 6, side: inner}, count: 1}
+  outlet:   {cylinder: {d: 5, side: inner}, count: 1}
+  holes:    {cylinder: {d: 5.5, side: inner}, count: 6}
+  frame:    {axis_frame: {axis: sensor, low: larger_area, ref_dir: inlet, ref_dir_toward: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 170×100mm、厚 12mm
+    hard: true
+    check:
+      - bbox_sorted: [12, 100, 170]
+
+  - id: channel_depth
+    source: 流道深 7mm（槽底 z = 5）；底面中心直径 4mm、深 4mm 测温盲孔
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 0, 0], expect: [[4, 5]]}
+      - line_material: {frame: frame, along: 0, at: [null, 0, 10], expect: [[0, 12]]}
+      - exists: sensor
+      - pocket_depth: {pocket: sensor, value: 4, open_at_extreme: true}
+
+  - id: passes
+    source: 5 段直线流道，中心线 y = −36、−18、0、18、36，宽 10mm
+    check:
+      - line_material: {frame: frame, along: 2, at: [8, 0, null],
+                        expect: [[-50, -41], [-31, -23], [-13, -5], [5, 13], [23, 31], [41, 50]]}
+
+  - id: turns_plus_x
+    source: +X 一侧的两个半圈：圆心 (55, −27)、(55, 9)，半径 9mm
+    derivation: >-
+      x = 64 沿 Y：每个弯道在 y_c ± √(14² − 9²) = y_c ± 10.724 处；出液口 R2.5 在 y = 36 ± 2.5；
+      换成 frame 坐标 −y
+    check:
+      - line_material: {frame: frame, along: 2, at: [8, -64, null],
+                        expect: [[-50, -38.5], [-33.5, -19.724], [1.724, 16.276], [37.724, 50]]}
+
+  - id: turns_minus_x
+    source: −X 一侧的两个半圈：圆心 (−55, −9)、(−55, 27)
+    derivation: x = −64 沿 Y：弯道 −9 ± 10.724、27 ± 10.724；进液口 R3 在 y = −36 ± 3
+    check:
+      - line_material: {frame: frame, along: 2, at: [8, 64, null],
+                        expect: [[-50, -37.724], [-16.276, -1.724], [19.724, 33], [39, 50]]}
+
+  - id: seal_groove
+    source: 宽 3mm、深 2mm 密封槽，中心线 146×90mm、四角 R8mm 的圆角矩形
+    derivation: >-
+      z = 11、y = 0 沿 X：流道（含弯道外缘 55 + 10.724）占 ±65.724，密封槽 ±[71.5, 74.5]，安装孔 ±[76.25, 81.75]；
+      x = 0 沿 Y：密封槽 ±[43.5, 46.5]
+    check:
+      - line_material: {frame: frame, along: 1, at: [11, null, 0],
+                        expect: [[-85, -81.75], [-76.25, -74.5], [-71.5, -65.724], [65.724, 71.5], [74.5, 76.25], [81.75, 85]]}
+      - line_material: {frame: frame, along: 2, at: [11, 0, null],
+                        expect: [[-50, -46.5], [-43.5, -41], [-31, -23], [-13, -5], [5, 13], [23, 31], [41, 43.5], [46.5, 50]]}
+      - line_material: {frame: frame, along: 0, at: [null, 0, -45], expect: [[0, 10]]}
+
+  - id: ports
+    source: −X 端面 y = −36、z = 8 处直径 6mm 进液孔；+X 端面 y = 36、z = 8 处直径 5mm 出液孔；深 30mm 通到流道端头
+    derivation: y = −36、z = 8 沿 X：进液孔 [−85, −55] 接上流道（端头到 −60），流道连同 +X 弯道外缘一直空到 x = 65.724
+    check:
+      - exists: inlet
+      - exists: outlet
+      - through: {holes: inlet}
+      - through: {holes: outlet}
+      - parallel_to_frame: {frame: frame, items: inlet, axis: 1}
+      - axis_positions: {frame: frame, items: inlet, axes: [0, 2], expect: [[8, 36]]}
+      - axis_positions: {frame: frame, items: outlet, axes: [0, 2], expect: [[8, -36]]}
+      - line_material: {frame: frame, along: 1, at: [8, null, 36], expect: [[-85, -65.724]]}
+
+  - id: mount_holes
+    source: (±79, −40)、(±79, 0)、(±79, 40) 处 6 个直径 5.5mm 安装通孔
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2],
+                         expect: [[79, 40], [79, 0], [79, -40], [-79, 40], [-79, 0], [-79, -40]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 151362.4
+    check:
+      - volume: 151362.4
+
+ungraded: []

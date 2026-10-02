@@ -1,0 +1,90 @@
+case: ratchet_wheel
+prompt: >-
+  创建一个棘轮，单一实体，Z 轴向上。棘轮盘厚 15mm（z = 0~15），外周有 24 个锯齿形棘齿：齿根半径 50mm、齿顶半径 60mm；
+  在极角 θk = 15°·k（k = 0…23，从 +X 轴逆时针量）处各有一条径向齿面，从 (r = 50, θk) 直到 (r = 60, θk)；
+  齿背是直线，从齿顶 (r = 60, θk) 连到下一个齿的齿根 (r = 50, θk + 15°)，即逆时针方向看，每个齿顶后面跟着一段下降的齿背。
+  盘上表面中心有一个直径 50mm、高 10mm 的轮毂（z = 15~25）。中心开一个对边距 24mm 的正六边形贯穿孔（穿过盘和轮毂），
+  六边形有一条边与 +X 轴垂直（该边的外法线指向 +X）。盘上在半径 33mm 的圆上、极角 0°、60°、…、300° 处均布
+  6 个直径 14mm 的通孔（只穿过盘）。
+prompt_en: >-
+  Create a ratchet wheel as a single solid body, with the Z axis pointing up. The wheel disk is 15mm thick
+  (z = 0~15) and has 24 sawtooth ratchet teeth around its periphery, with a root radius of 50mm and a tip radius
+  of 60mm. At each polar angle θk = 15°·k (k = 0…23, measured counterclockwise from the +X axis) there is a radial
+  tooth face running from (r = 50, θk) to (r = 60, θk); the back of each tooth is a straight line from the tip
+  (r = 60, θk) to the root of the next tooth (r = 50, θk + 15°), i.e. going counterclockwise, each tip is followed
+  by a descending tooth back. The center of the top face of the disk carries a 50mm-diameter, 10mm-high hub
+  (z = 15~25). A regular hexagonal through hole 24mm across flats is cut at the center (through the disk and the
+  hub); one side of the hexagon is perpendicular to the +X axis (its outward normal points to +X). The disk has
+  6 through holes of 14mm diameter (through the disk only) evenly spaced on a circle of radius 33mm at polar
+  angles 0°, 60°, …, 300°.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿轴线向上，t = 0 在盘底面（两端平面面积较大的一端）；轴 1 指向某一个 D14 孔（+X），
+# 轴 2 = 轴 0 × 轴 1（+Y），角度逆时针为正。
+entities:
+  hub:      {cylinder: {d: 50, side: outer}, count: 1}
+  holes:    {cylinder: {d: 14, side: inner}, count: 6}
+  hex:      {prism_pocket: {about: hub, sides: 6, across_flats: 24}}
+  frame:    {axis_frame: {axis: hub, low: larger_area, ref: holes}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 齿顶半径 60mm；盘厚 15mm 加轮毂高 10mm
+    hard: true
+    check:
+      - bbox_sorted: [25, 120, 120]
+      - extent_along: {axis: hub, of: all, value: 25}
+
+  - id: disk_hub
+    source: 盘厚 15mm；直径 50mm、高 10mm 轮毂
+    check:
+      - exists: hub
+      - line_material: {frame: frame, along: 0, polar: [45, 30], expect: [[0, 15]]}
+      - line_material: {frame: frame, along: 0, polar: [20, 30], expect: [[0, 25]]}
+
+  - id: teeth
+    source: 24 个锯齿，齿根 R50、齿顶 R60，径向齿面在 15°k
+    derivation: 每个齿间（R55 圆上）的空隙与齿交替出现 24 次
+    check:
+      - angular_openings: {frame: frame, t: 7.5, r: 55, count: 24}
+
+  - id: tooth_direction
+    source: 逆时针方向每个齿顶后面跟着一段下降的直线齿背
+    derivation: >-
+      直线齿背从 (60, 30°) 到 (50, 45°)：33° 方位齿面半径 57.363；从 (60, 15°) 到 (50, 30°)：27° 方位 51.45；
+      六角孔在 27°、33° 方位的半径 12/cos27° = 13.468
+    check:
+      - radial_material: {frame: frame, t: 7.5, deg: 33, expect: [[13.468, 57.363]]}
+      - radial_material: {frame: frame, t: 7.5, deg: 27, expect: [[13.468, 51.45]]}
+
+  - id: hex_bore
+    source: 对边距 24mm 的正六边形贯穿孔，一条边的外法线指向 +X（即指向 0° 方位的 D14 孔）
+    check:
+      - exists: hex
+      - through: {holes: hex}
+      - radial_material: {frame: frame, t: 20, deg: 0, expect: [[12, 25]]}
+      - radial_material: {frame: frame, t: 20, deg: 30, expect: [[13.856, 25]]}
+
+  - id: holes
+    source: 半径 33mm 圆上 0°、60°、…、300° 处 6 个直径 14mm 通孔
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_distance: {from: hub, to: holes, value: 33}
+      - equal_angular: {about: hub, items: holes}
+      - line_material: {frame: frame, along: 0, polar: [33, 0], expect: []}
+      - line_material: {frame: frame, along: 0, polar: [33, 30], expect: [[0, 15]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 133072.0
+    check:
+      - volume: 133072.0
+
+ungraded: []

@@ -1,0 +1,109 @@
+case: injector_plate
+prompt: >-
+  创建一个液体火箭发动机喷注器面板，单一实体，Z 轴向上，所有回转结构同轴。面板是直径 160mm、厚 20mm 的圆盘
+  （z = 0~20），z = 20 是喷注面，喷注面外缘倒 1×1mm 的 45° 倒角。背面（z = 0）上有 4 条同心的环形集液槽：
+  槽宽 6mm、深 8mm（槽底 z = 8），槽中心半径分别为 20、35、50、65mm。每条槽底到喷注面之间钻一圈轴向喷孔
+  （从槽底 z = 8 一直通到 z = 20）：半径 20mm 的圈上 8 个直径 2mm 的孔，从极角 0° 起均布；半径 35mm 的圈上
+  16 个直径 2mm 的孔，从 11.25° 起均布；半径 50mm 的圈上 24 个直径 2mm 的孔，从 0° 起均布；半径 65mm 的圈上
+  32 个直径 1.5mm 的孔，从 5.625° 起均布（极角从 +X 轴量起）。面板中心有一个直径 6mm 的贯穿点火孔；
+  喷注面上在 (57.5, 0) 处有一个直径 4mm、深 6mm 的定位销盲孔；外圈在半径 72.5mm 的圆上、从 15° 起均布 12 个
+  直径 8.5mm 的螺栓通孔。
+prompt_en: >-
+  Create the injector face plate of a liquid rocket engine as a single solid body, with the Z axis pointing up;
+  all revolved features are coaxial. The plate is a disk 160mm in diameter and 20mm thick (z = 0~20); z = 20 is
+  the injector face, and its outer edge has a 1×1mm 45° chamfer. The back face (z = 0) has 4 concentric annular
+  manifold grooves, each 6mm wide and 8mm deep (groove floor at z = 8), centered on radii 20, 35, 50 and 65mm.
+  From each groove floor, a ring of axial injection orifices is drilled through to the injector face (from z = 8
+  to z = 20): 8 holes of 2mm diameter on radius 20mm, evenly spaced starting at polar angle 0°; 16 holes of 2mm
+  diameter on radius 35mm, evenly spaced starting at 11.25°; 24 holes of 2mm diameter on radius 50mm, evenly
+  spaced starting at 0°; and 32 holes of 1.5mm diameter on radius 65mm, evenly spaced starting at 5.625° (polar
+  angles measured from the +X axis). The center of the plate has a 6mm-diameter through hole for the igniter; the
+  injector face has a 4mm-diameter, 6mm-deep blind dowel hole at (57.5, 0); and the outer zone has 12 through
+  bolt holes of 8.5mm diameter evenly spaced on a circle of radius 72.5mm starting at 15°.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿中心孔轴线，t = 0 在喷注面 z = 20（两端平面面积较大的一端），t = 20 − z；
+# 轴 1 指向定位销孔（+X），轴 2 = 轴 0 × 轴 1（−Y）。所有孔位关于 X 轴对称，frame 角度与题面角度一致。
+entities:
+  center:   {cylinder: {d: 6, side: inner}, count: 1}
+  dowel:    {cylinder: {d: 4, side: inner}, count: 1}
+  orifices: {cylinder: {d: 2, side: inner}, count: 48}
+  fine:     {cylinder: {d: 1.5, side: inner}, count: 32}
+  bolts:    {cylinder: {d: 8.5, side: inner}, count: 12}
+  chamfer:  {cone: {semi_angle: 45, side: outer, max_r: 80}, count: 1}
+  frame:    {axis_frame: {axis: center, low: larger_area, ref: dowel}}
+
+rubrics:
+  - id: solid
+    source: 单一实体，所有回转结构同轴
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 直径 160mm、厚 20mm 的圆盘
+    hard: true
+    check:
+      - bbox_sorted: [20, 160, 160]
+      - extent_along: {axis: center, of: all, value: 20}
+
+  - id: face
+    source: 喷注面 z = 20，外缘 1×1mm 倒角；中心直径 6mm 贯穿孔
+    check:
+      - line_material: {frame: frame, along: 0, polar: [27.5, 0], expect: [[0, 20]]}
+      - exists: chamfer
+      - cone_size: {cones: chamfer, radial: 1, axial: 1}
+      - exists: center
+      - through: {holes: center}
+
+  - id: grooves
+    source: 背面 4 条宽 6mm、深 8mm 的环形槽，中心半径 20、35、50、65mm
+    derivation: z = 4 处 41° 方位（避开螺栓孔）沿径向；槽中心上方只剩 z = 8~20 的 12mm
+    check:
+      - radial_material: {frame: frame, t: 16, deg: 41, expect: [[3, 17], [23, 32], [38, 47], [53, 62], [68, 80]]}
+      - line_material: {frame: frame, along: 0, polar: [20, 20], expect: [[0, 12]]}
+      - line_material: {frame: frame, along: 0, polar: [65, 0], expect: [[0, 12]]}
+
+  - id: orifice_rings
+    source: 半径 20/35/50/65mm 圈上 8/16/24/32 个喷孔，孔径 2/2/2/1.5mm，从槽底通到喷注面
+    check:
+      - exists: orifices
+      - exists: fine
+      - angular_openings: {frame: frame, t: 6, r: 20, count: 8, chord: 2}
+      - angular_openings: {frame: frame, t: 6, r: 35, count: 16, chord: 2}
+      - angular_openings: {frame: frame, t: 6, r: 50, count: 24, chord: 2}
+      - angular_openings: {frame: frame, t: 6, r: 65, count: 32, chord: 1.5}
+
+  - id: orifice_phase
+    source: 各圈起始角 0°、11.25°、0°、5.625°
+    derivation: 每个喷孔轴线上从喷注面到槽底全空；15° 方位只有 R50 圈的孔和螺栓孔
+    check:
+      - line_material: {frame: frame, along: 0, polar: [20, 0], expect: []}
+      - line_material: {frame: frame, along: 0, polar: [35, 11.25], expect: []}
+      - line_material: {frame: frame, along: 0, polar: [35, 0], expect: [[0, 12]]}
+      - line_material: {frame: frame, along: 0, polar: [65, 5.625], expect: []}
+      - radial_material: {frame: frame, t: 6, deg: 15, expect: [[3, 49], [51, 68.25], [76.75, 80]]}
+
+  - id: dowel
+    source: 喷注面 (57.5, 0) 处直径 4mm、深 6mm 定位销盲孔
+    check:
+      - exists: dowel
+      - axis_distance: {from: center, to: dowel, value: 57.5}
+      - pocket_depth: {pocket: dowel, value: 6}
+
+  - id: bolts
+    source: 半径 72.5mm 圆上从 15° 起均布 12 个直径 8.5mm 螺栓通孔
+    check:
+      - exists: bolts
+      - through: {holes: bolts}
+      - axis_distance: {from: center, to: bolts, value: 72.5}
+      - equal_angular: {about: center, items: bolts}
+      - line_material: {frame: frame, along: 0, polar: [72.5, 15], expect: []}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 333855.0
+    check:
+      - volume: 333855.0
+
+ungraded: []

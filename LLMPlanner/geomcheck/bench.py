@@ -34,6 +34,10 @@ KINDS = {
                                 "bent_tube square_to_round rect_to_circle",
     # 困难子集，rubric 在 eval/rubrics_hard（--rubric-dir 指定），不计入上面 50 题
     "Showcase parts": "quad_frame connecting_rod finned_housing sprocket handwheel camshaft planet_carrier impeller",
+    "Showcase parts (hard)": "crankshaft brake_disc wheel_rim geneva_wheel spiral_staircase engine_piston "
+                             "pipe_manifold gearbox_housing heat_sink honeycomb_panel gear_pump_body cold_plate "
+                             "truss_beam turbine_disk bt40_holder hydraulic_manifold rocket_fin_can "
+                             "ratchet_wheel injector_plate robot_arm_link menger_sponge u_joint_yoke",
     # 三视图 track，rubric 在 eval/rubrics_three_view，题面附图纸（tasks 中的 image 字段）
     "Three-view basic parts": "b01_l_bracket b02_plate_with_holes b03_t_bracket b04_keycap b05_keycap_full "
                               "b06_lock_striker b07_switch_panel b11_gear_disc b22_round_bowl",
