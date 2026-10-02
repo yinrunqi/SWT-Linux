@@ -305,6 +305,8 @@ def _motion(session, spec: dict, parts: dict[str, Path], sw: str) -> dict:
         lo, hi = spec.get("clearance_mm") or [0.02, 2.0]
         gaps = []
         frame0 = (sampled.get("frames") or [{}])[0].get("transforms") or {}
+        # 齿隙前的分数和首帧位姿一并记下：本机 OCC 不可用（gap=None）时可离线补算，见 regrade_offline.py
+        motion["pre_clearance"] = {"score": motion["score"], "passed": motion["passed"]}
         for a, b in spec["clearance_pairs"]:
             if a not in parts or b not in parts:
                 continue
@@ -314,7 +316,8 @@ def _motion(session, spec: dict, parts: dict[str, Path], sw: str) -> dict:
                 continue
             gap = clearance_mm(pa, pb, frame0[sa], frame0[sb])
             gaps.append({"pair": [a, b], "mm": None if gap is None else round(gap, 4),
-                         "ok": gap is not None and lo <= gap <= hi})
+                         "ok": gap is not None and lo <= gap <= hi, "range_mm": [lo, hi],
+                         "steps": [str(pa), str(pb)], "transforms": [frame0[sa], frame0[sb]]})
         motion["clearance"] = gaps
         if gaps and not all(item["ok"] for item in gaps):
             motion["passed"] = False

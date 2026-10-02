@@ -365,7 +365,7 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 | 发动机 | r2 | 10/10 | 46.67 | 0 | 否 | 26 次调用后停滞 |
 
 - 零件阶段 32/32 全部合格，瓶颈在装配。
-- 减速箱两次装配 rubric 都是满分。r1 的传动比实测 0.1667，与期望一致；扣的 10 分来自两对啮合齿轮的间隙测量为 0 mm。r2 的输出轴几乎不转（实测比 0.0009，方向也不对），扣掉传动比分和间隙分。
+- 减速箱两次装配 rubric 都是满分。r1 的传动比实测 0.1667，与期望一致；扣的 10 分来自两对啮合齿轮的间隙测量为 0 mm。（2026-10-02 更正：这个 0 mm 是 `clearance_mm` 的缺陷造成的。它把以 m 为单位的平移直接作用在以 mm 读入的 STEP 上，旋转也取反了，所以任何齿轮对都量成 0。参考装配体旁边没有零件 STEP，齿隙检查被跳过，因此没有暴露。修正后由 `geomcheck/tests/test_clearance.py` 覆盖。）r2 的输出轴几乎不转（实测比 0.0009，方向也不对），扣掉传动比分和间隙分。
 - 发动机两次都只插入 7 个零件，凸轮轴、凸轮、凸轮齿轮、飞轮和曲轴齿轮都没装上。凸轮轴缺失时运动检查直接报 `'camshaft'`，记 0 分。
 - 停滞的原因：每次 LLM 调用的 `finish_reason` 现在记在结果的 `llm_calls_detail` 里，被判停滞的调用全部是 `finish_reason=length`，输出正好 8000 token，可见文字和工具调用都是 0。也就是说，模型把 `max_tokens=8000` 全部花在了隐藏的思考上，答案还没写出来就被截断，智能体把它当成"没有调用工具"。重跑结果在 `eval/assembly_gen_sonnet5_v2_engine_trace.json`：r1 是 11 次调用、最后 3 次截断；r2 是 35 次调用、其中 11 次截断，装配 rubric 分别为 18.1 和 46.67，与第一次一致。
 - 发动机 r2 的另一个问题出在模型自身：它反复按 `cyl(d=24)` 去找机体上的缸孔，但机体是一块平板，没有这个孔，活塞的滑动副应该用平面来约束。
@@ -403,6 +403,11 @@ venv\Scripts\python.exe -X utf8 eval\assembly_scratch\rescore_assemblies.py --re
 # 重评分已保存的装配体：结果 JSON=artifacts 目录，可给多组
 venv\Scripts\python.exe -X utf8 eval\assembly_scratch\rescore_assemblies.py --out eval\assembly_rescore.json `
     eval\assembly_scratch_result.json=eval\artifacts\assembly_scratch
+
+# 建模机器上 OCC 不可用时（零件全判不合格、齿隙为 None），把结果 JSON 和 --output-dir 拷到能跑 OCC 的机器上离线补算
+# 零件接口 rubric、齿隙、运动分与 e2e（只需检查器环境）
+venv-occ/bin/python -X utf8 eval/assembly_scratch/regrade_offline.py eval/assembly_gen_xxx.json `
+    --artifacts eval/artifacts/assembly_gen_xxx --output eval/assembly_gen_xxx_regraded.json
 
 # 离线单测（不占 SolidWorks）
 venv\Scripts\python.exe -m pytest test\test_assembly_rubric.py test\test_assembly_motion.py test\test_assembly_workflow_v2.py -q
