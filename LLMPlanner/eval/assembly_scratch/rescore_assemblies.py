@@ -152,12 +152,13 @@ def main() -> None:
         result_file, art_dir = pair.split("=", 1)
         data = json.loads(Path(result_file).read_text(encoding="utf-8"))
         for r in data["results"]:
-            if r.get("condition", "gold") != "gold" or not (r.get("assembly") or {}).get("aliases"):
+            if not (r.get("assembly") or {}).get("aliases"):
                 continue
             cid = r["case_id"]
             if cid not in cases or (cid, r["workflow"], r["repeat"], result_file) in done:
                 continue
-            path = (Path(art_dir) / r["workflow"] / cid / f"gold_r{r['repeat']}" / f"{cid}.SLDASM").resolve()
+            condition = r.get("condition", "gold")
+            path = (Path(art_dir) / r["workflow"] / cid / f"{condition}_r{r['repeat']}" / f"{cid}.SLDASM").resolve()
             if not path.is_file():
                 print("missing", path)
                 continue
