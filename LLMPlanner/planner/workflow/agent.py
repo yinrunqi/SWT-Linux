@@ -88,6 +88,8 @@ class WorkflowAgent:
         usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "calls": 0}
         tool_log: list[dict] = []
         finish_reasons: list[str | None] = []
+        # 原始响应只做记录（含 reasoning_content、缓存命中 usage），不回填进 messages，以免改变后续请求体。
+        llm_responses: list[Any] = []
         failed_signatures: dict[str, int] = {}
         status, summary, stalls, error = "max_llm_calls", "", 0, None
 
@@ -113,6 +115,9 @@ class WorkflowAgent:
                     usage[key] += int(getattr(response.usage, key, 0) or 0)
             # 推理 token 计入 max_tokens；截断（length）时部分网关会把 usage 置 0，需单独记录。
             finish_reasons.append(response.choices[0].finish_reason)
+            llm_responses.append(
+                response.model_dump(mode="json") if hasattr(response, "model_dump") else repr(response)
+            )
             message = response.choices[0].message
             calls = _tool_calls_payload(message)
             assistant = {"role": "assistant", "content": message.content or ""}
@@ -180,6 +185,7 @@ class WorkflowAgent:
             "llm_calls": usage["calls"],
             "reasoning_effort": self.reasoning_effort,
             "finish_reasons": finish_reasons,
+            "llm_responses": llm_responses,
             "tool_calls": tool_log,
             "token_usage": usage,
             "final_state": final_state,

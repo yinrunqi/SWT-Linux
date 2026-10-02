@@ -53,6 +53,7 @@ def test_agent_omits_reasoning_effort_by_default():
     assert requests and all("reasoning_effort" not in item for item in requests)
     assert outcome["reasoning_effort"] is None
     assert outcome["finish_reasons"] == ["stop", "stop"]
+    assert len(outcome["llm_responses"]) == 2
 
 
 def test_agent_sends_reasoning_effort_on_every_call():
