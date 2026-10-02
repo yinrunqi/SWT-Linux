@@ -1,0 +1,57 @@
+case: b22_round_bowl
+title: B22 圆碗
+prompt: 根据所附三视图（第三角画法，单位 mm）建模圆碗，单一实体。
+prompt_en: Model the round bowl from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/b22_round_bowl.png
+reference: eval/three_view/references/b22_round_bowl.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: right, a: [0, -40, 6], b: [0, -40, 40], side: bottom, tier: 1, text: "34"}
+    - {view: right, a: [0, -40, 0], b: [0, -40, 40], side: bottom, tier: 2, text: "40"}
+  callouts:
+    - {view: front, at: [0, 0, 40], r: 40, angle: 30, leader: 40, text: "Ø80"}
+    - {view: front, at: [0, 0, 40], r: 34, angle: 150, leader: 80, text: "Ø68"}
+  centers:
+    - {view: front, at: [0, 0, 40], r: 40}
+  notes: ["圆柱形内腔自顶面向下，深 34（右视图虚线）"]
+
+# frame：轴 0 沿碗轴，t = 0 在碗底（底面整圆面积大于顶面圆环）
+entities:
+  outer: {cylinder: {d: 80, side: outer}, count: 1}
+  inner: {cylinder: {d: 68, side: inner}, count: 1}
+  frame: {axis_frame: {axis: outer, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 Ø80；右视图高 40
+    hard: true
+    check:
+      - bbox_sorted: [40, 80, 80]
+      - exists: outer
+
+  - id: cavity
+    source: 主视图 Ø68，右视图内腔深 34（顶面敞开）
+    derivation: 中心处只剩底板 [0, 6]；壁厚 (80 − 68)/2 = 6
+    check:
+      - exists: inner
+      - coaxial: [inner, outer]
+      - line_material: {frame: frame, along: 0, polar: [0, 0], expect: [[0, 6]]}
+      - line_material: {frame: frame, along: 0, polar: [20, 0], expect: [[0, 6]]}
+      - radial_material: {frame: frame, t: 20, deg: 0, expect: [[34, 40]]}
+      - line_material: {frame: frame, along: 0, polar: [37, 0], expect: [[0, 40]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: π·(40²·40 − 34²·34) = 77585.0
+    check:
+      - volume: 77584.77
+
+ungraded: []

@@ -1,10 +1,13 @@
-"""Workflow-CAD-Bench text-to-CAD 部分的题目导出与结果汇总，与建模系统无关。
+"""Workflow-CAD-Bench 零件题（text-to-CAD 与三视图 track）的题目导出与结果汇总，与建模系统无关。
 
 用法（在 LLMPlanner 目录、venv-occ 中）：
     python -m geomcheck.bench tasks --output tasks.jsonl
     python -m geomcheck.bench tasks --lang en --output tasks_en.jsonl
     python -m geomcheck.rubric --artifacts <STEP 目录> --output scores.json
     python -m geomcheck.bench summary scores.json --repeats 2
+
+三视图 track：--rubric-dir eval/rubrics_three_view；题目带 image 字段（图纸 PNG），
+打分用 python -m geomcheck.three_view（rubric + 图像分），summary 会附带平均图像分。
 
 STEP 文件命名为 ``<case>_r<k>.step``（k 从 1 开始）；缺失的运行记 0 分、不合格。
 """
@@ -31,6 +34,10 @@ KINDS = {
                                 "bent_tube square_to_round rect_to_circle",
     # 困难子集，rubric 在 eval/rubrics_hard（--rubric-dir 指定），不计入上面 50 题
     "Showcase parts": "quad_frame connecting_rod finned_housing sprocket handwheel camshaft planet_carrier impeller",
+    # 三视图 track，rubric 在 eval/rubrics_three_view，题面附图纸（tasks 中的 image 字段）
+    "Three-view basic parts": "b01_l_bracket b02_plate_with_holes b03_t_bracket b04_keycap b05_keycap_full "
+                              "b06_lock_striker b07_switch_panel b11_gear_disc b22_round_bowl",
+    "Three-view composite parts": "c1_mech_keyboard c2_gearbox c3_gear_pair c4_desktop_pen_holder",
 }
 ORDER = [c for v in KINDS.values() for c in v.split()]
 KIND_OF = {c: k for k, v in KINDS.items() for c in v.split()}
@@ -45,10 +52,13 @@ def load_tasks(rubric_dir: Path, lang: str = "zh") -> list[dict]:
     for p in rubric_dir.glob("*.yaml"):
         r = yaml.safe_load(p.read_text(encoding="utf-8"))
         tasks[r["case"]] = r
-    return [
-        {"case": c, "kind": KIND_OF.get(c, ""), "prompt": tasks[c][field]}
-        for c in sorted(tasks, key=lambda c: (ORDER.index(c) if c in ORDER else len(ORDER), c))
-    ]
+    out = []
+    for c in sorted(tasks, key=lambda c: (ORDER.index(c) if c in ORDER else len(ORDER), c)):
+        task = {"case": c, "kind": KIND_OF.get(c, ""), "prompt": tasks[c][field]}
+        if "image" in tasks[c]:
+            task["image"] = tasks[c]["image"]  # 相对 LLMPlanner 目录的图纸路径
+        out.append(task)
+    return out
 
 
 def _boot(xs: list[float], n: int = 2000, seed: int = 0) -> tuple[float, float]:
@@ -74,6 +84,9 @@ def _stats(runs: dict[str, list[dict]], repeats: int) -> dict:
     for k in range(1, repeats + 1):
         out[f"pass@{k}"] = round(
             sum(_pass_at_k(len(v), sum(r["accepted"] for r in v), k) for v in runs.values()) / len(runs), 3)
+    images = [r["image"] for r in flat if r.get("image") is not None]
+    if images:
+        out["image_score"] = round(sum(images) / len(flat), 1)  # 缺失的运行按 0 计
     return out
 
 
@@ -82,14 +95,18 @@ def summarize(score_files: list[Path], rubric_dir: Path, repeats: int) -> dict:
     for f in score_files:
         for x in json.loads(f.read_text(encoding="utf-8")):
             graded[Path(x["step"]).stem] = x
+    with_image = any("image" in g for g in graded.values())
     runs = {}
     for t in load_tasks(rubric_dir):
         c = t["case"]
         runs[c] = []
         for k in range(1, repeats + 1):
             g = graded.get(f"{c}_r{k}")
-            runs[c].append({"score": g["score"] if g else 0.0, "accepted": bool(g and g["accepted"]),
-                            "hard_ok": bool(g and g["hard_ok"]), "missing": g is None})
+            run = {"score": g["score"] if g else 0.0, "accepted": bool(g and g["accepted"]),
+                   "hard_ok": bool(g and g["hard_ok"]), "missing": g is None}
+            if with_image:
+                run["image"] = g["image"]["image_score"] if g and "image" in g else 0.0
+            runs[c].append(run)
     report = {"all": _stats(runs, repeats), "by_kind": {}, "per_task": {}}
     for kind in KINDS:
         sub = {c: v for c, v in runs.items() if KIND_OF.get(c) == kind}
@@ -98,6 +115,8 @@ def summarize(score_files: list[Path], rubric_dir: Path, repeats: int) -> dict:
     for c, v in runs.items():
         report["per_task"][c] = {"scores": [r["score"] for r in v], "accepted": sum(r["accepted"] for r in v),
                                  "missing": sum(r["missing"] for r in v)}
+        if with_image:
+            report["per_task"][c]["image_scores"] = [r["image"] for r in v]
     return report
 
 
@@ -124,9 +143,11 @@ def main() -> None:
     report = summarize(args.scores, rubric_dir, args.repeats)
     a = report["all"]
     print(f"ALL  tasks={a['tasks']} runs={a['runs']} score={a['score']} ci95={a['ci95']} "
-          + " ".join(f"{k}={a[k]}" for k in a if k.startswith("pass@")) + f" core_form={a['core_form']}")
+          + " ".join(f"{k}={a[k]}" for k in a if k.startswith("pass@")) + f" core_form={a['core_form']}"
+          + (f" image_score={a['image_score']}" if "image_score" in a else ""))
     for kind, b in report["by_kind"].items():
-        print(f"  {kind:<26} tasks={b['tasks']:>2} score={b['score']:>5} pass@1={b['pass@1']}")
+        print(f"  {kind:<26} tasks={b['tasks']:>2} score={b['score']:>5} pass@1={b['pass@1']}"
+              + (f" image_score={b['image_score']}" if "image_score" in b else ""))
     missing = sum(v["missing"] for v in report["per_task"].values())
     if missing:
         print(f"  missing STEP files scored 0: {missing}")

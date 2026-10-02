@@ -1,0 +1,117 @@
+case: c4_desktop_pen_holder
+title: C4 一体式桌面笔筒
+prompt: 根据所附三视图（第三角画法，单位 mm）建模一体式多功能桌面笔筒，单一实体。
+prompt_en: Model the one-piece multi-function desk pen holder from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/c4_desktop_pen_holder.png
+reference: eval/three_view/references/c4_desktop_pen_holder.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-70, 0, 90], b: [-18, 44, 90], side: bottom, tier: 1, text: "52"}
+    - {view: front, a: [-18, 44, 90], b: [28, 78, 90], side: bottom, tier: 1, text: "46"}
+    - {view: front, a: [28, 78, 90], b: [70, 110, 90], side: bottom, tier: 1, text: "42"}
+    - {view: front, a: [-70, 0, 90], b: [70, 0, 90], side: bottom, tier: 2, text: "140"}
+    - {view: front, a: [-70, 0, 90], b: [-70, 44, 90], side: left, tier: 1, text: "44"}
+    - {view: front, a: [-70, 0, 90], b: [-18, 78, 90], side: left, tier: 2, text: "78"}
+    - {view: front, a: [70, 0, 90], b: [70, 110, 90], side: right, text: "110"}
+    - {view: top, a: [-70, 44, 0], b: [-63, 44, 9], side: top, text: "7"}
+    - {view: top, a: [-63, 44, 9], b: [-25, 44, 9], side: top, text: "38"}
+    - {view: top, a: [-25, 44, 9], b: [-12, 78, 9], side: top, text: "13"}
+    - {view: top, a: [-12, 78, 9], b: [22, 78, 9], side: top, text: "34"}
+    - {view: top, a: [22, 78, 9], b: [34, 110, 9], side: top, text: "12"}
+    - {view: top, a: [34, 110, 9], b: [64, 110, 9], side: top, text: "30"}
+    - {view: top, a: [64, 110, 9], b: [70, 110, 0], side: top, text: "6"}
+    - {view: top, a: [-70, 44, 0], b: [-63, 44, 9], side: left, tier: 1, text: "9"}
+    - {view: top, a: [-63, 44, 9], b: [-63, 44, 81], side: left, tier: 1, text: "72"}
+    - {view: top, a: [-63, 44, 81], b: [-70, 44, 90], side: left, tier: 1, text: "9"}
+    - {view: top, a: [-70, 44, 0], b: [-70, 44, 90], side: left, tier: 2, text: "90"}
+    - {view: top, a: [-70, 0, 90], b: [-57, 0, 52], side: bottom, text: "13"}
+    - {view: top, a: [-57, 0, 52], b: [-31, 0, 52], side: bottom, text: "26"}
+    - {view: top, a: [36, 0, 52], b: [62, 0, 52], side: bottom, text: "26"}
+    - {view: top, a: [62, 0, 52], b: [70, 0, 90], side: bottom, text: "8"}
+    - {view: top, a: [70, 0, 0], b: [62, 0, 38], side: right, text: "38"}
+    - {view: top, a: [62, 0, 38], b: [62, 0, 52], side: right, text: "14"}
+  callouts:
+    - {view: front, at: [-51, 37, 90], r: 0, angle: 125, leader: 70, text: "充电线孔"}
+    - {view: front, at: [44, 93, 90], r: 0, angle: 125, leader: 70, text: "提手槽"}
+    - {view: top, at: [67, 0, 87], r: 3, angle: -45, leader: 30, text: "4×R3"}
+  notes:
+    - "三个仓（前仓 38×72、中仓 34×72、后仓 30×72）自顶面向下，仓底均距底面 8（前仓深 36、中仓深 70、后仓深 102）"
+    - "底面两处防滑浅槽 26×14 深 1.5（俯视图虚线）；竖直外棱 4×R3"
+    - "充电线孔 14×10（矩形）：孔心距左端 26、距底面 32；提手槽 24×10 长圆：中心距右端 21、距底面 88；二者均贯穿前壁（前壁厚 9）"
+
+# frame：轴 0 = 前后（背面低），轴 1 = 高度（底面低），轴 2 = 长度（右端面低，c2 = 70 − x）
+entities:
+  fillets: {cylinder: {d: 6, side: outer}, count: 4}
+  frame: {principal_frame: {signs: {0: larger_area_low, 1: larger_area_low, 2: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 140、110；俯视图 90
+    hard: true
+    check:
+      - bbox_sorted: [90, 110, 140]
+
+  - id: steps
+    source: 主视图三段台阶：宽 52 / 46 / 42，高 44 / 78 / 110
+    check:
+      - line_material: {frame: frame, along: 1, at: [4, null, 120], expect: [[0, 44]]}
+      - line_material: {frame: frame, along: 1, at: [4, null, 60], expect: [[0, 78]]}
+      - line_material: {frame: frame, along: 1, at: [4, null, 20], expect: [[0, 110]]}
+      - line_material: {frame: frame, along: 2, at: [4, 60, null], expect: [[0, 88]]}
+      - line_material: {frame: frame, along: 2, at: [4, 90, null], expect: [[0, 42]]}
+
+  - id: compartments
+    source: 俯视图：仓宽 38 / 34 / 30、隔墙 7 / 13 / 12 / 6，仓长 72、前后壁 9
+    check:
+      - line_material: {frame: frame, along: 2, at: [45, 20, null], expect: [[0, 6], [36, 48], [82, 95], [133, 140]]}
+      - line_material: {frame: frame, along: 0, at: [null, 20, 21], expect: [[0, 9], [81, 90]]}
+      - line_material: {frame: frame, along: 0, at: [null, 20, 65], expect: [[0, 9], [81, 90]]}
+      - line_material: {frame: frame, along: 0, at: [null, 20, 114], expect: [[0, 9], [81, 90]]}
+
+  - id: floors
+    source: 注释：仓底均距底面 8；前、后仓下方有 1.5 深防滑槽
+    check:
+      - line_material: {frame: frame, along: 1, at: [45, null, 114], expect: [[1.5, 8]]}
+      - line_material: {frame: frame, along: 1, at: [45, null, 65], expect: [[0, 8]]}
+      - line_material: {frame: frame, along: 1, at: [45, null, 21], expect: [[1.5, 8]]}
+
+  - id: bottom_slots
+    source: 俯视图虚线：两处防滑浅槽 26×14，距左端 13、距右端 8、距背面 38；注释深 1.5
+    check:
+      - line_material: {frame: frame, along: 2, at: [45, 0.75, null], expect: [[0, 8], [34, 101], [127, 140]]}
+      - line_material: {frame: frame, along: 0, at: [null, 0.75, 21], expect: [[0, 38], [52, 90]]}
+
+  - id: charge_hole
+    source: 主视图：充电线孔 14×10，孔心距左端 26、距底 32，贯穿前壁
+    check:
+      - line_material: {frame: frame, along: 2, at: [85, 32, null], expect: [[0, 107], [121, 140]]}
+      - line_material: {frame: frame, along: 1, at: [85, null, 114], expect: [[0, 27], [37, 44]]}
+
+  - id: handle_slot
+    source: 主视图：提手槽 24×10 长圆，中心距右端 21、距底 88，贯穿前壁
+    check:
+      - line_material: {frame: frame, along: 2, at: [85, 88, null], expect: [[0, 9], [33, 42]]}
+      - line_material: {frame: frame, along: 1, at: [85, null, 21], expect: [[0, 83], [93, 110]]}
+
+  - id: fillets
+    source: 俯视图 4×R3：竖直外棱倒圆
+    check:
+      - blend_faces: {radius: 3, side: outer, min_count: 4}
+      - exists: fillets
+      - axis_positions: {frame: frame, items: fillets, axes: [0, 2], expect: [[3, 3], [87, 3], [3, 137], [87, 137]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 倒圆与布尔运算）体积 449550.27
+    check:
+      - volume: 449550.27
+
+ungraded: []

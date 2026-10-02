@@ -1,0 +1,63 @@
+case: b11_gear_disc
+title: B11 齿轮盘
+prompt: 根据所附三视图（第三角画法，单位 mm）建模齿轮盘，单一实体。
+prompt_en: Model the gear disc from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/b11_gear_disc.png
+reference: eval/three_view/references/b11_gear_disc.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: right, a: [30, -30, 0], b: [30, -30, 10], side: bottom, text: "10"}
+  callouts:
+    - {view: front, at: [0, 0, 10], r: 30, angle: 20, leader: 50, text: "Ø60"}
+    - {view: front, at: [0, 0, 10], r: 7.5, angle: 200, leader: 90, text: "Ø15 通孔"}
+    - {view: front, at: [20.785, 12, 10], r: 2, angle: 60, leader: 70, text: "12×Ø4 通孔 均布"}
+    - {view: front, at: [0, 0, 10], r: 24, angle: -50, leader: 60, text: "Ø48"}
+  circles:
+    - {view: front, at: [0, 0, 10], r: 24}
+  centers:
+    - {view: front, at: [0, 0, 10], r: 30}
+
+entities:
+  disc: {cylinder: {d: 60, side: outer}, count: 1}
+  bore: {cylinder: {d: 15, side: inner}, count: 1}
+  holes: {cylinder: {d: 4, side: inner}, count: 12}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 Ø60；右视图 10
+    hard: true
+    check:
+      - bbox_sorted: [10, 60, 60]
+      - exists: disc
+      - extent_along: {axis: disc, of: all, value: 10}
+
+  - id: bore
+    source: 主视图 Ø15 通孔（居中）
+    check:
+      - exists: bore
+      - coaxial: [bore, disc]
+      - through: {holes: bore}
+
+  - id: holes
+    source: 主视图 12×Ø4 通孔，均布在 Ø48 点画线圆上
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_distance: {from: disc, to: holes, value: 24}
+      - equal_angular: {about: disc, items: holes}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: π·10·(30² − 7.5² − 12·2²) = 24999.2
+    check:
+      - volume: 24999.22
+
+ungraded: []

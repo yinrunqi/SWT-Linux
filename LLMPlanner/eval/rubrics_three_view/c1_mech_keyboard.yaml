@@ -1,0 +1,84 @@
+case: c1_mech_keyboard
+title: C1 迷你机械键盘
+prompt: 根据所附三视图（第三角画法，单位 mm）建模迷你机械键盘（底座与键帽连成一体），单一实体。
+prompt_en: Model the mini mechanical keyboard (base and keycaps joined together) from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/c1_mech_keyboard.png
+reference: eval/three_view/references/c1_mech_keyboard.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-142.5, -47.5, 20], b: [142.5, -47.5, 20], side: bottom, text: "285"}
+    - {view: front, a: [-142.5, -47.5, 20], b: [-142.5, 47.5, 20], side: left, text: "95"}
+    - {view: front, a: [-142.5, 47.5, 20], b: [-108, 36, 20], side: top, text: "34.5"}
+    - {view: front, a: [-108, 36, 20], b: [-90, 36, 20], side: top, text: "18"}
+    - {view: front, a: [142.5, -47.5, 20], b: [108, -36, 20], side: right, text: "11.5"}
+    - {view: front, a: [108, -36, 20], b: [108, -18, 20], side: right, text: "18"}
+    - {view: top, a: [-114.5, 0, 20], b: [-101.5, 0, 20], side: bottom, tier: 1, text: "13"}
+    - {view: top, a: [-115.5, 0, 15], b: [-100.5, 0, 15], side: bottom, tier: 2, text: "15"}
+    - {view: right, a: [142.5, -47.5, 0], b: [142.5, -47.5, 15], side: bottom, tier: 1, text: "15"}
+    - {view: right, a: [142.5, -47.5, 0], b: [142.5, -47.5, 20], side: bottom, tier: 2, text: "20"}
+  centers:
+    - {view: front, at: [-108, -36, 20], r: 7.5}
+  notes:
+    - "键帽 13 列 × 5 行，行距、列距均为 18，整体关于底座中心对称"
+    - "每个键帽为正四棱台：底 15×15、顶 13×13、高 5，立在底座顶面上"
+
+# frame：轴 0 = 高度（底面低），轴 1 = 宽度（95），轴 2 = 长度（285）；键帽中心 c2 = 34.5 + 18k，c1 = 11.5 + 18j
+entities:
+  frame: {principal_frame: {signs: {0: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 285×95；右视图总高 20
+    hard: true
+    check:
+      - bbox_sorted: [20, 95, 285]
+
+  - id: base
+    source: 右视图：底座高 15
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 2, 2], expect: [[0, 15]]}
+      - line_material: {frame: frame, along: 0, at: [null, 47.5, 2], expect: [[0, 15]]}
+
+  - id: columns
+    source: 主视图：13 列，首列中心距左端 34.5，列距 18
+    derivation: 键帽半高处（z = 17.5）边长 14：各列占 [34.5 + 18k − 7, 34.5 + 18k + 7]
+    check:
+      - line_material:
+          frame: frame
+          along: 2
+          at: [17.5, 47.5, null]
+          expect: [[27.5, 41.5], [45.5, 59.5], [63.5, 77.5], [81.5, 95.5], [99.5, 113.5], [117.5, 131.5],
+                   [135.5, 149.5], [153.5, 167.5], [171.5, 185.5], [189.5, 203.5], [207.5, 221.5],
+                   [225.5, 239.5], [243.5, 257.5]]
+
+  - id: rows
+    source: 主视图：5 行，首行中心距底边 11.5，行距 18
+    check:
+      - line_material:
+          frame: frame
+          along: 1
+          at: [17.5, null, 142.5]
+          expect: [[4.5, 18.5], [22.5, 36.5], [40.5, 54.5], [58.5, 72.5], [76.5, 90.5]]
+
+  - id: key_shape
+    source: 俯视图键帽底 15、顶 13，右视图键帽高 5：正四棱台
+    derivation: 键帽高 h 处边长 15 − 0.4h；h = 1 → 65·14.6² = 13855.4，h = 4.5 → 65·13.2² = 11325.6
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 11.5, 34.5], expect: [[0, 20]]}
+      - section_areas: {frame: frame, axis: 0, at: [16, 19.5], expect: [13855.4, 11325.6]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 285×95×15 + 65·5/3·(225 + 169 + 195) = 469933.3
+    check:
+      - volume: 469933.33
+
+ungraded: []

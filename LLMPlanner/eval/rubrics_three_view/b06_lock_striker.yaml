@@ -1,0 +1,75 @@
+case: b06_lock_striker
+title: B06 门锁扣板
+prompt: 根据所附三视图（第三角画法，单位 mm）建模门锁扣板，单一实体。
+prompt_en: Model the door lock striker plate from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/b06_lock_striker.png
+reference: eval/three_view/references/b06_lock_striker.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-15, -40, 3], b: [15, -40, 3], side: bottom, text: "30"}
+    - {view: front, a: [-15, -40, 3], b: [-15, 40, 3], side: left, text: "80"}
+    - {view: front, a: [-10, 0, 3], b: [10, 0, 3], side: top, text: "20"}
+    - {view: front, a: [10, -5, 3], b: [10, 5, 3], side: right, tier: 1, text: "10"}
+    - {view: front, a: [0, -32, 3], b: [0, 32, 3], side: right, tier: 2, text: "64"}
+    - {view: right, a: [15, -40, 3], b: [15, -40, 0], side: bottom, text: "3"}
+  callouts:
+    - {view: front, at: [0, 32, 3], r: 2.5, angle: 50, leader: 90, text: "2×Ø5 通孔"}
+    - {view: front, at: [-12, -37, 3], r: 3, angle: 225, text: "4×R3"}
+  centers:
+    - {view: front, at: [0, 32, 3], r: 2.5}
+    - {view: front, at: [0, -32, 3], r: 2.5}
+    - {view: front, at: [-5, 0, 3], r: 5}
+    - {view: front, at: [5, 0, 3], r: 5}
+  axes:
+    - {view: front, a: [0, -43, 3], b: [0, 43, 3]}
+  notes: ["中部长圆通孔：总长 20、宽 10，两端半圆，居中"]
+
+# frame：轴 0 = 厚度，轴 1 = 宽度（30），轴 2 = 长度（80）；零件双向对称
+entities:
+  holes: {cylinder: {d: 5, side: inner}, count: 2}
+  slot_ends: {cylinder: {d: 10, side: inner}, count: 2}
+  frame: {principal_frame: {}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 30、80；右视图 3
+    hard: true
+    check:
+      - bbox_sorted: [3, 30, 80]
+
+  - id: corners
+    source: 主视图 4×R3：板的四个角倒圆
+    derivation: 距长边 0.5 处，R3 圆角使材料从 3 − √(9 − 2.5²) = 1.342 开始
+    check:
+      - blend_faces: {radius: 3, side: outer, min_count: 4}
+      - line_material: {frame: frame, along: 2, at: [1.5, 0.5, null], expect: [[1.342, 78.658]]}
+
+  - id: holes
+    source: 主视图 2×Ø5 通孔，孔距 64，位于中心线上
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[15, 8], [15, 72]]}
+
+  - id: slot
+    source: 主视图长圆通孔：长 20（沿宽度方向）、宽 10，两端半圆，居中
+    check:
+      - opening_size: {frame: frame, normal: 0, at: [1.5, 15, 40], size: [10, 20], through: true, centered: true}
+      - exists: slot_ends
+      - axis_positions: {frame: frame, items: slot_ends, axes: [1, 2], expect: [[10, 40], [20, 40]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 倒圆与布尔运算）体积 6523.39
+    check:
+      - volume: 6523.39
+
+ungraded: []

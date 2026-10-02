@@ -1,0 +1,55 @@
+case: b01_l_bracket
+title: B01 L 型支架
+prompt: 根据所附三视图（第三角画法，单位 mm）建模 L 型支架，单一实体。
+prompt_en: Model the L-shaped bracket from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/b01_l_bracket.png
+reference: eval/three_view/references/b01_l_bracket.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [0, 0, 20], b: [60, 0, 20], side: bottom, text: "60"}
+    - {view: front, a: [0, 0, 20], b: [0, 40, 20], side: left, text: "40"}
+    - {view: front, a: [30, 40, 20], b: [60, 20, 20], side: top, text: "30"}
+    - {view: front, a: [60, 0, 20], b: [60, 20, 20], side: right, text: "20"}
+    - {view: right, a: [60, 0, 20], b: [60, 0, 0], side: bottom, text: "20"}
+
+# frame：轴 0 = 厚度（20），轴 1 = 高度（底面低），轴 2 = 长度（左端面低）
+entities:
+  frame: {principal_frame: {signs: {1: larger_area_low, 2: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 60、40；右视图 20
+    hard: true
+    check:
+      - bbox_sorted: [20, 40, 60]
+
+  - id: notch
+    source: 主视图：右上角缺口宽 30，缺口下方台阶高 20
+    derivation: 高度 10 处全长有材料；高度 30 处只有左段 0–30；左段全高 40，右段高 20
+    check:
+      - line_material: {frame: frame, along: 2, at: [10, 10, null], expect: [[0, 60]]}
+      - line_material: {frame: frame, along: 2, at: [10, 30, null], expect: [[0, 30]]}
+      - line_material: {frame: frame, along: 1, at: [10, null, 15], expect: [[0, 40]]}
+      - line_material: {frame: frame, along: 1, at: [10, null, 45], expect: [[0, 20]]}
+
+  - id: prismatic
+    source: 俯视图、右视图均为矩形：截面沿厚度方向不变
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 30, 15], expect: [[0, 20]]}
+      - line_material: {frame: frame, along: 0, at: [null, 10, 45], expect: [[0, 20]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: (60×40 − 30×20)×20 = 36000
+    check:
+      - volume: 36000
+
+ungraded: []

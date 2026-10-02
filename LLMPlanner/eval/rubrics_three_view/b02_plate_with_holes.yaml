@@ -1,0 +1,60 @@
+case: b02_plate_with_holes
+title: B02 带孔平板
+prompt: 根据所附三视图（第三角画法，单位 mm）建模带孔平板，单一实体。
+prompt_en: Model the plate with holes from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/b02_plate_with_holes.png
+reference: eval/three_view/references/b02_plate_with_holes.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [0, 0, 10], b: [80, 0, 10], side: bottom, text: "80"}
+    - {view: front, a: [0, 0, 10], b: [0, 40, 10], side: left, text: "40"}
+    - {view: front, a: [0, 40, 10], b: [20, 20, 10], side: top, text: "20"}
+    - {view: front, a: [20, 20, 10], b: [60, 20, 10], side: top, text: "40"}
+    - {view: front, a: [80, 0, 10], b: [60, 20, 10], side: right, text: "20"}
+    - {view: right, a: [80, 0, 10], b: [80, 0, 0], side: bottom, text: "10"}
+  callouts:
+    - {view: front, at: [60, 20, 10], r: 5, angle: 45, text: "2×Ø10 通孔"}
+  centers:
+    - {view: front, at: [20, 20, 10], r: 5}
+    - {view: front, at: [60, 20, 10], r: 5}
+
+# frame：轴 0 = 厚度，轴 1 = 宽度（40），轴 2 = 长度（80）；孔位关于板中心对称，轴向正负不影响
+entities:
+  holes: {cylinder: {d: 10, side: inner}, count: 2}
+  frame: {principal_frame: {}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 80、40；右视图 10
+    hard: true
+    check:
+      - bbox_sorted: [10, 40, 80]
+
+  - id: holes
+    source: 主视图 2×Ø10 通孔（俯视图、右视图中为贯穿的虚线）
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - parallel_to_frame: {frame: frame, axis: 0, items: holes}
+
+  - id: hole_positions
+    source: 主视图：孔心距左端 20、孔距 40、距底边 20
+    check:
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[20, 20], [20, 60]]}
+      - pair_distance: {items: holes, value: 40}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 80×40×10 − 2·π·5²·10 = 30429.2
+    check:
+      - volume: 30429.2
+
+ungraded: []

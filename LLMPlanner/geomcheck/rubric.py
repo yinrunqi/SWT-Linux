@@ -200,6 +200,29 @@ def _flip_larger_area_low(ctx: Ctx, frame: Frame, axis: int, rebuild) -> Frame:
     return frame
 
 
+def _flip_wider_end_low(ctx: Ctx, frame: Frame, axis: int, rebuild) -> Frame:
+    """两端各取轴向 2% 厚的一层表面采样点，面内包围盒面积较大的一端为低端（如底大顶小的键帽，
+    与底面是否开槽、顶面是否倒圆无关）。"""
+    c = (ctx.part.points - frame.origin) @ frame.axes.T
+    band = 0.02 * float(frame.hi[axis] - frame.lo[axis])
+    others = [k for k in range(3) if k != axis]
+
+    def area(mask):
+        sub = c[mask][:, others]
+        return float(np.prod(sub.max(axis=0) - sub.min(axis=0))) if len(sub) else 0.0
+
+    low = area(c[:, axis] <= frame.lo[axis] + band)
+    high = area(c[:, axis] >= frame.hi[axis] - band)
+    if high > low * (1 + 1e-3) + 1e-6:
+        axes = frame.axes.copy()
+        axes[axis] = -axes[axis]
+        return rebuild(axes)
+    return frame
+
+
+_SIGN_RULES = {"larger_area_low": _flip_larger_area_low, "wider_end_low": _flip_wider_end_low}
+
+
 def sel_principal_frame(ctx: Ctx, a: dict) -> Frame:
     part = ctx.part
     axes = principal_axes(part)
@@ -210,9 +233,9 @@ def sel_principal_frame(ctx: Ctx, a: dict) -> Frame:
     if a.get("up") == "open_end":
         signs[0] = "larger_area_low"
     for axis, rule in sorted(signs.items()):
-        if rule != "larger_area_low":
+        if rule not in _SIGN_RULES:
             raise ValueError(f"未知的方向规则 {rule}")
-        frame = _flip_larger_area_low(ctx, frame, int(axis), lambda ax: _box_frame(part, ax))
+        frame = _SIGN_RULES[rule](ctx, frame, int(axis), lambda ax: _box_frame(part, ax))
     return frame
 
 
@@ -484,6 +507,13 @@ def ck_single_valid_solid(ctx: Ctx, a) -> Result:
     p = ctx.part
     ok = p.n_solids == 1 and p.is_valid()
     return ok, {"solids": p.n_solids, "shells": p.n_shells, "valid": p.is_valid()}
+
+
+def ck_solid_count(ctx: Ctx, value) -> Result:
+    """恰有 value 个实体且整体有效（如两个分开的零件）。"""
+    p = ctx.part
+    ok = p.n_solids == value and p.is_valid()
+    return ok, {"solids": p.n_solids, "valid": p.is_valid()}
 
 
 def ck_exists(ctx: Ctx, name) -> Result:

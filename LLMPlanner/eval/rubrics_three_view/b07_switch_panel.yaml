@@ -1,0 +1,75 @@
+case: b07_switch_panel
+title: B07 86 型开关面板
+prompt: 根据所附三视图（第三角画法，单位 mm）建模 86 型开关面板，单一实体。
+prompt_en: Model the type-86 wall switch panel from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/b07_switch_panel.png
+reference: eval/three_view/references/b07_switch_panel.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-35, -35, 10], b: [35, -35, 10], side: bottom, tier: 1, text: "70"}
+    - {view: front, a: [-43, -43, 10], b: [43, -43, 10], side: bottom, tier: 2, text: "86"}
+    - {view: front, a: [-35, -35, 10], b: [-35, 35, 10], side: left, tier: 1, text: "70"}
+    - {view: front, a: [-43, -43, 10], b: [-43, 43, 10], side: left, tier: 2, text: "86"}
+    - {view: front, a: [-25, 25, 10], b: [25, 25, 10], side: top, text: "50"}
+    - {view: front, a: [25, -25, 10], b: [25, 25, 10], side: right, text: "50"}
+    - {view: right, a: [43, -43, 10], b: [43, -43, 7], side: bottom, tier: 1, text: "3"}
+    - {view: right, a: [43, -43, 10], b: [43, -43, 0], side: bottom, tier: 2, text: "10"}
+  callouts:
+    - {view: front, at: [35, 35, 10], r: 1.5, angle: 45, text: "4×Ø3 通孔"}
+    - {view: front, at: [-40, -40, 10], r: 3, angle: 225, text: "4×R3"}
+  centers:
+    - {view: front, at: [35, 35, 10], r: 1.5}
+    - {view: front, at: [-35, 35, 10], r: 1.5}
+    - {view: front, at: [35, -35, 10], r: 1.5}
+    - {view: front, at: [-35, -35, 10], r: 1.5}
+  axes:
+    - {view: front, a: [0, -46, 10], b: [0, 46, 10]}
+    - {view: front, a: [-46, 0, 10], b: [46, 0, 10]}
+  notes: ["正面居中方形凹槽 50×50 深 3"]
+
+# frame：轴 0 = 厚度（背面低：背面面积大于带凹槽的正面），轴 1、2 = 两边（对称）
+entities:
+  holes: {cylinder: {d: 3, side: inner}, count: 4}
+  frame: {principal_frame: {signs: {0: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 86×86；右视图 10
+    hard: true
+    check:
+      - bbox_sorted: [10, 86, 86]
+
+  - id: corners
+    source: 主视图 4×R3
+    check:
+      - blend_faces: {radius: 3, side: outer, min_count: 4}
+
+  - id: holes
+    source: 主视图 4×Ø3 通孔，孔距 70×70，关于中心对称
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[8, 8], [8, 78], [78, 8], [78, 78]]}
+
+  - id: pocket
+    source: 主视图凹槽 50×50（居中），右视图深 3
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 43, 43], expect: [[0, 7]]}
+      - line_material: {frame: frame, along: 1, at: [8.5, null, 43], expect: [[0, 18], [68, 86]]}
+      - line_material: {frame: frame, along: 2, at: [8.5, 43, null], expect: [[0, 18], [68, 86]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 86²×10 − 4·(3² − π·3²/4)·10 − 50²×3 − 4·π·1.5²·10 = 66100.0
+    check:
+      - volume: 66100.0
+
+ungraded: []

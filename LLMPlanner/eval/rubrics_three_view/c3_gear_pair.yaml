@@ -1,0 +1,83 @@
+case: c3_gear_pair
+title: C3 齿轮组
+prompt: 根据所附三视图（第三角画法，单位 mm）建模齿轮组：两个齿轮为两个分开的实体，按图示位置摆放在同一个零件文件中。
+prompt_en: Model the gear pair from the attached three-view drawing (third-angle projection, units in mm). The two gears are two separate solid bodies placed as shown, in the same part file.
+image: eval/three_view/drawings/c3_gear_pair.png
+reference: eval/three_view/references/c3_gear_pair.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-59, 0, 15], b: [-11, 0, 15], side: bottom, tier: 1, text: "48"}
+    - {view: front, a: [-9, 0, 15], b: [79, 0, 15], side: bottom, tier: 1, text: "88"}
+    - {view: front, a: [-35, 0, 15], b: [35, 0, 15], side: bottom, tier: 2, text: "70"}
+    - {view: front, a: [-59, -2.5, 15], b: [-59, 2.5, 15], side: left, text: "5"}
+    - {view: front, a: [32.5, 44, 15], b: [37.5, 44, 15], side: top, text: "5"}
+    - {view: right, a: [0, -44, 0], b: [0, -44, 15], side: bottom, text: "15"}
+  callouts:
+    - {view: front, at: [-35, 0, 15], r: 20, angle: 125, leader: 60, text: "Ø40"}
+    - {view: front, at: [35, 0, 15], r: 40, angle: 60, leader: 40, text: "Ø80"}
+  centers:
+    - {view: front, at: [-35, 0, 15], r: 24}
+    - {view: front, at: [35, 0, 15], r: 44}
+  axes:
+    - {view: front, a: [-64, 0, 15], b: [84, 0, 15]}
+  notes:
+    - "小齿轮 10 齿、大齿轮 20 齿，均为矩形齿（齿宽 5、齿顶为平面），沿圆周均布"
+    - "两齿轮在中心连线上齿顶相对；两齿轮厚度均为 15，为两个分开的实体"
+
+# fs / fb：分别以小、大齿轮齿根圆柱为轴的坐标系，轴 1 指向另一个齿轮的轴线
+entities:
+  small: {cylinder: {d: 40, side: outer}, count: 1}
+  big: {cylinder: {d: 80, side: outer}, count: 1}
+  fs: {axis_frame: {axis: small, ref: big}}
+  fb: {axis_frame: {axis: big, ref: small}}
+
+rubrics:
+  - id: solids
+    source: 两个分开的实体
+    hard: true
+    check:
+      - solid_count: 2
+
+  - id: thickness
+    source: 右视图：两齿轮厚度均为 15
+    hard: true
+    check:
+      - exists: small
+      - extent_along: {axis: small, of: all, value: 15}
+
+  - id: gears
+    source: 主视图 Ø40、Ø80 齿根圆，中心距 70
+    check:
+      - exists: small
+      - exists: big
+      - parallel: [big, small]
+      - axis_distance: {from: small, to: big, value: 70}
+
+  - id: tips_on_center_line
+    source: 主视图齿顶 48、88；注释：两齿轮在中心连线上齿顶相对
+    derivation: 沿中心连线（小齿轮中心为 0）：小齿轮 [−24, 24]，大齿轮 [70 − 44, 70 + 44]
+    check:
+      - line_material: {frame: fs, along: 1, at: [7.5, null, 0], expect: [[-24, 24], [26, 114]]}
+
+  - id: small_teeth
+    source: 注释：小齿轮 10 齿均布；主视图齿宽 5
+    derivation: 半径 22 圆上每齿占 2·asin(2.5/22) = 13.049°，齿间空 36 − 13.049 = 22.951°
+    check:
+      - angular_openings: {frame: fs, t: 7.5, r: 22, count: 10, arc_deg: 22.951}
+
+  - id: big_teeth
+    source: 注释：大齿轮 20 齿均布；主视图齿宽 5
+    derivation: 半径 42 圆上每齿占 2·asin(2.5/42) = 6.825°，齿间空 18 − 6.825 = 11.175°
+    check:
+      - angular_openings: {frame: fb, t: 7.5, r: 42, count: 20, arc_deg: 11.175}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 103326.02
+    check:
+      - volume: 103326.02
+
+ungraded:
+  - 真实渐开线齿形（图纸为矩形齿示意）

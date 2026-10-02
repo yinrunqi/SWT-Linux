@@ -1,0 +1,102 @@
+case: c2_gearbox
+title: C2 齿轮减速器外壳
+prompt: 根据所附三视图（第三角画法，单位 mm）建模齿轮减速器外壳，单一实体。
+prompt_en: Model the gear reducer housing from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/c2_gearbox.png
+reference: eval/three_view/references/c2_gearbox.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-80, 20, 50], b: [80, 20, 50], side: bottom, tier: 1, text: "160"}
+    - {view: front, a: [-100, 0, 60], b: [100, 0, 60], side: bottom, tier: 2, text: "200"}
+    - {view: front, a: [-100, 0, 60], b: [-100, 20, 60], side: left, tier: 1, text: "20"}
+    - {view: front, a: [-100, 0, 60], b: [-80, 100, 50], side: left, tier: 2, text: "100"}
+    - {view: front, a: [100, 0, 60], b: [72, 26, 42], side: right, tier: 1, text: "26"}
+    - {view: front, a: [100, 0, 60], b: [0, 60, 50], side: right, tier: 2, text: "60"}
+    - {view: top, a: [-100, 20, -60], b: [-85, 20, -45], side: top, tier: 1, text: "15"}
+    - {view: top, a: [-85, 20, -45], b: [85, 20, -45], side: top, tier: 2, text: "170"}
+    - {view: top, a: [-80, 100, 50], b: [-72, 100, 42], side: bottom, text: "8"}
+    - {view: top, a: [-85, 20, -45], b: [-85, 20, 45], side: left, tier: 1, text: "90"}
+    - {view: top, a: [-100, 0, -60], b: [-100, 0, 60], side: left, tier: 2, text: "120"}
+    - {view: top, a: [80, 100, -50], b: [80, 100, 50], side: right, text: "100"}
+    - {view: right, a: [80, 20, 50], b: [80, 20, -50], side: bottom, tier: 1, text: "100"}
+    - {view: right, a: [100, 0, 60], b: [100, 0, -60], side: bottom, tier: 2, text: "120"}
+  callouts:
+    - {view: front, at: [0, 60, 50], r: 12.5, angle: 45, text: "Ø25 通孔（前后壁）"}
+    - {view: top, at: [85, 20, 45], r: 4, angle: -45, leader: 30, text: "4×Ø8 通孔"}
+  centers:
+    - {view: front, at: [0, 60, 50], r: 12.5}
+    - {view: top, at: [85, 20, 45], r: 4}
+    - {view: top, at: [-85, 20, 45], r: 4}
+    - {view: top, at: [85, 20, -45], r: 4}
+    - {view: top, at: [-85, 20, -45], r: 4}
+  axes:
+    - {view: top, a: [0, 0, -64], b: [0, 0, 64]}
+    - {view: right, a: [0, 60, -54], b: [0, 60, 54]}
+  notes:
+    - "箱体四周壁厚均为 8，内腔顶部敞开，腔底距底面 26"
+    - "底部法兰 200×120 厚 20，箱体 160×100 居中立于法兰上"
+
+# frame：轴 0 = 高度（底面低），轴 1 = 进深（120），轴 2 = 长度（200）
+entities:
+  bearing: {cylinder: {d: 25, side: inner}, count: 2}  # 前、后壁上各一段孔壁
+  mount: {cylinder: {d: 8, side: inner}, count: 4}
+  frame: {principal_frame: {signs: {0: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 200、总高 100；俯视图 120
+    hard: true
+    check:
+      - bbox_sorted: [100, 120, 200]
+
+  - id: flange
+    source: 主视图法兰厚 20；俯视图法兰 200×120
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 5, 100], expect: [[0, 20]]}
+      - line_material: {frame: frame, along: 1, at: [10, null, 100], expect: [[0, 120]]}
+      - line_material: {frame: frame, along: 2, at: [10, 60, null], expect: [[0, 200]]}
+
+  - id: box
+    source: 主视图箱体长 160、高 100；俯视图进深 100，四周壁厚 8
+    derivation: 箱体长度方向占 [20, 180]、进深方向占 [10, 110]；内腔 [28, 172]×[18, 102]
+    check:
+      - line_material: {frame: frame, along: 2, at: [40, 60, null], expect: [[20, 28], [172, 180]]}
+      - line_material: {frame: frame, along: 1, at: [40, null, 60], expect: [[10, 18], [102, 110]]}
+      - line_material: {frame: frame, along: 0, at: [null, 14, 60], expect: [[0, 100]]}
+
+  - id: cavity_floor
+    source: 主视图腔底高 26；内腔顶部敞开
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 60, 100], expect: [[0, 26]]}
+
+  - id: bearing
+    source: 主视图 Ø25 通孔，孔心高 60、左右居中，贯穿前后壁
+    check:
+      - exists: bearing
+      - through: {holes: bearing}
+      - parallel_to_frame: {frame: frame, axis: 1, items: bearing}
+      - axis_positions: {frame: frame, items: bearing, axes: [0, 2], expect: [[60, 100], [60, 100]]}
+
+  - id: mount_holes
+    source: 俯视图 4×Ø8 通孔，孔距 170×90，距法兰边 15
+    check:
+      - exists: mount
+      - through: {holes: mount}
+      - parallel_to_frame: {frame: frame, axis: 0, items: mount}
+      - axis_positions: {frame: frame, items: mount, axes: [1, 2], expect: [[15, 15], [15, 185], [105, 15], [105, 185]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 853020.78
+    check:
+      - volume: 853020.78
+
+ungraded: []

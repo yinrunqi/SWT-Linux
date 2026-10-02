@@ -1,0 +1,62 @@
+case: b03_t_bracket
+title: B03 T 型支架
+prompt: 根据所附三视图（第三角画法，单位 mm）建模 T 型支架，单一实体。
+prompt_en: Model the T-shaped bracket from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/b03_t_bracket.png
+reference: eval/three_view/references/b03_t_bracket.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [0, 45, 15], b: [60, 45, 15], side: top, text: "60"}
+    - {view: front, a: [20, 0, 15], b: [40, 0, 15], side: bottom, text: "20"}
+    - {view: front, a: [20, 0, 15], b: [0, 30, 15], side: left, text: "30"}
+    - {view: front, a: [0, 30, 15], b: [0, 45, 15], side: left, text: "15"}
+    - {view: front, a: [40, 0, 15], b: [60, 45, 15], side: right, text: "45"}
+    - {view: right, a: [60, 0, 15], b: [60, 0, 0], side: bottom, text: "15"}
+  axes:
+    - {view: front, a: [30, -5, 15], b: [30, 50, 15]}
+  notes: ["主视图关于竖直点画线左右对称"]
+
+# frame：轴 0 = 厚度，轴 1 = 高度（横梁顶面低：顶面面积大于立柱底面），轴 2 = 宽度（对称，正负不影响）
+entities:
+  frame: {principal_frame: {signs: {1: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 60、45；右视图 15
+    hard: true
+    check:
+      - bbox_sorted: [15, 45, 60]
+
+  - id: bar
+    source: 主视图：顶部横梁全宽 60、高 15
+    check:
+      - line_material: {frame: frame, along: 1, at: [7.5, null, 5], expect: [[0, 15]]}
+      - line_material: {frame: frame, along: 2, at: [7.5, 7.5, null], expect: [[0, 60]]}
+
+  - id: stem
+    source: 主视图：立柱宽 20、高 30，关于对称线居中
+    check:
+      - line_material: {frame: frame, along: 2, at: [7.5, 30, null], expect: [[20, 40]]}
+      - line_material: {frame: frame, along: 1, at: [7.5, null, 30], expect: [[0, 45]]}
+
+  - id: prismatic
+    source: 俯视图、右视图均为矩形：截面沿厚度 15 不变
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 7.5, 5], expect: [[0, 15]]}
+      - line_material: {frame: frame, along: 0, at: [null, 7.5, 55], expect: [[0, 15]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: (60×15 + 20×30)×15 = 22500
+    check:
+      - volume: 22500
+
+ungraded: []

@@ -1,0 +1,68 @@
+case: b05_keycap_full
+title: B05 键帽（完整版）
+prompt: 根据所附三视图（第三角画法，单位 mm）建模键帽，单一实体。
+prompt_en: Model the keycap from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/b05_keycap_full.png
+reference: eval/three_view/references/b05_keycap_full.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-6, -6, 0], b: [6, -6, 0], side: bottom, tier: 1, text: "12"}
+    - {view: front, a: [-9, -9, 0], b: [9, -9, 0], side: bottom, tier: 2, text: "18"}
+    - {view: front, a: [-6, -6, 0], b: [-6, 6, 0], side: left, tier: 1, text: "12"}
+    - {view: front, a: [-9, -9, 0], b: [-9, 9, 0], side: left, tier: 2, text: "18"}
+    - {view: front, a: [-7, 7, 8], b: [7, 7, 8], side: top, text: "14"}
+    - {view: right, a: [9, -9, 0], b: [9, -9, 3], side: bottom, tier: 1, text: "3"}
+    - {view: right, a: [9, -9, 0], b: [9, -9, 8], side: bottom, tier: 2, text: "8"}
+  axes:
+    - {view: front, a: [0, -11, 0], b: [0, 11, 0]}
+    - {view: front, a: [-11, 0, 0], b: [11, 0, 0]}
+  notes:
+    - "正四棱台外形，顶面与底面中心对齐；14 为顶面棱边倒圆前的理论交线尺寸"
+    - "顶面四周棱边倒圆 R1.5"
+    - "底面居中方形盲槽 12×12 深 3（主视图虚线）"
+
+# frame：轴 0 = 高度（外廓较宽的 18×18 一端为底），轴 1、2 = 底面两边（对称）
+entities:
+  frame: {principal_frame: {signs: {0: wider_end_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 18×18；右视图高 8
+    hard: true
+    check:
+      - bbox_sorted: [8, 18, 18]
+
+  - id: taper
+    source: 主视图 18、14，右视图高 8：侧面从 18 线性收到 14
+    derivation: 高度 z 处边长 18 − 0.5z：z = 5 → 15.5² = 240.25，z = 6 → 15² = 225（倒圆在 z ≈ 6.86 以上）
+    check:
+      - section_areas: {frame: frame, axis: 0, at: [5, 6], expect: [240.25, 225]}
+
+  - id: pocket
+    source: 主视图虚线 12×12、右视图深 3：底面居中方形盲槽
+    derivation: 中心处材料 z ∈ [3, 8]；z = 1.5 处外缘在 9 − 1.5/4 = 8.625，即 [0.375, 17.625]，盲槽占 [3, 15]
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 9, 9], expect: [[3, 8]]}
+      - line_material: {frame: frame, along: 1, at: [1.5, null, 9], expect: [[0.375, 3], [15, 17.625]]}
+      - line_material: {frame: frame, along: 2, at: [1.5, 9, null], expect: [[0.375, 3], [15, 17.625]]}
+
+  - id: fillet
+    source: 注释：顶面四周棱边倒圆 R1.5
+    check:
+      - blend_faces: {radius: 1.5, side: outer, min_count: 4, near: {frame: frame, axis: 0, side: high, within: 1.5}}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 倒圆与布尔运算）体积 1612.22
+    check:
+      - volume: 1612.22
+
+ungraded: []
