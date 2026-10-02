@@ -5,6 +5,16 @@ prompt: >-
   贯穿两块圆盘和连接柱。在同一个直径 90mm 的圆上、每两根相邻连接柱的正中间，开 3 个直径 12mm 的行星轮轴孔，
   贯穿两块圆盘。上盘中心开直径 40mm 的太阳轮通孔。下盘下表面中心同轴伸出直径 30mm、长 40mm 的输出轴，
   轴端中心有一个 M10 螺纹底孔：直径 8.5mm、深 20mm。两块圆盘外圆的上下棱边都倒 1mm×45° 倒角（共 4 条圆边）。
+prompt_en: >-
+  Create a planet carrier as a single solid body. Two coaxial discs, upper and lower, are 120mm in diameter
+  and 8mm thick, with a clear gap of 20mm between them. Between the two discs, 3 cylindrical connecting posts
+  of 18mm diameter are evenly spaced on a 90mm-diameter circle, and each post has a 6.6mm-diameter bolt hole
+  at its center running through both discs and the post. On the same 90mm-diameter circle, midway between each
+  pair of adjacent posts, there are 3 planet-pin holes of 12mm diameter running through both discs. The center
+  of the upper disc has a 40mm-diameter through hole for the sun wheel. An output shaft 30mm in diameter and
+  40mm long extends coaxially from the center of the bottom face of the lower disc, and the center of its end
+  has an M10 threaded-hole pilot bore: 8.5mm in diameter and 20mm deep. The upper and lower edges of the outer
+  circles of both discs are chamfered 1mm×45° (4 circular edges in total).
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # frame：轴 0 沿输出轴轴线，t = 0 在上盘上表面（两端平面面积较大的一端）：上盘 [0, 8]、下盘 [28, 36]、

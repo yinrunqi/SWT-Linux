@@ -6,6 +6,17 @@ prompt: >-
   孔壁上有一条宽 6mm 的通长键槽，键槽底面距孔中心 12.8mm。轮盘上在直径 52mm 的圆上均布 6 个直径 9mm 的减重孔，
   其中一个减重孔与键槽位于同一方位，并且这个方位上正好也有一个齿槽。
   在轮毂上正对键槽、距轮毂端面 6.5mm 处沿径向钻一个直径 4.2mm 的紧定螺钉底孔，从轮毂外圆钻通到中心孔。
+prompt_en: >-
+  Create an 18-tooth roller-chain sprocket (pitch 12.7mm) as a single solid body. The plate is 7mm thick with
+  a blank outer diameter of 80mm; 18 tooth-gap circles of 8.6mm diameter are evenly spaced on a
+  73.14mm-diameter pitch circle and cut through the plate thickness, and what remains between adjacent gaps
+  forms the teeth. A coaxial hub with an outer diameter of 40mm extends from one side of the plate, with the
+  hub end face 20mm from the other side face of the plate. The 20mm-diameter center hole runs through the full
+  length, and its wall has a 6mm-wide full-length keyway whose bottom face is 12.8mm from the hole center. The
+  plate has 6 lightening holes of 9mm diameter evenly spaced on a 52mm-diameter circle; one of these
+  lightening holes lies at the same angular position as the keyway, and a tooth gap also lies exactly at that
+  position. On the hub, directly over the keyway and 6.5mm from the hub end face, make a 4.2mm-diameter radial
+  set-screw pilot hole from the hub outer surface through to the center hole.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # frame：轴 0 沿中心孔轴线，t = 0 在轮盘不带轮毂的一面（两端平面面积较大的一端），轮毂端面 t = 20；

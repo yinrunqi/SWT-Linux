@@ -7,6 +7,19 @@ prompt: >-
   每个电机座中心开直径 8mm 的轴孔，另有 4 个直径 3.2mm 的电机安装孔，分别位于电机座圆心沿中心板两边方向
   （即平行于中心板各边的 4 个方向）偏移 9.5mm 处。每根机臂中线上开一个宽 6mm 的减重长圆孔，
   两端半圆圆心距板中心分别为 45mm 和 75mm。机臂侧边与中心板边相交形成的 8 个内角各倒 R5mm 圆角（沿板厚方向的棱边）。
+prompt_en: >-
+  Create an X-type quadcopter frame base plate as a single solid body; the whole plate is 4mm thick. The
+  center plate is a 60mm square, with a 12mm-diameter cable hole at its center and 4 flight-controller
+  mounting holes of 3.5mm diameter, whose centers lie at the corners of a 30.5mm square centered on the plate
+  center with its sides parallel to the center-plate edges. Four arms extend along the two diagonals of the
+  center plate; each arm is 16mm wide and its centerline passes through the plate center. Each arm ends in a
+  32mm-diameter circular motor mount whose center is 110mm from the plate center, and the rectangular part of
+  the arm extends all the way to the motor-mount center. Each motor mount has an 8mm-diameter shaft hole at
+  its center and 4 motor mounting holes of 3.2mm diameter, offset 9.5mm from the motor-mount center along the
+  directions of the two center-plate edges (that is, the 4 directions parallel to the center-plate edges).
+  Each arm has a 6mm-wide lightening slot on its centerline, with the centers of its two semicircular ends
+  45mm and 75mm from the plate center. The 8 inner corners formed where the arm sides meet the center-plate
+  edges are each rounded with an R5mm fillet (the edges along the plate thickness).
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # frame：轴 0 沿板厚（t ∈ [0, 4]），原点在走线孔轴线上；轴 1 指向某一个电机座（沿一条对角线），

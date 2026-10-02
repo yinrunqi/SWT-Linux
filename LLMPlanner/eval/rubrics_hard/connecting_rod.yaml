@@ -6,6 +6,18 @@ prompt: >-
   梯形关于连杆中线对称，两条底边都垂直于中线，靠大头的一边距大头孔心 40mm、长 24mm，
   靠小头的一边距大头孔心 110mm、长 14mm，槽角不倒圆。小头顶端沿连杆中线方向钻一个直径 4mm 的油孔，
   从小头外圆一直钻通到活塞销孔。大头轴承孔两端孔口各倒 1mm×45° 倒角。
+prompt_en: >-
+  Create an engine connecting rod as a single solid body, 20mm thick overall. The big end is a cylindrical
+  boss with an outer diameter of 56mm and a 36mm-diameter through bearing bore at its center; the small end is
+  a cylindrical boss with an outer diameter of 30mm and a 20mm-diameter through piston-pin bore at its center;
+  the big-end and small-end bore centers are 140mm apart. The outline of the shank is formed by the two
+  external common tangents of the big-end and small-end outer circles. Mill a 6mm-deep trapezoidal lightening
+  pocket into each of the front and back faces of the shank, leaving a central web 8mm thick. The trapezoid is
+  symmetric about the rod centerline and both parallel sides are perpendicular to the centerline: the side
+  nearer the big end is 40mm from the big-end bore center and 24mm long, and the side nearer the small end is
+  110mm from the big-end bore center and 14mm long; the pocket corners are not rounded. At the top of the
+  small end, make a 4mm-diameter oil hole along the rod centerline, running from the small-end outer circle
+  through to the piston-pin bore. Chamfer both ends of the big-end bearing bore 1mm×45°.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # frame：轴 0 沿厚度（t ∈ [0, 20]），原点在大头孔轴线上；轴 1 沿连杆中线指向小头。零件关于中线、中面都对称。

@@ -6,6 +6,16 @@ prompt: >-
   沿径向从轮毂一直连到轮缘，沿圆周均布。在第一根轮辐的延长线上、距手轮中心 92mm 处装一根摇把：
   摇把是直径 20mm 的圆柱，轴线平行于手轮轴线，从轮缘中面起向一侧伸出，末端为 R10mm 的半球，
   摇把最高点距轮缘中面 70mm。
+prompt_en: >-
+  Create a five-spoke handwheel with a handle as a single solid body. The rim is a ring with a circular
+  cross-section: the section diameter is 16mm, and the circle through the section centers has a diameter of
+  184mm (rim outer diameter 200mm). The central hub is a cylinder with an outer diameter of 40mm and a length
+  of 36mm, coaxial with the rim, with the midpoint of its length on the rim mid-plane; the center of the hub
+  has a regular hexagonal through hole 17mm across flats. 5 cylindrical spokes of 12mm diameter lie in the rim
+  mid-plane, run radially from the hub to the rim, and are evenly spaced around the circumference. On the
+  extension of the first spoke, 92mm from the wheel center, add a handle: the handle is a 20mm-diameter
+  cylinder whose axis is parallel to the wheel axis, extending to one side from the rim mid-plane and ending
+  in an R10mm hemisphere; the highest point of the handle is 70mm from the rim mid-plane.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # frame：轴 0 沿轮毂轴线，t = 0 在远离摇把一侧的轮毂端面（另一端最高点是摇把球头，没有平面）；

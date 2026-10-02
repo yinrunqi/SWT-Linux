@@ -8,6 +8,19 @@ prompt: >-
   以及两圆的两条外公切线组成。左轴颈端面上开一个直径 5mm、深 8mm 的定位销孔，孔心距轴线 9mm。
   第 1 个凸轮的桃尖朝向定位销孔所在方向；从左端沿轴线向右看，第 2、3、4 个凸轮的桃尖依次比前一个顺时针转过 90°。
   驱动轴头的键槽开在定位销孔所在的一侧。
+prompt_en: >-
+  Create a four-cylinder engine camshaft as a single solid body; all revolved features are coaxial. Measuring
+  along the axis to the right from the left end face at 0: the main shaft is 20mm in diameter and runs from 0
+  to 220mm; the left journal is 30mm in diameter, at 0~16mm; the middle journal is 30mm in diameter, at
+  102~118mm; the right journal is 30mm in diameter, at 204~220mm; a drive stub of 18mm diameter extends from
+  the right end, at 220~245mm, and the stub has a 5mm-wide full-length flat keyway whose bottom plane is 6mm
+  from the axis. The four cams are 14mm wide, with their width centers at 40, 78, 142 and 180mm; the profile
+  of each cam consists of a 32mm-diameter base circle (concentric with the shaft), a 16mm-diameter nose circle
+  (center 12mm from the axis), and the two external common tangents of the two circles. The end face of the
+  left journal has a locating pin hole 5mm in diameter and 8mm deep, with its center 9mm from the axis. The
+  nose of cam 1 points toward the locating pin hole; viewed from the left end along the axis toward the right,
+  the noses of cams 2, 3 and 4 are each rotated 90° clockwise relative to the previous one. The keyway on the
+  drive stub is on the same side as the locating pin hole.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # frame：轴 0 沿轴线，t = 0 在左端面（两端平面面积较大的一端）；轴 1 指向定位销孔；

@@ -8,6 +8,20 @@ prompt: >-
   沿轴向从筒底面一直延伸到法兰下表面；其中一片鳍片的中面正对法兰一条边的中点。
   底板中心开直径 22mm 的轴承孔，并在直径 40mm 的圆上开 4 个直径 4.5mm 的贯穿螺钉孔，
   这 4 个孔分别与 4 个法兰安装孔位于同一方位。
+prompt_en: >-
+  Create a motor housing with cooling fins as a single solid body. The shell is a cylinder with an outer
+  diameter of 80mm and an inner diameter of 70mm, closed at the bottom with an 8mm-thick base; the cylinder is
+  100mm tall overall from the bottom face to the top face and open at the top. At the top there is a 100×100mm
+  square mounting flange, 8mm thick, whose top face is flush with the top of the cylinder. The middle of the
+  flange has a 70mm-diameter through hole equal to the cylinder inner diameter; the four corners of the flange
+  are rounded R10mm (the edges along the thickness), and 4 through mounting holes of 7mm diameter are placed
+  at hole-center coordinates (±42, ±42)mm (origin at the flange center, axes parallel to the flange edges).
+  The outer wall of the cylinder carries 12 longitudinal cooling fins evenly spaced around the circumference;
+  each fin is 3mm thick, extends radially from the outer wall to 50mm from the axis, and runs axially from the
+  bottom face of the cylinder up to the underside of the flange; the mid-plane of one fin faces the midpoint
+  of one flange edge. The center of the base has a 22mm-diameter bearing hole, and 4 through screw holes of
+  4.5mm diameter lie on a 40mm-diameter circle; these 4 holes lie at the same angular positions as the 4
+  flange mounting holes respectively.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # frame：轴 0 沿筒轴，t = 0 在法兰上表面（两端平面面积较大的一端），底面 t = 100；

@@ -7,6 +7,19 @@ prompt: >-
   圆心在 (18, −40)mm、半径 40mm，从轮毂外圆上的点 (18, 0) 开始（此处中线沿径向），
   顺时针方向弯向外侧，一直到半径 58mm 处截止（叶片外端面形状不限）；叶片内端伸入轮毂并与轮毂合并。
   其余 7 片由第 1 片绕轴线每隔 45° 阵列得到。
+prompt_en: >-
+  Create an open centrifugal impeller as a single solid body. The back plate is a disc 120mm in diameter and
+  6mm thick; the hub is a cylinder with an outer diameter of 36mm, 30mm tall overall measured from the bottom
+  face of the back plate, with its top outer edge chamfered 1mm×45°; the 12mm-diameter center hole runs
+  through. The top face of the back plate carries 8 backward-curved blades evenly spaced around the
+  circumference; the blades are 20mm high (measured from the top face of the back plate) and 3mm thick (1.5mm
+  on each side of the centerline). Looking down at the back plate from the blade side, set up a plane
+  Cartesian coordinate system with the axis as the origin (X to the right, Y up). The centerline of blade 1 is
+  a circular arc with its center at (18, −40)mm and a radius of 40mm, starting from the point (18, 0) on the
+  hub outer circle (where the centerline is radial), curving outward in the clockwise direction, and ending at
+  a radius of 58mm (the shape of the blade outer end is unrestricted); the inner end of each blade extends
+  into the hub and merges with it. The other 7 blades are obtained by patterning blade 1 about the axis every
+  45°.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # frame：轴 0 沿轮毂轴线，t = 0 在后盘底面（两端平面面积较大的一端），叶片 [6, 26]、轮毂顶 30；
