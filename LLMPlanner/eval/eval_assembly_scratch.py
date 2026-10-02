@@ -84,13 +84,16 @@ def _close(sw: str) -> None:
 
 def _openai():
     import os
+    import uuid
     from openai import OpenAI
 
+    # 每个智能体运行一个新 client：TT Switch 只在同一 X-Session-Id 下复用 prompt 缓存，其他服务忽略这个头。
     client = OpenAI(
         api_key=os.environ["OPENAI_API_KEY"],
         base_url=os.environ.get("OPENAI_BASE_URL") or None,
         timeout=180,
         max_retries=2,
+        default_headers={"X-Session-Id": f"assembly-eval-{uuid.uuid4().hex}"},
     )
     # 网关上游偶发以 400 model_param_invalid 拒收同一请求，重放即可通过；SDK 不重试 400。
     create = client.chat.completions.create
@@ -98,9 +101,13 @@ def _openai():
     def logged(**kwargs):
         response = create(**kwargs)
         choice = response.choices[0]
+        details = getattr(response.usage, "completion_tokens_details", None)
         LLM_CALL_LOG.append({
             "finish_reason": choice.finish_reason,
             "completion_tokens": getattr(response.usage, "completion_tokens", None),
+            "reasoning_tokens": getattr(details, "reasoning_tokens", None),
+            "prompt_tokens": getattr(response.usage, "prompt_tokens", None),
+            "prompt_cache_hit_tokens": getattr(response.usage, "prompt_cache_hit_tokens", None),
             "n_tool_calls": len(choice.message.tool_calls or []),
             "text_chars": len(choice.message.content or ""),
         })
@@ -157,6 +164,7 @@ def generate_part(
     sw: str,
     model: str,
     max_llm_calls: int,
+    reasoning_effort: str | None = None,
 ) -> dict:
     from planner.workflow.agent import WorkflowAgent
     from planner.workflow.tools import WorkflowSession
@@ -169,7 +177,9 @@ def generate_part(
     started = time.perf_counter()
     outcome = WorkflowAgent(
         _openai(), model, session, max_llm_calls=max_llm_calls, extra_tools=extra,
+        reasoning_effort=reasoning_effort,
     ).run(spec["prompt"])
+    _dump_llm_io(dest.parent / spec["id"], outcome)
     step, sldprt = dest.with_suffix(".step"), dest.with_suffix(".SLDPRT")
     artifacts = {}
     try:
@@ -190,9 +200,20 @@ def generate_part(
         "grade": grade,
         "token_usage": outcome["token_usage"],
         "llm_calls": outcome["llm_calls"],
+        "error": outcome.get("error"),
+        "finish_reasons": outcome.get("finish_reasons"),
+        "tool_calls": outcome["tool_calls"],
+        "agent_summary": outcome.get("summary"),
         "duration_seconds": round(time.perf_counter() - started, 2),
         "artifacts": artifacts,
     }
+
+
+def _dump_llm_io(stem: Path, outcome: dict) -> None:
+    """完整对话与每次调用的原始响应存到产物目录，结果 JSON 只留摘要。"""
+    for suffix, key in ((".agent_messages.json", "messages"), (".llm_responses.json", "llm_responses")):
+        stem.with_name(stem.name + suffix).write_text(
+            json.dumps(outcome.get(key) or [], ensure_ascii=False, indent=1, default=str), encoding="utf-8")
 
 
 def assemble(
@@ -205,6 +226,7 @@ def assemble(
     max_llm_calls: int,
     workflow: str = "v1",
     max_tokens: int = 8000,
+    reasoning_effort: str | None = None,
 ) -> dict:
     from planner.assembly_workflow.agent import AssemblyAgent
     from planner.assembly_workflow.session import AssemblySession
@@ -220,11 +242,13 @@ def assemble(
     LLM_CALL_LOG.clear()
     outcome = AssemblyAgent(
         _openai(), model, session, max_llm_calls=max_llm_calls, max_tokens=max_tokens,
-        tools=tool_specs(workflow),
+        tools=tool_specs(workflow), reasoning_effort=reasoning_effort,
     ).run(goal)
     messages = outcome.get("messages") or []
     dest.with_name("agent_messages.json").write_text(
         json.dumps(messages, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
+    dest.with_name("llm_responses.json").write_text(
+        json.dumps(outcome.get("llm_responses") or [], ensure_ascii=False, indent=1, default=str), encoding="utf-8")
     agent_texts = [
         {"turn": i, "text": m.get("content") or "", "with_tools": bool(m.get("tool_calls"))}
         for i, m in enumerate(messages)
@@ -245,6 +269,7 @@ def assemble(
     _close(sw)
     return {
         "status": outcome["status"],
+        "error": outcome.get("error"),
         "infra_error": infra_error,
         "static": static,
         "rubric": rubric,
@@ -316,6 +341,13 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
             dest = out / "parts" / spec["id"]
             result = generate_part(
                 spec, dest, sw=args.sw, model=args.model, max_llm_calls=args.max_part_calls,
+                reasoning_effort=args.reasoning_effort,
+            )
+            print(
+                f"  part {spec['id']}: accepted={result['accepted']} score={result['score']} "
+                f"status={result['status']} calls={result['llm_calls']}"
+                + (f" error={result['error']}" if result.get("error") else ""),
+                flush=True,
             )
             part_results.append(result)
             if result["artifacts"].get("sldprt"):
@@ -335,7 +367,7 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
     assembly = assemble(
         case, parts, out / f"{case_id}.SLDASM",
         sw=args.sw, model=args.model, max_llm_calls=args.max_asm_calls, workflow=workflow,
-        max_tokens=args.asm_max_tokens,
+        max_tokens=args.asm_max_tokens, reasoning_effort=args.reasoning_effort,
     )
     part_rate = 1.0 if condition == "gold" else _rate(part_results)
     motion_score = float((assembly.get("motion") or {}).get("score") or 0)
@@ -385,6 +417,12 @@ def main() -> None:
     parser.add_argument("--max-part-calls", type=int, default=40)
     parser.add_argument("--max-asm-calls", type=int, default=50)
     parser.add_argument("--asm-max-tokens", type=int, default=8000)
+    parser.add_argument(
+        "--reasoning-effort",
+        choices=("none", "minimal", "low", "medium", "high", "xhigh"),
+        default=None,
+        help="sent as reasoning_effort on every part and assembly agent call; omitted = provider default",
+    )
     parser.add_argument("--output-dir", default=str(ROOT / "eval" / "artifacts" / "assembly_scratch"))
     parser.add_argument("--output", default=str(ROOT / "eval" / "assembly_scratch_result.json"))
     args = parser.parse_args()
@@ -416,6 +454,9 @@ def main() -> None:
             "recipes": {wf: list(RECIPE_SETS[wf]) for wf in workflows},
             "results": rows,
             "model": args.model,
+            "base_url": os.environ.get("OPENAI_BASE_URL"),
+            "reasoning_effort": args.reasoning_effort,
+            "prompt_lang": "zh",
             "asm_max_tokens": args.asm_max_tokens,
             "extra_toolset": EXTRA_TOOLSET_VERSION,
         }
@@ -431,9 +472,13 @@ def main() -> None:
                     print(f"=== {case['case_id']} {condition} r{repeat} {workflow} ===", flush=True)
                     row = run_condition(case, condition, repeat, args, workflow)
                     rows.append(row)
+                    asm = row.get("assembly") or {}
                     print(
                         f"  parts={row['part_pass_rate']} static={row['assembly_score']} "
-                        f"motion={row['motion_score']} e2e={row['e2e']}",
+                        f"motion={row['motion_score']} e2e={row['e2e']} "
+                        f"asm_status={asm.get('status')} asm_calls={asm.get('llm_calls')}"
+                        + (f" error={asm.get('error') or asm.get('infra_error')}"
+                           if asm.get("error") or asm.get("infra_error") else ""),
                         flush=True,
                     )
                     write()

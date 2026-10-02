@@ -54,6 +54,7 @@ class AssemblyAgent:
         temperature: float = 0.0,
         max_stalls: int = 2,
         tools: list[dict] | None = None,
+        reasoning_effort: str | None = None,
     ):
         self.client = client
         self.model = model
@@ -63,6 +64,7 @@ class AssemblyAgent:
         self.max_tokens = max_tokens
         self.temperature = temperature
         self.max_stalls = max_stalls
+        self.reasoning_effort = reasoning_effort
 
     def run(self, goal: str) -> dict:
         started = time.perf_counter()
@@ -73,7 +75,11 @@ class AssemblyAgent:
         usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "calls": 0}
         tool_log: list[dict] = []
         failed_signatures: dict[str, int] = {}
+        # 原始响应只做记录（含 reasoning_content、缓存命中 usage），不回填进 messages，以免改变后续请求体。
+        llm_responses: list[Any] = []
         status, summary, stalls, error = "max_llm_calls", "", 0, None
+        # 未指定时不发送该字段，保持与历史结果相同的请求体。
+        extra = {"reasoning_effort": self.reasoning_effort} if self.reasoning_effort else {}
 
         for _ in range(self.max_llm_calls):
             try:
@@ -84,6 +90,7 @@ class AssemblyAgent:
                     tool_choice="auto",
                     temperature=self.temperature,
                     max_tokens=self.max_tokens,
+                    **extra,
                 )
             except Exception as exc:
                 status, error = "llm_error", f"{type(exc).__name__}: {exc}"
@@ -92,6 +99,9 @@ class AssemblyAgent:
             if response.usage is not None:
                 for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
                     usage[key] += int(getattr(response.usage, key, 0) or 0)
+            llm_responses.append(
+                response.model_dump(mode="json") if hasattr(response, "model_dump") else repr(response)
+            )
             message = response.choices[0].message
             calls = _tool_calls_payload(message)
             assistant = {"role": "assistant", "content": message.content or ""}
@@ -149,6 +159,8 @@ class AssemblyAgent:
             "summary": summary,
             "error": error,
             "llm_calls": usage["calls"],
+            "reasoning_effort": self.reasoning_effort,
+            "llm_responses": llm_responses,
             "tool_calls": tool_log,
             "token_usage": usage,
             "last_motion": self.session.last_motion,

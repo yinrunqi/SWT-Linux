@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ.setdefault("OPENAI_API_KEY", "test-key")
 
 import web.app as web_app
+from planner.assembly_workflow.agent import AssemblyAgent
 from planner.workflow.agent import WorkflowAgent
 
 
@@ -60,6 +61,24 @@ def test_agent_sends_reasoning_effort_on_every_call():
     requests, outcome = _agent_requests("medium")
     assert [item["reasoning_effort"] for item in requests] == ["medium", "medium"]
     assert outcome["reasoning_effort"] == "medium"
+
+
+class StubAssemblySession(StubSession):
+    last_motion = None
+    aliases: dict = {}
+    saved = False
+
+
+def test_assembly_agent_reasoning_effort_and_raw_responses():
+    for effort, expected in ((None, False), ("medium", True)):
+        completions = RecordingCompletions()
+        client = SimpleNamespace(chat=SimpleNamespace(completions=completions))
+        outcome = AssemblyAgent(
+            client, "model", StubAssemblySession(), max_llm_calls=2, tools=[], reasoning_effort=effort,
+        ).run("goal")
+        assert all(("reasoning_effort" in item) is expected for item in completions.requests)
+        assert outcome["reasoning_effort"] == effort
+        assert len(outcome["llm_responses"]) == len(completions.requests) == 2
 
 
 def _post(json_body, monkeypatch):
