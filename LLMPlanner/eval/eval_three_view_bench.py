@@ -77,7 +77,7 @@ def run_one(task: dict, k: int, args) -> dict:
         "instruction": task["prompt"],
         "image": base64.b64encode(task["image"].read_bytes()).decode("ascii"),
         "mode": args.mode,
-        "provider": "aiping",
+        "provider": args.provider,
         "vision_model": args.vision_model,
         "plan_model": args.plan_model,
         "use_cache": False,
@@ -112,6 +112,12 @@ def main() -> int:
     parser.add_argument("--repeats", type=int, default=2)
     parser.add_argument("--lang", choices=sorted(PROMPT_FIELDS), default="zh")
     parser.add_argument("--mode", choices=["multi_turn", "single_turn"], default="multi_turn")
+    parser.add_argument(
+        "--provider",
+        choices=["aiping", "ttswitch", "juheai"],
+        default="aiping",
+        help="LLM service the Web backend uses: ttswitch reads OPENAI_* from .env, others read <PROVIDER>_*",
+    )
     parser.add_argument("--vision-model", default="GLM-4.6V")
     parser.add_argument("--plan-model", default="Qwen3.5-397B-A17B")
     parser.add_argument("--web-url", default="http://localhost:5000")

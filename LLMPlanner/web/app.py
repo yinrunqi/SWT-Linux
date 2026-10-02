@@ -1757,12 +1757,22 @@ def _run_workflow_l1(
     capture_trace: bool,
 ) -> dict:
     """L1：工程师级工具 + 闭环 Agent。results 只列建模工具调用，供打分统计失败次数。"""
+    import uuid
+
     from openai import OpenAI
 
     from planner.workflow.agent import WorkflowAgent
     from planner.workflow.tools import WorkflowSession
 
-    client = OpenAI(api_key=api_key, base_url=base_url or None, timeout=180, max_retries=2)
+    # TT Switch 只有在同一 X-Session-Id 下才复用 prompt 缓存；显式缓存模型不带此头时每轮都按缓存写计费。
+    # 每次运行一个新值，不跨任务共享上下文。其他 OpenAI 兼容服务会忽略这个头。
+    client = OpenAI(
+        api_key=api_key,
+        base_url=base_url or None,
+        timeout=180,
+        max_retries=2,
+        default_headers={"X-Session-Id": f"workflow-l1-{uuid.uuid4().hex}"},
+    )
     session = WorkflowSession(base_url=executor.base_url, executor=executor)
     session.start_part()
     outcome = WorkflowAgent(client, model, session, max_llm_calls=max_llm_calls).run(instruction)
