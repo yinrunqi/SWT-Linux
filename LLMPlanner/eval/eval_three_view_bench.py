@@ -2,7 +2,9 @@
 
 Each task posts the benchmark drawing (eval/three_view/drawings/<case>.png) and the neutral
 prompt from eval/rubrics_three_view/<case>.yaml to /api/run, then exports the final part as
-<out-dir>/<case>_r<k>.step. Scoring is offline and needs no SolidWorks:
+<out-dir>/<case>_r<k>.step. The default --action-level L1 is end to end: the L1 workflow agent sees
+the drawing itself (so --plan-model must accept images) and may call render_views to compare the
+current part against it. Scoring is offline and needs no SolidWorks:
 
     venv-occ\\Scripts\\python.exe -X utf8 -m geomcheck.three_view --artifacts <out-dir> --output scores.json
     venv-occ\\Scripts\\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_three_view \\
@@ -75,14 +77,19 @@ def run_one(task: dict, k: int, args) -> dict:
     time.sleep(1.0)
     payload = {
         "instruction": task["prompt"],
-        "image": base64.b64encode(task["image"].read_bytes()).decode("ascii"),
-        "mode": args.mode,
+        "image": "data:image/png;base64," + base64.b64encode(task["image"].read_bytes()).decode("ascii"),
         "provider": "aiping",
-        "vision_model": args.vision_model,
         "plan_model": args.plan_model,
+        "action_level": args.action_level,
         "use_cache": False,
     }
-    row: dict[str, Any] = {"case": task["case"], "repeat": k}
+    if args.action_level == "L1":
+        # 端到端：图纸直接交给 plan_model（须为多模态模型），没有单独的读图阶段
+        payload.update({"max_turns": args.max_llm_calls, "views_tool": not args.no_views_tool})
+    else:
+        payload.update({"mode": args.mode, "vision_model": args.vision_model})
+    row: dict[str, Any] = {"case": task["case"], "repeat": k, "action_level": args.action_level,
+                           "plan_model": args.plan_model}
     try:
         response = requests.post(f"{args.web_url}/api/run", json=payload, timeout=3600)
         try:
@@ -91,6 +98,14 @@ def run_one(task: dict, k: int, args) -> dict:
             body = {"error": response.text[:500]}
         row["token_usage"] = body.get("token_usage")
         row["status"] = (body.get("multi_turn") or {}).get("status") or (body.get("summary") or {}).get("status")
+        if args.action_level == "L1":
+            summary = body.get("summary") or {}
+            row["llm_calls"] = summary.get("llm_calls")
+            row["tool_calls"] = summary.get("tool_calls")
+            row["failed_modeling_calls"] = sum(1 for item in body.get("results") or [] if not item.get("success"))
+            row["render_views_calls"] = sum(
+                1 for item in (body.get("workflow") or {}).get("tool_calls") or [] if item.get("tool") == "render_views"
+            )
         if not response.ok or not body.get("success"):
             row["error"] = body.get("error") or f"HTTP {response.status_code}"
         # 失败的运行也导出当前零件：部分完成的几何同样按 rubric 计分
@@ -108,12 +123,17 @@ def run_one(task: dict, k: int, args) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--ids", nargs="*", help="case ids (default: all 13)")
+    parser.add_argument("--ids", nargs="*", help="case ids (default: all)")
     parser.add_argument("--repeats", type=int, default=2)
     parser.add_argument("--lang", choices=sorted(PROMPT_FIELDS), default="zh")
-    parser.add_argument("--mode", choices=["multi_turn", "single_turn"], default="multi_turn")
-    parser.add_argument("--vision-model", default="GLM-4.6V")
+    parser.add_argument("--action-level", choices=["L1", "L0"], default="L1",
+                        help="L1: end-to-end workflow agent that sees the drawing (plan model must accept images); "
+                             "L0: legacy vision-IR + blueprint pipeline")
     parser.add_argument("--plan-model", default="Qwen3.5-397B-A17B")
+    parser.add_argument("--max-llm-calls", type=int, default=40, help="L1 LLM call budget")
+    parser.add_argument("--no-views-tool", action="store_true", help="L1: do not offer render_views (ablation)")
+    parser.add_argument("--mode", choices=["multi_turn", "single_turn"], default="multi_turn", help="L0 only")
+    parser.add_argument("--vision-model", default="GLM-4.6V", help="L0 only")
     parser.add_argument("--web-url", default="http://localhost:5000")
     parser.add_argument("--sw-url", default="http://localhost:5100")
     parser.add_argument("--name", default=datetime.now().strftime("three_view_%Y%m%d_%H%M"))

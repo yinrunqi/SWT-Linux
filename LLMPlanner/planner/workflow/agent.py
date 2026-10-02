@@ -10,7 +10,7 @@ import json
 import time
 from typing import Any
 
-from .tools import TOOL_SPECS, WorkflowSession, dumps_result, tool_specs
+from .tools import IMAGE_KEY, TOOL_SPECS, WorkflowSession, dumps_result, tool_specs
 
 SYSTEM_PROMPT = """你是一名资深机械设计工程师，正在 SolidWorks 中用工具逐步建出用户描述的零件。
 
@@ -42,6 +42,42 @@ SYSTEM_PROMPT = """你是一名资深机械设计工程师，正在 SolidWorks �
 4. 全部完成后调用 get_model_state，逐项核对总体尺寸、孔数、特征是否满足需求；不满足就继续修改。
 5. 核对无误后调用 finish，并在 summary 中说明零件的组成与关键尺寸。
 """
+
+
+DRAWING_NOTE = (
+    "附图是零件的三视图（第三角画法）。图纸坐标与模型坐标一致：主视图沿 -Z 方向看（图上右 = +X、上 = +Y）；"
+    "俯视图在主视图上方，从 +Y 往下看（图上右 = +X、下 = +Z）；右视图在主视图右方，从 +X 看（图上右 = -Z、上 = +Y）。"
+    "实线是可见边，虚线是隐藏边，点画线是中心线。全部尺寸从图纸读取。"
+)
+RENDERED_PLACEHOLDER = "（此前 render_views 的三视图已省略，只保留最新一张）"
+
+
+def _image_part(image_b64: str, mime: str) -> dict:
+    return {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{image_b64}"}}
+
+
+def _first_user_message(goal: str, image_b64: str | None, image_mime: str) -> dict:
+    text = f"建模需求：\n{goal}\n\n当前是一个空零件，请开始建模。"
+    if not image_b64:
+        return {"role": "user", "content": text}
+    return {
+        "role": "user",
+        "content": [{"type": "text", "text": f"{text}\n\n{DRAWING_NOTE}"}, _image_part(image_b64, image_mime)],
+    }
+
+
+def _without_images(messages: list[dict]) -> list[dict]:
+    """记录用的消息副本：图片 base64 换成占位文字，避免 trace 文件膨胀。"""
+    out = []
+    for message in messages:
+        content = message.get("content")
+        if isinstance(content, list):
+            content = [
+                {"type": "text", "text": "[image]"} if part.get("type") == "image_url" else part for part in content
+            ]
+            message = {**message, "content": content}
+        out.append(message)
+    return out
 
 
 def _tool_calls_payload(message: Any) -> list[dict]:
@@ -77,12 +113,14 @@ class WorkflowAgent:
         self.max_stalls = max_stalls
         self.tools = tool_specs(extra_tools)
 
-    def run(self, goal: str) -> dict:
+    def run(self, goal: str, image_b64: str | None = None, image_mime: str = "image/png") -> dict:
+        """image_b64：看图建模时的输入图纸，放在首条用户消息里，之后每次调用模型都能看到。"""
         started = time.perf_counter()
         messages: list[dict] = [
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": f"建模需求：\n{goal}\n\n当前是一个空零件，请开始建模。"},
+            _first_user_message(goal, image_b64, image_mime),
         ]
+        rendered_at: int | None = None
         usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "calls": 0}
         tool_log: list[dict] = []
         failed_signatures: dict[str, int] = {}
@@ -125,6 +163,7 @@ class WorkflowAgent:
             stalls = 0
 
             finished = False
+            images: list[str] = []
             for call in calls:
                 name = call["function"]["name"]
                 raw_args = call["function"]["arguments"]
@@ -143,6 +182,8 @@ class WorkflowAgent:
                             summary = str(args.get("summary", ""))
                     else:
                         result = self.session.call(name, args)
+                if IMAGE_KEY in result:
+                    images.append(result.pop(IMAGE_KEY))
                 if not result.get("ok"):
                     signature = f"{name}:{json.dumps(args, sort_keys=True, ensure_ascii=False)}"
                     failed_signatures[signature] = failed_signatures.get(signature, 0) + 1
@@ -156,6 +197,18 @@ class WorkflowAgent:
                     "message": (result.get("error") or {}).get("message", ""),
                 })
                 messages.append({"role": "tool", "tool_call_id": call["id"], "content": dumps_result(result)})
+            if images and not finished:
+                # 投影图很占 token，历史里只保留最新一张
+                if rendered_at is not None:
+                    messages[rendered_at]["content"] = RENDERED_PLACEHOLDER
+                rendered_at = len(messages)
+                messages.append({
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "render_views：当前零件的三视图如下，请与输入图纸逐个视图对照。"},
+                        _image_part(images[-1], "image/png"),
+                    ],
+                })
             if finished:
                 status = "finished"
                 break
@@ -173,7 +226,7 @@ class WorkflowAgent:
             "tool_calls": tool_log,
             "token_usage": usage,
             "final_state": final_state,
-            "messages": messages,
+            "messages": _without_images(messages),
             "duration_seconds": round(time.perf_counter() - started, 2),
         }
 

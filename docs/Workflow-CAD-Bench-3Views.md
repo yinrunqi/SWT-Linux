@@ -129,7 +129,24 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 venv-occ\Scripts\python.exe -X utf8 -m geomcheck.tests.refs_three_view
 ```
 
-用 Workflow-CAD 跑时用 `eval/eval_three_view_bench.py`。它把图纸和题面发给 `/api/run`，并把每次运行的 STEP 存到 `eval/artifacts/<name>/<case>_r<k>.step`，之后按上面的命令离线打分。这个 track 目前还没有参考结果。
+### 5.1 用 Workflow-CAD 跑
+
+用 `eval/eval_three_view_bench.py`。它把图纸和题面发给 `/api/run`，把每次运行的 STEP 存到 `eval/artifacts/<name>/<case>_r<k>.step`，再按上面的命令离线打分。默认走 **L1 端到端**：
+
+- 与 text-to-CAD 共用同一个 L1 Agent、同一套 24 个工具和同一份系统提示词。区别只有输入：图纸作为图片放在首条用户消息里，Agent 每次调用模型都能看到它。另附一段固定说明，交代图纸的视图方位与模型坐标的对应关系，所有题目都一样。
+- 没有单独的读图阶段，`--plan-model` 必须是支持图片输入的多模态模型。
+- 带图时 Agent 额外获得一个 `render_views` 工具：把当前零件导出为 STEP，在 `venv-occ` 里投影成不带标注的三视图（版式与输入图纸相同），以图片形式返回，并附包围盒和体积，方便模型逐个视图对照。上下文里只保留最新一张投影图。投影只用当前零件，不接触参考实体。`--no-views-tool` 关掉这个工具，用于消融。
+- 后端所在环境没有 OCP，投影通过子进程调用 `venv-occ\Scripts\python.exe`；放在别处时用环境变量 `GEOMCHECK_PYTHON` 指定。
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py --plan-model <多模态模型> --repeats 2 --name three_view_l1_<model>
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view --artifacts eval\artifacts\three_view_l1_<model> --output eval\three_view_l1_<model>_scores.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_three_view summary eval\three_view_l1_<model>_scores.json --repeats 2
+```
+
+`runs.json` 里每次运行另记 LLM 调用数、工具调用数、失败的建模调用数和 `render_views` 调用数。`--action-level L0` 仍可使用旧流程：先由 `--vision-model` 把图纸读成结构化中间表示，再生成蓝图交给 L0 多轮 Agent。
+
+这个 track 目前还没有参考结果。
 
 ---
 

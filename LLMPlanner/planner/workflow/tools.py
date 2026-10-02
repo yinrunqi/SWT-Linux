@@ -8,8 +8,13 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import math
+import os
+import subprocess
+import tempfile
+from pathlib import Path
 from typing import Any, Callable
 
 import requests
@@ -26,6 +31,11 @@ from .sketch_check import check_profile, to_geometry
 
 VOLUME_EPS_MM3 = 1e-3
 AXES = ("X", "Y", "Z")
+LLMPLANNER_ROOT = Path(__file__).resolve().parents[2]
+RENDER_PYTHON = os.getenv("GEOMCHECK_PYTHON") or str(LLMPLANNER_ROOT / "venv-occ" / "Scripts" / "python.exe")
+RENDER_TIMEOUT_S = 180
+# 工具结果里以 PNG base64 返回的图片；Agent 取出后作为图片消息发送，不写进 tool 文本
+IMAGE_KEY = "_image_png_b64"
 MAX_PLANAR_FACES = 40
 MAX_CYLINDER_FACES = 30
 
@@ -364,7 +374,19 @@ INTERNAL_GEAR_SPEC = _tool(
     },
     ["module", "teeth", "face_width", "outer_diameter"],
 )
-EXTRA_TOOL_SPECS = {"spur_gear": SPUR_GEAR_SPEC, "internal_gear": INTERNAL_GEAR_SPEC}
+RENDER_VIEWS_SPEC = _tool(
+    "render_views",
+    "把当前零件按第三角画法投影成三视图（不带尺寸标注），图片附在下一条消息里，用来和输入图纸逐个视图对照。"
+    "主视图沿 -Z 方向看（图上右 = +X、上 = +Y），俯视图在主视图上方（从 +Y 往下看，图上下 = +Z），"
+    "右视图在主视图右方（从 +X 看，图上右 = -Z）。可见边为实线，隐藏边为虚线。只在看图建模会话中可用。",
+    {},
+    [],
+)
+EXTRA_TOOL_SPECS = {
+    "spur_gear": SPUR_GEAR_SPEC,
+    "internal_gear": INTERNAL_GEAR_SPEC,
+    "render_views": RENDER_VIEWS_SPEC,
+}
 # 装配零件附加工具集的版本：v1 = {spur_gear}；v2 加入 internal_gear。结果文件按此标注。
 EXTRA_TOOLSET_VERSION = "v2"
 
@@ -441,6 +463,8 @@ class WorkflowSession:
             self._handlers["spur_gear"] = self.spur_gear
         if "internal_gear" in extra_tools:
             self._handlers["internal_gear"] = self.internal_gear
+        if "render_views" in extra_tools:
+            self._handlers["render_views"] = self.render_views
 
     # ------------------------------------------------------------ HTTP
 
@@ -589,6 +613,37 @@ class WorkflowSession:
 
     def get_model_state(self, args: dict) -> dict:
         return {"state": self.state_summary()}
+
+    def _render_png(self, step: Path, png: Path) -> None:
+        """在 OCC 环境里投影 STEP；后端环境没有 OCP，所以走子进程。"""
+        try:
+            proc = subprocess.run(
+                [RENDER_PYTHON, "-X", "utf8", "-m", "geomcheck.drawing", str(step), str(png)],
+                cwd=LLMPLANNER_ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                timeout=RENDER_TIMEOUT_S,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise WorkflowError("RENDER_FAILED", f"{type(exc).__name__}: {exc}") from None
+        if proc.returncode != 0 or not png.is_file():
+            raise WorkflowError("RENDER_FAILED", (proc.stderr or proc.stdout or "").strip()[-300:])
+
+    def render_views(self, args: dict) -> dict:
+        state = self.state_summary()
+        if not state.get("volume_mm3"):
+            raise WorkflowError("NO_BODY", "零件中还没有实体，无法投影")
+        with tempfile.TemporaryDirectory(prefix="render_views_") as tmp:
+            step, png = Path(tmp) / "current.step", Path(tmp) / "views.png"
+            data = self._request("POST", "/api/export-step", {"stepPath": str(step)})
+            if not data.get("success") or not step.is_file():
+                raise WorkflowError("RENDER_FAILED", str(data.get("message") or data.get("error") or "STEP 导出失败"))
+            self._render_png(step, png)
+            image = base64.b64encode(png.read_bytes()).decode("ascii")
+        return {
+            "bbox_mm": state["bbox_mm"],
+            "volume_mm3": state["volume_mm3"],
+            "note": "三视图图片附在下一条消息里",
+            IMAGE_KEY: image,
+        }
 
     # ------------------------------------------------------------ 调度
 
@@ -1481,6 +1536,6 @@ def dumps_result(result: dict, limit: int = 6000) -> str:
 
 
 __all__ = [
-    "TOOL_SPECS", "TOOL_NAMES", "EXTRA_TOOL_SPECS", "SPUR_GEAR_SPEC",
+    "TOOL_SPECS", "TOOL_NAMES", "EXTRA_TOOL_SPECS", "SPUR_GEAR_SPEC", "RENDER_VIEWS_SPEC", "IMAGE_KEY",
     "WorkflowSession", "dumps_result", "tool_specs", "BASE_PLANES",
 ]
