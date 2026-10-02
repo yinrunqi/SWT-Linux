@@ -1655,6 +1655,7 @@ def run_one(
             },
             "token_usage": payload.get("token_usage"),
             "workflow_status": (payload.get("summary") or {}).get("status"),
+            "workflow_error": (payload.get("workflow") or {}).get("error"),
             "llm_calls": (payload.get("summary") or {}).get("llm_calls"),
             "truncated_llm_calls": sum(
                 reason == "length"
@@ -1994,6 +1995,12 @@ def main() -> int:
             f"duration={result['duration_seconds']}s",
             flush=True,
         )
+        if result.get("workflow_status") not in (None, "finished") or result.get("error"):
+            print(
+                f"  workflow_status={result.get('workflow_status')} "
+                f"error={result.get('workflow_error') or result.get('error')}",
+                flush=True,
+            )
         _write_report(
             output,
             results,
