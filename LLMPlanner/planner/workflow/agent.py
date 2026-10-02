@@ -67,6 +67,7 @@ class WorkflowAgent:
         temperature: float = 0.0,
         max_stalls: int = 2,
         extra_tools: list[str] | None = None,
+        reasoning_effort: str | None = None,
     ):
         self.client = client
         self.model = model
@@ -74,6 +75,7 @@ class WorkflowAgent:
         self.max_llm_calls = max_llm_calls
         self.max_tokens = max_tokens
         self.temperature = temperature
+        self.reasoning_effort = reasoning_effort
         self.max_stalls = max_stalls
         self.tools = tool_specs(extra_tools)
 
@@ -89,6 +91,8 @@ class WorkflowAgent:
         failed_signatures: dict[str, int] = {}
         status, summary, stalls, error = "max_llm_calls", "", 0, None
 
+        # 未指定时不发送该字段，保持与历史结果相同的请求体（由服务端默认值决定推理强度）。
+        extra = {"reasoning_effort": self.reasoning_effort} if self.reasoning_effort else {}
         for _ in range(self.max_llm_calls):
             try:
                 response = self.client.chat.completions.create(
@@ -98,6 +102,7 @@ class WorkflowAgent:
                     tool_choice="auto",
                     temperature=self.temperature,
                     max_tokens=self.max_tokens,
+                    **extra,
                 )
             except Exception as exc:
                 status, error = "llm_error", f"{type(exc).__name__}: {exc}"
@@ -173,6 +178,7 @@ class WorkflowAgent:
             "summary": summary,
             "error": error,
             "llm_calls": usage["calls"],
+            "reasoning_effort": self.reasoning_effort,
             "finish_reasons": finish_reasons,
             "tool_calls": tool_log,
             "token_usage": usage,

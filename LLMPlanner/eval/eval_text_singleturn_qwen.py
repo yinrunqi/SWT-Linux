@@ -1573,6 +1573,7 @@ def run_one(
     artifact_stem: Path | None = None,
     lang: str = "zh",
     provider: str = "aiping",
+    reasoning_effort: str | None = None,
 ) -> dict:
     started = time.perf_counter()
     cleanup_before = _close_documents(sw_url)
@@ -1592,6 +1593,8 @@ def run_one(
     }
     if action_level == "L1":
         request_payload["max_turns"] = max_llm_calls
+    if reasoning_effort:
+        request_payload["reasoning_effort"] = reasoning_effort
     trace = {
         "request": {
             "url": f"{web_url}/api/run",
@@ -1739,6 +1742,7 @@ def _write_report(
     action_level: str = "L0",
     lang: str = "zh",
     provider: str = "aiping",
+    reasoning_effort: str | None = None,
 ) -> dict:
     spent_yuan = None
     if balance_before and balance_after:
@@ -1753,6 +1757,7 @@ def _write_report(
         "run_at": datetime.now().astimezone().isoformat(timespec="seconds"),
         "provider": PROVIDER_LABELS.get(provider, provider),
         "model": model,
+        "reasoning_effort": reasoning_effort,
         "mode": "workflow" if action_level == "L1" else "single_turn",
         "action_level": action_level,
         "prompt_lang": lang,
@@ -1852,6 +1857,7 @@ def rescore_report(source: Path, output: Path, strict_orientation: bool = False)
             (key for key, label in PROVIDER_LABELS.items() if label == old.get("provider")),
             old.get("provider", "aiping"),
         ),
+        reasoning_effort=old.get("reasoning_effort"),
     )
     return report
 
@@ -1867,6 +1873,12 @@ def main() -> int:
         choices=PROVIDERS,
         default="aiping",
         help="LLM service the Web backend uses: ttswitch reads OPENAI_* from .env, others read <PROVIDER>_*",
+    )
+    parser.add_argument(
+        "--reasoning-effort",
+        choices=("none", "minimal", "low", "medium", "high", "xhigh"),
+        default=None,
+        help="L1 only; sent as reasoning_effort on every agent call. Omitted = provider default",
     )
     parser.add_argument(
         "--skip-qwen-historical",
@@ -1933,6 +1945,8 @@ def main() -> int:
         help="Do not keep each run's SLDPRT and STEP under eval/artifacts/<result name>/",
     )
     args = parser.parse_args()
+    if args.reasoning_effort and args.action_level != "L1":
+        parser.error("--reasoning-effort requires --action-level L1")
     if args.rescore:
         report = rescore_report(args.rescore, args.output or args.rescore, args.strict_orientation)
         print(
@@ -1983,6 +1997,7 @@ def main() -> int:
             ),
             lang=args.lang,
             provider=args.provider,
+            reasoning_effort=args.reasoning_effort,
         )
         result["repeat"] = repeat
         results.append(result)
@@ -2017,6 +2032,7 @@ def main() -> int:
             action_level=args.action_level,
             lang=args.lang,
             provider=args.provider,
+            reasoning_effort=args.reasoning_effort,
         )
         if (
             args.pause_every > 0
@@ -2044,6 +2060,7 @@ def main() -> int:
         action_level=args.action_level,
         lang=args.lang,
         provider=args.provider,
+        reasoning_effort=args.reasoning_effort,
     )
     print(
         f"summary score={report['average_score']} "

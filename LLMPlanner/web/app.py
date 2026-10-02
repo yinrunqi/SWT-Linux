@@ -1745,6 +1745,7 @@ def set_projector_animation_pose():
 
 
 WORKFLOW_QUERY_TOOLS = {"get_model_state", "set_parameters", "finish"}
+REASONING_EFFORTS = ("none", "minimal", "low", "medium", "high", "xhigh")
 
 
 def _run_workflow_l1(
@@ -1755,6 +1756,7 @@ def _run_workflow_l1(
     model: str,
     max_llm_calls: int,
     capture_trace: bool,
+    reasoning_effort: str | None = None,
 ) -> dict:
     """L1：工程师级工具 + 闭环 Agent。results 只列建模工具调用，供打分统计失败次数。"""
     import uuid
@@ -1775,7 +1777,13 @@ def _run_workflow_l1(
     )
     session = WorkflowSession(base_url=executor.base_url, executor=executor)
     session.start_part()
-    outcome = WorkflowAgent(client, model, session, max_llm_calls=max_llm_calls).run(instruction)
+    outcome = WorkflowAgent(
+        client,
+        model,
+        session,
+        max_llm_calls=max_llm_calls,
+        reasoning_effort=reasoning_effort,
+    ).run(instruction)
     modeling_calls = [item for item in outcome["tool_calls"] if item["tool"] not in WORKFLOW_QUERY_TOOLS]
     results = [
         {
@@ -1868,6 +1876,15 @@ def run():
     dry_run = data.get("dry_run", False)
     use_cache = bool(data.get("use_cache", True))
     capture_trace = bool(data.get("capture_trace", False))
+    reasoning_effort = str(data.get("reasoning_effort") or "").strip().lower() or None
+    if reasoning_effort is not None:
+        if reasoning_effort not in REASONING_EFFORTS:
+            return jsonify({
+                "success": False,
+                "error": f"未知 reasoning_effort: {reasoning_effort}，可选 {', '.join(REASONING_EFFORTS)}",
+            }), 400
+        if action_level != "L1":
+            return jsonify({"success": False, "error": "reasoning_effort 目前只支持 L1 workflow"}), 400
     # 多模态：可选图片（base64，可含或不含 data URI 前缀；不含时按 JPEG 处理）
     image_raw = data.get("image", "") or ""
     image_b64 = image_raw.strip()
@@ -1902,6 +1919,7 @@ def run():
                     model=plan_model,
                     max_llm_calls=max_turns or 40,
                     capture_trace=capture_trace,
+                    reasoning_effort=reasoning_effort,
                 ))
         except Exception as exc:
             traceback.print_exc()
