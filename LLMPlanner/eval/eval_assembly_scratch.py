@@ -148,8 +148,16 @@ def score_assembly_rubric(session, case: dict) -> dict | None:
 
 
 def _grade_step(step: Path, rubric_path: Path) -> dict:
-    from geomcheck.occ_part import Part
-    from geomcheck.rubric import evaluate, load_rubric
+    try:
+        from geomcheck.occ_part import Part
+        from geomcheck.rubric import evaluate, load_rubric
+    except ImportError as exc:  # 未装 cadquery-ocp，或其 DLL 被系统策略拦截
+        return {
+            "accepted": False,
+            "score": None,
+            "skipped": True,
+            "error": f"OCC 不可用，零件未打分，用 eval/assembly_scratch/regrade_offline.py 补算: {exc}",
+        }
 
     try:
         return evaluate(load_rubric(rubric_path), Part.from_step(step))
@@ -346,8 +354,11 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
                 spec, dest, sw=args.sw, model=args.model, max_llm_calls=args.max_part_calls,
                 reasoning_effort=args.reasoning_effort,
             )
+            skipped = bool((result.get("grade") or {}).get("skipped"))
             print(
-                f"  part {spec['id']}: accepted={result['accepted']} score={result['score']} "
+                f"  part {spec['id']}: "
+                + ("grade=skipped(OCC) " if skipped else f"accepted={result['accepted']} score={result['score']} ")
+                + f"step={'yes' if Path(str(result['artifacts'].get('step', ''))).is_file() else 'NO'} "
                 f"status={result['status']} calls={result['llm_calls']}"
                 + (f" error={result['error']}" if result.get("error") else ""),
                 flush=True,
@@ -438,6 +449,11 @@ def main() -> None:
             parser.error(f"未知测例 {token}，可选：{', '.join(CASE_FILES)}")
         names.append(name)
     conditions = ["gold", "gen", "e2e"] if args.condition == "all" else [args.condition]
+    if "e2e" in conditions:
+        try:
+            import geomcheck.occ_part  # noqa: F401
+        except ImportError as exc:
+            parser.error(f"e2e 条件要在建模时给零件打分才能决定是否装配，但 OCC 不可用（{exc}）；改用 --condition gen")
     workflows = ["v1", "v2"] if args.workflow == "both" else [args.workflow]
     rows = []
 
@@ -457,6 +473,9 @@ def main() -> None:
             "recipes": {wf: list(RECIPE_SETS[wf]) for wf in workflows},
             "results": rows,
             "model": args.model,
+            "part_grading_skipped": any(
+                (part.get("grade") or {}).get("skipped") for row in rows for part in row.get("parts") or []
+            ),
             "base_url": os.environ.get("OPENAI_BASE_URL"),
             "reasoning_effort": args.reasoning_effort,
             "prompt_lang": "zh",
