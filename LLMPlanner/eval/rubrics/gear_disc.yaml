@@ -1,5 +1,8 @@
 case: gear_disc
 prompt: 创建直径 60mm、厚 8mm 的圆盘，中心有直径 12mm 贯穿孔，并在接近外缘处均布 12 个相同的小贯穿槽。
+prompt_en: >-
+  Create a disc 60mm in diameter and 8mm thick with a 12mm-diameter through hole at the center, and 12
+  identical small through slots evenly spaced near the outer edge.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 entities:

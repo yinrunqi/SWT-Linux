@@ -2,6 +2,10 @@ case: u_channel
 prompt: >-
   创建长 100mm 的 U 形槽：外宽 40mm、外高 30mm，两侧壁厚和底板厚都是 4mm，槽口朝上；
   底板上沿长度方向打 3 个直径 8mm 的贯穿孔，孔距 30mm，整体在长度方向居中。
+prompt_en: >-
+  Create a U-channel 100mm long: outer width 40mm, outer height 30mm, both side walls and the base plate 4mm
+  thick, with the opening facing up; in the base plate, make 3 through holes of 8mm diameter along the length
+  at a spacing of 30mm, centered as a whole along the length.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 0 = 高(30)，1 = 宽(40)，2 = 长(100)；高度 0 在底面（完整底面 > 两侧壁顶面）。

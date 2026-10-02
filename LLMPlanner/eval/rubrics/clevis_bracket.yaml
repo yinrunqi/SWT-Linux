@@ -4,6 +4,14 @@ prompt: >-
   其中 ±30mm 沿 80mm 方向。底板上表面立起两片相同的耳板：每片厚 10mm（沿 80mm 方向），宽 30mm 与底板 50mm 方向居中，
   两耳内侧面相距 30mm 且关于底板中心对称；耳板顶端为 R15mm 半圆，圆心距底板上表面 25mm。
   在该圆心处开直径 12mm 的销孔，沿 80mm 方向贯穿两片耳板。
+prompt_en: >-
+  Create a double-lug clevis bracket. The base plate is 80×50mm and 10mm thick, with four 9mm-diameter
+  mounting through holes whose centers are at (±30mm, ±17mm) relative to the center of the base plate, where
+  ±30mm is along the 80mm direction. Two identical lug plates stand on the top face of the base plate: each is
+  10mm thick (along the 80mm direction) and 30mm wide, centered in the 50mm direction of the base plate; the
+  inner faces of the two lugs are 30mm apart and symmetric about the center of the base plate; the top end of
+  each lug is an R15mm semicircle whose center is 25mm from the top face of the base plate. At that center,
+  make a 12mm-diameter pin hole through both lug plates along the 80mm direction.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 底座坐标系：0 = 80mm 方向，1 = 50mm 方向，2 = 向上；原点在底面外廓中心。

@@ -2,6 +2,10 @@ case: bent_tube
 prompt: >-
   创建带法兰的 90° 弯管。中心线是半径 50mm 的四分之一圆弧；管子外径 20mm、实心。
   两端各有外径 44mm、厚 5mm 的圆形法兰，法兰厚度沿管轴线向外凸出。
+prompt_en: >-
+  Create a 90° flanged elbow. Its centerline is a quarter-circle arc of radius 50mm; the tube has an outer
+  diameter of 20mm and is solid. Each end has a circular flange with an outer diameter of 44mm and a thickness
+  of 5mm; the flange thickness projects outward along the tube axis.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 entities:

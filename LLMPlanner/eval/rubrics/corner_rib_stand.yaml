@@ -3,6 +3,13 @@ prompt: >-
   创建带筋支架，单一实体。水平底板 80×50mm、厚 8mm；在 80mm 方向的一端立起 50mm 宽、高 36mm、厚 8mm 的立板，
   立板外侧面与底板该端面齐平。在底板与立板的内侧拐角加一块厚 5mm 的直角筋，筋的两条直角边分别沿底板和立板各 24mm，
   筋位于 50mm 方向的对称中面。
+prompt_en: >-
+  Create a ribbed stand as a single solid body. The horizontal base plate is 80×50mm and 8mm thick; at one end
+  in the 80mm direction, an upright plate 50mm wide, 36mm high and 8mm thick stands up, with its outer face
+  flush with that end face of the base plate. At the inner corner between the base plate and the upright
+  plate, add a 5mm-thick right-triangle rib whose two perpendicular sides extend 24mm each, along the base
+  plate and along the upright plate respectively; the rib lies on the mid-plane of symmetry in the 50mm
+  direction.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 底座坐标系：0 = 80mm 方向（+0 指向立板一端），1 = 50mm 方向，2 = 向上；原点在底面外廓中心。

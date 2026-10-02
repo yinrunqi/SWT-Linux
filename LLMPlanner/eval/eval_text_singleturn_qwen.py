@@ -777,6 +777,307 @@ HARD_CASES = (
 )
 CASES = CASES + HELDOUT_CASES + COMPLEX_CASES + ADVANCED_CASES + EXTRA_CASES + HARD_CASES
 
+# 英文题面：逐句对应中文原文，数值、单位、歧义程度与中文一致（rubric 的 ungraded 项在英文中同样不写明）。
+# 与 eval/rubrics/<case>.yaml 的 prompt_en 字段保持逐字一致。
+# 措辞避开 planner/skills/recipes 的英文 trigger 子串（drill、mate、cam、index 等），使 L0 注入的 recipe 与中文相同。
+PROMPTS_EN = {
+    "phone_stand": (
+        "Create a one-piece desktop phone stand; all features must be merged into a single solid body. "
+        "The base is 110mm long, 78mm wide and 8mm thick. A 78mm-wide inclined back plate, 6mm thick and at 74° "
+        "to the horizontal, rises from the top face of the base; the overall height of the finished stand is 118mm. "
+        "At the front end of the base, add a lip spanning the full width, 10mm thick front to back and rising 12mm "
+        "above the top face of the base, so that the finished stand is 20mm tall overall at the front. "
+        "Add one triangular stiffening rib on each of the left and right sides of the back plate. "
+        "In the lower center of the back plate, cut a U-shaped through slot for the charging cable, 16mm wide, "
+        "open at the bottom, with an opening height of 28mm. In the upper-middle part of the back plate, cut 3 "
+        "horizontal 36×8mm through vent slots with a vertical center-to-center spacing of 18mm. "
+        "On the bottom face, machine two shallow 24×10mm recesses, 1.5mm deep, for anti-slip pads. "
+        "Finally, apply R4mm fillets to as many suitable outer edges as possible, while keeping the bottom face "
+        "flat and the stand left-right symmetric."
+    ),
+    "stool": (
+        "Create a four-legged stool: seat 200×200×20mm; four cylindrical legs, each 20mm in diameter and "
+        "150mm long, with each leg center 30mm from the adjacent edges."
+    ),
+    "rounded_stool": (
+        "Create a four-legged stool: seat 200×200×20mm; four cylindrical legs, each 20mm in diameter and "
+        "150mm long, 30mm from the edges; apply R5mm fillets to the four top edges of the seat."
+    ),
+    "storage_box": (
+        "Create an open-top rectangular storage box with outer dimensions of 120×80×50mm, a wall thickness "
+        "and a bottom thickness of 8mm each, and R3mm fillets on the edges of the top opening."
+    ),
+    "standard_die": (
+        "Create a standard six-sided die with a side length of 20mm and R1.5mm fillets on all edges; the six "
+        "faces carry 1 to 6 pips respectively, with the pips on opposite faces summing to 7; each pip is a "
+        "dimple 3mm in diameter and 1.5mm deep."
+    ),
+    "hex_nut": (
+        "Create a regular hexagon nut 30mm across flats and 8mm thick, with a 10mm-diameter through hole "
+        "at the center, centered on the origin in the thickness direction."
+    ),
+    "mug": (
+        "Create a cylindrical mug 90mm tall, with an outer diameter of 70mm, a wall thickness of 5mm and a "
+        "bottom thickness of 10mm, and add a ring-shaped handle with an outer diameter of 40mm, a band width "
+        "of 8mm and a thickness of 8mm."
+    ),
+    "wrench": (
+        "Create a single-ended wrench 8mm thick: the head has an outer diameter of 40mm and a regular hexagonal "
+        "opening at its center, 13mm across flats; the handle is 120mm long and 15mm wide and is solidly merged "
+        "with the head."
+    ),
+    "vase": (
+        "Create an axisymmetric hollow vase 150mm tall: flat bottom, a maximum diameter of 90mm in the middle, "
+        "a neck diameter of 40mm, a mouth diameter of 55mm and a bottom thickness of 10mm."
+    ),
+    "key": (
+        "Create a small key 2mm thick: a key-ring head with an outer diameter of 20mm, a 10×5mm ring hole and "
+        "a 42×8mm key blade, with 5 evenly spaced tooth notches along one side of the blade."
+    ),
+    "gear_disc": (
+        "Create a disc 60mm in diameter and 8mm thick with a 12mm-diameter through hole at the center, and "
+        "12 identical small through slots evenly spaced near the outer edge."
+    ),
+    "flange": (
+        "Create a circular flange 100mm in diameter and 12mm thick, with a 30mm-diameter central through hole "
+        "and 6 through holes of 8mm diameter evenly spaced on an 80mm pitch circle diameter."
+    ),
+    "pulley": (
+        "Create a simplified pulley 100mm in diameter and 20mm thick, with a 25mm-diameter central through "
+        "hole; the top has an annular groove with an outer diameter of 90mm, an inner diameter of 70mm and a "
+        "depth of 10mm; apply a C1mm chamfer to the outer rim."
+    ),
+    "stepped_shaft": (
+        "Using a single revolve, create a three-step shaft with an overall length of 90mm: the diameter × "
+        "length of the steps, in order, are 35×40mm, 50×30mm and 25×20mm; the shaft is centered on the origin "
+        "along its axis."
+    ),
+    "socket_bolt": (
+        "Create a simplified hex socket head cap screw: shank diameter 10mm, shank length 50mm; head diameter "
+        "18mm, head height 6mm; a hexagon socket in the top of the head, 8mm across flats, as a blind hole 4mm "
+        "deep; R0.5mm at the junction of head and shank."
+    ),
+    "l_bracket": (
+        "Create an L-shaped angle bracket 5mm thick, with both legs 30mm wide: the horizontal leg is 50mm long "
+        "on the outside and the vertical leg is 40mm tall on the outside, the two legs joined into one piece at "
+        "the corner. In the horizontal leg, make 2 through holes of 6mm diameter along its length, with their "
+        "centers on the width centerline at 20mm and 38mm respectively from the outer face of the vertical leg; "
+        "in the vertical leg, make 1 through hole of 6mm diameter on the width centerline, 25mm from the "
+        "bottom face."
+    ),
+    "spacer_ring": (
+        "Create a spacer with an outer diameter of 40mm, an inner diameter of 20mm and a thickness of 10mm; "
+        "apply C1mm chamfers to the outer circular edges of both end faces."
+    ),
+    "mounting_plate": (
+        "Mounting plate 120×80×6mm, R8 fillets on the four corners (the vertical edges), 4× Ø7 through holes "
+        "with centers 12mm from the two adjacent edges; a 40×20mm rectangular through window at the center of "
+        "the plate."
+    ),
+    "stepped_block": (
+        "Create a stepped block: the lower tier is 80×50×15mm; the upper tier is 40×50×15mm, placed at one end "
+        "of the lower tier, flush with its end face and both side faces, for an overall height of 30mm. "
+        "At the center of the exposed top face of the lower tier, make a blind hole 10mm in diameter and "
+        "8mm deep."
+    ),
+    "knob": (
+        "Create a knob: a cylindrical body 30mm in diameter and 20mm tall; a small cylinder 10mm in diameter "
+        "and 5mm tall protrudes from the center of the top face; 12 vertical grip grooves are evenly spaced "
+        "around the outer circumference of the body, each 2mm wide and 1mm deep, running through the full "
+        "height of the body; the center of the bottom face has a blind mounting hole 6mm in diameter and "
+        "12mm deep."
+    ),
+    "hex_standoff": (
+        "M3 hex standoff: a regular hexagonal prism 8mm across flats and 20mm long; the center of each end face "
+        "has a Ø3.3mm tap pilot hole, 6mm deep (threads not modeled)."
+    ),
+    "u_channel": (
+        "Create a U-channel 100mm long: outer width 40mm, outer height 30mm, both side walls and the base plate "
+        "4mm thick, with the opening facing up; in the base plate, make 3 through holes of 8mm diameter along "
+        "the length at a spacing of 30mm, centered as a whole along the length."
+    ),
+    "flanged_bushing": (
+        "Create a flanged bushing: sleeve outer diameter 20mm, inner diameter 12mm, overall length 30mm; one end "
+        "has a flange with an outer diameter of 36mm and a thickness of 5mm, the flange thickness being included "
+        "in the overall length; the bore runs through the full length."
+    ),
+    "wedge_block": (
+        "Create a wedge block 60mm long and 30mm wide, 20mm high at one end and 5mm high at the other; the top "
+        "face is a continuous flat slope and the bottom face is flat."
+    ),
+    "spoked_wheel": (
+        "Create a wheel disc 120mm in diameter and 10mm thick with a 20mm-diameter central shaft hole; between "
+        "the shaft hole and the outer rim, evenly space 4 sector-shaped lightening holes, each an annular sector "
+        "with an inner radius of 20mm, an outer radius of 50mm and an included angle of 60°, all going through."
+    ),
+    "end_cap": (
+        "Create a circular end cap with an outer diameter of 60mm and an overall height of 15mm; hollow out a "
+        "cavity 50mm in diameter and 12mm deep upward from the bottom face, leaving a top plate 3mm thick; make "
+        "an 8mm-diameter through hole at the center of the top plate."
+    ),
+    "link_bar": (
+        "Create a link bar 6mm thick: both ends are round heads 24mm in diameter with their centers 80mm apart, "
+        "joined by a 14mm-wide bar in between, the whole forming a single outer profile; there is a "
+        "10mm-diameter through hole at each of the two circle centers."
+    ),
+    "fork_end": (
+        "Create a fork end; all features are merged into a single solid body. The shank is a cylinder 20mm in "
+        "diameter and 35mm long; the top end of the shank joins a 40×24mm fork-root block 10mm high, with the "
+        "shank axis passing through the center of the block. Two identical fork lugs extend from the top face "
+        "of the fork root: each lug is 8mm thick, with its outer face flush with one of the two end faces of the "
+        "fork root in the 40mm direction (leaving a 24mm opening between the lugs); each lug is 24mm wide, the "
+        "same width as the fork root, and ends in an R12mm semicircle whose center is 18mm from the top face of "
+        "the fork root. At the semicircle centers, make a 10mm-diameter cross pin hole in the thickness "
+        "direction, through both lugs; the center of the bottom end face of the shank has a 6.8mm-diameter tap "
+        "pilot hole, 20mm deep (threads not modeled)."
+    ),
+    "three_lug_housing": (
+        "Create a three-lug flanged bearing housing. The flange is 10mm thick; its outline is a disc of 32mm "
+        "radius plus 3 radial mounting lugs evenly spaced at 120° around the circumference: each lug is 22mm "
+        "wide, with its two sides parallel to the radial direction, and ends in an R11mm semicircle tangent to "
+        "the sides, whose center is 48mm from the center; a 9mm-diameter mounting through hole is made at that "
+        "semicircle center. A coaxial hub 46mm in diameter sits on top of the flange, with its top face 38mm "
+        "from the bottom face of the flange. The 30mm-diameter central bearing bore runs through the full length, "
+        "and the top end of the hub is further machined with a bearing-seat counterbore 38mm in diameter and "
+        "9mm deep."
+    ),
+    "pillow_block": (
+        "Create a pillow block bearing housing, left-right symmetric, with all features merged into a single "
+        "solid body. The base is 120×40mm and 12mm thick. A housing body rises from the center of the top face "
+        "of the base: it spans the full width of the base in the 40mm direction, and its front-view profile is "
+        "a 60mm-wide rectangle topped by an R30mm semicircle whose center is 45mm from the bottom face of the "
+        "base. At that center, make a 35mm-diameter bearing bore through the body in the 40mm direction. "
+        "Each end of the base has a mounting slot running in the 120mm direction, 11mm wide, with the centers "
+        "of its two end semicircles 10mm apart; the center of each slot is 45mm from the center of the housing "
+        "body, and the slots go through the base."
+    ),
+    "twin_arm_rocker": (
+        "Create a twin-arm rocker with all features merged into a single solid body. The hub is a cylinder "
+        "30mm in diameter and 40mm long with a 12mm-diameter central through bore. Two identical rocker plates "
+        "are perpendicular to the hub axis, each 8mm thick, with their outer faces flush with the two end faces "
+        "of the hub respectively; the outline of each rocker plate consists of an R15mm arc centered on the hub "
+        "axis and an R10mm arc centered 70mm from the axis, the two arcs connected by two common tangent lines. "
+        "At the center of the R10mm arc, make an 8mm-diameter pin hole through both rocker plates."
+    ),
+    "clevis_bracket": (
+        "Create a double-lug clevis bracket. The base plate is 80×50mm and 10mm thick, with four 9mm-diameter "
+        "mounting through holes whose centers are at (±30mm, ±17mm) relative to the center of the base plate, "
+        "where ±30mm is along the 80mm direction. Two identical lug plates stand on the top face of the base "
+        "plate: each is 10mm thick (along the 80mm direction) and 30mm wide, centered in the 50mm direction of "
+        "the base plate; the inner faces of the two lugs are 30mm apart and symmetric about the center of the "
+        "base plate; the top end of each lug is an R15mm semicircle whose center is 25mm from the top face of "
+        "the base plate. At that center, make a 12mm-diameter pin hole through both lug plates along the 80mm "
+        "direction."
+    ),
+    "diamond_flange": (
+        "Create a diamond flange mount. The flange plate is 8mm thick; its outline is the convex profile formed "
+        "by a central R25mm arc and two side R12mm arcs (each centered 42mm from the center, with all three "
+        "centers collinear) connected by common tangent lines; a 10mm-diameter through hole is made at the "
+        "center of each of the two R12mm arcs. A coaxial boss 34mm in diameter sits on top of the flange plate, "
+        "with its top face 26mm from the bottom face of the flange; a 20mm-diameter central hole runs through "
+        "the full length."
+    ),
+    "support_seat": (
+        "Create a shaft support block with all features merged into a single solid body. The base is 100×50mm "
+        "and 10mm thick; a 20mm-thick upright plate rises from the center of the top face of the base, centered "
+        "in the 50mm direction of the base; its front-view profile is a 50mm-wide rectangle topped by an R25mm "
+        "semicircle whose center is 40mm from the bottom face of the base. At that center, make a 24mm-diameter "
+        "shaft hole through the upright plate in its thickness direction. In the base, on the centerline along "
+        "the 100mm direction, make one 10mm-diameter through hole on each side, 38mm from the center."
+    ),
+    "crank": (
+        "Create a crank with all features merged into a single solid body. The hub is a cylinder 36mm in "
+        "diameter and 24mm long with a 16mm-diameter central through bore. The crank arm is perpendicular to "
+        "the hub axis and 10mm thick, with one side face flush with one end face of the hub; the arm outline "
+        "consists of an R18mm arc centered on the hub axis and an R11mm arc centered 60mm from the axis, the two "
+        "arcs connected by common tangent lines. At the center of the R11mm arc, on the side where the arm is "
+        "flush with the hub, a crank pin boss 22mm in diameter and 15mm high protrudes; a 10mm-diameter hole at "
+        "the center of the boss passes through both the boss and the crank arm."
+    ),
+    "gusset_bracket": (
+        "Create a ribbed angle bracket as a single solid body. The horizontal base plate is 60×40mm and 6mm "
+        "thick; at one end in the 60mm direction, an upright plate 40mm wide, 30mm high and 6mm thick stands up, "
+        "with its outer face flush with that end face of the base plate. At the inner corner between the base "
+        "plate and the upright plate, add a 4mm-thick right-triangle rib whose two perpendicular sides extend "
+        "18mm each, along the base plate and along the upright plate respectively; the rib lies on the "
+        "mid-plane of symmetry in the 40mm direction."
+    ),
+    "flanged_elbow": (
+        "Create a 90° flanged elbow. Its centerline is a quarter-circle arc of radius 40mm; the tube has an "
+        "outer diameter of 16mm and is solid. Each end has a circular flange with an outer diameter of 36mm and "
+        "a thickness of 4mm; the flange thickness projects outward along the tube axis, and the center hole "
+        "intersects the tube."
+    ),
+    "open_box": (
+        "Create an open-top box: outer dimensions 80×50×40mm, a wall thickness and a bottom thickness of 4mm "
+        "each, made with a shell feature."
+    ),
+    "counterbore_plate": (
+        "Create an 80×60×10mm mounting plate with four counterbored holes: through-hole diameter 6mm, "
+        "counterbore diameter 11mm and depth 3.5mm; the hole centers are 14mm from the two adjacent edges "
+        "(i.e. at (±26mm, ±16mm) relative to the center of the plate). The counterbores are on the top face "
+        "of the plate."
+    ),
+    "side_pad": (
+        "Create a 50×40×30mm block (50 along X, 30 along Y as the height, 40 along Z), with its bottom face at "
+        "Y=0. On a plane parallel to the right end face and 20mm outside it, sketch a 16mm-diameter circle and "
+        "extrude it toward the solid until it meets the right end face, forming a side boss."
+    ),
+    "sheet_angle": "Create a flat sheet-metal plate: outline 70×40mm, sheet thickness 1.5mm.",
+    "square_to_round": (
+        "Create a transition fitting 40mm tall: the bottom is a square with 30mm sides and the top is a circle "
+        "24mm in diameter; the two sections are parallel with coaxial centers and are connected by a loft."
+    ),
+    "corner_rib_stand": (
+        "Create a ribbed stand as a single solid body. The horizontal base plate is 80×50mm and 8mm thick; at "
+        "one end in the 80mm direction, an upright plate 50mm wide, 36mm high and 8mm thick stands up, with its "
+        "outer face flush with that end face of the base plate. At the inner corner between the base plate and "
+        "the upright plate, add a 5mm-thick right-triangle rib whose two perpendicular sides extend 24mm each, "
+        "along the base plate and along the upright plate respectively; the rib lies on the mid-plane of "
+        "symmetry in the 50mm direction."
+    ),
+    "bent_tube": (
+        "Create a 90° flanged elbow. Its centerline is a quarter-circle arc of radius 50mm; the tube has an "
+        "outer diameter of 20mm and is solid. Each end has a circular flange with an outer diameter of 44mm and "
+        "a thickness of 5mm; the flange thickness projects outward along the tube axis."
+    ),
+    "lidless_housing": (
+        "Create an open-top housing: outer dimensions 100×60×50mm, a wall thickness and a bottom thickness of "
+        "5mm each, made with a shell feature."
+    ),
+    "csk_cover": (
+        "Create a 90×70×12mm cover plate with four counterbored holes: through-hole diameter 8mm, counterbore "
+        "diameter 14mm and depth 4mm; the hole centers are 15mm from the two adjacent edges. The counterbores "
+        "are on the top face of the plate."
+    ),
+    "through_boss": (
+        "Create a 60×48×36mm block (60 along X, 36 along Y as the height, 48 along Z), with its bottom face at "
+        "Y=0. On a plane parallel to the right end face and 24mm outside it, sketch a 20mm-diameter circle and "
+        "extrude it toward the solid until it meets the right end face."
+    ),
+    "sheet_channel": "Create a flat sheet-metal plate: outline 90×50mm, sheet thickness 1.2mm.",
+    "rect_to_circle": (
+        "Create a transition tube 50mm tall: the bottom is a 40×24mm rectangle and the top is a circle 28mm in "
+        "diameter; the two sections are parallel with coaxial centers and are connected by a loft."
+    ),
+    "soap_dish": (
+        "Create an open-top rectangular soap dish as a single solid body. Outer dimensions 110×75×25mm (25mm "
+        "tall), side wall thickness 3mm, bottom thickness 3mm; R8mm fillets on the four outer vertical edges. "
+        "Make 15 drain through holes of 5mm diameter in the bottom plate, arranged in 3 rows × 5 columns: "
+        "5 columns along the 110mm direction at a column pitch of 18mm, and 3 rows along the 75mm direction at "
+        "a row pitch of 18mm, with the center of the hole array coinciding with the center of the bottom face."
+    ),
+}
+PROMPT_LANGS = ("zh", "en")
+
+
+def case_prompt(case: TextCase, lang: str = "zh") -> str:
+    if lang == "zh":
+        return case.prompt
+    if lang == "en":
+        return PROMPTS_EN[case.case_id]
+    raise ValueError(f"unknown prompt language {lang!r}, expected one of {PROMPT_LANGS}")
+
 
 HISTORICAL_CASES = (
     {
@@ -1156,6 +1457,7 @@ def run_one(
     action_level: str = "L0",
     max_llm_calls: int = 40,
     artifact_stem: Path | None = None,
+    lang: str = "zh",
 ) -> dict:
     started = time.perf_counter()
     cleanup_before = _close_documents(sw_url)
@@ -1163,7 +1465,7 @@ def run_one(
     payload: dict[str, Any] = {}
     observation: dict[str, Any] = {}
     request_payload = {
-        "instruction": case.prompt,
+        "instruction": case_prompt(case, lang),
         "provider": "aiping",
         "vision_model": model,
         "plan_model": model,
@@ -1315,6 +1617,7 @@ def _write_report(
     repeats: int = 1,
     strict_orientation: bool = False,
     action_level: str = "L0",
+    lang: str = "zh",
 ) -> dict:
     spent_yuan = None
     if balance_before and balance_after:
@@ -1331,6 +1634,7 @@ def _write_report(
         "model": model,
         "mode": "workflow" if action_level == "L1" else "single_turn",
         "action_level": action_level,
+        "prompt_lang": lang,
         "score_version": 2,
         "strict_orientation": strict_orientation,
         "repeats": repeats,
@@ -1422,6 +1726,7 @@ def rescore_report(source: Path, output: Path, strict_orientation: bool = False)
         repeats=int(old.get("repeats") or 1),
         strict_orientation=strict_orientation,
         action_level=old.get("action_level", "L0"),
+        lang=old.get("prompt_lang", "zh"),
     )
     return report
 
@@ -1485,6 +1790,12 @@ def main() -> int:
         "heldout cases must never be used to tune prompts, tools or code",
     )
     parser.add_argument(
+        "--lang",
+        choices=PROMPT_LANGS,
+        default="zh",
+        help="Task prompt language; en runs the English translation of every case",
+    )
+    parser.add_argument(
         "--no-save-artifacts",
         dest="save_artifacts",
         action="store_false",
@@ -1520,7 +1831,8 @@ def main() -> int:
             .replace("-", "_")
         )
         prefix = "text_workflow_l1" if args.action_level == "L1" else "text_singleturn"
-        output = ROOT / "eval" / f"{prefix}_{safe_model}_{args.split}_result.json"
+        lang_suffix = "" if args.lang == "zh" else f"_{args.lang}"
+        output = ROOT / "eval" / f"{prefix}_{safe_model}_{args.split}{lang_suffix}_result.json"
     balance_before = _query_balance(ROOT / ".env")
     results: list[dict] = []
     jobs = [(case, repeat) for case in selected for repeat in range(repeats)]
@@ -1538,6 +1850,7 @@ def main() -> int:
                 ROOT / "eval" / "artifacts" / output.stem / f"{case.case_id}_r{repeat + 1}"
                 if args.save_artifacts else None
             ),
+            lang=args.lang,
         )
         result["repeat"] = repeat
         results.append(result)
@@ -1564,6 +1877,7 @@ def main() -> int:
             repeats=repeats,
             strict_orientation=args.strict_orientation,
             action_level=args.action_level,
+            lang=args.lang,
         )
         if (
             args.pause_every > 0
@@ -1589,6 +1903,7 @@ def main() -> int:
         repeats=repeats,
         strict_orientation=args.strict_orientation,
         action_level=args.action_level,
+        lang=args.lang,
     )
     print(
         f"summary score={report['average_score']} "

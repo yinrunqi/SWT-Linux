@@ -1,5 +1,8 @@
 case: stepped_shaft
 prompt: 使用一次旋转创建总长 90mm 的三段阶梯轴：各段直径和长度依次为 35×40mm、50×30mm、25×20mm，轴向关于原点居中。
+prompt_en: >-
+  Using a single revolve, create a three-step shaft with an overall length of 90mm: the diameter × length of
+  the steps, in order, are 35×40mm, 50×30mm and 25×20mm; the shaft is centered on the origin along its axis.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 entities:

@@ -2,6 +2,10 @@ case: counterbore_plate
 prompt: >-
   创建 80×60×10mm 的安装板，四个沉头孔：通孔直径 6mm，沉头直径 11mm、深 3.5mm；
   孔心距相邻两边各 14mm（即相对板中心位于 (±26mm, ±16mm)）。沉头在板的上表面。
+prompt_en: >-
+  Create an 80×60×10mm mounting plate with four counterbored holes: through-hole diameter 6mm, counterbore
+  diameter 11mm and depth 3.5mm; the hole centers are 14mm from the two adjacent edges (i.e. at (±26mm, ±16mm)
+  relative to the center of the plate). The counterbores are on the top face of the plate.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 0 = 厚(10)，1 = 宽(60)，2 = 长(80)；原点在包围盒角点。

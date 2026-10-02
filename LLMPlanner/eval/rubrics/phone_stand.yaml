@@ -7,6 +7,18 @@ prompt: >-
   背板中上部开3个36×8mm的水平贯穿散热槽，槽中心竖向间距18mm。
   底面加工两个24×10mm、深1.5mm的防滑垫浅凹槽。
   最后尽可能对适合的外轮廓做R4mm圆角，同时保持底面平整、支架左右对称。
+prompt_en: >-
+  Create a one-piece desktop phone stand; all features must be merged into a single solid body. The base is
+  110mm long, 78mm wide and 8mm thick. A 78mm-wide inclined back plate, 6mm thick and at 74° to the
+  horizontal, rises from the top face of the base; the overall height of the finished stand is 118mm. At the
+  front end of the base, add a lip spanning the full width, 10mm thick front to back and rising 12mm above the
+  top face of the base, so that the finished stand is 20mm tall overall at the front. Add one triangular
+  stiffening rib on each of the left and right sides of the back plate. In the lower center of the back plate,
+  cut a U-shaped through slot for the charging cable, 16mm wide, open at the bottom, with an opening height of
+  28mm. In the upper-middle part of the back plate, cut 3 horizontal 36×8mm through vent slots with a vertical
+  center-to-center spacing of 18mm. On the bottom face, machine two shallow 24×10mm recesses, 1.5mm deep, for
+  anti-slip pads. Finally, apply R4mm fillets to as many suitable outer edges as possible, while keeping the
+  bottom face flat and the stand left-right symmetric.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 底座坐标系：0 = 长(110)，1 = 宽(78，左右方向)，2 = 向上；原点在底面外廓中心。

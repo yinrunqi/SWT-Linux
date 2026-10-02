@@ -1,5 +1,8 @@
 case: hex_standoff
 prompt: M3 六角隔离柱：对边距 8mm、长 20mm 的正六棱柱，两个端面中心各有一个 Ø3.3mm、深 6mm 的螺纹底孔（不做螺纹）。
+prompt_en: >-
+  M3 hex standoff: a regular hexagonal prism 8mm across flats and 20mm long; the center of each end face has a
+  Ø3.3mm tap pilot hole, 6mm deep (threads not modeled).
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 entities:

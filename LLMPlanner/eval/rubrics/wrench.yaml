@@ -1,5 +1,9 @@
 case: wrench
 prompt: 创建厚 8mm 的单头扳手：头部外径 40mm、中心正六角卡口对边距 13mm；手柄长 120mm、宽 15mm，并与头部可靠合并。
+prompt_en: >-
+  Create a single-ended wrench 8mm thick: the head has an outer diameter of 40mm and a regular hexagonal
+  opening at its center, 13mm across flats; the handle is 120mm long and 15mm wide and is solidly merged with
+  the head.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 0 = 厚(8)，1 = 头部直径方向(40)，2 = 长度方向。

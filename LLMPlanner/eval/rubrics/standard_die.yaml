@@ -1,5 +1,9 @@
 case: standard_die
 prompt: 创建边长 20mm 的标准六面骰子，全部棱边 R1.5mm；六面分别为 1 至 6 点、相对面点数和为 7；点为直径 3mm、深 1.5mm 的凹坑。
+prompt_en: >-
+  Create a standard six-sided die with a side length of 20mm and R1.5mm fillets on all edges; the six faces
+  carry 1 to 6 pips respectively, with the pips on opposite faces summing to 7; each pip is a dimple 3mm in
+  diameter and 1.5mm deep.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 entities:

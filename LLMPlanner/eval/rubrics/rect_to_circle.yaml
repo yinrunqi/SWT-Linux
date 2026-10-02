@@ -1,5 +1,8 @@
 case: rect_to_circle
 prompt: 创建一个高 50mm 的过渡管：底面是 40×24mm 的矩形，顶面是直径 28mm 的圆，两截面平行且中心同轴，用放样连接。
+prompt_en: >-
+  Create a transition tube 50mm tall: the bottom is a 40×24mm rectangle and the top is a circle 28mm in
+  diameter; the two sections are parallel with coaxial centers and are connected by a loft.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 0 = 宽（由顶圆定为 28），1 = 矩形长边方向(40)，2 = 高；高度 0 在矩形端（960 > 圆 615.8）。

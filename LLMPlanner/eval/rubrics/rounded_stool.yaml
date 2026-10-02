@@ -1,5 +1,8 @@
 case: rounded_stool
 prompt: 创建四脚板凳：凳面 200×200×20mm；四条圆柱腿直径 20mm、长 150mm，距边 30mm；凳面顶部四条边做 R5mm 圆角。
+prompt_en: >-
+  Create a four-legged stool: seat 200×200×20mm; four cylindrical legs, each 20mm in diameter and 150mm long,
+  30mm from the edges; apply R5mm fillets to the four top edges of the seat.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 同 stool：0 = 高，凳面顶面在 0（圆角后顶面 190×190 仍远大于腿端面积）。

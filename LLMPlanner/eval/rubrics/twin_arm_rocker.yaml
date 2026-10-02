@@ -4,6 +4,13 @@ prompt: >-
   两片相同的摇臂板垂直于轮毂轴线，厚度均为 8mm，外侧面分别与轮毂两个端面齐平；
   摇臂板外形为以轮毂轴线为圆心的 R15mm 圆弧和以距轴线 70mm 处为圆心的 R10mm 圆弧，两圆弧由两条公切直线连接。
   在 R10mm 圆弧圆心处开直径 8mm 的销孔，贯穿两片摇臂板。
+prompt_en: >-
+  Create a twin-arm rocker with all features merged into a single solid body. The hub is a cylinder 30mm in
+  diameter and 40mm long with a 12mm-diameter central through bore. Two identical rocker plates are
+  perpendicular to the hub axis, each 8mm thick, with their outer faces flush with the two end faces of the
+  hub respectively; the outline of each rocker plate consists of an R15mm arc centered on the hub axis and an
+  R10mm arc centered 70mm from the axis, the two arcs connected by two common tangent lines. At the center of
+  the R10mm arc, make an 8mm-diameter pin hole through both rocker plates.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # rframe：轴 0 沿轮毂轴线（t ∈ [0, 40]），轴 1 从轮毂轴线指向臂端圆心，横向坐标以轮毂轴线为 0。

@@ -1,5 +1,9 @@
 case: mug
 prompt: 创建高 90mm、外径 70mm、壁厚 5mm、底厚 10mm 的圆柱形马克杯，并添加外径 40mm、条粗 8mm、厚 8mm 的环形把手。
+prompt_en: >-
+  Create a cylindrical mug 90mm tall, with an outer diameter of 70mm, a wall thickness of 5mm and a bottom
+  thickness of 10mm, and add a ring-shaped handle with an outer diameter of 40mm, a band width of 8mm and a
+  thickness of 8mm.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # basis: explicit = 题面直接写明；implied = “马克杯/把手”这一名词的常识要求，单独汇报、不进主分。

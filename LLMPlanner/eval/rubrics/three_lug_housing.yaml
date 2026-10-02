@@ -4,6 +4,14 @@ prompt: >-
   每个耳宽 22mm，两侧边平行于径向，端部为与侧边相切的 R11mm 半圆，半圆圆心距中心 48mm，
   并在该圆心处开直径 9mm 的贯穿安装孔。法兰上方同轴设置直径 46mm 的轮毂，轮毂顶面距法兰底面 38mm。
   中心轴承孔直径 30mm 全长贯通，轮毂顶端再加工直径 38mm、深 9mm 的轴承座沉孔。
+prompt_en: >-
+  Create a three-lug flanged bearing housing. The flange is 10mm thick; its outline is a disc of 32mm radius
+  plus 3 radial mounting lugs evenly spaced at 120° around the circumference: each lug is 22mm wide, with its
+  two sides parallel to the radial direction, and ends in an R11mm semicircle tangent to the sides, whose
+  center is 48mm from the center; a 9mm-diameter mounting through hole is made at that semicircle center. A
+  coaxial hub 46mm in diameter sits on top of the flange, with its top face 38mm from the bottom face of the
+  flange. The 30mm-diameter central bearing bore runs through the full length, and the top end of the hub is
+  further machined with a bearing-seat counterbore 38mm in diameter and 9mm deep.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # hframe：轴 0 沿轮毂轴线，t = 0 在法兰底面（端部平面面积较大的一端）；方位角 0° 指向某一个耳。

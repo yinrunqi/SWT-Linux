@@ -1,5 +1,8 @@
 case: mounting_plate
 prompt: 安装板 120×80×6mm，四个角做 R8 圆角（竖直棱边），4-Ø7 贯穿孔，孔心距相邻两边各 12mm；板中央开一个 40×20mm 的矩形贯穿窗口。
+prompt_en: >-
+  Mounting plate 120×80×6mm, R8 fillets on the four corners (the vertical edges), 4× Ø7 through holes with
+  centers 12mm from the two adjacent edges; a 40×20mm rectangular through window at the center of the plate.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 0 = 厚(6)，1 = 宽(80)，2 = 长(120)；原点在包围盒角点。

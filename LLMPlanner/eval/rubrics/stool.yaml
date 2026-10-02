@@ -1,5 +1,8 @@
 case: stool
 prompt: 创建四脚板凳：凳面 200×200×20mm；四条圆柱腿直径 20mm、长 150mm，腿中心距相邻边 30mm。
+prompt_en: >-
+  Create a four-legged stool: seat 200×200×20mm; four cylindrical legs, each 20mm in diameter and 150mm long,
+  with each leg center 30mm from the adjacent edges.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 坐标轴由短到长：0 = 高(170)，1、2 = 凳面两边(200)；原点在包围盒角点。

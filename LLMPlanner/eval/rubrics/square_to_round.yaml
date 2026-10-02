@@ -1,5 +1,8 @@
 case: square_to_round
 prompt: 创建一个高 40mm 的过渡接管：底面是边长 30mm 的正方形，顶面是直径 24mm 的圆，两截面平行且中心同轴，用放样连接。
+prompt_en: >-
+  Create a transition fitting 40mm tall: the bottom is a square with 30mm sides and the top is a circle 24mm
+  in diameter; the two sections are parallel with coaxial centers and are connected by a loft.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 0、1 = 正方形两边方向，2 = 高；高度 0 在端部平面面积较大的一端（正方形 900 > 圆 452.4）。

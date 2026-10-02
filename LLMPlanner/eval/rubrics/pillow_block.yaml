@@ -5,6 +5,15 @@ prompt: >-
   半圆圆心距底座底面 45mm。在该圆心处开直径 35mm 的轴承孔，沿 40mm 方向贯穿。
   底座两端各有一个沿 120mm 方向的安装长圆孔，宽 11mm、两端半圆圆心相距 10mm，
   长圆孔中心距座体中心 45mm，贯穿底座。
+prompt_en: >-
+  Create a pillow block bearing housing, left-right symmetric, with all features merged into a single solid
+  body. The base is 120×40mm and 12mm thick. A housing body rises from the center of the top face of the base:
+  it spans the full width of the base in the 40mm direction, and its front-view profile is a 60mm-wide
+  rectangle topped by an R30mm semicircle whose center is 45mm from the bottom face of the base. At that
+  center, make a 35mm-diameter bearing bore through the body in the 40mm direction. Each end of the base has a
+  mounting slot running in the 120mm direction, 11mm wide, with the centers of its two end semicircles 10mm
+  apart; the center of each slot is 45mm from the center of the housing body, and the slots go through the
+  base.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # 底座坐标系：0 = 底座长边(120)，1 = 宽(40)，2 = 向上；原点在底面外廓中心。

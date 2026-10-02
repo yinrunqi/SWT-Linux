@@ -3,6 +3,12 @@ prompt: >-
   创建菱形法兰座。法兰板厚 8mm，外形由中心 R25mm 圆弧与两侧 R12mm 圆弧（圆心分别距中心 42mm，三个圆心共线）
   通过公切直线连接而成的凸轮廓；两个 R12mm 圆弧圆心处各开直径 10mm 的贯穿孔。
   法兰板上方同轴设置直径 34mm 的凸台，凸台顶面距法兰底面 26mm；中心直径 20mm 的孔全长贯通。
+prompt_en: >-
+  Create a diamond flange mount. The flange plate is 8mm thick; its outline is the convex profile formed by a
+  central R25mm arc and two side R12mm arcs (each centered 42mm from the center, with all three centers
+  collinear) connected by common tangent lines; a 10mm-diameter through hole is made at the center of each of
+  the two R12mm arcs. A coaxial boss 34mm in diameter sits on top of the flange plate, with its top face 26mm
+  from the bottom face of the flange; a 20mm-diameter central hole runs through the full length.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
 
 # dframe：轴 0 沿凸台轴线，t = 0 在法兰底面；轴 1 指向一侧 R12 圆心。
