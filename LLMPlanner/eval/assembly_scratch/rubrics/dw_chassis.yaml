@@ -1,0 +1,18 @@
+case: dw_chassis
+prompt: "创建车架板：在 front_plane 上画矩形，X 从 -30 到 30 mm，Y 从 -20 到 80 mm，向 +Z 拉伸 8 mm。开贯穿孔：(0,0) 直径 6 mm，(10,60) 直径 6 mm。不要抽壳。"
+tolerance: {length_mm: 0.25, angle_deg: 1.0, volume_rel: 0.04}
+entities:
+  wf: {world_frame: {}}
+  h0: {cylinder: {d: 6, side: inner}, count: 2}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: shape
+    hard: true
+    check:
+      - bbox_sorted: [8, 60, 100]
+      - exists: h0
+      - through: {holes: h0}
+      - axis_positions: {frame: wf, items: h0, axes: [0, 1], expect: [[30, 20], [40, 80]]}

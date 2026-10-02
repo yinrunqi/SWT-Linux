@@ -79,6 +79,32 @@ def test_legacy_expect_ratio_unchanged():
     assert out["passed"] and abs(out["kinematics"]["output_ratio"] - 1 / 6) < 1e-3
 
 
+def test_leads_strokes_swings_antiphase():
+    sweep = 720
+    frames = _frames(121, sweep,
+                     out=(lambda t: 25 * math.sin(math.radians(sweep * t)), lambda t: 0.004 * t),
+                     slider=(lambda t: 0.0, lambda t: 0.015 * math.cos(math.radians(sweep * t))),
+                     hook=(lambda t: 0.0, lambda t: -0.015 * math.cos(math.radians(sweep * t))))
+    spec = {"driver": "driver", "expect_fixed": ["frame"],
+            "leads": [{"role": "out", "axis": "y", "mm_per_rev": 2}],
+            "swings": [{"role": "out", "deg": 50}],
+            "strokes": [{"role": "slider", "axis": "y", "mm": 30}, {"role": "hook", "axis": "y", "mm": 30}],
+            "antiphase": [{"roles": ["slider", "hook"], "axis": "y"}]}
+    out = analyze_frames(frames, spec, ALIASES, [])
+    assert out["passed"] and out["score"] == 100, out["kinematics"]
+    assert abs(abs(out["kinematics"]["leads"][0]["measured_mm_per_rev"]) - 2) < 1e-6
+
+    spec["leads"][0]["mm_per_rev"] = 3
+    assert analyze_frames(frames, spec, ALIASES, [])["score"] == 85
+    spec["leads"][0]["mm_per_rev"] = 2
+    spec["swings"][0]["deg"] = 40
+    assert analyze_frames(frames, spec, ALIASES, [])["score"] == 85
+    spec["swings"][0]["deg"] = 50
+    spec["antiphase"] = [{"roles": ["slider", "slider"], "axis": "y"}]
+    out = analyze_frames(frames, spec, ALIASES, [])
+    assert not out["passed"] and out["kinematics"]["strokes"][-1]["correlation"] > 0.99
+
+
 def test_local_world_round_trip():
     tf = _tf(30, 0.01, 0.02, 0.03, axis="x")
     p = np.array([5.0, -7.0, 11.0])

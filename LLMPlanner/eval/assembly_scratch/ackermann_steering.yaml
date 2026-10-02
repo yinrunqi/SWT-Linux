@@ -1,0 +1,125 @@
+case_id: ackermann_steering
+title: 阿克曼转向梯形（多位姿）
+# 主销距 120、臂长 25、内倾 16°，横拉杆 106.22；三个转角检查内外轮转向节位置。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: ak_axle
+  extra_tools: []
+  prompt: |
+    创建前桥板：在 front_plane 上画矩形，X 从 -80 到 80 mm，Y 从 -15 到 15 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(-60,0) 直径 6 mm，(60,0) 直径 6 mm。不要抽壳。
+- id: ak_knuckle
+  extra_tools: []
+  prompt: |
+    创建转向节臂：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (25,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=25 处直径 6 mm。
+- id: ak_tie_rod
+  extra_tools: []
+  prompt: |
+    创建横拉杆：在 front_plane 上画两端圆头的长条，宽 10 mm，两端半圆的圆心分别在原点和 (106.22,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=106.22 处直径 6 mm。
+- id: ak_pin14
+  extra_tools: []
+  prompt: |
+    创建主销：直径 6 mm、长 14 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: ak_pin12
+  extra_tools: []
+  prompt: |
+    创建拉杆销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+gold_roles:
+  axle: ak_axle
+  kingpin_l: ak_pin14
+  kingpin_r: ak_pin14
+  knuckle_l: ak_knuckle
+  knuckle_r: ak_knuckle
+  tie_pin_l: ak_pin12
+  tie_pin_r: ak_pin12
+  tie_rod: ak_tie_rod
+assembly:
+  prompt: |
+    装配阿克曼转向梯形。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - axle 固定，z∈[0,8]，主销孔 (-60,0) 与 (60,0)。kingpin_l、kingpin_r 分别固定在两孔里（z∈[0,14]）。
+    - knuckle_l、knuckle_r 的原点孔分别套在 kingpin_l、kingpin_r 上转动（z∈[8,14]）。
+      直行时两转向节臂都指向 −Y（车尾方向）并向内倾 16°：knuckle_l 指向 -74°，knuckle_r 指向 -106°（从 +X 量）。
+    - tie_pin_l、tie_pin_r 分别固定在两转向节臂的 X=25 孔里（z∈[8,20]）；tie_rod 两端孔分别套在上面（z∈[14,20]）。
+    - 转向自由度保持自由（活动度 1），不要固定。各件互不穿模，装好后保存。
+motion:
+  mode: poses
+  frame: axle
+  expect_fixed:
+  - axle
+  tolerance_mm: 1.5
+  max_interference: 0
+  poses:
+  - name: left_small
+    set:
+    - type: angle
+      a: knuckle_l:plane(top)
+      b: axle:plane(top)
+      angle_deg: 59.0
+      points:
+      - role: knuckle_l
+        local:
+        - 25.0
+        - 0.0
+        - 0
+        expect:
+          x: -47.12
+          y: -21.43
+      - role: knuckle_r
+        local:
+        - 25.0
+        - 0.0
+        - 0
+        expect:
+          x: 59.03
+          y: -24.98
+    right_steer_deg: 13.79
+  - name: left_full
+    set:
+    - type: angle
+      a: knuckle_l:plane(top)
+      b: axle:plane(top)
+      angle_deg: 46.0
+      points:
+      - role: knuckle_l
+        local:
+        - 25.0
+        - 0.0
+        - 0
+        expect:
+          x: -42.63
+          y: -17.98
+      - role: knuckle_r
+        local:
+        - 25.0
+        - 0.0
+        - 0
+        expect:
+          x: 63.37
+          y: -24.77
+    right_steer_deg: 23.74
+  - name: right
+    set:
+    - type: angle
+      a: knuckle_l:plane(top)
+      b: axle:plane(top)
+      angle_deg: 94.0
+      points:
+      - role: knuckle_l
+        local:
+        - 25.0
+        - 0.0
+        - 0
+        expect:
+          x: -61.74
+          y: -24.94
+      - role: knuckle_r
+        local:
+        - 25.0
+        - 0.0
+        - 0
+        expect:
+          x: 44.33
+          y: -19.48
+    right_steer_deg: -22.8

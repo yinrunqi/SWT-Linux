@@ -1,0 +1,97 @@
+case_id: pumpjack_drive
+title: 游梁式抽油机传动
+# 10/30 齿减速带曲柄，曲柄 20、连杆 90、游梁后臂 50 的曲柄摇杆带游梁摆动。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: pj_frame
+  extra_tools: []
+  prompt: |
+    创建机架板：在 front_plane 上画矩形，X 从 -80 到 40 mm，Y 从 -30 到 110 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(-50,0) 直径 10 mm，(0,0) 直径 10 mm，(-30,90) 直径 6 mm。不要抽壳。
+- id: pj_motor_shaft
+  extra_tools: []
+  prompt: |
+    创建电机轴：直径 10 mm、长 26 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: pj_crank_shaft
+  extra_tools: []
+  prompt: |
+    创建曲柄轴：直径 10 mm、长 32 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: pj_pinion
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2.5 mm，齿数 10，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: pj_bull_gear
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2.5 mm，齿数 30，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: pj_crank
+  extra_tools: []
+  prompt: |
+    创建曲柄：在 front_plane 上画两端圆头的长条，宽 16 mm，两端半圆的圆心分别在原点和 (20,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=20 处直径 6 mm。
+- id: pj_pin12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: pj_pitman
+  extra_tools: []
+  prompt: |
+    创建连杆：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (90,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=90 处直径 6 mm。
+- id: pj_beam
+  extra_tools: []
+  prompt: |
+    创建游梁：在 front_plane 上画两端圆头的长条，宽 14 mm，两端半圆的圆心分别在原点和 (130,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=50 处直径 6 mm，X=130 处直径 6 mm。
+- id: pj_pivot_pin
+  extra_tools: []
+  prompt: |
+    创建游梁支销：直径 6 mm、长 34 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+gold_roles:
+  frame: pj_frame
+  motor_shaft: pj_motor_shaft
+  pinion: pj_pinion
+  crank_shaft: pj_crank_shaft
+  bull_gear: pj_bull_gear
+  crank: pj_crank
+  crank_pin: pj_pin12
+  pitman: pj_pitman
+  pitman_pin: pj_pin12
+  beam: pj_beam
+  pivot_pin: pj_pivot_pin
+assembly:
+  prompt: |
+    装配游梁式抽油机（齿轮减速带曲柄，曲柄摇杆机构带游梁摆动）。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]。轴承孔：电机轴 (-50,0)、曲柄轴 (0,0)；游梁支孔 (-30,90)。
+    - motor_shaft 穿过 (-50,0) 孔绕 Z 转动（z∈[-10,16]），10 齿 pinion 固定在其上（z∈[8,16]）。
+    - crank_shaft 穿过 (0,0) 孔绕 Z 转动（z∈[-10,22]），30 齿 bull_gear（z∈[8,16]）与 crank 的 10 mm 孔（z∈[16,22]）
+      都固定在 crank_shaft 上。pinion 与 bull_gear 外啮合（模数 2.5，中心距 50），减速比 3。
+    - crank_pin 固定在 crank 的 6 mm 孔（z∈[16,28]）；pitman 一端绕 crank_pin 转（z∈[22,28]）；
+      pitman_pin 固定在 pitman 另一端孔（z∈[22,34]）。
+    - pivot_pin 固定在 frame 的 (-30,90) 孔里（z∈[0,34]）；beam 的 X=50 孔套在 pivot_pin 上转动（z∈[28,34]），
+      beam 的 X=0 孔套在 pitman_pin 上，X=130 一端（驴头）伸向 pivot_pin 的另一侧。
+      曲柄 20、连杆 90、游梁后臂 50、机架 94.9；beam 的 X=0 端在 pivot_pin 的 +X 侧。
+    - 曲柄整周转动时游梁往复摆动约 47.7°。各齿轮互不穿模，啮合齿相位要对上。
+    对 motor_shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: motor_shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - pinion
+  - crank
+  - pitman
+  - beam
+  ratios:
+  - role: crank
+    ratio: 3
+    same_direction: false
+  swings:
+  - role: beam
+    deg: 47.71
+  max_interference: 0

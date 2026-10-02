@@ -1,0 +1,23 @@
+# 装配级 rubric：角色名与 toggle_clamp.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: toggle_clamp
+ground: base
+mobility: 1
+bodies:
+  base: [base]
+  arm: [arm]
+  handle: [handle]
+  link: [link]
+flex:
+  pin_a: [base, arm]
+  pin_h: [base, handle]
+  pin_j: [arm, link]
+  pin_k: [handle, link]
+joints:
+- bodies: [arm, base]
+  type: revolute
+- bodies: [handle, base]
+  type: revolute
+- bodies: [link, arm]
+  type: revolute
+- bodies: [link, handle]
+  type: [revolute, cylindrical]

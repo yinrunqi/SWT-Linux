@@ -1,0 +1,18 @@
+case: tc_handle
+prompt: "创建手柄：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (80,0)，向 +Z 拉伸 6 mm。在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=25 处直径 6 mm。"
+tolerance: {length_mm: 0.25, angle_deg: 1.0, volume_rel: 0.06}
+entities:
+  wf: {world_frame: {}}
+  h0: {cylinder: {d: 6, side: inner}, count: 2}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: shape
+    hard: true
+    check:
+      - bbox_sorted: [6, 12, 92]
+      - exists: h0
+      - through: {holes: h0}
+      - axis_positions: {frame: wf, items: h0, axes: [0, 1], expect: [[6, 6], [31, 6]]}

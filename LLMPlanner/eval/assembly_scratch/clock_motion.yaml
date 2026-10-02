@@ -1,0 +1,94 @@
+case_id: clock_motion_works
+title: 钟表跨轮（12:1 时分针）
+# 10/30 与 8/32 两级外啮合，时轮管套在分轮轴上；两针分层。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: ck_frame
+  extra_tools: []
+  prompt: |
+    创建机芯夹板：在 front_plane 上画矩形，X 从 -40 到 60 mm，Y 从 -40 到 40 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 4 mm，(30,0) 直径 4 mm。不要抽壳。
+- id: ck_minute_arbor
+  extra_tools: []
+  prompt: |
+    创建分轮轴：直径 4 mm、长 50 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: ck_wheel_arbor
+  extra_tools: []
+  prompt: |
+    创建跨轮轴：直径 4 mm、长 26 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: ck_cannon_pinion
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 1.5 mm，齿数 10，压力角 30°，齿宽 6 mm，轴孔直径 4 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: ck_minute_wheel
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 1.5 mm，齿数 30，压力角 30°，齿宽 6 mm，轴孔直径 4 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: ck_minute_pinion
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 1.5 mm，齿数 8，压力角 30°，齿宽 6 mm，轴孔直径 4 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: ck_hour_wheel
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 1.5 mm，齿数 32，压力角 30°，齿宽 6 mm，轴孔直径 8 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: ck_hour_tube
+  extra_tools: []
+  prompt: |
+    创建时轮管：外径 8 mm、厚 16 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 4 mm。
+- id: ck_minute_hand
+  extra_tools: []
+  prompt: |
+    创建分针：在 front_plane 上画两端圆头的长条，宽 8 mm，两端半圆的圆心分别在原点和 (50,0)，向 +Z 拉伸 2 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 4 mm。
+- id: ck_hour_hand
+  extra_tools: []
+  prompt: |
+    创建时针：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (35,0)，向 +Z 拉伸 2 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 8 mm。
+gold_roles:
+  frame: ck_frame
+  minute_arbor: ck_minute_arbor
+  cannon_pinion: ck_cannon_pinion
+  minute_hand: ck_minute_hand
+  wheel_arbor: ck_wheel_arbor
+  minute_wheel: ck_minute_wheel
+  minute_pinion: ck_minute_pinion
+  hour_tube: ck_hour_tube
+  hour_wheel: ck_hour_wheel
+  hour_hand: ck_hour_hand
+assembly:
+  prompt: |
+    装配钟表跨轮机构（分针转 12 圈时针转 1 圈）。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]，分轮轴孔 (0,0)，跨轮轴孔 (30,0)，两孔直径都是 4 mm。
+    - minute_arbor 穿过 (0,0) 孔绕 Z 转动（z∈[-10,40]）；10 齿 cannon_pinion（z∈[8,14]）与 minute_hand（z∈[34,36]）
+      都固定在 minute_arbor 上。
+    - wheel_arbor 穿过 (30,0) 孔绕 Z 转动（z∈[-6,20]）；30 齿 minute_wheel（z∈[8,14]）与 8 齿 minute_pinion（z∈[14,20]）
+      都固定在 wheel_arbor 上。cannon_pinion 与 minute_wheel 外啮合（模数 1.5，中心距 30）。
+    - hour_tube 套在 minute_arbor 上绕 Z 转动（z∈[14,30]）；32 齿 hour_wheel（z∈[14,20]，轴孔 8 mm）与 hour_hand
+      （z∈[28,30]，孔 8 mm）都固定在 hour_tube 上。minute_pinion 与 hour_wheel 外啮合（中心距 30）。
+    - 传动比：minute_wheel 是分轮转速的 1/3、反向；hour_wheel 是分轮的 1/12、同向。各齿轮互不穿模，啮合齿相位要对上。
+    对 minute_arbor 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: minute_arbor
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - cannon_pinion
+  - minute_wheel
+  - hour_hand
+  ratios:
+  - role: minute_wheel
+    ratio: 3
+    same_direction: false
+  - role: hour_hand
+    ratio: 12
+    same_direction: true
+  max_interference: 0

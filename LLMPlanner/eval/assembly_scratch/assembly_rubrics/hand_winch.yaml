@@ -1,0 +1,21 @@
+# 装配级 rubric：角色名与 hand_winch.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: hand_winch
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame]
+  handle: [handle_shaft, pinion, handle, knob]
+  drum: [drum_shaft, gear, drum]
+joints:
+- bodies: [handle, frame]
+  type: revolute
+- bodies: [drum, frame]
+  type: revolute
+couplings:
+- type: gear
+  a: pinion
+  b: gear
+  teeth: [12, 36]
+  module_mm: 2
+  external: true
+center_distance_tol_mm: 0.2

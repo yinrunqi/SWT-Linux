@@ -1,0 +1,62 @@
+case_id: lead_screw_stage
+title: 竖直丝杠滑台
+# 丝杠导程 2，滑台由导杆导向、螺母与丝杠成螺旋副。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: ls_frame
+  extra_tools: []
+  prompt: |
+    创建底板：在 front_plane 上画矩形，X 从 -30 到 70 mm，Y 从 -30 到 30 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(40,0) 直径 8 mm。不要抽壳。
+- id: ls_screw
+  extra_tools: []
+  prompt: |
+    创建丝杠：直径 10 mm、长 128 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: ls_handwheel
+  extra_tools: []
+  prompt: |
+    创建手轮：外径 50 mm、厚 8 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。
+- id: ls_guide_rod
+  extra_tools: []
+  prompt: |
+    创建导杆：直径 8 mm、长 120 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: ls_carriage
+  extra_tools: []
+  prompt: |
+    创建滑台：在 front_plane 上画矩形，X 从 -15 到 55 mm，Y 从 -15 到 15 mm，向 +Z 拉伸 10 mm。
+    开贯穿孔：(0,0) 直径 20 mm，(40,0) 直径 8 mm。不要抽壳。
+- id: ls_nut
+  extra_tools: []
+  prompt: |
+    创建螺母：外径 20 mm、厚 10 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。
+gold_roles:
+  frame: ls_frame
+  screw: ls_screw
+  handwheel: ls_handwheel
+  guide_rod: ls_guide_rod
+  carriage: ls_carriage
+  nut: ls_nut
+assembly:
+  prompt: |
+    装配竖直丝杠滑台。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]，丝杠孔 (0,0) 直径 10，导杆孔 (40,0) 直径 8。
+    - screw 穿过 (0,0) 孔绕 Z 转动（z∈[-16,112]）；handwheel 固定在 screw 下端（z∈[-16,-8]）。
+    - guide_rod 固定在 (40,0) 孔里（z∈[0,120]）。
+    - carriage 的 8 mm 孔套在 guide_rod 上，只能沿 Z 滑动（初始 z∈[50,60]）；nut 固定在 carriage 的 20 mm 孔里（z∈[50,60]），
+      nut 与 screw 组成螺旋副，导程 2 mm：丝杠转一圈滑台沿 Z 移动 2 mm。
+    对 screw 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: screw
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - handwheel
+  - carriage
+  leads:
+  - role: carriage
+    axis: z
+    mm_per_rev: 2
+  max_interference: 0

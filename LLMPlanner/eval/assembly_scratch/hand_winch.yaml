@@ -1,0 +1,75 @@
+case_id: hand_winch
+title: 手摇绞盘
+# 摇把轴 12 齿带卷筒轴 36 齿，单级外啮合减速 3。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: hw_frame
+  extra_tools: []
+  prompt: |
+    创建支架板：在 front_plane 上画矩形，X 从 -30 到 80 mm，Y 从 -40 到 40 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(48,0) 直径 10 mm。不要抽壳。
+- id: hw_handle_shaft
+  extra_tools: []
+  prompt: |
+    创建摇把轴：直径 10 mm、长 30 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: hw_drum_shaft
+  extra_tools: []
+  prompt: |
+    创建卷筒轴：直径 10 mm、长 56 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: hw_pinion
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 12，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: hw_gear
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 36，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: hw_handle
+  extra_tools: []
+  prompt: |
+    创建摇把：在 front_plane 上画两端圆头的长条，宽 14 mm，两端半圆的圆心分别在原点和 (40,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=40 处直径 6 mm。
+- id: hw_knob
+  extra_tools: []
+  prompt: |
+    创建手柄：直径 6 mm、长 30 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: hw_drum
+  extra_tools: []
+  prompt: |
+    创建卷筒：外径 40 mm、厚 40 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。
+gold_roles:
+  frame: hw_frame
+  handle_shaft: hw_handle_shaft
+  pinion: hw_pinion
+  handle: hw_handle
+  knob: hw_knob
+  drum_shaft: hw_drum_shaft
+  gear: hw_gear
+  drum: hw_drum
+assembly:
+  prompt: |
+    装配手摇绞盘（摇把经 12/36 齿轮减速带卷筒）。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]，轴承孔 (0,0) 与 (48,0)。
+    - handle_shaft 穿过 (0,0) 孔绕 Z 转动（z∈[-14,16]）；12 齿 pinion（z∈[8,16]）固定在其上；
+      板后 handle 的 10 mm 孔固定在 handle_shaft 上（z∈[-14,-8]），knob 固定在 handle 的 6 mm 孔里、向 −Z 伸出（z∈[-44,-14]）。
+    - drum_shaft 穿过 (48,0) 孔绕 Z 转动（z∈[0,56]）；36 齿 gear（z∈[8,16]）与 drum（z∈[16,56]）都固定在 drum_shaft 上。
+    - pinion 与 gear 外啮合（模数 2，中心距 48），卷筒转速为摇把的 1/3、反向。各齿轮互不穿模，啮合齿相位要对上。
+    对 handle_shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: handle_shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - pinion
+  - handle
+  - drum
+  ratios:
+  - role: drum
+    ratio: 3
+    same_direction: false
+  max_interference: 0

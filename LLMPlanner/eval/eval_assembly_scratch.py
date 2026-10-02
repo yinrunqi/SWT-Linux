@@ -38,6 +38,10 @@ CASE_FILES = {
     "sewing_machine": "sewing_machine_drive",
     "projector": "film_projector_drive",
 }
+CORE_CASES = list(CASE_FILES)
+# 扩展的 20 个测例由 bench_cases.py 生成；--cases bench 表示全部扩展测例
+from eval.assembly_scratch.bench_cases import CASES as BENCH_CASES  # noqa: E402
+CASE_FILES.update({name: c.case_id for name, c in BENCH_CASES.items()})
 CASE_ALIASES = {case_id: name for name, case_id in CASE_FILES.items()}
 
 
@@ -385,8 +389,9 @@ def main() -> None:
     parser.add_argument("--output", default=str(ROOT / "eval" / "assembly_scratch_result.json"))
     args = parser.parse_args()
     names = []
-    for token in args.cases.split(","):
-        token = token.strip()
+    tokens = [t.strip() for t in args.cases.split(",")]
+    tokens = [n for t in tokens for n in (list(BENCH_CASES) if t == "bench" else [t])]
+    for token in tokens:
         name = CASE_ALIASES.get(token, token)
         if not (CASES_DIR / f"{name}.yaml").is_file():
             parser.error(f"未知测例 {token}，可选：{', '.join(CASE_FILES)}")

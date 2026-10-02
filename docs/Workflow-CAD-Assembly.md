@@ -82,6 +82,12 @@ v2 的规则都来自 AutoMate 与 Fusion 360 Gallery 的统计，不来自试�
 
 额外零件工具集 v2（`EXTRA_TOOLSET_VERSION`）增加了 `internal_gear`：渐开线内齿圈，齿槽轮廓就是外齿轮齿形把齿顶高、齿根高对调（齿顶圆 r − m，齿根圆 r + 1.15m，齿隙 0.05m），`phase_deg` 是某个齿圈轮齿中心的方位角。装配工具 `mesh_gears` 增加了 `internal: true`：b 是齿圈，中心距必须是 m(z_b − z_a)/2，只转动外齿轮 a 去对齐相位，默认 `reverse=false`（同向）。实测 SolidWorks 的齿轮配合能正确处理行星架：太阳 12 / 行星 18 / 齿圈 48 固定时，行星架转速比 0.2、同向、零干涉。v1 的结果（只有 `spur_gear`）不受影响，测例清单和工具集版本见 [Workflow-CAD-Bench-Assembly.md](Workflow-CAD-Bench-Assembly.md)。
 
+`insert_component` 的 `rotate_deg` 修正（2026-10-02，扩展测例试点之前）：C# 的 `set-component-pose` 按行向量约定，物理转向与 `angleDeg` 相反。`mesh_gears` 早就做了取负补偿，`insert_component` 却直接透传，所以 `rotate_deg: 30` 实际是绕 Z 转 −30°，与工具说明"绕 +Z"相反。齿轮相位只差正负号时影响不大，但闭环连杆按说明给初始角时，SolidWorks 会解到镜像装配模式（如肘节夹钳的铰点落到另一侧），角度配合再也拨不回来。现已在 `insert_component` 里同样取负，实测 `rotate_deg: 30` 读回 30°。此前的试点结果都是旧行为下跑的。
+
+`insert_component` 的 `rotate_deg` 修正（2026-10-02，扩展测例试点之前）：C# 的 `set-component-pose` 按行向量约定，物理转向与 `angleDeg` 相反。`mesh_gears` 早就做了取负补偿，`insert_component` 却直接透传，所以 `rotate_deg: 30` 实际是绕 Z 转 −30°，与工具说明"绕 +Z"相反。齿轮相位只差正负号时影响不大，但闭环连杆按说明给初始角时，SolidWorks 会解到镜像装配模式（如肘节夹钳的铰点落到另一侧），角度配合再也拨不回来。现已在 `insert_component` 里同样取负，实测 `rotate_deg: 30` 读回 30°。此前的试点结果都是旧行为下跑的。
+
+`insert_component` 的 `rotate_deg` 修正（2026-10-02，扩展测例试点之前）：C# 的 `set-component-pose` 按行向量约定，物理转向与 `angleDeg` 相反。`mesh_gears` 早就做了取负补偿，`insert_component` 却直接透传，所以 `rotate_deg: 30` 实际是绕 Z 转 −30°，与工具说明"绕 +Z"相反。齿轮相位只差正负号时影响不大，但闭环连杆按说明给初始角时，SolidWorks 会解到镜像装配模式（如肘节夹钳的铰点落到另一侧），角度配合再也拨不回来。现已在 `insert_component` 里同样取负，实测 `rotate_deg: 30` 读回 30°。此前的试点结果都是旧行为下跑的。
+
 ## 3. 评测协议
 
 测例与评分规格的完整说明（含新增测例的流程）见 [Workflow-CAD-Bench-Assembly.md](Workflow-CAD-Bench-Assembly.md)。本节是摘要。

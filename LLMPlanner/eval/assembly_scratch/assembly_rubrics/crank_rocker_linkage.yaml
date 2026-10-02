@@ -1,0 +1,22 @@
+# 装配级 rubric：角色名与 crank_rocker.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: crank_rocker_linkage
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame]
+  crank: [shaft, crank]
+  coupler: [coupler]
+  rocker: [rocker]
+flex:
+  crank_pin: [crank, coupler]
+  coupler_pin: [coupler, rocker]
+  rocker_pin: [frame, rocker]
+joints:
+- bodies: [crank, frame]
+  type: revolute
+- bodies: [coupler, crank]
+  type: revolute
+- bodies: [rocker, frame]
+  type: revolute
+- bodies: [coupler, rocker]
+  type: [revolute, cylindrical]

@@ -1,0 +1,18 @@
+# 装配级 rubric：角色名与 scara_arm.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: scara_arm
+ground: base
+mobility: 4
+bodies:
+  base: [base, column]
+  upper_arm: [upper_arm]
+  forearm: [forearm]
+  quill: [quill]
+flex:
+  elbow_pin: [upper_arm, forearm]
+joints:
+- bodies: [upper_arm, base]
+  type: revolute
+- bodies: [forearm, upper_arm]
+  type: revolute
+- bodies: [quill, forearm]
+  type: cylindrical

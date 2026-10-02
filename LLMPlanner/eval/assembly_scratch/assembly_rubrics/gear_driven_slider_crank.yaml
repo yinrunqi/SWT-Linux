@@ -1,0 +1,32 @@
+# 装配级 rubric：角色名与 geared_slider_crank.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: gear_driven_slider_crank
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame]
+  motor: [motor_shaft, pinion]
+  crank: [crank_shaft, gear, crank]
+  rod: [rod]
+  slider: [slider]
+flex:
+  crank_pin: [crank, rod]
+  wrist_pin: [rod, slider]
+joints:
+- bodies: [motor, frame]
+  type: revolute
+- bodies: [crank, frame]
+  type: revolute
+- bodies: [rod, crank]
+  type: revolute
+- bodies: [slider, rod]
+  type: revolute
+- bodies: [slider, frame]
+  type: [slider, planar]
+couplings:
+- type: gear
+  a: pinion
+  b: gear
+  teeth: [12, 36]
+  module_mm: 2
+  external: true
+center_distance_tol_mm: 0.2

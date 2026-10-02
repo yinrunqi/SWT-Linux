@@ -1,0 +1,30 @@
+# 装配级 rubric：角色名与 excavator_arm.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: excavator_arm
+ground: base
+mobility: 3
+bodies:
+  base: [base]
+  boom: [boom]
+  stick: [stick]
+  bucket: [bucket]
+  barrel: [barrel]
+  ram: [ram]
+flex:
+  boom_pin: [base, boom]
+  barrel_pin: [base, barrel]
+  ram_pin: [boom, ram]
+  stick_pin: [boom, stick]
+  bucket_pin: [stick, bucket]
+joints:
+- bodies: [boom, base]
+  type: revolute
+- bodies: [barrel, base]
+  type: revolute
+- bodies: [ram, boom]
+  type: revolute
+- bodies: [ram, barrel]
+  type: [slider, planar]
+- bodies: [stick, boom]
+  type: revolute
+- bodies: [bucket, stick]
+  type: revolute

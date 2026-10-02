@@ -292,6 +292,27 @@ BUILDERS = {
 }
 
 
+def _bench_builder(name: str):
+    def build(out: Path) -> dict[str, Path]:
+        from eval.assembly_scratch.bench_cases import CASES, build_part
+        out.mkdir(parents=True, exist_ok=True)
+        close()
+        p = {pid: out / f"{pid}.SLDPRT" for pid in CASES[name].parts}
+        for pid, spec in CASES[name].parts.items():
+            build_part(p[pid], spec)
+        return p
+    return build
+
+
+def _register_bench() -> None:
+    from eval.assembly_scratch.bench_cases import CASES
+    for name in CASES:
+        BUILDERS[name] = _bench_builder(name)
+
+
+_register_bench()
+
+
 def main() -> None:
     here = Path(__file__).resolve().parent
     dest = here / "gold_parts"

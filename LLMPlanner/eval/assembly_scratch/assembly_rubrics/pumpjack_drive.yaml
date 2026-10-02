@@ -1,0 +1,33 @@
+# 装配级 rubric：角色名与 pumpjack.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: pumpjack_drive
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame]
+  motor: [motor_shaft, pinion]
+  crank: [crank_shaft, bull_gear, crank]
+  pitman: [pitman]
+  beam: [beam]
+flex:
+  crank_pin: [crank, pitman]
+  pitman_pin: [pitman, beam]
+  pivot_pin: [frame, beam]
+joints:
+- bodies: [motor, frame]
+  type: revolute
+- bodies: [crank, frame]
+  type: revolute
+- bodies: [pitman, crank]
+  type: revolute
+- bodies: [beam, frame]
+  type: revolute
+- bodies: [pitman, beam]
+  type: [revolute, cylindrical]
+couplings:
+- type: gear
+  a: pinion
+  b: bull_gear
+  teeth: [10, 30]
+  module_mm: 2.5
+  external: true
+center_distance_tol_mm: 0.2

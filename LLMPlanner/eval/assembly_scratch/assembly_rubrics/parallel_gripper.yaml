@@ -1,0 +1,38 @@
+# 装配级 rubric：角色名与 parallel_gripper.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: parallel_gripper
+ground: base
+mobility: 2
+bodies:
+  base: [base]
+  lower_l: [lower_l]
+  upper_l: [upper_l]
+  finger_l: [finger_l]
+  lower_r: [lower_r]
+  upper_r: [upper_r]
+  finger_r: [finger_r]
+flex:
+  base_pin_lo_l: [base, lower_l]
+  base_pin_up_l: [base, upper_l]
+  link_pin_lo_l: [lower_l, finger_l]
+  link_pin_up_l: [upper_l, finger_l]
+  base_pin_lo_r: [base, lower_r]
+  base_pin_up_r: [base, upper_r]
+  link_pin_lo_r: [lower_r, finger_r]
+  link_pin_up_r: [upper_r, finger_r]
+joints:
+- bodies: [lower_l, base]
+  type: revolute
+- bodies: [upper_l, base]
+  type: revolute
+- bodies: [finger_l, lower_l]
+  type: revolute
+- bodies: [finger_l, upper_l]
+  type: &id001 [revolute, cylindrical]
+- bodies: [lower_r, base]
+  type: revolute
+- bodies: [upper_r, base]
+  type: revolute
+- bodies: [finger_r, lower_r]
+  type: revolute
+- bodies: [finger_r, upper_r]
+  type: *id001

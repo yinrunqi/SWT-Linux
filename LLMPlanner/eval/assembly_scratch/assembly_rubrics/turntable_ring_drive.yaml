@@ -1,0 +1,21 @@
+# 装配级 rubric：角色名与 turntable.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: turntable_ring_drive
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame, spindle]
+  drive: [pinion_shaft, pinion]
+  table: [table, ring]
+joints:
+- bodies: [drive, frame]
+  type: revolute
+- bodies: [table, frame]
+  type: revolute
+couplings:
+- type: gear
+  a: pinion
+  b: ring
+  teeth: [12, 48]
+  module_mm: 2
+  external: false
+center_distance_tol_mm: 0.2

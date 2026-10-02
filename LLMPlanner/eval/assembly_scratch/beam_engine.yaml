@@ -1,0 +1,94 @@
+case_id: beam_engine
+title: 蒸汽梁机
+# 曲柄 20、连杆 110、半游梁 60 的曲柄摇杆，游梁另一端经活塞杆带活塞沿 Y 往复。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: be_frame
+  extra_tools: []
+  prompt: |
+    创建机架板：在 front_plane 上画矩形，X 从 -90 到 90 mm，Y 从 -30 到 140 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(60,0) 直径 10 mm，(0,120) 直径 6 mm。不要抽壳。
+- id: be_shaft
+  extra_tools: []
+  prompt: |
+    创建曲柄轴：直径 10 mm、长 24 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: be_crank
+  extra_tools: []
+  prompt: |
+    创建曲柄：在 front_plane 上画两端圆头的长条，宽 16 mm，两端半圆的圆心分别在原点和 (20,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=20 处直径 6 mm。
+- id: be_pin12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: be_conrod
+  extra_tools: []
+  prompt: |
+    创建连杆：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (110,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=110 处直径 6 mm。
+- id: be_beam
+  extra_tools: []
+  prompt: |
+    创建游梁：在 front_plane 上画两端圆头的长条，宽 14 mm，两端半圆的圆心分别在原点和 (120,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=60 处直径 6 mm，X=120 处直径 6 mm。
+- id: be_pivot_pin
+  extra_tools: []
+  prompt: |
+    创建游梁支销：直径 6 mm、长 26 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: be_piston_rod
+  extra_tools: []
+  prompt: |
+    创建活塞杆：在 front_plane 上画两端圆头的长条，宽 10 mm，两端半圆的圆心分别在原点和 (60,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=60 处直径 6 mm。
+- id: be_piston
+  extra_tools: []
+  prompt: |
+    创建活塞：在 front_plane 上画矩形，X 从 -10 到 10 mm，Y 从 -12 到 12 mm，向 +Z 拉伸 6 mm。
+    开贯穿孔：(0,0) 直径 6 mm。不要抽壳。
+gold_roles:
+  frame: be_frame
+  shaft: be_shaft
+  crank: be_crank
+  crank_pin: be_pin12
+  conrod: be_conrod
+  conrod_pin: be_pin12
+  beam: be_beam
+  pivot_pin: be_pivot_pin
+  e_pin: be_pin12
+  piston_rod: be_piston_rod
+  p_pin: be_pin12
+  piston: be_piston
+assembly:
+  prompt: |
+    装配蒸汽梁机（曲柄—连杆—游梁—活塞杆—活塞）。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]。曲柄轴承孔 (60,0)，游梁支孔 (0,120)。
+    - shaft 穿过 (60,0) 孔绕 Z 转动（z∈[-10,14]）；crank 的 10 mm 孔固定在 shaft 上（z∈[8,14]）。
+    - crank_pin 固定在 crank 的 6 mm 孔（z∈[8,20]）；conrod 一端绕 crank_pin 转（z∈[14,20]）；
+      conrod_pin 固定在 conrod 另一端孔（z∈[14,26]）。
+    - pivot_pin 固定在 frame 的 (0,120) 孔（z∈[0,26]）；beam 的 X=60 孔套在 pivot_pin 上转动（z∈[20,26]），
+      beam 的 X=120 孔套在 conrod_pin 上（这一端在 +X 侧，靠曲柄），X=0 端在 -X 侧。
+    - e_pin 固定在 piston_rod 的原点孔（z∈[14,26]），插在 beam 的 X=0 孔里转动；piston_rod 在 z∈[14,20]，
+      另一端孔里固定 p_pin（z∈[8,20]）；piston 的孔套在 p_pin 上转动（z∈[8,14]）。
+    - piston 只能沿 frame 的 Y 方向移动，孔心始终在 x=-60 的直线上，位于游梁下方。
+    - 曲柄整周转动时游梁摆动约 40.0°，活塞行程约 40.9 mm。
+    对 shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - crank
+  - conrod
+  - beam
+  - piston
+  swings:
+  - role: beam
+    deg: 40.01
+  strokes:
+  - role: piston
+    axis: y
+    mm: 40.94
+  max_interference: 0

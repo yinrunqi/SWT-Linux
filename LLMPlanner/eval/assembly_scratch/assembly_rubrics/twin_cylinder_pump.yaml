@@ -1,0 +1,31 @@
+# 装配级 rubric：角色名与 twin_pump.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: twin_cylinder_pump
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame]
+  crank: [shaft, crank_a, crank_b]
+  rod_a: [rod_a]
+  rod_b: [rod_b]
+  piston_a: [piston_a]
+  piston_b: [piston_b]
+flex:
+  crank_pin_a: [crank, rod_a]
+  crank_pin_b: [crank, rod_b]
+  wrist_pin_a: [rod_a, piston_a]
+  wrist_pin_b: [rod_b, piston_b]
+joints:
+- bodies: [crank, frame]
+  type: revolute
+- bodies: [rod_a, crank]
+  type: revolute
+- bodies: [rod_b, crank]
+  type: revolute
+- bodies: [piston_a, rod_a]
+  type: revolute
+- bodies: [piston_b, rod_b]
+  type: revolute
+- bodies: [piston_a, frame]
+  type: &id001 [slider, planar]
+- bodies: [piston_b, frame]
+  type: *id001

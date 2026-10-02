@@ -1,0 +1,15 @@
+# 装配级 rubric：角色名与 lead_screw_stage.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: lead_screw_stage
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame, guide_rod]
+  screw: [screw, handwheel]
+  carriage: [carriage, nut]
+joints:
+- bodies: [screw, frame]
+  type: revolute
+- bodies: [carriage, frame]
+  type: [cylindrical, slider]
+- bodies: [carriage, screw]
+  type: screw

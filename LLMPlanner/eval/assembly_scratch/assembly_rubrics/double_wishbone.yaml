@@ -1,0 +1,23 @@
+# 装配级 rubric：角色名与 double_wishbone.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: double_wishbone
+ground: chassis
+mobility: 1
+bodies:
+  chassis: [chassis]
+  lower_arm: [lower_arm]
+  upper_arm: [upper_arm]
+  knuckle: [knuckle, spindle, hub]
+flex:
+  lower_pin: [chassis, lower_arm]
+  upper_pin: [chassis, upper_arm]
+  lower_ball: [lower_arm, knuckle]
+  upper_ball: [upper_arm, knuckle]
+joints:
+- bodies: [lower_arm, chassis]
+  type: revolute
+- bodies: [upper_arm, chassis]
+  type: revolute
+- bodies: [knuckle, lower_arm]
+  type: revolute
+- bodies: [knuckle, upper_arm]
+  type: [revolute, cylindrical]

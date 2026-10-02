@@ -1,0 +1,32 @@
+# 装配级 rubric：角色名与 beam_engine.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: beam_engine
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame]
+  crank: [shaft, crank]
+  conrod: [conrod]
+  beam: [beam]
+  piston_rod: [piston_rod]
+  piston: [piston]
+flex:
+  crank_pin: [crank, conrod]
+  conrod_pin: [conrod, beam]
+  pivot_pin: [frame, beam]
+  e_pin: [beam, piston_rod]
+  p_pin: [piston_rod, piston]
+joints:
+- bodies: [crank, frame]
+  type: revolute
+- bodies: [conrod, crank]
+  type: revolute
+- bodies: [beam, frame]
+  type: revolute
+- bodies: [conrod, beam]
+  type: [revolute, cylindrical]
+- bodies: [piston_rod, beam]
+  type: revolute
+- bodies: [piston, piston_rod]
+  type: revolute
+- bodies: [piston, frame]
+  type: [slider, planar]

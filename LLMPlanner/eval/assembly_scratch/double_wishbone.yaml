@@ -1,0 +1,161 @@
+case_id: double_wishbone
+title: 双横臂悬架（多位姿）
+# 下摆臂 100、上摆臂 70、转向节 70，三个跳动位置检查上下球铰与轮心。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: dw_chassis
+  extra_tools: []
+  prompt: |
+    创建车架板：在 front_plane 上画矩形，X 从 -30 到 30 mm，Y 从 -20 到 80 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 6 mm，(10,60) 直径 6 mm。不要抽壳。
+- id: dw_lower_arm
+  extra_tools: []
+  prompt: |
+    创建下摆臂：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (100,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=100 处直径 6 mm。
+- id: dw_upper_arm
+  extra_tools: []
+  prompt: |
+    创建上摆臂：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (70,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=70 处直径 6 mm。
+- id: dw_knuckle
+  extra_tools: []
+  prompt: |
+    创建转向节：在 front_plane 上画两端圆头的长条，宽 14 mm，两端半圆的圆心分别在原点和 (70,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=35 处直径 6 mm，X=70 处直径 6 mm。
+- id: dw_hub
+  extra_tools: []
+  prompt: |
+    创建轮毂盘：外径 50 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 6 mm。
+- id: dw_pin14
+  extra_tools: []
+  prompt: |
+    创建车架销：直径 6 mm、长 14 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: dw_pin12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+gold_roles:
+  chassis: dw_chassis
+  lower_pin: dw_pin14
+  upper_pin: dw_pin14
+  lower_arm: dw_lower_arm
+  upper_arm: dw_upper_arm
+  lower_ball: dw_pin12
+  upper_ball: dw_pin12
+  knuckle: dw_knuckle
+  spindle: dw_pin12
+  hub: dw_hub
+assembly:
+  prompt: |
+    装配双横臂悬架（平面简化）。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - chassis 固定，z∈[0,8]，下摆臂铰孔 (0,0)，上摆臂铰孔 (10,60)。lower_pin、upper_pin 分别固定在两孔里（z∈[0,14]）。
+    - lower_arm、upper_arm 的原点孔分别套在 lower_pin、upper_pin 上转动（z∈[8,14]），都朝 +X 伸出。
+    - lower_ball、upper_ball 分别固定在 lower_arm 的 X=100 孔、upper_arm 的 X=70 孔里（z∈[8,20]）。
+    - knuckle 的原点孔套在 lower_ball 上、X=70 孔套在 upper_ball 上（z∈[14,20]），X=70 端在上。
+    - spindle 固定在 knuckle 的 X=35 孔里（z∈[14,26]）；hub 固定在 spindle 上（z∈[20,26]）。
+    - 悬架上下跳动保持自由（活动度 1），不要固定角度。各件互不穿模，装好后保存。
+motion:
+  mode: poses
+  frame: chassis
+  expect_fixed:
+  - chassis
+  tolerance_mm: 1.5
+  max_interference: 0
+  poses:
+  - name: rebound
+    set:
+    - type: angle
+      a: lower_arm:plane(top)
+      b: chassis:plane(top)
+      angle_deg: 12.0
+      points:
+      - role: lower_arm
+        local:
+        - 100.0
+        - 0.0
+        - 0
+        expect:
+          x: 97.81
+          y: -20.79
+      - role: knuckle
+        local:
+        - 70.0
+        - 0.0
+        - 0
+        expect:
+          x: 78.7
+          y: 46.55
+    points:
+    - role: hub
+      local:
+      - 0
+      - 0
+      - 0
+      expect:
+        x: 88.25
+        y: 12.88
+  - name: ride
+    set:
+    - type: angle
+      a: lower_arm:plane(top)
+      b: chassis:plane(top)
+      angle_deg: 5.0
+      points:
+      - role: lower_arm
+        local:
+        - 100.0
+        - 0.0
+        - 0
+        expect:
+          x: 99.62
+          y: 8.72
+      - role: knuckle
+        local:
+        - 70.0
+        - 0.0
+        - 0
+        expect:
+          x: 78.29
+          y: 75.39
+    points:
+    - role: hub
+      local:
+      - 0
+      - 0
+      - 0
+      expect:
+        x: 88.95
+        y: 42.05
+  - name: bump
+    set:
+    - type: angle
+      a: lower_arm:plane(top)
+      b: chassis:plane(top)
+      angle_deg: 15.0
+      points:
+      - role: lower_arm
+        local:
+        - 100.0
+        - 0.0
+        - 0
+        expect:
+          x: 96.59
+          y: 25.88
+      - role: knuckle
+        local:
+        - 70.0
+        - 0.0
+        - 0
+        expect:
+          x: 72.47
+          y: 91.59
+    points:
+    - role: hub
+      local:
+      - 0
+      - 0
+      - 0
+      expect:
+        x: 84.53
+        y: 58.74

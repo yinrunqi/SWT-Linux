@@ -1,0 +1,90 @@
+case_id: gear_driven_slider_crank
+title: 齿轮驱动曲柄滑块
+# 12/36 齿减速带曲柄 20、连杆 70 的对心曲柄滑块。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: gs_frame
+  extra_tools: []
+  prompt: |
+    创建机架板：在 front_plane 上画矩形，X 从 -70 到 110 mm，Y 从 -45 到 45 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(-48,0) 直径 10 mm，(0,0) 直径 10 mm。不要抽壳。
+- id: gs_motor_shaft
+  extra_tools: []
+  prompt: |
+    创建电机轴：直径 10 mm、长 26 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: gs_crank_shaft
+  extra_tools: []
+  prompt: |
+    创建曲柄轴：直径 10 mm、长 32 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: gs_pinion
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 12，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: gs_gear
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 36，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: gs_crank
+  extra_tools: []
+  prompt: |
+    创建曲柄：在 front_plane 上画两端圆头的长条，宽 16 mm，两端半圆的圆心分别在原点和 (20,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=20 处直径 6 mm。
+- id: gs_pin12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: gs_rod
+  extra_tools: []
+  prompt: |
+    创建连杆：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (70,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=70 处直径 6 mm。
+- id: gs_slider
+  extra_tools: []
+  prompt: |
+    创建滑块：在 front_plane 上画矩形，X 从 -12 到 12 mm，Y 从 -10 到 10 mm，向 +Z 拉伸 6 mm。
+    开贯穿孔：(0,0) 直径 6 mm。不要抽壳。
+gold_roles:
+  frame: gs_frame
+  motor_shaft: gs_motor_shaft
+  pinion: gs_pinion
+  crank_shaft: gs_crank_shaft
+  gear: gs_gear
+  crank: gs_crank
+  crank_pin: gs_pin12
+  rod: gs_rod
+  wrist_pin: gs_pin12
+  slider: gs_slider
+assembly:
+  prompt: |
+    装配齿轮减速驱动的曲柄滑块机构。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]，轴承孔 (-48,0) 与 (0,0)。
+    - motor_shaft 穿过 (-48,0) 孔绕 Z 转动（z∈[-10,16]），12 齿 pinion 固定在其上（z∈[8,16]）。
+    - crank_shaft 穿过 (0,0) 孔绕 Z 转动（z∈[-10,22]）；36 齿 gear（z∈[8,16]）与 crank 的 10 mm 孔（z∈[16,22]）都固定在其上。
+      pinion 与 gear 外啮合（模数 2，中心距 48）。
+    - crank_pin 固定在 crank 的 6 mm 孔（z∈[16,28]）；rod 一端绕 crank_pin 转（z∈[22,28]）；
+      wrist_pin 固定在 rod 另一端孔（z∈[22,34]）；slider 的孔套在 wrist_pin 上转动（z∈[28,34]）。
+    - slider 只能沿 frame 的 X 方向移动，孔心始终在 y=0 的直线上、曲柄轴 +X 侧。曲柄 20、连杆 70，行程 40 mm。各齿轮互不穿模，啮合齿相位要对上。
+    对 motor_shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: motor_shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - pinion
+  - crank
+  - rod
+  - slider
+  ratios:
+  - role: crank
+    ratio: 3
+    same_direction: false
+  strokes:
+  - role: slider
+    axis: x
+    mm: 40
+  max_interference: 0

@@ -2,7 +2,7 @@
 
 本文是装配评测的规格说明：有哪些测例、每个测例怎么打分、怎么新增测例。装配 workflow 本身（工具、配方、实现中踩过的坑、试点过程）见 [Workflow-CAD-Assembly.md](Workflow-CAD-Assembly.md)。
 
-当前有七个测例。后五个由 SolidWorksTutorial 旧示例（台灯、雨伞、电钻、缝纫机、放映机）转换而来：只保留核心运动链，去掉装饰件，每个 6–16 个组件。
+当前有 27 个测例：7 个核心测例，加 20 个扩展测例（见下文"扩展测例"）。核心测例中的后五个由 SolidWorksTutorial 旧示例（台灯、雨伞、电钻、缝纫机、放映机）转换而来：只保留核心运动链，去掉装饰件，每个 6–16 个组件。
 
 | case_id | `--cases` 名 | 机构 | 组件数 | 目标活动度 | 运动检查 |
 |---|---|---|---|---|---|
@@ -30,6 +30,41 @@
 | v2 | `spur_gear`、`internal_gear`（渐开线内齿圈） | `mesh_gears` 增加 `internal: true`（内啮合中心距与相位） |
 
 6.1 节及更早的结果都是 v1 跑的。v2 只新增工具，原有工具的行为不变。
+
+### 扩展测例（20 个）
+
+全部由 `eval/assembly_scratch/bench_cases.py` 一个文件定义：零件（板、两端圆头长条、销、圆盘、直齿轮、内齿圈六种基本体）、角色、提示词、运动规格、装配 rubric 和参考装配的搭法都写在里面，`write` 子命令据此生成规格 yaml、零件 rubric 和装配 rubric。摆角、行程、位姿点位、初始插入角都由文件里的平面运动学解算，不手填。机构都是平面叠层结构：各零件装好后占的 z 范围写在装配提示里，转轴都沿 Z。
+
+| case_id | `--cases` 名 | 机构 | 组件数 | 目标活动度 | 运动检查 |
+|---|---|---|---|---|---|
+| `crank_rocker_linkage` | `crank_rocker` | 曲柄摇杆四杆（20/70/50/80） | 8 | 1 | 马达：摇杆摆角 |
+| `offset_slider_crank` | `offset_slider_crank` | 偏置曲柄滑块（15/60，偏距 10） | 7 | 1 | 马达：滑块行程 |
+| `twin_cylinder_pump` | `twin_pump` | 双缸往复泵，两曲柄相差 180°，板前板后各一缸 | 12 | 1 | 马达：两缸行程、反相 |
+| `pumpjack_drive` | `pumpjack` | 10/30 齿减速 + 曲柄摇杆游梁 | 11 | 1 | 马达：曲柄比、游梁摆角 |
+| `windshield_wiper_linkage` | `wiper_linkage` | 曲柄摇杆 + 平行四边形带第二刮臂 | 13 | 1 | 马达：两刮臂摆角 |
+| `beam_engine` | `beam_engine` | 曲柄摇杆游梁，另一端经活塞杆带活塞 | 12 | 1 | 马达：游梁摆角、活塞行程 |
+| `clock_motion_works` | `clock_motion` | 钟表跨轮 10/30 + 8/32，时轮管套在分轮轴上 | 10 | 1 | 马达：跨轮 1/3 反向、时针 1/12 同向 |
+| `hand_winch` | `hand_winch` | 摇把 12/36 齿减速带卷筒 | 8 | 1 | 马达：卷筒 1/3 反向 |
+| `turntable_ring_drive` | `turntable` | 12 齿小齿轮内啮合 48 齿齿圈转台 | 6 | 1 | 马达：转台 1/4 同向 |
+| `star_gear_reducer` | `star_reducer` | 星型轮系：中间轮轴固定、齿圈输出 | 8 | 1 | 马达：输出 1/4 反向 |
+| `lead_screw_stage` | `lead_screw_stage` | 竖直丝杠滑台（导程 2 mm，导杆导向） | 6 | 1 | 马达：导程 |
+| `gear_driven_slider_crank` | `geared_slider_crank` | 12/36 齿减速 + 对心曲柄滑块 | 10 | 1 | 马达：曲柄比、行程 |
+| `epicyclic_carrier_output` | `planetary_carrier` | 单级行星：齿圈固定、行星架输出 | 8 | 1 | 马达：行星架 1/5 同向 |
+| `excavator_arm` | `excavator_arm` | 动臂—油缸筒—活塞杆闭环 + 斗杆 + 铲斗 | 11 | 3 | 多位姿 |
+| `scara_arm` | `scara_arm` | SCARA：两转动 + 升降杆圆柱副 | 6 | 4 | 多位姿 |
+| `pantograph` | `pantograph` | 2 倍缩放仪 | 10 | 2 | 多位姿 |
+| `ackermann_steering` | `ackermann_steering` | 阿克曼转向梯形 | 8 | 1 | 多位姿 |
+| `toggle_clamp` | `toggle_clamp` | 肘节夹钳四杆 | 8 | 1 | 多位姿 |
+| `parallel_gripper` | `parallel_gripper` | 两组平行四边形导向的夹爪 | 15 | 2 | 多位姿 |
+| `double_wishbone` | `double_wishbone` | 双横臂悬架（平面简化） | 10 | 1 | 多位姿 |
+
+设计时的约束：
+
+- 每个测例最多 3 对齿轮啮合，且不出现冗余的齿轮闭环（多行星轮）。原因见电钻的说明。
+- 不用齿条小齿轮、线性耦合和槽口：装配 rubric 的活动度不计它们（3.1 节）。
+- 闭环机构的最后一个铰在 rubric 里允许 revolute 或 cylindrical，滑块允许 slider 或 planar，理由同发动机、缝纫机。
+- 销都只连两个体，`flex` 允许它固定在任一侧。
+- 多位姿测例的点位都取在杆件 X 轴（孔心连线）上，与零件正装、翻面无关；四杆类的装配模式（例如肘节夹钳的铰点 J 在 A、K 连线上方）在提示里写明，因为从一个模式到另一个模式要穿过奇异位形，角度配合改不过来。
 
 ## 1. 评测流程
 
@@ -172,6 +207,16 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
   - idler_gear–shutter_gear 18/24，中心距 31.5 mm；
   - drive_pinion–sprocket_gear 16/64，中心距 60 mm。
 
+扩展测例的 rubric 由 `bench_cases.py` 生成，写法与上面一致，几个要点：
+
+- 刚体组：同轴固连的轴、齿轮、曲柄、卷筒、手轮、指针等合成一组；固定在机架上的立轴、导杆、齿圈并入机架组。
+- 铰销一律写进 `flex`，允许固定在相邻两组中的任一组。
+- 双缸泵的两个活塞、偏置 / 对心曲柄滑块的滑块、梁机的活塞，对机架都允许 slider 或 planar。
+- 丝杠滑台：carriage–frame 允许 cylindrical 或 slider（套在导杆上），carriage–screw 必须是 screw。
+- SCARA 的升降杆对小臂是 cylindrical（可升降也可自转），整机活动度 4。
+- 挖掘机的活塞杆对缸筒允许 slider 或 planar。
+- 钟表的时轮组对分轮组是 revolute（时轮管套在分轮轴上），星型轮系与行星架输出的输出组对机架是 revolute（与主轴承孔同轴）。
+
 ## 4. 运动检查
 
 实现：`geomcheck/assembly_motion.py`。参数来自规格里的 `motion` 段，有两种模式：
@@ -198,6 +243,8 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 | 行程 | −15 | `stroke_role`（默认 piston_pin）在 `stroke_axis`（默认 y）上坐标的极差，与 `expect_stroke_mm` 相差超过 2 mm |
 | 正时 | −15 | `timing_driven` 转角 / 驱动转角，与 1/`timing_ratio` 相差超过 0.08；`timing_opposite` 时还要求反向 |
 | 齿隙（可选） | −10 | `clearance_pairs` 里各对零件在首帧的 OCC 最小距离不在 `clearance_mm` 范围内 |
+| 导程 | 并入传动比项 | `leads`：每项 `role` 沿 `axis` 的位移 / 驱动圈数与 `mm_per_rev` 的相对误差超过 8%（默认不比符号，`signed: true` 时比） |
+| 多件行程、摆角、反相 | 并入行程项 | `strokes`：每项 `role` 原点沿 `axis` 的极差与 `mm` 相差超过 2 mm；`swings`：每项 `role` 绕 Z 转角（展开后）的极差与 `deg` 相差超过 2°；`antiphase`：`roles` 两件沿 `axis` 的位置序列相关系数不小于 −0.9 |
 
 扣分项全部不触发才算 `passed`。如果规格要求的角色在装配体里不存在，或者采样出错，运动分记 0，并在 `error` 里写明原因。
 
@@ -267,6 +314,35 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 | 缝纫机 | 100 | 100 | 针杆行程 35.998 mm；旋梭 2 倍速反向；中心距 45 mm；零干涉 |
 | 放映机 | 100 | 100 | 快门 1.0 同向；输片 0.25 反向；中心距 31.5 / 31.5 / 60 mm；零干涉 |
 
+扩展测例（全部按修正后的 `rotate_deg` 重建，缝纫机也重建复核，仍是 100 / 100）：
+
+| 参考装配体 | 装配 rubric | 运动分 | 关键测量（括号内为解算值） |
+|---|---|---|---|
+| 曲柄摇杆 | 100 | 100 | 摇杆摆角 47.385°（47.39°）；零干涉 |
+| 偏置曲柄滑块 | 100 | 100 | 行程 30.455 mm（30.46）；零干涉 |
+| 双缸泵 | 100 | 100 | 两缸行程 30.0 / 29.999 mm；位置相关系数 −0.992；零干涉 |
+| 抽油机 | 100 | 100 | 曲柄 0.3333 反向；游梁摆角 47.691°（47.71°）；中心距 50 mm；零干涉 |
+| 雨刮 | 100 | 100 | 两刮臂摆角都是 44.185°（44.19°）；零干涉 |
+| 梁机 | 100 | 100 | 游梁摆角 40.001°（40.01°）；活塞行程 40.932 mm（40.94）；零干涉 |
+| 钟表跨轮 | 100 | 100 | 跨轮 0.3333 反向；时针 0.0833 同向；中心距 30 / 30 mm；零干涉 |
+| 手摇绞盘 | 100 | 100 | 卷筒 0.3333 反向；中心距 48 mm；零干涉 |
+| 内齿圈转台 | 100 | 100 | 转台 0.25 同向；内啮合中心距 36 mm；零干涉 |
+| 星型轮系 | 100 | 100 | 输出 0.25 反向；中心距 30 / 30 mm；零干涉 |
+| 丝杠滑台 | 100 | 100 | 导程 2.0 mm/转；零干涉 |
+| 齿轮曲柄滑块 | 100 | 100 | 曲柄 0.3333 反向；行程 39.997 mm；中心距 48 mm；零干涉 |
+| 行星架输出 | 100 | 100 | 行星架 0.2 同向；中心距 30 / 30 mm；零干涉 |
+| 挖掘机臂 | 100 | 100 | 活动度 3；3 个位姿点位最大误差 0.004 mm；零干涉 |
+| SCARA | 100 | 100 | 活动度 4；3 个位姿（含升降 z）最大误差 0.004 mm；零干涉 |
+| 缩放仪 | 100 | 100 | 活动度 2；3 个位姿最大误差 0.005 mm；零干涉 |
+| 阿克曼转向 | 100 | 100 | 3 个转角下两侧转向节铰点最大误差 0.007 mm；零干涉 |
+| 肘节夹钳 | 100 | 100 | 3 个手柄角最大误差 0.004 mm；零干涉 |
+| 平行夹爪 | 100 | 100 | 活动度 2；对称、不对称共 3 个位姿最大误差 0.004 mm；零干涉 |
+| 双横臂悬架 | 100 | 100 | 3 个跳动位置最大误差 0.005 mm；零干涉 |
+
+扩展测例的 146 个标准零件在各自的零件接口 rubric 上全部 100 分。
+
+第一次搭扩展测例的参考装配时，缩放仪、阿克曼转向、肘节夹钳的位姿分是 0：机构全部落在关于 X 轴的镜像装配模式。原因是 `insert_component` 的 `rotate_deg` 实际是顺时针（见 Workflow-CAD-Assembly.md §2.2 末尾的修正说明），修正后重建即恢复 100。
+
 如果参考装配体不是满分，先查评测器或标准零件，不要先怀疑智能体。重新生成标准零件后，参考装配体也要重建：它引用的零件变了，旧的配合可能还在，但运动已经不对。这次发动机的阳性对照就是这样掉到 65 分的（曲柄、连杆、凸轮在参考装配体之后重建过），重建参考装配体后恢复 100。
 
 搭这五个参考装配体时，评测器和标准零件做了这些修正：
@@ -314,6 +390,12 @@ venv\Scripts\python.exe -X utf8 eval\assembly_scratch\rescore_assemblies.py --re
 # 正式评测（--condition gold|gen|e2e|all，--workflow v1|v2|both）
 venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --cases gearbox,engine --condition gold --workflow both --repeats 2
 venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --cases desk_lamp,umbrella,drill_gearbox,sewing_machine,projector --condition gen --workflow v2
+# 扩展测例：--cases bench 表示全部 20 个
+venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --cases bench --condition gen --workflow v2 --repeats 1 --model claude-sonnet-5
+
+# 扩展测例的规格、零件 rubric、装配 rubric 由 bench_cases.py 生成；report 打印解算出的摆角 / 行程 / 传动角
+venv\Scripts\python.exe -X utf8 -m eval.assembly_scratch.bench_cases write
+venv\Scripts\python.exe -X utf8 -m eval.assembly_scratch.bench_cases report
 
 # 只重评部分测例的阳性对照（参数是 case_id）
 venv\Scripts\python.exe -X utf8 eval\assembly_scratch\rescore_assemblies.py --reference --cases folding_umbrella --out eval\assembly_reference_rescore.json
@@ -342,6 +424,8 @@ venv\Scripts\python.exe -m pytest test\test_assembly_rubric.py test\test_assembl
 4. 标准零件：在 `build_standard_parts.py` 里加生成函数。画圆一律带 `noInference: true`，生成后用 OCC 核对孔径和孔位。
 5. 参考装配体：在 `build_reference_assemblies.py` 里用宏工具搭一份，要求装配 rubric 和运动分都是 100、静态和逐帧都零干涉、零件在几何上真的装在一起（检查位姿，不能只看运动学）。同一零件用在多个角色上时，组件名不是 `<角色>-1`，`_finish` 会把角色 → 组件名另存为 `reference_<name>.aliases.json`，`rescore_assemblies.py --reference` 优先读它。
 6. 登记：只需在 `eval_assembly_scratch.py` 的 `CASE_FILES`（规格文件名 → case_id）里加一行，`rescore_assemblies.py` 直接复用。
+
+由基本体拼成的平面机构，更省事的做法是在 `bench_cases.py` 里加一个 `@case` 函数：给出零件、角色、提示词、运动规格、rubric 和参考装配的搭法（`Ref` 记录每个角色的绝对 z，关节偏距自动算），然后运行 `write`。上面 1–6 步都由它完成：`build_standard_parts.py`、`build_reference_assemblies.py`、`CASE_FILES` 会自动登记 `bench_cases.CASES` 里的全部测例。
 
 约束：
 

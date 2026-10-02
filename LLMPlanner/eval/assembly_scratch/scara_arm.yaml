@@ -1,0 +1,181 @@
+case_id: scara_arm
+title: SCARA 机械臂（多位姿）
+# 大臂 150、小臂 120 两转动 + 升降杆圆柱副，活动度 4；三个位姿检查肘点、末端 xyz。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: sc_base
+  extra_tools: []
+  prompt: |
+    创建底座：在 front_plane 上画矩形，X 从 -60 到 60 mm，Y 从 -60 到 60 mm，向 +Z 拉伸 10 mm。
+    开贯穿孔：(0,0) 直径 10 mm。不要抽壳。
+- id: sc_column
+  extra_tools: []
+  prompt: |
+    创建立柱：直径 10 mm、长 40 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: sc_upper_arm
+  extra_tools: []
+  prompt: |
+    创建大臂：在 front_plane 上画两端圆头的长条，宽 30 mm，两端半圆的圆心分别在原点和 (150,0)，向 +Z 拉伸 10 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=150 处直径 10 mm。
+- id: sc_elbow_pin
+  extra_tools: []
+  prompt: |
+    创建肘销：直径 10 mm、长 20 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: sc_forearm
+  extra_tools: []
+  prompt: |
+    创建小臂：在 front_plane 上画两端圆头的长条，宽 24 mm，两端半圆的圆心分别在原点和 (120,0)，向 +Z 拉伸 10 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=120 处直径 10 mm。
+- id: sc_quill
+  extra_tools: []
+  prompt: |
+    创建升降杆：直径 10 mm、长 100 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+gold_roles:
+  base: sc_base
+  column: sc_column
+  upper_arm: sc_upper_arm
+  elbow_pin: sc_elbow_pin
+  forearm: sc_forearm
+  quill: sc_quill
+assembly:
+  prompt: |
+    装配 SCARA 机械臂。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - base 固定，z∈[0,10]，中心孔 (0,0)。column 固定在中心孔里（z∈[0,40]）。
+    - upper_arm 的原点孔套在 column 上绕 Z 转动（z∈[30,40]）；elbow_pin 固定在 upper_arm 的 X=150 孔（z∈[30,50]）。
+    - forearm 的原点孔套在 elbow_pin 上绕 Z 转动（z∈[40,50]）。
+    - quill 插在 forearm 的 X=120 孔里，可沿 Z 升降、也可绕自身轴线转动（圆柱副）；初始 z∈[0,100]。
+    - 两个转角、升降与 quill 自转都保持自由（整机活动度 4），不要固定。各件互不穿模，装好后保存。
+motion:
+  mode: poses
+  frame: base
+  expect_fixed:
+  - base
+  tolerance_mm: 1.5
+  max_interference: 0
+  poses:
+  - name: pick
+    set:
+    - type: angle
+      a: upper_arm:plane(top)
+      b: base:plane(top)
+      angle_deg: 20.0
+      points:
+      - role: upper_arm
+        local:
+        - 150.0
+        - 0.0
+        - 0
+        expect:
+          x: 140.95
+          y: 51.3
+    - type: angle
+      a: forearm:plane(top)
+      b: upper_arm:plane(top)
+      angle_deg: 60.0
+      points:
+      - role: forearm
+        local:
+        - 120.0
+        - 0.0
+        - 0
+        expect:
+          x: 161.79
+          y: 169.48
+    - type: offset
+      a: quill:plane(front)
+      b: base:plane(front)
+      offset_mm: 0
+      points:
+      - role: quill
+        local:
+        - 0
+        - 0
+        - 0
+        expect:
+          x: 161.79
+          y: 169.48
+          z: 0
+  - name: place
+    set:
+    - type: angle
+      a: upper_arm:plane(top)
+      b: base:plane(top)
+      angle_deg: 60.0
+      points:
+      - role: upper_arm
+        local:
+        - 150.0
+        - 0.0
+        - 0
+        expect:
+          x: 75.0
+          y: 129.9
+    - type: angle
+      a: forearm:plane(top)
+      b: upper_arm:plane(top)
+      angle_deg: 70.0
+      points:
+      - role: forearm
+        local:
+        - 120.0
+        - 0.0
+        - 0
+        expect:
+          x: 193.18
+          y: 109.07
+    - type: offset
+      a: quill:plane(front)
+      b: base:plane(front)
+      offset_mm: -30
+      points:
+      - role: quill
+        local:
+        - 0
+        - 0
+        - 0
+        expect:
+          x: 193.18
+          y: 109.07
+          z: -30
+  - name: tuck
+    set:
+    - type: angle
+      a: upper_arm:plane(top)
+      b: base:plane(top)
+      angle_deg: 30.0
+      points:
+      - role: upper_arm
+        local:
+        - 150.0
+        - 0.0
+        - 0
+        expect:
+          x: 129.9
+          y: -75.0
+    - type: angle
+      a: forearm:plane(top)
+      b: upper_arm:plane(top)
+      angle_deg: 100.0
+      points:
+      - role: forearm
+        local:
+        - 120.0
+        - 0.0
+        - 0
+        expect:
+          x: 170.95
+          y: 37.76
+    - type: offset
+      a: quill:plane(front)
+      b: base:plane(front)
+      offset_mm: 20
+      points:
+      - role: quill
+        local:
+        - 0
+        - 0
+        - 0
+        expect:
+          x: 170.95
+          y: 37.76
+          z: 20

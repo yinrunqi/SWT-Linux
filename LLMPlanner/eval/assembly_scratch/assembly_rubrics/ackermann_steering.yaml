@@ -1,0 +1,23 @@
+# 装配级 rubric：角色名与 ackermann_steering.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: ackermann_steering
+ground: axle
+mobility: 1
+bodies:
+  axle: [axle]
+  knuckle_l: [knuckle_l]
+  knuckle_r: [knuckle_r]
+  tie_rod: [tie_rod]
+flex:
+  kingpin_l: [axle, knuckle_l]
+  kingpin_r: [axle, knuckle_r]
+  tie_pin_l: [knuckle_l, tie_rod]
+  tie_pin_r: [knuckle_r, tie_rod]
+joints:
+- bodies: [knuckle_l, axle]
+  type: revolute
+- bodies: [knuckle_r, axle]
+  type: revolute
+- bodies: [tie_rod, knuckle_l]
+  type: revolute
+- bodies: [tie_rod, knuckle_r]
+  type: [revolute, cylindrical]

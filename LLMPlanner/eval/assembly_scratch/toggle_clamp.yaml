@@ -1,0 +1,132 @@
+case_id: toggle_clamp
+title: 肘节夹钳（多位姿）
+# 压臂—连杆—手柄四杆，三个手柄角检查压臂端与手柄端位置。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: tc_base
+  extra_tools: []
+  prompt: |
+    创建底座板：在 front_plane 上画矩形，X 从 -30 到 90 mm，Y 从 -40 到 30 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 6 mm，(60,-20) 直径 6 mm。不要抽壳。
+- id: tc_arm
+  extra_tools: []
+  prompt: |
+    创建压臂：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (100,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=30 处直径 6 mm。
+- id: tc_handle
+  extra_tools: []
+  prompt: |
+    创建手柄：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (80,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=25 处直径 6 mm。
+- id: tc_link
+  extra_tools: []
+  prompt: |
+    创建连杆：在 front_plane 上画两端圆头的长条，宽 10 mm，两端半圆的圆心分别在原点和 (40,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=40 处直径 6 mm。
+- id: tc_pin14
+  extra_tools: []
+  prompt: |
+    创建压臂销：直径 6 mm、长 14 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: tc_pin26
+  extra_tools: []
+  prompt: |
+    创建手柄销：直径 6 mm、长 26 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: tc_pin12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+gold_roles:
+  base: tc_base
+  arm: tc_arm
+  handle: tc_handle
+  link: tc_link
+  pin_a: tc_pin14
+  pin_h: tc_pin26
+  pin_j: tc_pin12
+  pin_k: tc_pin12
+assembly:
+  prompt: |
+    装配肘节夹钳（四杆机构：压臂、连杆、手柄）。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - base 固定，z∈[0,8]，压臂铰孔 (0,0)，手柄铰孔 (60,-20)。
+    - pin_a 固定在 (0,0) 孔（z∈[0,14]），arm 的原点孔套在上面转动（z∈[8,14]）；pin_j 固定在 arm 的 X=30 孔（z∈[8,20]）。
+    - pin_h 固定在 (60,-20) 孔（z∈[0,26]），handle 的原点孔套在上面转动（z∈[20,26]）；pin_k 固定在 handle 的 X=25 孔（z∈[14,26]）。
+    - link 两端孔分别套在 pin_j、pin_k 上（z∈[14,20]）。压臂 30、连杆 40、手柄 25、机架 63.25，
+      连杆与压臂的铰点 J 在 A、K 连线的上方（+Y 侧）。
+    - 机构活动度 1，不要固定角度。各件互不穿模，装好后保存。
+motion:
+  mode: poses
+  frame: base
+  expect_fixed:
+  - base
+  tolerance_mm: 1.5
+  max_interference: 0
+  poses:
+  - name: open
+    set:
+    - type: angle
+      a: handle:plane(top)
+      b: base:plane(top)
+      angle_deg: 150.0
+      points:
+      - role: handle
+        local:
+        - 80.0
+        - 0.0
+        - 0
+        expect:
+          x: -9.28
+          y: 20.0
+      - role: arm
+        local:
+        - 100.0
+        - 0.0
+        - 0
+        expect:
+          x: 52.57
+          y: 85.06
+  - name: mid
+    set:
+    - type: angle
+      a: handle:plane(top)
+      b: base:plane(top)
+      angle_deg: 120.0
+      points:
+      - role: handle
+        local:
+        - 80.0
+        - 0.0
+        - 0
+        expect:
+          x: 20.0
+          y: 49.28
+      - role: arm
+        local:
+        - 100.0
+        - 0.0
+        - 0
+        expect:
+          x: 51.73
+          y: 85.58
+  - name: clamp
+    set:
+    - type: angle
+      a: handle:plane(top)
+      b: base:plane(top)
+      angle_deg: 90.0
+      points:
+      - role: handle
+        local:
+        - 80.0
+        - 0.0
+        - 0
+        expect:
+          x: 60.0
+          y: 60.0
+      - role: arm
+        local:
+        - 100.0
+        - 0.0
+        - 0
+        expect:
+          x: 75.82
+          y: 65.21

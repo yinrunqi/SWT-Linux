@@ -331,6 +331,15 @@ BUILDS = {"gearbox": gearbox, "engine": engine, "desk_lamp": desk_lamp, "umbrell
           "drill_gearbox": drill_gearbox, "sewing_machine": sewing_machine, "projector": projector}
 
 
+def _register_bench() -> None:
+    from eval.assembly_scratch.bench_cases import CASES, build_reference
+    for name in CASES:
+        BUILDS[name] = lambda name=name: build_reference(name)
+
+
+_register_bench()
+
+
 def main() -> None:
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     call("/api/close-all-documents")

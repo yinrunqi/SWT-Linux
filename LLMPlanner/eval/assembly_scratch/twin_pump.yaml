@@ -1,0 +1,83 @@
+case_id: twin_cylinder_pump
+title: 双缸 180° 曲柄往复泵
+# 两组曲柄滑块共用曲轴、曲柄相差 180°，板前板后各一缸；检查两缸行程与反相。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: tp_frame
+  extra_tools: []
+  prompt: |
+    创建泵体板：在 front_plane 上画矩形，X 从 -40 到 40 mm，Y 从 -30 到 110 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm。不要抽壳。
+- id: tp_shaft
+  extra_tools: []
+  prompt: |
+    创建曲轴：直径 10 mm、长 20 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: tp_crank
+  extra_tools: []
+  prompt: |
+    创建曲柄：在 front_plane 上画两端圆头的长条，宽 16 mm，两端半圆的圆心分别在原点和 (15,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=15 处直径 6 mm。
+- id: tp_pin12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: tp_rod
+  extra_tools: []
+  prompt: |
+    创建连杆：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (60,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=60 处直径 6 mm。
+- id: tp_piston
+  extra_tools: []
+  prompt: |
+    创建活塞：在 front_plane 上画矩形，X 从 -10 到 10 mm，Y 从 -12 到 12 mm，向 +Z 拉伸 6 mm。
+    开贯穿孔：(0,0) 直径 6 mm。不要抽壳。
+gold_roles:
+  frame: tp_frame
+  shaft: tp_shaft
+  crank_a: tp_crank
+  crank_b: tp_crank
+  crank_pin_a: tp_pin12
+  crank_pin_b: tp_pin12
+  rod_a: tp_rod
+  rod_b: tp_rod
+  wrist_pin_a: tp_pin12
+  wrist_pin_b: tp_pin12
+  piston_a: tp_piston
+  piston_b: tp_piston
+assembly:
+  prompt: |
+    装配双缸往复泵（两缸共用一根曲轴，两个曲柄相差 180°）。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]，曲轴承孔在原点。shaft 穿过轴承孔绕 Z 转动（z∈[-6,14]）。
+    - 前缸（板前 +Z 侧）：crank_a 的 10 mm 孔固定在 shaft 上（z∈[8,14]）；crank_pin_a 固定在 crank_a 的 6 mm 孔（z∈[8,20]）；
+      rod_a 一端绕 crank_pin_a 转（z∈[14,20]）；wrist_pin_a 固定在 rod_a 另一端孔（z∈[14,26]）；
+      piston_a 的孔套在 wrist_pin_a 上转动（z∈[20,26]）。
+    - 后缸（板后 −Z 侧）：crank_b 的 10 mm 孔固定在 shaft 上（z∈[-6,0]），曲柄方向与 crank_a 相反（相差 180°）；
+      crank_pin_b 固定在 crank_b 的 6 mm 孔（z∈[-12,0]）；rod_b 一端绕 crank_pin_b 转（z∈[-12,-6]）；
+      wrist_pin_b 固定在 rod_b 另一端孔（z∈[-18,-6]）；piston_b 的孔套在 wrist_pin_b 上转动（z∈[-18,-12]）。
+    - 两个活塞都只能沿 frame 的 Y 方向移动，孔心始终在 x=0 的直线上、曲轴 +Y 侧。
+    - 曲柄 15、连杆 60，每缸行程 30 mm，两活塞反相往复。
+    对 shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - crank_a
+  - piston_a
+  - piston_b
+  strokes:
+  - role: piston_a
+    axis: y
+    mm: 30
+  - role: piston_b
+    axis: y
+    mm: 30
+  antiphase:
+  - roles:
+    - piston_a
+    - piston_b
+    axis: y
+  max_interference: 0

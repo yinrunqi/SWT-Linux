@@ -1,0 +1,93 @@
+case_id: windshield_wiper_linkage
+title: 双刮臂雨刮联动
+# 曲柄摇杆驱动主刮臂，联动杆与两刮臂组成平行四边形带副刮臂同摆。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: wp_frame
+  extra_tools: []
+  prompt: |
+    创建机架板：在 front_plane 上画矩形，X 从 -30 到 190 mm，Y 从 -30 到 40 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(60,0) 直径 6 mm，(160,0) 直径 6 mm。不要抽壳。
+- id: wp_motor_shaft
+  extra_tools: []
+  prompt: |
+    创建电机轴：直径 10 mm、长 24 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: wp_crank
+  extra_tools: []
+  prompt: |
+    创建曲柄：在 front_plane 上画两端圆头的长条，宽 16 mm，两端半圆的圆心分别在原点和 (15,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=15 处直径 6 mm。
+- id: wp_pin12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: wp_pivot_pin
+  extra_tools: []
+  prompt: |
+    创建刮臂支销：直径 6 mm、长 26 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: wp_link1
+  extra_tools: []
+  prompt: |
+    创建驱动连杆：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (50,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=50 处直径 6 mm。
+- id: wp_arm1
+  extra_tools: []
+  prompt: |
+    创建主刮臂：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (80,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=25 处直径 6 mm，X=40 处直径 6 mm。
+- id: wp_arm2
+  extra_tools: []
+  prompt: |
+    创建副刮臂：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (80,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=25 处直径 6 mm。
+- id: wp_link2
+  extra_tools: []
+  prompt: |
+    创建联动杆：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (100,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=100 处直径 6 mm。
+gold_roles:
+  frame: wp_frame
+  motor_shaft: wp_motor_shaft
+  crank: wp_crank
+  crank_pin: wp_pin12
+  link1: wp_link1
+  link1_pin: wp_pin12
+  arm1: wp_arm1
+  arm1_pin: wp_pivot_pin
+  arm2: wp_arm2
+  arm2_pin: wp_pivot_pin
+  link2: wp_link2
+  link2_pin_a: wp_pin12
+  link2_pin_b: wp_pin12
+assembly:
+  prompt: |
+    装配双刮臂雨刮联动机构。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]。电机轴承孔 (0,0)，主刮臂支孔 (60,0)，副刮臂支孔 (160,0)。
+    - motor_shaft 穿过 (0,0) 孔绕 Z 转动（z∈[-10,14]）；crank 的 10 mm 孔固定在 motor_shaft 上（z∈[8,14]）。
+    - crank_pin 固定在 crank 的 6 mm 孔（z∈[8,20]）；link1 一端绕 crank_pin 转（z∈[14,20]）；
+      link1_pin 固定在 link1 另一端孔（z∈[14,26]）。
+    - arm1_pin、arm2_pin 分别固定在 frame 的 (60,0)、(160,0) 孔里（z∈[0,26]）；arm1、arm2 的原点孔分别套在上面转动（z∈[20,26]）。
+      arm1 的 X=40 孔套在 link1_pin 上：曲柄 15、连杆 50、摇杆 40、机架 60 的曲柄摇杆，刮臂朝 +Y 侧。
+    - link2_pin_a、link2_pin_b 分别固定在 link2 两端孔里（z∈[20,32]），link2 在 z∈[26,32]；
+      link2_pin_a 插在 arm1 的 X=25 孔里转动，link2_pin_b 插在 arm2 的 X=25 孔里转动，两刮臂组成平行四边形、始终平行同摆。
+    - 曲柄整周转动时两刮臂各摆动约 44.2°。
+    对 motor_shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: motor_shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - crank
+  - link1
+  - arm1
+  - arm2
+  - link2
+  swings:
+  - role: arm1
+    deg: 44.19
+  - role: arm2
+    deg: 44.19
+  max_interference: 0

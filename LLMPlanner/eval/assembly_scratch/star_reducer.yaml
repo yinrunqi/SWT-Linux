@@ -1,0 +1,76 @@
+case_id: star_gear_reducer
+title: 星型齿轮减速器
+# 太阳轮 12、固定轴中间轮 18、齿圈 48 输出，i=-4。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: sr_frame
+  extra_tools: []
+  prompt: |
+    创建箱体板：在 front_plane 上画矩形，X 从 -60 到 60 mm，Y 从 -60 到 60 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(30,0) 直径 6 mm。不要抽壳。
+- id: sr_shaft26
+  extra_tools: []
+  prompt: |
+    创建输入轴：直径 10 mm、长 26 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: sr_output_shaft
+  extra_tools: []
+  prompt: |
+    创建输出轴：直径 10 mm、长 20 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: sr_sun
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 12，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: sr_planet_pin
+  extra_tools: []
+  prompt: |
+    创建惰轮销：直径 6 mm、长 16 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: sr_planet
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 18，压力角 30°，齿宽 8 mm，轴孔直径 6 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: sr_ring
+  extra_tools:
+  - internal_gear
+  prompt: |
+    创建渐开线内齿圈，模数 2 mm，齿数 48，压力角 30°，齿宽 8 mm，外径 106 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 internal_gear。
+- id: sr_cover
+  extra_tools: []
+  prompt: |
+    创建输出盘：外径 106 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。
+gold_roles:
+  frame: sr_frame
+  input_shaft: sr_shaft26
+  sun: sr_sun
+  planet_pin: sr_planet_pin
+  planet: sr_planet
+  ring: sr_ring
+  cover: sr_cover
+  output_shaft: sr_output_shaft
+assembly:
+  prompt: |
+    装配星型齿轮减速器（中间轮轴固定、内齿圈输出）。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]，主轴承孔 (0,0) 直径 10，中间轮销孔 (30,0) 直径 6。
+    - input_shaft 穿过 (0,0) 孔绕 Z 转动（z∈[-10,16]），12 齿 sun 固定在其上（z∈[8,16]）。
+    - planet_pin 固定在 (30,0) 孔里（z∈[0,16]）；18 齿 planet 套在 planet_pin 上转动（z∈[8,16]）。
+    - output_shaft 与主轴承孔同轴、绕 Z 转动（z∈[16,36]）；cover 的中心孔（z∈[16,22]）与 48 齿内齿圈 ring（z∈[8,16]）
+      都固定在 output_shaft 上。
+    - sun 与 planet 外啮合、planet 与 ring 内啮合（模数 2，中心距都是 30）。输出转速为输入的 1/4、反向。各齿轮互不穿模，啮合齿相位要对上。
+    对 input_shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: input_shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - sun
+  - planet
+  - cover
+  ratios:
+  - role: cover
+    ratio: 4
+    same_direction: false
+  max_interference: 0

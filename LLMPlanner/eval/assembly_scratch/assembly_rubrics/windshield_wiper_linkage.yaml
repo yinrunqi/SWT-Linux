@@ -1,0 +1,33 @@
+# 装配级 rubric：角色名与 wiper_linkage.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: windshield_wiper_linkage
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame]
+  crank: [motor_shaft, crank]
+  link1: [link1]
+  arm1: [arm1]
+  arm2: [arm2]
+  link2: [link2]
+flex:
+  crank_pin: [crank, link1]
+  link1_pin: [link1, arm1]
+  arm1_pin: [frame, arm1]
+  arm2_pin: [frame, arm2]
+  link2_pin_a: [link2, arm1]
+  link2_pin_b: [link2, arm2]
+joints:
+- bodies: [crank, frame]
+  type: revolute
+- bodies: [link1, crank]
+  type: revolute
+- bodies: [arm1, frame]
+  type: revolute
+- bodies: [arm1, link1]
+  type: &id001 [revolute, cylindrical]
+- bodies: [arm2, frame]
+  type: revolute
+- bodies: [link2, arm1]
+  type: revolute
+- bodies: [link2, arm2]
+  type: *id001

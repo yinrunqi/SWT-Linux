@@ -334,10 +334,11 @@ class AssemblySession:
             raise WorkflowError("FEATURE_FAILED", "插入组件后没有返回名称")
         angle = float(args.get("rotate_deg") or 0)
         if angle:
+            # set-component-pose 的物理转向与 angleDeg 相反（行向量约定，见 mesh_gears）；rotate_deg 按绕 +Z 逆时针
             self._ok(self._request("POST", "/api/assembly/set-component-pose", {
                 "componentName": sw_name,
                 "x": xyz[0], "y": xyz[1], "z": xyz[2],
-                "axisX": 0, "axisY": 0, "axisZ": 1, "angleDeg": angle,
+                "axisX": 0, "axisY": 0, "axisZ": 1, "angleDeg": -angle,
             }))
         self.aliases[alias] = sw_name
         self.saved = False

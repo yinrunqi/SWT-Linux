@@ -1,0 +1,32 @@
+# 装配级 rubric：角色名与 star_reducer.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: star_gear_reducer
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame]
+  input: [input_shaft, sun]
+  planet: [planet]
+  output: [output_shaft, cover, ring]
+flex:
+  planet_pin: [frame, planet]
+joints:
+- bodies: [input, frame]
+  type: revolute
+- bodies: [planet, frame]
+  type: revolute
+- bodies: [output, frame]
+  type: revolute
+couplings:
+- type: gear
+  a: sun
+  b: planet
+  teeth: [12, 18]
+  module_mm: 2
+  external: true
+- type: gear
+  a: planet
+  b: ring
+  teeth: [18, 48]
+  module_mm: 2
+  external: false
+center_distance_tol_mm: 0.2

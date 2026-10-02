@@ -1,0 +1,27 @@
+# 装配级 rubric：角色名与 pantograph.yaml 的 gold_roles 一致（由 bench_cases.py 生成）。
+case_id: pantograph
+ground: base
+mobility: 2
+bodies:
+  base: [base]
+  bar1: [bar1]
+  bar2: [bar2]
+  bar3: [bar3]
+  bar4: [bar4]
+flex:
+  pin_o: [base, bar1]
+  pin_c: [bar1, bar3]
+  pin_a: [bar1, bar2]
+  pin_d: [bar2, bar4]
+  pin_t: [bar3, bar4]
+joints:
+- bodies: [bar1, base]
+  type: revolute
+- bodies: [bar2, bar1]
+  type: revolute
+- bodies: [bar3, bar1]
+  type: revolute
+- bodies: [bar4, bar3]
+  type: revolute
+- bodies: [bar4, bar2]
+  type: [revolute, cylindrical]

@@ -1,0 +1,72 @@
+case_id: crank_rocker_linkage
+title: 曲柄摇杆四杆机构
+# 曲柄 20、连杆 70、摇杆 50、机架 80（Grashof 曲柄摇杆）；分三层叠放。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: cr_frame
+  extra_tools: []
+  prompt: |
+    创建机架板：在 front_plane 上画矩形，X 从 -30 到 110 mm，Y 从 -30 到 90 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(80,0) 直径 6 mm。不要抽壳。
+- id: cr_shaft
+  extra_tools: []
+  prompt: |
+    创建曲柄轴：直径 10 mm、长 24 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: cr_crank
+  extra_tools: []
+  prompt: |
+    创建曲柄：在 front_plane 上画两端圆头的长条，宽 16 mm，两端半圆的圆心分别在原点和 (20,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=20 处直径 6 mm。
+- id: cr_pin12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: cr_coupler
+  extra_tools: []
+  prompt: |
+    创建连杆：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (70,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=70 处直径 6 mm。
+- id: cr_rocker
+  extra_tools: []
+  prompt: |
+    创建摇杆：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (50,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=50 处直径 6 mm。
+- id: cr_pin26
+  extra_tools: []
+  prompt: |
+    创建摇杆支销：直径 6 mm、长 26 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+gold_roles:
+  frame: cr_frame
+  shaft: cr_shaft
+  crank: cr_crank
+  crank_pin: cr_pin12
+  coupler: cr_coupler
+  coupler_pin: cr_pin12
+  rocker: cr_rocker
+  rocker_pin: cr_pin26
+assembly:
+  prompt: |
+    装配曲柄摇杆四杆机构。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]。曲柄轴承孔在原点，摇杆支孔在 (80,0)。
+    - shaft 穿过原点孔绕 Z 转动（z∈[-10,14]）；crank 的 10 mm 孔固定在 shaft 上（z∈[8,14]），与 shaft 同转。
+    - crank_pin 固定在 crank 的 6 mm 孔里（z∈[8,20]）；coupler 一端套在 crank_pin 上转动（z∈[14,20]）。
+    - coupler_pin 固定在 coupler 另一端孔里（z∈[14,26]）。
+    - rocker_pin 固定在 frame 的 (80,0) 孔里（z∈[0,26]）；rocker 一端套在 rocker_pin 上转动（z∈[20,26]），
+      另一端套在 coupler_pin 上，组成曲柄 20、连杆 70、摇杆 50、机架 80 的曲柄摇杆机构，摇杆在机架连线上方（+Y 侧）。
+    - 曲柄整周转动时摇杆往复摆动约 47.4°。
+    对 shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - crank
+  - coupler
+  - rocker
+  swings:
+  - role: rocker
+    deg: 47.39
+  max_interference: 0

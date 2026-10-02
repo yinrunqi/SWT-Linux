@@ -1,0 +1,67 @@
+case_id: offset_slider_crank
+title: 偏置曲柄滑块机构
+# 曲柄 15、连杆 60、偏距 10，滑块沿 X；行程由解算得出。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: os_frame
+  extra_tools: []
+  prompt: |
+    创建机架板：在 front_plane 上画矩形，X 从 -30 到 110 mm，Y 从 -30 到 40 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm。不要抽壳。
+- id: os_shaft
+  extra_tools: []
+  prompt: |
+    创建曲柄轴：直径 10 mm、长 24 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: os_crank
+  extra_tools: []
+  prompt: |
+    创建曲柄：在 front_plane 上画两端圆头的长条，宽 16 mm，两端半圆的圆心分别在原点和 (15,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=15 处直径 6 mm。
+- id: os_pin12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: os_rod
+  extra_tools: []
+  prompt: |
+    创建连杆：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (60,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=60 处直径 6 mm。
+- id: os_slider
+  extra_tools: []
+  prompt: |
+    创建滑块：在 front_plane 上画矩形，X 从 -12 到 12 mm，Y 从 -8 到 8 mm，向 +Z 拉伸 6 mm。
+    开贯穿孔：(0,0) 直径 6 mm。不要抽壳。
+gold_roles:
+  frame: os_frame
+  shaft: os_shaft
+  crank: os_crank
+  crank_pin: os_pin12
+  rod: os_rod
+  wrist_pin: os_pin12
+  slider: os_slider
+assembly:
+  prompt: |
+    装配偏置曲柄滑块机构。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]，曲柄轴承孔在原点。
+    - shaft 穿过轴承孔绕 Z 转动（z∈[-10,14]）；crank 的 10 mm 孔固定在 shaft 上（z∈[8,14]）。
+    - crank_pin 固定在 crank 的 6 mm 孔里（z∈[8,20]）；rod 一端套在 crank_pin 上转动（z∈[14,20]）。
+    - wrist_pin 固定在 rod 另一端孔里（z∈[14,26]）；slider 的孔套在 wrist_pin 上转动（z∈[20,26]）。
+    - slider 只能沿 frame 的 X 方向移动，导路偏置：slider 孔心始终在 y=+10 的直线上，位于曲柄轴 +X 侧。
+    - 曲柄 15、连杆 60、偏距 10，曲柄转一圈滑块行程约 30.46 mm。
+    对 shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - crank
+  - rod
+  - slider
+  strokes:
+  - role: slider
+    axis: x
+    mm: 30.46
+  max_interference: 0

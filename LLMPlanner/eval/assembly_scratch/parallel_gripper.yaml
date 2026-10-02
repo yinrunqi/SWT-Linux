@@ -1,0 +1,147 @@
+case_id: parallel_gripper
+title: 平行四边形夹爪（多位姿）
+# 左右两组平行四边形，活动度 2；含对称与不对称三个位姿，检查两指尖位置。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: gp_base
+  extra_tools: []
+  prompt: |
+    创建夹爪底座：在 front_plane 上画矩形，X 从 -80 到 80 mm，Y 从 -20 到 50 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(-60,0) 直径 6 mm，(-60,30) 直径 6 mm，(60,0) 直径 6 mm，(60,30) 直径 6 mm。不要抽壳。
+- id: gp_link
+  extra_tools: []
+  prompt: |
+    创建摆杆：在 front_plane 上画两端圆头的长条，宽 10 mm，两端半圆的圆心分别在原点和 (40,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=40 处直径 6 mm。
+- id: gp_finger
+  extra_tools: []
+  prompt: |
+    创建指板：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (60,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=30 处直径 6 mm。
+- id: gp_pin14
+  extra_tools: []
+  prompt: |
+    创建底座销：直径 6 mm、长 14 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: gp_pin12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+gold_roles:
+  base: gp_base
+  lower_l: gp_link
+  upper_l: gp_link
+  finger_l: gp_finger
+  base_pin_lo_l: gp_pin14
+  base_pin_up_l: gp_pin14
+  link_pin_lo_l: gp_pin12
+  link_pin_up_l: gp_pin12
+  lower_r: gp_link
+  upper_r: gp_link
+  finger_r: gp_finger
+  base_pin_lo_r: gp_pin14
+  base_pin_up_r: gp_pin14
+  link_pin_lo_r: gp_pin12
+  link_pin_up_r: gp_pin12
+assembly:
+  prompt: |
+    装配平行四边形夹爪（左右两指各由一组平行四边形连杆导向，两指独立）。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - base 固定，z∈[0,8]，左侧铰孔 (-60,0)、(-60,30)，右侧铰孔 (60,0)、(60,30)。
+    - base_pin_lo_l / base_pin_up_l / base_pin_lo_r / base_pin_up_r 依次固定在这四个孔里（z∈[0,14]）。
+    - lower_l、upper_l 的原点孔分别套在左侧两根底座销上转动，lower_r、upper_r 套在右侧两根上（z∈[8,14]）；
+      四根摆杆初始都朝向机构中线（左侧指向 +X，右侧指向 −X）。
+    - link_pin_lo_* / link_pin_up_* 分别固定在对应摆杆的 X=40 孔里（z∈[8,20]）。
+    - finger_l 的原点孔套在 link_pin_lo_l 上、X=30 孔套在 link_pin_up_l 上（z∈[14,20]），指尖朝 +Y；finger_r 同理接右侧。
+      每侧摆杆、指板与底座组成平行四边形，指板始终竖直平移。
+    - 两指各 1 个自由度（整机活动度 2），不要固定。各件互不穿模，装好后保存。
+motion:
+  mode: poses
+  frame: base
+  expect_fixed:
+  - base
+  tolerance_mm: 1.5
+  max_interference: 0
+  poses:
+  - name: open
+    set:
+    - type: angle
+      a: lower_l:plane(top)
+      b: base:plane(top)
+      angle_deg: 10.0
+      points:
+      - role: finger_l
+        local:
+        - 60.0
+        - 0.0
+        - 0
+        expect:
+          x: -20.61
+          y: 66.95
+    - type: angle
+      a: lower_r:plane(top)
+      b: base:plane(top)
+      angle_deg: 170.0
+      points:
+      - role: finger_r
+        local:
+        - 60.0
+        - 0.0
+        - 0
+        expect:
+          x: 20.61
+          y: 66.95
+  - name: close
+    set:
+    - type: angle
+      a: lower_l:plane(top)
+      b: base:plane(top)
+      angle_deg: 15.0
+      points:
+      - role: finger_l
+        local:
+        - 60.0
+        - 0.0
+        - 0
+        expect:
+          x: -21.36
+          y: 49.65
+    - type: angle
+      a: lower_r:plane(top)
+      b: base:plane(top)
+      angle_deg: 165.0
+      points:
+      - role: finger_r
+        local:
+        - 60.0
+        - 0.0
+        - 0
+        expect:
+          x: 21.36
+          y: 49.65
+  - name: skew
+    set:
+    - type: angle
+      a: lower_l:plane(top)
+      b: base:plane(top)
+      angle_deg: 20.0
+      points:
+      - role: finger_l
+        local:
+        - 60.0
+        - 0.0
+        - 0
+        expect:
+          x: -22.41
+          y: 73.68
+    - type: angle
+      a: lower_r:plane(top)
+      b: base:plane(top)
+      angle_deg: 170.0
+      points:
+      - role: finger_r
+        local:
+        - 60.0
+        - 0.0
+        - 0
+        expect:
+          x: 20.61
+          y: 53.05

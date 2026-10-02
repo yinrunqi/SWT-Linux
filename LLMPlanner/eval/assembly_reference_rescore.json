@@ -1460,11 +1460,11 @@
               "same_direction": false
             }
           ],
-          "stroke_mm": 35.998,
+          "stroke_mm": 35.999,
           "expected_stroke_mm": 36
         }
       },
-      "seconds": 62.6
+      "seconds": 322.8
     },
     {
       "case_id": "film_projector_drive",
@@ -1687,6 +1687,4527 @@
         }
       },
       "seconds": 58.0
+    },
+    {
+      "case_id": "crank_rocker_linkage",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_crank_rocker.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "shaft",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "crank",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "coupler",
+            "body": "coupler",
+            "ok": true
+          },
+          {
+            "role": "rocker",
+            "body": "rocker",
+            "ok": true
+          },
+          {
+            "role": "crank_pin",
+            "body": "crank|coupler",
+            "ok": true
+          },
+          {
+            "role": "coupler_pin",
+            "body": "coupler|rocker",
+            "ok": true
+          },
+          {
+            "role": "rocker_pin",
+            "body": "frame|rocker",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "crank",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "coupler",
+              "crank"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "rocker",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "coupler",
+              "rocker"
+            ],
+            "expected": [
+              "revolute",
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "passed": true,
+        "score": 100.0,
+        "interference_frames": [],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 28.65,
+          "strokes": [
+            {
+              "role": "rocker",
+              "swing_deg": 47.385,
+              "expected": 47.39,
+              "ok": true
+            }
+          ]
+        }
+      },
+      "seconds": 40.5
+    },
+    {
+      "case_id": "offset_slider_crank",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_offset_slider_crank.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "shaft",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "crank",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "rod",
+            "body": "rod",
+            "ok": true
+          },
+          {
+            "role": "slider",
+            "body": "slider",
+            "ok": true
+          },
+          {
+            "role": "crank_pin",
+            "body": "crank|rod",
+            "ok": true
+          },
+          {
+            "role": "wrist_pin",
+            "body": "rod|slider",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "crank",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "rod",
+              "crank"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "slider",
+              "rod"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "slider",
+              "frame"
+            ],
+            "expected": [
+              "slider",
+              "planar"
+            ],
+            "actual": "planar",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "passed": true,
+        "score": 100.0,
+        "interference_frames": [],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 42.97,
+          "strokes": [
+            {
+              "role": "slider",
+              "axis": "x",
+              "measured_mm": 30.455,
+              "expected": 30.46,
+              "ok": true
+            }
+          ]
+        }
+      },
+      "seconds": 38.3
+    },
+    {
+      "case_id": "twin_cylinder_pump",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_twin_pump.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "shaft",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "crank_a",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "crank_b",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "rod_a",
+            "body": "rod_a",
+            "ok": true
+          },
+          {
+            "role": "rod_b",
+            "body": "rod_b",
+            "ok": true
+          },
+          {
+            "role": "piston_a",
+            "body": "piston_a",
+            "ok": true
+          },
+          {
+            "role": "piston_b",
+            "body": "piston_b",
+            "ok": true
+          },
+          {
+            "role": "crank_pin_a",
+            "body": "crank|rod_a",
+            "ok": true
+          },
+          {
+            "role": "crank_pin_b",
+            "body": "crank|rod_b",
+            "ok": true
+          },
+          {
+            "role": "wrist_pin_a",
+            "body": "rod_a|piston_a",
+            "ok": true
+          },
+          {
+            "role": "wrist_pin_b",
+            "body": "rod_b|piston_b",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "crank",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "rod_a",
+              "crank"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "rod_b",
+              "crank"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "piston_a",
+              "rod_a"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "piston_b",
+              "rod_b"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "piston_a",
+              "frame"
+            ],
+            "expected": [
+              "slider",
+              "planar"
+            ],
+            "actual": "planar",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "piston_b",
+              "frame"
+            ],
+            "expected": [
+              "slider",
+              "planar"
+            ],
+            "actual": "planar",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "passed": true,
+        "score": 100.0,
+        "interference_frames": [],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 28.65,
+          "strokes": [
+            {
+              "role": "piston_a",
+              "axis": "y",
+              "measured_mm": 30.0,
+              "expected": 30.0,
+              "ok": true
+            },
+            {
+              "role": "piston_b",
+              "axis": "y",
+              "measured_mm": 29.999,
+              "expected": 30.0,
+              "ok": true
+            },
+            {
+              "roles": [
+                "piston_a",
+                "piston_b"
+              ],
+              "correlation": -0.992,
+              "ok": true
+            }
+          ]
+        }
+      },
+      "seconds": 52.3
+    },
+    {
+      "case_id": "pumpjack_drive",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_pumpjack.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "motor_shaft",
+            "body": "motor",
+            "ok": true
+          },
+          {
+            "role": "pinion",
+            "body": "motor",
+            "ok": true
+          },
+          {
+            "role": "crank_shaft",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "bull_gear",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "crank",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "pitman",
+            "body": "pitman",
+            "ok": true
+          },
+          {
+            "role": "beam",
+            "body": "beam",
+            "ok": true
+          },
+          {
+            "role": "crank_pin",
+            "body": "crank|pitman",
+            "ok": true
+          },
+          {
+            "role": "pitman_pin",
+            "body": "pitman|beam",
+            "ok": true
+          },
+          {
+            "role": "pivot_pin",
+            "body": "frame|beam",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "motor",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "crank",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "pitman",
+              "crank"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "beam",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "pitman",
+              "beam"
+            ],
+            "expected": [
+              "revolute",
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": [
+          {
+            "pair": [
+              "pinion",
+              "bull_gear"
+            ],
+            "mate": "齿轮配合1",
+            "ratio": [
+              10.0,
+              30.0
+            ],
+            "ratio_ok": true,
+            "direction_ok": true,
+            "center_distance_mm": 50.0,
+            "expected_mm": 50.0,
+            "center_ok": true,
+            "score": 1.0
+          }
+        ]
+      },
+      "motion": {
+        "passed": true,
+        "score": 100.0,
+        "interference_frames": [],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 28.65,
+          "ratios": [
+            {
+              "role": "crank",
+              "measured": 0.3333,
+              "expected": 0.3333,
+              "max_step_deg": 9.55,
+              "ok": true,
+              "same_direction": false
+            }
+          ],
+          "strokes": [
+            {
+              "role": "beam",
+              "swing_deg": 47.691,
+              "expected": 47.71,
+              "ok": true
+            }
+          ]
+        }
+      },
+      "seconds": 53.6
+    },
+    {
+      "case_id": "windshield_wiper_linkage",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_wiper_linkage.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "motor_shaft",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "crank",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "link1",
+            "body": "link1",
+            "ok": true
+          },
+          {
+            "role": "arm1",
+            "body": "arm1",
+            "ok": true
+          },
+          {
+            "role": "arm2",
+            "body": "arm2",
+            "ok": true
+          },
+          {
+            "role": "link2",
+            "body": "link2",
+            "ok": true
+          },
+          {
+            "role": "crank_pin",
+            "body": "crank|link1",
+            "ok": true
+          },
+          {
+            "role": "link1_pin",
+            "body": "link1|arm1",
+            "ok": true
+          },
+          {
+            "role": "arm1_pin",
+            "body": "frame|arm1",
+            "ok": true
+          },
+          {
+            "role": "arm2_pin",
+            "body": "frame|arm2",
+            "ok": true
+          },
+          {
+            "role": "link2_pin_a",
+            "body": "link2|arm1",
+            "ok": true
+          },
+          {
+            "role": "link2_pin_b",
+            "body": "link2|arm2",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "crank",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "link1",
+              "crank"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "arm1",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "arm1",
+              "link1"
+            ],
+            "expected": [
+              "revolute",
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "arm2",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "link2",
+              "arm1"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "link2",
+              "arm2"
+            ],
+            "expected": [
+              "revolute",
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "passed": true,
+        "score": 100.0,
+        "interference_frames": [],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 28.65,
+          "strokes": [
+            {
+              "role": "arm1",
+              "swing_deg": 44.185,
+              "expected": 44.19,
+              "ok": true
+            },
+            {
+              "role": "arm2",
+              "swing_deg": 44.185,
+              "expected": 44.19,
+              "ok": true
+            }
+          ]
+        }
+      },
+      "seconds": 54.4
+    },
+    {
+      "case_id": "beam_engine",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_beam_engine.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "shaft",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "crank",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "conrod",
+            "body": "conrod",
+            "ok": true
+          },
+          {
+            "role": "beam",
+            "body": "beam",
+            "ok": true
+          },
+          {
+            "role": "piston_rod",
+            "body": "piston_rod",
+            "ok": true
+          },
+          {
+            "role": "piston",
+            "body": "piston",
+            "ok": true
+          },
+          {
+            "role": "crank_pin",
+            "body": "crank|conrod",
+            "ok": true
+          },
+          {
+            "role": "conrod_pin",
+            "body": "conrod|beam",
+            "ok": true
+          },
+          {
+            "role": "pivot_pin",
+            "body": "frame|beam",
+            "ok": true
+          },
+          {
+            "role": "e_pin",
+            "body": "beam|piston_rod",
+            "ok": true
+          },
+          {
+            "role": "p_pin",
+            "body": "piston_rod|piston",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "crank",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "conrod",
+              "crank"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "beam",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "conrod",
+              "beam"
+            ],
+            "expected": [
+              "revolute",
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "piston_rod",
+              "beam"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "piston",
+              "piston_rod"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "piston",
+              "frame"
+            ],
+            "expected": [
+              "slider",
+              "planar"
+            ],
+            "actual": "planar",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "passed": true,
+        "score": 100.0,
+        "interference_frames": [],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 28.65,
+          "strokes": [
+            {
+              "role": "piston",
+              "axis": "y",
+              "measured_mm": 40.932,
+              "expected": 40.94,
+              "ok": true
+            },
+            {
+              "role": "beam",
+              "swing_deg": 40.001,
+              "expected": 40.01,
+              "ok": true
+            }
+          ]
+        }
+      },
+      "seconds": 54.4
+    },
+    {
+      "case_id": "clock_motion_works",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_clock_motion.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "minute_arbor",
+            "body": "minute",
+            "ok": true
+          },
+          {
+            "role": "cannon_pinion",
+            "body": "minute",
+            "ok": true
+          },
+          {
+            "role": "minute_hand",
+            "body": "minute",
+            "ok": true
+          },
+          {
+            "role": "wheel_arbor",
+            "body": "wheel",
+            "ok": true
+          },
+          {
+            "role": "minute_wheel",
+            "body": "wheel",
+            "ok": true
+          },
+          {
+            "role": "minute_pinion",
+            "body": "wheel",
+            "ok": true
+          },
+          {
+            "role": "hour_tube",
+            "body": "hour",
+            "ok": true
+          },
+          {
+            "role": "hour_wheel",
+            "body": "hour",
+            "ok": true
+          },
+          {
+            "role": "hour_hand",
+            "body": "hour",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "minute",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "wheel",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "hour",
+              "minute"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": [
+          {
+            "pair": [
+              "cannon_pinion",
+              "minute_wheel"
+            ],
+            "mate": "齿轮配合1",
+            "ratio": [
+              10.0,
+              30.0
+            ],
+            "ratio_ok": true,
+            "direction_ok": true,
+            "center_distance_mm": 30.0,
+            "expected_mm": 30.0,
+            "center_ok": true,
+            "score": 1.0
+          },
+          {
+            "pair": [
+              "minute_pinion",
+              "hour_wheel"
+            ],
+            "mate": "齿轮配合2",
+            "ratio": [
+              8.0,
+              32.0
+            ],
+            "ratio_ok": true,
+            "direction_ok": true,
+            "center_distance_mm": 30.0,
+            "expected_mm": 30.0,
+            "center_ok": true,
+            "score": 1.0
+          }
+        ]
+      },
+      "motion": {
+        "passed": true,
+        "score": 100.0,
+        "interference_frames": [],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 28.65,
+          "ratios": [
+            {
+              "role": "minute_wheel",
+              "measured": 0.3333,
+              "expected": 0.3333,
+              "max_step_deg": 9.55,
+              "ok": true,
+              "same_direction": false
+            },
+            {
+              "role": "hour_hand",
+              "measured": 0.0833,
+              "expected": 0.0833,
+              "max_step_deg": 2.39,
+              "ok": true,
+              "same_direction": true
+            }
+          ]
+        }
+      },
+      "seconds": 52.9
+    },
+    {
+      "case_id": "hand_winch",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_hand_winch.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "handle_shaft",
+            "body": "handle",
+            "ok": true
+          },
+          {
+            "role": "pinion",
+            "body": "handle",
+            "ok": true
+          },
+          {
+            "role": "handle",
+            "body": "handle",
+            "ok": true
+          },
+          {
+            "role": "knob",
+            "body": "handle",
+            "ok": true
+          },
+          {
+            "role": "drum_shaft",
+            "body": "drum",
+            "ok": true
+          },
+          {
+            "role": "gear",
+            "body": "drum",
+            "ok": true
+          },
+          {
+            "role": "drum",
+            "body": "drum",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "handle",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "drum",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": [
+          {
+            "pair": [
+              "pinion",
+              "gear"
+            ],
+            "mate": "齿轮配合1",
+            "ratio": [
+              12.0,
+              36.0
+            ],
+            "ratio_ok": true,
+            "direction_ok": true,
+            "center_distance_mm": 48.0,
+            "expected_mm": 48.0,
+            "center_ok": true,
+            "score": 1.0
+          }
+        ]
+      },
+      "motion": {
+        "passed": true,
+        "score": 100.0,
+        "interference_frames": [],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 42.97,
+          "ratios": [
+            {
+              "role": "drum",
+              "measured": 0.3333,
+              "expected": 0.3333,
+              "max_step_deg": 9.55,
+              "ok": true,
+              "same_direction": false
+            }
+          ]
+        }
+      },
+      "seconds": 42.3
+    },
+    {
+      "case_id": "turntable_ring_drive",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_turntable.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "spindle",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "pinion_shaft",
+            "body": "drive",
+            "ok": true
+          },
+          {
+            "role": "pinion",
+            "body": "drive",
+            "ok": true
+          },
+          {
+            "role": "table",
+            "body": "table",
+            "ok": true
+          },
+          {
+            "role": "ring",
+            "body": "table",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "drive",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "table",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": [
+          {
+            "pair": [
+              "pinion",
+              "ring"
+            ],
+            "mate": "齿轮配合1",
+            "ratio": [
+              12.0,
+              48.0
+            ],
+            "ratio_ok": true,
+            "direction_ok": true,
+            "center_distance_mm": 36.0,
+            "expected_mm": 36.0,
+            "center_ok": true,
+            "score": 1.0
+          }
+        ]
+      },
+      "motion": {
+        "passed": true,
+        "score": 100.0,
+        "interference_frames": [],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3523.69,
+          "frames": 121,
+          "driver_max_step_deg": 85.94,
+          "ratios": [
+            {
+              "role": "table",
+              "measured": 0.25,
+              "expected": 0.25,
+              "max_step_deg": 21.49,
+              "ok": true,
+              "same_direction": true
+            }
+          ]
+        }
+      },
+      "seconds": 38.1
+    },
+    {
+      "case_id": "star_gear_reducer",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_star_reducer.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "input_shaft",
+            "body": "input",
+            "ok": true
+          },
+          {
+            "role": "sun",
+            "body": "input",
+            "ok": true
+          },
+          {
+            "role": "planet",
+            "body": "planet",
+            "ok": true
+          },
+          {
+            "role": "output_shaft",
+            "body": "output",
+            "ok": true
+          },
+          {
+            "role": "cover",
+            "body": "output",
+            "ok": true
+          },
+          {
+            "role": "ring",
+            "body": "output",
+            "ok": true
+          },
+          {
+            "role": "planet_pin",
+            "body": "frame|planet",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "input",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "planet",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "output",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": [
+          {
+            "pair": [
+              "sun",
+              "planet"
+            ],
+            "mate": "齿轮配合1",
+            "ratio": [
+              12.0,
+              18.0
+            ],
+            "ratio_ok": true,
+            "direction_ok": true,
+            "center_distance_mm": 30.0,
+            "expected_mm": 30.0,
+            "center_ok": true,
+            "score": 1.0
+          },
+          {
+            "pair": [
+              "planet",
+              "ring"
+            ],
+            "mate": "齿轮配合2",
+            "ratio": [
+              18.0,
+              48.0
+            ],
+            "ratio_ok": true,
+            "direction_ok": true,
+            "center_distance_mm": 30.0,
+            "expected_mm": 30.0,
+            "center_ok": true,
+            "score": 1.0
+          }
+        ]
+      },
+      "motion": {
+        "passed": true,
+        "score": 100.0,
+        "interference_frames": [],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 28.65,
+          "ratios": [
+            {
+              "role": "cover",
+              "measured": 0.25,
+              "expected": 0.25,
+              "max_step_deg": 7.16,
+              "ok": true,
+              "same_direction": false
+            }
+          ]
+        }
+      },
+      "seconds": 47.3
+    },
+    {
+      "case_id": "lead_screw_stage",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_lead_screw_stage.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "guide_rod",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "screw",
+            "body": "screw",
+            "ok": true
+          },
+          {
+            "role": "handwheel",
+            "body": "screw",
+            "ok": true
+          },
+          {
+            "role": "carriage",
+            "body": "carriage",
+            "ok": true
+          },
+          {
+            "role": "nut",
+            "body": "carriage",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "screw",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "carriage",
+              "frame"
+            ],
+            "expected": [
+              "cylindrical",
+              "slider"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "carriage",
+              "screw"
+            ],
+            "expected": [
+              "screw"
+            ],
+            "actual": "screw",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "passed": true,
+        "score": 100.0,
+        "interference_frames": [],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 42.97,
+          "leads": [
+            {
+              "role": "carriage",
+              "measured_mm_per_rev": -2.0,
+              "expected": 2.0,
+              "ok": true
+            }
+          ]
+        }
+      },
+      "seconds": 34.9
+    },
+    {
+      "case_id": "gear_driven_slider_crank",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_geared_slider_crank.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "motor_shaft",
+            "body": "motor",
+            "ok": true
+          },
+          {
+            "role": "pinion",
+            "body": "motor",
+            "ok": true
+          },
+          {
+            "role": "crank_shaft",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "gear",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "crank",
+            "body": "crank",
+            "ok": true
+          },
+          {
+            "role": "rod",
+            "body": "rod",
+            "ok": true
+          },
+          {
+            "role": "slider",
+            "body": "slider",
+            "ok": true
+          },
+          {
+            "role": "crank_pin",
+            "body": "crank|rod",
+            "ok": true
+          },
+          {
+            "role": "wrist_pin",
+            "body": "rod|slider",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "motor",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "crank",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "rod",
+              "crank"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "slider",
+              "rod"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "slider",
+              "frame"
+            ],
+            "expected": [
+              "slider",
+              "planar"
+            ],
+            "actual": "planar",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": [
+          {
+            "pair": [
+              "pinion",
+              "gear"
+            ],
+            "mate": "齿轮配合1",
+            "ratio": [
+              12.0,
+              36.0
+            ],
+            "ratio_ok": true,
+            "direction_ok": true,
+            "center_distance_mm": 48.0,
+            "expected_mm": 48.0,
+            "center_ok": true,
+            "score": 1.0
+          }
+        ]
+      },
+      "motion": {
+        "passed": true,
+        "score": 100.0,
+        "interference_frames": [],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 28.65,
+          "ratios": [
+            {
+              "role": "crank",
+              "measured": 0.3333,
+              "expected": 0.3333,
+              "max_step_deg": 9.55,
+              "ok": true,
+              "same_direction": false
+            }
+          ],
+          "strokes": [
+            {
+              "role": "slider",
+              "axis": "x",
+              "measured_mm": 39.997,
+              "expected": 40.0,
+              "ok": true
+            }
+          ]
+        }
+      },
+      "seconds": 54.3
+    },
+    {
+      "case_id": "epicyclic_carrier_output",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_planetary_carrier.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "ring",
+            "body": "frame",
+            "ok": true
+          },
+          {
+            "role": "input_shaft",
+            "body": "input",
+            "ok": true
+          },
+          {
+            "role": "sun",
+            "body": "input",
+            "ok": true
+          },
+          {
+            "role": "output_shaft",
+            "body": "carrier",
+            "ok": true
+          },
+          {
+            "role": "carrier",
+            "body": "carrier",
+            "ok": true
+          },
+          {
+            "role": "planet",
+            "body": "planet",
+            "ok": true
+          },
+          {
+            "role": "planet_pin",
+            "body": "carrier|planet",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "input",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "carrier",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "planet",
+              "carrier"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": [
+          {
+            "pair": [
+              "sun",
+              "planet"
+            ],
+            "mate": "齿轮配合1",
+            "ratio": [
+              12.0,
+              18.0
+            ],
+            "ratio_ok": true,
+            "direction_ok": true,
+            "center_distance_mm": 30.0,
+            "expected_mm": 30.0,
+            "center_ok": true,
+            "score": 1.0
+          },
+          {
+            "pair": [
+              "planet",
+              "ring"
+            ],
+            "mate": "齿轮配合2",
+            "ratio": [
+              18.0,
+              48.0
+            ],
+            "ratio_ok": true,
+            "direction_ok": true,
+            "center_distance_mm": 30.0,
+            "expected_mm": 30.0,
+            "center_ok": true,
+            "score": 1.0
+          }
+        ]
+      },
+      "motion": {
+        "passed": true,
+        "score": 100.0,
+        "interference_frames": [],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": 3437.747,
+          "frames": 121,
+          "driver_max_step_deg": 160.48,
+          "ratios": [
+            {
+              "role": "carrier",
+              "measured": 0.2,
+              "expected": 0.2,
+              "max_step_deg": 8.59,
+              "ok": true,
+              "same_direction": true
+            }
+          ]
+        }
+      },
+      "seconds": 48.7
+    },
+    {
+      "case_id": "excavator_arm",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_excavator_arm.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "base",
+            "body": "base",
+            "ok": true
+          },
+          {
+            "role": "boom",
+            "body": "boom",
+            "ok": true
+          },
+          {
+            "role": "stick",
+            "body": "stick",
+            "ok": true
+          },
+          {
+            "role": "bucket",
+            "body": "bucket",
+            "ok": true
+          },
+          {
+            "role": "barrel",
+            "body": "barrel",
+            "ok": true
+          },
+          {
+            "role": "ram",
+            "body": "ram",
+            "ok": true
+          },
+          {
+            "role": "boom_pin",
+            "body": "base|boom",
+            "ok": true
+          },
+          {
+            "role": "barrel_pin",
+            "body": "base|barrel",
+            "ok": true
+          },
+          {
+            "role": "ram_pin",
+            "body": "boom|ram",
+            "ok": true
+          },
+          {
+            "role": "stick_pin",
+            "body": "boom|stick",
+            "ok": true
+          },
+          {
+            "role": "bucket_pin",
+            "body": "stick|bucket",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "boom",
+              "base"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "barrel",
+              "base"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "ram",
+              "boom"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "ram",
+              "barrel"
+            ],
+            "expected": [
+              "slider",
+              "planar"
+            ],
+            "actual": "planar",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "stick",
+              "boom"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "bucket",
+              "stick"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 3,
+          "target": 3,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "mode": "poses",
+        "passed": true,
+        "score": 100.0,
+        "poses": [
+          {
+            "name": "dig",
+            "variants": [
+              {
+                "flip": false
+              },
+              {
+                "flip": false
+              },
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "boom",
+                  "coord": "x",
+                  "got": 122.567,
+                  "expected": 122.57,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "boom",
+                  "coord": "y",
+                  "got": 142.846,
+                  "expected": 142.85,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "stick",
+                  "coord": "x",
+                  "got": 225.933,
+                  "expected": 225.93,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "stick",
+                  "coord": "y",
+                  "got": 105.224,
+                  "expected": 105.22,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "bucket",
+                  "coord": "x",
+                  "got": 250.933,
+                  "expected": 250.93,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "bucket",
+                  "coord": "y",
+                  "got": 61.923,
+                  "expected": 61.92,
+                  "err_mm": 0.003,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "lift",
+            "variants": [
+              {
+                "flip": false
+              },
+              {
+                "flip": false
+              },
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "boom",
+                  "coord": "x",
+                  "got": 91.772,
+                  "expected": 91.77,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "boom",
+                  "coord": "y",
+                  "got": 171.064,
+                  "expected": 171.06,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "stick",
+                  "coord": "x",
+                  "got": 191.466,
+                  "expected": 191.47,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "stick",
+                  "coord": "y",
+                  "got": 124.576,
+                  "expected": 124.58,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "bucket",
+                  "coord": "x",
+                  "got": 195.824,
+                  "expected": 195.82,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "bucket",
+                  "coord": "y",
+                  "got": 74.767,
+                  "expected": 74.77,
+                  "err_mm": 0.003,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "reach",
+            "variants": [
+              {
+                "flip": false
+              },
+              {
+                "flip": false
+              },
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "boom",
+                  "coord": "x",
+                  "got": 54.723,
+                  "expected": 54.72,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "boom",
+                  "coord": "y",
+                  "got": 190.351,
+                  "expected": 190.35,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "stick",
+                  "coord": "x",
+                  "got": 149.986,
+                  "expected": 149.99,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "stick",
+                  "coord": "y",
+                  "got": 135.351,
+                  "expected": 135.35,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "bucket",
+                  "coord": "x",
+                  "got": 174.986,
+                  "expected": 174.99,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "bucket",
+                  "coord": "y",
+                  "got": 92.05,
+                  "expected": 92.05,
+                  "err_mm": 0.0,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          }
+        ]
+      },
+      "seconds": 225.8
+    },
+    {
+      "case_id": "scara_arm",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_scara_arm.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "base",
+            "body": "base",
+            "ok": true
+          },
+          {
+            "role": "column",
+            "body": "base",
+            "ok": true
+          },
+          {
+            "role": "upper_arm",
+            "body": "upper_arm",
+            "ok": true
+          },
+          {
+            "role": "forearm",
+            "body": "forearm",
+            "ok": true
+          },
+          {
+            "role": "quill",
+            "body": "quill",
+            "ok": true
+          },
+          {
+            "role": "elbow_pin",
+            "body": "upper_arm|forearm",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "upper_arm",
+              "base"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "forearm",
+              "upper_arm"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "quill",
+              "forearm"
+            ],
+            "expected": [
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 4,
+          "target": 4,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "mode": "poses",
+        "passed": true,
+        "score": 100.0,
+        "poses": [
+          {
+            "name": "pick",
+            "variants": [
+              {
+                "flip": true
+              },
+              {
+                "flip": false
+              },
+              {}
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "upper_arm",
+                  "coord": "x",
+                  "got": 140.954,
+                  "expected": 140.95,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "y",
+                  "got": 51.303,
+                  "expected": 51.3,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "forearm",
+                  "coord": "x",
+                  "got": 161.792,
+                  "expected": 161.79,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "forearm",
+                  "coord": "y",
+                  "got": 169.48,
+                  "expected": 169.48,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "quill",
+                  "coord": "x",
+                  "got": 161.792,
+                  "expected": 161.79,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "quill",
+                  "coord": "y",
+                  "got": 169.48,
+                  "expected": 169.48,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "quill",
+                  "coord": "z",
+                  "got": 0.0,
+                  "expected": 0.0,
+                  "err_mm": 0.0,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "place",
+            "variants": [
+              {
+                "flip": false
+              },
+              {
+                "flip": true
+              },
+              {}
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "upper_arm",
+                  "coord": "x",
+                  "got": 75.0,
+                  "expected": 75.0,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "y",
+                  "got": 129.904,
+                  "expected": 129.9,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "forearm",
+                  "coord": "x",
+                  "got": 193.177,
+                  "expected": 193.18,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "forearm",
+                  "coord": "y",
+                  "got": 109.066,
+                  "expected": 109.07,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "quill",
+                  "coord": "x",
+                  "got": 193.177,
+                  "expected": 193.18,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "quill",
+                  "coord": "y",
+                  "got": 109.066,
+                  "expected": 109.07,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "quill",
+                  "coord": "z",
+                  "got": -30.0,
+                  "expected": -30.0,
+                  "err_mm": 0.0,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "tuck",
+            "variants": [
+              {
+                "flip": true
+              },
+              {
+                "flip": false
+              },
+              {}
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "upper_arm",
+                  "coord": "x",
+                  "got": 129.904,
+                  "expected": 129.9,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "y",
+                  "got": -75.0,
+                  "expected": -75.0,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "forearm",
+                  "coord": "x",
+                  "got": 170.946,
+                  "expected": 170.95,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "forearm",
+                  "coord": "y",
+                  "got": 37.763,
+                  "expected": 37.76,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "quill",
+                  "coord": "x",
+                  "got": 170.946,
+                  "expected": 170.95,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "quill",
+                  "coord": "y",
+                  "got": 37.763,
+                  "expected": 37.76,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "quill",
+                  "coord": "z",
+                  "got": 20.0,
+                  "expected": 20.0,
+                  "err_mm": 0.0,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          }
+        ]
+      },
+      "seconds": 215.2
+    },
+    {
+      "case_id": "pantograph",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_pantograph.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "base",
+            "body": "base",
+            "ok": true
+          },
+          {
+            "role": "bar1",
+            "body": "bar1",
+            "ok": true
+          },
+          {
+            "role": "bar2",
+            "body": "bar2",
+            "ok": true
+          },
+          {
+            "role": "bar3",
+            "body": "bar3",
+            "ok": true
+          },
+          {
+            "role": "bar4",
+            "body": "bar4",
+            "ok": true
+          },
+          {
+            "role": "pin_o",
+            "body": "base|bar1",
+            "ok": true
+          },
+          {
+            "role": "pin_c",
+            "body": "bar1|bar3",
+            "ok": true
+          },
+          {
+            "role": "pin_a",
+            "body": "bar1|bar2",
+            "ok": true
+          },
+          {
+            "role": "pin_d",
+            "body": "bar2|bar4",
+            "ok": true
+          },
+          {
+            "role": "pin_t",
+            "body": "bar3|bar4",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "bar1",
+              "base"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "bar2",
+              "bar1"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "bar3",
+              "bar1"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "bar4",
+              "bar3"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "bar4",
+              "bar2"
+            ],
+            "expected": [
+              "revolute",
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 2,
+          "target": 2,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "mode": "poses",
+        "passed": true,
+        "score": 100.0,
+        "poses": [
+          {
+            "name": "a",
+            "variants": [
+              {
+                "flip": false
+              },
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "bar1",
+                  "coord": "x",
+                  "got": 103.923,
+                  "expected": 103.92,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "bar1",
+                  "coord": "y",
+                  "got": 60.0,
+                  "expected": 60.0,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "bar2",
+                  "coord": "x",
+                  "got": 62.881,
+                  "expected": 62.88,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "bar2",
+                  "coord": "y",
+                  "got": 172.763,
+                  "expected": 172.76,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "bar3",
+                  "coord": "x",
+                  "got": 31.44,
+                  "expected": 31.44,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "bar3",
+                  "coord": "y",
+                  "got": 86.382,
+                  "expected": 86.38,
+                  "err_mm": 0.002,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.003,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "b",
+            "variants": [
+              {
+                "flip": false
+              },
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "bar1",
+                  "coord": "x",
+                  "got": 118.177,
+                  "expected": 118.18,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "bar1",
+                  "coord": "y",
+                  "got": 20.838,
+                  "expected": 20.84,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "bar2",
+                  "coord": "x",
+                  "got": 77.135,
+                  "expected": 77.13,
+                  "err_mm": 0.005,
+                  "ok": true
+                },
+                {
+                  "role": "bar2",
+                  "coord": "y",
+                  "got": 133.601,
+                  "expected": 133.6,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "bar3",
+                  "coord": "x",
+                  "got": 38.567,
+                  "expected": 38.57,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "bar3",
+                  "coord": "y",
+                  "got": 66.8,
+                  "expected": 66.8,
+                  "err_mm": 0.0,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.005,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "c",
+            "variants": [
+              {
+                "flip": false
+              },
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "bar1",
+                  "coord": "x",
+                  "got": 77.135,
+                  "expected": 77.13,
+                  "err_mm": 0.005,
+                  "ok": true
+                },
+                {
+                  "role": "bar1",
+                  "coord": "y",
+                  "got": 91.925,
+                  "expected": 91.93,
+                  "err_mm": 0.005,
+                  "ok": true
+                },
+                {
+                  "role": "bar2",
+                  "coord": "x",
+                  "got": 17.135,
+                  "expected": 17.13,
+                  "err_mm": 0.005,
+                  "ok": true
+                },
+                {
+                  "role": "bar2",
+                  "coord": "y",
+                  "got": 195.848,
+                  "expected": 195.85,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "bar3",
+                  "coord": "x",
+                  "got": 8.567,
+                  "expected": 8.57,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "bar3",
+                  "coord": "y",
+                  "got": 97.924,
+                  "expected": 97.92,
+                  "err_mm": 0.004,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.005,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          }
+        ]
+      },
+      "seconds": 166.2
+    },
+    {
+      "case_id": "ackermann_steering",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_ackermann_steering.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "axle",
+            "body": "axle",
+            "ok": true
+          },
+          {
+            "role": "knuckle_l",
+            "body": "knuckle_l",
+            "ok": true
+          },
+          {
+            "role": "knuckle_r",
+            "body": "knuckle_r",
+            "ok": true
+          },
+          {
+            "role": "tie_rod",
+            "body": "tie_rod",
+            "ok": true
+          },
+          {
+            "role": "kingpin_l",
+            "body": "axle|knuckle_l",
+            "ok": true
+          },
+          {
+            "role": "kingpin_r",
+            "body": "axle|knuckle_r",
+            "ok": true
+          },
+          {
+            "role": "tie_pin_l",
+            "body": "knuckle_l|tie_rod",
+            "ok": true
+          },
+          {
+            "role": "tie_pin_r",
+            "body": "knuckle_r|tie_rod",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "knuckle_l",
+              "axle"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "knuckle_r",
+              "axle"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "tie_rod",
+              "knuckle_l"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "tie_rod",
+              "knuckle_r"
+            ],
+            "expected": [
+              "revolute",
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "mode": "poses",
+        "passed": true,
+        "score": 100.0,
+        "poses": [
+          {
+            "name": "left_small",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "knuckle_l",
+                  "coord": "x",
+                  "got": -47.124,
+                  "expected": -47.12,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_l",
+                  "coord": "y",
+                  "got": -21.429,
+                  "expected": -21.43,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "x",
+                  "got": 59.037,
+                  "expected": 59.03,
+                  "err_mm": 0.007,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "y",
+                  "got": -24.981,
+                  "expected": -24.98,
+                  "err_mm": 0.001,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.007,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "left_full",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "knuckle_l",
+                  "coord": "x",
+                  "got": -42.634,
+                  "expected": -42.63,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_l",
+                  "coord": "y",
+                  "got": -17.983,
+                  "expected": -17.98,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "x",
+                  "got": 63.369,
+                  "expected": 63.37,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "y",
+                  "got": -24.772,
+                  "expected": -24.77,
+                  "err_mm": 0.002,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "right",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "knuckle_l",
+                  "coord": "x",
+                  "got": -61.744,
+                  "expected": -61.74,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_l",
+                  "coord": "y",
+                  "got": -24.939,
+                  "expected": -24.94,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "x",
+                  "got": 44.336,
+                  "expected": 44.33,
+                  "err_mm": 0.006,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "y",
+                  "got": -19.484,
+                  "expected": -19.48,
+                  "err_mm": 0.004,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.006,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          }
+        ]
+      },
+      "seconds": 12.6
+    },
+    {
+      "case_id": "toggle_clamp",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_toggle_clamp.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "base",
+            "body": "base",
+            "ok": true
+          },
+          {
+            "role": "arm",
+            "body": "arm",
+            "ok": true
+          },
+          {
+            "role": "handle",
+            "body": "handle",
+            "ok": true
+          },
+          {
+            "role": "link",
+            "body": "link",
+            "ok": true
+          },
+          {
+            "role": "pin_a",
+            "body": "base|arm",
+            "ok": true
+          },
+          {
+            "role": "pin_h",
+            "body": "base|handle",
+            "ok": true
+          },
+          {
+            "role": "pin_j",
+            "body": "arm|link",
+            "ok": true
+          },
+          {
+            "role": "pin_k",
+            "body": "handle|link",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "arm",
+              "base"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "handle",
+              "base"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "link",
+              "arm"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "link",
+              "handle"
+            ],
+            "expected": [
+              "revolute",
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "mode": "poses",
+        "passed": true,
+        "score": 100.0,
+        "poses": [
+          {
+            "name": "open",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "handle",
+                  "coord": "x",
+                  "got": -9.282,
+                  "expected": -9.28,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "handle",
+                  "coord": "y",
+                  "got": 20.0,
+                  "expected": 20.0,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "arm",
+                  "coord": "x",
+                  "got": 52.574,
+                  "expected": 52.57,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "arm",
+                  "coord": "y",
+                  "got": 85.064,
+                  "expected": 85.06,
+                  "err_mm": 0.004,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "mid",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "handle",
+                  "coord": "x",
+                  "got": 20.0,
+                  "expected": 20.0,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "handle",
+                  "coord": "y",
+                  "got": 49.282,
+                  "expected": 49.28,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "arm",
+                  "coord": "x",
+                  "got": 51.727,
+                  "expected": 51.73,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "arm",
+                  "coord": "y",
+                  "got": 85.582,
+                  "expected": 85.58,
+                  "err_mm": 0.002,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.003,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "clamp",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "handle",
+                  "coord": "x",
+                  "got": 60.0,
+                  "expected": 60.0,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "handle",
+                  "coord": "y",
+                  "got": 60.0,
+                  "expected": 60.0,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "arm",
+                  "coord": "x",
+                  "got": 75.816,
+                  "expected": 75.82,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "arm",
+                  "coord": "y",
+                  "got": 65.207,
+                  "expected": 65.21,
+                  "err_mm": 0.003,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          }
+        ]
+      },
+      "seconds": 188.9
+    },
+    {
+      "case_id": "parallel_gripper",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_parallel_gripper.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "base",
+            "body": "base",
+            "ok": true
+          },
+          {
+            "role": "lower_l",
+            "body": "lower_l",
+            "ok": true
+          },
+          {
+            "role": "upper_l",
+            "body": "upper_l",
+            "ok": true
+          },
+          {
+            "role": "finger_l",
+            "body": "finger_l",
+            "ok": true
+          },
+          {
+            "role": "lower_r",
+            "body": "lower_r",
+            "ok": true
+          },
+          {
+            "role": "upper_r",
+            "body": "upper_r",
+            "ok": true
+          },
+          {
+            "role": "finger_r",
+            "body": "finger_r",
+            "ok": true
+          },
+          {
+            "role": "base_pin_lo_l",
+            "body": "base|lower_l",
+            "ok": true
+          },
+          {
+            "role": "base_pin_up_l",
+            "body": "base|upper_l",
+            "ok": true
+          },
+          {
+            "role": "link_pin_lo_l",
+            "body": "lower_l|finger_l",
+            "ok": true
+          },
+          {
+            "role": "link_pin_up_l",
+            "body": "upper_l|finger_l",
+            "ok": true
+          },
+          {
+            "role": "base_pin_lo_r",
+            "body": "base|lower_r",
+            "ok": true
+          },
+          {
+            "role": "base_pin_up_r",
+            "body": "base|upper_r",
+            "ok": true
+          },
+          {
+            "role": "link_pin_lo_r",
+            "body": "lower_r|finger_r",
+            "ok": true
+          },
+          {
+            "role": "link_pin_up_r",
+            "body": "upper_r|finger_r",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "lower_l",
+              "base"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "upper_l",
+              "base"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "finger_l",
+              "lower_l"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "finger_l",
+              "upper_l"
+            ],
+            "expected": [
+              "revolute",
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "lower_r",
+              "base"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "upper_r",
+              "base"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "finger_r",
+              "lower_r"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "finger_r",
+              "upper_r"
+            ],
+            "expected": [
+              "revolute",
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 2,
+          "target": 2,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "mode": "poses",
+        "passed": true,
+        "score": 100.0,
+        "poses": [
+          {
+            "name": "open",
+            "variants": [
+              {
+                "flip": true
+              },
+              {
+                "flip": true
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "finger_l",
+                  "coord": "x",
+                  "got": -20.608,
+                  "expected": -20.61,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "finger_l",
+                  "coord": "y",
+                  "got": 66.946,
+                  "expected": 66.95,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "finger_r",
+                  "coord": "x",
+                  "got": 20.608,
+                  "expected": 20.61,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "finger_r",
+                  "coord": "y",
+                  "got": 66.946,
+                  "expected": 66.95,
+                  "err_mm": 0.004,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "close",
+            "variants": [
+              {
+                "flip": true
+              },
+              {
+                "flip": true
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "finger_l",
+                  "coord": "x",
+                  "got": -21.363,
+                  "expected": -21.36,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "finger_l",
+                  "coord": "y",
+                  "got": 49.647,
+                  "expected": 49.65,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "finger_r",
+                  "coord": "x",
+                  "got": 21.363,
+                  "expected": 21.36,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "finger_r",
+                  "coord": "y",
+                  "got": 49.647,
+                  "expected": 49.65,
+                  "err_mm": 0.003,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.003,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "skew",
+            "variants": [
+              {
+                "flip": true
+              },
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "finger_l",
+                  "coord": "x",
+                  "got": -22.412,
+                  "expected": -22.41,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "finger_l",
+                  "coord": "y",
+                  "got": 73.681,
+                  "expected": 73.68,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "finger_r",
+                  "coord": "x",
+                  "got": 20.608,
+                  "expected": 20.61,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "finger_r",
+                  "coord": "y",
+                  "got": 53.054,
+                  "expected": 53.05,
+                  "err_mm": 0.004,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          }
+        ]
+      },
+      "seconds": 239.1
+    },
+    {
+      "case_id": "double_wishbone",
+      "workflow": "reference",
+      "assembly": "eval\\assembly_scratch\\gold_parts\\reference_double_wishbone.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "chassis",
+            "body": "chassis",
+            "ok": true
+          },
+          {
+            "role": "lower_arm",
+            "body": "lower_arm",
+            "ok": true
+          },
+          {
+            "role": "upper_arm",
+            "body": "upper_arm",
+            "ok": true
+          },
+          {
+            "role": "knuckle",
+            "body": "knuckle",
+            "ok": true
+          },
+          {
+            "role": "spindle",
+            "body": "knuckle",
+            "ok": true
+          },
+          {
+            "role": "hub",
+            "body": "knuckle",
+            "ok": true
+          },
+          {
+            "role": "lower_pin",
+            "body": "chassis|lower_arm",
+            "ok": true
+          },
+          {
+            "role": "upper_pin",
+            "body": "chassis|upper_arm",
+            "ok": true
+          },
+          {
+            "role": "lower_ball",
+            "body": "lower_arm|knuckle",
+            "ok": true
+          },
+          {
+            "role": "upper_ball",
+            "body": "upper_arm|knuckle",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "lower_arm",
+              "chassis"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "upper_arm",
+              "chassis"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "knuckle",
+              "lower_arm"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "knuckle",
+              "upper_arm"
+            ],
+            "expected": [
+              "revolute",
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "mode": "poses",
+        "passed": true,
+        "score": 100.0,
+        "poses": [
+          {
+            "name": "rebound",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 97.815,
+                  "expected": 97.81,
+                  "err_mm": 0.005,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": -20.791,
+                  "expected": -20.79,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "x",
+                  "got": 78.695,
+                  "expected": 78.7,
+                  "err_mm": 0.005,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "y",
+                  "got": 46.547,
+                  "expected": 46.55,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "x",
+                  "got": 88.255,
+                  "expected": 88.25,
+                  "err_mm": 0.005,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "y",
+                  "got": 12.878,
+                  "expected": 12.88,
+                  "err_mm": 0.002,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.005,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "ride",
+            "variants": [
+              {
+                "flip": true
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 99.619,
+                  "expected": 99.62,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": 8.716,
+                  "expected": 8.72,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "x",
+                  "got": 78.288,
+                  "expected": 78.29,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "y",
+                  "got": 75.386,
+                  "expected": 75.39,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "x",
+                  "got": 88.954,
+                  "expected": 88.95,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "y",
+                  "got": 42.051,
+                  "expected": 42.05,
+                  "err_mm": 0.001,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "bump",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 96.593,
+                  "expected": 96.59,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": 25.882,
+                  "expected": 25.88,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "x",
+                  "got": 72.465,
+                  "expected": 72.47,
+                  "err_mm": 0.005,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "y",
+                  "got": 91.592,
+                  "expected": 91.59,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "x",
+                  "got": 84.529,
+                  "expected": 84.53,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "y",
+                  "got": 58.737,
+                  "expected": 58.74,
+                  "err_mm": 0.003,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.005,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          }
+        ]
+      },
+      "seconds": 227.1
     }
   ]
 }

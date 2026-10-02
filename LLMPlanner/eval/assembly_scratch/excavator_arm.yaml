@@ -1,0 +1,201 @@
+case_id: excavator_arm
+title: 挖掘机工作臂（多位姿）
+# 动臂—油缸筒—活塞杆闭环 + 斗杆 + 铲斗，活动度 3；三个位姿检查斗杆根、铲斗根、斗尖位置。
+# 由 bench_cases.py 生成，改测例请改那里再运行 write。
+parts:
+- id: ex_base
+  extra_tools: []
+  prompt: |
+    创建底座板：在 front_plane 上画矩形，X 从 -60 到 140 mm，Y 从 -30 到 70 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,40) 直径 6 mm，(110,0) 直径 6 mm。不要抽壳。
+- id: ex_boom
+  extra_tools: []
+  prompt: |
+    创建动臂：在 front_plane 上画两端圆头的长条，宽 14 mm，两端半圆的圆心分别在原点和 (160,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=60 处直径 6 mm，X=160 处直径 6 mm。
+- id: ex_stick
+  extra_tools: []
+  prompt: |
+    创建斗杆：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (110,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=110 处直径 6 mm。
+- id: ex_bucket
+  extra_tools: []
+  prompt: |
+    创建铲斗板：在 front_plane 上画两端圆头的长条，宽 20 mm，两端半圆的圆心分别在原点和 (50,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm。
+- id: ex_barrel
+  extra_tools: []
+  prompt: |
+    创建油缸筒：在 front_plane 上画两端圆头的长条，宽 14 mm，两端半圆的圆心分别在原点和 (90,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm。
+- id: ex_ram
+  extra_tools: []
+  prompt: |
+    创建活塞杆：在 front_plane 上画两端圆头的长条，宽 10 mm，两端半圆的圆心分别在原点和 (90,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm。
+- id: ex_pin26
+  extra_tools: []
+  prompt: |
+    创建动臂销：直径 6 mm、长 26 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: ex_pin14
+  extra_tools: []
+  prompt: |
+    创建缸底销：直径 6 mm、长 14 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: ex_pin12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+gold_roles:
+  base: ex_base
+  boom: ex_boom
+  stick: ex_stick
+  bucket: ex_bucket
+  barrel: ex_barrel
+  ram: ex_ram
+  boom_pin: ex_pin26
+  barrel_pin: ex_pin14
+  ram_pin: ex_pin12
+  stick_pin: ex_pin12
+  bucket_pin: ex_pin12
+assembly:
+  prompt: |
+    装配挖掘机工作臂（动臂由油缸驱动，斗杆、铲斗可转）。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - base 固定，z∈[0,8]。动臂铰孔 (0,40)，油缸底铰孔 (110,0)。
+    - boom_pin 固定在 (0,40) 孔（z∈[0,26]）；boom 的原点孔套在 boom_pin 上转动（z∈[20,26]）。
+    - barrel_pin 固定在 (110,0) 孔（z∈[0,14]）；barrel 的孔套在 barrel_pin 上转动（z∈[8,14]），筒身朝动臂方向伸出。
+    - ram_pin 固定在 boom 的 X=60 孔（z∈[14,26]）；ram 的孔套在 ram_pin 上转动（z∈[14,20]），杆身朝 barrel_pin 方向伸进油缸筒，
+      ram 与 barrel 组成滑动副（只能沿缸筒轴线伸缩，两者轴线始终共线）。
+    - stick_pin 固定在 boom 的 X=160 孔（z∈[20,32]）；stick 的原点孔套在上面转动（z∈[26,32]）。
+    - bucket_pin 固定在 stick 的 X=110 孔（z∈[26,38]）；bucket 的孔套在上面转动（z∈[32,38]）。
+    - 动臂俯仰（油缸伸缩）、斗杆、铲斗三个自由度都保持自由（整机活动度 3），不要固定角度。各件互不穿模，装好后保存。
+motion:
+  mode: poses
+  frame: base
+  expect_fixed:
+  - base
+  tolerance_mm: 1.5
+  max_interference: 0
+  poses:
+  - name: dig
+    set:
+    - type: angle
+      a: boom:plane(top)
+      b: base:plane(top)
+      angle_deg: 40.0
+      points:
+      - role: boom
+        local:
+        - 160.0
+        - 0.0
+        - 0
+        expect:
+          x: 122.57
+          y: 142.85
+    - type: angle
+      a: stick:plane(top)
+      b: boom:plane(top)
+      angle_deg: 60.0
+      points:
+      - role: stick
+        local:
+        - 110.0
+        - 0.0
+        - 0
+        expect:
+          x: 225.93
+          y: 105.22
+    - type: angle
+      a: bucket:plane(top)
+      b: stick:plane(top)
+      angle_deg: 40.0
+      points:
+      - role: bucket
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: 250.93
+          y: 61.92
+  - name: lift
+    set:
+    - type: angle
+      a: boom:plane(top)
+      b: base:plane(top)
+      angle_deg: 55.0
+      points:
+      - role: boom
+        local:
+        - 160.0
+        - 0.0
+        - 0
+        expect:
+          x: 91.77
+          y: 171.06
+    - type: angle
+      a: stick:plane(top)
+      b: boom:plane(top)
+      angle_deg: 80.0
+      points:
+      - role: stick
+        local:
+        - 110.0
+        - 0.0
+        - 0
+        expect:
+          x: 191.47
+          y: 124.58
+    - type: angle
+      a: bucket:plane(top)
+      b: stick:plane(top)
+      angle_deg: 60.0
+      points:
+      - role: bucket
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: 195.82
+          y: 74.77
+  - name: reach
+    set:
+    - type: angle
+      a: boom:plane(top)
+      b: base:plane(top)
+      angle_deg: 70.0
+      points:
+      - role: boom
+        local:
+        - 160.0
+        - 0.0
+        - 0
+        expect:
+          x: 54.72
+          y: 190.35
+    - type: angle
+      a: stick:plane(top)
+      b: boom:plane(top)
+      angle_deg: 100.0
+      points:
+      - role: stick
+        local:
+        - 110.0
+        - 0.0
+        - 0
+        expect:
+          x: 149.99
+          y: 135.35
+    - type: angle
+      a: bucket:plane(top)
+      b: stick:plane(top)
+      angle_deg: 30.0
+      points:
+      - role: bucket
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: 174.99
+          y: 92.05

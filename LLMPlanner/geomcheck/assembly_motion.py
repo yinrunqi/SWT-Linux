@@ -101,6 +101,21 @@ def analyze_frames(
         ratio_ok = ratio_ok and check["ok"]
     if ratio_checks:
         kinematics["ratios"] = ratio_checks
+    lead_checks = []
+    for item in spec.get("leads") or []:
+        axis = "xyz".index(str(item.get("axis") or "z").lower())
+        pos = [_xyz(frame["transforms"][name(item["role"])])[axis] for frame in frames]
+        travel = pos[-1] - pos[0]
+        per_rev = float(travel / ((sweep or 1e-9) / 360.0))
+        expected = float(item["mm_per_rev"])
+        check = {"role": item["role"], "measured_mm_per_rev": round(per_rev, 4), "expected": expected,
+                 "ok": bool(abs(abs(per_rev) - abs(expected)) <= 0.08 * abs(expected))}
+        if expected < 0 or item.get("signed"):
+            check["ok"] = check["ok"] and bool(per_rev * expected > 0)
+        lead_checks.append(check)
+        ratio_ok = ratio_ok and check["ok"]
+    if lead_checks:
+        kinematics["leads"] = lead_checks
     if spec.get("expect_ratio") and spec.get("expect_moving"):
         output = name(spec["expect_moving"][-1])
         raw_out = [_angle_z(frame["transforms"][output]) for frame in frames]
@@ -144,6 +159,28 @@ def analyze_frames(
         kinematics["stroke_mm"] = round(stroke, 3)
         kinematics["expected_stroke_mm"] = spec["expect_stroke_mm"]
         stroke_ok = abs(stroke - float(spec["expect_stroke_mm"])) <= 2.0
+    stroke_checks = []
+    for item in spec.get("strokes") or []:
+        axis = "xyz".index(str(item.get("axis") or "y").lower())
+        pos = [_xyz(frame["transforms"][name(item["role"])])[axis] for frame in frames]
+        got = float(max(pos) - min(pos))
+        stroke_checks.append({"role": item["role"], "axis": "xyz"[axis], "measured_mm": round(got, 3),
+                              "expected": float(item["mm"]), "ok": bool(abs(got - float(item["mm"])) <= 2.0)})
+    # 摇杆摆角：绕 Z 转角的极差（不展开到整周，摆动件不会转过 ±180°）
+    for item in spec.get("swings") or []:
+        ang = unwrap([_angle_z(frame["transforms"][name(item["role"])]) for frame in frames])
+        got = float(max(ang) - min(ang))
+        stroke_checks.append({"role": item["role"], "swing_deg": round(got, 3),
+                              "expected": float(item["deg"]), "ok": bool(abs(got - float(item["deg"])) <= 2.0)})
+    # 两件沿同一轴反相往复（双缸 180° 曲柄）：位置序列相关系数 < -0.9
+    for item in spec.get("antiphase") or []:
+        axis = "xyz".index(str(item.get("axis") or "y").lower())
+        a, b = ([_xyz(frame["transforms"][name(role)])[axis] for frame in frames] for role in item["roles"])
+        corr = float(np.corrcoef(a, b)[0, 1]) if np.std(a) > 1e-6 and np.std(b) > 1e-6 else 0.0
+        stroke_checks.append({"roles": item["roles"], "correlation": round(corr, 3), "ok": bool(corr < -0.9)})
+    if stroke_checks:
+        kinematics["strokes"] = stroke_checks
+        stroke_ok = stroke_ok and all(c["ok"] for c in stroke_checks)
 
     passed = not inter_frames and not stuck and not drifted and ratio_ok and stroke_ok and timing_ok
     score = 100.0
