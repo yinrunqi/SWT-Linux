@@ -1,0 +1,103 @@
+case: d15_motor_mount
+title: D15 电机安装座
+prompt: 根据所附三视图（第三角画法，单位 mm）建模电机安装座，单一实体。
+prompt_en: Model the motor mount from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d15_motor_mount.png
+reference: eval/three_view/references/d15_motor_mount.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-40, 0, 50], b: [40, 0, 50], side: bottom, text: "80"}
+    - {view: front, a: [-15.5, 67.5, 8], b: [15.5, 67.5, 8], side: top, text: "31"}
+    - {view: front, a: [-40, 0, 50], b: [-40, 8, 50], side: left, tier: 1, text: "8"}
+    - {view: front, a: [-40, 0, 50], b: [0, 52, 8], side: left, tier: 2, text: "52"}
+    - {view: front, a: [-40, 0, 50], b: [-40, 86, 8], side: left, tier: 3, text: "86"}
+    - {view: front, a: [15.5, 36.5, 8], b: [15.5, 67.5, 8], side: right, text: "31"}
+    - {view: top, a: [-25, 8, 25], b: [25, 8, 25], side: top, text: "50"}
+    - {view: top, a: [22, 8, 42], b: [28, 8, 42], side: bottom, text: "6"}
+    - {view: top, a: [28, 8, 22], b: [28, 8, 42], side: right, tier: 1, text: "20"}
+    - {view: top, a: [40, 8, 50], b: [28, 8, 42], side: right, tier: 2, text: "8"}
+    - {view: top, a: [-40, 86, 0], b: [-40, 86, 8], side: left, tier: 1, text: "8"}
+    - {view: top, a: [-40, 8, 0], b: [-40, 8, 50], side: left, tier: 2, text: "50"}
+    - {view: right, a: [40, 8, 8], b: [40, 8, 40], side: bottom, text: "32"}
+    - {view: right, a: [40, 8, 8], b: [40, 40, 8], side: right, text: "32"}
+  callouts:
+    - {view: front, at: [0, 52, 8], r: 11, angle: -20, leader: 170, text: "Ø22 通孔"}
+    - {view: front, at: [15.5, 67.5, 8], r: 1.75, angle: 20, leader: 140, text: "4×Ø3.5 通孔"}
+  centers:
+    - {view: front, at: [0, 52, 8], r: 11}
+    - {view: front, at: [15.5, 67.5, 8], r: 1.75}
+    - {view: front, at: [-15.5, 67.5, 8], r: 1.75}
+    - {view: front, at: [15.5, 36.5, 8], r: 1.75}
+    - {view: front, at: [-15.5, 36.5, 8], r: 1.75}
+  axes:
+    - {view: front, a: [0, -4, 8], b: [0, 90, 8]}
+  notes:
+    - "两侧三角形筋板厚 6，外侧与左右侧面平齐；底板两长圆孔宽 6、长 20，两端半圆，左右对称"
+    - "4×Ø3.5 孔为 31×31 正方形分布，中心与 Ø22 孔重合"
+
+# frame：轴 0 = 前后 50（立板侧低），轴 1 = 宽度 80，轴 2 = 高度 86（底面低）
+entities:
+  bore: {cylinder: {d: 22, side: inner}, count: 1}
+  screws: {cylinder: {d: 3.5, side: inner}, count: 4}
+  slot_ends: {cylinder: {d: 6, side: inner}, count: 4}
+  frame: {principal_frame: {signs: {0: larger_area_low, 2: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 80、86；俯视图 50
+    hard: true
+    check:
+      - bbox_sorted: [50, 80, 86]
+
+  - id: plates
+    source: 主视图底板厚 8；俯视图立板厚 8
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 40, 70], expect: [[0, 8]]}
+      - line_material: {frame: frame, along: 2, at: [30, 40, null], expect: [[0, 8]]}
+      - line_material: {frame: frame, along: 2, at: [4, 10, null], expect: [[0, 86]]}
+
+  - id: motor_bore
+    source: 主视图 Ø22 通孔，孔心高 52、左右居中
+    check:
+      - exists: bore
+      - through: {holes: bore}
+      - parallel_to_frame: {frame: frame, axis: 0, items: bore}
+      - axis_positions: {frame: frame, items: bore, axes: [1, 2], expect: [[40, 52]]}
+
+  - id: screw_holes
+    source: 主视图 4×Ø3.5 通孔，31×31，与 Ø22 同中心
+    check:
+      - exists: screws
+      - through: {holes: screws}
+      - axis_positions: {frame: frame, items: screws, axes: [1, 2], expect: [[24.5, 36.5], [24.5, 67.5], [55.5, 36.5], [55.5, 67.5]]}
+
+  - id: slots
+    source: 俯视图长圆孔间距 50、长 20、宽 6，距前边 8
+    check:
+      - exists: slot_ends
+      - parallel_to_frame: {frame: frame, axis: 2, items: slot_ends}
+      - line_material: {frame: frame, along: 0, at: [null, 15, 4], expect: [[0, 22], [42, 50]]}
+      - line_material: {frame: frame, along: 1, at: [32, null, 4], expect: [[0, 12], [18, 62], [68, 80]]}
+
+  - id: gussets
+    source: 右视图筋板 32×32；注释：厚 6、与侧面平齐
+    derivation: 筋板斜边满足（距背面 z）+（高 y）= 48；距背面 16 处高至 32
+    check:
+      - line_material: {frame: frame, along: 2, at: [16, 3, null], expect: [[0, 32]]}
+      - line_material: {frame: frame, along: 1, at: [16, null, 20], expect: [[0, 6], [74, 80]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 82918.67
+    check:
+      - volume: 82918.67
+
+ungraded: []

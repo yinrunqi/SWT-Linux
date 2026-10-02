@@ -1,0 +1,104 @@
+case: d03_rib_bracket
+title: D03 带筋支架
+prompt: 根据所附三视图（第三角画法，单位 mm）建模带筋支架，单一实体。
+prompt_en: Model the ribbed bracket from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d03_rib_bracket.png
+reference: eval/three_view/references/d03_rib_bracket.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-40, 0, 30], b: [40, 0, 30], side: bottom, text: "80"}
+    - {view: front, a: [34, 50, -20], b: [40, 50, -20], side: top, text: "6"}
+    - {view: front, a: [-40, 0, 30], b: [-40, 10, 30], side: left, tier: 1, text: "10"}
+    - {view: front, a: [-40, 0, 30], b: [0, 45, -20], side: left, tier: 2, text: "45"}
+    - {view: front, a: [-40, 0, 30], b: [-30, 70, -20], side: left, tier: 3, text: "70"}
+    - {view: front, a: [40, 0, 30], b: [40, 50, -20], side: right, text: "50"}
+    - {view: top, a: [-28, 10, 12], b: [28, 10, 12], side: top, text: "56"}
+    - {view: top, a: [-40, 70, -30], b: [-40, 70, -20], side: left, tier: 1, text: "10"}
+    - {view: top, a: [40, 10, 30], b: [28, 10, 12], side: right, tier: 1, text: "18"}
+    - {view: top, a: [40, 10, 30], b: [40, 10, -30], side: right, tier: 2, text: "60"}
+    - {view: right, a: [40, 10, 20], b: [40, 10, -20], side: bottom, tier: 1, text: "40"}
+    - {view: right, a: [40, 0, 30], b: [40, 0, -30], side: bottom, tier: 2, text: "60"}
+  callouts:
+    - {view: front, at: [0, 45, -20], r: 10, angle: 50, leader: 50, text: "Ø20 通孔"}
+    - {view: front, at: [-30, 60, -20], r: 10, angle: 135, leader: 30, text: "2×R10"}
+    - {view: top, at: [-28, 10, 12], r: 5, angle: 225, leader: 40, text: "2×Ø10 通孔"}
+  centers:
+    - {view: front, at: [0, 45, -20], r: 10}
+    - {view: top, at: [28, 10, 12], r: 5}
+    - {view: top, at: [-28, 10, 12], r: 5}
+  axes:
+    - {view: front, a: [0, -4, -20], b: [0, 74, -20]}
+  notes:
+    - "左右两块三角形筋板厚 6，外侧与支架左右侧面平齐；筋板底边长 40（自立板前面起），高至 50"
+
+# frame：轴 0 = 前后 60（立板侧低），轴 1 = 高度（底面低），轴 2 = 宽度 80
+entities:
+  hole: {cylinder: {d: 20, side: inner}, count: 1}
+  base_holes: {cylinder: {d: 10, side: inner}, count: 2}
+  frame: {principal_frame: {signs: {0: larger_area_low, 1: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 80、70；俯视图 60
+    hard: true
+    check:
+      - bbox_sorted: [60, 70, 80]
+
+  - id: base
+    source: 主视图底板厚 10；俯视图底板进深 60
+    check:
+      - line_material: {frame: frame, along: 1, at: [45, null, 20], expect: [[0, 10]]}
+      - line_material: {frame: frame, along: 0, at: [null, 5, 20], expect: [[0, 60]]}
+
+  - id: upright
+    source: 俯视图立板厚 10；主视图立板高 70
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 30, 20], expect: [[0, 10]]}
+      - line_material: {frame: frame, along: 1, at: [5, null, 15], expect: [[0, 70]]}
+
+  - id: corners
+    source: 主视图立板上部 2×R10
+    derivation: 高 69 处，R10 圆角（圆心距侧面 10、距顶面 10）使宽度方向材料从 10 − √(100 − 81) = 5.641 开始
+    check:
+      - blend_faces: {radius: 10, side: outer, min_count: 2}
+      - line_material: {frame: frame, along: 2, at: [5, 69, null], expect: [[5.641, 74.359]]}
+
+  - id: hole
+    source: 主视图 Ø20 通孔，孔心高 45、左右居中
+    check:
+      - exists: hole
+      - through: {holes: hole}
+      - parallel_to_frame: {frame: frame, axis: 0, items: hole}
+      - axis_positions: {frame: frame, items: hole, axes: [1, 2], expect: [[45, 40]]}
+
+  - id: gussets
+    source: 主视图筋板厚 6、高至 50；右视图筋板底边 40；注释：与左右侧面平齐
+    derivation: 筋板斜边过（高 10，距背面 50）与（高 50，距背面 10）：高 20 处到 40，高 40 处到 20
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 20, 3], expect: [[0, 40]]}
+      - line_material: {frame: frame, along: 0, at: [null, 40, 3], expect: [[0, 20]]}
+      - line_material: {frame: frame, along: 2, at: [30, 20, null], expect: [[0, 6], [74, 80]]}
+
+  - id: base_holes
+    source: 俯视图 2×Ø10 通孔，孔距 56，距前边 18
+    check:
+      - exists: base_holes
+      - through: {holes: base_holes}
+      - parallel_to_frame: {frame: frame, axis: 1, items: base_holes}
+      - axis_positions: {frame: frame, items: base_holes, axes: [0, 2], expect: [[42, 12], [42, 68]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 倒圆与布尔运算）体积 100458.41
+    check:
+      - volume: 100458.41
+
+ungraded: []

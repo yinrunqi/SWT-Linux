@@ -1,0 +1,98 @@
+case: d20_ribbed_base
+title: D20 带筋底座
+prompt: 根据所附三视图（第三角画法，单位 mm）建模带筋底座，单一实体。
+prompt_en: Model the ribbed base from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d20_ribbed_base.png
+reference: eval/three_view/references/d20_ribbed_base.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-55, 0, 45], b: [55, 0, 45], side: bottom, tier: 1, text: "110"}
+    - {view: front, a: [-70, 0, 45], b: [70, 0, 45], side: bottom, tier: 2, text: "140"}
+    - {view: front, a: [-45, 25, 3], b: [45, 25, 3], side: top, tier: 1, text: "90"}
+    - {view: front, a: [-15, 35, 0], b: [15, 35, 0], side: top, tier: 2, text: "Ø30"}
+    - {view: front, a: [-70, 0, 45], b: [-70, 10, 45], side: left, tier: 1, text: "10"}
+    - {view: front, a: [-70, 0, 45], b: [-65, 30, 32], side: left, tier: 2, text: "30"}
+    - {view: front, a: [70, 0, 45], b: [45, 25, 3], side: right, tier: 1, text: "25"}
+    - {view: front, a: [70, 0, 45], b: [15, 35, 0], side: right, tier: 2, text: "35"}
+    - {view: top, a: [-55, 30, -32], b: [-55, 30, 32], side: left, tier: 1, text: "64"}
+    - {view: top, a: [-70, 10, -45], b: [-70, 10, 45], side: left, tier: 2, text: "90"}
+    - {view: top, a: [3, 25, -32], b: [3, 25, 32], side: right, text: "64"}
+    - {view: top, a: [-3, 25, 32], b: [3, 25, 32], side: bottom, text: "6"}
+  callouts:
+    - {view: top, at: [55, 30, -32], r: 10, angle: 45, leader: 40, text: "4×Ø20 凸台"}
+    - {view: top, at: [55, 30, 32], r: 4, angle: -45, leader: 70, text: "4×Ø8 通孔"}
+    - {view: top, at: [0, 35, 0], r: 8, angle: 60, leader: 175, text: "Ø16 深 20"}
+  centers:
+    - {view: top, at: [55, 30, 32], r: 10}
+    - {view: top, at: [-55, 30, 32], r: 10}
+    - {view: top, at: [55, 30, -32], r: 10}
+    - {view: top, at: [-55, 30, -32], r: 10}
+    - {view: top, at: [0, 35, 0], r: 15}
+  notes:
+    - "底面中部凹槽 80×50、深 4，居中"
+    - "十字筋厚 6、高 15（自底板上表面起），居中；中心凸台 Ø30 高至 35，中心盲孔 Ø16 深 20"
+
+# frame：轴 0 = 高度 35（底面低），轴 1 = 前后 90，轴 2 = 长度 140
+entities:
+  bosses: {cylinder: {d: 20, side: outer}, count: 4}
+  boss_holes: {cylinder: {d: 8, side: inner}, count: 4}
+  center: {cylinder: {d: 30, side: outer}, count: 1}
+  center_hole: {cylinder: {d: 16, side: inner}, count: 1}
+  frame: {principal_frame: {signs: {0: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 140、35；俯视图 90
+    hard: true
+    check:
+      - bbox_sorted: [35, 90, 140]
+
+  - id: plate
+    source: 主视图底板厚 10；注释：底面凹槽 80×50 深 4
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 45, 10], expect: [[0, 10]]}
+      - line_material: {frame: frame, along: 0, at: [null, 55, 40], expect: [[4, 10]]}
+      - line_material: {frame: frame, along: 2, at: [2, 45, null], expect: [[0, 30], [110, 140]]}
+      - line_material: {frame: frame, along: 1, at: [2, null, 70], expect: [[0, 20], [70, 90]]}
+
+  - id: bosses
+    source: 主视图凸台间距 110、高 30；俯视图 4×Ø20 凸台、4×Ø8 通孔，前后间距 64
+    check:
+      - exists: bosses
+      - exists: boss_holes
+      - through: {holes: boss_holes}
+      - axis_positions: {frame: frame, items: boss_holes, axes: [1, 2], expect: [[13, 15], [13, 125], [77, 15], [77, 125]]}
+      - line_material: {frame: frame, along: 0, at: [null, 20, 15], expect: [[0, 30]]}
+
+  - id: ribs
+    source: 主视图横筋长 90、高至 25；俯视图纵筋长 64、筋厚 6
+    check:
+      - line_material: {frame: frame, along: 2, at: [20, 45, null], expect: [[25, 62], [78, 115]]}
+      - line_material: {frame: frame, along: 1, at: [20, null, 70], expect: [[13, 37], [53, 77]]}
+      - line_material: {frame: frame, along: 0, at: [null, 45, 100], expect: [[4, 25]]}
+      - line_material: {frame: frame, along: 1, at: [20, null, 100], expect: [[42, 48]]}
+
+  - id: center_boss
+    source: 主视图 Ø30 高至 35；俯视图 Ø16 深 20
+    check:
+      - exists: center
+      - exists: center_hole
+      - coaxial: [center_hole, center]
+      - pocket_depth: {pocket: center_hole, value: 20}
+      - line_material: {frame: frame, along: 0, at: [null, 45, 82], expect: [[4, 35]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 151247.32
+    check:
+      - volume: 151247.32
+
+ungraded: []

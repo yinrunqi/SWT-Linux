@@ -1,0 +1,88 @@
+case: d06_u_clevis
+title: D06 U 形叉头
+prompt: 根据所附三视图（第三角画法，单位 mm）建模 U 形叉头，单一实体。
+prompt_en: Model the U-shaped clevis from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d06_u_clevis.png
+reference: eval/three_view/references/d06_u_clevis.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-12, -20, 0], b: [12, -20, 0], side: bottom, tier: 1, text: "Ø24"}
+    - {view: front, a: [-20, 0, 15], b: [20, 0, 15], side: bottom, tier: 2, text: "40"}
+    - {view: front, a: [-8, 38, 15], b: [8, 38, 15], side: top, text: "16"}
+    - {view: front, a: [-12, -20, 0], b: [-20, 0, 15], side: left, tier: 1, text: "20"}
+    - {view: front, a: [-20, 0, 15], b: [-8, 20, 0], side: left, tier: 2, text: "20"}
+    - {view: front, a: [-20, 0, 15], b: [-20, 38, 0], side: left, tier: 3, text: "38"}
+    - {view: front, a: [-12, -20, 0], b: [-20, 53, 0], side: left, tier: 4, text: "73"}
+    - {view: front, a: [6, -20, 0], b: [6, -4, 0], side: right, text: "16"}
+    - {view: right, a: [20, 0, 15], b: [20, 0, -15], side: bottom, text: "30"}
+  callouts:
+    - {view: right, at: [20, 38, 0], r: 5, angle: 200, leader: 80, text: "Ø10 通孔"}
+    - {view: right, at: [20, 38, 0], r: 15, angle: 50, leader: 40, text: "R15"}
+    - {view: front, at: [0, -20, 0], r: 6, angle: -10, leader: 110, text: "Ø12 深 16"}
+  centers:
+    - {view: right, at: [20, 38, 0], r: 5}
+  axes:
+    - {view: front, a: [0, -24, 0], b: [0, 57, 0]}
+  notes:
+    - "两耳上端为 R15 半圆，与 Ø10 销孔同心；销孔贯通两耳"
+    - "底部 Ø24 凸台与叉头同轴，中心盲孔 Ø12 深 16"
+
+# frame：轴 0 = 厚度 30，轴 1 = 宽度 40，轴 2 = 高度（凸台端低）
+entities:
+  pin: {cylinder: {d: 10, side: inner}, count: 2}
+  caps: {cylinder: {d: 30, side: outer}, count: 2}
+  boss: {cylinder: {d: 24, side: outer}, count: 1}
+  tap: {cylinder: {d: 12, side: inner}, count: 1}
+  frame: {principal_frame: {signs: {2: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 40、总高 73；右视图 30
+    hard: true
+    check:
+      - bbox_sorted: [30, 40, 73]
+
+  - id: slot
+    source: 主视图槽宽 16，槽底距叉头底面 20
+    check:
+      - line_material: {frame: frame, along: 1, at: [15, null, 50], expect: [[0, 12], [28, 40]]}
+      - line_material: {frame: frame, along: 2, at: [5, 20, null], expect: [[0, 40]]}
+
+  - id: pin_hole
+    source: 右视图 Ø10 通孔；主视图孔心高 38
+    check:
+      - exists: pin
+      - through: {holes: pin}
+      - parallel_to_frame: {frame: frame, axis: 1, items: pin}
+      - axis_positions: {frame: frame, items: pin, axes: [0, 2], expect: [[15, 58], [15, 58]]}
+
+  - id: ears
+    source: 右视图 R15；注释：耳端半圆与销孔同心
+    check:
+      - exists: caps
+      - coaxial: [caps, pin]
+      - line_material: {frame: frame, along: 2, at: [15, 5, null], expect: [[20, 53], [63, 73]]}
+
+  - id: boss
+    source: 主视图 Ø24 凸台长 20；盲孔 Ø12 深 16
+    check:
+      - exists: boss
+      - exists: tap
+      - line_material: {frame: frame, along: 2, at: [15, 20, null], expect: [[16, 40]]}
+      - line_material: {frame: frame, along: 2, at: [10, 14, null], expect: [[0, 40]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 50795.57
+    check:
+      - volume: 50795.57
+
+ungraded: []

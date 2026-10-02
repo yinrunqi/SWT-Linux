@@ -1,0 +1,81 @@
+case: d16_heat_sink
+title: D16 散热器
+prompt: 根据所附三视图（第三角画法，单位 mm）建模散热器，单一实体。
+prompt_en: Model the heat sink from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d16_heat_sink.png
+reference: eval/three_view/references/d16_heat_sink.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-31.5, 0, 25], b: [31.5, 0, 25], side: bottom, tier: 1, text: "63"}
+    - {view: front, a: [-35, 0, 25], b: [35, 0, 25], side: bottom, tier: 2, text: "70"}
+    - {view: front, a: [-24, 30, 25], b: [-16, 30, 25], side: top, tier: 1, text: "8"}
+    - {view: front, a: [23, 30, 25], b: [25, 30, 25], side: top, tier: 1, text: "2"}
+    - {view: front, a: [-24, 30, 25], b: [24, 30, 25], side: top, tier: 2, text: "48"}
+    - {view: front, a: [-35, 0, 25], b: [-35, 6, 25], side: left, tier: 1, text: "6"}
+    - {view: front, a: [-35, 0, 25], b: [-25, 30, 25], side: left, tier: 2, text: "30"}
+    - {view: top, a: [31.5, 6, -15], b: [31.5, 6, 15], side: right, tier: 1, text: "30"}
+    - {view: top, a: [35, 6, -25], b: [35, 6, 25], side: right, tier: 2, text: "50"}
+  callouts:
+    - {view: top, at: [-31.5, 6, -15], r: 2.25, angle: 135, leader: 40, text: "4×Ø4.5 通孔"}
+  centers:
+    - {view: top, at: [31.5, 6, 15], r: 2.25}
+    - {view: top, at: [-31.5, 6, 15], r: 2.25}
+    - {view: top, at: [31.5, 6, -15], r: 2.25}
+    - {view: top, at: [-31.5, 6, -15], r: 2.25}
+  axes:
+    - {view: front, a: [0, -1, 25], b: [0, 34, 25]}
+  notes:
+    - "7 片散热片厚 2、等距 8，相对中心对称，片高至总高 30，贯通前后"
+
+# frame：轴 0 = 高度 30（底板侧低），轴 1 = 前后 50，轴 2 = 宽度 70
+entities:
+  holes: {cylinder: {d: 4.5, side: inner}, count: 4}
+  frame: {principal_frame: {signs: {0: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 70、30；俯视图 50
+    hard: true
+    check:
+      - bbox_sorted: [30, 50, 70]
+
+  - id: base
+    source: 主视图底板厚 6
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 25, 5], expect: [[0, 6]]}
+      - line_material: {frame: frame, along: 2, at: [3, 25, null], expect: [[0, 70]]}
+
+  - id: fins
+    source: 主视图片距 8、片厚 2、两端片中心距 48；注释：7 片，对称
+    check:
+      - line_material:
+          frame: frame
+          along: 2
+          at: [20, 25, null]
+          expect: [[10, 12], [18, 20], [26, 28], [34, 36], [42, 44], [50, 52], [58, 60]]
+      - line_material: {frame: frame, along: 0, at: [null, 25, 35], expect: [[0, 30]]}
+      - line_material: {frame: frame, along: 0, at: [null, 25, 39], expect: [[0, 6]]}
+
+  - id: holes
+    source: 俯视图 4×Ø4.5 通孔，孔距 63×30
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - parallel_to_frame: {frame: frame, axis: 0, items: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[10, 3.5], [40, 3.5], [10, 66.5], [40, 66.5]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 70·6·50 + 7·2·24·50 − 4·π·2.25²·6 = 37418.30
+    check:
+      - volume: 37418.30
+
+ungraded: []

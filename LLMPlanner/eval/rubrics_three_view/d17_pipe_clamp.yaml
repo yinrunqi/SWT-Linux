@@ -1,0 +1,86 @@
+case: d17_pipe_clamp
+title: D17 管夹
+prompt: 根据所附三视图（第三角画法，单位 mm）建模管夹：上压板与下座为两个分开的实体，按图示位置摆放在同一个零件文件中。
+prompt_en: Model the pipe clamp from the attached three-view drawing (third-angle projection, units in mm). The upper strap and the lower base are two separate solid bodies placed as shown, in the same part file.
+image: eval/three_view/drawings/d17_pipe_clamp.png
+reference: eval/three_view/references/d17_pipe_clamp.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-40, -25, 10], b: [40, -25, 10], side: bottom, tier: 1, text: "80"}
+    - {view: front, a: [-50, -25, 10], b: [50, -25, 10], side: bottom, tier: 2, text: "100"}
+    - {view: front, a: [-50, -25, 10], b: [-50, -1, 10], side: left, tier: 1, text: "24"}
+    - {view: front, a: [-50, -1, 10], b: [-50, 1, 10], side: left, tier: 2, text: "2"}
+    - {view: front, a: [50, 1, 10], b: [50, 7, 10], side: right, tier: 1, text: "6"}
+    - {view: front, a: [50, -25, 10], b: [0, 30, 10], side: right, tier: 2, text: "55"}
+    - {view: right, a: [50, -25, 10], b: [50, -25, -10], side: bottom, text: "20"}
+  callouts:
+    - {view: front, at: [0, 0, 10], r: 30, angle: 60, leader: 40, text: "R30"}
+    - {view: front, at: [0, 0, 10], r: 20, angle: 135, leader: 60, text: "Ø40"}
+    - {view: top, at: [40, 30, 0], r: 3.5, angle: 45, leader: 40, text: "2×Ø7 通孔（贯穿两件）"}
+  centers:
+    - {view: front, at: [0, 0, 10], r: 20}
+    - {view: top, at: [40, 30, 0], r: 3.5}
+    - {view: top, at: [-40, 30, 0], r: 3.5}
+  axes:
+    - {view: front, a: [-40, -29, 10], b: [-40, 11, 10]}
+    - {view: front, a: [40, -29, 10], b: [40, 11, 10]}
+  notes:
+    - "上压板（R30/Ø40 半圆环 + 两侧耳板厚 6）与下座为两个分开的实体，间隙 2；Ø40 孔心位于间隙中面"
+    - "两处 Ø7 螺栓孔同时贯穿压板耳板与下座，前后居中"
+
+# frame：轴 0 = 前后 20，轴 1 = 高度 55（下座底面低），轴 2 = 长度 100
+entities:
+  ring: {cylinder: {d: 60, side: outer}, count: 1}
+  bores: {cylinder: {d: 40, side: inner}}
+  bolts: {cylinder: {d: 7, side: inner}, count: 4}
+  frame: {principal_frame: {signs: {1: larger_area_low}}}
+
+rubrics:
+  - id: solids
+    source: 两个分开的实体
+    hard: true
+    check:
+      - solid_count: 2
+
+  - id: outer
+    source: 主视图 100、55；右视图 20
+    hard: true
+    check:
+      - bbox_sorted: [20, 55, 100]
+
+  - id: strap
+    source: 主视图 R30 外圆、Ø40 内孔，孔心位于间隙中面
+    derivation: 孔心高 25；高 35 处半圆环占 ±[√(20² − 10²), √(30² − 10²)] = ±[17.321, 28.284]
+    check:
+      - line_material: {frame: frame, along: 1, at: [10, null, 50], expect: [[0, 5], [45, 55]]}
+      - line_material: {frame: frame, along: 2, at: [10, 35, null], expect: [[21.716, 32.679], [67.321, 78.284]]}
+
+  - id: bores
+    source: 主视图 Ø40：压板内孔与下座圆弧槽同心
+    check:
+      - exists: ring
+      - exists: bores
+      - coaxial: [bores, ring]
+
+  - id: ears_gap
+    source: 主视图下座高 24、间隙 2、耳板厚 6
+    check:
+      - line_material: {frame: frame, along: 1, at: [10, null, 20], expect: [[0, 24], [26, 32]]}
+
+  - id: bolt_holes
+    source: 主视图孔距 80；俯视图 2×Ø7 通孔，贯穿两件
+    check:
+      - exists: bolts
+      - through: {holes: bolts}
+      - parallel_to_frame: {frame: frame, axis: 1, items: bolts}
+      - axis_positions: {frame: frame, items: bolts, axes: [0, 2], expect: [[10, 10], [10, 10], [10, 90], [10, 90]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）两实体体积之和 54108.71
+    check:
+      - volume: 54108.71
+
+ungraded: []

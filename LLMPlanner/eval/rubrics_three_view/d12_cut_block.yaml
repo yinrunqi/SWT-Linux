@@ -1,0 +1,84 @@
+case: d12_cut_block
+title: D12 切角支座
+prompt: 根据所附三视图（第三角画法，单位 mm）建模切角支座，单一实体。
+prompt_en: Model the chamfered support block from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d12_cut_block.png
+reference: eval/three_view/references/d12_cut_block.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [0, 0, 40], b: [25, 20, 40], side: bottom, tier: 1, text: "25"}
+    - {view: front, a: [0, 0, 40], b: [70, 0, 40], side: bottom, tier: 2, text: "70"}
+    - {view: front, a: [0, 0, 40], b: [25, 20, 40], side: left, tier: 1, text: "20"}
+    - {view: front, a: [0, 0, 40], b: [0, 50, 40], side: left, tier: 2, text: "50"}
+    - {view: front, a: [70, 0, 40], b: [25, 30, 40], side: right, text: "30"}
+    - {view: top, a: [45, 20, 12], b: [70, 20, 28], side: top, text: "25"}
+    - {view: top, a: [70, 20, 12], b: [70, 20, 28], side: right, text: "16"}
+    - {view: top, a: [0, 50, 0], b: [0, 50, 40], side: left, text: "40"}
+    - {view: right, a: [25, 50, 0], b: [25, 50, 20], side: top, text: "20"}
+    - {view: right, a: [0, 0, 0], b: [0, 35, 12], side: bottom, text: "12"}
+    - {view: right, a: [0, 0, 0], b: [0, 35, 12], side: right, text: "35"}
+  callouts:
+    - {view: right, at: [25, 40, 30], r: 0, angle: 150, leader: 40, text: "45°"}
+    - {view: right, at: [25, 35, 12], r: 5, angle: 40, leader: 50, text: "Ø10 通孔"}
+  centers:
+    - {view: right, at: [25, 35, 12], r: 5}
+  notes:
+    - "立板前上角 45° 斜切：斜面自顶面（距背面 20）切至前面（高 30），左右贯通立板"
+    - "Ø10 孔沿左右方向贯通立板；底板右端开口槽宽 16、长 25，上下贯通，前后居中"
+
+# frame：轴 0 = 前后 40（背面低），轴 1 = 高度（底面低），轴 2 = 长度 70（立板侧低）
+entities:
+  hole: {cylinder: {d: 10, side: inner}, count: 1}
+  frame: {principal_frame: {signs: {0: larger_area_low, 1: larger_area_low, 2: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 70、50；俯视图 40
+    hard: true
+    check:
+      - bbox_sorted: [40, 50, 70]
+
+  - id: profile
+    source: 主视图 L 形：底板高 20，立板宽 25
+    check:
+      - line_material: {frame: frame, along: 2, at: [5, 10, null], expect: [[0, 70]]}
+      - line_material: {frame: frame, along: 2, at: [5, 35, null], expect: [[0, 25]]}
+      - line_material: {frame: frame, along: 1, at: [5, null, 50], expect: [[0, 20]]}
+
+  - id: chamfer
+    source: 右视图 45° 斜面、顶面余宽 20；主视图斜面下沿高 30
+    derivation: 斜面为（距背面 z）+（高 y）= 70；面长 20√2、宽 25，面积 707.11
+    check:
+      - line_material: {frame: frame, along: 1, at: [30, null, 10], expect: [[0, 40]]}
+      - line_material: {frame: frame, along: 0, at: [null, 45, 10], expect: [[0, 25]]}
+      - planar_face: {frame: frame, axis: 1, angle: 45, area: 707.11}
+
+  - id: notch
+    source: 俯视图开口槽宽 16、长 25，前后居中
+    check:
+      - line_material: {frame: frame, along: 2, at: [20, 10, null], expect: [[0, 45]]}
+      - line_material: {frame: frame, along: 0, at: [null, 10, 60], expect: [[0, 12], [28, 40]]}
+
+  - id: hole
+    source: 右视图 Ø10 通孔，孔心高 35、距背面 12
+    check:
+      - exists: hole
+      - through: {holes: hole}
+      - parallel_to_frame: {frame: frame, axis: 2, items: hole}
+      - axis_positions: {frame: frame, items: hole, axes: [0, 1], expect: [[12, 35]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 71036.50
+    check:
+      - volume: 71036.50
+
+ungraded: []

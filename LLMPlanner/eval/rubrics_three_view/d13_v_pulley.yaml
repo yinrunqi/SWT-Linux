@@ -1,0 +1,106 @@
+case: d13_v_pulley
+title: D13 双槽 V 带轮
+prompt: 根据所附三视图（第三角画法，单位 mm）建模双槽 V 带轮，单一实体。
+prompt_en: Model the double-groove V-belt pulley from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d13_v_pulley.png
+reference: eval/three_view/references/d13_v_pulley.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-10, 0, 40], b: [12.8, 0, 40], side: bottom, text: "22.8"}
+    - {view: front, a: [12.8, -3, 40], b: [12.8, 3, 40], side: right, text: "6"}
+    - {view: right, a: [0, -50, 5], b: [0, -50, 35], side: bottom, tier: 1, text: "30"}
+    - {view: right, a: [0, -20, 0], b: [0, -20, 40], side: bottom, tier: 2, text: "40"}
+    - {view: right, a: [0, 40, 15], b: [0, 40, 25], side: top, tier: 1, text: "10"}
+    - {view: right, a: [0, 50, 7], b: [0, 50, 19], side: top, tier: 2, text: "12"}
+    - {view: right, a: [0, 50, 13], b: [0, 50, 27], side: top, tier: 3, text: "14"}
+    - {view: right, a: [0, -42, 13], b: [0, 42, 13], side: left, tier: 1, text: "Ø84"}
+    - {view: right, a: [0, -50, 5], b: [0, 50, 5], side: left, tier: 2, text: "Ø100"}
+    - {view: right, a: [0, -40, 35], b: [0, 40, 35], side: right, tier: 1, text: "Ø80"}
+    - {view: right, a: [0, -20, 40], b: [0, 20, 40], side: right, tier: 2, text: "Ø40"}
+  callouts:
+    - {view: front, at: [0, 0, 40], r: 10, angle: 160, leader: 170, text: "Ø20"}
+    - {view: front, at: [0, 30, 40], r: 6, angle: 60, leader: 60, text: "4×Ø12 通孔"}
+    - {view: front, at: [0, 0, 40], r: 30, angle: 225, leader: 50, text: "Ø60"}
+  circles:
+    - {view: front, at: [0, 0, 40], r: 30}
+  centers:
+    - {view: front, at: [0, 0, 40], r: 50}
+  notes:
+    - "两条 V 槽对称于轮宽中面，槽角 38°，槽口宽 12（位于 Ø100 处），槽底 Ø84，槽心距 14"
+    - "轮缘内径 Ø80、宽 30；腹板厚 10 居中；轮毂 Ø40 长 40；4×Ø12 减重孔在腹板上均布于 Ø60 圆"
+    - "Ø20 孔内键槽宽 6，槽底至孔对侧 22.8，贯通"
+
+# frame：轴 0 沿 Ø20 孔轴线，轴 1 指向某个 Ø12 孔
+entities:
+  bore: {cylinder: {d: 20, side: inner}, count: 1}
+  holes: {cylinder: {d: 12, side: inner}, count: 4}
+  hub: {cylinder: {d: 40, side: outer}}
+  rim_inner: {cylinder: {d: 80, side: inner}}
+  groove_bottom: {cylinder: {d: 84, side: outer}}
+  frame: {axis_frame: {axis: bore, ref: holes}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 右视图 Ø100、轮毂长 40
+    hard: true
+    check:
+      - bbox_sorted: [40, 100, 100]
+      - exists: bore
+
+  - id: hub
+    source: 右视图轮毂 Ø40、长 40；主视图 Ø20
+    check:
+      - exists: hub
+      - coaxial: [bore, hub]
+      - line_material: {frame: frame, along: 0, polar: [15, 45], expect: [[0, 40]]}
+
+  - id: web
+    source: 右视图腹板厚 10，居中
+    check:
+      - line_material: {frame: frame, along: 0, polar: [30, 45], expect: [[15, 25]]}
+      - line_material: {frame: frame, along: 0, polar: [38, 45], expect: [[15, 25]]}
+
+  - id: rim
+    source: 右视图轮缘 Ø80、宽 30
+    check:
+      - exists: rim_inner
+      - coaxial: [bore, rim_inner]
+      - line_material: {frame: frame, along: 0, polar: [41, 45], expect: [[5, 35]]}
+
+  - id: grooves
+    source: 右视图槽口 12、槽心距 14、槽底 Ø84；注释：槽角 38°
+    derivation: 槽侧面每径向 8 轴向收 8·tan19° = 2.755；半径 46 处槽宽 12 − 2.755 = 9.245，第一槽占 [8.377, 17.623]，第二槽占 [22.377, 31.623]
+    check:
+      - line_material: {frame: frame, along: 0, polar: [46, 45], expect: [[5, 8.377], [17.623, 22.377], [31.623, 35]]}
+      - exists: groove_bottom
+      - coaxial: [bore, groove_bottom]
+
+  - id: holes
+    source: 主视图 4×Ø12 通孔，均布于 Ø60
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_distance: {from: bore, to: holes, value: 30}
+      - equal_angular: {about: bore, items: holes}
+
+  - id: keyway
+    source: 主视图键槽宽 6、22.8
+    derivation: 槽底距孔心 22.8 − 10 = 12.8；半径 11 圆上恰有一处缺口，弦长 6
+    check:
+      - angular_openings: {frame: frame, t: 20, r: 11, count: 1, chord: 6, radial: [null, 12.8]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 旋转与布尔运算）体积 111865.04
+    check:
+      - volume: 111865.04
+
+ungraded: []

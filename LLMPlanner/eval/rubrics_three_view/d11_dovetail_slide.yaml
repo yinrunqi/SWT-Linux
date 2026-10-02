@@ -1,0 +1,81 @@
+case: d11_dovetail_slide
+title: D11 燕尾滑块
+prompt: 根据所附三视图（第三角画法，单位 mm）建模燕尾滑块，单一实体。
+prompt_en: Model the dovetail slide block from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d11_dovetail_slide.png
+reference: eval/three_view/references/d11_dovetail_slide.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-12, 0, 60], b: [12, 0, 60], side: bottom, tier: 1, text: "24"}
+    - {view: front, a: [-40, 0, 60], b: [40, 0, 60], side: bottom, tier: 2, text: "80"}
+    - {view: front, a: [-5, 40, 60], b: [5, 40, 60], side: top, tier: 1, text: "10"}
+    - {view: front, a: [-20, 40, 30], b: [20, 40, 30], side: top, tier: 2, text: "40"}
+    - {view: front, a: [-12, 0, 60], b: [-20.66, 15, 60], side: left, tier: 1, text: "15"}
+    - {view: front, a: [-40, 0, 60], b: [-40, 40, 60], side: left, tier: 2, text: "40"}
+    - {view: front, a: [5, 35, 60], b: [40, 40, 60], side: right, tier: 1, text: "5"}
+    - {view: front, a: [20, 28, 30], b: [40, 40, 60], side: right, tier: 2, text: "12"}
+    - {view: top, a: [-40, 40, 0], b: [-40, 40, 60], side: left, text: "60"}
+    - {view: top, a: [40, 40, 0], b: [20, 40, 30], side: right, text: "30"}
+  callouts:
+    - {view: front, at: [-12, 0, 60], r: 0, angle: 30, leader: 50, text: "60°"}
+    - {view: top, at: [20, 40, 30], r: 4, angle: -45, leader: 40, text: "2×Ø8 深 12"}
+  centers:
+    - {view: top, at: [20, 40, 30], r: 4}
+    - {view: top, at: [-20, 40, 30], r: 4}
+  axes:
+    - {view: front, a: [0, -4, 60], b: [0, 44, 60]}
+  notes:
+    - "底部燕尾槽贯通前后：槽口宽 24、深 15，两侧面与底面成 60°"
+    - "顶面中间通槽宽 10、深 5，贯通前后"
+
+# frame：轴 0 = 高度 40（顶面低），轴 1 = 长度 60，轴 2 = 宽度 80
+entities:
+  holes: {cylinder: {d: 8, side: inner}, count: 2}
+  frame: {principal_frame: {signs: {0: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 80、40；俯视图 60
+    hard: true
+    check:
+      - bbox_sorted: [40, 60, 80]
+
+  - id: dovetail
+    source: 主视图燕尾槽口宽 24、深 15、60°
+    derivation: 距底面 h 处槽半宽 12 + h/tan60°：h = 1 时 12.577，h = 14 时 20.083；斜面长 15/sin60° = 17.321、长 60，面积 1039.23；斜面外法向与轴 0（指向底面）成 120°
+    check:
+      - line_material: {frame: frame, along: 2, at: [39, 10, null], expect: [[0, 27.423], [52.577, 80]]}
+      - line_material: {frame: frame, along: 2, at: [26, 10, null], expect: [[0, 19.917], [60.083, 80]]}
+      - line_material: {frame: frame, along: 0, at: [null, 10, 30], expect: [[0, 25]]}
+      - planar_face: {frame: frame, axis: 0, angle: 120, area: 1039.23}
+
+  - id: top_slot
+    source: 主视图顶部通槽宽 10、深 5
+    check:
+      - line_material: {frame: frame, along: 2, at: [2, 10, null], expect: [[0, 35], [45, 80]]}
+      - line_material: {frame: frame, along: 2, at: [4.9, 10, null], expect: [[0, 35], [45, 80]]}
+      - line_material: {frame: frame, along: 2, at: [5.1, 10, null], expect: [[0, 80]]}
+
+  - id: holes
+    source: 俯视图 2×Ø8 深 12，孔距 40，前后居中
+    check:
+      - exists: holes
+      - parallel_to_frame: {frame: frame, axis: 0, items: holes}
+      - pocket_depth: {pocket: holes, value: 12}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[30, 20], [30, 60]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 158399.40
+    check:
+      - volume: 158399.40
+
+ungraded: []

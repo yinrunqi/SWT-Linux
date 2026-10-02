@@ -1,0 +1,87 @@
+case: d05_stepped_shaft
+title: D05 阶梯轴
+prompt: 根据所附三视图（第三角画法，单位 mm）建模阶梯轴，单一实体。
+prompt_en: Model the stepped shaft from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d05_stepped_shaft.png
+reference: eval/three_view/references/d05_stepped_shaft.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [0, -10, 0], b: [30, -15, 0], side: bottom, tier: 1, text: "30"}
+    - {view: front, a: [30, -15, 0], b: [80, -15, 0], side: bottom, tier: 1, text: "50"}
+    - {view: front, a: [80, -15, 0], b: [120, -12, 0], side: bottom, tier: 1, text: "40"}
+    - {view: front, a: [0, -10, 0], b: [120, -12, 0], side: bottom, tier: 2, text: "120"}
+    - {view: front, a: [0, -10, 0], b: [0, 10, 0], side: left, text: "Ø20"}
+    - {view: front, a: [120, -12, 0], b: [120, 12, 0], side: right, tier: 1, text: "Ø24"}
+    - {view: front, a: [80, -15, 0], b: [80, 15, 0], side: right, tier: 2, text: "Ø30"}
+    - {view: top, a: [0, 10, 0], b: [15, 10, 0], side: top, tier: 1, text: "15"}
+    - {view: top, a: [0, 10, 0], b: [40, 15, 0], side: top, tier: 2, text: "40"}
+    - {view: top, a: [40, 15, 0], b: [70, 15, 0], side: top, tier: 2, text: "30"}
+    - {view: top, a: [70, 15, -4], b: [70, 15, 4], side: right, text: "8"}
+  callouts:
+    - {view: top, at: [15, 10, 0], r: 3, angle: -60, leader: 50, text: "Ø6 通孔"}
+  centers:
+    - {view: top, at: [15, 10, 0], r: 3}
+  axes:
+    - {view: front, a: [-4, 0, 0], b: [124, 0, 0]}
+    - {view: top, a: [-4, 0, 0], b: [124, 0, 0]}
+  notes:
+    - "键槽宽 8、长 30、深 4（自 Ø30 圆柱顶部量起），两端半圆，位于轴的正上方"
+    - "Ø6 横孔竖直贯通 Ø20 段，与键槽同方向"
+
+# frame：轴 0 沿 Ø30 段轴线（Ø24 端低），轴 1 指向键槽一侧
+entities:
+  shaft: {cylinder: {d: 30, side: outer}, count: 1}
+  key_ends: {cylinder: {d: 8, side: inner}, count: 2}
+  cross: {cylinder: {d: 6, side: inner}, count: 1}
+  frame: {axis_frame: {axis: shaft, ref_dir: key_ends, ref_dir_toward: true, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图总长 120、最大直径 Ø30
+    hard: true
+    check:
+      - bbox_sorted: [30, 30, 120]
+      - exists: shaft
+
+  - id: steps
+    source: 主视图三段 Ø20×30、Ø30×50、Ø24×40
+    derivation: 自 Ø24 端量起：Ø24 段 [0, 40]，Ø30 段 [40, 90]，Ø20 段 [90, 120]
+    check:
+      - radial_material: {frame: frame, t: 20, deg: 180, expect: [[0, 12]]}
+      - radial_material: {frame: frame, t: 65, deg: 180, expect: [[0, 15]]}
+      - radial_material: {frame: frame, t: 112, deg: 180, expect: [[0, 10]]}
+      - line_material: {frame: frame, along: 0, polar: [13, 180], expect: [[40, 90]]}
+      - line_material: {frame: frame, along: 0, polar: [11, 180], expect: [[0, 90]]}
+
+  - id: keyway
+    source: 俯视图键槽距左端 40、长 30、宽 8；注释：深 4，两端半圆
+    derivation: 自 Ø24 端量起键槽占 [50, 80]；槽底距轴线 15 − 4 = 11
+    check:
+      - exists: key_ends
+      - radial_material: {frame: frame, t: 65, deg: 0, expect: [[0, 11]]}
+      - line_material: {frame: frame, along: 0, polar: [13, 0], expect: [[40, 50], [80, 90]]}
+
+  - id: cross_hole
+    source: 俯视图 Ø6 通孔距左端 15；注释：竖直贯通，与键槽同方向
+    derivation: 横孔中心距 Ø24 端 105；偏离孔轴 2 的探测线在孔内弦长 2√(9 − 4) = 4.472
+    check:
+      - exists: cross
+      - through: {holes: cross}
+      - parallel_to_frame: {frame: frame, axis: 1, items: cross}
+      - line_material: {frame: frame, along: 0, polar: [2, 90], expect: [[0, 102.764], [107.236, 120]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 61437.57
+    check:
+      - volume: 61437.57
+
+ungraded: []

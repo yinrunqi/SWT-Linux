@@ -1,0 +1,86 @@
+case: d10_clamp_plate
+title: D10 沉孔压板
+prompt: 根据所附三视图（第三角画法，单位 mm）建模沉孔压板，单一实体。
+prompt_en: Model the counterbored clamp plate from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d10_clamp_plate.png
+reference: eval/three_view/references/d10_clamp_plate.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-20, -10, 15], b: [20, -10, 15], side: bottom, tier: 1, text: "40"}
+    - {view: front, a: [-38, -20, 15], b: [38, -20, 15], side: bottom, tier: 2, text: "76"}
+    - {view: front, a: [-50, -35, 15], b: [50, -35, 15], side: bottom, tier: 3, text: "100"}
+    - {view: front, a: [-20, -10, 15], b: [-20, 10, 15], side: left, tier: 1, text: "20"}
+    - {view: front, a: [-38, -20, 15], b: [-38, 20, 15], side: left, tier: 2, text: "40"}
+    - {view: front, a: [-50, -35, 15], b: [-50, 35, 15], side: left, tier: 3, text: "70"}
+    - {view: front, a: [50, 29, 15], b: [50, 35, 15], side: right, text: "6"}
+    - {view: right, a: [50, -35, 15], b: [50, -35, 0], side: bottom, text: "15"}
+    - {view: right, a: [50, 35, 15], b: [50, 35, 10], side: top, text: "5"}
+  callouts:
+    - {view: front, at: [38, 20, 15], r: 4.5, angle: 200, leader: 70, text: "4×Ø9 通孔"}
+    - {view: front, at: [38, -20, 15], r: 7.5, angle: 200, leader: 70, text: "沉孔 Ø15 深 8"}
+  centers:
+    - {view: front, at: [38, 20, 15], r: 7.5}
+    - {view: front, at: [-38, 20, 15], r: 7.5}
+    - {view: front, at: [38, -20, 15], r: 7.5}
+    - {view: front, at: [-38, -20, 15], r: 7.5}
+  axes:
+    - {view: front, a: [-54, 0, 15], b: [54, 0, 15]}
+    - {view: front, a: [0, -39, 15], b: [0, 39, 15]}
+  notes:
+    - "4 个沉孔从上表面（主视图可见面）加工；中部矩形窗口 40×20 贯通"
+    - "上边缘台阶宽 6、深 5，贯通左右"
+
+# frame：轴 0 = 厚度（底面低），轴 1 = 宽度 70（无台阶边低），轴 2 = 长度 100
+entities:
+  holes: {cylinder: {d: 9, side: inner}, count: 4}
+  cbores: {cylinder: {d: 15, side: inner}, count: 4}
+  frame: {principal_frame: {signs: {0: larger_area_low, 1: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 100、70；右视图 15
+    hard: true
+    check:
+      - bbox_sorted: [15, 70, 100]
+
+  - id: window
+    source: 主视图中部窗口 40×20 贯通、居中
+    check:
+      - opening_size: {frame: frame, normal: 0, at: [7.5, 35, 50], size: [20, 40], through: true, centered: true}
+
+  - id: holes
+    source: 主视图 4×Ø9 通孔，孔距 76×40，居中
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - parallel_to_frame: {frame: frame, axis: 0, items: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[15, 12], [15, 88], [55, 12], [55, 88]]}
+
+  - id: counterbores
+    source: 主视图沉孔 Ø15 深 8；注释：从上表面加工
+    check:
+      - exists: cbores
+      - recess: {holes: holes, top_d: 15, depth: 8}
+      - line_material: {frame: frame, along: 0, at: [null, 21, 12], expect: [[0, 7]]}
+
+  - id: rebate
+    source: 主视图台阶宽 6；右视图台阶深 5
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 67, 50], expect: [[0, 10]]}
+      - line_material: {frame: frame, along: 1, at: [12.5, null, 2], expect: [[0, 64]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 105000 − 12000 − 3000 − 4·π·4.5²·15 − 4·π·(7.5² − 4.5²)·8 = 82563.85
+    check:
+      - volume: 82563.85
+
+ungraded: []

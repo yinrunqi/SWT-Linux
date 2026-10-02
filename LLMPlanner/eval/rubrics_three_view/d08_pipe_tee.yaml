@@ -1,0 +1,91 @@
+case: d08_pipe_tee
+title: D08 法兰三通
+prompt: 根据所附三视图（第三角画法，单位 mm）建模法兰三通，单一实体。
+prompt_en: Model the flanged pipe tee from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d08_pipe_tee.png
+reference: eval/three_view/references/d08_pipe_tee.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-50, -30, 0], b: [-42, -30, 0], side: bottom, tier: 1, text: "8"}
+    - {view: front, a: [-50, -30, 0], b: [50, -30, 0], side: bottom, tier: 2, text: "100"}
+    - {view: front, a: [-15, 60, 0], b: [15, 60, 0], side: top, text: "Ø30"}
+    - {view: front, a: [-42, -20, 0], b: [-42, 20, 0], side: left, tier: 1, text: "Ø40"}
+    - {view: front, a: [-50, -30, 0], b: [-50, 30, 0], side: left, tier: 2, text: "Ø60"}
+    - {view: front, a: [50, 0, 0], b: [15, 60, 0], side: right, text: "60"}
+  callouts:
+    - {view: top, at: [0, 60, 0], r: 11, angle: 40, leader: 60, text: "Ø22"}
+    - {view: right, at: [50, 0, 0], r: 15, angle: 200, leader: 90, text: "Ø30 通孔"}
+    - {view: right, at: [50, 16.971, 16.971], r: 3, angle: 150, leader: 50, text: "4×Ø6 通孔"}
+    - {view: right, at: [50, 0, 0], r: 24, angle: -60, leader: 60, text: "Ø48"}
+  circles:
+    - {view: right, at: [50, 0, 0], r: 24}
+  centers:
+    - {view: right, at: [50, 0, 0], r: 30}
+    - {view: top, at: [0, 60, 0], r: 15}
+  axes:
+    - {view: front, a: [-54, 0, 0], b: [54, 0, 0]}
+    - {view: front, a: [0, -4, 0], b: [0, 64, 0]}
+  notes:
+    - "两端法兰相同（Ø60 厚 8），各有 4×Ø6 通孔均布于 Ø48 圆，孔位与竖直中心线成 45°"
+    - "主管内孔 Ø30 贯通；支管 Ø30/Ø22 高 60（自主管轴线起），内孔与主管内孔相通"
+
+# frame：轴 0 = 前后 60，轴 1 = 高度 90（支管端低），轴 2 = 长度 100
+entities:
+  flange_holes: {cylinder: {d: 6, side: inner}, count: 8}
+  frame: {principal_frame: {signs: {1: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 100、Ø60 法兰、支管高 60
+    hard: true
+    check:
+      - bbox_sorted: [60, 90, 100]
+
+  - id: main_pipe
+    source: 主视图主管 Ø40；右视图内孔 Ø30 通孔
+    derivation: 支管端为 0：主管轴线在 60，管壁占 [40, 45] 与 [75, 80]
+    check:
+      - line_material: {frame: frame, along: 1, at: [30, null, 20], expect: [[40, 45], [75, 80]]}
+      - line_material: {frame: frame, along: 2, at: [30, 60, null], expect: []}
+
+  - id: branch
+    source: 主视图支管 Ø30、高 60；俯视图内孔 Ø22
+    check:
+      - line_material: {frame: frame, along: 1, at: [30, null, 50], expect: [[75, 80]]}
+      - line_material: {frame: frame, along: 2, at: [30, 30, null], expect: [[35, 39], [61, 65]]}
+      - line_material: {frame: frame, along: 1, at: [30, null, 37], expect: [[0, 45], [75, 80]]}
+
+  - id: flanges
+    source: 主视图法兰 Ø60、厚 8
+    check:
+      - line_material: {frame: frame, along: 2, at: [30, 89, null], expect: [[0, 8], [92, 100]]}
+
+  - id: flange_holes
+    source: 右视图 4×Ø6 通孔均布于 Ø48；注释：两端相同，孔位与竖直中心线成 45°
+    derivation: 孔心距轴线 24、方位 45°：两个坐标各偏 ±16.971
+    check:
+      - exists: flange_holes
+      - through: {holes: flange_holes}
+      - parallel_to_frame: {frame: frame, axis: 2, items: flange_holes}
+      - axis_positions:
+          frame: frame
+          items: flange_holes
+          axes: [0, 1]
+          expect: [[13.029, 43.029], [13.029, 43.029], [13.029, 76.971], [13.029, 76.971],
+                   [46.971, 43.029], [46.971, 43.029], [46.971, 76.971], [46.971, 76.971]]
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 90136.66
+    check:
+      - volume: 90136.66
+
+ungraded: []

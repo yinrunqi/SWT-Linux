@@ -1,0 +1,94 @@
+case: d09_angle_bracket
+title: D09 角钢支架
+prompt: 根据所附三视图（第三角画法，单位 mm）建模角钢支架，单一实体。
+prompt_en: Model the angle bracket from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d09_angle_bracket.png
+reference: eval/three_view/references/d09_angle_bracket.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [0, 0, 50], b: [60, 0, 50], side: bottom, text: "60"}
+    - {view: front, a: [0, 0, 50], b: [0, 40, 50], side: left, text: "40"}
+    - {view: front, a: [0, 40, 50], b: [8, 40, 50], side: top, text: "8"}
+    - {view: front, a: [60, 0, 50], b: [60, 8, 50], side: right, text: "8"}
+    - {view: top, a: [0, 8, 50], b: [25, 8, 30], side: bottom, tier: 1, text: "25"}
+    - {view: top, a: [25, 8, 30], b: [47, 8, 30], side: bottom, tier: 1, text: "22"}
+    - {view: top, a: [47, 8, 26], b: [47, 8, 34], side: right, tier: 1, text: "8"}
+    - {view: top, a: [60, 8, -30], b: [60, 8, 30], side: right, tier: 2, text: "60"}
+    - {view: top, a: [0, 40, -50], b: [0, 40, 50], side: left, text: "100"}
+    - {view: right, a: [0, 26, 25], b: [0, 26, -25], side: bottom, text: "50"}
+    - {view: right, a: [0, 0, 50], b: [0, 26, 25], side: left, text: "26"}
+  callouts:
+    - {view: front, at: [13, 13, 50], r: -5, angle: 45, leader: 40, text: "R5"}
+    - {view: right, at: [0, 26, -25], r: 4.5, angle: 45, leader: 70, text: "2×Ø9 通孔"}
+  centers:
+    - {view: right, at: [0, 26, 25], r: 4.5}
+    - {view: right, at: [0, 26, -25], r: 4.5}
+    - {view: top, at: [29, 8, 30], r: 4}
+    - {view: top, at: [43, 8, 30], r: 4}
+    - {view: top, at: [29, 8, -30], r: 4}
+    - {view: top, at: [43, 8, -30], r: 4}
+  axes:
+    - {view: top, a: [-4, 8, 0], b: [64, 8, 0]}
+    - {view: right, a: [54, 26, 0], b: [-54, 26, 0]}
+  notes:
+    - "两长圆孔宽 8、长 22，两端半圆，前后对称；内侧折弯处圆角 R5"
+
+# frame：轴 0 = 高度 40（水平边低），轴 1 = 水平边方向 60（竖直边低），轴 2 = 长度 100
+entities:
+  slot_ends: {cylinder: {d: 8, side: inner}, count: 4}
+  holes: {cylinder: {d: 9, side: inner}, count: 2}
+  frame: {principal_frame: {signs: {0: larger_area_low, 1: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 60、40；俯视图 100
+    hard: true
+    check:
+      - bbox_sorted: [40, 60, 100]
+
+  - id: section
+    source: 主视图 L 形截面，两边厚均为 8
+    check:
+      - line_material: {frame: frame, along: 1, at: [4, null, 50], expect: [[0, 60]]}
+      - line_material: {frame: frame, along: 0, at: [null, 4, 50], expect: [[0, 40]]}
+      - line_material: {frame: frame, along: 0, at: [null, 30, 50], expect: [[0, 8]]}
+      - line_material: {frame: frame, along: 1, at: [20, null, 50], expect: [[0, 8]]}
+
+  - id: fillet
+    source: 主视图内侧 R5
+    derivation: 圆角圆心（13, 13），高 9 处材料延至 13 − √(25 − 16) = 10
+    check:
+      - blend_faces: {radius: 5, min_count: 1}
+      - line_material: {frame: frame, along: 1, at: [9, null, 50], expect: [[0, 10]]}
+
+  - id: slots
+    source: 俯视图长圆孔距竖直边外侧 25、长 22、宽 8，间距 60
+    check:
+      - exists: slot_ends
+      - parallel_to_frame: {frame: frame, axis: 0, items: slot_ends}
+      - line_material: {frame: frame, along: 1, at: [4, null, 20], expect: [[0, 25], [47, 60]]}
+      - line_material: {frame: frame, along: 2, at: [4, 36, null], expect: [[0, 16], [24, 76], [84, 100]]}
+
+  - id: holes
+    source: 右视图 2×Ø9 通孔，孔距 50，孔心高 26
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - parallel_to_frame: {frame: frame, axis: 1, items: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [0, 2], expect: [[26, 25], [26, 75]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 倒圆与布尔运算）体积 70522.38
+    check:
+      - volume: 70522.38
+
+ungraded: []

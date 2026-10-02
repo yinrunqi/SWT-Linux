@@ -5,7 +5,7 @@ Workflow-CAD-Bench 有三个 track：
 | track | 输入 | 任务数 | 文档 |
 |---|---|---|---|
 | text-to-CAD | 自然语言设计要求 | 50（另有 8 道困难子集） | 本文第 1–7 节 |
-| 三视图生成 CAD | 工程图（三视图 PNG）+ 一句中性题面 | 13 | 本文第 8 节 |
+| 三视图生成 CAD | 工程图（三视图 PNG）+ 一句中性题面 | 33 | 本文第 8 节 |
 | 复杂装配体生成 | 自然语言装配要求 | 见装配文档 | [`Workflow-CAD-Bench-Assembly.md`](./Workflow-CAD-Bench-Assembly.md) |
 
 text-to-CAD track 共有 **50 个任务**。每个任务是一段自然语言设计要求，配有一份 **rubric**：它把题面里的每条要求写成对最终实体的确定性几何检查。三视图 track 用同一套检查器，rubric 只检查图纸上标注或画出的内容，另外附一个基于投影图像的相似度分。
@@ -60,7 +60,7 @@ venv-occ\Scripts\python.exe -c "import OCP, numpy, yaml; print('occ ok')"
 venv-occ\Scripts\python.exe -m pytest geomcheck/tests -q -p no:cacheprovider
 ```
 
-测试会用 OpenCASCADE 直接构造三组参考实体和变体：text-to-CAD 的 50 个参考实体、12 个合法变体和 62 个错误变体，困难子集的 8 个参考实体和 24 个变体，以及三视图 track 的 13 个参考实体和 28 个错误变体（第 8 节）。它们分别用 rubric 和图像分打分，再加上检查器其余模块的单元测试，应该显示 `257 passed`，全部跑完约 5 分钟。这一步通过，说明你机器上的检查器和我们的打分结果完全一致。
+测试会用 OpenCASCADE 直接构造三组参考实体和变体：text-to-CAD 的 50 个参考实体、12 个合法变体和 62 个错误变体，困难子集的 8 个参考实体和 24 个变体，以及三视图 track 的 33 个参考实体和 83 个错误变体（第 8 节）。它们分别用 rubric 和图像分打分，再加上检查器其余模块的单元测试，应该显示 `407 passed`，全部跑完约 5 分钟。这一步通过，说明你机器上的检查器和我们的打分结果完全一致。
 
 Linux 和 macOS 上把 `venv-occ\Scripts\python.exe` 换成 `venv-occ/bin/python` 即可，下文同理。以下命令都在 `LLMPlanner` 目录下执行。
 
@@ -324,16 +324,28 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 
 ---
 
-## 8. 三视图 track：13 道看图建模题
+## 8. 三视图 track：33 道看图建模题
 
 ### 8.1 任务与文件
 
-13 道题来自 Web Demo 的三视图样例（`datasets/manual_three_view/`）。原样例不适合直接用作 benchmark，原因有三点：
+共 33 道题，分两部分：B/C 组 13 道来自 Web Demo 的三视图样例；D 组 20 道是为 benchmark 新设计的零件（见下文）。
+
+B/C 组 13 道题来自 Web Demo 的三视图样例（`datasets/manual_three_view/`）。原样例不适合直接用作 benchmark，原因有三点：
 - C1–C3 的图纸只画了外框；
 - B22 没有隐藏线和内腔尺寸，B07 缺少凹槽和孔的标注；
 - 文字提示里写了 SolidWorks 建模步骤。
 
-因此 benchmark 版本**重新生成了全部 13 张图纸**：先按图纸尺寸用 OpenCASCADE 构造参考实体（`geomcheck/tests/refs_three_view.py`），再用 HLR 投影出三视图。可见边画粗实线，隐藏边画虚线，尺寸、引线、中心线和注释按每题 rubric 里的 `drawing` 清单绘制。原 demo 的图纸和数据保持不变。
+因此 benchmark 版本**重新生成了这 13 张图纸**：先按图纸尺寸用 OpenCASCADE 构造参考实体（`geomcheck/tests/refs_three_view.py`），再用 HLR 投影出三视图。可见边画粗实线，隐藏边画虚线，尺寸、引线、中心线和注释按每题 rubric 里的 `drawing` 清单绘制。原 demo 的图纸和数据保持不变。
+
+D 组 20 道题全部是自行设计的常见机械零件，参考实体、图纸和 rubric 的生成流程与 B/C 组相同。没有使用任何外部数据集的图纸或模型，这样一来不涉及许可问题，题目也不会出现在模型的训练数据里。设计时让每道题覆盖不同的建模操作组合：
+- 拉伸截面：V 形块、燕尾槽；
+- 回转：阶梯轴、V 带轮；
+- 孔：阵列孔、沉孔、沉头孔、盲孔、交叉孔；
+- 筋板与圆角，斜切面；
+- 长圆孔、键槽；
+- 公切线轮廓（连杆）；
+- 等距阵列（散热片、齿条）；
+- 两实体装配位（管夹）。
 
 | 文件 | 内容 |
 |---|---|
@@ -341,16 +353,18 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 | `eval/three_view/drawings/<case>.png` | 交给建模系统的图纸（第三角画法：俯视图在主视图上方，右视图在主视图右方） |
 | `eval/three_view/references/<case>.step` | 参考实体，图像分的比较对象 |
 
-题面只有一句中性的话，例如“根据所附三视图（第三角画法，单位 mm）建模 L 型支架，单一实体。”，全部尺寸都从图纸读取。C3 的题面另外说明两个齿轮是两个分开的实体。
+题面只有一句中性的话，例如“根据所附三视图（第三角画法，单位 mm）建模 L 型支架，单一实体。”，全部尺寸都从图纸读取。C3 和 D17 的题面另外说明零件由两个分开的实体组成。
 
 | 类型 | 任务（case id，括号内为显式条目数） |
 |---|---|
 | 基础零件（9） | L 型支架 `b01_l_bracket`（5）、带孔平板 `b02_plate_with_holes`（5）、T 型支架 `b03_t_bracket`（6）、键帽 `b04_keycap`（6）、带圆角和底槽的键帽 `b05_keycap_full`（6）、门锁扣板 `b06_lock_striker`（6）、86 型开关面板 `b07_switch_panel`（6）、齿轮盘 `b11_gear_disc`（5）、圆碗 `b22_round_bowl`（4） |
 | 组合零件（4） | 迷你机械键盘 `c1_mech_keyboard`（7，65 个键帽阵列）、齿轮减速器外壳 `c2_gearbox`（8）、齿轮组 `c3_gear_pair`（7，两个实体）、一体式桌面笔筒 `c4_desktop_pen_holder`（10） |
+| 投影基础零件（10） | V 形块 `d01_v_block`（7）、法兰盖 `d04_flange_cover`（8）、阶梯轴 `d05_stepped_shaft`（6）、U 形叉头 `d06_u_clevis`（7）、偏心轮 `d07_eccentric_cam`（7）、角钢支架 `d09_angle_bracket`（7）、沉孔压板 `d10_clamp_plate`（7）、燕尾滑块 `d11_dovetail_slide`（6）、切角支座 `d12_cut_block`（7）、齿条 `d18_gear_rack`（7） |
+| 投影组合零件（10） | 轴承座 `d02_bearing_block`（10）、带筋支架 `d03_rib_bracket`（9）、法兰三通 `d08_pipe_tee`（7）、双槽 V 带轮 `d13_v_pulley`（9）、连杆 `d14_link_rod`（7）、电机安装座 `d15_motor_mount`（8）、散热器 `d16_heat_sink`（6）、管夹 `d17_pipe_clamp`（7，两个实体）、合页片 `d19_hinge_leaf`（6）、带筋底座 `d20_ribbed_base`（7） |
 
-13 题共 81 个显式条目。
+33 题共 226 个显式条目（B/C 组 81 个，D 组 145 个）。
 
-与原 demo 相比，有三处几何改动：
+B/C 组与原 demo 相比，有三处几何改动：
 - B06 的 R3 圆角从“3 mm 厚板的长边”改到板的四个竖直角。原来的圆角半径等于板厚，是退化几何。
 - C3 的矩形齿嵌入齿根圆 1 mm，避免齿与轮盘只在一条线上相切。
 - 体积一律取 OCC 参考实体的精确值。原 GT 忽略了圆角，圆也用多边形近似。
@@ -369,11 +383,11 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 
 ### 8.3 rubric 与图像分的验证
 
-`geomcheck/tests/test_refs_three_view.py` 共 84 个测试：
+`geomcheck/tests/test_refs_three_view.py` 共 234 个测试：
 - 从参考 STEP 读回的实体得 100 分，体积与 rubric 一致。
-- 28 个针对性错误变体恰好在预期条目上失败。例如：孔距 36、凹槽深 5、去掉充电线孔、齿轮中心距 72、12 列键帽。
+- 83 个针对性错误变体（B/C 组 28 个，D 组 55 个）恰好在预期条目上失败。例如：孔距 36、凹槽深 5、去掉充电线孔、齿轮中心距 72、12 列键帽；D 组如燕尾角 50°、6 片散热片、去掉油孔、沉孔深 4、管夹无间隙。少数变体会连带另一个条目失败，原因是两处几何确实相互关联（例如齿条改成 11 个齿后，沉孔上方正好是齿）；这些情况在测试里逐条注明。
 - 参考实体在原位和旋转后的图像分都是 100（旋转后要求不低于 99.9）。
-- 28 个错误变体和 C4 的镜像件，图像分都低于 99.5。
+- 83 个错误变体和 C4 的镜像件，图像分都低于 99.5。
 
 ### 8.4 命令
 
@@ -391,7 +405,7 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 venv-occ\Scripts\python.exe -X utf8 -m geomcheck.tests.refs_three_view
 ```
 
-提交要求同第 3 节。区别是 C3 要求恰好两个有效实体，其余 12 题要求单一实体。`scores.json` 的每条记录比 `geomcheck.rubric` 多一个 `image` 字段，内容包括 `image_score`、`silhouette_iou`、三个视图各自的得分，以及选中的旋转。
+提交要求同第 3 节。区别是 C3 和 D17 要求恰好两个有效实体，其余 31 题要求单一实体。`scores.json` 的每条记录比 `geomcheck.rubric` 多一个 `image` 字段，内容包括 `image_score`、`silhouette_iou`、三个视图各自的得分，以及选中的旋转。
 
 用 Workflow-CAD 跑时用 `eval/eval_three_view_bench.py`。它把图纸和题面发给 `/api/run`，并把每次运行的 STEP 存到 `eval/artifacts/<name>/<case>_r<k>.step`，之后按上面的命令离线打分。这个 track 目前还没有参考结果。
 

@@ -1,0 +1,111 @@
+case: d02_bearing_block
+title: D02 轴承座
+prompt: 根据所附三视图（第三角画法，单位 mm）建模轴承座，单一实体。
+prompt_en: Model the bearing block from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d02_bearing_block.png
+reference: eval/three_view/references/d02_bearing_block.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-30, 0, 25], b: [30, 0, 25], side: bottom, tier: 1, text: "60"}
+    - {view: front, a: [-60, 0, 25], b: [60, 0, 25], side: bottom, tier: 2, text: "120"}
+    - {view: front, a: [-60, 0, 25], b: [-60, 14, 25], side: left, tier: 1, text: "14"}
+    - {view: front, a: [-60, 0, 25], b: [0, 50, 20], side: left, tier: 2, text: "50"}
+    - {view: front, a: [-60, 0, 25], b: [0, 80, 0], side: left, tier: 3, text: "80"}
+    - {view: front, a: [30, 0, 25], b: [30, 3, 25], side: right, tier: 1, text: "3"}
+    - {view: top, a: [-45, 14, 0], b: [45, 14, 0], side: top, tier: 1, text: "90"}
+    - {view: top, a: [-60, 14, -25], b: [-60, 14, 25], side: left, tier: 1, text: "50"}
+    - {view: top, a: [30, 80, -20], b: [30, 80, 20], side: right, tier: 1, text: "40"}
+  callouts:
+    - {view: front, at: [0, 50, 20], r: 17.5, angle: -40, leader: 60, text: "Ø35 通孔"}
+    - {view: front, at: [0, 50, 20], r: 30, angle: 135, leader: 40, text: "R30"}
+    - {view: top, at: [45, 14, 0], r: 6, angle: -45, leader: 40, text: "2×Ø12 通孔"}
+    - {view: top, at: [0, 80, 0], r: 3, angle: 60, leader: 50, text: "Ø6"}
+  centers:
+    - {view: front, at: [0, 50, 20], r: 17.5}
+    - {view: top, at: [45, 14, 0], r: 6}
+    - {view: top, at: [-45, 14, 0], r: 6}
+    - {view: top, at: [0, 80, 0], r: 3}
+  notes:
+    - "立柱宽 60（与 R30 相切）、厚 40，前后居中；油孔 Ø6 自顶部竖直钻通至 Ø35 轴承孔"
+    - "底面中部让空槽宽 60、深 3，前后贯通；底板厚 14"
+
+# frame：轴 0 = 前后 50，轴 1 = 高度（底面低），轴 2 = 长度 120
+entities:
+  barrel: {cylinder: {d: 60, side: outer}, count: 1}
+  bore: {cylinder: {d: 35, side: inner}, count: 1}
+  oil: {cylinder: {d: 6, side: inner}, count: 1}
+  mount: {cylinder: {d: 12, side: inner}, count: 2}
+  frame: {principal_frame: {signs: {1: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 120、80；俯视图 50
+    hard: true
+    check:
+      - bbox_sorted: [50, 80, 120]
+
+  - id: base
+    source: 主视图底板厚 14；俯视图底板 120×50
+    check:
+      - line_material: {frame: frame, along: 2, at: [2, 7, null], expect: [[0, 120]]}
+      - line_material: {frame: frame, along: 1, at: [2, null, 10], expect: [[0, 14]]}
+
+  - id: recess
+    source: 主视图底面让空槽宽 60、深 3
+    check:
+      - line_material: {frame: frame, along: 2, at: [2, 1.5, null], expect: [[0, 30], [90, 120]]}
+      - line_material: {frame: frame, along: 2, at: [2, 2.9, null], expect: [[0, 30], [90, 120]]}
+      - line_material: {frame: frame, along: 2, at: [2, 3.1, null], expect: [[0, 120]]}
+
+  - id: pedestal
+    source: 主视图立柱宽 60；俯视图立柱厚 40、前后居中
+    check:
+      - line_material: {frame: frame, along: 2, at: [25, 25, null], expect: [[30, 90]]}
+      - line_material: {frame: frame, along: 0, at: [null, 25, 60], expect: [[5, 45]]}
+
+  - id: barrel
+    source: 主视图 R30 轴承筒，中心高 50、左右居中；俯视图筒长 40
+    check:
+      - exists: barrel
+      - axis_positions: {frame: frame, items: barrel, axes: [1, 2], expect: [[50, 60]]}
+      - line_material: {frame: frame, along: 0, at: [null, 75, 70], expect: [[5, 45]]}
+
+  - id: bore
+    source: 主视图 Ø35 通孔，与 R30 同心
+    check:
+      - exists: bore
+      - through: {holes: bore}
+      - coaxial: [bore, barrel]
+      - parallel_to_frame: {frame: frame, axis: 0, items: bore}
+
+  - id: oil_hole
+    source: 俯视图 Ø6 油孔；注释：自顶部竖直钻通至轴承孔
+    check:
+      - exists: oil
+      - through: {holes: oil}
+      - parallel_to_frame: {frame: frame, axis: 1, items: oil}
+      - axis_positions: {frame: frame, items: oil, axes: [0, 2], expect: [[25, 60]]}
+
+  - id: mount_holes
+    source: 俯视图 2×Ø12 通孔，孔距 90，前后居中
+    check:
+      - exists: mount
+      - through: {holes: mount}
+      - parallel_to_frame: {frame: frame, axis: 1, items: mount}
+      - axis_positions: {frame: frame, items: mount, axes: [0, 2], expect: [[25, 15], [25, 105]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 175942.21
+    check:
+      - volume: 175942.21
+
+ungraded: []

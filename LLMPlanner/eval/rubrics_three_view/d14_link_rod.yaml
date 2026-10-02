@@ -1,0 +1,88 @@
+case: d14_link_rod
+title: D14 连杆
+prompt: 根据所附三视图（第三角画法，单位 mm）建模连杆，单一实体。
+prompt_en: Model the connecting link from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d14_link_rod.png
+reference: eval/three_view/references/d14_link_rod.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [0, -30, 20], b: [120, -16, 18], side: bottom, text: "120"}
+    - {view: front, a: [0, 30, 20], b: [42, 7, 18], side: top, text: "42"}
+    - {view: front, a: [42, 7, 18], b: [94, 7, 18], side: top, text: "52"}
+    - {view: front, a: [87, -7, 18], b: [87, 7, 18], side: right, text: "14"}
+    - {view: top, a: [-30, 0, 0], b: [-30, 0, 20], side: left, text: "20"}
+    - {view: top, a: [136, 0, 2], b: [136, 0, 18], side: right, text: "16"}
+  callouts:
+    - {view: front, at: [0, 0, 20], r: 30, angle: 135, leader: 40, text: "Ø60"}
+    - {view: front, at: [0, 0, 20], r: 18, angle: -120, leader: 90, text: "Ø36"}
+    - {view: front, at: [120, 0, 18], r: 16, angle: 50, leader: 40, text: "Ø32"}
+    - {view: front, at: [120, 0, 18], r: 8, angle: -60, leader: 70, text: "Ø16"}
+  centers:
+    - {view: front, at: [0, 0, 20], r: 30}
+    - {view: front, at: [120, 0, 18], r: 16}
+  axes:
+    - {view: front, a: [-34, 0, 20], b: [140, 0, 20]}
+    - {view: top, a: [-34, 0, 10], b: [140, 0, 10]}
+  notes:
+    - "杆身两侧轮廓为 R24（以大头孔心为圆心）与 R12（以小头孔心为圆心）两圆的外公切线"
+    - "杆身与小头同厚 16，与大头（厚 20）对称于同一中面；上下两面各有长圆凹槽 52×14、深 4，两端半圆"
+
+# frame：轴 0 沿 Ø36 孔轴线（厚度方向），轴 1 指向 Ø16 孔
+entities:
+  big_bore: {cylinder: {d: 36, side: inner}, count: 1}
+  small_bore: {cylinder: {d: 16, side: inner}, count: 1}
+  big: {cylinder: {d: 60, side: outer}, count: 1}
+  small: {cylinder: {d: 32, side: outer}, count: 1}
+  frame: {axis_frame: {axis: big_bore, ref: small_bore}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图中心距 120、Ø60、Ø32；俯视图大头厚 20
+    hard: true
+    check:
+      - frame_box: {frame: frame, size: [20, 166, 60]}
+
+  - id: ends
+    source: 主视图 Ø60/Ø36 大头、Ø32/Ø16 小头，中心距 120
+    check:
+      - exists: big
+      - exists: small
+      - coaxial: [big, big_bore]
+      - coaxial: [small, small_bore]
+      - parallel: [small_bore, big_bore]
+      - axis_distance: {from: big_bore, to: small_bore, value: 120}
+
+  - id: thickness
+    source: 俯视图大头厚 20、小头厚 16；注释：对称于同一中面
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, -27, 0], expect: [[0, 20]]}
+      - line_material: {frame: frame, along: 0, at: [null, 130, 0], expect: [[2, 18]]}
+
+  - id: shank
+    source: 注释：杆身两侧为 R24、R12 两圆的外公切线
+    derivation: 公切线到大头中心距 24、法向与中心连线夹角 asin(12/120)；距大头中心 68 处半宽 (24 − 6.8)/cos(5.739°) = 17.287
+    check:
+      - line_material: {frame: frame, along: 2, at: [10, 68, null], expect: [[-17.287, 17.287]]}
+
+  - id: pockets
+    source: 主视图凹槽 52×14、距大头中心 42；注释：上下两面各深 4
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 68, 0], expect: [[6, 14]]}
+      - line_material: {frame: frame, along: 0, at: [null, 68, 9], expect: [[2, 18]]}
+      - line_material: {frame: frame, along: 1, at: [4, null, 0], expect: [[-30, -18], [18, 42], [94, 112], [128, 136]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 84389.62
+    check:
+      - volume: 84389.62
+
+ungraded: []

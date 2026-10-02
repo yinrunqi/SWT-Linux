@@ -1,0 +1,87 @@
+case: d19_hinge_leaf
+title: D19 合页片
+prompt: 根据所附三视图（第三角画法，单位 mm）建模合页片，单一实体。
+prompt_en: Model the hinge leaf from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d19_hinge_leaf.png
+reference: eval/three_view/references/d19_hinge_leaf.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [0, 0, 50], b: [60, 0, 50], side: bottom, text: "60"}
+    - {view: front, a: [60, 0, 50], b: [60, 3, 50], side: right, text: "3"}
+    - {view: top, a: [-4, 8, 0], b: [-4, 8, 10], side: left, tier: 1, text: "10"}
+    - {view: top, a: [-4, 8, 10], b: [-4, 8, 20], side: left, tier: 1, text: "10"}
+    - {view: top, a: [-4, 8, 0], b: [-4, 8, 50], side: left, tier: 2, text: "50"}
+    - {view: top, a: [0, 3, 15], b: [5, 3, 15], side: top, tier: 1, text: "5"}
+    - {view: top, a: [0, 3, 50], b: [40, 3, 40], side: bottom, text: "40"}
+    - {view: top, a: [40, 3, 10], b: [40, 3, 25], side: right, tier: 1, text: "15"}
+    - {view: top, a: [40, 3, 25], b: [40, 3, 40], side: right, tier: 1, text: "15"}
+  callouts:
+    - {view: front, at: [0, 4, 50], r: 4, angle: 120, leader: 40, text: "Ø8"}
+    - {view: front, at: [0, 4, 50], r: 1.5, angle: 60, leader: 60, text: "Ø3 通孔"}
+    - {view: top, at: [40, 3, 10], r: 4.5, angle: 30, leader: 50, text: "3×Ø5 沉头 Ø9×90°"}
+  centers:
+    - {view: front, at: [0, 4, 50], r: 4}
+    - {view: top, at: [40, 3, 10], r: 4.5}
+    - {view: top, at: [40, 3, 25], r: 4.5}
+    - {view: top, at: [40, 3, 40], r: 4.5}
+  notes:
+    - "三节 Ø8 铰节等长 10、间隔 10，Ø3 销孔贯通；铰节下沿与板底面平齐，间隔处板边让空 5"
+    - "3 个沉头孔从上表面（铰节凸出一侧）加工"
+
+# frame：轴 0 = 厚度方向 8（板底面低），轴 1 = 长度 50，轴 2 = 宽度 64（远离铰节一端低）
+entities:
+  knuckles: {cylinder: {d: 8, side: outer}, count: 3}
+  pins: {cylinder: {d: 3, side: inner}, count: 3}
+  holes: {cylinder: {d: 5, side: inner}, count: 3}
+  csk: {cone: {semi_angle: 45, side: inner}, count: 3}
+  frame: {principal_frame: {signs: {0: larger_area_low, 2: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 60、Ø8；俯视图 50
+    hard: true
+    check:
+      - bbox_sorted: [8, 50, 64]
+
+  - id: knuckles
+    source: 俯视图三节铰节长 10、间隔 10；主视图 Ø8、Ø3 通孔
+    check:
+      - exists: knuckles
+      - exists: pins
+      - coaxial: [pins, knuckles]
+      - through: {holes: pins}
+      - line_material: {frame: frame, along: 1, at: [6.5, null, 60], expect: [[0, 10], [20, 30], [40, 50]]}
+
+  - id: plate
+    source: 主视图板厚 3、宽 60；俯视图间隔处让空 5
+    derivation: 高 1.5 处 Ø8 铰节伸出板边 √(16 − 2.5²) = 3.123
+    check:
+      - line_material: {frame: frame, along: 2, at: [1.5, 5, null], expect: [[0, 63.123]]}
+      - line_material: {frame: frame, along: 2, at: [1.5, 15, null], expect: [[0, 55]]}
+      - line_material: {frame: frame, along: 0, at: [null, 25, 30], expect: [[0, 3]]}
+
+  - id: holes
+    source: 俯视图 3×Ø5 沉头 Ø9×90°，距板边 40，间距 15；注释：从上表面加工
+    derivation: 偏离孔轴 3.5 处沉头锥面高 1 + (3.5 − 2.5) = 2
+    check:
+      - exists: holes
+      - exists: csk
+      - through: {holes: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[10, 20], [25, 20], [40, 20]]}
+      - line_material: {frame: frame, along: 0, at: [null, 10, 23.5], expect: [[0, 2]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 9441.56
+    check:
+      - volume: 9441.56
+
+ungraded: []

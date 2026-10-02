@@ -1,0 +1,91 @@
+case: d04_flange_cover
+title: D04 法兰盖
+prompt: 根据所附三视图（第三角画法，单位 mm）建模法兰盖，单一实体。
+prompt_en: Model the flange cover from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d04_flange_cover.png
+reference: eval/three_view/references/d04_flange_cover.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: right, a: [50, -50, 0], b: [50, -50, 12], side: bottom, tier: 1, text: "12"}
+    - {view: right, a: [50, -50, 0], b: [25, -25, 32], side: bottom, tier: 2, text: "32"}
+    - {view: right, a: [35, 50, 0], b: [35, 50, 3], side: top, text: "3"}
+  callouts:
+    - {view: front, at: [0, 0, 32], r: 50, angle: 120, leader: 40, text: "Ø100"}
+    - {view: front, at: [0, 0, 32], r: 25, angle: 200, leader: 110, text: "Ø50"}
+    - {view: front, at: [0, 0, 32], r: 15, angle: -30, leader: 180, text: "Ø30 通孔"}
+    - {view: front, at: [40, 0, 32], r: 4.5, angle: 30, leader: 60, text: "6×Ø9 通孔 均布"}
+    - {view: front, at: [0, 0, 32], r: 40, angle: 75, leader: 50, text: "Ø80"}
+    - {view: right, at: [0, -30, 1.5], r: 0, angle: 210, leader: 80, text: "Ø70 深 3（底面）"}
+  circles:
+    - {view: front, at: [0, 0, 32], r: 40}
+  centers:
+    - {view: front, at: [0, 0, 32], r: 50}
+  notes:
+    - "底面中部沉台 Ø70 深 3；Ø50 凸台与法兰同心，高出法兰 20"
+
+# frame：轴 0 沿 Ø100 外圆轴线（底面低），轴 1 指向某个 Ø9 孔
+entities:
+  disc: {cylinder: {d: 100, side: outer}, count: 1}
+  boss: {cylinder: {d: 50, side: outer}, count: 1}
+  bore: {cylinder: {d: 30, side: inner}, count: 1}
+  holes: {cylinder: {d: 9, side: inner}, count: 6}
+  frame: {axis_frame: {axis: disc, ref: holes, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 Ø100；右视图总厚 32
+    hard: true
+    check:
+      - bbox_sorted: [32, 100, 100]
+      - exists: disc
+
+  - id: flange
+    source: 右视图法兰厚 12
+    check:
+      - line_material: {frame: frame, along: 0, polar: [45, 30], expect: [[0, 12]]}
+
+  - id: boss
+    source: 主视图 Ø50 凸台；右视图总厚 32
+    check:
+      - exists: boss
+      - coaxial: [boss, disc]
+      - line_material: {frame: frame, along: 0, polar: [20, 30], expect: [[3, 32]]}
+      - radial_material: {frame: frame, t: 20, deg: 30, expect: [[15, 25]]}
+
+  - id: bore
+    source: 主视图 Ø30 通孔，居中
+    check:
+      - exists: bore
+      - coaxial: [bore, disc]
+      - through: {holes: bore}
+
+  - id: recess
+    source: 右视图 Ø70 深 3（底面）、3
+    check:
+      - radial_material: {frame: frame, t: 1.5, deg: 30, expect: [[35, 50]]}
+      - radial_material: {frame: frame, t: 2.9, deg: 30, expect: [[35, 50]]}
+      - radial_material: {frame: frame, t: 3.1, deg: 30, expect: [[15, 50]]}
+
+  - id: holes
+    source: 主视图 6×Ø9 通孔，均布于 Ø80 圆
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_distance: {from: disc, to: holes, value: 40}
+      - equal_angular: {about: disc, items: holes}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: π(50²·12 + 25²·20 − 15²·32 − (35² − 15²)·3 − 6·4.5²·12) = 96893.0
+    check:
+      - volume: 96893.0
+
+ungraded: []

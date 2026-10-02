@@ -1,0 +1,93 @@
+case: d07_eccentric_cam
+title: D07 偏心轮
+prompt: 根据所附三视图（第三角画法，单位 mm）建模偏心轮，单一实体。
+prompt_en: Model the eccentric cam from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d07_eccentric_cam.png
+reference: eval/three_view/references/d07_eccentric_cam.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [0, -40, 15], b: [10, -18, 25], side: bottom, tier: 1, text: "10"}
+    - {view: front, a: [-18, -20, 15], b: [0, -40, 15], side: bottom, tier: 1, text: "18"}
+    - {view: front, a: [-24, -14, 15], b: [-24, 14, 15], side: left, text: "28"}
+    - {view: front, a: [7, 13, 25], b: [13, 13, 25], side: top, text: "6"}
+    - {view: front, a: [10, 0, 25], b: [13, 13, 25], side: right, text: "13"}
+    - {view: right, a: [40, -40, 0], b: [40, -40, 15], side: bottom, tier: 1, text: "15"}
+    - {view: right, a: [40, -40, 0], b: [10, -18, 25], side: bottom, tier: 2, text: "25"}
+  callouts:
+    - {view: front, at: [0, 0, 15], r: 40, angle: 120, leader: 40, text: "Ø80"}
+    - {view: front, at: [10, 0, 25], r: 18, angle: 30, leader: 70, text: "Ø36"}
+    - {view: front, at: [10, 0, 25], r: 10, angle: -60, leader: 110, text: "Ø20 通孔"}
+    - {view: front, at: [-18, 14, 15], r: 6, angle: 135, leader: 40, text: "2×Ø12 通孔"}
+  centers:
+    - {view: front, at: [0, 0, 15], r: 40}
+    - {view: front, at: [10, 0, 25], r: 10}
+    - {view: front, at: [-18, 14, 15], r: 6}
+    - {view: front, at: [-18, -14, 15], r: 6}
+  notes:
+    - "Ø36 轮毂（高出轮盘 10）与 Ø20 孔同心，相对 Ø80 外圆偏心 10"
+    - "孔内键槽宽 6，槽顶距孔心 13，贯通"
+
+# frame：轴 0 沿 Ø80 外圆轴线（底面低），轴 1 指向 Ø20 孔心
+entities:
+  disc: {cylinder: {d: 80, side: outer}, count: 1}
+  bore: {cylinder: {d: 20, side: inner}, count: 1}
+  hub: {cylinder: {d: 36, side: outer}, count: 1}
+  holes: {cylinder: {d: 12, side: inner}, count: 2}
+  frame: {axis_frame: {axis: disc, ref: bore, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 Ø80；右视图总厚 25
+    hard: true
+    check:
+      - bbox_sorted: [25, 80, 80]
+      - exists: disc
+
+  - id: bore
+    source: 主视图 Ø20 通孔，偏心 10
+    check:
+      - exists: bore
+      - through: {holes: bore}
+      - parallel: [bore, disc]
+      - axis_distance: {from: disc, to: bore, value: 10}
+
+  - id: hub
+    source: 主视图 Ø36 轮毂；右视图轮盘厚 15、总厚 25；注释：轮毂与孔同心
+    check:
+      - exists: hub
+      - coaxial: [hub, bore]
+      - line_material: {frame: frame, along: 0, polar: [25, 0], expect: [[0, 25]]}
+      - line_material: {frame: frame, along: 0, polar: [15, 180], expect: [[0, 15]]}
+
+  - id: keyway
+    source: 主视图键槽宽 6、槽顶距孔心 13
+    derivation: 过孔心、垂直于偏心方向的直线：外圆半弦 √(40² − 10²) = 38.730，孔占 [−10, 10]，键槽一侧延至 13
+    check:
+      - line_material:
+          frame: frame
+          along: 2
+          at: [8, 10, null]
+          expect_any: [[[-38.73, -13], [10, 38.73]], [[-38.73, -10], [13, 38.73]]]
+
+  - id: holes
+    source: 主视图 2×Ø12 通孔，距中心 18（偏心反侧），孔距 28
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[-18, 14], [-18, -14]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 73857.27
+    check:
+      - volume: 73857.27
+
+ungraded: []

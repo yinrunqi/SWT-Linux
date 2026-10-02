@@ -1,4 +1,4 @@
-"""三视图 track 13 道题：参考 STEP 满分且与构造函数一致；每个反例恰好在预期条目上失败；
+"""三视图 track 33 道题：参考 STEP 满分且与构造函数一致；每个反例恰好在预期条目上失败；
 图像分对参考件的任意摆放为 100，对反例与镜像件低于 100。
 
 运行：venv-occ\\Scripts\\python.exe -m pytest geomcheck/tests -q
@@ -54,6 +54,69 @@ MUTANTS = [
     ("c4_desktop_pen_holder", "no_charge_hole", lambda: R.c4_desktop_pen_holder(charge_hole=False),
      {"charge_hole"}),
     ("c4_desktop_pen_holder", "no_fillet", lambda: R.c4_desktop_pen_holder(fillet_r=0), {"fillets"}),
+    # D 组：自行设计、由参考件投影出图的 20 道题
+    ("d01_v_block", "v_width_36", lambda: R.d01_v_block(v_width=36), {"v_groove", "volume"}),
+    # 没有让刀槽时 V 形斜面延伸到槽底，斜面面积随之变化
+    ("d01_v_block", "no_relief", lambda: R.d01_v_block(relief=False), {"relief", "v_groove"}),
+    ("d01_v_block", "groove_y_28", lambda: R.d01_v_block(groove_y=28), {"side_grooves"}),
+    ("d02_bearing_block", "bore_30", lambda: R.d02_bearing_block(bore_d=30), {"bore", "volume"}),
+    ("d02_bearing_block", "no_oil_hole", lambda: R.d02_bearing_block(oil_hole=False), {"oil_hole"}),
+    ("d02_bearing_block", "hole_dx_40", lambda: R.d02_bearing_block(hole_dx=40), {"mount_holes"}),
+    ("d02_bearing_block", "no_recess", lambda: R.d02_bearing_block(recess=False), {"recess", "volume"}),
+    ("d03_rib_bracket", "rib_top_40", lambda: R.d03_rib_bracket(rib_top=40), {"gussets", "volume"}),
+    ("d03_rib_bracket", "hole_y_40", lambda: R.d03_rib_bracket(hole_y=40), {"hole"}),
+    ("d03_rib_bracket", "no_fillet", lambda: R.d03_rib_bracket(fillet_r=0), {"corners"}),
+    ("d04_flange_cover", "four_holes", lambda: R.d04_flange_cover(n_holes=4), {"holes", "volume"}),
+    ("d04_flange_cover", "recess_30", lambda: R.d04_flange_cover(recess_r=30), {"recess", "volume"}),
+    ("d05_stepped_shaft", "key_42_68", lambda: R.d05_stepped_shaft(key=(42, 68)), {"keyway"}),
+    ("d05_stepped_shaft", "hole_x_20", lambda: R.d05_stepped_shaft(hole_x=20), {"cross_hole"}),
+    ("d06_u_clevis", "slot_18", lambda: R.d06_u_clevis(slot_w=18), {"slot", "volume"}),
+    # 耳板顶部圆弧与销孔同心，销孔下移时耳板外形一起变
+    ("d06_u_clevis", "pin_y_36", lambda: R.d06_u_clevis(pin_y=36), {"pin_hole", "ears"}),
+    ("d06_u_clevis", "tap_depth_20", lambda: R.d06_u_clevis(tap_depth=20), {"boss"}),
+    # 键槽开在偏心孔上，孔心移动时键槽位置一起变
+    ("d07_eccentric_cam", "offset_12", lambda: R.d07_eccentric_cam(offset=12), {"bore", "keyway"}),
+    ("d07_eccentric_cam", "no_keyway", lambda: R.d07_eccentric_cam(keyway=False), {"keyway"}),
+    ("d07_eccentric_cam", "hub_x_0", lambda: R.d07_eccentric_cam(hub_x=0), {"hub"}),
+    ("d08_pipe_tee", "branch_bore_12", lambda: R.d08_pipe_tee(branch_bore=12), {"branch", "volume"}),
+    ("d08_pipe_tee", "flange_t_10", lambda: R.d08_pipe_tee(flange_t=10), {"flanges", "volume"}),
+    ("d08_pipe_tee", "hole_deg_0", lambda: R.d08_pipe_tee(hole_deg=0), {"flange_holes"}),
+    ("d09_angle_bracket", "slot_25_51", lambda: R.d09_angle_bracket(slot=(25, 51)), {"slots"}),
+    ("d09_angle_bracket", "hole_y_24", lambda: R.d09_angle_bracket(hole_y=24), {"holes"}),
+    ("d09_angle_bracket", "no_fillet", lambda: R.d09_angle_bracket(fillet_r=0), {"fillet"}),
+    ("d10_clamp_plate", "cbore_6", lambda: R.d10_clamp_plate(cbore_depth=6), {"counterbores", "volume"}),
+    ("d10_clamp_plate", "rebate_4", lambda: R.d10_clamp_plate(rebate_depth=4), {"rebate"}),
+    ("d10_clamp_plate", "window_40_24", lambda: R.d10_clamp_plate(window=(40, 24)), {"window", "volume"}),
+    ("d11_dovetail_slide", "angle_50", lambda: R.d11_dovetail_slide(angle=50), {"dovetail", "volume"}),
+    ("d11_dovetail_slide", "hole_depth_15", lambda: R.d11_dovetail_slide(hole_depth=15), {"holes"}),
+    ("d11_dovetail_slide", "no_top_slot", lambda: R.d11_dovetail_slide(top_slot=False), {"top_slot", "volume"}),
+    ("d12_cut_block", "chamfer_25", lambda: R.d12_cut_block(chamfer_z=25), {"chamfer", "volume"}),
+    ("d12_cut_block", "notch_20", lambda: R.d12_cut_block(notch_w=20), {"notch", "volume"}),
+    ("d12_cut_block", "hole_z_20", lambda: R.d12_cut_block(hole_z=20), {"hole"}),
+    ("d13_v_pulley", "groove_10", lambda: R.d13_v_pulley(groove_depth=10), {"grooves", "volume"}),
+    ("d13_v_pulley", "six_holes", lambda: R.d13_v_pulley(n_holes=6), {"holes", "volume"}),
+    ("d13_v_pulley", "no_keyway", lambda: R.d13_v_pulley(keyway=False), {"keyway"}),
+    ("d14_link_rod", "pocket_5", lambda: R.d14_link_rod(pocket_depth=5), {"pockets", "volume"}),
+    ("d14_link_rod", "small_t_20", lambda: R.d14_link_rod(small_t=20), {"thickness", "volume"}),
+    ("d15_motor_mount", "bore_20", lambda: R.d15_motor_mount(bore_d=20), {"motor_bore"}),
+    ("d15_motor_mount", "square_30", lambda: R.d15_motor_mount(square=30), {"screw_holes"}),
+    ("d15_motor_mount", "no_gussets", lambda: R.d15_motor_mount(gussets=False), {"gussets", "volume"}),
+    ("d16_heat_sink", "six_fins", lambda: R.d16_heat_sink(n_fins=6), {"fins", "volume"}),
+    ("d16_heat_sink", "hole_dz_12", lambda: R.d16_heat_sink(hole_dz=12), {"holes"}),
+    # R28 时没有 Ø60 外圆，总高也随之变
+    ("d17_pipe_clamp", "outer_28", lambda: R.d17_pipe_clamp(outer_r=28), {"outer", "strap", "bores", "volume"}),
+    # 无间隙时两件相贴，螺栓孔在两件上的孔壁合成一段
+    ("d17_pipe_clamp", "no_gap", lambda: R.d17_pipe_clamp(gap=0), {"ears_gap", "bolt_holes", "volume"}),
+    ("d17_pipe_clamp", "hole_x_38", lambda: R.d17_pipe_clamp(hole_x=38), {"bolt_holes"}),
+    # 11 齿居中排布时 x=30、90 处正好是齿，沉孔上方被齿挡住
+    ("d18_gear_rack", "eleven_teeth", lambda: R.d18_gear_rack(n_teeth=11),
+     {"teeth", "holes", "counterbores", "volume"}),
+    ("d18_gear_rack", "cbore_4", lambda: R.d18_gear_rack(cbore_depth=4), {"counterbores"}),
+    ("d19_hinge_leaf", "notch_3", lambda: R.d19_hinge_leaf(notch=3), {"plate", "volume"}),
+    ("d19_hinge_leaf", "hole_x_35", lambda: R.d19_hinge_leaf(hole_x=35), {"holes"}),
+    ("d20_ribbed_base", "rib_h_12", lambda: R.d20_ribbed_base(rib_h=12), {"ribs", "volume"}),
+    ("d20_ribbed_base", "center_depth_25", lambda: R.d20_ribbed_base(center_depth=25), {"center_boss"}),
+    ("d20_ribbed_base", "boss_x_50", lambda: R.d20_ribbed_base(boss_x=50), {"bosses"}),
 ]
 
 _refs: dict[str, Reference] = {}

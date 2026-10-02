@@ -1,0 +1,91 @@
+case: d18_gear_rack
+title: D18 齿条
+prompt: 根据所附三视图（第三角画法，单位 mm）建模齿条，单一实体。
+prompt_en: Model the gear rack from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d18_gear_rack.png
+reference: eval/three_view/references/d18_gear_rack.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [0, 0, 15], b: [30, 0, 7.5], side: bottom, tier: 1, text: "30"}
+    - {view: front, a: [30, 0, 7.5], b: [90, 0, 7.5], side: bottom, tier: 1, text: "60"}
+    - {view: front, a: [0, 0, 15], b: [120, 0, 15], side: bottom, tier: 2, text: "120"}
+    - {view: front, a: [0, 20, 15], b: [5, 25, 15], side: top, tier: 1, text: "5"}
+    - {view: front, a: [5, 25, 15], b: [15, 25, 15], side: top, tier: 1, text: "10"}
+    - {view: front, a: [113.5, 25, 15], b: [116.5, 25, 15], side: top, tier: 1, text: "3"}
+    - {view: front, a: [0, 20, 15], b: [3.5, 25, 15], side: left, tier: 1, text: "5"}
+    - {view: front, a: [0, 0, 15], b: [3.5, 25, 15], side: left, tier: 2, text: "25"}
+    - {view: front, a: [95.5, 0, 7.5], b: [95.5, 6, 7.5], side: right, tier: 1, text: "6"}
+    - {view: front, a: [120, 0, 15], b: [120, 20, 15], side: right, tier: 2, text: "20"}
+    - {view: right, a: [120, 0, 15], b: [120, 0, 0], side: bottom, text: "15"}
+  callouts:
+    - {view: front, at: [17.5, 25, 15], r: 0, angle: 60, leader: 40, text: "齿侧与竖直方向 20°"}
+    - {view: top, at: [90, 25, 7.5], r: 3.3, angle: -20, leader: 240, text: "2×Ø6.6 通孔，底面沉孔 Ø11 深 6"}
+  centers:
+    - {view: top, at: [30, 25, 7.5], r: 5.5}
+    - {view: top, at: [90, 25, 7.5], r: 5.5}
+  notes:
+    - "12 个梯形齿，齿距 10，第一个齿中心距左端 5；齿高 5、齿顶宽 3，齿侧与竖直方向成 20°，沿厚度方向贯通"
+    - "两沉孔从底面加工，孔心位于厚度中间"
+
+# frame：轴 0 = 厚度 15，轴 1 = 高度（底面低），轴 2 = 长度 120
+entities:
+  holes: {cylinder: {d: 6.6, side: inner}, count: 2}
+  cbores: {cylinder: {d: 11, side: inner}, count: 2}
+  frame: {principal_frame: {signs: {1: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 120、25；右视图 15
+    hard: true
+    check:
+      - bbox_sorted: [15, 25, 120]
+
+  - id: body
+    source: 主视图齿根高 20
+    check:
+      - line_material: {frame: frame, along: 1, at: [3, null, 0.5], expect: [[0, 20]]}
+      - line_material: {frame: frame, along: 2, at: [3, 10, null], expect: [[0, 120]]}
+
+  - id: teeth
+    source: 主视图齿距 10、首齿中心距端面 5、齿高 5、齿顶宽 3、齿侧 20°；注释：12 齿
+    derivation: 齿根半宽 1.5 + 5·tan20° = 3.320；高 21 处半宽 3.320 − tan20° = 2.956；齿侧面长 5/cos20° = 5.321、宽 15，面积 79.81
+    check:
+      - line_material:
+          frame: frame
+          along: 2
+          at: [3, 21, null]
+          expect: [[2.044, 7.956], [12.044, 17.956], [22.044, 27.956], [32.044, 37.956], [42.044, 47.956],
+                   [52.044, 57.956], [62.044, 67.956], [72.044, 77.956], [82.044, 87.956], [92.044, 97.956],
+                   [102.044, 107.956], [112.044, 117.956]]
+      - planar_face: {frame: frame, axis: 1, angle: 70, area: 79.81}
+
+  - id: holes
+    source: 主视图孔距 60、距端面 30；俯视图 2×Ø6.6 通孔，厚度居中
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - parallel_to_frame: {frame: frame, axis: 1, items: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [0, 2], expect: [[7.5, 30], [7.5, 90]]}
+
+  - id: counterbores
+    source: 俯视图底面沉孔 Ø11 深 6；主视图 6
+    check:
+      - exists: cbores
+      - recess: {holes: holes, top_d: 11, depth: 6}
+      - line_material: {frame: frame, along: 1, at: [3, null, 30], expect: [[6, 20]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 38217.49
+    check:
+      - volume: 38217.49
+
+ungraded: []
