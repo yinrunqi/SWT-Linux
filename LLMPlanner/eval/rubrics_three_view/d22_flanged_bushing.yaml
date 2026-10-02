@@ -1,0 +1,98 @@
+case: d22_flanged_bushing
+title: D22 法兰轴套
+prompt: 根据所附三视图（第三角画法，单位 mm）建模法兰轴套，单一实体。
+prompt_en: Model the flanged bushing from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d22_flanged_bushing.png
+reference: eval/three_view/references/d22_flanged_bushing.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: top, a: [-30, 0, 0], b: [30, 0, 0], side: top, text: "Ø60"}
+    - {view: top, a: [-20, 0, 38], b: [20, 0, 38], side: bottom, text: "Ø40"}
+    - {view: top, a: [30, 0, 0], b: [30, 0, 8], side: right, tier: 1, text: "8"}
+    - {view: top, a: [30, 0, 0], b: [20, 0, 38], side: right, tier: 2, text: "38"}
+    - {view: right, a: [20, -20, 0], b: [20, -20, 25], side: bottom, text: "25"}
+  callouts:
+    - {view: front, at: [0, 0, 38], r: 12.5, angle: 200, leader: 110, text: "Ø25 通孔"}
+    - {view: front, at: [0, 0, 38], r: 15, angle: 160, leader: 100, text: "Ø30 深 5"}
+    - {view: front, at: [17.678, 17.678, 8], r: 3, angle: 30, leader: 50, text: "4×Ø6 通孔"}
+    - {view: front, at: [0, 0, 8], r: 25, angle: -30, leader: 60, text: "Ø50"}
+    - {view: right, at: [20, 0, 25], r: 2, angle: 60, leader: 50, text: "Ø4 通孔"}
+  circles:
+    - {view: front, at: [0, 0, 8], r: 25}
+  centers:
+    - {view: front, at: [0, 0, 38], r: 30}
+    - {view: right, at: [20, 0, 25], r: 2}
+  axes:
+    - {view: top, a: [0, 0, -4], b: [0, 0, 42]}
+  notes:
+    - "Ø4 油孔沿径向贯通两侧壁，距法兰底面 25；沉孔 Ø30 深 5 在小端"
+    - "4×Ø6 孔均布于 Ø50 圆，与油孔方向成 45°"
+
+# frame：轴 0 沿 Ø25 孔轴线（法兰端低），轴 1 沿油孔方向
+entities:
+  bore: {cylinder: {d: 25, side: inner}, count: 1}
+  cbore: {cylinder: {d: 30, side: inner}, count: 1}
+  oil: {cylinder: {d: 4, side: inner}}
+  holes: {cylinder: {d: 6, side: inner}, count: 4}
+  frame: {axis_frame: {axis: bore, ref_dir: oil, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 俯视图 Ø60、总长 38
+    hard: true
+    check:
+      - bbox_sorted: [38, 60, 60]
+      - exists: bore
+
+  - id: flange
+    source: 俯视图法兰 Ø60、厚 8
+    check:
+      - line_material: {frame: frame, along: 0, polar: [25, 0], expect: [[0, 8]]}
+      - radial_material: {frame: frame, t: 4, deg: 0, expect: [[12.5, 30]]}
+
+  - id: body
+    source: 俯视图套筒 Ø40；主视图 Ø25 通孔
+    check:
+      - through: {holes: bore}
+      - radial_material: {frame: frame, t: 20, deg: 90, expect: [[12.5, 20]]}
+      - line_material: {frame: frame, along: 0, polar: [18, 90], expect: [[0, 38]]}
+
+  - id: counterbore
+    source: 主视图 Ø30 深 5；注释：在小端
+    check:
+      - exists: cbore
+      - coaxial: [cbore, bore]
+      - line_material: {frame: frame, along: 0, polar: [14, 90], expect: [[0, 33]]}
+
+  - id: oil_hole
+    source: 右视图 Ø4 通孔，距法兰底面 25；注释：径向贯通两侧壁
+    check:
+      - exists: oil
+      - through: {holes: oil}
+      - line_material: {frame: frame, along: 0, polar: [16, 0], expect: [[0, 23], [27, 38]]}
+      - line_material: {frame: frame, along: 0, polar: [16, 180], expect: [[0, 23], [27, 38]]}
+
+  - id: flange_holes
+    source: 主视图 4×Ø6 通孔均布于 Ø50；注释：与油孔方向成 45°
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_distance: {from: bore, to: holes, value: 25}
+      - equal_angular: {about: bore, items: holes}
+      - line_material: {frame: frame, along: 0, polar: [25, 45], expect: []}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 39491.86
+    check:
+      - volume: 39491.86
+
+ungraded: []

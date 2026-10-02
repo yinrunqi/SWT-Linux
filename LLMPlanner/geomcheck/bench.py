@@ -41,10 +41,14 @@ KINDS = {
     # 自行设计、由参考件投影出图
     "Three-view projected basic parts": "d01_v_block d04_flange_cover d05_stepped_shaft d06_u_clevis "
                                         "d07_eccentric_cam d09_angle_bracket d10_clamp_plate "
-                                        "d11_dovetail_slide d12_cut_block d18_gear_rack",
+                                        "d11_dovetail_slide d12_cut_block d18_gear_rack "
+                                        "d21_t_slot_block d22_flanged_bushing d23_cross_plate d24_u_channel "
+                                        "d25_step_pin d26_square_flange d27_guide_rail d35_shaft_collar",
     "Three-view projected composite parts": "d02_bearing_block d03_rib_bracket d08_pipe_tee d13_v_pulley "
                                             "d14_link_rod d15_motor_mount d16_heat_sink d17_pipe_clamp "
-                                            "d19_hinge_leaf d20_ribbed_base",
+                                            "d19_hinge_leaf d20_ribbed_base d28_round_cup d29_hanger_bracket "
+                                            "d30_valve_body d31_lever_arm d32_tool_holder d33_shell_housing "
+                                            "d34_fixture_plate d36_flanged_tube d37_column_base",
 }
 ORDER = [c for v in KINDS.values() for c in v.split()]
 KIND_OF = {c: k for k, v in KINDS.items() for c in v.split()}

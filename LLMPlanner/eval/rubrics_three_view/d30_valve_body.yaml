@@ -1,0 +1,94 @@
+case: d30_valve_body
+title: D30 阀体
+prompt: 根据所附三视图（第三角画法，单位 mm）建模阀体，单一实体。
+prompt_en: Model the valve body from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d30_valve_body.png
+reference: eval/three_view/references/d30_valve_body.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-35, 0, 25], b: [35, 0, 25], side: bottom, tier: 2, text: "70"}
+    - {view: front, a: [-18, 7, 25], b: [18, 7, 25], side: bottom, tier: 1, text: "36"}
+    - {view: front, a: [-35, 0, 25], b: [-35, 50, 25], side: left, tier: 1, text: "50"}
+    - {view: front, a: [-35, 0, 25], b: [-15, 60, 0], side: left, tier: 2, text: "60"}
+    - {view: front, a: [35, 7, 25], b: [35, 43, 25], side: right, tier: 1, text: "36"}
+    - {view: right, a: [35, 0, 25], b: [35, 0, -25], side: bottom, text: "50"}
+    - {view: right, a: [35, 0, -25], b: [35, 25, -25], side: right, text: "25"}
+  callouts:
+    - {view: front, at: [18, 43, 25], r: 2.5, angle: 45, leader: 50, text: "4×Ø5 深 10"}
+    - {view: right, at: [35, 25, 0], r: 10, angle: 210, leader: 60, text: "Ø20 通孔"}
+    - {view: top, at: [0, 60, 0], r: 8, angle: 210, leader: 70, text: "Ø16 至 Ø20 孔"}
+    - {view: top, at: [0, 60, 0], r: 15, angle: 30, leader: 40, text: "Ø30 凸台高 10"}
+  centers:
+    - {view: right, at: [35, 25, 0], r: 10}
+    - {view: top, at: [0, 60, 0], r: 15}
+    - {view: front, at: [18, 43, 25], r: 2.5}
+    - {view: front, at: [-18, 43, 25], r: 2.5}
+    - {view: front, at: [18, 7, 25], r: 2.5}
+    - {view: front, at: [-18, 7, 25], r: 2.5}
+  axes:
+    - {view: front, a: [0, -4, 25], b: [0, 64, 25]}
+  notes:
+    - "Ø20 孔左右贯通，位于块体前后、上下中心；Ø16 孔自凸台顶面向下通入 Ø20 孔"
+    - "4×Ø5 孔在前面，以 Ø20 孔轴线为中心呈 36×36 方形分布"
+
+# frame：轴 0 = 前后 50（后面低），轴 1 = 高度 60（底面低），轴 2 = 长度 70
+entities:
+  bore: {cylinder: {d: 20, side: inner}, count: 1}
+  port: {cylinder: {d: 16, side: inner}, count: 1}
+  boss: {cylinder: {d: 30, side: outer}, count: 1}
+  holes: {cylinder: {d: 5, side: inner}, count: 4}
+  frame: {principal_frame: {signs: {0: larger_area_low, 1: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 70、60；右视图 50
+    hard: true
+    check:
+      - bbox_sorted: [50, 60, 70]
+
+  - id: bore
+    source: 右视图 Ø20 通孔，孔心高 25；注释：左右贯通、位于前后中心
+    check:
+      - exists: bore
+      - through: {holes: bore}
+      - parallel_to_frame: {frame: frame, axis: 2, items: bore}
+      - axis_positions: {frame: frame, items: bore, axes: [0, 1], expect: [[25, 25]]}
+
+  - id: port
+    source: 俯视图 Ø16；注释：自凸台顶面向下通入 Ø20 孔
+    check:
+      - exists: port
+      - parallel_to_frame: {frame: frame, axis: 1, items: port}
+      - axis_positions: {frame: frame, items: port, axes: [0, 2], expect: [[25, 35]]}
+      - line_material: {frame: frame, along: 1, at: [25, null, 35], expect: [[0, 15]]}
+
+  - id: boss
+    source: 俯视图 Ø30 凸台高 10；主视图总高 60
+    check:
+      - exists: boss
+      - axis_positions: {frame: frame, items: boss, axes: [0, 2], expect: [[25, 35]]}
+      - line_material: {frame: frame, along: 1, at: [25, null, 47], expect: [[0, 15], [35, 60]]}
+
+  - id: face_holes
+    source: 主视图 4×Ø5 深 10，孔距 36×36；注释：在前面、以 Ø20 孔轴线为中心
+    check:
+      - exists: holes
+      - pocket_depth: {pocket: holes, value: 10}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[7, 17], [7, 53], [43, 17], [43, 53]]}
+      - line_material: {frame: frame, along: 0, at: [null, 7, 17], expect: [[0, 40]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 154088.11
+    check:
+      - volume: 154088.11
+
+ungraded: []

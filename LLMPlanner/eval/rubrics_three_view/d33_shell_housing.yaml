@@ -1,0 +1,88 @@
+case: d33_shell_housing
+title: D33 壳体罩
+prompt: 根据所附三视图（第三角画法，单位 mm）建模壳体罩，单一实体。
+prompt_en: Model the shell housing cover from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d33_shell_housing.png
+reference: eval/three_view/references/d33_shell_housing.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-55, 0, 25], b: [55, 0, 25], side: bottom, tier: 2, text: "110"}
+    - {view: front, a: [-40, 0, 25], b: [40, 0, 25], side: bottom, tier: 1, text: "80"}
+    - {view: front, a: [-55, 0, 25], b: [-55, 6, 25], side: left, tier: 1, text: "6"}
+    - {view: front, a: [-40, 0, 25], b: [-40, 40, 25], side: left, tier: 2, text: "40"}
+    - {view: front, a: [35, 34, 25], b: [40, 34, 25], side: top, text: "5"}
+    - {view: front, a: [40, 34, 25], b: [40, 40, 25], side: right, text: "6"}
+    - {view: top, a: [-47.5, 40, 0], b: [47.5, 40, 0], side: top, text: "95"}
+    - {view: right, a: [55, 0, 25], b: [55, 0, -25], side: bottom, text: "50"}
+  callouts:
+    - {view: top, at: [0, 40, 0], r: 10, angle: 45, leader: 60, text: "Ø20 通孔"}
+    - {view: top, at: [47.5, 40, 0], r: 4, angle: -45, leader: 40, text: "2×Ø8 通孔"}
+  centers:
+    - {view: top, at: [0, 40, 0], r: 10}
+    - {view: top, at: [47.5, 40, 0], r: 4}
+    - {view: top, at: [-47.5, 40, 0], r: 4}
+  axes:
+    - {view: top, a: [-59, 40, 0], b: [59, 40, 0]}
+  notes:
+    - "底部敞口的壳体：四周壁厚 5，顶板厚 6；两侧安装耳厚 6，与底面平齐"
+    - "所有孔位于前后中心线上"
+
+# frame：轴 0 = 高度 40（顶面低），轴 1 = 前后 50，轴 2 = 长度 110
+entities:
+  top_hole: {cylinder: {d: 20, side: inner}, count: 1}
+  ear_holes: {cylinder: {d: 8, side: inner}, count: 2}
+  frame: {principal_frame: {signs: {0: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 110、40；右视图 50
+    hard: true
+    check:
+      - bbox_sorted: [40, 50, 110]
+
+  - id: walls
+    source: 主视图左右壁厚 5；注释：四周壁厚 5、底部敞口
+    check:
+      - line_material: {frame: frame, along: 2, at: [20, 25, null], expect: [[15, 20], [90, 95]]}
+      - line_material: {frame: frame, along: 1, at: [20, null, 55], expect: [[0, 5], [45, 50]]}
+
+  - id: top
+    source: 主视图顶板厚 6
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 25, 75], expect: [[0, 6]]}
+
+  - id: top_hole
+    source: 俯视图 Ø20 通孔，居中
+    check:
+      - exists: top_hole
+      - through: {holes: top_hole}
+      - axis_positions: {frame: frame, items: top_hole, axes: [1, 2], expect: [[25, 55]]}
+
+  - id: ears
+    source: 主视图耳板厚 6、伸出 15；注释：与底面平齐
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 25, 3], expect: [[34, 40]]}
+      - line_material: {frame: frame, along: 0, at: [null, 25, 107], expect: [[34, 40]]}
+
+  - id: ear_holes
+    source: 俯视图 2×Ø8 通孔，孔距 95
+    check:
+      - exists: ear_holes
+      - through: {holes: ear_holes}
+      - axis_positions: {frame: frame, items: ear_holes, axes: [1, 2], expect: [[25, 7.5], [25, 102.5]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 71311.86
+    check:
+      - volume: 71311.86
+
+ungraded: []

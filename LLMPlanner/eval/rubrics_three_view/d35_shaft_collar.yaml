@@ -1,0 +1,75 @@
+case: d35_shaft_collar
+title: D35 开口轴环
+prompt: 根据所附三视图（第三角画法，单位 mm）建模开口轴环，单一实体。
+prompt_en: Model the split shaft collar from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d35_shaft_collar.png
+reference: eval/three_view/references/d35_shaft_collar.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [20, -1, 14], b: [20, 1, 14], side: right, text: "2"}
+    - {view: front, a: [0, -20, 14], b: [15, -20, 14], side: bottom, text: "15"}
+    - {view: top, a: [-20, 20, 0], b: [-20, 20, 14], side: left, text: "14"}
+  callouts:
+    - {view: front, at: [0, 0, 14], r: 20, angle: 135, leader: 40, text: "Ø40"}
+    - {view: front, at: [0, 0, 14], r: 10, angle: 225, leader: 90, text: "Ø20"}
+    - {view: top, at: [15, 20, 7], r: 2.25, angle: 45, leader: 50, text: "Ø4.5 通孔"}
+  centers:
+    - {view: front, at: [0, 0, 14], r: 20}
+    - {view: top, at: [15, 20, 7], r: 2.25}
+  axes:
+    - {view: front, a: [15, -24, 14], b: [15, 24, 14]}
+  notes:
+    - "开口宽 2，位于一侧，切断该侧环壁；Ø4.5 夹紧孔垂直穿过开口，位于厚度中间"
+
+# frame：轴 0 沿 Ø20 孔轴线，轴 1 沿夹紧孔方向；开口在轴 2 的哪一侧不定，相关探测取两种情况之一
+entities:
+  bore: {cylinder: {d: 20, side: inner}, count: 1}
+  clamp: {cylinder: {d: 4.5, side: inner}}
+  frame: {axis_frame: {axis: bore, ref_dir: clamp}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 Ø40；俯视图厚 14
+    hard: true
+    check:
+      - bbox_sorted: [14, 40, 40]
+      - exists: bore
+
+  - id: ring
+    source: 主视图 Ø40、Ø20
+    check:
+      - radial_material: {frame: frame, t: 3, deg: 0, expect: [[10, 20]]}
+      - radial_material: {frame: frame, t: 11, deg: 180, expect: [[10, 20]]}
+
+  - id: slit
+    source: 主视图开口宽 2；注释：位于一侧，切断该侧环壁
+    derivation: 距轴线 15 处环壁半宽 √(20² − 15²) = 13.229
+    check:
+      - line_material: {frame: frame, along: 2, at: [3, 0, null], expect_any: [[[-20, -10]], [[10, 20]]]}
+      - line_material: {frame: frame, along: 1, at: [3, null, 15], expect_any: [[[-13.229, -1], [1, 13.229]], [[-13.229, 13.229]]]}
+      - line_material: {frame: frame, along: 1, at: [3, null, -15], expect_any: [[[-13.229, -1], [1, 13.229]], [[-13.229, 13.229]]]}
+
+  - id: clamp_hole
+    source: 主视图孔心距轴线 15；俯视图 Ø4.5 通孔；注释：穿过开口、位于厚度中间
+    derivation: 距轴线 17 处探测线在孔内；另一侧环壁半宽 √(20² − 17²) = 10.536
+    check:
+      - exists: clamp
+      - through: {holes: clamp}
+      - line_material: {frame: frame, along: 1, at: [7, null, 17], expect_any: [[], [[-10.536, 10.536]]]}
+      - line_material: {frame: frame, along: 1, at: [7, null, -17], expect_any: [[], [[-10.536, 10.536]]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 12529.36
+    check:
+      - volume: 12529.36
+
+ungraded: []

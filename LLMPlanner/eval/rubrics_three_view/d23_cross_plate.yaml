@@ -1,0 +1,81 @@
+case: d23_cross_plate
+title: D23 十字连接板
+prompt: 根据所附三视图（第三角画法，单位 mm）建模十字连接板，单一实体。
+prompt_en: Model the cross-shaped connecting plate from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d23_cross_plate.png
+reference: eval/three_view/references/d23_cross_plate.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-60, -15, 10], b: [60, -15, 10], side: bottom, tier: 2, text: "120"}
+    - {view: front, a: [-45, 0, 10], b: [45, 0, 10], side: bottom, tier: 1, text: "90"}
+    - {view: front, a: [-15, -60, 10], b: [-15, 60, 10], side: left, text: "120"}
+    - {view: front, a: [-15, 60, 10], b: [15, 60, 10], side: top, text: "30"}
+    - {view: front, a: [60, -15, 10], b: [60, 15, 10], side: right, text: "30"}
+    - {view: right, a: [60, 60, 0], b: [60, 60, 10], side: top, text: "10"}
+  callouts:
+    - {view: front, at: [0, 0, 10], r: 15, angle: 210, leader: 90, text: "Ø30 通孔"}
+    - {view: front, at: [45, 0, 10], r: 4, angle: 60, leader: 60, text: "4×Ø8 通孔"}
+    - {view: front, at: [20, 20, 10], r: -5, angle: 45, leader: 50, text: "4×R5"}
+  centers:
+    - {view: front, at: [0, 0, 10], r: 15}
+    - {view: front, at: [45, 0, 10], r: 4}
+    - {view: front, at: [-45, 0, 10], r: 4}
+    - {view: front, at: [0, 45, 10], r: 4}
+    - {view: front, at: [0, -45, 10], r: 4}
+  notes:
+    - "两臂相同、互相垂直并对称于中心；4 个 Ø8 孔位于两臂中心线上，距中心 45"
+
+# frame：轴 0 = 厚度 10，轴 1、2 = 两臂方向（各 120）
+entities:
+  center: {cylinder: {d: 30, side: inner}, count: 1}
+  holes: {cylinder: {d: 8, side: inner}, count: 4}
+  frame: {principal_frame: {}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 120×120；右视图厚 10
+    hard: true
+    check:
+      - bbox_sorted: [10, 120, 120]
+
+  - id: arms
+    source: 主视图两臂宽 30、长 120；右视图厚 10
+    check:
+      - line_material: {frame: frame, along: 2, at: [5, 85, null], expect: [[45, 75]]}
+      - line_material: {frame: frame, along: 1, at: [5, null, 85], expect: [[45, 75]]}
+      - line_material: {frame: frame, along: 0, at: [null, 60, 5], expect: [[0, 10]]}
+
+  - id: fillets
+    source: 主视图 4×R5（内角）
+    check:
+      - blend_faces: {radius: 5, min_count: 4}
+
+  - id: center_hole
+    source: 主视图 Ø30 通孔，居中
+    check:
+      - exists: center
+      - through: {holes: center}
+      - axis_positions: {frame: frame, items: center, axes: [1, 2], expect: [[60, 60]]}
+
+  - id: holes
+    source: 主视图 4×Ø8 通孔，孔距 90；注释：位于两臂中心线上
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[15, 60], [105, 60], [60, 15], [60, 105]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 54135.40
+    check:
+      - volume: 54135.40
+
+ungraded: []
