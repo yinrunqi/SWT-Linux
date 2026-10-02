@@ -70,6 +70,22 @@ def _save_artifacts(sw_url: str, stem: Path) -> dict:
     return saved
 
 
+def strip_images(value):
+    """trace 里的图片 data URI 换成占位：输入图纸已在 drawings/ 下，投影图可由 STEP 重新生成。"""
+    if isinstance(value, dict):
+        return {key: strip_images(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [strip_images(item) for item in value]
+    if isinstance(value, str) and value.startswith("data:image/"):
+        return "[image]"
+    return value
+
+
+def _write_trace(path: Path, request: dict, status: int | None, body: Any, error: str | None) -> None:
+    trace = {"request": strip_images(request), "response_status": status, "response": strip_images(body), "error": error}
+    path.write_text(json.dumps(trace, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
+
+
 def run_one(task: dict, k: int, args) -> dict:
     started = time.perf_counter()
     stem = args.out_dir / f"{task['case']}_r{k}"
@@ -82,20 +98,25 @@ def run_one(task: dict, k: int, args) -> dict:
         "plan_model": args.plan_model,
         "action_level": args.action_level,
         "use_cache": False,
+        "capture_trace": True,
     }
     if args.action_level == "L1":
         # 端到端：图纸直接交给 plan_model（须为多模态模型），没有单独的读图阶段
         payload.update({"max_turns": args.max_llm_calls, "views_tool": not args.no_views_tool})
     else:
         payload.update({"mode": args.mode, "vision_model": args.vision_model})
+    trace_path = stem.parent / f"{stem.name}.trace.json"
     row: dict[str, Any] = {"case": task["case"], "repeat": k, "action_level": args.action_level,
-                           "plan_model": args.plan_model}
+                           "plan_model": args.plan_model, "trace": str(trace_path)}
+    status_code, body = None, None
     try:
         response = requests.post(f"{args.web_url}/api/run", json=payload, timeout=3600)
+        status_code = response.status_code
         try:
             body = response.json()
         except ValueError:
-            body = {"error": response.text[:500]}
+            body = {"error": response.text[:500], "raw_text": response.text}
+        _write_trace(trace_path, payload, status_code, body, None)
         row["token_usage"] = body.get("token_usage")
         row["status"] = (body.get("multi_turn") or {}).get("status") or (body.get("summary") or {}).get("status")
         if args.action_level == "L1":
@@ -112,6 +133,8 @@ def run_one(task: dict, k: int, args) -> dict:
         row["artifacts"] = _save_artifacts(args.sw_url, stem)
     except Exception as exc:
         row["error"] = str(exc)
+        if body is None:
+            _write_trace(trace_path, payload, status_code, None, str(exc))
     finally:
         try:
             _close_documents(args.sw_url)

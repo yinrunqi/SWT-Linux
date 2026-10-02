@@ -144,7 +144,7 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view --artifacts eval\art
 venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_three_view summary eval\three_view_l1_<model>_scores.json --repeats 2
 ```
 
-`runs.json` 里每次运行另记 LLM 调用数、工具调用数、失败的建模调用数和 `render_views` 调用数。`--action-level L0` 仍可使用旧流程：先由 `--vision-model` 把图纸读成结构化中间表示，再生成蓝图交给 L0 多轮 Agent。
+`runs.json` 里每次运行另记 LLM 调用数、工具调用数、失败的建模调用数和 `render_views` 调用数。LLM 的完整输出存在 `<case>_r<k>.trace.json`，包括整段对话和每次调用的原始响应。`--action-level L0` 仍可使用旧流程：先由 `--vision-model` 把图纸读成结构化中间表示，再生成蓝图交给 L0 多轮 Agent。
 
 这个 track 目前还没有参考结果。
 

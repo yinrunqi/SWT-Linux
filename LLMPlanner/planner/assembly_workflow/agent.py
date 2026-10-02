@@ -6,6 +6,7 @@ import json
 import time
 from typing import Any
 
+from planner.workflow.agent import raw_response
 from planner.workflow.tools import dumps_result
 
 from .session import AssemblySession
@@ -72,6 +73,7 @@ class AssemblyAgent:
         ]
         usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "calls": 0}
         tool_log: list[dict] = []
+        llm_responses: list[dict] = []
         failed_signatures: dict[str, int] = {}
         status, summary, stalls, error = "max_llm_calls", "", 0, None
 
@@ -88,6 +90,7 @@ class AssemblyAgent:
             except Exception as exc:
                 status, error = "llm_error", f"{type(exc).__name__}: {exc}"
                 break
+            llm_responses.append(raw_response(response))
             usage["calls"] += 1
             if response.usage is not None:
                 for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
@@ -155,5 +158,6 @@ class AssemblyAgent:
             "aliases": dict(self.session.aliases),
             "saved": self.session.saved,
             "messages": messages,
+            "llm_responses": llm_responses,
             "duration_seconds": round(time.perf_counter() - started, 2),
         }

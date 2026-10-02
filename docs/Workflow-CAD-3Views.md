@@ -58,6 +58,14 @@ Web 后端所在的 `venv` 没有 OpenCASCADE，所以投影通过子进程调�
 
 `capture_trace` 返回的对话记录和评测日志里，图片都换成 `[image]` 占位，不会写入 base64。
 
+评测时每次运行都会打开 `capture_trace`，把完整响应写到 `<case>_r<k>.trace.json`。这个文件包含：
+- `request`：发出的请求，图纸已换成占位；
+- `response.raw_llm_trace`：发给模型的整段对话，包括模型每轮的文字、工具调用和工具结果；
+- `response.workflow.llm_responses`：每次调用模型的原始响应，包括 `reasoning_content`、`finish_reason` 和逐次 usage；
+- `response.workflow.tool_calls`：每次工具调用的参数和结果。
+
+L0 流程录下的是每次调用模型的原始请求和响应。请求超时或后端出错时，trace 里记 `error`。
+
 ---
 
 ## 2. 环境
@@ -86,7 +94,7 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py --plan-model <�
 venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view --artifacts eval\artifacts\smoke_three_view_l1
 ```
 
-SolidWorks 里会建出一个 L 型支架，`eval\artifacts\smoke_three_view_l1\` 下会出现 `b01_l_bracket_r1.step`、`.SLDPRT` 和 `runs.json`。打分输出 rubric 得分和图像分。
+SolidWorks 里会建出一个 L 型支架，`eval\artifacts\smoke_three_view_l1\` 下会出现 `b01_l_bracket_r1.step`、`.SLDPRT`、`.trace.json`（完整的 LLM 记录）和 `runs.json`。打分输出 rubric 得分和图像分。
 
 ### 3.2 批量运行 50 道三视图题
 
@@ -115,7 +123,7 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 
 每次运行前后都会关闭所有 SolidWorks 文档，结束后把 STEP 和 SLDPRT 存到 `eval/artifacts/<name>/<case>_r<k>.*`。失败的运行也会尽量保存当时的零件，同样参与打分。
 
-`runs.json` 里 L1 每次运行记录：`status`（`finished` / `max_llm_calls` / `stalled` / `llm_error`）、`llm_calls`、`tool_calls`、`failed_modeling_calls`、`render_views_calls`、`token_usage`、`duration_seconds`，以及 `plan_model` 和 `action_level`。
+`runs.json` 里 L1 每次运行记录：`status`（`finished` / `max_llm_calls` / `stalled` / `llm_error`）、`llm_calls`、`tool_calls`、`failed_modeling_calls`、`render_views_calls`、`token_usage`、`duration_seconds`、`plan_model`、`action_level`，以及 trace 文件路径 `trace`。
 
 ### 3.3 消融：有无 `render_views`
 

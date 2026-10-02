@@ -369,7 +369,7 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 - 发动机两次都只插入 7 个零件，凸轮轴、凸轮、凸轮齿轮、飞轮和曲轴齿轮都没装上。凸轮轴缺失时运动检查直接报 `'camshaft'`，记 0 分。
 - 停滞的原因：每次 LLM 调用的 `finish_reason` 现在记在结果的 `llm_calls_detail` 里，被判停滞的调用全部是 `finish_reason=length`，输出正好 8000 token，可见文字和工具调用都是 0。也就是说，模型把 `max_tokens=8000` 全部花在了隐藏的思考上，答案还没写出来就被截断，智能体把它当成"没有调用工具"。重跑结果在 `eval/assembly_gen_sonnet5_v2_engine_trace.json`：r1 是 11 次调用、最后 3 次截断；r2 是 35 次调用、其中 11 次截断，装配 rubric 分别为 18.1 和 46.67，与第一次一致。
 - 发动机 r2 的另一个问题出在模型自身：它反复按 `cyl(d=24)` 去找机体上的缸孔，但机体是一块平板，没有这个孔，活塞的滑动副应该用平面来约束。
-- 现在每行结果里有装配阶段的工具调用记录 `tool_calls`、智能体的文字回复 `agent_texts` 和每次调用的 `llm_calls_detail`；完整对话保存在产物目录的 `agent_messages.json`。
+- 现在每行结果里有装配阶段的工具调用记录 `tool_calls`、智能体的文字回复 `agent_texts` 和每次调用的 `llm_calls_detail`；完整对话保存在产物目录的 `agent_messages.json`，每次调用的原始响应保存在同目录的 `agent_llm_responses.json`，包括 `reasoning_content`、`finish_reason` 和逐次 usage。`gen` / `e2e` 条件下零件生成阶段的完整记录保存在 `parts/<id>.agent.json`，内容有对话、原始响应、工具调用和最终状态，结果里的 `parts[].trace` 指向这个文件。
 - 为排除截断，又把装配阶段的 `max_tokens` 放大到 32000（`--asm-max-tokens 32000`）重跑发动机，产物在 `eval/artifacts/assembly_gen_sonnet5_tok32k/`。r1 第 31 次工具调用（`joint`）时 SolidWorks 卡死，HTTP 等满 180 s 超时，之后活动装配文档丢失，剩下约 25 次调用全部报"没有活动的装配体文档"，保存时脚本崩溃，r2 没有跑。这是基础设施故障，不是模型结果；harness 已改为记 `infra_error` 后继续，需要在 SolidWorks 空闲时重跑。
 - 同期用 TT Switch 跑 gemini-3.5-flash / gemini-3.1-pro 时，多轮工具调用的请求会间歇性返回 `400 model_param_invalid`，有时几分钟内全部被拒。这是网关上游的问题，所以没有 Gemini 的结果。
 

@@ -56,6 +56,17 @@ def _image_part(image_b64: str, mime: str) -> dict:
     return {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{image_b64}"}}
 
 
+def raw_response(response: Any) -> dict:
+    """完整的 provider 响应（含 reasoning_content、finish_reason、逐次 usage），只用于记录。"""
+    dump = getattr(response, "model_dump", None)
+    if callable(dump):
+        try:
+            return json.loads(json.dumps(dump(mode="json"), ensure_ascii=False, default=str))
+        except Exception:
+            pass
+    return {"repr": repr(response)}
+
+
 def _first_user_message(goal: str, image_b64: str | None, image_mime: str) -> dict:
     text = f"建模需求：\n{goal}\n\n当前是一个空零件，请开始建模。"
     if not image_b64:
@@ -123,6 +134,7 @@ class WorkflowAgent:
         rendered_at: int | None = None
         usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "calls": 0}
         tool_log: list[dict] = []
+        llm_responses: list[dict] = []
         failed_signatures: dict[str, int] = {}
         status, summary, stalls, error = "max_llm_calls", "", 0, None
 
@@ -139,6 +151,7 @@ class WorkflowAgent:
             except Exception as exc:
                 status, error = "llm_error", f"{type(exc).__name__}: {exc}"
                 break
+            llm_responses.append(raw_response(response))
             usage["calls"] += 1
             if response.usage is not None:
                 for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
@@ -227,6 +240,7 @@ class WorkflowAgent:
             "token_usage": usage,
             "final_state": final_state,
             "messages": _without_images(messages),
+            "llm_responses": llm_responses,
             "duration_seconds": round(time.perf_counter() - started, 2),
         }
 

@@ -150,6 +150,10 @@ def _grade_step(step: Path, rubric_path: Path) -> dict:
         return {"accepted": False, "score": 0.0, "error": f"{type(exc).__name__}: {exc}"}
 
 
+def _write_json(path: Path, value) -> None:
+    path.write_text(json.dumps(value, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
+
+
 def generate_part(
     spec: dict,
     dest: Path,
@@ -170,6 +174,8 @@ def generate_part(
     outcome = WorkflowAgent(
         _openai(), model, session, max_llm_calls=max_llm_calls, extra_tools=extra,
     ).run(spec["prompt"])
+    trace = dest.with_suffix(".agent.json")
+    _write_json(trace, outcome)
     step, sldprt = dest.with_suffix(".step"), dest.with_suffix(".SLDPRT")
     artifacts = {}
     try:
@@ -192,6 +198,7 @@ def generate_part(
         "llm_calls": outcome["llm_calls"],
         "duration_seconds": round(time.perf_counter() - started, 2),
         "artifacts": artifacts,
+        "trace": str(trace),
     }
 
 
@@ -223,8 +230,8 @@ def assemble(
         tools=tool_specs(workflow),
     ).run(goal)
     messages = outcome.get("messages") or []
-    dest.with_name("agent_messages.json").write_text(
-        json.dumps(messages, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
+    _write_json(dest.with_name("agent_messages.json"), messages)
+    _write_json(dest.with_name("agent_llm_responses.json"), outcome.get("llm_responses") or [])
     agent_texts = [
         {"turn": i, "text": m.get("content") or "", "with_tools": bool(m.get("tool_calls"))}
         for i, m in enumerate(messages)
