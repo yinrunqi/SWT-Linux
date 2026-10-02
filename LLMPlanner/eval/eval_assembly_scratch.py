@@ -439,6 +439,11 @@ def main() -> None:
     )
     parser.add_argument("--output-dir", default=str(ROOT / "eval" / "artifacts" / "assembly_scratch"))
     parser.add_argument("--output", default=str(ROOT / "eval" / "assembly_scratch_result.json"))
+    parser.add_argument(
+        "--resume", action="store_true",
+        help="keep finished rows of an existing --output and run only the missing ones; "
+        "rows with infra_error or an LLM error are rerun",
+    )
     args = parser.parse_args()
     names = []
     tokens = [t.strip() for t in args.cases.split(",")]
@@ -456,6 +461,20 @@ def main() -> None:
             parser.error(f"e2e 条件要在建模时给零件打分才能决定是否装配，但 OCC 不可用（{exc}）；改用 --condition gen")
     workflows = ["v1", "v2"] if args.workflow == "both" else [args.workflow]
     rows = []
+    if args.resume and Path(args.output).is_file():
+        previous = json.loads(Path(args.output).read_text(encoding="utf-8"))
+        for key in ("model", "reasoning_effort", "asm_max_tokens"):
+            if previous.get(key) != getattr(args, key):
+                parser.error(f"--resume：已有结果的 {key}={previous.get(key)!r} 与本次 {getattr(args, key)!r} 不一致")
+        for row in previous.get("results") or []:
+            asm = row.get("assembly") or {}
+            if asm.get("infra_error") or asm.get("status") == "llm_error":
+                print(f"[resume] 重跑 {row['case_id']} {row['condition']} r{row['repeat']} {row['workflow']}"
+                      f"（{asm.get('infra_error') or asm.get('error')}）", flush=True)
+                continue
+            rows.append(row)
+        print(f"[resume] 保留已完成的 {len(rows)} 行", flush=True)
+    done = {(r["case_id"], r["condition"], r["repeat"], r["workflow"]) for r in rows}
 
     def write() -> dict:
         report = {
@@ -491,6 +510,9 @@ def main() -> None:
             for repeat in range(1, args.repeats + 1):
                 # 同一 case / 重复内交替 v1、v2，减少 SolidWorks 状态漂移造成的系统偏差
                 for workflow in workflows:
+                    if (case["case_id"], condition, repeat, workflow) in done:
+                        print(f"=== {case['case_id']} {condition} r{repeat} {workflow} === 已完成，跳过", flush=True)
+                        continue
                     print(f"=== {case['case_id']} {condition} r{repeat} {workflow} ===", flush=True)
                     row = run_condition(case, condition, repeat, args, workflow)
                     rows.append(row)
