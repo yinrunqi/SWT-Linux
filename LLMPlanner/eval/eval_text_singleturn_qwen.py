@@ -23,9 +23,11 @@ from planner.observer import SwObserver
 try:
     from .eval_three_view_multiturn import ROOT, _query_balance
     from . import metrics as geo_metrics
+    from . import sw_watchdog
 except ImportError:
     from eval_three_view_multiturn import ROOT, _query_balance
     import metrics as geo_metrics
+    import sw_watchdog
 
 
 MODEL = "Qwen3.5-397B-A17B"
@@ -2759,6 +2761,15 @@ def main() -> int:
         help="Keep finished runs from --output and continue interrupted L1 runs from their checkpoints "
         "(eval/artifacts/<result name>/<case>_r<k>.checkpoint.json); runs that errored are retried",
     )
+    parser.add_argument(
+        "--sw-restarts",
+        type=int,
+        default=0,
+        help="SolidWorks watchdog: before each case restart SolidWorks and the HTTP service when either is down "
+        "or SolidWorks exceeds --sw-max-private-gb; a run that loses SolidWorks is restarted and continued from "
+        "its checkpoint up to this many times. 0 = off",
+    )
+    parser.add_argument("--sw-max-private-gb", type=float, default=12.0)
     args = parser.parse_args()
     if args.reasoning_effort and args.action_level != "L1":
         parser.error("--reasoning-effort requires --action-level L1")
@@ -2803,26 +2814,41 @@ def main() -> int:
     done = {(item["case_id"], item.get("repeat", 0)) for item in results}
     artifact_root = ROOT / "eval" / "artifacts" / output.stem
     jobs = [(case, repeat) for case in selected for repeat in range(repeats) if (case.case_id, repeat) not in done]
+    sw_url = args.sw_url.rstrip("/")
     for index, (case, repeat) in enumerate(jobs, 1):
         checkpoint = artifact_root / f"{case.case_id}_r{repeat + 1}.checkpoint.json"
         resuming = args.resume and checkpoint.is_file()
         print(f"[{index}/{len(jobs)}] {case.name} (run {repeat + 1}/{repeats})"
               f"{' resume from checkpoint' if resuming else ''}", flush=True)
-        result = run_one(
-            case,
-            web_url=args.web_url.rstrip("/"),
-            sw_url=args.sw_url.rstrip("/"),
-            model=args.model,
-            strict_orientation=args.strict_orientation,
-            action_level=args.action_level,
-            max_llm_calls=args.max_llm_calls,
-            artifact_stem=artifact_root / f"{case.case_id}_r{repeat + 1}" if args.save_artifacts else None,
-            lang=args.lang,
-            provider=args.provider,
-            reasoning_effort=args.reasoning_effort,
-            checkpoint=checkpoint if args.action_level == "L1" else None,
-            resume=resuming,
-        )
+        for attempt in range(1 + args.sw_restarts):
+            if args.sw_restarts:
+                reason = sw_watchdog.check(sw_url, args.sw_max_private_gb)
+                if reason:
+                    print(f"  [watchdog] {reason}", flush=True)
+                    sw_watchdog.restart(sw_url)
+            result = run_one(
+                case,
+                web_url=args.web_url.rstrip("/"),
+                sw_url=sw_url,
+                model=args.model,
+                strict_orientation=args.strict_orientation,
+                action_level=args.action_level,
+                max_llm_calls=args.max_llm_calls,
+                artifact_stem=artifact_root / f"{case.case_id}_r{repeat + 1}" if args.save_artifacts else None,
+                lang=args.lang,
+                provider=args.provider,
+                reasoning_effort=args.reasoning_effort,
+                checkpoint=checkpoint if args.action_level == "L1" else None,
+                resume=resuming,
+            )
+            lost = result.get("workflow_status") == "sw_lost" or (
+                result.get("status") == "error" and sw_watchdog.check(sw_url, 0) is not None
+            )
+            if not lost or attempt == args.sw_restarts:
+                break
+            print(f"  [watchdog] SolidWorks lost during the run ({result.get('workflow_status') or result.get('error')}); "
+                  "restarting and continuing from the checkpoint", flush=True)
+            resuming = args.action_level == "L1" and checkpoint.is_file()
         result["repeat"] = repeat
         results.append(result)
         usage = result.get("token_usage") or {}
