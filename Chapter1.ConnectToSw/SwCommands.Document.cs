@@ -51,6 +51,58 @@ namespace Chapter1.ConnectToSw
         }
 
         /// <summary>
+        /// 把文档切到标准视向并缩放到全屏，供重放录屏使用。
+        /// target：auto=当前活动窗口，part=零件建模文档，assembly=装配建模文档（先激活其窗口，插入零件可能把零件窗口顶到前面）。
+        /// view：isometric / trimetric / dimetric / front / back / left / right / top / bottom / none（none 只缩放）。
+        /// </summary>
+        public Dictionary<string, object> FitView(string target, string view)
+        {
+            IModelDoc2 doc;
+            switch ((target ?? "auto").ToLowerInvariant())
+            {
+                case "part":
+                    doc = ActiveDoc;
+                    break;
+                case "assembly":
+                    doc = _activeAssembly == null ? null : (IModelDoc2)_activeAssembly;
+                    if (doc != null)
+                    {
+                        int errors = 0;
+                        _swApp.ActivateDoc3(doc.GetTitle(), false, (int)swRebuildOnActivation_e.swDontRebuildActiveDoc, ref errors);
+                    }
+                    break;
+                default:
+                    doc = _swApp.IActiveDoc2;
+                    break;
+            }
+            if (doc == null)
+                throw new InvalidOperationException($"没有可调整视图的文档（target={target}）");
+
+            var views = new Dictionary<string, swStandardViews_e>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["front"] = swStandardViews_e.swFrontView,
+                ["back"] = swStandardViews_e.swBackView,
+                ["left"] = swStandardViews_e.swLeftView,
+                ["right"] = swStandardViews_e.swRightView,
+                ["top"] = swStandardViews_e.swTopView,
+                ["bottom"] = swStandardViews_e.swBottomView,
+                ["isometric"] = swStandardViews_e.swIsometricView,
+                ["trimetric"] = swStandardViews_e.swTrimetricView,
+                ["dimetric"] = swStandardViews_e.swDimetricView,
+            };
+            string viewName = string.IsNullOrWhiteSpace(view) ? "isometric" : view;
+            if (!string.Equals(viewName, "none", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!views.TryGetValue(viewName, out var standard))
+                    throw new ArgumentException($"未知视向 {viewName}");
+                doc.ShowNamedView2("", (int)standard);
+            }
+            doc.ViewZoomtofit2();
+            doc.GraphicsRedraw2();
+            return new Dictionary<string, object> { ["title"] = doc.GetTitle(), ["view"] = viewName };
+        }
+
+        /// <summary>
         /// 关闭除当前活动文档以外的窗口，不保存临时修改。
         /// 装配完成后用于保留最终装配体，同时释放预加载零件窗口。
         /// </summary>

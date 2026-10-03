@@ -273,6 +273,47 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench summary eval\rubric_mymod
 
 核心形体率为 0.85。每次运行平均 91 s、0.18 元，折合每个合格零件 0.25 元。这些结果对应的打分文件是 `eval/rubric_*_tools24.json`。
 
+### 6.1 GPT-6-Astra（英文题面，2026-10-02）
+
+设置：
+
+- Workflow-CAD L1，24 个工具，每次运行最多 40 次 LLM 调用；
+- 模型 `gpt-6-astra`，`--reasoning-effort medium`，温度 0，经 TT Switch 网关轨道 B（`/native`），每次运行带独立的 `X-Session-Id` 以复用 prompt 缓存；
+- 英文题面（`--lang en`），每题 1 次，50 道核心题和 8 道困难题各跑一轮。
+
+命令：
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --provider ttswitch --model gpt-6-astra `
+    --action-level L1 --reasoning-effort medium --lang en --split all --repeats 1 `
+    --output eval\text_workflow_l1_gpt6_astra_medium_all_en_result.json
+```
+
+困难题把 `--split all` 换成 `--split hard`。结果文件是 `eval/text_workflow_l1_gpt6_astra_medium_{all,hard}_en_result.json`，rubric 打分是 `eval/rubric_gpt6_astra_medium_{all,hard}_en.json`。
+
+| 零件类型 | 任务数 | 均分 | pass@1 | 平均 token | 平均 LLM 调用 | 平均耗时 |
+|---|---|---|---|---|---|---|
+| 日常物品 | 9 | 100 | 1.0 | 129.8k | 12.9 | 126 s |
+| 常见机加工件 | 19 | 100 | 1.0 | 55.9k | 6.8 | 54 s |
+| 多特征零件 | 8 | 100 | 1.0 | 76.3k | 9.0 | 77 s |
+| 特定操作零件 | 14 | 97.1 | 0.93 | 52.5k | 6.4 | 52 s |
+| **全部 50 题** | **50** | **99.2**（95% CI [97.6, 100]） | **0.98** | 71.5k | 8.1 | 70 s |
+| 困难子集 | 8 | 100 | 1.0 | 166.4k | 16.2 | 153 s |
+
+两轮的核心形体率都是 1.0。对照第 6、7 节的 Qwen3.5-397B-A17B：50 题均分 84.9、pass@1 0.74，困难子集均分 62.2、pass@1 0.125。两者不完全可比：Qwen 用中文题面、每题 2 次、推理强度为服务端默认。
+
+- 58 次运行都由智能体自己 `finish`，最多用了 36 次调用，没有碰到 40 次的预算。
+- 537 次 LLM 调用里没有截断（`finish_reason=length` 0 次）。单次输出最多 930 token；推理 token 中位数 0、最大 813；prompt 缓存命中率 50 题 86%、困难题 91%。
+- 唯一不合格的是 `rect_to_circle`（60 分）。英文题面是 “transition tube”，模型放样后用 `shell` 抽成 2 mm 壁厚、两端开口，并在总结里写明“未指定的壁厚暂取 2 mm”；rubric 按实心放样体检查两个端面，底面、顶面两项失败。rubric 的 `ungraded` 已注明“过渡管：未给壁厚，按实心放样体理解”，所以这是题面歧义。同类的 `square_to_round`（“transition fitting”）做成了实心，通过。按“看过结果后不改 rubric”的约束没有调整。
+
+建模时脚本打印的 `score` 是旧版近似分 `score_case_v2`（包围盒、体积区间、特征计数，期望值写在 `eval_text_singleturn_qwen.py` 的 `TextCase` 里），不是 rubric 分。这一轮它给出 50 题 97.61、困难题 93.75。除 `rect_to_circle` 两种分都判失败外，另有 15 题 rubric 满分而旧分扣分，原因都在旧分：
+
+- 旧期望值写错：`quad_frame` 机臂沿对角线，包围盒应为 2 × (110·cos45° + 16) = 187.56，旧值按 252；`camshaft` 桃尖最大半径 20、四个凸轮相差 90°，包围盒应为 40×40，旧值 33.9；`lidless_housing` 精确体积是 100×60×50 − 90×50×45 = 97500，旧区间 100000–104000；`vase` 是空心件，旧体积区间 300k–500k 偏大；`wrench`、`phone_stand` 的两种合理读法 rubric 都接受，旧值只认一种。
+- 只按特征类型计数：L1 的 `hole`、`shell`、`circular_pattern` 和轮廓内圆角不计入 cuts / circles / fillets，`flange`、`mug`、`storage_box`、`socket_bolt`、`soap_dish` 因此被判特征不足。
+- 失败工具调用扣分：每次 2.5 分，即使已回滚并修正（`standard_die`、`flanged_elbow`、`connecting_rod`、`planet_carrier` 等）。
+
+58 个 STEP 与运行记录一一对应，OCC 读出的体积与 SolidWorks 实测体积最大相对偏差 0.004%，困难题体积与参考实体一致（例如 `quad_frame` 36432.05 对参考 36432.1）。
+
 ---
 
 ## 7. 困难子集：8 个复杂综合件（showcase）
@@ -314,7 +355,7 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 - 连杆的油孔或减重槽把实体拆成多块；
 - 机架只做了 1 个内角圆角。
 
-打分文件是 `eval/rubric_hard_tools24.json`，汇总在 `eval/rubric_hard_tools24_summary.json`。
+打分文件是 `eval/rubric_hard_tools24.json`，汇总在 `eval/rubric_hard_tools24_summary.json`。GPT-6-Astra 在困难子集上的结果（英文题面，8/8 合格）见 6.1 节。
 
 需要说明两处在看过首批结果后对 rubric 的修正，两处都只放宽了与题意无关的判定：
 - 凸轮轴：模型按切点坐标画弧时，同一段基圆被拆成了圆心相差几微米的两张面，被数成了 5 个基圆。现在不再要求基圆和桃尖圆的数量恰好为 4，四个凸轮是否齐全改由逐个凸轮的探测保证。

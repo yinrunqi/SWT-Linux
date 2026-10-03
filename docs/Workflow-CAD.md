@@ -244,6 +244,24 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py `
 - 从零生成零件再装配（减速箱 / 发动机试点）见 [`Workflow-CAD-Assembly.md`](./Workflow-CAD-Assembly.md)。
 - 打分和汇总见 [`Workflow-CAD-Bench.md`](./Workflow-CAD-Bench.md)。
 
+### 4.5 重放已保存的建模过程（录制演示）
+
+`eval/replay_demo.py` 读取评测结果里保存的 LLM 原始响应和工具日志，不再调用 LLM，按原顺序把每个工具调用发给与评测时相同的会话，在 SolidWorks 里重现建模过程。每一步打印模型这一轮的文字和工具参数，执行后通过 C# 服务的 `/api/view/fit` 切到等轴测并缩放到全屏。
+
+```powershell
+# text-to-CAD（L1）
+venv\Scripts\python.exe -X utf8 -u eval\replay_demo.py text eval\text_workflow_l1_<model>_hard_en_result.json --case camshaft
+
+# 装配：零件用评测时保存的 .SLDPRT，--animate 在驱动件上加马达播放 Motion Study（多位姿测例依次摆位姿）
+venv\Scripts\python.exe -X utf8 -u eval\replay_demo.py assembly eval\assembly_gen_<model>_v2.json --case pumpjack_drive `
+    --artifacts eval\artifacts\assembly_gen_<model>_v2 --animate
+```
+
+- 默认原样重放全部调用，包括评测时失败并已回滚的调用；跳过它们可能改变 SolidWorks 自动编号的特征名，后面按名称引用特征的调用会对不上。
+- 装配的 `save_assembly` 一律写到 `eval/artifacts/replay/<case_id>.SLDASM`（或 `--save-as`），不覆盖评测产物。
+- 结束时打印成败与评测时不一致的调用数，零件还会对比最终体积；不为 0 说明重放没有复现评测结果。
+- `--delay` 控制每步停顿，`--pause` 每步等回车，`--view` 选视向（`off` 不动视图）。
+
 ---
 
 ## 5. 代码导览
