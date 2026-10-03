@@ -2430,7 +2430,10 @@ def run_one(
             ),
             "tool_calls": (payload.get("summary") or {}).get("tool_calls"),
             "resumed": (payload.get("workflow") or {}).get("resumed"),
+            "max_llm_calls": max_llm_calls if action_level == "L1" else None,
             "duration_seconds": round(time.perf_counter() - started, 2),
+            # 续跑时 duration_seconds 只是本段；agent 的计时包含所有中断前的段
+            "workflow_duration_seconds": (payload.get("workflow") or {}).get("duration_seconds"),
             "cleanup_before": cleanup_before,
             "error": None,
             "artifacts": artifacts,
@@ -2559,7 +2562,10 @@ def _write_report(
         ),
         "total": len(results),
         "total_duration_seconds": round(
-            sum(float(item.get("duration_seconds") or 0) for item in results), 2
+            sum(
+                max(float(item.get("workflow_duration_seconds") or 0), float(item.get("duration_seconds") or 0))
+                for item in results
+            ), 2
         ),
         "per_case": per_case,
         "token_totals": {
