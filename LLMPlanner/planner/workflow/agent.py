@@ -55,7 +55,8 @@ DRAWING_NOTE = (
 RENDERED_PLACEHOLDER = "（此前 render_views 的三视图已省略，只保留最新一张）"
 # 续跑时不需要重放的工具：只读查询，不改变零件
 NO_REPLAY_TOOLS = {"get_model_state", "render_views", "finish"}
-RESUMABLE_STATUSES = {"running", "llm_error"}
+RESUMABLE_STATUSES = {"running", "llm_error", "sw_lost"}
+ENVIRONMENT_ERRORS = {"NO_PART", "SW_UNAVAILABLE"}
 
 
 def _image_part(image_b64: str, mime: str) -> dict:
@@ -71,6 +72,14 @@ def raw_response(response: Any) -> dict:
         except Exception:
             pass
     return {"repr": repr(response)}
+
+
+FINISH_REASONS = {"stop", "length", "tool_calls", "content_filter", "function_call"}
+STREAM_ATTEMPTS = 3
+
+
+class StreamFailed(RuntimeError):
+    """网关在流中途以非标准 finish_reason（如 error）结束：上游临时故障，可原样重试。"""
 
 
 def _streamed_completion(client: Any, **kwargs: Any) -> Any:
@@ -100,6 +109,8 @@ def _streamed_completion(client: Any, **kwargs: Any) -> Any:
                     slot["function"]["arguments"] += tc.function.arguments or ""
             if choice.finish_reason:
                 finish_reason = choice.finish_reason
+    if finish_reason is not None and finish_reason not in FINISH_REASONS:
+        raise StreamFailed(f"流以 finish_reason={finish_reason} 结束: {''.join(content)[-300:]}")
     message: dict = {"role": "assistant", "content": "".join(content) or None,
                      "tool_calls": [calls[i] for i in sorted(calls)] or None}
     if reasoning:
@@ -250,7 +261,13 @@ class WorkflowAgent:
                            "temperature": self.temperature, "max_tokens": max_tokens, **extra}
                 try:
                     if self.stream:
-                        response = _streamed_completion(self.client, **request)
+                        for attempt in range(1, STREAM_ATTEMPTS + 1):
+                            try:
+                                response = _streamed_completion(self.client, **request)
+                                break
+                            except StreamFailed:
+                                if attempt == STREAM_ATTEMPTS:
+                                    raise
                     else:
                         response = self.client.chat.completions.create(**request)
                 except Exception as exc:
@@ -278,7 +295,8 @@ class WorkflowAgent:
                     messages.append({"role": "user", "content": "上一条回复太长被截断了。少写分析，直接输出下一步的工具调用。"})
                 checkpoint()
                 continue
-            max_tokens = self.max_tokens
+            # 放宽后的上限保留到本题结束：同一题后续步骤的思考量相近，重置会让每步都先白白截断几次
+            round_start = (len(messages), len(tool_log), dict(failed_signatures))
             assistant = {"role": "assistant", "content": reply["content"]}
             if calls:
                 assistant["tool_calls"] = calls
@@ -320,6 +338,14 @@ class WorkflowAgent:
                             summary = str(args.get("summary", ""))
                     else:
                         result = self.session.call(name, args)
+                code = (result.get("error") or {}).get("code")
+                if code in ENVIRONMENT_ERRORS and getattr(self.session, "has_part", True):
+                    # 零件文档或 SolidWorks 服务丢了，不是模型的错：撤回这一轮，留给 --resume 重放后重做
+                    messages[round_start[0]:] = []
+                    del tool_log[round_start[1]:]
+                    failed_signatures = round_start[2]
+                    status, error, pending = "sw_lost", f"{name}: {result['error'].get('message')}", reply
+                    break
                 if IMAGE_KEY in result:
                     images.append(result.pop(IMAGE_KEY))
                 if not result.get("ok"):
@@ -335,6 +361,8 @@ class WorkflowAgent:
                     "message": (result.get("error") or {}).get("message", ""),
                 })
                 messages.append({"role": "tool", "tool_call_id": call["id"], "content": dumps_result(result)})
+            if status == "sw_lost":
+                break
             if images and not finished:
                 # 投影图很占 token，历史里只保留最新一张
                 if rendered_at is not None:

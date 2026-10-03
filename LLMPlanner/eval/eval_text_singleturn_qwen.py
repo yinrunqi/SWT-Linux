@@ -2628,8 +2628,8 @@ def rescore_report(source: Path, output: Path, strict_orientation: bool = False)
 
 
 def _needs_rerun(result: dict) -> bool:
-    """--resume 时重跑的记录：请求异常、LLM 接口出错或续跑重放失败，都不是模型能力的结果。"""
-    return result.get("status") == "error" or result.get("workflow_status") in ("llm_error", "resume_failed")
+    """--resume 时重跑的记录：请求异常、LLM 接口出错、SolidWorks 文档丢失或续跑重放失败，都不是模型能力的结果。"""
+    return result.get("status") == "error" or result.get("workflow_status") in ("llm_error", "sw_lost", "resume_failed")
 
 
 def main() -> int:

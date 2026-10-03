@@ -140,6 +140,33 @@ def test_workflow_agent_resumes_from_checkpoint_without_repeating_llm_calls(tmp_
     assert json.loads(path.read_text(encoding="utf-8"))["status"] == "finished"
 
 
+class LosingSession(RecordingSession):
+    has_part = True
+
+    def call(self, name, args):
+        if args.get("id") == "LOST":
+            self.calls.append((name, args))
+            return {"ok": False, "error": {"code": "NO_PART", "message": "当前没有活动文档"}}
+        return super().call(name, args)
+
+
+def test_workflow_agent_stops_when_part_is_lost_and_resumes_the_round(tmp_path):
+    path = tmp_path / "case_r1.checkpoint.json"
+    first = ScriptedClient([(1, [_call("a", "extrude", {"id": "A"})]),
+                            (2, [_call("b", "extrude", {"id": "B"}), _call("c", "extrude", {"id": "LOST"})])])
+    outcome = WorkflowAgent(first, "m", LosingSession(), checkpoint_path=path).run("立方体")
+    assert outcome["status"] == "sw_lost" and outcome["llm_calls"] == 2
+    saved = json.loads(path.read_text(encoding="utf-8"))
+    assert [item["args"]["id"] for item in saved["tool_log"]] == ["A"]
+    assert [c["id"] for c in saved["pending"]["tool_calls"]] == ["b", "c"]
+
+    session = RecordingSession()
+    second = ScriptedClient([(3, [_call("d", "finish", {"summary": "s"})])])
+    outcome = WorkflowAgent(second, "m", session, checkpoint_path=path).run("立方体", resume=True)
+    assert outcome["status"] == "finished" and outcome["llm_calls"] == 3
+    assert [args["id"] for _, args in session.calls] == ["A", "B", "LOST"]
+
+
 def test_workflow_agent_stops_resume_when_replay_differs(tmp_path):
     path = tmp_path / "case_r1.checkpoint.json"
     first = ScriptedClient([(1, [_call("a", "extrude", {"id": "A"})])])
@@ -162,6 +189,27 @@ def test_workflow_agent_returns_finished_checkpoint_after_replay(tmp_path):
     outcome = WorkflowAgent(ScriptedClient([]), "m", session, checkpoint_path=path).run("立方体", resume=True)
     assert outcome["status"] == "finished" and outcome["summary"] == "s" and outcome["llm_calls"] == 2
     assert [args["id"] for _, args in session.calls] == ["A"]
+
+
+def test_workflow_agent_keeps_raised_budget_after_truncation():
+    budgets = []
+
+    def create(**kwargs):
+        budgets.append(kwargs["max_tokens"])
+        if len(budgets) == 1:
+            choice = SimpleNamespace(message=SimpleNamespace(content="", tool_calls=None), finish_reason="length")
+        elif len(budgets) == 2:
+            message = SimpleNamespace(content="", tool_calls=[_call("a", "get_model_state")])
+            choice = SimpleNamespace(message=message, finish_reason="tool_calls")
+        else:
+            message = SimpleNamespace(content="", tool_calls=[_call("b", "finish", {"summary": "s"})])
+            choice = SimpleNamespace(message=message, finish_reason="tool_calls")
+        return SimpleNamespace(choices=[choice], usage=None)
+
+    client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+    outcome = WorkflowAgent(client, "m", PartSession(), max_tokens=8000).run("立方体")
+    assert outcome["status"] == "finished"
+    assert budgets == [8000, 16000, 16000]
 
 
 def test_streamed_completion_reassembles_tool_calls_and_usage():
@@ -197,6 +245,29 @@ def test_streamed_completion_reassembles_tool_calls_and_usage():
     assert [(t.id, t.function.name, t.function.arguments) for t in choice.message.tool_calls] == [
         ("t1", "extrude", '{"w": 20}'), ("t2", "finish", "{}")]
     assert response.usage.total_tokens == 12
+
+
+def test_streamed_completion_retries_when_gateway_ends_stream_with_error():
+    from openai.types.chat import ChatCompletionChunk
+
+    def chunk(delta, finish=None):
+        return ChatCompletionChunk.model_construct(
+            id="c1", created=1, model="m", object="chat.completion.chunk", usage=None,
+            choices=[SimpleNamespace(index=0, delta=SimpleNamespace(content=delta.get("content"),
+                                                                     reasoning_content=None,
+                                                                     tool_calls=delta.get("tool_calls")),
+                                     finish_reason=finish)])
+
+    finish_call = SimpleNamespace(index=0, id="t1", function=SimpleNamespace(name="finish", arguments="{}"))
+    streams = [[chunk({"content": "x"}, finish="error")],
+               [chunk({"tool_calls": [finish_call]}, finish="tool_calls")]]
+
+    def create(**kwargs):
+        return iter(streams.pop(0))
+
+    client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+    outcome = WorkflowAgent(client, "m", PartSession(), stream=True).run("立方体")
+    assert outcome["status"] == "finished" and outcome["llm_calls"] == 1 and not streams
 
 
 def test_assembly_agent_keeps_raw_responses():
