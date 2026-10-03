@@ -185,8 +185,11 @@ class WorkflowAgent:
                     if not isinstance(args, dict):
                         raise ValueError("参数必须是 JSON 对象")
                 except ValueError as exc:
-                    result = {"ok": False, "error": {"code": "TOOL_ARGS", "message": f"参数不是合法 JSON: {exc}"}}
+                    result = {"ok": False, "error": {
+                        "code": "TOOL_ARGS", "message": f"参数不是合法 JSON: {exc}；收到的是: {raw_args[:300]}"}}
                     args = {"_raw": raw_args}
+                    # 网关要把历史里的 arguments 解析成对象，非法 JSON 留在历史里会让之后每次请求都 400
+                    call["function"]["arguments"] = "{}"
                 else:
                     if name == "finish":
                         result = self._finish(args)

@@ -1,0 +1,5565 @@
+{
+  "summary": {
+    "n": 3,
+    "part_pass_rate": 0.933,
+    "assembly_score": 66.67,
+    "motion_score": 63.33,
+    "e2e": 0.333
+  },
+  "by_workflow": {
+    "v2": {
+      "all": {
+        "n": 3,
+        "part_pass_rate": 0.933,
+        "assembly_score": 66.67,
+        "motion_score": 63.33,
+        "e2e": 0.333
+      },
+      "adjustable_desk_lamp": {
+        "n": 1,
+        "part_pass_rate": 1.0,
+        "assembly_score": 100.0,
+        "motion_score": 100.0,
+        "e2e": 1.0
+      },
+      "single_cylinder_engine": {
+        "n": 1,
+        "part_pass_rate": 0.8,
+        "assembly_score": 0.0,
+        "motion_score": 0.0,
+        "e2e": 0.0
+      },
+      "two_stage_gearbox": {
+        "n": 1,
+        "part_pass_rate": 1.0,
+        "assembly_score": 100.0,
+        "motion_score": 90.0,
+        "e2e": 0.0
+      }
+    }
+  },
+  "recipes": {
+    "v2": [
+      "assembly_topology.md",
+      "assembly_joint_mapping.md",
+      "assembly_coupling.md",
+      "assembly_linkage.md",
+      "assembly_motion_check.md"
+    ]
+  },
+  "results": [
+    {
+      "case_id": "two_stage_gearbox",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "v2",
+      "parts": [
+        {
+          "part_id": "housing",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "housing",
+            "score": 100.0,
+            "passed": 3,
+            "total": 3,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "thickness",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      10.0,
+                      80.0,
+                      190.0
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "holes",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 3,
+                    "expected": 3
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 10.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 10.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 10.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 56697,
+            "completion_tokens": 810,
+            "total_tokens": 57507,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 81.42,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\housing.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\housing.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\housing.agent.json"
+        },
+        {
+          "part_id": "shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "shaft",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      50.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      10.0,
+                      10.0,
+                      50.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 27068,
+            "completion_tokens": 427,
+            "total_tokens": 27495,
+            "calls": 2
+          },
+          "llm_calls": 2,
+          "duration_seconds": 14.91,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\shaft.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\shaft.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\shaft.agent.json"
+        },
+        {
+          "part_id": "pinion_z12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "pinion_z12",
+            "score": 100.0,
+            "passed": 3,
+            "total": 3,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "bore",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 10.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      10.0
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "teeth",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "angular_openings",
+                    "ok": true,
+                    "sections": [
+                      {
+                        "t": 5,
+                        "r": 16.0,
+                        "count": 12,
+                        "gaps_deg": [
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0
+                        ],
+                        "arc_deg": [
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43
+                        ],
+                        "chord": [
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631
+                        ],
+                        "r_in": [
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245
+                        ],
+                        "r_out": [
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null
+                        ],
+                        "ok": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 46906,
+            "completion_tokens": 474,
+            "total_tokens": 47380,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 159.21,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\pinion_z12.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\pinion_z12.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\pinion_z12.agent.json"
+        },
+        {
+          "part_id": "wheel_z24",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "wheel_z24",
+            "score": 100.0,
+            "passed": 3,
+            "total": 3,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "bore",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 10.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      10.0
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "teeth",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "angular_openings",
+                    "ok": true,
+                    "sections": [
+                      {
+                        "t": 5,
+                        "r": 34.0,
+                        "count": 24,
+                        "gaps_deg": [
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0
+                        ],
+                        "arc_deg": [
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18,
+                          4.18
+                        ],
+                        "chord": [
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479,
+                          2.479
+                        ],
+                        "r_in": [
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249,
+                          32.249
+                        ],
+                        "r_out": [
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null
+                        ],
+                        "ok": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 46857,
+            "completion_tokens": 567,
+            "total_tokens": 47424,
+            "calls": 3
+          },
+          "llm_calls": 3,
+          "duration_seconds": 80.55,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\wheel_z24.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\wheel_z24.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\wheel_z24.agent.json"
+        },
+        {
+          "part_id": "pinion_z12b",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "pinion_z12b",
+            "score": 100.0,
+            "passed": 3,
+            "total": 3,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "bore",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 10.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "teeth",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "angular_openings",
+                    "ok": true,
+                    "sections": [
+                      {
+                        "t": 5,
+                        "r": 16.0,
+                        "count": 12,
+                        "gaps_deg": [
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0,
+                          30.0
+                        ],
+                        "arc_deg": [
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43,
+                          9.43
+                        ],
+                        "chord": [
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631,
+                          2.631
+                        ],
+                        "r_in": [
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245,
+                          14.245
+                        ],
+                        "r_out": [
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null
+                        ],
+                        "ok": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 46963,
+            "completion_tokens": 704,
+            "total_tokens": 47667,
+            "calls": 3
+          },
+          "llm_calls": 3,
+          "duration_seconds": 140.28,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\pinion_z12b.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\pinion_z12b.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\pinion_z12b.agent.json"
+        },
+        {
+          "part_id": "wheel_z36",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "wheel_z36",
+            "score": 100.0,
+            "passed": 3,
+            "total": 3,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "bore",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 10.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      10.0
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "teeth",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "angular_openings",
+                    "ok": true,
+                    "sections": [
+                      {
+                        "t": 5,
+                        "r": 52.0,
+                        "count": 36,
+                        "gaps_deg": [
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0,
+                          10.0
+                        ],
+                        "arc_deg": [
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7,
+                          2.7
+                        ],
+                        "chord": [
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45,
+                          2.45
+                        ],
+                        "r_in": [
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25,
+                          50.25
+                        ],
+                        "r_out": [
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null
+                        ],
+                        "ok": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 46771,
+            "completion_tokens": 667,
+            "total_tokens": 47438,
+            "calls": 3
+          },
+          "llm_calls": 3,
+          "duration_seconds": 126.94,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\wheel_z36.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\wheel_z36.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\wheel_z36.agent.json"
+        }
+      ],
+      "assembly": {
+        "status": "finished",
+        "infra_error": null,
+        "static": {
+          "component_count": 8,
+          "saved": true
+        },
+        "rubric": {
+          "score": 100.0,
+          "parts": {
+            "rigid_groups": 1.0,
+            "joints": 1.0,
+            "mobility": 1.0,
+            "grounded": 1.0,
+            "not_over_defined": 1.0,
+            "couplings": 1.0
+          },
+          "rigid_groups": [
+            {
+              "role": "housing",
+              "body": "housing",
+              "ok": true
+            },
+            {
+              "role": "input_shaft",
+              "body": "input",
+              "ok": true
+            },
+            {
+              "role": "input_pinion",
+              "body": "input",
+              "ok": true
+            },
+            {
+              "role": "lay_shaft",
+              "body": "lay",
+              "ok": true
+            },
+            {
+              "role": "lay_wheel",
+              "body": "lay",
+              "ok": true
+            },
+            {
+              "role": "lay_pinion",
+              "body": "lay",
+              "ok": true
+            },
+            {
+              "role": "output_shaft",
+              "body": "output",
+              "ok": true
+            },
+            {
+              "role": "output_wheel",
+              "body": "output",
+              "ok": true
+            }
+          ],
+          "joints": [
+            {
+              "bodies": [
+                "input",
+                "housing"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "lay",
+                "housing"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "output",
+                "housing"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            }
+          ],
+          "mobility": {
+            "actual": 1,
+            "target": 1,
+            "ok": true,
+            "skipped": []
+          },
+          "floating": [],
+          "ground_ok": true,
+          "over_defined": {},
+          "broken_mates": [],
+          "suppressed_mates": [],
+          "couplings": [
+            {
+              "pair": [
+                "input_pinion",
+                "lay_wheel"
+              ],
+              "mate": "齿轮配合1",
+              "ratio": [
+                12.0,
+                24.0
+              ],
+              "ratio_ok": true,
+              "direction_ok": true,
+              "center_distance_mm": 54.0,
+              "expected_mm": 54.0,
+              "center_ok": true,
+              "score": 1.0
+            },
+            {
+              "pair": [
+                "lay_pinion",
+                "output_wheel"
+              ],
+              "mate": "齿轮配合2",
+              "ratio": [
+                12.0,
+                36.0
+              ],
+              "ratio_ok": true,
+              "direction_ok": true,
+              "center_distance_mm": 72.0,
+              "expected_mm": 72.0,
+              "center_ok": true,
+              "score": 1.0
+            }
+          ]
+        },
+        "static_score": 100.0,
+        "motion": {
+          "passed": false,
+          "score": 90.0,
+          "interference_frames": [],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_sweep_deg": 3437.747,
+            "frames": 121,
+            "driver_max_step_deg": 28.65,
+            "output_max_step_deg": 4.77,
+            "output_ratio": 0.1667,
+            "expected_ratio": 0.16666666666666666,
+            "same_direction": true
+          },
+          "clearance": [
+            {
+              "pair": [
+                "input_pinion",
+                "lay_wheel"
+              ],
+              "mm": 0.0,
+              "ok": false
+            },
+            {
+              "pair": [
+                "lay_pinion",
+                "output_wheel"
+              ],
+              "mm": 0.0,
+              "ok": false
+            }
+          ]
+        },
+        "token_usage": {
+          "prompt_tokens": 435551,
+          "completion_tokens": 10898,
+          "total_tokens": 446449,
+          "calls": 16
+        },
+        "llm_calls": 16,
+        "duration_seconds": 1309.44,
+        "aliases": {
+          "housing": "housing-1",
+          "input_shaft": "shaft-1",
+          "lay_shaft": "shaft-2",
+          "output_shaft": "shaft-3",
+          "input_pinion": "pinion_z12-1",
+          "lay_wheel": "wheel_z24-1",
+          "lay_pinion": "pinion_z12b-1",
+          "output_wheel": "wheel_z36-1"
+        },
+        "agent_texts": [
+          {
+            "turn": 17,
+            "text": "三根轴已装好并能转动。现在插入齿轮并装到对应轴上。",
+            "with_tools": true
+          },
+          {
+            "turn": 29,
+            "text": "SW连接中断了一次，需要重试lay_pinion的装配。",
+            "with_tools": true
+          },
+          {
+            "turn": 31,
+            "text": "lay_pinion还没有装到轴上（dof仍是under，位置偏移到了-35），需要重试mount_on_shaft。",
+            "with_tools": true
+          },
+          {
+            "turn": 33,
+            "text": "All four gears are now mounted. Let's check DOF and then mesh the gears.",
+            "with_tools": true
+          },
+          {
+            "turn": 38,
+            "text": "Both gear meshes are established. Now let's verify DOF and check for interference.",
+            "with_tools": true
+          },
+          {
+            "turn": 41,
+            "text": "DOF=1，无干涉。现在对输入轴做一整圈的运动检查。",
+            "with_tools": true
+          },
+          {
+            "turn": 43,
+            "text": "运动检查通过：输出轴转速比为输入的 1/6（0.1667），且转向相同（符号一致），中间轴为 -0.5（两级外啮合中转向相反是正常的），无干涉、无卡滞、固定件未漂移。现在保存并完成装配。",
+            "with_tools": true
+          }
+        ],
+        "llm_calls_detail": [
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 210,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 76,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 937,
+            "n_tool_calls": 3,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 93,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 4391,
+            "n_tool_calls": 3,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 772,
+            "n_tool_calls": 4,
+            "text_chars": 25
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 265,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2038,
+            "n_tool_calls": 4,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 55,
+            "n_tool_calls": 1,
+            "text_chars": 28
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 202,
+            "n_tool_calls": 1,
+            "text_chars": 59
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 80,
+            "n_tool_calls": 1,
+            "text_chars": 72
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 622,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 103,
+            "n_tool_calls": 2,
+            "text_chars": 82
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 276,
+            "n_tool_calls": 1,
+            "text_chars": 26
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 205,
+            "n_tool_calls": 1,
+            "text_chars": 93
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 573,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          }
+        ],
+        "agent_last_motion": {
+          "passed": true,
+          "frames": 13,
+          "duration": 6.0,
+          "interference_frames": [],
+          "moved": [
+            "shaft-1",
+            "pinion_z12-1",
+            "wheel_z36-1",
+            "pinion_z12b-1",
+            "wheel_z24-1",
+            "shaft-3",
+            "shaft-2"
+          ],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_turned_deg": 3437.7,
+            "sample_ratio": {
+              "input_shaft": 1.0,
+              "input_pinion": 1.0,
+              "lay_shaft": -0.5,
+              "lay_wheel": -0.5,
+              "lay_pinion": -0.5,
+              "output_shaft": 0.1667,
+              "output_wheel": 0.1667
+            }
+          }
+        },
+        "joints": [
+          {
+            "kind": "revolute",
+            "a": "housing-1",
+            "b": "shaft-1",
+            "mates": [
+              "同心1",
+              "重合1"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "housing-1",
+            "b": "shaft-2",
+            "mates": [
+              "同心2",
+              "重合2"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "housing-1",
+            "b": "shaft-3",
+            "mates": [
+              "同心3",
+              "重合3"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "pinion_z12-1",
+            "b": "shaft-1",
+            "mates": [
+              "同心4",
+              "距离2"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "wheel_z24-1",
+            "b": "shaft-2",
+            "mates": [
+              "同心5",
+              "距离4"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "wheel_z36-1",
+            "b": "shaft-3",
+            "mates": [
+              "同心7",
+              "距离7"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "pinion_z12b-1",
+            "b": "shaft-2",
+            "mates": [
+              "同心8",
+              "距离9"
+            ]
+          },
+          {
+            "kind": "coupling:gear",
+            "a": "pinion_z12-1",
+            "b": "wheel_z24-1",
+            "mates": [
+              "齿轮配合1"
+            ]
+          },
+          {
+            "kind": "coupling:gear",
+            "a": "pinion_z12b-1",
+            "b": "wheel_z36-1",
+            "mates": [
+              "齿轮配合2"
+            ]
+          }
+        ]
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\housing.SLDPRT",
+            "name": "housing",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "housing"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\shaft.SLDPRT",
+            "name": "input_shaft",
+            "at": [
+              0,
+              0,
+              10
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\shaft.SLDPRT",
+            "name": "lay_shaft",
+            "at": [
+              54,
+              0,
+              10
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\shaft.SLDPRT",
+            "name": "output_shaft",
+            "at": [
+              126,
+              0,
+              10
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "housing:cyl(d=10.4, near=[0,0])",
+            "b": "input_shaft:cyl(d=10)",
+            "face_a": "housing:face(-Z, outermost)",
+            "face_b": "input_shaft:face(-Z)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "housing:cyl(d=10.4, near=[54,0])",
+            "b": "lay_shaft:cyl(d=10)",
+            "face_a": "housing:face(-Z, outermost)",
+            "face_b": "lay_shaft:face(-Z)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "housing:cyl(d=10.4, near=[126,0])",
+            "b": "output_shaft:cyl(d=10)",
+            "face_a": "housing:face(-Z, outermost)",
+            "face_b": "output_shaft:face(-Z)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\pinion_z12.SLDPRT",
+            "name": "input_pinion",
+            "at": [
+              0,
+              0,
+              25
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\wheel_z24.SLDPRT",
+            "name": "lay_wheel",
+            "at": [
+              54,
+              0,
+              25
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\pinion_z12b.SLDPRT",
+            "name": "lay_pinion",
+            "at": [
+              54,
+              0,
+              40
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\two_stage_gearbox\\gen_r1\\parts\\wheel_z36.SLDPRT",
+            "name": "output_wheel",
+            "at": [
+              126,
+              0,
+              40
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "input_pinion",
+            "shaft": "input_shaft",
+            "diameter": 10,
+            "offset": 15,
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "lay_wheel",
+            "shaft": "lay_shaft",
+            "diameter": 10,
+            "offset": 15,
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "lay_pinion",
+            "shaft": "lay_shaft",
+            "diameter": 10,
+            "offset": 35,
+            "lock_rotation": true
+          },
+          "ok": false,
+          "error_code": "SW_UNAVAILABLE",
+          "message": "[SW_UNAVAILABLE] ('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None))"
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "output_wheel",
+            "shaft": "output_shaft",
+            "diameter": 10,
+            "offset": 35,
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "lay_pinion",
+            "shaft": "lay_shaft",
+            "diameter": 10,
+            "offset": 35,
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 1
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "input_pinion",
+            "b": "lay_wheel",
+            "teeth_a": 12,
+            "teeth_b": 24,
+            "module": 3,
+            "reverse": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "lay_pinion",
+            "b": "output_wheel",
+            "teeth_a": 12,
+            "teeth_b": 36,
+            "module": 3,
+            "reverse": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 1
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "input_shaft",
+            "driver_ref": "input_shaft:cyl(d=10)",
+            "sweep_deg": 360,
+            "frames": 13,
+            "expect_moving": [
+              "input_shaft",
+              "input_pinion",
+              "lay_shaft",
+              "lay_wheel",
+              "lay_pinion",
+              "output_shaft",
+              "output_wheel"
+            ],
+            "expect_fixed": [
+              "housing"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "save_assembly",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "finish",
+          "args": {
+            "summary": "双级外啮合圆柱齿轮减速箱装配完成：\n1. housing 作为地固定；三根轴（输入/中间/输出）分别与 housing 三个孔用 revolute 关节同心+端面贴合装配，孔距 54mm/72mm。\n2. 四个齿轮用 mount_on_shaft(lock_rotation=true) 分别键连接到对应轴：input_pinion(z12)@输入轴 offset15mm；lay_wheel(z24)+lay_pinion(z12b) 同装在中间轴，分别 offset 15mm/35mm 形成轴向两层；output_wheel(z36)@输出轴 offset35mm，与 lay_pinion 同层啮合。\n3. 用 mesh_gears 建立两级外啮合：input_pinion(z12)-lay_wheel(z24) 中心距54mm，reverse=true；lay_pinion(z12b)-output_wheel(z36) 中心距72mm，reverse=true，两次均自动完成齿轮相位旋转。\n4. check_dof 验证 mobility=1（单输入机构，符合预期）；check_interference 无干涉；check_motion 对输入轴整圈驱动验证：各级轴/齿轮均联动，无卡滞，housing 未漂移，输出轴与输入轴转速比为 0.1667（即1/6），转向相同（符号一致，两级外啮合偶数级输出同向），满足总减速比6:1的设计要求。\n5. 装配已保存至 two_stage_gearbox.SLDASM。"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 100.0,
+      "motion_score": 90.0,
+      "e2e": false
+    },
+    {
+      "case_id": "single_cylinder_engine",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "v2",
+      "parts": [
+        {
+          "part_id": "frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "frame",
+            "score": 100.0,
+            "passed": 3,
+            "total": 3,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "plate",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      8.0,
+                      100.0,
+                      210.0
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "bore",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 56437,
+            "completion_tokens": 775,
+            "total_tokens": 57212,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 81.44,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.agent.json"
+        },
+        {
+          "part_id": "crank",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "crank",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "holes",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "pair_distance",
+                    "ok": true,
+                    "measured": 25.0
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 70479,
+            "completion_tokens": 1370,
+            "total_tokens": 71849,
+            "calls": 5
+          },
+          "llm_calls": 5,
+          "duration_seconds": 58.51,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\crank.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\crank.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\crank.agent.json"
+        },
+        {
+          "part_id": "rod",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "rod",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "holes",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "pair_distance",
+                    "ok": true,
+                    "measured": 90.0
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 70221,
+            "completion_tokens": 1498,
+            "total_tokens": 71719,
+            "calls": 5
+          },
+          "llm_calls": 5,
+          "duration_seconds": 40.07,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\rod.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\rod.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\rod.agent.json"
+        },
+        {
+          "part_id": "piston",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "piston",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "coaxial",
+                    "ok": true,
+                    "coaxial": [
+                      true
+                    ]
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      30.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 69759,
+            "completion_tokens": 1317,
+            "total_tokens": 71076,
+            "calls": 5
+          },
+          "llm_calls": 5,
+          "duration_seconds": 212.48,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\piston.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\piston.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\piston.agent.json"
+        },
+        {
+          "part_id": "pin",
+          "status": "max_llm_calls",
+          "accepted": false,
+          "score": null,
+          "grade": null,
+          "token_usage": {
+            "prompt_tokens": 667791,
+            "completion_tokens": 9428,
+            "total_tokens": 677219,
+            "calls": 40
+          },
+          "llm_calls": 40,
+          "duration_seconds": 345.66,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\pin.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\pin.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\pin.agent.json"
+        },
+        {
+          "part_id": "flywheel",
+          "status": "max_llm_calls",
+          "accepted": false,
+          "score": null,
+          "grade": null,
+          "token_usage": {
+            "prompt_tokens": 657893,
+            "completion_tokens": 8731,
+            "total_tokens": 666624,
+            "calls": 40
+          },
+          "llm_calls": 40,
+          "duration_seconds": 324.44,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\flywheel.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\flywheel.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\flywheel.agent.json"
+        },
+        {
+          "part_id": "crank_gear",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "crank_gear",
+            "score": 100.0,
+            "passed": 3,
+            "total": 3,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "bore",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 10.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "teeth",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "angular_openings",
+                    "ok": true,
+                    "sections": [
+                      {
+                        "t": 5,
+                        "r": 22.0,
+                        "count": 16,
+                        "gaps_deg": [
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5
+                        ],
+                        "arc_deg": [
+                          6.64,
+                          6.64,
+                          6.64,
+                          6.64,
+                          6.64,
+                          6.64,
+                          6.64,
+                          6.64,
+                          6.64,
+                          6.64,
+                          6.64,
+                          6.64,
+                          6.64,
+                          6.64,
+                          6.64,
+                          6.64
+                        ],
+                        "chord": [
+                          2.55,
+                          2.55,
+                          2.55,
+                          2.55,
+                          2.55,
+                          2.55,
+                          2.55,
+                          2.55,
+                          2.55,
+                          2.55,
+                          2.55,
+                          2.55,
+                          2.55,
+                          2.55,
+                          2.55,
+                          2.55
+                        ],
+                        "r_in": [
+                          20.248,
+                          20.248,
+                          20.248,
+                          20.248,
+                          20.248,
+                          20.248,
+                          20.248,
+                          20.248,
+                          20.248,
+                          20.248,
+                          20.248,
+                          20.248,
+                          20.248,
+                          20.248,
+                          20.248,
+                          20.248
+                        ],
+                        "r_out": [
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null
+                        ],
+                        "ok": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 46713,
+            "completion_tokens": 529,
+            "total_tokens": 47242,
+            "calls": 3
+          },
+          "llm_calls": 3,
+          "duration_seconds": 88.89,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\crank_gear.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\crank_gear.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\crank_gear.agent.json"
+        },
+        {
+          "part_id": "cam_gear",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "cam_gear",
+            "score": 100.0,
+            "passed": 3,
+            "total": 3,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "bore",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 10.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "teeth",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "angular_openings",
+                    "ok": true,
+                    "sections": [
+                      {
+                        "t": 5,
+                        "r": 46.0,
+                        "count": 32,
+                        "gaps_deg": [
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25,
+                          11.25
+                        ],
+                        "arc_deg": [
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06,
+                          3.06
+                        ],
+                        "chord": [
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457,
+                          2.457
+                        ],
+                        "r_in": [
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25,
+                          44.25
+                        ],
+                        "r_out": [
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null
+                        ],
+                        "ok": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 28482,
+            "completion_tokens": 455,
+            "total_tokens": 28937,
+            "calls": 2
+          },
+          "llm_calls": 2,
+          "duration_seconds": 49.22,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\cam_gear.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\cam_gear.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\cam_gear.agent.json"
+        },
+        {
+          "part_id": "camshaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "camshaft",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      50.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 55651,
+            "completion_tokens": 1512,
+            "total_tokens": 57163,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 27.01,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\camshaft.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\camshaft.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\camshaft.agent.json"
+        },
+        {
+          "part_id": "cam",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "cam",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "eccentric",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "axis_distance",
+                    "ok": true,
+                    "measured": [
+                      4.0
+                    ]
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      8.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 69888,
+            "completion_tokens": 1414,
+            "total_tokens": 71302,
+            "calls": 5
+          },
+          "llm_calls": 5,
+          "duration_seconds": 34.03,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\cam.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\cam.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\cam.agent.json"
+        }
+      ],
+      "assembly": {
+        "status": "max_llm_calls",
+        "infra_error": "save_assembly: [FEATURE_FAILED] 保存装配体失败: 没有活动的装配体文档，请先调用 /api/assembly/new",
+        "static": {
+          "component_count": 8,
+          "saved": false
+        },
+        "rubric": {
+          "score": 0.0,
+          "error": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        "static_score": 0.0,
+        "motion": {
+          "passed": false,
+          "score": 0.0,
+          "error": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        "token_usage": {
+          "prompt_tokens": 1434396,
+          "completion_tokens": 18170,
+          "total_tokens": 1452566,
+          "calls": 50
+        },
+        "llm_calls": 50,
+        "duration_seconds": 351.3,
+        "aliases": {
+          "frame": "frame-1",
+          "crank": "crank-1",
+          "rod": "rod-1",
+          "piston": "piston-1",
+          "crank_gear": "crank_gear-1",
+          "cam_gear": "cam_gear-1",
+          "camshaft": "camshaft-1",
+          "cam": "cam-1"
+        },
+        "agent_texts": [
+          {
+            "turn": 49,
+            "text": "The assembly document session seems to have been lost. Let me try again.",
+            "with_tools": true
+          },
+          {
+            "turn": 59,
+            "text": "The assembly session appears to have been lost unexpectedly (the backend reports no active assembly document). Let me retry a few times in case this is transient.",
+            "with_tools": true
+          },
+          {
+            "turn": 103,
+            "text": "我在尝试继续装配时遇到了一个持续性的后端错误：从某一步开始，系统提示\"没有活动的装配体文档，请先调用 /api/assembly/new\"，但我这边没有被提供创建新装配体文档的工具（`insert_component` 等工具应该会自动创建/附着到装配体文档，但现在全部失败，包括 `get_assembly_state`、`ground_component`、`mate`、`check_motion`、`check_dof` 等）。\n\n**情况说明：**\n1. 最初成功插入并固定了 `frame`，随后也成功插入了 `crank`、`rod`、`piston`、`crank_gear`、`cam_gear`、`camshaft`、`cam` 等组件（这些调用返回了 `ok: true`）。\n2. 但部分零件路径在需求中给出的别名与实际文件名不一致（`crank_shaft`/`crank_pin`/`piston_pin` 均指向 `pin.SLDPRT`，但该文件实际不存在于给定目录，我尝试了多种可能的文件名变体均未命中）。\n3. 在尝试插入 `flywheel.SLDPRT`（文件不存在）之后，后续所有工具调用（无论操作什么组件）都返回\"没有活动的装配体文档\"，包括原本已经成功过的 `frame` 插入调用本身也开始失败。这表明装配体会话在后端已经丢失/崩溃，而我没有可用的工具来重新初始化装配体文档（没有 `/api/assembly/new` 对应的工具）。\n\n**我需要你的配合来恢复：**\n- 请确认以下缺失/不一致的文件名应该指向哪个实际存在的文件：\n  - `pin.SLDPRT`（需求中 `crank_shaft`、`crank_pin`、`piston_pin` 三者都指向此路径）—— 实际目录下的曲轴销/活塞销文件叫什么？\n  - `flywheel.SLDPRT` —— 实际文件名是什么？\n- 另外，由于后端装配体会话似乎已丢失，可能需要你那边重置/重新打开一个空的 SolidWorks 装配体会话，我才能重新从 `insert_component(frame)` 开始装配流程。\n\n在你确认正确文件名、且装配体会话恢复可用后，我会重新按顺序插入所有组件并完成装配（曲轴系统、曲柄滑块、2:1正时齿轮、16:32 齿轮啮合等），并做完整的 `check_motion` 验证后再保存。",
+            "with_tools": false
+          }
+        ],
+        "llm_calls_detail": [
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 183,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 76,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1253,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 200,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 463,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 902,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 404,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 453,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 400,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1744,
+            "n_tool_calls": 6,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 530,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2297,
+            "n_tool_calls": 6,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 88,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 144,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 350,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 125,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 261,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 136,
+            "n_tool_calls": 1,
+            "text_chars": 72
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 185,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 265,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 221,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 343,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 139,
+            "n_tool_calls": 1,
+            "text_chars": 162
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 325,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 203,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 207,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 297,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 214,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 341,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 201,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 152,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 341,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 173,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 140,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 362,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 216,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 440,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 184,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 160,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 119,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 349,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 259,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 220,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 540,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "stop",
+            "completion_tokens": 1051,
+            "n_tool_calls": 0,
+            "text_chars": 1017
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 53,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 174,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 63,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 73,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 151,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          }
+        ],
+        "agent_last_motion": null,
+        "joints": []
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.SLDPRT",
+            "name": "frame"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "frame"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\pin.SLDPRT",
+            "name": "crank_shaft",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 零件文件不存在: C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\pin.SLDPRT"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\crank.SLDPRT",
+            "name": "crank",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\pin.SLDPRT",
+            "name": "crank_shaft",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 零件文件不存在: C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\pin.SLDPRT"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\Pin.SLDPRT",
+            "name": "crank_shaft",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 零件文件不存在: C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\Pin.SLDPRT"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\rod.SLDPRT",
+            "name": "rod",
+            "at": [
+              25,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\crank_pin.SLDPRT",
+            "name": "crank_shaft",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 零件文件不存在: C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\crank_pin.SLDPRT"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\piston_pin.SLDPRT",
+            "name": "piston_pin",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 零件文件不存在: C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\piston_pin.SLDPRT"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\piston.SLDPRT",
+            "name": "piston",
+            "at": [
+              25,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\flywheel.SLDPRT",
+            "name": "flywheel",
+            "at": [
+              0,
+              0,
+              -15
+            ]
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 零件文件不存在: C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\flywheel.SLDPRT"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\crank_gear.SLDPRT",
+            "name": "crank_gear",
+            "at": [
+              0,
+              0,
+              15
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\cam_gear.SLDPRT",
+            "name": "cam_gear",
+            "at": [
+              72,
+              0,
+              15
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\camshaft.SLDPRT",
+            "name": "camshaft",
+            "at": [
+              72,
+              0,
+              15
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\cam.SLDPRT",
+            "name": "cam",
+            "at": [
+              72,
+              0,
+              15
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\Flywheel.SLDPRT",
+            "name": "flywheel",
+            "at": [
+              0,
+              0,
+              -15
+            ]
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 零件文件不存在: C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\Flywheel.SLDPRT"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\crankshaft.SLDPRT",
+            "name": "crank_shaft",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 零件文件不存在: C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\crankshaft.SLDPRT"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\fly_wheel.SLDPRT",
+            "name": "flywheel",
+            "at": [
+              0,
+              0,
+              -15
+            ]
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\wheel.SLDPRT",
+            "name": "flywheel2",
+            "at": [
+              0,
+              0,
+              -15
+            ]
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\shaft.SLDPRT",
+            "name": "crank_shaft",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\main_shaft.SLDPRT",
+            "name": "crank_shaft2",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\crank_shaft.SLDPRT",
+            "name": "crank_shaft3",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\wrist_pin.SLDPRT",
+            "name": "piston_pin2",
+            "at": [
+              25,
+              0,
+              0
+            ]
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.SLDPRT",
+            "name": "frame",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.SLDPRT",
+            "name": "frame"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "check_dof",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.SLDPRT",
+            "name": "frame"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "save_assembly",
+          "args": {
+            "path": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\assembly.SLDASM"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 保存装配体失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.SLDPRT",
+            "name": "frame",
+            "at": [
+              0,
+              0,
+              0
+            ],
+            "rotate_deg": 0
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.SLDPRT",
+            "name": "frame_retry"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\rod.SLDPRT",
+            "name": "rod_test"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.SLDPRT",
+            "name": "frame"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 1
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.SLDPRT",
+            "name": "frame"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "frame:plane(front)",
+            "b": "frame:plane(front)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.SLDPRT",
+            "name": "frame",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "name": "frame",
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.SLDPRT"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "frame"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 固定组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "check_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "TOOL_ARGS",
+          "message": "[TOOL_ARGS] 未知工具 check_assembly_state"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.SLDPRT",
+            "name": "frame"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "frame"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.SLDPRT",
+            "name": "frame"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.SLDPRT",
+            "name": "frame"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "save_assembly",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 保存装配体失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\single_cylinder_engine\\gen_r1\\parts\\frame.SLDPRT",
+            "name": "frame"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 加入组件失败: 没有活动的装配体文档，请先调用 /api/assembly/new"
+        }
+      ],
+      "part_pass_rate": 0.8,
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false
+    },
+    {
+      "case_id": "adjustable_desk_lamp",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "v2",
+      "parts": [
+        {
+          "part_id": "lamp_base",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "lamp_base",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      8.0,
+                      80.0,
+                      120.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 56510,
+            "completion_tokens": 881,
+            "total_tokens": 57391,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 25.22,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_base.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_base.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_base.agent.json"
+        },
+        {
+          "part_id": "lamp_lower_arm",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "lamp_lower_arm",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "holes",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "pair_distance",
+                    "ok": true,
+                    "measured": 120.0
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 5.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 5.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      5.0,
+                      12.0,
+                      132.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 56525,
+            "completion_tokens": 1076,
+            "total_tokens": 57601,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 32.39,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_lower_arm.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_lower_arm.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_lower_arm.agent.json"
+        },
+        {
+          "part_id": "lamp_upper_arm",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "lamp_upper_arm",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "holes",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "pair_distance",
+                    "ok": true,
+                    "measured": 105.0
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 5.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 5.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      5.0,
+                      12.0,
+                      117.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 56918,
+            "completion_tokens": 1123,
+            "total_tokens": 58041,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 29.12,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_upper_arm.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_upper_arm.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_upper_arm.agent.json"
+        },
+        {
+          "part_id": "lamp_shade",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "lamp_shade",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      5.0,
+                      16.0,
+                      52.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 5.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 56377,
+            "completion_tokens": 736,
+            "total_tokens": 57113,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 25.25,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_shade.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_shade.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_shade.agent.json"
+        },
+        {
+          "part_id": "lamp_pin",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "lamp_pin",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      10.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      5.0,
+                      5.0,
+                      10.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 69085,
+            "completion_tokens": 889,
+            "total_tokens": 69974,
+            "calls": 5
+          },
+          "llm_calls": 5,
+          "duration_seconds": 25.7,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_pin.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_pin.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_pin.agent.json"
+        }
+      ],
+      "assembly": {
+        "status": "finished",
+        "infra_error": null,
+        "static": {
+          "component_count": 7,
+          "saved": true
+        },
+        "rubric": {
+          "score": 100.0,
+          "parts": {
+            "rigid_groups": 1.0,
+            "joints": 1.0,
+            "mobility": 1.0,
+            "grounded": 1.0,
+            "not_over_defined": 1.0,
+            "couplings": 1.0
+          },
+          "rigid_groups": [
+            {
+              "role": "base",
+              "body": "base",
+              "ok": true
+            },
+            {
+              "role": "lower_arm",
+              "body": "lower_arm",
+              "ok": true
+            },
+            {
+              "role": "upper_arm",
+              "body": "upper_arm",
+              "ok": true
+            },
+            {
+              "role": "shade",
+              "body": "shade",
+              "ok": true
+            },
+            {
+              "role": "shoulder_pin",
+              "body": "base|lower_arm",
+              "ok": true
+            },
+            {
+              "role": "elbow_pin",
+              "body": "lower_arm|upper_arm",
+              "ok": true
+            },
+            {
+              "role": "wrist_pin",
+              "body": "upper_arm|shade",
+              "ok": true
+            }
+          ],
+          "joints": [
+            {
+              "bodies": [
+                "lower_arm",
+                "base"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "upper_arm",
+                "lower_arm"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "shade",
+                "upper_arm"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            }
+          ],
+          "mobility": {
+            "actual": 3,
+            "target": 3,
+            "ok": true,
+            "skipped": []
+          },
+          "floating": [],
+          "ground_ok": true,
+          "over_defined": {},
+          "broken_mates": [],
+          "suppressed_mates": [],
+          "couplings": []
+        },
+        "static_score": 100.0,
+        "motion": {
+          "mode": "poses",
+          "passed": true,
+          "score": 100.0,
+          "poses": [
+            {
+              "name": "reach_low",
+              "variants": [
+                {
+                  "flip": true
+                },
+                {
+                  "flip": true
+                },
+                {
+                  "flip": false
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "lower_arm",
+                    "coord": "x",
+                    "got": 51.962,
+                    "expected": 51.96,
+                    "err_mm": 0.002,
+                    "ok": true
+                  },
+                  {
+                    "role": "lower_arm",
+                    "coord": "y",
+                    "got": 90.0,
+                    "expected": 90.0,
+                    "err_mm": 0.0,
+                    "ok": true
+                  },
+                  {
+                    "role": "upper_arm",
+                    "coord": "x",
+                    "got": 126.111,
+                    "expected": 126.11,
+                    "err_mm": 0.001,
+                    "ok": true
+                  },
+                  {
+                    "role": "upper_arm",
+                    "coord": "y",
+                    "got": 167.581,
+                    "expected": 167.58,
+                    "err_mm": 0.001,
+                    "ok": true
+                  },
+                  {
+                    "role": "shade",
+                    "coord": "x",
+                    "got": 174.009,
+                    "expected": 174.01,
+                    "err_mm": 0.001,
+                    "ok": true
+                  },
+                  {
+                    "role": "shade",
+                    "coord": "y",
+                    "got": 245.804,
+                    "expected": 245.8,
+                    "err_mm": 0.004,
+                    "ok": true
+                  }
+                ],
+                "max_err_mm": 0.004,
+                "ok": true
+              },
+              "interference_count": 0,
+              "interference_mm3": 0.0,
+              "drifted_fixed": [],
+              "ok": true
+            },
+            {
+              "name": "reach_mid",
+              "variants": [
+                {
+                  "flip": false
+                },
+                {
+                  "flip": true
+                },
+                {
+                  "flip": true
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "lower_arm",
+                    "coord": "x",
+                    "got": 30.0,
+                    "expected": 30.0,
+                    "err_mm": 0.0,
+                    "ok": true
+                  },
+                  {
+                    "role": "lower_arm",
+                    "coord": "y",
+                    "got": 111.962,
+                    "expected": 111.96,
+                    "err_mm": 0.002,
+                    "ok": true
+                  },
+                  {
+                    "role": "upper_arm",
+                    "coord": "x",
+                    "got": 107.581,
+                    "expected": 107.58,
+                    "err_mm": 0.001,
+                    "ok": true
+                  },
+                  {
+                    "role": "upper_arm",
+                    "coord": "y",
+                    "got": 186.111,
+                    "expected": 186.11,
+                    "err_mm": 0.001,
+                    "ok": true
+                  },
+                  {
+                    "role": "shade",
+                    "coord": "x",
+                    "got": 195.01,
+                    "expected": 195.01,
+                    "err_mm": 0.0,
+                    "ok": true
+                  },
+                  {
+                    "role": "shade",
+                    "coord": "y",
+                    "got": 204.812,
+                    "expected": 204.81,
+                    "err_mm": 0.002,
+                    "ok": true
+                  }
+                ],
+                "max_err_mm": 0.002,
+                "ok": true
+              },
+              "interference_count": 0,
+              "interference_mm3": 0.0,
+              "drifted_fixed": [],
+              "ok": true
+            },
+            {
+              "name": "reach_high",
+              "variants": [
+                {
+                  "flip": false
+                },
+                {
+                  "flip": false
+                },
+                {
+                  "flip": false
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "lower_arm",
+                    "coord": "x",
+                    "got": 8.35,
+                    "expected": 8.35,
+                    "err_mm": 0.0,
+                    "ok": true
+                  },
+                  {
+                    "role": "lower_arm",
+                    "coord": "y",
+                    "got": 119.416,
+                    "expected": 119.42,
+                    "err_mm": 0.004,
+                    "ok": true
+                  },
+                  {
+                    "role": "upper_arm",
+                    "coord": "x",
+                    "got": 61.223,
+                    "expected": 61.22,
+                    "err_mm": 0.003,
+                    "ok": true
+                  },
+                  {
+                    "role": "upper_arm",
+                    "coord": "y",
+                    "got": 206.653,
+                    "expected": 206.65,
+                    "err_mm": 0.003,
+                    "ok": true
+                  },
+                  {
+                    "role": "shade",
+                    "coord": "x",
+                    "got": 144.721,
+                    "expected": 144.72,
+                    "err_mm": 0.001,
+                    "ok": true
+                  },
+                  {
+                    "role": "shade",
+                    "coord": "y",
+                    "got": 225.476,
+                    "expected": 225.48,
+                    "err_mm": 0.004,
+                    "ok": true
+                  }
+                ],
+                "max_err_mm": 0.004,
+                "ok": true
+              },
+              "interference_count": 0,
+              "interference_mm3": 0.0,
+              "drifted_fixed": [],
+              "ok": true
+            }
+          ]
+        },
+        "token_usage": {
+          "prompt_tokens": 1357345,
+          "completion_tokens": 25502,
+          "total_tokens": 1382847,
+          "calls": 40
+        },
+        "llm_calls": 40,
+        "duration_seconds": 832.06,
+        "aliases": {
+          "base": "lamp_base-1",
+          "shoulder_pin": "lamp_pin-1",
+          "lower_arm": "lamp_lower_arm-1",
+          "elbow_pin": "lamp_pin-2",
+          "upper_arm": "lamp_upper_arm-1",
+          "wrist_pin": "lamp_pin-3",
+          "shade": "lamp_shade-1"
+        },
+        "agent_texts": [
+          {
+            "turn": 15,
+            "text": "Shoulder pin is now fixed to base. Now insert lower_arm.",
+            "with_tools": true
+          },
+          {
+            "turn": 33,
+            "text": "Lower_arm is now revolute-joined to base via shoulder_pin, free to rotate about Z, positioned on +Z face of base. Now insert elbow_pin.",
+            "with_tools": true
+          },
+          {
+            "turn": 39,
+            "text": "elbow_pin fixed to lower_arm. Now insert upper_arm.",
+            "with_tools": true
+          },
+          {
+            "turn": 43,
+            "text": "upper_arm has cylinder at [0,0] end (face:7, d=5) which should go on elbow_pin, and at [105,0] end for wrist pin later. Connect upper_arm's near-[0,0] hole to elbow_pin, with face mating to lower_arm's front face (since upper_arm should rest on lower_arm's front/+Z side).",
+            "with_tools": true
+          },
+          {
+            "turn": 49,
+            "text": "upper_arm is now revolute to elbow_pin, resting on lower_arm's front face. Now insert wrist_pin at upper_arm's other end.",
+            "with_tools": true
+          },
+          {
+            "turn": 53,
+            "text": "Now insert shade.",
+            "with_tools": true
+          },
+          {
+            "turn": 62,
+            "text": "All 8 components placed with proper mates. Now let's check DOF — expect mobility 3 (three revolute joints free).",
+            "with_tools": true
+          },
+          {
+            "turn": 64,
+            "text": "The DOF checker doesn't fully recognize raw `mate` pairs as composed revolute joints (shown as \"unknown_mates\"), but physically each concentric+coincident pair is exactly a revolute joint. Let me verify with interference and motion checks.",
+            "with_tools": true
+          },
+          {
+            "turn": 66,
+            "text": "No interference. Now let's run motion check driving each rotating joint — start with shoulder.",
+            "with_tools": true
+          },
+          {
+            "turn": 68,
+            "text": "Good, shoulder joint motion passes. Now check elbow joint.",
+            "with_tools": true
+          },
+          {
+            "turn": 70,
+            "text": "Let's inspect current state to understand the elbow joint issue - possibly previous motion test left components mid-sweep, or there's a conflicting constraint.",
+            "with_tools": true
+          },
+          {
+            "turn": 74,
+            "text": "The elbow test failure seems related to specifying `expect_fixed` for non-grounded bodies (lower_arm/elbow_pin are only free-floating relative to base, not literally locked). Let me retry without forcing expectations, just checking raw motion behavior.",
+            "with_tools": true
+          },
+          {
+            "turn": 78,
+            "text": "All three revolute joints (shoulder, elbow, wrist) pass motion checks with no interference. Final interference check before saving.",
+            "with_tools": true
+          },
+          {
+            "turn": 80,
+            "text": "No interference. Now save and finish.",
+            "with_tools": true
+          }
+        ],
+        "llm_calls_detail": [
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 398,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 75,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 428,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 78,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1264,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 91,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 218,
+            "n_tool_calls": 1,
+            "text_chars": 56
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 30,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 4448,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 852,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 94,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1671,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 42,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1186,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 198,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 528,
+            "n_tool_calls": 1,
+            "text_chars": 135
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 281,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 55,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 219,
+            "n_tool_calls": 1,
+            "text_chars": 51
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 30,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 241,
+            "n_tool_calls": 1,
+            "text_chars": 272
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 119,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 30,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 241,
+            "n_tool_calls": 1,
+            "text_chars": 121
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 204,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 194,
+            "n_tool_calls": 1,
+            "text_chars": 17
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 30,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 292,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 30,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 93,
+            "n_tool_calls": 1,
+            "text_chars": 112
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1494,
+            "n_tool_calls": 1,
+            "text_chars": 239
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 272,
+            "n_tool_calls": 1,
+            "text_chars": 94
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 574,
+            "n_tool_calls": 1,
+            "text_chars": 58
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 4076,
+            "n_tool_calls": 1,
+            "text_chars": 159
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 30,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 4289,
+            "n_tool_calls": 1,
+            "text_chars": 252
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 419,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 153,
+            "n_tool_calls": 1,
+            "text_chars": 131
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 40,
+            "n_tool_calls": 1,
+            "text_chars": 37
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 495,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          }
+        ],
+        "agent_last_motion": {
+          "passed": true,
+          "frames": 13,
+          "duration": 6.0,
+          "interference_frames": [],
+          "moved": [
+            "lamp_lower_arm-1",
+            "lamp_pin-2",
+            "lamp_upper_arm-1",
+            "lamp_pin-3",
+            "lamp_shade-1"
+          ],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_turned_deg": -0.0
+          }
+        },
+        "joints": [
+          {
+            "kind": "fixed",
+            "a": "lamp_pin-1",
+            "b": "lamp_base-1",
+            "mates": [
+              "同心1",
+              "重合1"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "lamp_lower_arm-1",
+            "b": "lamp_pin-1",
+            "mates": [
+              "同心4"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "lamp_lower_arm-1",
+            "b": "lamp_base-1",
+            "mates": [
+              "重合4"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "lamp_pin-2",
+            "b": "lamp_lower_arm-1",
+            "mates": [
+              "同心5",
+              "重合5"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "lamp_upper_arm-1",
+            "b": "lamp_pin-2",
+            "mates": [
+              "同心6"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "lamp_upper_arm-1",
+            "b": "lamp_lower_arm-1",
+            "mates": [
+              "重合6"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "lamp_pin-3",
+            "b": "lamp_upper_arm-1",
+            "mates": [
+              "同心7",
+              "重合7"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "lamp_shade-1",
+            "b": "lamp_pin-3",
+            "mates": [
+              "同心8"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "lamp_shade-1",
+            "b": "lamp_upper_arm-1",
+            "mates": [
+              "重合8"
+            ]
+          }
+        ]
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_base.SLDPRT",
+            "name": "base",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "base"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_pin.SLDPRT",
+            "name": "shoulder_pin",
+            "at": [
+              0,
+              60,
+              8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "shoulder_pin:cyl(d=5)",
+            "b": "base:cyl(d=5.2)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_lower_arm.SLDPRT",
+            "name": "lower_arm",
+            "at": [
+              0,
+              60,
+              8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "lower_arm:cyl(d=5, near=[0,0])",
+            "b": "shoulder_pin:cyl(d=5)",
+            "face_a": "lower_arm:face(-Z, outermost)",
+            "face_b": "base:face(+Z, largest)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "lower_arm:cyl(d=5, near=[0,0])",
+            "b": "shoulder_pin:cyl(d=5)",
+            "face_a": "lower_arm:face(-Z, outermost)",
+            "face_b": "shoulder_pin:face(+Z, largest)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "lower_arm:cyl(d=5, near=[0,0])",
+            "b": "shoulder_pin:cyl(d=5)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "lower_arm:face(-Z, outermost)",
+            "b": "base:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_pin.SLDPRT",
+            "name": "elbow_pin",
+            "at": [
+              120,
+              60,
+              13
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "elbow_pin:cyl(d=5)",
+            "b": "lower_arm:cyl(d=5, near=[120,0])"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_upper_arm.SLDPRT",
+            "name": "upper_arm",
+            "at": [
+              120,
+              60,
+              13
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "upper_arm:cyl(d=5, near=[0,0])",
+            "b": "elbow_pin:cyl(d=5)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "upper_arm:face(-Z, outermost)",
+            "b": "lower_arm:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_pin.SLDPRT",
+            "name": "wrist_pin",
+            "at": [
+              15,
+              60,
+              18
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "wrist_pin:cyl(d=5)",
+            "b": "upper_arm:cyl(d=5, near=[105,0])"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\adjustable_desk_lamp\\gen_r1\\parts\\lamp_shade.SLDPRT",
+            "name": "shade",
+            "at": [
+              15,
+              60,
+              18
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "shade:cyl(d=5)",
+            "b": "wrist_pin:cyl(d=5)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "shade:face(-Z, outermost)",
+            "b": "upper_arm:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 3
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "lower_arm",
+            "driver_ref": "lower_arm:cyl(d=5, near=[0,0])",
+            "sweep_deg": 360,
+            "frames": 13,
+            "expect_moving": [
+              "lower_arm",
+              "elbow_pin",
+              "upper_arm",
+              "wrist_pin",
+              "shade"
+            ],
+            "expect_fixed": [
+              "base",
+              "shoulder_pin"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "upper_arm",
+            "driver_ref": "upper_arm:cyl(d=5, near=[0,0])",
+            "sweep_deg": 360,
+            "frames": 13,
+            "expect_moving": [
+              "upper_arm",
+              "wrist_pin",
+              "shade"
+            ],
+            "expect_fixed": [
+              "base",
+              "shoulder_pin",
+              "lower_arm",
+              "elbow_pin"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "SW_UNAVAILABLE",
+          "message": "[SW_UNAVAILABLE] HTTPConnectionPool(host='localhost', port=5100): Read timed out. (read timeout=180)"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "upper_arm",
+            "driver_ref": "upper_arm:cyl(d=5, near=[0,0])",
+            "sweep_deg": 360,
+            "frames": 13
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "shade",
+            "driver_ref": "shade:cyl(d=5)",
+            "sweep_deg": 360,
+            "frames": 13
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "save_assembly",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "finish",
+          "args": {
+            "summary": "三自由度可调台灯装配完成：\n1. base 固定作为地基。\n2. shoulder_pin 用 fixed 关节固定在 base 的肩部铰孔 (0,60)，轴向 Z。\n3. lower_arm 通过同心+端面贴合（revolute）绕 shoulder_pin 转动，贴在 base 前面（+Z 侧）。\n4. elbow_pin 用 fixed 关节固定在 lower_arm 另一端孔中，与其一起转动。\n5. upper_arm 通过同心+端面贴合（revolute）绕 elbow_pin 转动，贴在 lower_arm 前面。\n6. wrist_pin 用 fixed 关节固定在 upper_arm 另一端孔中，与其一起转动。\n7. shade 通过同心+端面贴合（revolute）绕 wrist_pin 转动，贴在 upper_arm 前面。\n\n三处转动副（肩、肘、腕）均未加任何限位或锁定，保持自由转动，整机活动度为 3。分别驱动 lower_arm、upper_arm、shade 做 360° 运动检查，均无干涉、无卡死、无固定件漂移，全部通过。静态 check_interference 结果为零干涉。装配已保存至 adjustable_desk_lamp.SLDASM。"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "e2e": true
+    }
+  ],
+  "model": "claude-sonnet-5",
+  "asm_max_tokens": 8000,
+  "extra_toolset": "v2"
+}

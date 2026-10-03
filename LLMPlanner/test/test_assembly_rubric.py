@@ -182,6 +182,171 @@ def test_planetary_gear_rolling_constraint():
     assert _global_mobility(names, {"frame-1"}, locked)["mobility"] == 0
 
 
+def _crank_rocker_comps(fixed_all=False):
+    rubric = _rubric("crank_rocker_linkage")
+    roles = [r for members in rubric["bodies"].values() for r in members] + list(rubric["flex"])
+    comps = [_comp(f"{r}-1", fixed=fixed_all or r == "frame", status=3 if r == "frame" else 2) for r in roles]
+    return comps, {r: f"{r}-1" for r in roles}, rubric
+
+
+def test_negative_controls_score_near_zero():
+    """退化装配体（只插零件 / 全部固定 / 只插一半）不应拿分；旧口径下它们能白拿三四十分。"""
+    comps, _, aliases = gearbox()
+    rubric = _rubric("two_stage_gearbox")
+    out = evaluate(comps, [], aliases, rubric)
+    assert out["score"] <= 10, out["parts"]
+
+    all_fixed = [{**c, "isFixed": True} for c in comps]
+    out = evaluate(all_fixed, [], aliases, rubric)
+    assert out["score"] <= 10, out["parts"]
+    assert set(out["wrongly_fixed"]) == set(aliases) - {"housing"}
+
+    half = comps[:4]
+    out = evaluate(half, [], aliases, rubric)
+    assert out["score"] <= 10 and len(out["missing_roles"]) == 4, out
+
+    comps, aliases, rubric = _crank_rocker_comps()
+    out = evaluate(comps, [], aliases, rubric)
+    assert out["score"] <= 10 and out["score_v1"] >= 30, (out["score"], out["score_v1"], out["parts"])
+    comps, aliases, rubric = _crank_rocker_comps(fixed_all=True)
+    out = evaluate(comps, [], aliases, rubric)
+    assert out["score"] <= 10, out["parts"]
+
+
+def test_partial_assembly_scores_proportionally():
+    """输入轴与中间轴装对、输出轴整组没装：分数介于阴性对照与满分之间。"""
+    comps, mates, aliases = gearbox()
+    gone = {"output_shaft-1", "output_wheel-1"}
+    comps = [c for c in comps if c["name"] not in gone]
+    mates = [m for m in mates if not set(m["components"]) & gone]
+    out = evaluate(comps, mates, aliases, _rubric("two_stage_gearbox"))
+    assert 30 < out["score"] < 80, out["parts"]
+    assert out["parts"]["mobility"] == 0 and out["completeness"] == pytest.approx(6 / 8)
+
+
+def test_non_applicable_items_are_dropped():
+    """没有齿轮规格的测例不再白拿 couplings 的 20 分：满分仍是 100，只是分母去掉了这一项。"""
+    comps, mates, aliases = gearbox()
+    rubric = {k: v for k, v in _rubric("two_stage_gearbox").items() if k != "couplings"}
+    out = evaluate(comps, mates, aliases, rubric)
+    assert "couplings" not in out["parts"] and out["score"] == 100
+    loose = [m for m in mates if m["name"] != "c_output_wheel-1_output_shaft-1"]
+    out = evaluate(comps, loose, aliases, rubric)
+    # 去掉耦合项后，同样的错误占的比重更大
+    assert out["score"] < out["score_v1"]
+
+
+def test_mobility_is_graded():
+    comps, mates, aliases = gearbox()
+    rubric = {**_rubric("two_stage_gearbox"), "mobility": 3}
+    no_gears = [m for m in mates if m["mateType"] != 10]
+    out = evaluate(comps, no_gears, aliases, rubric)
+    assert out["mobility"]["actual"] == 3 and out["parts"]["mobility"] == 1
+    out = evaluate(comps, mates, aliases, rubric)
+    assert out["parts"]["mobility"] == pytest.approx(1 / 3, abs=1e-3)
+
+
+def _screw_case(lead_m):
+    comps = [_comp("frame-1", fixed=True, status=3), _comp("screw-1"), _comp("nut-1", 0, 0, 0.02)]
+    m = revolute("screw-1", "frame-1", 0)
+    m.append(_mate("sc", 17, _cyl("nut-1", 0), _cyl("screw-1", 0), revolutionValue=lead_m))
+    slide = _mate("guide", 0, _plane("nut-1", [0, 0, 0], [1, 0, 0]), _plane("frame-1", [0, 0, 0], [1, 0, 0]))
+    m.append(slide)
+    aliases = {c["name"][:-2]: c["name"] for c in comps}
+    rubric = {"ground": "frame", "mobility": 1, "bodies": {"frame": ["frame"], "screw": ["screw"], "nut": ["nut"]},
+              "joints": [{"bodies": ["screw", "frame"], "type": "revolute"},
+                         {"bodies": ["nut", "screw"], "type": "screw", "lead_mm": 2}]}
+    return comps, m, aliases, rubric
+
+
+def test_screw_lead_is_checked():
+    rows = mate_rows(_mate("sc", 17, _cyl("a", 0), _cyl("b", 0), revolutionValue=0.002))[0]
+    assert classify_rows(rows)["lead_mm"] == pytest.approx(2.0, rel=1e-6)
+    comps, m, aliases, rubric = _screw_case(0.002)
+    out = evaluate(comps, m, aliases, rubric)
+    assert out["joints"][1]["lead_ok"] and out["score"] == 100, out
+    comps, m, aliases, rubric = _screw_case(0.0002)
+    out = evaluate(comps, m, aliases, rubric)
+    assert out["joints"][1]["actual"] == "screw" and out["joints"][1]["lead_ok"] is False
+    assert out["joints"][1]["ok_v1"] and out["score"] < 100
+
+
+def test_joint_anchors_ignore_part_origin():
+    """锚点只比同一零件上各转轴的间距：生成的机体原点不在标准零件的位置（零件接口 rubric 按包围盒量孔位，允许这样），
+    只要孔间距对，关节就算对。"""
+    from geomcheck.assembly_rubric import derive_anchors
+
+    comps, mates, aliases = gearbox()
+    rubric = _rubric("two_stage_gearbox")
+    for index, item in derive_anchors(comps, mates, aliases, rubric).items():
+        rubric["joints"][int(index)].update(item)
+    shifted = copy.deepcopy(comps)
+    housing = next(c for c in shifted if c["name"] == "housing-1")
+    housing["transform"][9] += 0.03
+    out = evaluate(shifted, mates, aliases, rubric)
+    assert out["score"] == 100 and all(j.get("anchor_ok", True) for j in out["joints"]), out["joints"]
+
+
+def test_derived_anchors_round_trip():
+    """从参考装配体导出的锚点合并回 rubric 后，参考装配体仍是满分；把输出轴挪到中间轴孔上则关节失分。"""
+    from geomcheck.assembly_rubric import derive_anchors
+
+    comps, mates, aliases = gearbox()
+    rubric = _rubric("two_stage_gearbox")
+    derived = derive_anchors(comps, mates, aliases, rubric)
+    assert set(derived) == {"0", "1", "2"}
+    assert derived["2"]["anchors"] == [
+        {"role": "output_shaft", "point_mm": [0.0, 0.0, 0.0], "dir": [0.0, 0.0, 1.0]},
+        {"role": "housing", "point_mm": [126.0, 0.0, 0.0], "dir": [0.0, 0.0, 1.0]},
+    ]
+    for index, item in derived.items():
+        rubric["joints"][int(index)].update(item)
+    assert evaluate(comps, mates, aliases, rubric)["score"] == 100
+
+    wrong = copy.deepcopy(mates)
+    for m in wrong:
+        if set(m["components"]) == {"output_shaft-1", "housing-1"}:
+            for e in m["entities"]:
+                e["params"][0] = 0.054
+    out = evaluate(comps, wrong, aliases, rubric)
+    assert out["joints"][2]["ok_v1"] and not out["joints"][2]["ok"], out["joints"][2]
+    # 同在机体上、装对了的两个关节不受牵连
+    assert out["joints"][0]["ok"] and out["joints"][1]["ok"], out["joints"][:2]
+
+    comps, m, aliases, screw_rubric = _screw_case(0.002)
+    del screw_rubric["joints"][1]["lead_mm"]
+    assert derive_anchors(comps, m, aliases, screw_rubric)["1"]["lead_mm"] == pytest.approx(2.0)
+
+
+def _fourbar(close_full: bool):
+    """机架 frame 固定；曲柄 (0,0)、摇杆 (0.08,0)，连杆两端铰接。close_full=False 时闭环铰只做同心。"""
+    comps = [_comp("frame-1", fixed=True, status=3), _comp("crank-1"), _comp("coupler-1", 0, 0.02),
+             _comp("rocker-1", 0.08)]
+    m = revolute("crank-1", "frame-1", 0) + revolute("coupler-1", "crank-1", 0, y=0.02)
+    m += revolute("rocker-1", "frame-1", 0.08)
+    last = revolute("coupler-1", "rocker-1", 0.07, y=0.05)
+    m += last if close_full else last[:1]
+    return comps, m
+
+
+def test_mobility_modes_reports_redundancy_and_free_axes():
+    from geomcheck.assembly_rubric import axial_row, mobility_modes, relative_motion_free
+
+    comps, m = _fourbar(close_full=True)
+    names = [c["name"] for c in comps]
+    full = mobility_modes(names, {"frame-1"}, m)
+    assert full["mobility"] == 1 and full["redundant"] == 3, (full["mobility"], full["redundant"])
+    assert all(v == {"dof": 1, "rotations": 1, "translations": 0} for v in full["free"].values())
+    minimal = mobility_modes(names, {"frame-1"}, _fourbar(close_full=False)[1])
+    # 闭环铰只做同心时轴向已经被另外三个铰定住：活动度不变、冗余少 1 行
+    assert minimal["mobility"] == 1 and minimal["redundant"] == 2
+    row = axial_row([0.07, 0.05, 0], [0, 0, 1])
+    assert not relative_motion_free(minimal, "rocker-1", "coupler-1", row)
+    # 开链（去掉摇杆）时连杆的轴向是确定的，但绕 Z 的转动是自由的
+    opened = mobility_modes(names, {"frame-1"}, [x for x in m if "rocker-1" not in x["components"]])
+    assert opened["free"]["rocker-1"]["dof"] == 6
+
+
 def test_crank_slider_engine():
     """frame 固定；曲柄绕原点转；曲柄销固定在曲柄上（x=25mm），连杆绕曲柄销转；
     活塞销固定在活塞上，连杆绕活塞销转；活塞沿 Y 滑动；凸轮轴在 x=-72mm 与 16/32 齿轮啮合。"""

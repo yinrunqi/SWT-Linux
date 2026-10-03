@@ -43,6 +43,19 @@ def _round(value, digits=3):
     return round(float(value), digits)
 
 
+# v3：这些工具成功后附带一份精简的装配增量（活动度、冗余、过定义、悬空件），不用再调 get_assembly_state
+MUTATING_TOOLS = {
+    "insert_component", "ground_component", "mate", "delete_mate", "joint", "close_loop", "mount_on_shaft",
+    "revolute_joint", "slider_joint", "mesh_gears", "crank_slider", "rack_pinion", "screw_pair", "linear_coupler",
+}
+
+
+def _plain(exc: WorkflowError) -> str:
+    """去掉 str(WorkflowError) 开头的 [CODE]，重新包装报错时不重复错误码。"""
+    text = str(exc)
+    return text.split("] ", 1)[1] if text.startswith("[") and "] " in text else text
+
+
 def angle_about_z(matrix: list[float]) -> float:
     r = np.array(matrix[:9], float).reshape(3, 3)
     return math.degrees(math.atan2(r[1, 0], r[0, 0]))
@@ -61,17 +74,24 @@ class AssemblySession:
         workflow: str = "v1",
         allowed_tools: set[str] | None = None,
     ):
-        if workflow not in ("v1", "v2"):
+        if workflow not in ("v1", "v2", "v3"):
             raise ValueError(f"未知 workflow {workflow}")
         self.base_url = base_url.rstrip("/")
         self.http = requests.Session()
         self.timeout = timeout
         self.workflow = workflow
+        # v3 = v2 的配合与宏工具 + 增量状态、秩法自由度、自动闭环、位姿自检等（见 docs）
+        self.v2plus = workflow in ("v2", "v3")
+        self.v3 = workflow == "v3"
         self.allowed_tools = allowed_tools
         self.aliases: dict[str, str] = {}
         self.mate_names: list[str] = []
         self.joints: list[dict] = []
         self.last_motion: dict | None = None
+        self.last_pose: dict | None = None
+        self.last_dof: dict | None = None
+        self._face_cache: dict[tuple, list[dict]] = {}
+        self._pair_deletes: dict[frozenset, int] = {}
         self.saved = False
         self.has_assembly = False
         self.assembly_path = ""
@@ -95,6 +115,7 @@ class AssemblySession:
             "crank_slider": self.crank_slider,
             "check_interference": self.check_interference,
             "check_motion": self.check_motion,
+            "check_pose": self.check_pose,
             "save_assembly": self.save_assembly,
             "finish": self.finish,
         }
@@ -129,7 +150,9 @@ class AssemblySession:
         self.aliases.clear()
         self.mate_names.clear()
         self.joints.clear()
-        self.last_motion = None
+        self.last_motion = self.last_pose = self.last_dof = None
+        self._face_cache.clear()
+        self._pair_deletes.clear()
         self.saved = False
         return data
 
@@ -142,6 +165,10 @@ class AssemblySession:
             if name != "finish" and not self.has_assembly:
                 raise WorkflowError("NO_PART", "还没有装配体，先新建")
             result = {"ok": True, **self._handlers[name](args)}
+            if self.v3 and name in MUTATING_TOOLS:
+                # 改了结构，之前的运动 / 位姿 / 自由度检查都不再代表当前装配体
+                self.last_motion = self.last_pose = self.last_dof = None
+                result["after"] = self._delta()
         except RefError as exc:
             result = {"ok": False, "error": {"code": "REF", "message": str(exc)}}
         except WorkflowError as exc:
@@ -170,7 +197,87 @@ class AssemblySession:
         body = {"component": self.resolve_name(component), "maxFaces": 80}
         if radius is not None:
             body["radius"] = radius
-        return self.asmwf("component-faces", body).get("faces") or []
+        if not self.v3:
+            return self.asmwf("component-faces", body).get("faces") or []
+        # 面几何是零件局部坐标，装配里只变位姿，不变面；齿轮有上千个面，每次重查很慢
+        key = (body["component"], radius)
+        if key not in self._face_cache:
+            self._face_cache[key] = self.asmwf("component-faces", body).get("faces") or []
+        return self._face_cache[key]
+
+    def _face_summary(self, name: str) -> dict:
+        cylinders, planes, spheres = [], [], []
+        for face in self.faces(name):
+            if face.get("surfaceType") == "sphere" and face.get("radius") is not None:
+                spheres.append({
+                    "ref": f"face:{face['index']}",
+                    "diameter_mm": _round(float(face["radius"]) * 2000),
+                    "center_mm": _round([v * 1000 for v in face.get("center") or [0, 0, 0]]),
+                })
+            elif face.get("surfaceType") == "cylinder" and face.get("radius") is not None:
+                cylinders.append({
+                    "ref": f"face:{face['index']}",
+                    "diameter_mm": _round(float(face["radius"]) * 2000),
+                    "axis": _round(face.get("axis")),
+                    "axis_origin_mm": _round([v * 1000 for v in face.get("axisOrigin") or [0, 0, 0]]),
+                })
+            elif face.get("surfaceType") == "plane":
+                planes.append({
+                    "ref": f"face:{face['index']}",
+                    "area_mm2": _round(float(face.get("area") or 0) * 1e6, 1),
+                    "normal": _round(face.get("normal")),
+                })
+        cylinders.sort(key=lambda c: c["diameter_mm"] or 0)
+        planes.sort(key=lambda p: -(p["area_mm2"] or 0))
+        out = {"cylinders": cylinders[:8], "planes": planes[:6]}
+        if spheres:
+            out["spheres"] = spheres[:4]
+        return out
+
+    def _alias(self, sw_name: str) -> str:
+        return next((a for a, s in self.aliases.items() if s == sw_name), sw_name)
+
+    def _modes(self, components: list[dict] | None = None, mates: list[dict] | None = None) -> tuple:
+        from geomcheck.assembly_rubric import mobility_modes
+
+        components = components if components is not None else (self.asmwf("components").get("components") or [])
+        mates = mates if mates is not None else (self.asmwf("mates").get("mates") or [])
+        good = [m for m in mates if not m.get("suppressed") and int(m.get("errorCode") or 0) == 0]
+        names = [c["name"] for c in components]
+        fixed = {c["name"] for c in components if c.get("isFixed")}
+        return mobility_modes(names, fixed, good), components, mates
+
+    def _delta(self) -> dict:
+        try:
+            modes, components, mates = self._modes()
+        except WorkflowError as exc:
+            return {"error": exc.to_dict().get("message")}
+        reached = self._grounded_by_mates(components, mates)
+        return {
+            "mobility": modes["mobility"],
+            "redundant": modes["redundant"],
+            "over_defined": sorted(self._alias(c["name"]) for c in components
+                                   if int(c.get("constrainedStatus") or 0) in (4, 5, 6)),
+            "broken_mates": [m.get("name") for m in mates if int(m.get("errorCode") or 0) != 0],
+            "floating": sorted(self._alias(c["name"]) for c in components if c["name"] not in reached),
+        }
+
+    @staticmethod
+    def _grounded_by_mates(components: list[dict], mates: list[dict]) -> set[str]:
+        from geomcheck.assembly_rubric import COUPLINGS
+
+        reached = {c["name"] for c in components if c.get("isFixed")}
+        changed = True
+        while changed:
+            changed = False
+            for m in mates:
+                comps = [c for c in (m.get("components") or []) if c]
+                if len(comps) < 2 or m.get("mateType") in COUPLINGS or int(m.get("errorCode") or 0):
+                    continue
+                if set(comps) & reached and not set(comps) <= reached:
+                    reached |= set(comps)
+                    changed = True
+        return reached
 
     def edges(self, component: str, kind: str = "all") -> list[dict]:
         body = {"component": self.resolve_name(component), "kind": kind, "maxEdges": 400}
@@ -189,7 +296,16 @@ class AssemblySession:
                 parsed_radius = float(sel.get("d") or sel["diameter"]) / 2000.0
         except Exception:
             parsed_radius = None
-        return sw_name, resolve_on_faces(selector, self.faces(sw_name, parsed_radius))
+        try:
+            return sw_name, resolve_on_faces(selector, self.faces(sw_name, parsed_radius))
+        except RefError as exc:
+            if not self.v3:
+                raise
+            faces = self._face_summary(sw_name)
+            cyl = [f"{c['ref']} d={c['diameter_mm']} at={c['axis_origin_mm'][:2]}" for c in faces["cylinders"]]
+            pln = [f"{p['ref']} n={p['normal']}" for p in faces["planes"]]
+            raise RefError(f"{exc}；{component} 的圆柱面：{cyl or '无'}；平面：{pln or '无'}"
+                           "（at 为零件局部 XY，mm，可写 cyl(d=..., near=[x,y])）") from None
 
     def _mate(self, kind: str, a: str, b: str, **kw) -> dict:
         ca, ra = self.resolve_ref(a)
@@ -241,6 +357,8 @@ class AssemblySession:
     # ------------------------------------------------------------ 观察
 
     def get_assembly_state(self, args: dict) -> dict:
+        if self.v3:
+            return self._state_v3(args)
         raw = self.asmwf("components").get("components") or []
         mates = self.asmwf("mates").get("mates") or []
         alias_of = {sw: alias for alias, sw in self.aliases.items()}
@@ -280,7 +398,7 @@ class AssemblySession:
                 "cylinders": cylinders[:8],
                 "planes": planes[:6],
             }
-            if self.workflow == "v2" and spheres:
+            if self.v2plus and spheres:
                 summary["spheres"] = spheres[:4]
             components.append(summary)
         state = {
@@ -304,7 +422,7 @@ class AssemblySession:
                 "stuck": self.last_motion.get("stuck"),
             },
         }
-        if self.workflow == "v2":
+        if self.v2plus:
             alias = {sw: al for al, sw in self.aliases.items()}
             state["joints"] = [
                 {"kind": e["kind"], "a": alias.get(e["a"], e["a"]), "b": alias.get(e["b"], e["b"]),
@@ -312,6 +430,47 @@ class AssemblySession:
                 for e in self.joints
             ]
         return state
+
+    def _state_v3(self, args: dict) -> dict:
+        """默认只给组件状态与配合；面列表在 insert_component 时已经返回过，要再看时用 faces / components。"""
+        modes, raw, mates = self._modes()
+        wanted = {self.resolve_name(n) for n in args.get("components") or []}
+        with_faces = bool(args.get("faces"))
+        components = []
+        for item in raw:
+            name = item["name"]
+            summary = {
+                "alias": self._alias(name) if name in self.aliases.values() else None,
+                "name": name,
+                "fixed": item.get("isFixed"),
+                "dof": CONSTRAINED.get(int(item.get("constrainedStatus") or 0), item.get("constrainedStatus")),
+                "origin_mm": _round(translation_mm(item.get("transform") or [0] * 12)),
+                "rot_z_deg": _round(angle_about_z(item.get("transform") or [1, 0, 0, 0, 1, 0, 0, 0, 1]), 2),
+            }
+            free = modes["free"].get(name)
+            if free:
+                summary["free"] = free
+            if with_faces or name in wanted:
+                summary.update(self._face_summary(name))
+            components.append(summary)
+        return {
+            "components": components,
+            "mates": [
+                {
+                    "name": m.get("name"), "type": m.get("type"),
+                    "components": [self._alias(c) for c in m.get("components") or [] if c],
+                    **({"error": m.get("errorCode")} if int(m.get("errorCode") or 0) else {}),
+                    **({"gear": [m.get("gearRatioNumerator"), m.get("gearRatioDenominator"), m.get("reverse")]}
+                       if m.get("gearRatioNumerator") is not None else {}),
+                }
+                for m in mates
+            ],
+            "mobility": modes["mobility"],
+            "redundant": modes["redundant"],
+            "saved": self.saved,
+            "last_motion": None if not self.last_motion else {"passed": self.last_motion.get("passed")},
+            "last_pose": None if not self.last_pose else {"passed": self.last_pose.get("passed")},
+        }
 
     # ------------------------------------------------------------ 放置 / 配合
 
@@ -342,7 +501,10 @@ class AssemblySession:
             }))
         self.aliases[alias] = sw_name
         self.saved = False
-        return {"alias": alias, "component": sw_name, "at_mm": list(at), "rotate_deg": angle}
+        out = {"alias": alias, "component": sw_name, "at_mm": list(at), "rotate_deg": angle}
+        if self.v3:
+            out["faces"] = self._face_summary(sw_name)
+        return out
 
     def ground_component(self, args: dict) -> dict:
         name = self.resolve_name(str(args.get("component") or ""))
@@ -365,14 +527,14 @@ class AssemblySession:
         if args.get("reverse") is not None:
             extra["reverse"] = bool(args["reverse"])
         a, b = str(args["a"]), str(args["b"])
-        if self.workflow == "v2":
+        if self.v2plus:
             kind = kind.replace("-", "_")
             extra.update(self._mechanical_args(kind, args))
             if kind == "lock":
                 a = a if ":" in a else f"{a}:component"
                 b = b if ":" in b else f"{b}:component"
         result = self._mate(kind, a, b, **extra)
-        if self.workflow == "v2":
+        if self.v2plus:
             self._record_joint(f"mate:{kind}", a, b, [result])
         return result
 
@@ -401,12 +563,24 @@ class AssemblySession:
 
     def delete_mate(self, args: dict) -> dict:
         name = str(args.get("name") or "")
+        pair = None
+        if self.v3:
+            mate = next((m for m in self.asmwf("mates").get("mates") or [] if m.get("name") == name), None)
+            comps = [c for c in (mate or {}).get("components") or [] if c]
+            pair = frozenset(comps) if len(comps) >= 2 else None
         self.asmwf("delete-mate", {"name": name})
         if name in self.mate_names:
             self.mate_names.remove(name)
         self._forget_mates([name])
         self.saved = False
-        return {"deleted": name}
+        out = {"deleted": name}
+        if pair:
+            self._pair_deletes[pair] = self._pair_deletes.get(pair, 0) + 1
+            if self._pair_deletes[pair] >= 3:
+                out["warning"] = (f"{'/'.join(sorted(self._alias(c) for c in pair))} 之间的配合已经删了 "
+                                  f"{self._pair_deletes[pair]} 次。反复加删说明思路不对：先 check_dof 看哪个零件"
+                                  "多了或少了自由度，再决定要哪种关节，不要换个面再试同一种配合。")
+        return out
 
     # ------------------------------------------------------------ 关节登记
 
@@ -448,7 +622,7 @@ class AssemblySession:
         keyed = bool(args.get("lock_rotation"))
         created = []
         try:
-            if keyed and self.workflow == "v2":
+            if keyed and self.v2plus:
                 created.append(self._mate("concentric", cyl_a, cyl_b, align="aligned", lockRotation=True))
             else:
                 created.append(self._mate("concentric", cyl_a, cyl_b, align="aligned"))
@@ -707,12 +881,130 @@ class AssemblySession:
 
     def joint(self, args: dict) -> dict:
         kind = str(args.get("type") or "").lower()
+        if self.v3:
+            return self._joint_v3(kind, args)
         created = self._joint_mates(kind, args)
         entry = self._record_joint(kind, str(args["a"]), str(args["b"]), created)
         return {"joint": kind, "components": [entry["a"], entry["b"]], "mates": created}
 
+    # ------------------------------------------------------------ v3：关节的轴向 / 止转约束按需添加
+
+    def _world_axis(self, ref: str) -> tuple[np.ndarray, np.ndarray] | None:
+        """圆柱引用在装配坐标下的轴线 (点 m, 方向)。"""
+        comp, sel = self.resolve_ref(ref)
+        if not str(sel).startswith("face:"):
+            return None
+        index = int(str(sel).split(":")[1])
+        face = next((f for f in self.faces(comp) if f.get("index") == index), None)
+        if not face or face.get("surfaceType") != "cylinder":
+            return None
+        tf = next((c.get("transform") for c in self.asmwf("components").get("components") or []
+                   if c["name"] == comp), None)
+        if tf is None:
+            return None
+        axes = np.array(tf[:9], float).reshape(3, 3)
+        origin = np.array(tf[9:12], float) + np.array(face["axisOrigin"], float) @ axes
+        return origin, np.array(face["axis"], float) @ axes
+
+    def _axis_gap_hint(self, a: str, b: str) -> str:
+        try:
+            la, lb = self._world_axis(a), self._world_axis(b)
+        except (WorkflowError, RefError):
+            return ""
+        if not la or not lb:
+            return ""
+        u = la[1] / (np.linalg.norm(la[1]) or 1)
+        gap = float(np.linalg.norm(np.cross(lb[0] - la[0], u))) * 1000
+        return (f"两条轴线当前相距 {gap:.2f} mm。若这是闭环的最后一个铰，说明孔位或杆长与已装好的部分对不上："
+                "检查是否选错了孔（用 near=[x,y] 指定）或前面的关节装错了孔。")
+
+    def _offset_from_z(self, args: dict, at_z: float) -> float:
+        if args.get("face_a") or args.get("face_b"):
+            raise WorkflowError("TOOL_ARGS", "at_z 只用于默认的前视基准面；已给 face_a/face_b 时请用 offset")
+        comp_b = self._component_of(str(args["b"]))
+        tf = next((c.get("transform") for c in self.asmwf("components").get("components") or []
+                   if c["name"] == comp_b), None)
+        if tf is None:
+            raise WorkflowError("TOOL_ARGS", f"找不到组件 {comp_b}")
+        bz = float(tf[8])
+        if abs(abs(bz) - 1) > 1e-3:
+            raise WorkflowError("TOOL_ARGS", f"{args['b']} 的零件 Z 轴不沿装配 Z，at_z 无法换算，请用 offset")
+        return (at_z - float(tf[11]) * 1000) * (1 if bz > 0 else -1)
+
+    def _joint_extra(self, kind: str, args: dict) -> list[dict]:
+        """完整关节比最小关节多出的那条约束：转动副 / 销槽的轴向贴合，圆柱导向滑块的止转面。"""
+        a, b = str(args["a"]), str(args["b"])
+        face_a = args.get("face_a") or f"{split_ref(a)[0] if ':' in a else a}:plane(front)"
+        face_b = args.get("face_b") or f"{split_ref(b)[0] if ':' in b else b}:plane(front)"
+        if kind in ("revolute", "pin_slot"):
+            if args.get("offset") is not None:
+                return [self._offset_mate(face_a, face_b, args["offset"])]
+            return [self._mate("coincident", face_a, face_b, align="aligned")]
+        if not args.get("guide_a") or not args.get("guide_b"):
+            raise WorkflowError("TOOL_ARGS", "slider 需要 guide_a/guide_b（再约束一个面，只留沿一条轴的平移）")
+        return [self._mate("coincident", str(args["guide_a"]), str(args["guide_b"]), align="aligned")]
+
+    def _extra_needed(self, kind: str, primary: list[dict]) -> bool:
+        """最小关节建好后，多出的那条约束限制的运动是否还自由（闭环里常已被别的铰定住）。"""
+        from geomcheck.assembly_rubric import AXIAL, _rot_row, axial_row, relative_motion_free
+
+        modes, _, mates = self._modes()
+        mate = next((m for m in mates if m.get("name") == primary[0]["name"]), None)
+        if not mate:
+            return True
+        ents = [e for e in mate.get("entities") or [] if e.get("params") and int(e.get("refType", -1)) in AXIAL]
+        comps = [c for c in mate.get("components") or [] if c]
+        if not ents or len(comps) < 2:
+            return True
+        p, u = np.array(ents[0]["params"][:3], float), np.array(ents[0]["params"][3:6], float)
+        row = _rot_row(u / np.linalg.norm(u)) if kind == "slider" else axial_row(p, u)
+        return relative_motion_free(modes, comps[0], comps[1], row)
+
+    def _joint_v3(self, kind: str, args: dict) -> dict:
+        args = dict(args)
+        if args.get("at_z") is not None and args.get("offset") is None:
+            args["offset"] = self._offset_from_z(args, float(args["at_z"]))
+        splittable = kind in ("revolute", "pin_slot") or (
+            kind == "slider" and self._is_cylinder_ref(str(args["a"])) and self._is_cylinder_ref(str(args["b"])))
+        note = None
+        if not splittable:
+            created = self._joint_mates(kind, args)
+        else:
+            try:
+                created = self._joint_mates(kind, args, minimal=True)
+            except WorkflowError as exc:
+                if "errStatus=5" in str(exc) and kind != "pin_slot":
+                    raise WorkflowError(exc.code, f"{_plain(exc)}。"
+                                        + self._axis_gap_hint(str(args["a"]), str(args["b"]))) from None
+                raise
+            try:
+                needed = self._extra_needed(kind, created)
+                if needed:
+                    created += self._joint_extra(kind, args)
+            except WorkflowError as exc:
+                self._rollback(created)
+                message = _plain(exc)
+                if "errStatus=5" in message:
+                    message += ("。轴向（或止转）约束与已有约束冲突：两个基准面的位置要求与已装好的部分不一致。"
+                                "用 at_z / offset 写明 a 的层位，或检查前面关节的层位。")
+                raise WorkflowError(exc.code, message) from None
+            except Exception:
+                self._rollback(created)
+                raise
+            if not needed:
+                what = "止转" if kind == "slider" else "轴向位置"
+                note = f"{what}已被其他关节定住（闭环），只加了主约束，避免冗余过定义"
+        entry = self._record_joint(kind, str(args["a"]), str(args["b"]), created,
+                                   **({"loop": True} if note else {}))
+        out = {"joint": kind, "components": [entry["a"], entry["b"]], "mates": created}
+        if note:
+            out["note"] = note
+        return out
+
     def close_loop(self, args: dict) -> dict:
         kind = str(args.get("type") or "revolute").lower()
+        if self.v3:
+            return self._joint_v3(kind, args)
         a_name = self._component_of(str(args["a"]))
         b_name = self._component_of(str(args["b"]))
         connected = self._connected_to_ground()
@@ -802,7 +1094,40 @@ class AssemblySession:
             ref_a, ref_b = self._matching_cylinders(screw, nut)
         mate = self._mate("screw", ref_a, ref_b, lead=lead / 1000, reverse=bool(args.get("reverse", False)))
         self._record_joint("screw", ref_a, ref_b, [mate])
-        return {"mate": mate, "lead_mm": lead}
+        out = {"mate": mate, "lead_mm": lead}
+        if self.v3:
+            out.update(self._verify_screw(mate["name"], lead))
+        return out
+
+    def _verify_screw(self, name: str, lead: float) -> dict:
+        """按当前约束的运动空间核对螺母相对螺杆的实际导程（mm/转）；对不上通常是选错了圆柱面。"""
+        modes, _, mates = self._modes()
+        mate = next((m for m in mates if m.get("name") == name), None)
+        ents = [e for e in (mate or {}).get("entities") or [] if e.get("params")]
+        comps = [c for c in (mate or {}).get("components") or [] if c]
+        null, cols = modes["null"], modes["columns"]
+        if not ents or len(comps) < 2 or not null.size:
+            return {}
+        p = np.array(ents[0]["params"][:3], float)
+        u = np.array(ents[0]["params"][3:6], float)
+        u = u / np.linalg.norm(u)
+
+        def block(n):
+            return null[6 * cols[n]:6 * cols[n] + 6] if n in cols else np.zeros((6, null.shape[1]))
+        rel = block(comps[1]) - block(comps[0])
+        spin = u @ rel[3:]
+        if np.max(np.abs(spin)) < 1e-9:
+            return {"verify": "螺杆与螺母之间不能相对转动：检查螺杆是否被锁死，或螺母是否同时被别的约束定住"}
+        travel = u @ (rel[:3] + np.cross(rel[3:].T, p).T)
+        if np.linalg.matrix_rank(np.vstack([spin, travel]), tol=1e-9) > 1:
+            return {"verify": "螺母沿螺杆的移动还没有和转动耦合（另有独立的滑动自由度），检查螺母或滑台的约束"}
+        k = int(np.argmax(np.abs(spin)))
+        measured = abs(2 * math.pi * float(travel[k]) / spin[k]) * 1000
+        report = {"verified_lead_mm": round(measured, 4)}
+        if abs(measured - lead) > 0.05 * lead:
+            report["verify"] = (f"按当前约束算出的导程是 {measured:.4f} mm/转，与要求的 {lead} 不符："
+                                "可能选错了圆柱面（用 screw_ref / nut_ref 显式指定），或螺母另有约束")
+        return report
 
     def linear_coupler(self, args: dict) -> dict:
         a, b = str(args["a"]), str(args["b"])
@@ -832,7 +1157,32 @@ class AssemblySession:
         self._record_joint("coupling:linear", edge_a, edge_b, [mate])
         return {"mate": mate, "ratio": ratio, "reference": result.get("referenceComponents")}
 
+    def _check_dof_v3(self, args: dict) -> dict:
+        """按 SolidWorks 里的真实配合求约束秩：直接加的 mate 也算在内，闭环冗余单独报出。"""
+        modes, components, mates = self._modes()
+        reached = self._grounded_by_mates(components, mates)
+        report = {
+            "mobility": modes["mobility"],
+            "redundant": modes["redundant"],
+            "free": {self._alias(n): v for n, v in modes["free"].items()},
+            "floating": sorted(self._alias(c["name"]) for c in components if c["name"] not in reached),
+            "over_defined": sorted(self._alias(c["name"]) for c in components
+                                   if int(c.get("constrainedStatus") or 0) in (4, 5, 6)),
+            "broken_mates": [m.get("name") for m in mates if int(m.get("errorCode") or 0) != 0],
+            "not_counted": modes["skipped"],
+            "hint": "free 是每个零件相对机架还能动的自由度（dof=转动+平移）；"
+                    "活动度偏大时找 dof 比预期多的零件补约束，偏小时找冗余或装错的关节。",
+        }
+        expected = args.get("expected_mobility")
+        if expected is not None:
+            report["expected_mobility"] = int(expected)
+            report["matches_expected"] = modes["mobility"] == int(expected) and not report["floating"]
+        self.last_dof = report
+        return report
+
     def check_dof(self, args: dict) -> dict:
+        if self.v3:
+            return self._check_dof_v3(args)
         components = self.asmwf("components").get("components") or []
         statuses = {c["name"]: CONSTRAINED.get(int(c.get("constrainedStatus") or 0), "unknown") for c in components}
         fixed = {c["name"] for c in components if c.get("isFixed")}
@@ -967,6 +1317,12 @@ class AssemblySession:
         dense = self.asmwf("motion-sample", {
             "times": [duration * i / 120 for i in range(121)], "interference": False,
         }).get("frames") or raw_frames
+        sampling: dict = {}
+        if self.v3:
+            from geomcheck.assembly_motion import refine_aliased
+            dense, sampling = refine_aliased(
+                lambda times: self.asmwf("motion-sample", {"times": times, "interference": False}).get("frames") or [],
+                driver, duration, dense)
 
         def turned(name: str) -> float:
             angles = [angle_about_z(frame["transforms"][name]) for frame in dense]
@@ -990,8 +1346,58 @@ class AssemblySession:
             "drifted_fixed": drifted,
             "kinematics": kinematics,
         }
+        if self.v3:
+            report["interference_pairs"] = self._pair_summary(raw_frames)
+            if sampling.get("driver_jump_deg"):
+                sampling["hint"] = "驱动件在相邻帧间跳转，多半是机构卡死或闭环装不上，求解器在两个位形之间跳"
+            if sampling:
+                report["sampling"] = sampling
+            for key in ("moved", "stuck", "drifted_fixed"):
+                report[key] = [self._alias(n) for n in report[key]]
         self.last_motion = report
         return report
+
+    def _pair_summary(self, frames: list[dict]) -> list[dict]:
+        """逐帧干涉按零件对汇总：首次出现的帧、出现帧数、最大干涉体积。静态就有的多半是层位 / 孔位错，
+        转到某个角度才出现的多半是相位或杆件摆动范围问题。"""
+        pairs: dict[tuple, dict] = {}
+        for index, frame in enumerate(frames):
+            for item in (frame.get("interference") or {}).get("interferences") or []:
+                key = tuple(sorted(self._alias(c) for c in item.get("components") or []))
+                row = pairs.setdefault(key, {"pair": list(key), "first_frame": index, "frames": 0, "max_mm3": 0.0})
+                row["frames"] += 1
+                row["max_mm3"] = max(row["max_mm3"], _round(float(item.get("volume") or 0) * 1e9, 3))
+        return sorted(pairs.values(), key=lambda r: -r["max_mm3"])
+
+    def check_pose(self, args: dict) -> dict:
+        """有限行程 / 多自由度机构的自检：按 set 依次加临时角度 / 距离配合把机构摆到一个位形，
+        核对关键点、做静态干涉与固定件漂移检查，然后删掉临时配合。与评测的位姿模式是同一套机制。"""
+        from geomcheck.assembly_motion import run_poses
+
+        poses = args.get("poses") or [{"name": args.get("name") or "pose", "set": args.get("set") or [],
+                                       "points": args.get("points") or []}]
+        for pose in poses:
+            for item in pose.get("set") or []:
+                if item.get("type") not in ("angle", "offset", "distance"):
+                    raise WorkflowError("TOOL_ARGS", "set 里每项 type 必须是 angle / offset / distance")
+        spec = {"poses": poses, "expect_fixed": args.get("expect_fixed") or [],
+                "frame": args.get("frame") or next((a for a, s in self.aliases.items()
+                                                    if s in self._fixed_names()), None),
+                "tolerance_mm": float(args.get("tolerance_mm") or 1.5), "max_interference": 0}
+        if not spec["frame"]:
+            raise WorkflowError("TOOL_ARGS", "还没有固定件，先 ground_component")
+        result = run_poses(self, spec)
+        for row in result.get("poses") or []:
+            for item in row.get("interference_pairs") or []:
+                item["components"] = [self._alias(c) for c in item.get("components") or []]
+            row.pop("checks", None)
+        report = {"passed": result["passed"], "poses": result["poses"]}
+        self.last_pose = report
+        self.saved = False
+        return report
+
+    def _fixed_names(self) -> set[str]:
+        return {c["name"] for c in self.asmwf("components").get("components") or [] if c.get("isFixed")}
 
     def save_assembly(self, args: dict) -> dict:
         path = args.get("path") or self.assembly_path
@@ -1006,6 +1412,21 @@ class AssemblySession:
     def finish(self, args: dict) -> dict:
         if not self.saved:
             return {"ok": False, "error": {"code": "NOT_SAVED", "message": "请先 save_assembly"}}
+        if self.v3:
+            motion_ok = bool(self.last_motion and self.last_motion.get("passed"))
+            pose_ok = bool(self.last_pose and self.last_pose.get("passed")
+                           and self.last_dof and self.last_dof.get("matches_expected"))
+            if motion_ok or pose_ok:
+                return {"ok": True, "summary": args.get("summary", ""),
+                        "verified_by": "check_motion" if motion_ok else "check_pose + check_dof"}
+            return {"ok": False, "error": {
+                "code": "MOTION_FAIL",
+                "message": "finish 前需要：一次通过的 check_motion（整周回转机构）；或一次通过的 check_pose，"
+                           "且 check_dof(expected_mobility=设计活动度) 吻合（有限行程 / 多自由度机构）",
+                "last_motion": None if not self.last_motion else {"passed": self.last_motion.get("passed")},
+                "last_pose": None if not self.last_pose else {"passed": self.last_pose.get("passed")},
+                "last_dof_matches": None if not self.last_dof else self.last_dof.get("matches_expected"),
+            }}
         if not self.last_motion or not self.last_motion.get("passed"):
             return {
                 "ok": False,
