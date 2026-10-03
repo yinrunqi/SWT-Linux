@@ -93,7 +93,8 @@ rubrics:
     check:
       - exists: bosses
       - coaxial: [inlet, bosses]
-      - line_material: {frame: frame, along: 2, at: [41, 21, null], expect: [[-53, -44], [44, 53]]}
+      # 凸台从侧面 y = ±45 起还是略嵌入块体（参考件从 ±44 起）题面未规定，两种都接受
+      - line_material: {frame: frame, along: 2, at: [41, 21, null], expect_any: [[[-53, -44], [44, 53]], [[-53, -45], [45, 53]]]}
       - line_material: {frame: frame, along: 2, at: [25, 37, null], expect: [[-53, -24.75], [24.75, 53]]}
 
   - id: tapped_holes

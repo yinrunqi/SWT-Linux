@@ -836,6 +836,8 @@ def _frame_point(frame: Frame, a: dict, along: int | None = None) -> np.ndarray:
 
 
 def _match_intervals(ctx: Ctx, got: list, expect: list) -> bool:
+    # 探测线恰好擦过一条棱时会得到零长度区间，它不代表材料
+    got = [g for g in got if g[1] - g[0] > ctx.tol_len]
     return len(got) == len(expect) and all(
         ctx.near(g[0], e[0]) and ctx.near(g[1], e[1]) for g, e in zip(got, expect)
     )

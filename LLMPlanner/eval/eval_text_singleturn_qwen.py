@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 import time
 from dataclasses import dataclass
@@ -2030,6 +2031,36 @@ def _save_artifacts(sw_url: str, stem: Path | None) -> dict:
     return saved
 
 
+RUBRIC_DIRS = (LLM_ROOT / "eval" / "rubrics_hard", LLM_ROOT / "eval" / "rubrics")
+OCC_PYTHON = LLM_ROOT / "venv-occ" / "Scripts" / "python.exe"
+
+
+def _rubric_score(case_id: str, artifacts: dict) -> dict | None:
+    """用 geomcheck rubric 给导出的 STEP 打分；pythonocc 只装在 venv-occ，所以走子进程。"""
+    rubric = next((d / f"{case_id}.yaml" for d in RUBRIC_DIRS if (d / f"{case_id}.yaml").exists()), None)
+    if rubric is None or not artifacts.get("step") or not OCC_PYTHON.exists():
+        return None
+    step = Path(artifacts["step"])
+    step = step if step.is_absolute() else ROOT / step
+    out = step.with_suffix(".rubric.json")
+    try:
+        subprocess.run(
+            [str(OCC_PYTHON), "-X", "utf8", "-m", "geomcheck.rubric",
+             "--step", str(step), "--rubric", str(rubric), "--output", str(out)],
+            cwd=LLM_ROOT, capture_output=True, timeout=1800, check=True,
+        )
+        res = json.loads(out.read_text(encoding="utf-8"))[0]
+    except Exception as exc:
+        return {"rubric": rubric.name, "error": f"{type(exc).__name__}: {str(exc)[:300]}"}
+    return {
+        "rubric": rubric.name,
+        "score": res["score"],
+        "accepted": res["accepted"],
+        "hard_ok": res["hard_ok"],
+        "failed": [r["id"] for r in res["rubrics"] if not r["ok"]],
+    }
+
+
 def _observation(sw_url: str) -> dict:
     observer = SwObserver(base_url=sw_url)
     try:
@@ -2402,6 +2433,7 @@ def run_one(
             "case_id": case.case_id,
             "name": case.name,
             **scoring,
+            # 只表示每一步都执行成功；L1 中被 agent 自行纠正的失败调用也会使其为 failed，agent 是否收尾看 workflow_status
             "status": scoring_v1["status"],
             "plan_steps": scoring_v1["plan_steps"],
             "successful_steps": scoring_v1["successful_steps"],
@@ -2437,6 +2469,7 @@ def run_one(
             "cleanup_before": cleanup_before,
             "error": None,
             "artifacts": artifacts,
+            "rubric": _rubric_score(case.case_id, artifacts),
             "trace": trace,
         }
     except Exception as exc:
@@ -2801,6 +2834,10 @@ def main() -> int:
             f"duration={result['duration_seconds']}s",
             flush=True,
         )
+        if result.get("rubric"):
+            rub = result["rubric"]
+            print(f"  rubric={rub.get('score')} accepted={rub.get('accepted')} "
+                  f"failed={rub.get('failed') or rub.get('error')}", flush=True)
         if result.get("workflow_status") not in (None, "finished") or result.get("error"):
             print(
                 f"  workflow_status={result.get('workflow_status')} "
