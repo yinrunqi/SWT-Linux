@@ -1759,6 +1759,9 @@ def _image_mime(image_b64: str, declared: str = "") -> str:
     return "image/jpeg"
 
 
+REASONING_EFFORTS = ("none", "minimal", "low", "medium", "high", "xhigh")
+
+
 def _run_workflow_l1(
     instruction: str,
     *,
@@ -1770,22 +1773,36 @@ def _run_workflow_l1(
     image_b64: str = "",
     image_mime: str = "image/png",
     views_tool: bool = True,
+    reasoning_effort: str | None = None,
 ) -> dict:
     """L1：工程师级工具 + 闭环 Agent。results 只列建模工具调用，供打分统计失败次数。
 
     带图纸时（看图建模）图纸直接交给规划模型，所以 model 必须支持图片输入；
     views_tool 打开时 Agent 额外获得 render_views，可以把当前零件投影成三视图与图纸对照。
     """
+    import uuid
+
     from openai import OpenAI
 
     from planner.workflow.agent import WorkflowAgent
     from planner.workflow.tools import WorkflowSession
 
     extra_tools = ["render_views"] if image_b64 and views_tool else None
-    client = OpenAI(api_key=api_key, base_url=base_url or None, timeout=180, max_retries=2)
+    # TT Switch 只有在同一 X-Session-Id 下才复用 prompt 缓存；显式缓存模型不带此头时每轮都按缓存写计费。
+    # 每次运行一个新值，不跨任务共享上下文。其他 OpenAI 兼容服务会忽略这个头。
+    client = OpenAI(
+        api_key=api_key,
+        base_url=base_url or None,
+        timeout=180,
+        max_retries=2,
+        default_headers={"X-Session-Id": f"workflow-l1-{uuid.uuid4().hex}"},
+    )
     session = WorkflowSession(base_url=executor.base_url, executor=executor, extra_tools=extra_tools)
     session.start_part()
-    agent = WorkflowAgent(client, model, session, max_llm_calls=max_llm_calls, extra_tools=extra_tools)
+    agent = WorkflowAgent(
+        client, model, session, max_llm_calls=max_llm_calls, extra_tools=extra_tools,
+        reasoning_effort=reasoning_effort,
+    )
     outcome = agent.run(instruction, image_b64=image_b64 or None, image_mime=image_mime)
     modeling_calls = [item for item in outcome["tool_calls"] if item["tool"] not in WORKFLOW_QUERY_TOOLS]
     results = [
@@ -1881,6 +1898,15 @@ def run():
     dry_run = data.get("dry_run", False)
     use_cache = bool(data.get("use_cache", True))
     capture_trace = bool(data.get("capture_trace", False))
+    reasoning_effort = str(data.get("reasoning_effort") or "").strip().lower() or None
+    if reasoning_effort is not None:
+        if reasoning_effort not in REASONING_EFFORTS:
+            return jsonify({
+                "success": False,
+                "error": f"未知 reasoning_effort: {reasoning_effort}，可选 {', '.join(REASONING_EFFORTS)}",
+            }), 400
+        if action_level != "L1":
+            return jsonify({"success": False, "error": "reasoning_effort 目前只支持 L1 workflow"}), 400
     # 多模态：可选图片（base64，可含或不含 data URI 前缀；不含时按 JPEG 处理）
     image_raw = data.get("image", "") or ""
     image_b64 = image_raw.strip()
@@ -1918,6 +1944,7 @@ def run():
                     image_b64=image_b64,
                     image_mime=_image_mime(image_b64, declared_mime) if image_b64 else "image/png",
                     views_tool=bool(data.get("views_tool", True)),
+                    reasoning_effort=reasoning_effort,
                 ))
         except Exception as exc:
             traceback.print_exc()

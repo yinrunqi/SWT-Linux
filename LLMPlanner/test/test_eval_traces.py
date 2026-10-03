@@ -126,7 +126,7 @@ def test_three_view_run_one_writes_trace_on_request_failure(tmp_path, monkeypatc
     monkeypatch.setattr(bench, "_close_documents", lambda url: None)
     monkeypatch.setattr(bench.time, "sleep", lambda s: None)
     args = SimpleNamespace(out_dir=tmp_path, sw_url="sw", web_url="web", plan_model="m", action_level="L1",
-                           max_llm_calls=40, no_views_tool=False)
+                           max_llm_calls=40, no_views_tool=False, provider="aiping")
     row = bench.run_one({"case": "d01", "prompt": "p", "image": image}, 1, args)
     trace = json.loads(Path(row["trace"]).read_text(encoding="utf-8"))
     assert trace["error"] == "web down"

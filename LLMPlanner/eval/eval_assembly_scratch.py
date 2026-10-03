@@ -94,13 +94,16 @@ def _close(sw: str) -> None:
 
 def _openai():
     import os
+    import uuid
     from openai import OpenAI
 
+    # 每个智能体运行一个新 client：TT Switch 只在同一 X-Session-Id 下复用 prompt 缓存，其他服务忽略这个头。
     client = OpenAI(
         api_key=os.environ["OPENAI_API_KEY"],
         base_url=os.environ.get("OPENAI_BASE_URL") or None,
         timeout=180,
         max_retries=2,
+        default_headers={"X-Session-Id": f"assembly-eval-{uuid.uuid4().hex}"},
     )
     # 网关上游偶发以 400 model_param_invalid 拒收同一请求，重放即可通过；SDK 不重试 400。
     create = client.chat.completions.create
@@ -108,9 +111,13 @@ def _openai():
     def logged(**kwargs):
         response = create(**kwargs)
         choice = response.choices[0]
+        details = getattr(response.usage, "completion_tokens_details", None)
         LLM_CALL_LOG.append({
             "finish_reason": choice.finish_reason,
             "completion_tokens": getattr(response.usage, "completion_tokens", None),
+            "reasoning_tokens": getattr(details, "reasoning_tokens", None),
+            "prompt_tokens": getattr(response.usage, "prompt_tokens", None),
+            "prompt_cache_hit_tokens": getattr(response.usage, "prompt_cache_hit_tokens", None),
             "n_tool_calls": len(choice.message.tool_calls or []),
             "text_chars": len(choice.message.content or ""),
         })
@@ -189,8 +196,16 @@ def infra_flags(assembly: dict) -> list[str]:
 
 
 def _grade_step(step: Path, rubric_path: Path) -> dict:
-    from geomcheck.occ_part import Part
-    from geomcheck.rubric import evaluate, load_rubric
+    try:
+        from geomcheck.occ_part import Part
+        from geomcheck.rubric import evaluate, load_rubric
+    except ImportError as exc:  # 未装 cadquery-ocp，或其 DLL 被系统策略拦截
+        return {
+            "accepted": False,
+            "score": None,
+            "skipped": True,
+            "error": f"OCC 不可用，零件未打分，用 eval/assembly_scratch/regrade_offline.py 补算: {exc}",
+        }
 
     try:
         return evaluate(load_rubric(rubric_path), Part.from_step(step))
@@ -209,6 +224,7 @@ def generate_part(
     sw: str,
     model: str,
     max_llm_calls: int,
+    reasoning_effort: str | None = None,
 ) -> dict:
     from planner.workflow.agent import WorkflowAgent
     from planner.workflow.tools import WorkflowSession
@@ -221,6 +237,7 @@ def generate_part(
     started = time.perf_counter()
     outcome = WorkflowAgent(
         _openai(), model, session, max_llm_calls=max_llm_calls, extra_tools=extra,
+        reasoning_effort=reasoning_effort,
     ).run(spec["prompt"])
     trace = dest.with_suffix(".agent.json")
     _write_json(trace, outcome)
@@ -244,6 +261,10 @@ def generate_part(
         "grade": grade,
         "token_usage": outcome["token_usage"],
         "llm_calls": outcome["llm_calls"],
+        "error": outcome.get("error"),
+        "finish_reasons": outcome.get("finish_reasons"),
+        "tool_calls": outcome["tool_calls"],
+        "agent_summary": outcome.get("summary"),
         "duration_seconds": round(time.perf_counter() - started, 2),
         "artifacts": artifacts,
         "trace": str(trace),
@@ -260,6 +281,7 @@ def assemble(
     max_llm_calls: int,
     workflow: str = "v1",
     max_tokens: int = 8000,
+    reasoning_effort: str | None = None,
 ) -> dict:
     from planner.assembly_workflow.agent import AssemblyAgent
     from planner.assembly_workflow.session import AssemblySession
@@ -275,7 +297,7 @@ def assemble(
     LLM_CALL_LOG.clear()
     outcome = AssemblyAgent(
         _openai(), model, session, max_llm_calls=max_llm_calls, max_tokens=max_tokens,
-        tools=tool_specs(workflow),
+        tools=tool_specs(workflow), reasoning_effort=reasoning_effort,
     ).run(goal)
     messages = outcome.get("messages") or []
     _write_json(dest.with_name("agent_messages.json"), messages)
@@ -303,6 +325,7 @@ def assemble(
     _close(sw)
     return {
         "status": outcome["status"],
+        "error": outcome.get("error"),
         "infra_error": infra_error,
         "static": static,
         "rubric": rubric,
@@ -353,8 +376,10 @@ def _motion(session, spec: dict, parts: dict[str, Path], sw: str) -> dict:
                 continue
             gap = clearance_mm(pa, pb, frame0[sa], frame0[sb])
             gaps.append({"pair": [a, b], "mm": None if gap is None else round(gap, 4),
-                         "ok": gap is not None and lo <= gap <= hi})
-        # 只记录不计分：标准零件按零侧隙建模，参考装配体上也量出 0 mm，这一项过不了阳性对照
+                         "ok": gap is not None and lo <= gap <= hi, "range_mm": [lo, hi],
+                         "steps": [str(pa), str(pb)], "transforms": [frame0[sa], frame0[sb]]})
+        # 只记录不计分：planner/gears.py 的外啮合齿轮不留侧隙（齿厚正好半个齿距），标准零件实测只有
+        # 约 0.006–0.009 mm，低于 0.02 mm 下限，这一项过不了阳性对照。首帧位姿一并记下，OCC 不可用时可离线补量
         motion["clearance"] = gaps
     return motion
 
@@ -378,6 +403,16 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
             dest = out / "parts" / spec["id"]
             result = generate_part(
                 spec, dest, sw=args.sw, model=args.model, max_llm_calls=args.max_part_calls,
+                reasoning_effort=args.reasoning_effort,
+            )
+            skipped = bool((result.get("grade") or {}).get("skipped"))
+            print(
+                f"  part {spec['id']}: "
+                + ("grade=skipped(OCC) " if skipped else f"accepted={result['accepted']} score={result['score']} ")
+                + f"step={'yes' if Path(str(result['artifacts'].get('step', ''))).is_file() else 'NO'} "
+                f"status={result['status']} calls={result['llm_calls']}"
+                + (f" error={result['error']}" if result.get("error") else ""),
+                flush=True,
             )
             part_results.append(result)
             if result["artifacts"].get("sldprt"):
@@ -401,7 +436,7 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
             assembly = assemble(
                 case, parts, out / f"{case_id}.SLDASM",
                 sw=args.sw, model=args.model, max_llm_calls=budget, workflow=workflow,
-                max_tokens=args.asm_max_tokens,
+                max_tokens=args.asm_max_tokens, reasoning_effort=args.reasoning_effort,
             )
         except Exception as exc:  # SolidWorks 已经死掉时连新建装配体都会失败
             assembly = {"status": "infra_exception", "infra_error": f"{type(exc).__name__}: {exc}",
@@ -526,8 +561,19 @@ def main() -> None:
     parser.add_argument("--infra-retries", type=int, default=1,
                         help="装配阶段出现 SolidWorks 崩溃 / 超时痕迹时，重启 SolidWorks 后重跑的次数")
     parser.add_argument("--asm-max-tokens", type=int, default=8000)
+    parser.add_argument(
+        "--reasoning-effort",
+        choices=("none", "minimal", "low", "medium", "high", "xhigh"),
+        default=None,
+        help="sent as reasoning_effort on every part and assembly agent call; omitted = provider default",
+    )
     parser.add_argument("--output-dir", default=str(ROOT / "eval" / "artifacts" / "assembly_scratch"))
     parser.add_argument("--output", default=str(ROOT / "eval" / "assembly_scratch_result.json"))
+    parser.add_argument(
+        "--resume", action="store_true",
+        help="keep finished rows of an existing --output and run only the missing ones; "
+        "rows with infra_error or an LLM error are rerun",
+    )
     args = parser.parse_args()
     names = []
     tokens = [t.strip() for t in args.cases.split(",")]
@@ -538,8 +584,27 @@ def main() -> None:
             parser.error(f"未知测例 {token}，可选：{', '.join(CASE_FILES)}")
         names.append(name)
     conditions = ["gold", "gen", "e2e"] if args.condition == "all" else [args.condition]
+    if "e2e" in conditions:
+        try:
+            import geomcheck.occ_part  # noqa: F401
+        except ImportError as exc:
+            parser.error(f"e2e 条件要在建模时给零件打分才能决定是否装配，但 OCC 不可用（{exc}）；改用 --condition gen")
     workflows = ["v1", "v2"] if args.workflow == "both" else [args.workflow]
     rows = []
+    if args.resume and Path(args.output).is_file():
+        previous = json.loads(Path(args.output).read_text(encoding="utf-8"))
+        for key in ("model", "reasoning_effort", "asm_max_tokens"):
+            if previous.get(key) != getattr(args, key):
+                parser.error(f"--resume：已有结果的 {key}={previous.get(key)!r} 与本次 {getattr(args, key)!r} 不一致")
+        for row in previous.get("results") or []:
+            asm = row.get("assembly") or {}
+            if asm.get("infra_error") or asm.get("status") == "llm_error":
+                print(f"[resume] 重跑 {row['case_id']} {row['condition']} r{row['repeat']} {row['workflow']}"
+                      f"（{asm.get('infra_error') or asm.get('error')}）", flush=True)
+                continue
+            rows.append(row)
+        print(f"[resume] 保留已完成的 {len(rows)} 行", flush=True)
+    done = {(r["case_id"], r["condition"], r["repeat"], r["workflow"]) for r in rows}
 
     def write() -> dict:
         report = {
@@ -557,6 +622,12 @@ def main() -> None:
             "recipes": {wf: list(RECIPE_SETS[wf]) for wf in workflows},
             "results": rows,
             "model": args.model,
+            "part_grading_skipped": any(
+                (part.get("grade") or {}).get("skipped") for row in rows for part in row.get("parts") or []
+            ),
+            "base_url": os.environ.get("OPENAI_BASE_URL"),
+            "reasoning_effort": args.reasoning_effort,
+            "prompt_lang": "zh",
             "asm_max_tokens": args.asm_max_tokens,
             "max_asm_calls": args.max_asm_calls,
             "asm_calls_per_role": args.asm_calls_per_role,
@@ -571,14 +642,20 @@ def main() -> None:
             for repeat in range(1, args.repeats + 1):
                 # 同一 case / 重复内交替 v1、v2，减少 SolidWorks 状态漂移造成的系统偏差
                 for workflow in workflows:
+                    if (case["case_id"], condition, repeat, workflow) in done:
+                        print(f"=== {case['case_id']} {condition} r{repeat} {workflow} === 已完成，跳过", flush=True)
+                        continue
                     print(f"=== {case['case_id']} {condition} r{repeat} {workflow} ===", flush=True)
                     row = run_condition(case, condition, repeat, args, workflow)
                     rows.append(row)
+                    asm = row.get("assembly") or {}
                     print(
                         f"  parts={row['part_pass_rate']} static={row['assembly_score']} "
-                        f"motion={row['motion_score']} e2e={row['e2e']}"
-                        + (" [infra]" if row.get("infra_contaminated") else ""),
-                        flush=True,
+                        f"motion={row['motion_score']} e2e={row['e2e']} "
+                        f"asm_status={asm.get('status')} asm_calls={asm.get('llm_calls')}"
+                        + (" [infra]" if row.get("infra_contaminated") else "")
+                        + (f" error={asm.get('error') or asm.get('infra_error')}"
+                           if asm.get("error") or asm.get("infra_error") else ""),                        flush=True,
                     )
                     write()
     report = write()

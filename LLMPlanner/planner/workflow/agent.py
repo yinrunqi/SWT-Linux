@@ -114,6 +114,7 @@ class WorkflowAgent:
         temperature: float = 0.0,
         max_stalls: int = 2,
         extra_tools: list[str] | None = None,
+        reasoning_effort: str | None = None,
     ):
         self.client = client
         self.model = model
@@ -121,6 +122,7 @@ class WorkflowAgent:
         self.max_llm_calls = max_llm_calls
         self.max_tokens = max_tokens
         self.temperature = temperature
+        self.reasoning_effort = reasoning_effort
         self.max_stalls = max_stalls
         self.tools = tool_specs(extra_tools)
 
@@ -135,9 +137,12 @@ class WorkflowAgent:
         usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "calls": 0}
         tool_log: list[dict] = []
         llm_responses: list[dict] = []
+        finish_reasons: list[str | None] = []
         failed_signatures: dict[str, int] = {}
         status, summary, stalls, error = "max_llm_calls", "", 0, None
 
+        # 未指定时不发送该字段，保持与历史结果相同的请求体（由服务端默认值决定推理强度）。
+        extra = {"reasoning_effort": self.reasoning_effort} if self.reasoning_effort else {}
         for _ in range(self.max_llm_calls):
             try:
                 response = self.client.chat.completions.create(
@@ -147,6 +152,7 @@ class WorkflowAgent:
                     tool_choice="auto",
                     temperature=self.temperature,
                     max_tokens=self.max_tokens,
+                    **extra,
                 )
             except Exception as exc:
                 status, error = "llm_error", f"{type(exc).__name__}: {exc}"
@@ -156,6 +162,8 @@ class WorkflowAgent:
             if response.usage is not None:
                 for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
                     usage[key] += int(getattr(response.usage, key, 0) or 0)
+            # 推理 token 计入 max_tokens；截断（length）时部分网关会把 usage 置 0，需单独记录。
+            finish_reasons.append(getattr(response.choices[0], "finish_reason", None))
             message = response.choices[0].message
             calls = _tool_calls_payload(message)
             assistant = {"role": "assistant", "content": message.content or ""}
@@ -239,6 +247,8 @@ class WorkflowAgent:
             "summary": summary,
             "error": error,
             "llm_calls": usage["calls"],
+            "reasoning_effort": self.reasoning_effort,
+            "finish_reasons": finish_reasons,
             "tool_calls": tool_log,
             "token_usage": usage,
             "final_state": final_state,

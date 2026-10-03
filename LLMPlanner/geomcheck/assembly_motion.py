@@ -505,14 +505,19 @@ def clearance_mm(step_a: Path, step_b: Path, matrix_a, matrix_b) -> float | None
         return reader.OneShape()
 
     def locate(shape, matrix):
+        # 与 local_to_world 同一约定：ArrayData 0-2 / 3-5 / 6-8 是零件 X / Y / Z 轴（行向量），9-11 是原点（m）。
+        # gp_Trsf 按列向量书写，所以旋转取转置；STEP 读入后是 mm，平移也换算成 mm。
         trsf = gp_Trsf()
         m = [float(v) for v in matrix]
-        trsf.SetValues(m[0], m[1], m[2], m[9], m[3], m[4], m[5], m[10], m[6], m[7], m[8], m[11])
-        located = shape.Located(TopLoc_Location(trsf))
-        return located
+        trsf.SetValues(
+            m[0], m[3], m[6], m[9] * 1000,
+            m[1], m[4], m[7], m[10] * 1000,
+            m[2], m[5], m[8], m[11] * 1000,
+        )
+        return shape.Located(TopLoc_Location(trsf))
 
     dist = BRepExtrema_DistShapeShape(locate(load(step_a), matrix_a), locate(load(step_b), matrix_b))
     dist.Perform()
     if not dist.IsDone():
         return None
-    return float(dist.Value()) * 1000
+    return float(dist.Value())

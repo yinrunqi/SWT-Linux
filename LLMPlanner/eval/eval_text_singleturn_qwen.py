@@ -28,6 +28,9 @@ except ImportError:
 
 
 MODEL = "Qwen3.5-397B-A17B"
+# Web 后端按 provider 选择 .env 中的 Key / Base URL：ttswitch 用 OPENAI_*，其余用 <PROVIDER>_*。
+PROVIDERS = ("aiping", "ttswitch", "juheai")
+PROVIDER_LABELS = {"aiping": "AI Ping", "ttswitch": "TT Switch", "juheai": "juheai"}
 
 
 @dataclass(frozen=True)
@@ -1998,6 +2001,8 @@ def run_one(
     max_llm_calls: int = 40,
     artifact_stem: Path | None = None,
     lang: str = "zh",
+    provider: str = "aiping",
+    reasoning_effort: str | None = None,
 ) -> dict:
     started = time.perf_counter()
     cleanup_before = _close_documents(sw_url)
@@ -2006,7 +2011,7 @@ def run_one(
     observation: dict[str, Any] = {}
     request_payload = {
         "instruction": case_prompt(case, lang),
-        "provider": "aiping",
+        "provider": provider,
         "vision_model": model,
         "plan_model": model,
         "mode": "single_turn",
@@ -2017,6 +2022,8 @@ def run_one(
     }
     if action_level == "L1":
         request_payload["max_turns"] = max_llm_calls
+    if reasoning_effort:
+        request_payload["reasoning_effort"] = reasoning_effort
     trace = {
         "request": {
             "url": f"{web_url}/api/run",
@@ -2080,7 +2087,12 @@ def run_one(
             },
             "token_usage": payload.get("token_usage"),
             "workflow_status": (payload.get("summary") or {}).get("status"),
+            "workflow_error": (payload.get("workflow") or {}).get("error"),
             "llm_calls": (payload.get("summary") or {}).get("llm_calls"),
+            "truncated_llm_calls": sum(
+                reason == "length"
+                for reason in (payload.get("workflow") or {}).get("finish_reasons") or []
+            ),
             "tool_calls": (payload.get("summary") or {}).get("tool_calls"),
             "duration_seconds": round(time.perf_counter() - started, 2),
             "cleanup_before": cleanup_before,
@@ -2158,6 +2170,8 @@ def _write_report(
     strict_orientation: bool = False,
     action_level: str = "L0",
     lang: str = "zh",
+    provider: str = "aiping",
+    reasoning_effort: str | None = None,
 ) -> dict:
     spent_yuan = None
     if balance_before and balance_after:
@@ -2170,8 +2184,9 @@ def _write_report(
     case_means = [item["mean_score"] for item in per_case]
     report = {
         "run_at": datetime.now().astimezone().isoformat(timespec="seconds"),
-        "provider": "AI Ping",
+        "provider": PROVIDER_LABELS.get(provider, provider),
         "model": model,
+        "reasoning_effort": reasoning_effort,
         "mode": "workflow" if action_level == "L1" else "single_turn",
         "action_level": action_level,
         "prompt_lang": lang,
@@ -2267,6 +2282,11 @@ def rescore_report(source: Path, output: Path, strict_orientation: bool = False)
         strict_orientation=strict_orientation,
         action_level=old.get("action_level", "L0"),
         lang=old.get("prompt_lang", "zh"),
+        provider=next(
+            (key for key, label in PROVIDER_LABELS.items() if label == old.get("provider")),
+            old.get("provider", "aiping"),
+        ),
+        reasoning_effort=old.get("reasoning_effort"),
     )
     return report
 
@@ -2277,6 +2297,18 @@ def main() -> int:
     parser.add_argument("--sw-url", default="http://localhost:5100")
     parser.add_argument("--ids", nargs="*")
     parser.add_argument("--model", default=MODEL)
+    parser.add_argument(
+        "--provider",
+        choices=PROVIDERS,
+        default="aiping",
+        help="LLM service the Web backend uses: ttswitch reads OPENAI_* from .env, others read <PROVIDER>_*",
+    )
+    parser.add_argument(
+        "--reasoning-effort",
+        choices=("none", "minimal", "low", "medium", "high", "xhigh"),
+        default=None,
+        help="L1 only; sent as reasoning_effort on every agent call. Omitted = provider default",
+    )
     parser.add_argument(
         "--skip-qwen-historical",
         action="store_true",
@@ -2342,6 +2374,8 @@ def main() -> int:
         help="Do not keep each run's SLDPRT and STEP under eval/artifacts/<result name>/",
     )
     args = parser.parse_args()
+    if args.reasoning_effort and args.action_level != "L1":
+        parser.error("--reasoning-effort requires --action-level L1")
     if args.rescore:
         report = rescore_report(args.rescore, args.output or args.rescore, args.strict_orientation)
         print(
@@ -2391,6 +2425,8 @@ def main() -> int:
                 if args.save_artifacts else None
             ),
             lang=args.lang,
+            provider=args.provider,
+            reasoning_effort=args.reasoning_effort,
         )
         result["repeat"] = repeat
         results.append(result)
@@ -2403,6 +2439,12 @@ def main() -> int:
             f"duration={result['duration_seconds']}s",
             flush=True,
         )
+        if result.get("workflow_status") not in (None, "finished") or result.get("error"):
+            print(
+                f"  workflow_status={result.get('workflow_status')} "
+                f"error={result.get('workflow_error') or result.get('error')}",
+                flush=True,
+            )
         _write_report(
             output,
             results,
@@ -2418,6 +2460,8 @@ def main() -> int:
             strict_orientation=args.strict_orientation,
             action_level=args.action_level,
             lang=args.lang,
+            provider=args.provider,
+            reasoning_effort=args.reasoning_effort,
         )
         if (
             args.pause_every > 0
@@ -2444,6 +2488,8 @@ def main() -> int:
         strict_orientation=args.strict_orientation,
         action_level=args.action_level,
         lang=args.lang,
+        provider=args.provider,
+        reasoning_effort=args.reasoning_effort,
     )
     print(
         f"summary score={report['average_score']} "

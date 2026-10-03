@@ -90,6 +90,7 @@ class AssemblyAgent:
         temperature: float = 0.0,
         max_stalls: int = 2,
         tools: list[dict] | None = None,
+        reasoning_effort: str | None = None,
     ):
         self.client = client
         self.model = model
@@ -99,6 +100,7 @@ class AssemblyAgent:
         self.max_tokens = max_tokens
         self.temperature = temperature
         self.max_stalls = max_stalls
+        self.reasoning_effort = reasoning_effort
 
     def run(self, goal: str) -> dict:
         started = time.perf_counter()
@@ -114,6 +116,8 @@ class AssemblyAgent:
         status, summary, stalls, error = "max_llm_calls", "", 0, None
         max_tokens, truncations = self.max_tokens, 0
         state_messages: list[int] = []
+        # 未指定时不发送该字段，保持与历史结果相同的请求体。
+        extra = {"reasoning_effort": self.reasoning_effort} if self.reasoning_effort else {}
 
         for turn in range(self.max_llm_calls):
             if v3 and len(state_messages) > 1:
@@ -128,6 +132,7 @@ class AssemblyAgent:
                     tool_choice="auto",
                     temperature=self.temperature,
                     max_tokens=max_tokens,
+                    **extra,
                 )
             except Exception as exc:
                 status, error = "llm_error", f"{type(exc).__name__}: {exc}"
@@ -215,6 +220,7 @@ class AssemblyAgent:
             "error": error,
             "truncations": truncations,
             "llm_calls": usage["calls"],
+            "reasoning_effort": self.reasoning_effort,
             "tool_calls": tool_log,
             "token_usage": usage,
             "last_motion": self.session.last_motion,

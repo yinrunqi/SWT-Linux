@@ -142,6 +142,8 @@ SW_API_URL=http://localhost:5100
 
 TT Switch 网关的启动方式和可用模型见 `tt_switch_api_examples/README.md`。电脑重启后网关不会自动运行，连接被拒绝时先启动它。AI Ping、juheai 的配置可以分别写在 `AIPING_*`、`JUHEAI_*` 里备用，Web 设置里可以切换。
 
+请求里的 `provider` 决定 Web 后端读哪一组配置：`ttswitch`（Web 默认）读 `OPENAI_*`，`aiping`、`juheai` 分别读 `AIPING_*`、`JUHEAI_*`。评测脚本 `eval_text_singleturn_qwen.py`、`eval_three_view_bench.py` 默认发 `aiping`，走 TT Switch 网关时要加 `--provider ttswitch`。L1 每次运行带一个独立的 `X-Session-Id` 请求头，TT Switch 据此复用 prompt 缓存。
+
 请求里也可以临时指定 `api_key`、`base_url` 和 `plan_model`，会覆盖 `.env` 中的值。评测结果里的 `spent_yuan`（费用）依赖我们本机的 AI Ping 余额查询脚本，在别的机器上会是 `null`，不影响运行。需要的话，可以用结果里的 `token_usage` 乘以服务商的单价自己算。
 
 ---

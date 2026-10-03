@@ -94,7 +94,7 @@ def run_one(task: dict, k: int, args) -> dict:
     payload = {
         "instruction": task["prompt"],
         "image": "data:image/png;base64," + base64.b64encode(task["image"].read_bytes()).decode("ascii"),
-        "provider": "aiping",
+        "provider": args.provider,
         "plan_model": args.plan_model,
         "action_level": args.action_level,
         "use_cache": False,
@@ -152,6 +152,12 @@ def main() -> int:
     parser.add_argument("--action-level", choices=["L1", "L0"], default="L1",
                         help="L1: end-to-end workflow agent that sees the drawing (plan model must accept images); "
                              "L0: legacy vision-IR + blueprint pipeline")
+    parser.add_argument(
+        "--provider",
+        choices=["aiping", "ttswitch", "juheai"],
+        default="aiping",
+        help="LLM service the Web backend uses: ttswitch reads OPENAI_* from .env, others read <PROVIDER>_*",
+    )
     parser.add_argument("--plan-model", default="Qwen3.5-397B-A17B")
     parser.add_argument("--max-llm-calls", type=int, default=40, help="L1 LLM call budget")
     parser.add_argument("--no-views-tool", action="store_true", help="L1: do not offer render_views (ablation)")

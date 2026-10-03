@@ -263,7 +263,7 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 | `interference` 干涉 | 2 | 无干涉帧的比例 × 该动件实际在动的比例 |
 | `moving` 该动的动了 | 1 | `expect_moving` 里没有卡住的比例 |
 | `fixed` 固定件不漂 | 1 | `expect_fixed` 里没漂移的比例 × 该动件实际在动的比例 |
-规格里的 `clearance_pairs`（齿侧间隙）只记录到 `motion.clearance`，不计分、也不影响 `passed`：参考减速箱的标准齿轮按零侧隙建模，OCC 量出的两对啮合间隙都是 0 mm，这一项过不了阳性对照。
+规格里的 `clearance_pairs`（齿侧间隙）只记录到 `motion.clearance`，不计分、也不影响 `passed`：`planner/gears.py` 的外啮合直齿轮不留侧隙（齿厚正好半个齿距），参考减速箱两对啮合实测只有 0.009 / 0.006 mm，低于 0.02 mm 下限，这一项过不了阳性对照。
 
 “无干涉”“固定件不漂”只有在机构真的动起来时才有意义，所以乘上该动件在动的比例：完全卡死的机构得 0 分（旧口径是 65 分）。
 
@@ -407,7 +407,7 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 | 发动机 | r2 | 10/10 | 46.67 | 0 | 否 | 26 次调用后停滞 |
 
 - 零件阶段 32/32 全部合格，瓶颈在装配。
-- 减速箱两次装配 rubric 都是满分。r1 的传动比实测 0.1667，与期望一致；扣的 10 分来自两对啮合齿轮的间隙测量为 0 mm。r2 的输出轴几乎不转（实测比 0.0009，方向也不对），扣掉传动比分和间隙分。
+- 减速箱两次装配 rubric 都是满分。r1 的传动比实测 0.1667，与期望一致；扣的 10 分来自两对啮合齿轮的间隙测量为 0 mm。（2026-10-02 更正：这个 0 mm 是 `clearance_mm` 的缺陷造成的。它把以 m 为单位的平移直接作用在以 mm 读入的 STEP 上，旋转也取反了，所以任何齿轮对都量成 0。参考装配体旁边没有零件 STEP，齿隙检查被跳过，因此没有暴露。修正后由 `geomcheck/tests/test_clearance.py` 覆盖。）r2 的输出轴几乎不转（实测比 0.0009，方向也不对），扣掉传动比分和间隙分。
 - 发动机两次都只插入 7 个零件，凸轮轴、凸轮、凸轮齿轮、飞轮和曲轴齿轮都没装上。凸轮轴缺失时运动检查直接报 `'camshaft'`，记 0 分。
 - 停滞的原因：每次 LLM 调用的 `finish_reason` 现在记在结果的 `llm_calls_detail` 里，被判停滞的调用全部是 `finish_reason=length`，输出正好 8000 token，可见文字和工具调用都是 0。也就是说，模型把 `max_tokens=8000` 全部花在了隐藏的思考上，答案还没写出来就被截断，智能体把它当成"没有调用工具"。重跑结果在 `eval/assembly_gen_sonnet5_v2_engine_trace.json`：r1 是 11 次调用、最后 3 次截断；r2 是 35 次调用、其中 11 次截断，装配 rubric 分别为 18.1 和 46.67，与第一次一致。
 - 发动机 r2 的另一个问题出在模型自身：它反复按 `cyl(d=24)` 去找机体上的缸孔，但机体是一块平板，没有这个孔，活塞的滑动副应该用平面来约束。
@@ -496,7 +496,7 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 - 运动分：新口径按权重给部分分，旧口径是扣分制；多位姿模式下运动学精度和干涉分开计。挖掘机臂就是例子：三个位姿的点位误差都不超过 0.004 mm，但每个位姿有 2 处静态干涉，旧口径记 0，新口径记 60。
 - 运动分（门控）：结构不成立（角色没装全、没连到机架或活动度不对）时运动分记 0。27 例中结构成立的只有 9 例。
 - e2e 两种口径定义相同：零件全部合格，且运动检查通过。
-- 齿侧间隙两种口径都不计分，只记录在 `motion.clearance`。原因是参考减速箱上 OCC 量出的两对啮合间隙也是 0 mm（标准齿轮按零侧隙建模），这一项过不了阳性对照。
+- 齿侧间隙两种口径都不计分，只记录在 `motion.clearance`。原因是标准齿轮按零侧隙建模，参考减速箱两对啮合实测只有 0.009 / 0.006 mm，低于 0.02 mm 下限，这一项过不了阳性对照。（早先记录的 0 mm 来自 `clearance_mm` 的坐标换算 bug：平移的米没换成毫米、旋转取成了转置，已修正。）
 
 与原始运行记录的分数相比，旧口径只有两处不同：
 - 减速箱：运动分 90 → 100，e2e 否 → 是，原因是不再扣间隙分。
@@ -518,6 +518,71 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
   - 雨刮：缺 `link1` 角色。
 
 扩展测例批次中 SolidWorks 崩溃了 3 次（RPC 服务器不可用、进程退出）。每次都结束评测进程、重启 SolidWorks，再从未完成的测例续跑，分批结果最后合并。偏置曲柄滑块、挖掘机臂、缩放仪首次运行时，装配中途丢失了活动装配文档，结果带 `infra_error` 且分数为 0；按第 1 节的约定剔除，改用补跑结果，补跑产物在 `eval/artifacts/assembly_gen_sonnet5_bench_rerun/`。梁机的智能体运行正常，但评测器首次运动采样时 SolidWorks 请求超时（180 s），运动分记为 0。这属于评测侧故障，所以没有重跑智能体，只对保存的装配体重新采样。
+
+### 6.3 gen 条件结果（GPT-6-Astra，workflow v2，零件工具集 v2，2026-10-03）
+
+> 本节分数由合并前的评测器算出：装配 rubric 与运动分是旧口径（第 3、4 节改版之前的公式），并且齿隙仍按“不在 [0.02, 2] mm 内扣 10 分”计分。现在齿隙只记录不计分（见 4.2 节），所以减速箱的运动分在现行旧口径下应为 100。产物目录不在本机，还没有按新口径重评，不能和 6.2 节的新口径表直接比较。
+
+设置：
+
+- 27 个测例各跑 1 次，`--condition gen --workflow v2`；
+- 模型 `gpt-6-astra`，`--reasoning-effort medium`，经 TT Switch 网关轨道 B（`/native`），每个智能体运行带独立的 `X-Session-Id`；
+- 题面是中文：规格里只有中文的零件提示和装配提示；
+- 装配预算 50 次调用，`max_tokens` 8000；零件预算 40 次调用。
+
+建模机器上 OCC 不可用（Windows 智能应用控制拦截了 cadquery-ocp 的 DLL），所以零件接口 rubric 和减速箱齿隙是在另一台机器上用 `regrade_offline.py` 从零件 STEP 补算的；装配 rubric 和其余运动检查在建模时就已算好。原始结果在 `eval/assembly_gen_gpt6_astra_medium_v2.json`，以补算后的 `eval/assembly_gen_gpt6_astra_medium_v2_regraded.json` 为准。整批没有 `infra_error`。
+
+| 范围 | 测例 | 零件合格率 | 装配 rubric | 运动分 | e2e |
+|---|---|---|---|---|---|
+| 全部 | 27 | 201/201 | 87.4 | 60.3 | 11/27 = 0.41 |
+| 核心测例 | 7 | 55/55 | 80.6 | 34.3 | 1/7 |
+| 扩展测例 | 20 | 146/146 | 89.8 | 69.3 | 10/20 |
+
+| 测例 | 装入角色 | 装配 rubric | 运动分 | e2e | 装配调用 | 主要问题 |
+|---|---|---|---|---|---|---|
+| 双级圆柱齿轮减速箱 `two_stage_gearbox` | 8/8 | 100 | 90 | 否 | 50（用满） | 两对齿轮齿隙 0.009 / 0.006 mm，低于 0.02 mm 下限（见下文） |
+| 单缸曲柄滑块发动机 `single_cylinder_engine` | 9/12 | 70 | 0 | 否 | 50（用满） | 没插入凸轮轴、凸轮、凸轮齿轮；正时耦合 0 |
+| 可调台灯 `adjustable_desk_lamp` | 7/7 | 100 | 100 | 是 | 50（finish） | — |
+| 折叠伞骨架 `folding_umbrella` | 7/7 | 100 | 0 | 否 | 50（用满） | 装配 rubric 满分，3 个位姿都没过 |
+| 电钻两级行星减速器 `drill_planetary_gearbox` | 11/11 | 73.75 | 25 | 否 | 50（用满） | 活动度不对，耦合 0.44；13 帧全干涉，carrier1 / planet2 / carrier2 卡住 |
+| 缝纫机主传动 `sewing_machine_drive` | 10/15 | 45.38 | 0 | 否 | 50（用满） | 没插入曲柄销、针杆连杆、针杆销、送布连杆、送布摇杆 |
+| 电影放映机传动 `film_projector_drive` | 12/12 | 75 | 25 | 否 | 50（用满） | 活动度不对，耦合 0.5；13 帧全干涉，快门与输片轮卡住 |
+| 曲柄摇杆四杆机构 `crank_rocker_linkage` | 8/8 | 100 | 100 | 是 | 44（finish） | — |
+| 偏置曲柄滑块机构 `offset_slider_crank` | 7/7 | 93.75 | 80 | 否 | 50（用满） | 关节 0.75；滑块卡住 |
+| 双缸 180° 曲柄往复泵 `twin_cylinder_pump` | 11/12 | 72.62 | 0 | 否 | 50（用满） | 没插入第二个活塞 |
+| 游梁式抽油机传动 `pumpjack_drive` | 11/11 | 100 | 100 | 是 | 50（用满） | — |
+| 双刮臂雨刮联动 `windshield_wiper_linkage` | 12/13 | 79.89 | 65 | 否 | 50（用满） | 少一根销；第二刮臂卡住 |
+| 蒸汽梁机 `beam_engine` | 10/12 | 69.29 | 25 | 否 | 50（用满） | 没插入活塞杆和一根销；13 帧干涉 |
+| 钟表跨轮 `clock_motion_works` | 10/10 | 77.5 | 60 | 否 | 50（用满） | 活动度不对，耦合 0.62；2 帧干涉 |
+| 手摇绞盘 `hand_winch` | 8/8 | 100 | 100 | 是 | 46（finish） | — |
+| 内齿圈转台 `turntable_ring_drive` | 6/6 | 100 | 100 | 是 | 39（finish） | — |
+| 星型齿轮减速器 `star_gear_reducer` | 8/8 | 100 | 100 | 是 | 50（用满） | — |
+| 竖直丝杠滑台 `lead_screw_stage` | 6/6 | 100 | 65 | 否 | 46（finish） | 手轮与滑台卡住，导程不对 |
+| 齿轮驱动曲柄滑块 `gear_driven_slider_crank` | 10/10 | 100 | 100 | 是 | 50（用满） | — |
+| 单级行星减速器 `epicyclic_carrier_output` | 8/8 | 66.25 | 25 | 否 | 50（用满） | 耦合 0.25；13 帧全干涉，行星轮与行星架卡住 |
+| 挖掘机工作臂 `excavator_arm` | 9/11 | 67.75 | 0 | 否 | 50（用满） | 没插入铲斗和铲斗销；3 个位姿都没过 |
+| SCARA 机械臂 `scara_arm` | 6/6 | 100 | 100 | 是 | 50（用满） | — |
+| 2 倍缩放仪 `pantograph` | 10/10 | 100 | 66.67 | 否 | 50（用满） | 3 个位姿过 2 个 |
+| 阿克曼转向梯形 `ackermann_steering` | 8/8 | 100 | 100 | 是 | 50（用满） | — |
+| 肘节夹钳 `toggle_clamp` | 8/8 | 100 | 100 | 是 | 50（用满） | — |
+| 平行四边形夹爪 `parallel_gripper` | 13/15 | 69.83 | 0 | 否 | 50（用满） | 没插入左右两个夹爪 |
+| 双横臂悬架 `double_wishbone` | 10/10 | 100 | 100 | 是 | 50（用满） | — |
+
+“装入角色”是规格 `gold_roles` 里被智能体插入的角色数。装配 rubric 未满分时，“主要问题”里的关节、耦合是 3.2 节对应项的得分比例。
+
+分析：
+
+- 零件阶段不是瓶颈。201 个零件全部 100 分，平均每个 4.1 次 LLM 调用，最多 9 次。
+- 瓶颈在装配的调用预算。22 个测例用满了 50 次，只有 5 个自己调用了 `finish`；有 13 个测例一次 `check_motion` 都没调，是在自检之前被截停的。
+  - 1325 次装配调用里有 1322 次只发一个工具调用，没有并行。
+  - 查询类调用占了近一半：`get_assembly_state` 354 次、`check_dof` 281 次，而 `insert_component` 只有 243 次。
+  - 7 个测例因此没把零件插完（发动机、缝纫机、双缸泵、雨刮、梁机、挖掘机、夹爪）。运动检查要求的角色不存在时运动分记 0，所以这几个测例的运动分大多是 0。
+- 行星和多级齿轮系是第二类失败。电钻、放映机、行星架输出都插齐了零件，但耦合项只有 0.25–0.5，活动度不对，13 帧全部干涉，输出件卡住，说明啮合相位或中心距没做对。钟表跨轮是同一类问题，只有 2 帧干涉。
+- 没有截断：`finish_reason=length` 出现 0 次。推理 token 中位数 0、p95 59、最大 629。prompt 缓存命中率 96.4%。
+- token：零件阶段 6.4M，装配阶段 32.8M。耗时：零件 1.7 h，装配 3.4 h。
+- 与 6.1 节 Sonnet 5 相比只有减速箱和发动机两个测例可对照，而且 rubric 和零件工具集版本不同：减速箱 100 / 90（Sonnet 两次为 100 / 90 与 100 / 75），发动机 70 / 0（Sonnet 两次为 18.1 / 0 与 46.67 / 0）。
+
+齿隙下限的问题：修正 `clearance_mm` 后，减速箱两对齿轮实测间隙为 0.009 mm 和 0.006 mm，规格 `clearance_mm: [0.02, 2.0]` 不满足，运动分扣 10、e2e 判否。`planner/gears.py` 里外啮合直齿轮的齿厚正好是半个齿距，不加侧隙（只有内齿圈加 0.05m），所以中心距和相位都对的一对齿轮理论间隙就是 0，几微米来自渐开线的折线近似。也就是说，现在的齿轮模型几乎达不到 0.02 mm 的下限。这个问题以前没有暴露，是因为旧的 `clearance_mm` 总是量成 0（见 6.1 节更正）。按“看过结果后不改评测”的约束，这里没有改阈值；如果把下限改成 0、只用它检出干涉，减速箱运动分为 100，e2e 为 12/27 = 0.44。是否调整由后续统一决定。
 
 ## 7. 命令
 
@@ -559,6 +624,10 @@ venv\Scripts\python.exe -X utf8 eval\assembly_scratch\rescore_table.py eval\asse
 venv\Scripts\python.exe -X utf8 eval\assembly_scratch\rescore_unsuppress.py eval\assembly_v2_rescore_new.json
 # 6.2 节的旧口径 / 新口径两张大表（--extra 给出没有可重评装配体的行）
 venv\Scripts\python.exe -X utf8 eval\assembly_scratch\bench_table.py eval\assembly_v2_rescore_new.json --extra eval\assembly_gen_sonnet5_v2_core_projector_llm400.json
+# 建模机器上 OCC 不可用时（零件全判不合格、齿隙为 None），把结果 JSON 和 --output-dir 拷到能跑 OCC 的机器上离线补算
+# 零件接口 rubric、齿隙、运动分与 e2e（只需检查器环境）
+venv-occ/bin/python -X utf8 eval/assembly_scratch/regrade_offline.py eval/assembly_gen_xxx.json `
+    --artifacts eval/artifacts/assembly_gen_xxx --output eval/assembly_gen_xxx_regraded.json
 
 # 离线单测（不占 SolidWorks）
 venv\Scripts\python.exe -m pytest test\test_assembly_rubric.py test\test_assembly_motion.py test\test_assembly_workflow_v2.py test\test_assembly_workflow_v3.py -q
