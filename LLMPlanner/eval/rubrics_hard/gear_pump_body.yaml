@@ -10,14 +10,14 @@ prompt: >-
 prompt_en: >-
   Create the body of an external gear pump as a single solid body, with the Z axis pointing up. The body is a
   120×90×40mm block (x ∈ [−60, 60], y ∈ [−45, 45], z = 0~40) whose four vertical corner edges are rounded with
-  R12mm fillets. From the top face, cut a figure-eight gear chamber: two cylindrical cavities 50.5mm in diameter
+  R12mm fillets. From the top face, cut a figure-8 gear chamber: two cylindrical cavities 50.5mm in diameter
   centered at (−21, 0) and (21, 0), 30mm deep (chamber floor at z = 10), joined where the two circles overlap.
   The chamber floor has a 20mm-diameter through hole for the drive shaft at (−21, 0) (through the floor), and a
   15mm-diameter, 8mm-deep blind hole for the idler shaft at (21, 0) (downward from the chamber floor). The
   middle of the −Y side has an inlet boss and the middle of the +Y side an outlet boss: both bosses are cylinders
   of 36mm diameter with their axes along Y, centered at x = 0, z = 25, protruding 8mm outward from the side
-  faces (to y = ±53). The inlet is a 24mm-diameter hole and the outlet a 16mm-diameter hole, both drilled along Y
-  from the boss end faces through to the gear chamber. The top face has 4 M8 tap-drill holes at (±46, ±32):
+  faces (to y = ±53). The inlet is a 24mm-diameter hole and the outlet a 16mm-diameter hole, both bored along Y
+  from the boss end faces through to the gear chamber. The top face has 4 M8 threaded-hole pilot bores at (±46, ±32):
   6.8mm in diameter and 20mm deep; there are also 2 locating pin holes, 6mm in diameter and 12mm deep, at the
   diagonal positions (−30, 33) and (30, −33).
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}

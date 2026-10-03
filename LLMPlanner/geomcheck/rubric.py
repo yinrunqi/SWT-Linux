@@ -1679,10 +1679,15 @@ def evaluate(rubric: dict, part: Part) -> dict:
     ctx = Ctx(part, tol.get("length_mm", 0.1), tol.get("angle_deg", 0.5), tol.get("volume_rel", 0.01),
               rubric.get("entities", {}))
     rows = []
+    empty = part.shape is None or part.shape.IsNull()
     for item in rubric["rubrics"]:
         checks, ok_all = [], True
         for chk in item["check"]:
             (name, args), = chk.items()
+            if empty:
+                checks.append({"check": name, "ok": False, "error": "STEP 中没有形体"})
+                ok_all = False
+                continue
             try:
                 ok, detail = CHECKS[name](ctx, args)
             except EntityMissing as exc:

@@ -12,9 +12,11 @@ import sys
 import os
 import threading
 import traceback
+from pathlib import Path
 
+PLANNER_ROOT = Path(__file__).resolve().parents[1]
 # 将 LLMPlanner 目录加入 sys.path，以便导入 planner 模块
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, str(PLANNER_ROOT))
 
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -1774,6 +1776,8 @@ def _run_workflow_l1(
     image_mime: str = "image/png",
     views_tool: bool = True,
     reasoning_effort: str | None = None,
+    checkpoint_path: str = "",
+    resume: bool = False,
 ) -> dict:
     """L1：工程师级工具 + 闭环 Agent。results 只列建模工具调用，供打分统计失败次数。
 
@@ -1790,10 +1794,11 @@ def _run_workflow_l1(
     extra_tools = ["render_views"] if image_b64 and views_tool else None
     # TT Switch 只有在同一 X-Session-Id 下才复用 prompt 缓存；显式缓存模型不带此头时每轮都按缓存写计费。
     # 每次运行一个新值，不跨任务共享上下文。其他 OpenAI 兼容服务会忽略这个头。
+    # 截断重试会把输出上限放到 32000，推理模型生成这么长需要数分钟
     client = OpenAI(
         api_key=api_key,
         base_url=base_url or None,
-        timeout=180,
+        timeout=600,
         max_retries=2,
         default_headers={"X-Session-Id": f"workflow-l1-{uuid.uuid4().hex}"},
     )
@@ -1801,9 +1806,9 @@ def _run_workflow_l1(
     session.start_part()
     agent = WorkflowAgent(
         client, model, session, max_llm_calls=max_llm_calls, extra_tools=extra_tools,
-        reasoning_effort=reasoning_effort,
+        reasoning_effort=reasoning_effort, stream=True, checkpoint_path=checkpoint_path or None,
     )
-    outcome = agent.run(instruction, image_b64=image_b64 or None, image_mime=image_mime)
+    outcome = agent.run(instruction, image_b64=image_b64 or None, image_mime=image_mime, resume=resume)
     modeling_calls = [item for item in outcome["tool_calls"] if item["tool"] not in WORKFLOW_QUERY_TOOLS]
     results = [
         {
@@ -1932,6 +1937,12 @@ def run():
     if action_level == "L1":
         if dry_run:
             return jsonify({"success": False, "error": "L1 workflow 不支持 dry_run"}), 400
+        checkpoint_path = str(data.get("checkpoint_path") or "").strip()
+        if checkpoint_path:
+            resolved = Path(checkpoint_path).resolve()
+            if resolved.suffix != ".json" or not resolved.is_relative_to(PLANNER_ROOT / "eval"):
+                return jsonify({"success": False, "error": "checkpoint_path 必须是 LLMPlanner/eval 下的 .json 文件"}), 400
+            checkpoint_path = str(resolved)
         try:
             with _sw_execution_lock:
                 return jsonify(_run_workflow_l1(
@@ -1945,6 +1956,8 @@ def run():
                     image_mime=_image_mime(image_b64, declared_mime) if image_b64 else "image/png",
                     views_tool=bool(data.get("views_tool", True)),
                     reasoning_effort=reasoning_effort,
+                    checkpoint_path=checkpoint_path,
+                    resume=bool(data.get("resume", False)),
                 ))
         except Exception as exc:
             traceback.print_exc()

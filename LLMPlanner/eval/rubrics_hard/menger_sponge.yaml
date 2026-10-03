@@ -7,10 +7,10 @@ prompt: >-
   即在每个子立方体内沿 X、Y、Z 各贯穿切出一个 9×9mm 的方孔（位于该子立方体中间三分之一）。
   等价地说：一个点被挖掉，当且仅当在 27mm 或 9mm 某一级的划分中，它有至少两个坐标落在该级的中间三分之一。
 prompt_en: >-
-  Create a level-2 Menger sponge as a single solid body. Start from a cube with an edge of 81mm (x, y, z ∈ [0, 81]).
-  Level 1: divide the cube into 3×3×3 sub-cubes of 27mm and remove the sub-cube at the center of each face and the
+  Create a second-level Menger sponge as a single solid body. Start from a cube with an edge of 81mm (x, y, z ∈ [0, 81]).
+  First level: divide the cube into 3×3×3 sub-cubes of 27mm and remove the sub-cube at the center of each face and the
   sub-cube at the center of the whole cube, i.e. cut a 27×27mm square hole through the cube along each of X, Y
-  and Z, where the hole lies in the range [27, 54] of the other two coordinates. Level 2: divide each of the 20
+  and Z, where the hole lies in the range [27, 54] of the other two coordinates. Second level: divide each of the 20
   remaining 27mm sub-cubes again into 3×3×3 parts of 9mm and likewise remove the 9mm cubes at the center of each
   face and at the center, i.e. cut a 9×9mm square hole through each sub-cube along each of X, Y and Z (in the
   middle third of that sub-cube). Equivalently: a point is removed if and only if, at the 27mm level or at the

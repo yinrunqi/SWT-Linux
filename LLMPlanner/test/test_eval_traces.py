@@ -86,6 +86,119 @@ def test_workflow_agent_keeps_raw_responses():
     assert "reasoning_content" not in outcome["messages"][2]
 
 
+def test_workflow_agent_retries_truncated_reply_with_larger_budget():
+    budgets = []
+
+    def create(**kwargs):
+        budgets.append(kwargs["max_tokens"])
+        if len(budgets) <= 3:
+            choice = SimpleNamespace(message=SimpleNamespace(content="", tool_calls=None), finish_reason="length")
+        else:
+            message = SimpleNamespace(content="", tool_calls=[_call("a", "finish", {"summary": "s"})])
+            choice = SimpleNamespace(message=message, finish_reason="tool_calls")
+        return SimpleNamespace(choices=[choice], usage=None)
+
+    client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+    outcome = WorkflowAgent(client, "m", PartSession(), max_tokens=8000).run("立方体")
+    assert outcome["status"] == "finished"
+    assert budgets == [8000, 16000, 32000, 32000]
+    assert sum("被截断" in str(m.get("content")) for m in outcome["messages"]) == 1
+
+
+class RecordingSession(PartSession):
+    def __init__(self, crash_on=None, fail=()):
+        self.calls, self.crash_on, self.fail = [], crash_on, set(fail)
+
+    def call(self, name, args):
+        self.calls.append((name, args))
+        if self.crash_on and args.get("id") == self.crash_on:
+            raise RuntimeError("SolidWorks 崩溃")
+        if args.get("id") in self.fail:
+            return {"ok": False, "error": {"code": "SW_FAIL", "message": "x"}}
+        return {"ok": True}
+
+
+def test_workflow_agent_resumes_from_checkpoint_without_repeating_llm_calls(tmp_path):
+    path = tmp_path / "case_r1.checkpoint.json"
+    first = ScriptedClient([(1, [_call("a", "extrude", {"id": "A"})]), (2, [_call("b", "extrude", {"id": "B"})])])
+    try:
+        WorkflowAgent(first, "m", RecordingSession(crash_on="B"), checkpoint_path=path).run("立方体")
+    except RuntimeError:
+        pass
+    saved = json.loads(path.read_text(encoding="utf-8"))
+    assert saved["status"] == "running" and saved["usage"]["calls"] == 2
+    assert saved["pending"]["tool_calls"][0]["id"] == "b"
+    assert [item["args"]["id"] for item in saved["tool_log"]] == ["A"]
+
+    session = RecordingSession()
+    second = ScriptedClient([(3, [_call("c", "finish", {"summary": "s"})])])
+    outcome = WorkflowAgent(second, "m", session, checkpoint_path=path).run("立方体", resume=True)
+    assert outcome["status"] == "finished" and outcome["llm_calls"] == 3
+    assert [args["id"] for _, args in session.calls] == ["A", "B"]
+    assert outcome["resumed"] == {"from_llm_calls": 2, "replayed_tools": 1, "mismatch": None}
+    assert [r["id"] for r in outcome["llm_responses"]] == ["resp1", "resp2", "resp3"]
+    assert json.loads(path.read_text(encoding="utf-8"))["status"] == "finished"
+
+
+def test_workflow_agent_stops_resume_when_replay_differs(tmp_path):
+    path = tmp_path / "case_r1.checkpoint.json"
+    first = ScriptedClient([(1, [_call("a", "extrude", {"id": "A"})])])
+    WorkflowAgent(first, "m", RecordingSession(), checkpoint_path=path, max_llm_calls=1).run("立方体")
+    saved = json.loads(path.read_text(encoding="utf-8"))
+    saved["status"] = "running"
+    path.write_text(json.dumps(saved), encoding="utf-8")
+
+    second = ScriptedClient([])
+    outcome = WorkflowAgent(second, "m", RecordingSession(fail={"A"}), checkpoint_path=path).run("立方体", resume=True)
+    assert outcome["status"] == "resume_failed" and "extrude" in outcome["error"]
+    assert json.loads(path.read_text(encoding="utf-8"))["status"] == "running"
+
+
+def test_workflow_agent_returns_finished_checkpoint_after_replay(tmp_path):
+    path = tmp_path / "case_r1.checkpoint.json"
+    first = ScriptedClient([(1, [_call("a", "extrude", {"id": "A"})]), (2, [_call("b", "finish", {"summary": "s"})])])
+    WorkflowAgent(first, "m", RecordingSession(), checkpoint_path=path).run("立方体")
+    session = RecordingSession()
+    outcome = WorkflowAgent(ScriptedClient([]), "m", session, checkpoint_path=path).run("立方体", resume=True)
+    assert outcome["status"] == "finished" and outcome["summary"] == "s" and outcome["llm_calls"] == 2
+    assert [args["id"] for _, args in session.calls] == ["A"]
+
+
+def test_streamed_completion_reassembles_tool_calls_and_usage():
+    from openai.types.chat import ChatCompletionChunk
+    from planner.workflow.agent import _streamed_completion
+
+    def chunk(delta=None, finish=None, usage=None):
+        choices = [] if delta is None else [{"index": 0, "delta": delta, "finish_reason": finish}]
+        return ChatCompletionChunk.model_validate({"id": "c1", "created": 1, "model": "m",
+                                                   "object": "chat.completion.chunk", "choices": choices,
+                                                   "usage": usage})
+
+    chunks = [
+        chunk({"role": "assistant", "content": "先拉伸"}),
+        chunk({"tool_calls": [{"index": 0, "id": "t1", "type": "function",
+                               "function": {"name": "extrude", "arguments": '{"w": '}}]}),
+        chunk({"tool_calls": [{"index": 0, "function": {"arguments": "20}"}}]}),
+        chunk({"tool_calls": [{"index": 1, "id": "t2", "type": "function",
+                               "function": {"name": "finish", "arguments": "{}"}}]}, finish="tool_calls"),
+        chunk(usage={"prompt_tokens": 5, "completion_tokens": 7, "total_tokens": 12}),
+    ]
+    seen = {}
+
+    def create(**kwargs):
+        seen.update(kwargs)
+        return iter(chunks)
+
+    client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+    response = _streamed_completion(client, model="m", messages=[])
+    assert seen["stream"] is True and seen["stream_options"] == {"include_usage": True}
+    choice = response.choices[0]
+    assert choice.finish_reason == "tool_calls" and choice.message.content == "先拉伸"
+    assert [(t.id, t.function.name, t.function.arguments) for t in choice.message.tool_calls] == [
+        ("t1", "extrude", '{"w": 20}'), ("t2", "finish", "{}")]
+    assert response.usage.total_tokens == 12
+
+
 def test_assembly_agent_keeps_raw_responses():
     client = ScriptedClient([(1, [_call("a", "finish", {"summary": "ok"})])])
     outcome = AssemblyAgent(client, "m", AsmSession(), tools=[]).run("装配")

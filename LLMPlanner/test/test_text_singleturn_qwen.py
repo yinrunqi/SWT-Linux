@@ -21,7 +21,7 @@ def test_every_case_has_english_prompt_with_same_numbers():
 
 
 def test_rubric_english_prompts_match_eval_cases():
-    for path in (LLM_ROOT / "eval" / "rubrics").glob("*.yaml"):
+    for path in [*(LLM_ROOT / "eval" / "rubrics").glob("*.yaml"), *(LLM_ROOT / "eval" / "rubrics_hard").glob("*.yaml")]:
         rubric = yaml.safe_load(path.read_text(encoding="utf-8"))
         assert rubric["prompt_en"] == PROMPTS_EN[rubric["case"]], path.name
 

@@ -10,13 +10,13 @@ prompt: >-
 prompt_en: >-
   Create a hydraulic manifold block as a single solid body, with the Z axis pointing up. The block is a
   100×80×60mm box (x ∈ [−50, 50], y ∈ [−40, 40], z = 0~60) with a network of intersecting oil passages inside.
-  Port P: from the top face at (−25, 0), drill a 12mm-diameter hole 40mm deep downward (bottom at z = 20), with a
-  20mm-diameter, 3mm-deep counterbore at its mouth. Main gallery: from the −X end face at y = 0, z = 20, drill a
+  Port P: from the top face at (−25, 0), bore a 12mm-diameter hole 40mm deep downward (bottom at z = 20), with a
+  20mm-diameter, 3mm-deep counterbore at its mouth. Main gallery: from the −X end face at y = 0, z = 20, bore a
   10mm-diameter hole along +X all the way to x = 20, intersecting the P hole; the gallery entrance has a
-  16mm-diameter, 8mm-deep counterbore for a plug. Port A: from the +Y face at x = 10, z = 20, drill a
+  16mm-diameter, 8mm-deep counterbore for a plug. Port A: from the +Y face at x = 10, z = 20, bore a
   10mm-diameter hole 40mm deep along −Y, reaching y = 0 and intersecting the main gallery. Port T: from the bottom
-  face at (25, −15), drill a 14mm-diameter hole 45mm deep upward (bottom at z = 45); from the +X end face at
-  y = −15, z = 35, drill a 10mm-diameter cross hole 30mm deep along −X, intersecting the T hole. The four corners
+  face at (25, −15), bore a 14mm-diameter hole 45mm deep upward (bottom at z = 45); from the +X end face at
+  y = −15, z = 35, bore a 10mm-diameter cross hole 30mm deep along −X, intersecting the T hole. The four corners
   have 4 mounting through holes of 9mm diameter at (±40, ±30); the top face has 4 tapping holes of 4.2mm diameter
   and 10mm depth around port P at (−25 ± 16, ±16) for the valve mounting screws.
 tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}

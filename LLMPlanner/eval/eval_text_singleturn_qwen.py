@@ -1610,6 +1610,336 @@ PROMPTS_EN = {
         "end of each blade extends into the hub and merges with it. The other 7 blades are obtained by patterning"
         " blade 1 about the axis every 45°."
     ),
+    "crankshaft": (
+        "Create a two-throw crankshaft as a single solid body; all main journals are coaxial. Measuring forward "
+        "along the axis from the outer end face of the rear flange at 0: the rear flange is 100mm in diameter, "
+        "at 0~15mm; the rear main journal is 50mm in diameter, at 15~45mm; the middle main journal is 50mm in "
+        "diameter, at 115~145mm; the front main journal is 50mm in diameter, at 215~245mm; the front stub is "
+        "30mm in diameter, at 245~295mm. The two crank webs of throw A are at 45~60mm and 100~115mm, with a "
+        "40mm-diameter crankpin between them (60~100mm); the two crank webs of throw B are at 145~160mm and "
+        "200~215mm, with a 40mm-diameter crankpin between them (160~200mm). Both crankpin axes are parallel to "
+        "the main axis at a distance of 38mm, and throw B points opposite to throw A (180° apart). Each crank "
+        "web is 15mm thick and its outline is the union of two parts: first, the obround formed by a 64mm-diameter "
+        "circle concentric with the main axis, a 52mm-diameter circle concentric with the crankpin of that "
+        "throw, and the two external common tangents of these circles; second, a counterweight, a sector centered on "
+        "the main axis with radius 70mm and a 120° central angle, whose bisector points away from the crankpin "
+        "of that throw. The outer end face of the flange has a 20mm-diameter, 12mm-deep spigot bore at its "
+        "center, and a locating pin hole 8mm in diameter and 10mm deep, with its center 25mm from the axis in "
+        "the same direction as crankpin A. The flange has 6 through bolt holes of 9mm diameter evenly spaced on "
+        "a 76mm-diameter circle, rotated 30° from the direction of the locating pin hole. Each crankpin has a "
+        "6mm-diameter oil hole bored at the middle of its length: the oil hole axis intersects the crankpin "
+        "axis, is perpendicular to both the main axis and the direction of that throw, and goes through the "
+        "crankpin. The front stub has an 8mm-wide flat keyway whose bottom plane is 11mm from the axis, running "
+        "from 255mm to the end of the shaft, on the side of throw B."
+    ),
+    "brake_disc": (
+        "Create a ventilated automotive brake disc as a single solid body; all revolved features are coaxial. "
+        "Measuring upward along the axis from the bottom face of the lower friction ring at 0: both friction "
+        "rings are annuli with an outer diameter of 300mm, an inner diameter of 180mm and a thickness of 10mm; "
+        "the lower ring is at 0~10mm and the upper ring at 22~32mm. In the 12mm gap between the rings there are "
+        "40 radial cooling vanes, each 5mm wide (parallel sides, symmetric about its radial centerline), "
+        "extending radially from radius 90mm to 150mm, flush with the inner and outer circles of the friction "
+        "rings and filling the gap between the rings in height; the 40 vanes are evenly spaced around the "
+        "circumference. Above the upper ring is the hat: a tube with an outer diameter of 190mm and an inner "
+        "diameter of 170mm running from 22mm to 70mm, closed at its top by a top plate 190mm in outer diameter "
+        "and 8mm thick (62~70mm). The top plate has a 70mm center hole and 5 wheel-bolt holes of 14mm diameter "
+        "evenly spaced on a 114.3mm-diameter circle, one of which is in the same angular position as one of the "
+        "vanes. The friction rings have 20 axial through holes of 8mm diameter evenly spaced on a circle of "
+        "radius 120mm; each hole lies exactly midway between two adjacent vanes and goes through both the upper "
+        "and the lower ring (no hole passes through a vane), so that the holes occupy every other gap between "
+        "vanes."
+    ),
+    "wheel_rim": (
+        "Create a five-spoke automotive wheel (rim) as a single solid body; all revolved features are coaxial. "
+        "Measuring along the axis from the outer end face of the rim at 0: the rim barrel is a tube with an "
+        "inner diameter of 340mm and an outer diameter of 352mm, at 0~200mm; at each end there is a rim flange, "
+        "an annulus with an inner diameter of 340mm, an outer diameter of 380mm and a thickness of 12mm, at "
+        "0~12mm and 188~200mm respectively. The spoke disc is a 20mm-thick disc (150~170mm) whose outer edge "
+        "joins the inner wall of the barrel; the central hub seat is a 120mm-diameter cylinder at 140~210mm. The "
+        "hub seat has a 70mm-diameter through center bore and 5 through bolt holes of 15mm diameter evenly "
+        "spaced on a 114.3mm-diameter circle. The spoke disc has 5 through annular-sector lightening windows, "
+        "each with an inner radius of 75mm, an outer radius of 155mm and a central angle of 44°; the 5 windows "
+        "are evenly spaced, and the bisector of each window lies exactly midway between the directions of two "
+        "adjacent bolt holes (so the 5 spokes face the 5 bolt holes). The 4 corners of each window (the edges "
+        "along the thickness of the spoke disc, 20 in total) are rounded with R8mm fillets. The barrel has an "
+        "11mm-diameter valve hole at a height of 100mm, bored radially through the barrel wall, in the same "
+        "direction as the bisector of one of the windows."
+    ),
+    "geneva_wheel": (
+        "Create the wheel of a six-slot Geneva drive as a single solid body. The wheel is a disc 140mm in "
+        "diameter and 12mm thick; one face has a coaxial hub boss 40mm in diameter and 12mm high at its center "
+        "(24mm overall), and there is a 16mm-diameter through bore at the center. The disc has 6 evenly spaced "
+        "radial slots: each slot is 10mm wide (parallel sides, symmetric about its radial centerline), runs from "
+        "the rim of the disc inward and ends in a semicircle whose center is 40mm from the axis; the slots go "
+        "through the disc thickness. On the rim between each pair of adjacent slots, cut a concave locking arc: "
+        "the arc radius is 32mm and its center lies on the bisector between the two slots, 80mm from the axis; "
+        "the cut goes through the disc thickness (6 places). On each bisector between two slots, 28mm from the "
+        "axis, there is an 8mm-diameter through lightening hole (6 in total). The hub boss has a 5mm-diameter "
+        "radial set-screw hole at mid-height of the boss (18mm from the bottom face of the disc), in the "
+        "direction of one of the slots, drilled from the outer surface of the boss through to the bore."
+    ),
+    "spiral_staircase": (
+        "Create a spiral staircase model as a single solid body, with the Z axis pointing up. The base is a disc "
+        "300mm in diameter and 10mm thick (z = 0~10mm), centered at the origin. The central column is a "
+        "60mm-diameter cylinder running from z = 0 to z = 280mm, topped by a hemisphere of radius 30mm (apex at "
+        "z = 310mm). Around the column there are 12 steps; each step is a sector plate centered on the column "
+        "axis, with an outer radius of 140mm (its inner side joins the column), a central angle of 30° and a "
+        "thickness of 8mm. Viewed from above, step 1 occupies azimuth 0°~30° (azimuth measured from the +X axis, "
+        "counterclockwise positive), and each following step is rotated 30° counterclockwise and raised 20mm "
+        "relative to the previous one: step k (k = 1~12) occupies azimuth 30(k−1)°~30k° and its top surface is "
+        "at z = 30 + 20(k−1) mm. On the top surface of each step stands a baluster post 8mm in diameter and 90mm "
+        "high, whose axis lies on the bisector of that step, 130mm from the column axis. The base has a "
+        "20mm-diameter through cable hole centered at (100, 0), and 4 through anchor-bolt holes of 12mm diameter "
+        "on a circle of radius 130mm at azimuths 45°, 135°, 225° and 315°."
+    ),
+    "engine_piston": (
+        "Create an engine piston as a single solid body; all revolved features are coaxial. The piston has an "
+        "outer diameter of 86mm and an overall height of 70mm; measuring downward along the axis from the piston "
+        "crown face at 0: the outer edge of the crown is chamfered 1mm×45°. The outer surface has three ring "
+        "grooves, all with a root diameter of 78mm: the first compression-ring groove is at 7~9mm (2mm wide), "
+        "the second compression-ring groove is at 13~15mm (2mm wide), and the oil-ring groove is at 19~23mm (4mm "
+        "wide). The piston is open at the bottom; its cavity is a 74mm-diameter cylindrical bore cut from the "
+        "bottom face up to 12mm from the crown face (so the crown is 12mm thick). Inside the cavity there are "
+        "two piston-pin bosses: cylinders of 30mm diameter whose axis lies along one horizontal diameter at a "
+        "depth of 40mm from the crown face, each reaching inward from the cavity wall to 22mm from the piston "
+        "axis. A 22mm-diameter piston-pin bore runs along this diameter through both bosses and the outer wall "
+        "of the piston. The crown face has two flat-bottomed valve reliefs 30mm in diameter and 2mm deep, "
+        "centered on the diameter perpendicular to the pin bore, 18mm from the piston axis on either side. The "
+        "root of the oil-ring groove has 8 radial oil drain holes of 3mm diameter evenly spaced around the "
+        "circumference (hole axes at mid-width of the oil-ring groove), drilled from the groove root through to "
+        "the cavity, two of which are in line with the pin bore."
+    ),
+    "pipe_manifold": (
+        "Create a distribution manifold with three branch pipes as a single solid body. The main pipe runs along "
+        "the X axis with its axis through the origin; it is a tube with an outer diameter of 60mm and an inner "
+        "diameter of 48mm, from x = 0 to x = 300mm, open at both ends. Each end of the main pipe has a circular "
+        "flange 140mm in diameter and 16mm thick (x = 0~16 and 284~300mm), whose center hole is the same as the "
+        "bore of the main pipe; each flange has 8 through bolt holes of 14mm diameter evenly spaced on a "
+        "110mm-diameter circle, rotated 22.5° from the vertical direction (Z axis), so that there is no bolt "
+        "hole directly above or below the axis. On top of the main pipe (+Z), at x = 75, 150 and 225mm, a branch "
+        "pipe rises vertically: outer diameter 40mm, inner diameter 30mm, with its top 120mm from the main-pipe "
+        "axis, and its bore opens downward into the bore of the main pipe. The top of each branch has a circular "
+        "flange 90mm in diameter and 12mm thick (its top face 120mm from the main-pipe axis), with 4 through "
+        "bolt holes of 11mm diameter on a 70mm-diameter circle, located on the 45° diagonals between the X and Y "
+        "directions around the branch axis (that is, the 4 holes are at 45° to the X axis). Directly below the "
+        "main pipe (−Z), at x = 150mm, there is a drain boss with an outer diameter of 30mm whose bottom face is "
+        "50mm from the main-pipe axis, with a 12mm-diameter drain hole at its center that opens upward into the "
+        "bore of the main pipe."
+    ),
+    "gearbox_housing": (
+        "Create the lower housing of a single-stage gear reducer as a single solid body, with the Z axis "
+        "pointing up and the bottom face at z = 0. The housing is a 200×120×100mm box (x ∈ [−100, 100], y ∈ "
+        "[−60, 60], z ∈ [0, 100]), open at the top, with 8mm walls all round and a 10mm-thick floor. At the top "
+        "there is a 240×160mm rectangular flange 10mm thick (z = 90~100, flush with the top of the housing, its "
+        "central opening the same as the cavity of the housing), with 6 through bolt holes of 11mm diameter at "
+        "(±110, ±70) and (0, ±70). Each long side wall (the ±Y faces) has two bearing bosses: each boss is a "
+        "cylinder of 70mm diameter with its axis along Y, centered at height z = 50mm, protruding 15mm outward "
+        "from the outer surface of the wall (to y = ±75). The high-speed bearing seat is at x = −45mm with a "
+        "47mm-diameter bearing bore; the low-speed bearing seat is at x = 50mm with a 52mm-diameter bearing "
+        "bore; both bores run along Y through the bosses and walls on both sides. Directly below each boss there "
+        "is a vertical stiffening rib 8mm thick (its mid-plane at the same x as the boss axis), protruding from "
+        "the outer surface of the wall to y = ±75 and running from the bottom z = 0 up to z = 25, where it joins "
+        "the boss. Each end of the housing (±X) has a mounting foot: x ∈ [100, 130] and [−130, −100], y ∈ [−60, "
+        "60], 12mm thick (z = 0~12), with 13mm-diameter through holes for foundation bolts at (±115, ±40) (4 in "
+        "total). The floor has a 10.2mm-diameter through oil-drain hole at its center (0, 0), and the +X end "
+        "wall has a 14mm-diameter oil-level sight hole at y = 0, z = 40, running along X through the end wall."
+    ),
+    "heat_sink": (
+        "Create a pin-fin heat sink as a single solid body, with the Z axis pointing up. The base is a 100×100mm "
+        "square plate 8mm thick (x, y ∈ [−50, 50], z = 0~8); a 60×60mm, 2mm-thick thermal contact pad protrudes "
+        "from the center of its bottom face (z = −2~0). On the top face of the base, cylindrical pin fins are "
+        "arranged in a 9×9 square array with a 10mm pitch: each pin is 6mm in diameter and 40mm high (z = 8~48), "
+        "and the pin centers take x and y values of −40, −30, …, 30, 40, except that the pins at the 4 corners "
+        "of the array (at (±40, ±40)) are omitted, leaving 77 pins. At each of these 4 corners there is a "
+        "4.5mm-diameter through mounting hole centered at (±40, ±40), with an 8mm-diameter, 4mm-deep counterbore "
+        "at its mouth on the top-face side of the base."
+    ),
+    "honeycomb_panel": (
+        "Create a honeycomb lightweight panel as a single solid body, with the Z axis pointing up. The panel is "
+        "200×120mm and 10mm thick (x ∈ [−100, 100], y ∈ [−60, 60], z = 0~10), and its four vertical corner edges "
+        "are rounded with R10mm fillets. From the top face, mill 43 regular-hexagon blind pockets, 7mm deep "
+        "(leaving a 3mm floor); each hexagon is 16mm across flats and has one pair of opposite sides parallel to "
+        "the Y axis (so two of its vertices point toward ±Y). The hexagons are arranged as a honeycomb in 5 "
+        "rows: the middle row (y = 0) has 9 pockets centered at x = 0, ±19, ±38, ±57, ±76; the two rows at y = "
+        "±16.454mm have 8 pockets each, centered at x = ±9.5, ±28.5, ±47.5, ±66.5; the two rows at y = ±32.909mm "
+        "are the same as the middle row (9 each); the rib between adjacent hexagons is 3mm wide everywhere. At "
+        "the four corners of the panel, at (±90, ±50), there is an 8.5mm-diameter through mounting hole in each "
+        "corner (concentric with the corner fillet)."
+    ),
+    "gear_pump_body": (
+        "Create the body of an external gear pump as a single solid body, with the Z axis pointing up. The body "
+        "is a 120×90×40mm block (x ∈ [−60, 60], y ∈ [−45, 45], z = 0~40) whose four vertical corner edges are "
+        "rounded with R12mm fillets. From the top face, cut a figure-8 gear chamber: two cylindrical "
+        "cavities 50.5mm in diameter centered at (−21, 0) and (21, 0), 30mm deep (chamber floor at z = 10), "
+        "joined where the two circles overlap. The chamber floor has a 20mm-diameter through hole for the drive "
+        "shaft at (−21, 0) (through the floor), and a 15mm-diameter, 8mm-deep blind hole for the idler shaft at "
+        "(21, 0) (downward from the chamber floor). The middle of the −Y side has an inlet boss and the middle "
+        "of the +Y side an outlet boss: both bosses are cylinders of 36mm diameter with their axes along Y, "
+        "centered at x = 0, z = 25, protruding 8mm outward from the side faces (to y = ±53). The inlet is a "
+        "24mm-diameter hole and the outlet a 16mm-diameter hole, both bored along Y from the boss end faces "
+        "through to the gear chamber. The top face has 4 M8 threaded-hole pilot bores at (±46, ±32): 6.8mm in diameter and "
+        "20mm deep; there are also 2 locating pin holes, 6mm in diameter and 12mm deep, at the diagonal "
+        "positions (−30, 33) and (30, −33)."
+    ),
+    "cold_plate": (
+        "Create a liquid cold plate with a serpentine channel as a single solid body, with the Z axis pointing "
+        "up. The plate is 170×100mm and 12mm thick (x ∈ [−85, 85], y ∈ [−50, 50], z = 0~12). From the top face, "
+        "mill a serpentine channel 10mm wide and 7mm deep (channel floor at z = 5), whose centerline is: start "
+        "at (−55, −36), go straight along +X to (55, −36), make a half turn of radius 9mm about (55, −27) on the "
+        "+X side to (55, −18), go straight along −X to (−55, −18), make a half turn about (−55, −9) on the −X "
+        "side to (−55, 0), go along +X to (55, 0), make a half turn about (55, 9) on the +X side to (55, 18), go "
+        "along −X to (−55, 18), make a half turn about (−55, 27) on the −X side to (−55, 36), and finally go "
+        "along +X to the end point (55, 36); both ends of the channel are semicircular. Inlet: from the −X end "
+        "face, at y = −36, z = 8, bore a 6mm-diameter hole 30mm deep along +X, reaching exactly the start of "
+        "the channel. Outlet: from the +X end face, at y = 36, z = 8, bore a 5mm-diameter hole 30mm deep along "
+        "−X, reaching the end of the channel. The top face has a sealing groove around the channel: 3mm wide and "
+        "2mm deep, whose centerline is a 146×90mm rounded rectangle centered at the origin with R8mm corners. "
+        "The plate has 6 through mounting holes of 5.5mm diameter at (±79, −40), (±79, 0) and (±79, 40), and a "
+        "4mm-diameter, 4mm-deep blind hole for a temperature sensor at the center of the bottom face."
+    ),
+    "truss_beam": (
+        "Create a flat Warren-truss link beam as a single solid body, with the Z axis pointing up. The main body "
+        "is a 420×60×8mm plate (x ∈ [0, 420], y ∈ [0, 60], z = 0~8). Each end has a round boss of the same "
+        "thickness (z = 0~8), centered at (0, 30) and (420, 30) with a diameter of 60mm, fused with the plate. "
+        "The left boss has a 20mm-diameter through hole at its center and the right boss a 16mm-diameter through "
+        "hole at its center. The top face of the plate carries a stiffening rib along each of its two long "
+        "edges: 8mm wide and 8mm high, i.e. y ∈ [0, 8] and y ∈ [52, 60], z = 8~16, running from x = 0 to 420. "
+        "Cut 9 triangular lightening holes through the plate to form a Warren truss: 5 triangles pointing to +Y "
+        "with vertices (x0, 10), (x0 + 60, 10) and (x0 + 30, 50) for x0 = 20, 100, 180, 260, 340; and 4 "
+        "triangles pointing to −Y with vertices (x0 + 40, 50), (x0 + 100, 50) and (x0 + 70, 10) for x0 = 20, "
+        "100, 180, 260. Round all 27 vertical inner corners of the triangular holes with R4mm fillets."
+    ),
+    "turbine_disk": (
+        "Create an aero-engine turbine disk as a single solid body; all revolved features are coaxial. Measuring "
+        "upward along the axis from the bottom face of the disk at 0: the central hub is a tube with an outer "
+        "diameter of 90mm, an inner diameter of 40mm and a height of 40mm (0~40mm), with a 1×1mm 45° chamfer at "
+        "both ends of the bore. Outside the hub is a 10mm-thick web (15~25mm) running from radius 45mm to radius "
+        "100mm; the outer edge of the web joins the rim, an annulus with an inner radius of 100mm, an outer "
+        "radius of 130mm and a height of 30mm (5~35mm). The four circular concave corners where the web meets "
+        "the hub and the rim are rounded with R5mm fillets. The web has 10 axial lightening through holes of "
+        "10mm diameter evenly spaced on a 140mm-diameter circle. The periphery of the rim has 30 evenly spaced "
+        "dovetail slots running axially through the rim: each slot is symmetric about its own radial centerline; "
+        "the slot bottom is a 16mm-wide flat (perpendicular to the radial centerline) 112mm from the axis, and "
+        "the two side walls are straight and narrow outward, so that the slot is 10mm wide at 130mm from the "
+        "axis (narrow at the mouth, wide at the bottom). Each lightening hole lies exactly on the bisector "
+        "between two adjacent slots."
+    ),
+    "bt40_holder": (
+        "Create a (simplified) BT40 tool holder as a single solid body; all revolved features are coaxial. "
+        "Measure along the axis from the large-end face of the taper (the flange face) at 0, positive toward the "
+        "small end of the taper: the shank is a 7:24 cone (the diameter changes by 7mm per 24mm of length) with "
+        "a large-end diameter of 44.45mm at 0 and a length of 65.4mm (to 65.4). The flange is a 63mm-diameter "
+        "disk at −15.9~0; its outer cylindrical face carries a 60° V-groove centered at −8 with a groove-bottom "
+        "diameter of 56mm (3.5mm deep), both groove flanks making 30° with the end face (60° between the "
+        "flanks). Two drive slots are cut through the flange symmetrically about one diameter: each slot is "
+        "16.1mm wide, its flat bottom is 23.5mm from the axis, and it runs axially through the full flange "
+        "thickness. On the tool-side face of the flange (at −15.9), 25mm from the axis and at 90° from both "
+        "drive slots, there is an 8mm-diameter, 6mm-deep orientation blind hole. The tool end is a 40mm-diameter "
+        "cylinder running from −15.9 to −60, with a 1×1mm 45° chamfer on its outer edge at the end. From the "
+        "tool-end face, bore a flat-bottomed tool bore of 20mm diameter and 50mm depth along the axis (bottom "
+        "at −10); from the small-end face of the taper, bore a flat-bottomed retention-knob bore of 14mm "
+        "diameter and 30mm depth along the axis (bottom at 35.4); connect the two bore bottoms with a "
+        "6mm-diameter central coolant hole."
+    ),
+    "hydraulic_manifold": (
+        "Create a hydraulic manifold block as a single solid body, with the Z axis pointing up. The block is a "
+        "100×80×60mm box (x ∈ [−50, 50], y ∈ [−40, 40], z = 0~60) with a network of intersecting oil passages "
+        "inside. Port P: from the top face at (−25, 0), bore a 12mm-diameter hole 40mm deep downward (bottom at "
+        "z = 20), with a 20mm-diameter, 3mm-deep counterbore at its mouth. Main gallery: from the −X end face at "
+        "y = 0, z = 20, bore a 10mm-diameter hole along +X all the way to x = 20, intersecting the P hole; the "
+        "gallery entrance has a 16mm-diameter, 8mm-deep counterbore for a plug. Port A: from the +Y face at x = "
+        "10, z = 20, bore a 10mm-diameter hole 40mm deep along −Y, reaching y = 0 and intersecting the main "
+        "gallery. Port T: from the bottom face at (25, −15), bore a 14mm-diameter hole 45mm deep upward (bottom "
+        "at z = 45); from the +X end face at y = −15, z = 35, bore a 10mm-diameter cross hole 30mm deep along "
+        "−X, intersecting the T hole. The four corners have 4 mounting through holes of 9mm diameter at (±40, "
+        "±30); the top face has 4 tapping holes of 4.2mm diameter and 10mm depth around port P at (−25 ± 16, "
+        "±16) for the valve mounting screws."
+    ),
+    "rocket_fin_can": (
+        "Create the aft section of a sounding rocket as a single solid body; the Z axis is the vehicle axis, "
+        "with up pointing toward the nose. The airframe is a thin-walled tube with an outer diameter of 80mm and "
+        "an inner diameter of 72mm, from z = 0 to z = 300. Inside the bottom end of the tube is a bulkhead: an "
+        "annulus with an inner diameter of 60mm and an outer diameter of 72mm at z = 0~8, joined to the tube "
+        "wall. Below the bulkhead is a de Laval nozzle (a thin-walled shell of revolution) whose inner and outer "
+        "profiles are both polylines: the inner profile converges from (r = 30, z = 0) to the throat at (r = 12, "
+        "z = −30) and then diverges to the exit at (r = 34, z = −100); the outer profile runs from (r = 36, z = "
+        "0) to (r = 16, z = −30) and then to (r = 38, z = −100); the exit face is at z = −100. Outside the tube "
+        "are 4 evenly spaced flat fins, 4mm thick and symmetric about their own radial mid-planes, at azimuths "
+        "45°, 135°, 225° and 315° (measured from the +X axis). In its mid-plane each fin is a quadrilateral: the "
+        "fin root starts at r = 37 inside the tube wall and is fused with the tube; the leading edge is a "
+        "straight line from (r = 40, z = 110) to the tip at (r = 100, z = 30); the trailing edge is a straight "
+        "line from (r = 40, z = 10) to (r = 100, z = −20); the tip is an axial straight edge at r = 100 (z = "
+        "−20~30), and the leading and trailing edge lines are extended to r = 37 to meet the root. The tube wall "
+        "has a 6mm-diameter radial vent hole through the wall at z = 250 at each of the azimuths 0°, 90°, 180° "
+        "and 270°."
+    ),
+    "ratchet_wheel": (
+        "Create a ratchet wheel as a single solid body, with the Z axis pointing up. The wheel disk is 15mm "
+        "thick (z = 0~15) and has 24 sawtooth ratchet teeth around its periphery, with a root radius of 50mm and "
+        "a tip radius of 60mm. At each polar angle θk = 15°·k (k = 0…23, measured counterclockwise from the +X "
+        "axis) there is a radial tooth face running from (r = 50, θk) to (r = 60, θk); the back of each tooth is "
+        "a straight line from the tip (r = 60, θk) to the root of the next tooth (r = 50, θk + 15°), i.e. going "
+        "counterclockwise, each tip is followed by a descending tooth back. The center of the top face of the "
+        "disk carries a 50mm-diameter, 10mm-high hub (z = 15~25). A regular hexagonal through hole 24mm across "
+        "flats is cut at the center (through the disk and the hub); one side of the hexagon is perpendicular to "
+        "the +X axis (its outward normal points to +X). The disk has 6 through holes of 14mm diameter (through "
+        "the disk only) evenly spaced on a circle of radius 33mm at polar angles 0°, 60°, …, 300°."
+    ),
+    "injector_plate": (
+        "Create the injector face plate of a liquid rocket engine as a single solid body, with the Z axis "
+        "pointing up; all revolved features are coaxial. The plate is a disk 160mm in diameter and 20mm thick (z "
+        "= 0~20); z = 20 is the injector face, and its outer edge has a 1×1mm 45° chamfer. The back face (z = 0) "
+        "has 4 concentric annular manifold grooves, each 6mm wide and 8mm deep (groove floor at z = 8), centered "
+        "on radii 20, 35, 50 and 65mm. From each groove floor, a ring of axial injection orifices is bored "
+        "through to the injector face (from z = 8 to z = 20): 8 holes of 2mm diameter on radius 20mm, evenly "
+        "spaced starting at polar angle 0°; 16 holes of 2mm diameter on radius 35mm, evenly spaced starting at "
+        "11.25°; 24 holes of 2mm diameter on radius 50mm, evenly spaced starting at 0°; and 32 holes of 1.5mm "
+        "diameter on radius 65mm, evenly spaced starting at 5.625° (polar angles measured from the +X axis). The "
+        "center of the plate has a 6mm-diameter through hole for the igniter; the injector face has a "
+        "4mm-diameter, 6mm-deep blind dowel hole at (57.5, 0); and the outer zone has 12 through bolt holes of "
+        "8.5mm diameter evenly spaced on a circle of radius 72.5mm starting at 15°."
+    ),
+    "robot_arm_link": (
+        "Create the upper-arm link of a robot arm as a single solid body, with the Z axis pointing up. The arm "
+        "body is a 30mm-thick plate (z = 5~35) whose outline is bounded by the outer common tangents of two "
+        "circles: the shoulder circle centered at (0, 0) with a radius of 40mm and the elbow circle centered at "
+        "(200, 0) with a radius of 28mm. The shoulder also has a boss centered at (0, 0), 80mm in diameter and "
+        "40mm high (z = 0~40), fused with the arm body. The shoulder has a 52mm-diameter bearing through hole at "
+        "its center, and the elbow a 35mm-diameter through hole at its center. Each of the top and bottom faces "
+        "of the arm body has a 10mm-deep lightening pocket (top pocket z = 25~35, bottom pocket z = 5~15, "
+        "leaving a 10mm web in between). Both pockets have the same outline, bounded by the outer common "
+        "tangents of a circle centered at (70, 0) with a radius of 22mm and a circle centered at (150, 0) with a "
+        "radius of 14mm. The web has a 16mm-diameter cable through hole at (110, 0). The top face of the "
+        "shoulder boss (z = 40) has 6 tapping holes of 5mm diameter and 12mm depth evenly spaced on a circle of "
+        "radius 33mm at polar angles 30°, 90°, …, 330°. The elbow is a clamp: cut a 2mm-wide slit along y = 0 "
+        "from the elbow bore all the way to the end of the arm (x ≥ 200), through the full thickness; at x = "
+        "219, z = 20, drill a 6.6mm-diameter clamp-screw through hole along Y, crossing both sides of the slit."
+    ),
+    "menger_sponge": (
+        "Create a second-level Menger sponge as a single solid body. Start from a cube with an edge of 81mm (x, y, z "
+        "∈ [0, 81]). First level: divide the cube into 3×3×3 sub-cubes of 27mm and remove the sub-cube at the center "
+        "of each face and the sub-cube at the center of the whole cube, i.e. cut a 27×27mm square hole through "
+        "the cube along each of X, Y and Z, where the hole lies in the range [27, 54] of the other two "
+        "coordinates. Second level: divide each of the 20 remaining 27mm sub-cubes again into 3×3×3 parts of 9mm and "
+        "likewise remove the 9mm cubes at the center of each face and at the center, i.e. cut a 9×9mm square "
+        "hole through each sub-cube along each of X, Y and Z (in the middle third of that sub-cube). "
+        "Equivalently: a point is removed if and only if, at the 27mm level or at the 9mm level of subdivision, "
+        "at least two of its coordinates fall in the middle third at that level."
+    ),
+    "u_joint_yoke": (
+        "Create a universal-joint yoke as a single solid body, with the Z axis pointing up. The bottom hub is a "
+        "cylinder 50mm in diameter and 45mm high (z = 0~45), topped by a flange disk 80mm in diameter and 10mm "
+        "thick (z = 45~55). Two yoke arms rise from the flange, symmetric about the YZ plane: each arm is an "
+        "upright plate 12mm thick (in X) and 40mm wide (y ∈ [−20, 20]) with its inner face at x = ±24 (48mm "
+        "between the inner faces), i.e. x ∈ [24, 36] and x ∈ [−36, −24], rising from z = 45 to z = 90, with a "
+        "semicircular top of radius 20mm centered at (z = 90, y = 0) (axis along X). Both arms have a coaxial "
+        "22mm-diameter cross-bearing bore along X at z = 90, y = 0, through both arms. The hub has a "
+        "25mm-diameter through bore along its axis (through the hub and the flange); the bore has a full-length "
+        "8mm-wide keyway on its +Y side whose bottom face is 15.8mm from the axis. At z = 20, bore a "
+        "6.8mm-diameter set-screw hole from the +Y side along −Y, through the hub wall into the bore (in the "
+        "middle of the keyway). The outer face of each arm has 2 tapping holes for the bearing cap, 5mm in "
+        "diameter, 10mm deep, with axes along X, at z = 90, y = ±14.5 (4 in total)."
+    ),
 }
 PROMPT_LANGS = ("zh", "en")
 
@@ -2003,6 +2333,8 @@ def run_one(
     lang: str = "zh",
     provider: str = "aiping",
     reasoning_effort: str | None = None,
+    checkpoint: Path | None = None,
+    resume: bool = False,
 ) -> dict:
     started = time.perf_counter()
     cleanup_before = _close_documents(sw_url)
@@ -2022,6 +2354,9 @@ def run_one(
     }
     if action_level == "L1":
         request_payload["max_turns"] = max_llm_calls
+        if checkpoint is not None:
+            request_payload["checkpoint_path"] = str(checkpoint)
+            request_payload["resume"] = resume
     if reasoning_effort:
         request_payload["reasoning_effort"] = reasoning_effort
     trace = {
@@ -2037,8 +2372,8 @@ def run_one(
         response = requests.post(
             f"{web_url}/api/run",
             json=request_payload,
-            # 复杂件 40 次调用可能超过 15 分钟；超时后客户端会在服务端仍在建模时发起下一次运行
-            timeout=3600,
+            # 复杂件 40 次调用、推理模型单次回复数分钟时可能接近 1 小时；超时后客户端会在服务端仍在建模时发起下一次运行
+            timeout=7200,
         )
         trace["response_status"] = response.status_code
         try:
@@ -2094,6 +2429,7 @@ def run_one(
                 for reason in (payload.get("workflow") or {}).get("finish_reasons") or []
             ),
             "tool_calls": (payload.get("summary") or {}).get("tool_calls"),
+            "resumed": (payload.get("workflow") or {}).get("resumed"),
             "duration_seconds": round(time.perf_counter() - started, 2),
             "cleanup_before": cleanup_before,
             "error": None,
@@ -2291,6 +2627,11 @@ def rescore_report(source: Path, output: Path, strict_orientation: bool = False)
     return report
 
 
+def _needs_rerun(result: dict) -> bool:
+    """--resume 时重跑的记录：请求异常、LLM 接口出错或续跑重放失败，都不是模型能力的结果。"""
+    return result.get("status") == "error" or result.get("workflow_status") in ("llm_error", "resume_failed")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--web-url", default="http://localhost:5000")
@@ -2373,6 +2714,12 @@ def main() -> int:
         action="store_false",
         help="Do not keep each run's SLDPRT and STEP under eval/artifacts/<result name>/",
     )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Keep finished runs from --output and continue interrupted L1 runs from their checkpoints "
+        "(eval/artifacts/<result name>/<case>_r<k>.checkpoint.json); runs that errored are retried",
+    )
     args = parser.parse_args()
     if args.reasoning_effort and args.action_level != "L1":
         parser.error("--reasoning-effort requires --action-level L1")
@@ -2409,9 +2756,19 @@ def main() -> int:
         output = ROOT / "eval" / f"{prefix}_{safe_model}_{args.split}{lang_suffix}_result.json"
     balance_before = _query_balance(ROOT / ".env")
     results: list[dict] = []
-    jobs = [(case, repeat) for case in selected for repeat in range(repeats)]
+    if args.resume and output.is_file():
+        old = json.loads(output.read_text(encoding="utf-8"))
+        balance_before = old.get("balance_before") or balance_before
+        results = [item for item in old.get("results") or [] if not _needs_rerun(item)]
+        print(f"resume: keeping {len(results)} finished runs from {output.name}", flush=True)
+    done = {(item["case_id"], item.get("repeat", 0)) for item in results}
+    artifact_root = ROOT / "eval" / "artifacts" / output.stem
+    jobs = [(case, repeat) for case in selected for repeat in range(repeats) if (case.case_id, repeat) not in done]
     for index, (case, repeat) in enumerate(jobs, 1):
-        print(f"[{index}/{len(jobs)}] {case.name} (run {repeat + 1}/{repeats})", flush=True)
+        checkpoint = artifact_root / f"{case.case_id}_r{repeat + 1}.checkpoint.json"
+        resuming = args.resume and checkpoint.is_file()
+        print(f"[{index}/{len(jobs)}] {case.name} (run {repeat + 1}/{repeats})"
+              f"{' resume from checkpoint' if resuming else ''}", flush=True)
         result = run_one(
             case,
             web_url=args.web_url.rstrip("/"),
@@ -2420,13 +2777,12 @@ def main() -> int:
             strict_orientation=args.strict_orientation,
             action_level=args.action_level,
             max_llm_calls=args.max_llm_calls,
-            artifact_stem=(
-                ROOT / "eval" / "artifacts" / output.stem / f"{case.case_id}_r{repeat + 1}"
-                if args.save_artifacts else None
-            ),
+            artifact_stem=artifact_root / f"{case.case_id}_r{repeat + 1}" if args.save_artifacts else None,
             lang=args.lang,
             provider=args.provider,
             reasoning_effort=args.reasoning_effort,
+            checkpoint=checkpoint if args.action_level == "L1" else None,
+            resume=resuming,
         )
         result["repeat"] = repeat
         results.append(result)
