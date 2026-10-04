@@ -1,0 +1,457 @@
+"""L1_v2 的纯逻辑测试：不连接 SolidWorks；同时确认 L1（v1）的工具说明与提示词不受影响。"""
+
+from __future__ import annotations
+
+import json
+import math
+
+import pytest
+
+from planner.workflow.agent import SYSTEM_PROMPT, SYSTEM_PROMPT_V2, WorkflowAgent
+from planner.workflow.errors import WorkflowError
+from planner.workflow.profiles import normalize_loop
+from planner.workflow.sketch_check import to_geometry
+from planner.workflow.tools import TOOL_SPECS, WorkflowSession, tool_specs
+from planner.workflow.tools_v2 import (
+    TOOL_SPECS_V2,
+    WorkflowSessionV2,
+    coerce_args,
+    create_session,
+    hull_loop,
+    polar_centers,
+    prepare_loops,
+)
+from test_eval_traces import ScriptedClient, _call
+from test_workflow_tools import FakeSession
+
+
+class FakeV2(FakeSession, WorkflowSessionV2):
+    """FakeSession 的内存快照 + v2 的覆盖方法；基准面按 SolidWorks 的偏移规则模拟。"""
+
+    def __init__(self, cascade: dict | None = None, bodies: int | None = None, **kwargs):
+        super().__init__(**kwargs)
+        self.cascade = cascade or {}
+        self.bodies = bodies
+        self.requests = []
+
+    def snapshot(self):
+        data = super().snapshot()
+        if self.bodies is not None:
+            data["bodyCount"] = self.bodies
+        return data
+
+    def _request(self, method, path, body=None):
+        self.requests.append((path, body))
+        if path == "/api/ref-plane/offset":
+            name = f"基准面{len(self.features) + 1}"
+            self.features.append(name)
+            index = {"plane:0": 2, "plane:1": 1, "plane:2": 0}[body["reference"]]
+            origin = [0.0, 0.0, 0.0]
+            origin[index] = body["distance"] * (-1 if body["flip"] else 1)
+            rotation = [1, 0, 0, 0, 1, 0, 0, 0, 1]
+            rotation[6:9] = [1 if i == index else 0 for i in range(3)]
+            return {"success": True, "result": {"featureName": name, "origin": origin, "rotation": rotation}}
+        if path == "/api/ref-axis/planes":
+            name = f"基准轴{len(self.features) + 1}"
+            self.features.append(name)
+            return {"success": True, "result": {"featureName": name}}
+        if path == "/api/delete-feature":
+            name = body["featureName"]
+            self.deleted.append(name)
+            for removed in [name, *self.cascade.get(name, [])]:
+                if removed in self.features:
+                    self.features.remove(removed)
+            return {"success": True}
+        raise AssertionError(path)
+
+
+# ------------------------------------------------------------ v1 不变
+
+
+def test_v1_specs_and_prompt_are_untouched():
+    assert tool_specs() == TOOL_SPECS
+    assert all("hull" not in json.dumps(spec, ensure_ascii=False) for spec in TOOL_SPECS)
+    assert "Z=40" not in SYSTEM_PROMPT and "llm_calls_left" not in SYSTEM_PROMPT
+    agent = WorkflowAgent(ScriptedClient([]), "m", WorkflowSession(base_url="http://fake"))
+    assert agent.version == "v1" and agent.system_prompt == SYSTEM_PROMPT and agent.tools == TOOL_SPECS
+
+
+def test_v2_specs_keep_tool_names_and_add_new_options():
+    assert [s["function"]["name"] for s in TOOL_SPECS_V2] == [s["function"]["name"] for s in TOOL_SPECS]
+    by_name = {s["function"]["name"]: s["function"] for s in TOOL_SPECS_V2}
+    assert "polar" in by_name["hole"]["parameters"]["properties"]
+    assert "hull" in by_name["extrude"]["parameters"]["properties"]["loops"]["items"]["properties"]["type"]["enum"]
+    assert "Z=40" in by_name["cut"]["parameters"]["properties"]["plane"]["description"]
+    assert "names" in by_name["delete_feature"]["parameters"]["properties"]
+    agent = WorkflowAgent(ScriptedClient([]), "m", create_session("v2", base_url="http://fake"))
+    assert agent.version == "v2" and agent.system_prompt == SYSTEM_PROMPT_V2 and agent.tools == TOOL_SPECS_V2
+    assert isinstance(create_session("v1", base_url="http://fake"), WorkflowSession)
+    assert not isinstance(create_session("v1", base_url="http://fake"), WorkflowSessionV2)
+
+
+# ------------------------------------------------------------ 参数与轮廓
+
+
+def test_coerce_args_parses_json_strings_and_extra_quotes():
+    args = coerce_args({
+        "plane": "\"top\"",
+        "loops": json.dumps([{"type": "circle", "center": [0, 0], "diameter": 5}]),
+        "edges": "{\"origin\": [0, 0, 0], \"direction\": [0, 1, 0]}",
+        "through_all": "true",
+        "depth": "=wall",
+    })
+    assert args["plane"] == "top"
+    assert args["loops"][0]["diameter"] == 5
+    assert args["edges"]["direction"] == [0, 1, 0]
+    assert args["through_all"] is True
+    assert args["depth"] == "=wall"
+
+
+def test_hull_of_two_circles_has_closed_form_area():
+    loop = normalize_loop(hull_loop({"type": "hull", "circles": [
+        {"center": [0, 0], "diameter": 20}, {"center": [50, 0], "diameter": 20},
+    ]}))
+    assert to_geometry(loop).area == pytest.approx(math.pi * 100 + 50 * 20, rel=2e-3)
+    unequal = normalize_loop(hull_loop({"type": "hull", "circles": [
+        {"center": [0, 0], "radius": 20}, {"center": [0, 60], "radius": 8},
+    ]}))
+    geometry = to_geometry(unequal)
+    u0, v0, u1, v1 = geometry.bounds
+    assert (u0, v0, u1, v1) == pytest.approx((-20, -20, 20, 68), abs=0.05)
+
+
+def test_half_arc_with_center_only_must_give_ccw():
+    loop = {"type": "path", "start": [10, 0], "segments": [{"to": [-10, 0], "center": [0, 0]}]}
+    with pytest.raises(WorkflowError) as info:
+        prepare_loops([loop])
+    assert "ccw" in info.value.context["hint"]
+    ok = {"type": "path", "start": [10, 0], "segments": [{"to": [-10, 0], "center": [0, 0], "ccw": True}]}
+    assert prepare_loops([ok]) == [ok]
+
+
+def test_slightly_off_arc_center_is_snapped():
+    notes = []
+    loop = {"type": "path", "start": [0, 0], "segments": [
+        {"to": [36.678, 0]}, {"to": [0, 0], "center": [18.31, 0.5], "ccw": True},
+    ]}
+    snapped = prepare_loops([loop], notes)[0]
+    u, v = snapped["segments"][1]["center"]
+    assert math.hypot(u, v) == pytest.approx(math.hypot(36.678 - u, v), abs=1e-6)
+    assert (u, v) == pytest.approx((18.339, 0.5))
+    assert "圆心由" in notes[0]
+    far = {"type": "path", "start": [0, 0], "segments": [{"to": [30, 0]}, {"to": [0, 0], "center": [10, 0], "ccw": True}]}
+    assert prepare_loops([far], [])[0] == far
+
+
+def test_full_annular_sector_becomes_annulus():
+    notes = []
+    loops = prepare_loops([{"type": "annular_sector", "center": [0, 0], "r_inner": 10, "r_outer": 20,
+                            "start_deg": 0, "end_deg": 360}], notes)
+    assert [loop["radius"] for loop in loops] == [20.0, 10.0] and "圆环" in notes[0]
+    sector = {"type": "annular_sector", "center": [0, 0], "r_inner": 0, "r_outer": 20, "start_deg": 0, "end_deg": 120}
+    assert prepare_loops([sector], []) == [sector]
+
+
+def test_sweep_profile_is_placed_at_path_start():
+    session = FakeV2(delta=500)
+    result = session.call("sweep", {
+        "path_plane": "front_plane", "path_start": [40, 5],
+        "path_segments": [{"to": [40, 45]}],
+        "loops": [{"type": "circle", "center": [0, 0], "diameter": 8}],
+    })
+    assert result["ok"] is True, result
+    assert any("Y=5" in note for note in result["notes"])
+    offsets = [body for path, body in session.requests if path == "/api/ref-plane/offset"]
+    assert len(offsets) == 1 and offsets[0]["reference"] == "plane:1"
+    assert offsets[0]["distance"] == pytest.approx(0.005)
+    circles = [op["params"]["circles"] for op in session.ran[0] if "circles" in op.get("params", {})]
+    assert circles[-1][0]["cx"] == pytest.approx(0.04) and circles[-1][0]["cz"] == pytest.approx(0.0)
+    arc = FakeV2(delta=500).call("sweep", {
+        "path_plane": "front_plane", "path_start": [40, 0],
+        "path_segments": [{"to": [0, 40], "center": [0, 0], "ccw": True}],
+        "loops": [{"type": "circle", "center": [0, 0], "diameter": 8}],
+    })
+    assert arc["ok"] is True and any("Y=0" in note for note in arc["notes"])
+    slanted = FakeV2(delta=500).call("sweep", {
+        "path_plane": "front_plane", "path_start": [0, 0], "path_segments": [{"to": [30, 30]}],
+        "loops": [{"type": "circle", "center": [0, 0], "diameter": 8}],
+    })
+    assert slanted["error"]["code"] == "TOOL_ARGS" and "profile_plane" in slanted["error"]["hint"]
+
+
+def test_param_and_face_edge_errors_get_hints():
+    session = FakeV2()
+    result = session.call("set_parameters", {"values": {"a": "=10/tan(30)"}})
+    assert result["error"]["code"] == "PARAM_FORBIDDEN" and "tand" in result["error"]["hint"]
+    edges = FakeV2(delta=-5).call("chamfer", {"distance": 1, "edges": "face#0"})
+    assert edges["error"]["code"] == "TOOL_ARGS" and "射线" in edges["error"]["hint"]
+
+
+def test_polar_centers_follow_uv_angle_convention():
+    centers = polar_centers({"center": [0, 0], "pcd": 100, "count": 4, "start_deg": 45})
+    assert centers[0] == pytest.approx([35.355339, 35.355339])
+    assert centers[1] == pytest.approx([-35.355339, 35.355339])
+    arc = polar_centers({"center": [10, 0], "radius": 10, "count": 3, "start_deg": 0, "span_deg": 180})
+    assert arc == [pytest.approx([20, 0]), pytest.approx([10, 10]), pytest.approx([0, 0], abs=1e-6)]
+
+
+def test_hole_accepts_polar_layout():
+    session = FakeV2(delta=-300)
+    result = session.call("hole", {
+        "plane": "top", "polar": {"center": [0, 0], "radius": 20, "count": 6}, "diameter": 5, "depth": 4,
+    })
+    assert result["ok"] is True, result
+    circles = session.ran[0][1]["params"]["circles"]
+    assert len(circles) == 6
+    assert "polar" in result["notes"][0]
+
+
+# ------------------------------------------------------------ 平面写法
+
+
+def test_axis_plane_syntax_creates_and_reuses_reference_plane():
+    session = FakeV2(delta=100)
+    loops = [{"type": "circle", "center": [0, 0], "diameter": 8}]
+    first = session.call("extrude", {"plane": "Y=25", "loops": loops, "depth": 5})
+    assert first["ok"] is True, first
+    second = session.call("extrude", {"plane": "Y=25", "loops": loops, "depth": 3})
+    assert second["ok"] is True, second
+    offsets = [body for path, body in session.requests if path == "/api/ref-plane/offset"]
+    assert len(offsets) == 1 and offsets[0]["reference"] == "plane:1"
+    assert session.log[0]["args"]["plane"] == "Y=25"
+    assert session.ran[0][0]["route"] == "/api/select-ref-plane-and-sketch"
+    assert first["extent_mm"]["Y"] == [25.0, 30.0]
+    zero = session.call("extrude", {"plane": "Z=0", "loops": loops, "depth": 2})
+    assert zero["ok"] is True and session.ran[-1][0] == {"operation": "select_plane", "params": {"index": 0}}
+
+
+def test_ref_plane_is_reused_at_same_position():
+    session = FakeV2()
+    first = session.call("ref_plane", {"reference": "top_plane", "offset": 12})
+    again = session.call("ref_plane", {"reference": "top_plane", "offset": 12})
+    assert again["reused"] is True and again["name"] == first["name"]
+
+
+def test_edit_feature_rejects_reference_planes():
+    session = FakeV2()
+    name = session.call("ref_plane", {"reference": "top_plane", "offset": 12})["name"]
+    result = session.call("edit_feature", {"name": name, "value": 20})
+    assert result["ok"] is False and "Z=" in result["error"]["hint"]
+
+
+def test_stale_face_index_gets_hint():
+    result = FakeV2(delta=-10).call("cut", {
+        "plane": "face#99", "loops": [{"type": "circle", "center": [0, 0], "diameter": 4}], "depth": 2,
+    })
+    assert result["error"]["code"] == "REF_NOT_FOUND"
+    assert "get_model_state" in result["error"]["hint"]
+
+
+# ------------------------------------------------------------ 特征反馈
+
+
+def test_one_sided_through_all_from_mid_plane_is_flagged():
+    session = FakeV2(delta=-500)
+    result = session.call("cut", {
+        "plane": "front_plane", "loops": [{"type": "rect", "center": [0, 5], "size": [10, 4]}],
+        "through_all": True, "direction": "+Z",
+    })
+    assert result["ok"] is True, result
+    assert result["extent_mm"] == {"X": [-5.0, 5.0], "Y": [3.0, 7.0], "Z": [0.0, 30.0]}
+    assert any("direction=both" in text for text in result["warnings"])
+
+
+def test_one_sided_through_all_from_face_below_a_boss_is_flagged():
+    session = FakeV2(delta=-500)
+    original = session.snapshot
+
+    def snapshot():
+        data = original()
+        data["boundingBox"] = {**data["boundingBox"], "maxY": 0.03}
+        return data
+
+    session.snapshot = snapshot
+    loops = [{"type": "circle", "center": [0, 0], "diameter": 6}]
+    result = session.call("cut", {"plane": "face#0", "loops": loops, "through_all": True})
+    assert result["ok"] is True, result
+    assert any("实体面 Y=10" in text and "[10, 30]" in text for text in result["warnings"])
+    clean = FakeV2(delta=-500).call("cut", {"plane": "face#0", "loops": loops, "through_all": True})
+    assert not any("through_all" in text for text in clean.get("warnings", []))
+
+
+def test_low_removal_ratio_is_flagged_and_both_depth_is_total():
+    session = FakeV2(delta=-100)
+    result = session.call("cut", {
+        "plane": "top", "loops": [{"type": "circle", "center": [0, 0], "diameter": 10}], "depth": 5,
+    })
+    assert result["removal_ratio"] == pytest.approx(100 / (math.pi * 25 * 5), abs=3e-3)
+    assert any("只去除了" in text for text in result["warnings"])
+    both = FakeV2(delta=1000).call("extrude", {
+        "plane": "front_plane", "loops": [{"type": "rect", "center": [0, 50], "size": [10, 10]}],
+        "depth": 10, "direction": "both",
+    })
+    assert both["extent_mm"]["Z"] == [-5.0, 5.0] and "总厚度" in both["note"]
+
+
+def test_extra_bodies_are_rejected_and_rolled_back():
+    session = FakeV2(delta=100)
+    original = session.snapshot
+
+    def snapshot():
+        data = original()
+        data["bodyCount"] = 1 if not session.ran else 2
+        return data
+
+    session.snapshot = snapshot
+    result = session.call("extrude", {
+        "plane": "front_plane", "loops": [{"type": "circle", "center": [0, 80], "diameter": 8}], "depth": 5,
+    })
+    assert result["error"]["code"] == "FEATURE_DISCONNECTED"
+    assert result["error"]["rolled_back"]
+
+
+def test_new_cylinders_are_reported():
+    session = FakeV2(delta=-50)
+    original = session.snapshot
+
+    def snapshot():
+        data = original()
+        if session.ran:
+            data["faces"] = data["faces"] + [{
+                "index": 6, "surfaceType": "cylinder", "radius": 0.0025,
+                "axis": {"x": 0, "y": 1, "z": 0}, "axisOrigin": {"x": 0.01, "y": 0.0, "z": -0.02},
+                "box": {"minX": 0.0075, "minY": 0.0, "minZ": -0.0225, "maxX": 0.0125, "maxY": 0.01, "maxZ": -0.0175},
+            }]
+        return data
+
+    session.snapshot = snapshot
+    result = session.call("hole", {"plane": "top", "centers": [[10, -20]], "diameter": 5, "through_all": True})
+    assert result["new_cylinders"] == [{"diameter_mm": 5.0, "axis": "Y", "count": 1, "axis_at_mm": [[10.0, 0.0, -20.0]]}]
+
+
+def test_fillet_reports_estimated_edge_length_and_accepts_ray_list():
+    radius = 2.0
+    session = FakeV2(delta=-(1 - math.pi / 4) * radius * radius * 80)
+    rays = [{"origin": [0, 20, 30], "direction": [0, -1, 0]}, {"origin": [0, 20, -30], "direction": [0, -1, 0]}]
+    result = session.call("fillet", {"radius": radius, "edges": rays})
+    assert result["ok"] is True, result
+    assert [op["operation"] for op in session.ran[0]] == ["feature_fillet", "feature_fillet"]
+    assert result["estimated_edge_length_mm"] == pytest.approx(80, abs=0.1)
+    assert "warnings" not in result
+
+
+def test_ambiguous_edge_rays_are_flagged():
+    along_edge = FakeV2(delta=-50).call("fillet", {"radius": 2, "edges": {"origin": [40, 5, 30], "direction": [0, 1, 0]}})
+    assert any("贴着面掠过" in text for text in along_edge["warnings"])
+    corner = FakeV2(delta=-50).call("fillet", {"radius": 2, "edges": [
+        {"origin": [0, 20, 30], "direction": [0, -1, 0]}, {"origin": [40, 20, 30], "direction": [0, -1, 0]},
+    ]})
+    assert len(corner["warnings"]) == 1 and "第 2 条射线命中 face#0" in corner["warnings"][0]
+
+
+def test_pattern_volume_is_checked_against_seed():
+    session = FakeV2(delta=-100)
+    session.call("hole", {"plane": "top", "centers": [[20, 0]], "diameter": 5, "depth": 3})
+    session.delta = -150
+    result = session.call("circular_pattern", {"count": 6, "axis": "Y", "center": [0, 0, 0]})
+    assert result["expected_delta_mm3"] == pytest.approx(-500)
+    assert any("阵列" in text for text in result["warnings"])
+    axis_requests = [body for path, body in session.requests if path == "/api/ref-axis/planes"]
+    assert axis_requests == [{"first": "plane:2", "second": "plane:0"}]
+    assert session.ran[-1][0]["params"]["axisFeature"] == session.features[-3]
+    session.call("circular_pattern", {"count": 6, "axis": "Y", "center": [0, 5, 0]})
+    assert len([1 for path, _ in session.requests if path == "/api/ref-axis/planes"]) == 1
+
+
+def test_face_sketch_selects_observed_face_directly():
+    session = FakeV2(delta=-50)
+    session.call("cut", {"plane": "top", "loops": [{"type": "circle", "center": [0, 0], "diameter": 4}], "depth": 2})
+    assert session.ran[0][0] == {
+        "operation": "select_observed_face_and_sketch", "route": "/api/select-observed-face-and-sketch",
+        "params": {"faceIndex": 0, "exact": True},
+    }
+    v1 = FakeSession(delta=-50)
+    v1.call("cut", {"plane": "top", "loops": [{"type": "circle", "center": [0, 0], "diameter": 4}], "depth": 2})
+    assert v1.ran[0][0] == {"operation": "select_observed_face_and_sketch", "params": {"faceIndex": 0}}
+
+
+def test_delete_feature_reports_cascade():
+    session = FakeV2()
+    session.features = ["凸台1", "切除1", "阵列1"]
+    session.cascade = {"切除1": ["阵列1"]}
+    result = session.call("delete_feature", {"name": "切除1"})
+    assert result["deleted"] == ["切除1"] and result["also_removed"] == ["阵列1"]
+    many = FakeV2()
+    many.features = ["A", "B", "C"]
+    out = many.call("delete_feature", {"names": ["C", "B"]})
+    assert out["deleted"] == ["C", "B"] and "also_removed" not in out
+
+
+# ------------------------------------------------------------ 状态
+
+
+def _cylinder(index, x, z, diameter=6.0, top=10.0):
+    return {
+        "index": index, "surfaceType": "cylinder", "radius": diameter / 2000,
+        "axis": {"x": 0, "y": 1, "z": 0}, "axisOrigin": {"x": x / 1000, "y": 0, "z": z / 1000},
+        "box": {"minX": (x - 3) / 1000, "minY": 0.0, "minZ": (z - 3) / 1000,
+                "maxX": (x + 3) / 1000, "maxY": top / 1000, "maxZ": (z + 3) / 1000},
+    }
+
+
+def test_state_groups_holes_and_filters():
+    session = FakeV2()
+    original = session.snapshot
+
+    def snapshot():
+        data = original()
+        holes = []
+        for i, (x, z) in enumerate([(20, 20), (-20, 20), (20, -20), (-20, -20)]):
+            holes += [_cylinder(10 + 2 * i, x, z), _cylinder(11 + 2 * i, x, z)]
+        data["faces"] = data["faces"] + holes + [_cylinder(30, 0, 0, diameter=12)]
+        return data
+
+    session.snapshot = snapshot
+    state = session.call("get_model_state", {})["state"]
+    groups = {group["diameter_mm"]: group for group in state["cylinder_groups"]}
+    assert groups[6.0]["count"] == 4 and len(groups[6.0]["refs"]) == 8
+    assert groups[12.0]["count"] == 1
+    near = session.call("get_model_state", {"type": "cylinder", "near": [20, 5, 20], "radius": 2})["state"]
+    assert "planar_faces" not in near
+    assert [group["count"] for group in near["cylinder_groups"]] == [1]
+    planes = session.call("get_model_state", {"type": "plane", "axis": "Y"})["state"]
+    assert {face["normal"] for face in planes["planar_faces"]} == {"+Y", "-Y"}
+
+
+# ------------------------------------------------------------ agent 循环
+
+
+class StateSession(FakeV2):
+    pass
+
+
+def test_agent_v2_blocks_duplicates_and_repeated_failures_and_trims_old_state():
+    session = StateSession(delta=0.0)
+    bad = {"plane": "top", "loops": [{"type": "circle", "center": [0, 0], "diameter": 4}], "depth": 2}
+    client = ScriptedClient([
+        (1, [_call("a", "get_model_state"), _call("b", "cut", bad), _call("c", "cut", bad)]),
+        (2, [_call("d", "cut", bad)]),
+        (3, [_call("e", "cut", bad), _call("f", "get_model_state")]),
+        (4, [_call("g", "finish", {"summary": "s"})]),
+    ])
+    outcome = WorkflowAgent(client, "m", session, max_llm_calls=8).run("立方体")
+    codes = [item["error_code"] for item in outcome["tool_calls"]]
+    assert codes == [None, "FEATURE_NO_EFFECT", "DUPLICATE_CALL", "FEATURE_NO_EFFECT", "REPEATED_FAILURE", None, None]
+    assert [item.get("blocked", False) for item in outcome["tool_calls"]][2:5] == [True, False, True]
+    tool_messages = [m for m in outcome["messages"] if m["role"] == "tool"]
+    assert tool_messages[0]["content"].startswith("（此前的 get_model_state")
+    latest = json.loads(tool_messages[5]["content"])
+    assert latest["ok"] is True and latest["llm_calls_left"] == 5
+    assert outcome["status"] == "finished"
+
+
+def test_agent_v2_finish_rejects_multiple_bodies():
+    session = FakeV2(bodies=2)
+    client = ScriptedClient([(1, [_call("a", "finish", {"summary": "s"})])])
+    outcome = WorkflowAgent(client, "m", session, max_llm_calls=1).run("立方体")
+    assert outcome["tool_calls"][0]["error_code"] == "MULTI_BODY"

@@ -79,6 +79,7 @@ class Ctx:
     tol_vol: float
     specs: dict
     cache: dict = field(default_factory=dict)
+    hand: int = 1  # either_hand 坐标系的轴 2 取 +1（右手）或 -1（镜像）
 
     def near(self, a: float, b: float) -> bool:
         return abs(a - b) <= self.tol_len + 1e-9
@@ -267,10 +268,12 @@ def sel_axis_frame(ctx: Ctx, a: dict) -> Frame:
     part = ctx.part
     ax = _axis(ctx.items(a["axis"])[0])
 
+    hand = ctx.hand if a.get("either_hand") else 1
+
     def build(d, e1):
         d = unit(d)
         e1 = unit(e1 - np.dot(e1, d) * d)
-        axes = np.array([d, e1, np.cross(d, e1)])
+        axes = np.array([d, e1, hand * np.cross(d, e1)])
         lo, hi = part.extents(axes)
         foot = ax.o - np.dot(ax.o, d) * d
         origin = foot + lo[0] * d
@@ -1677,9 +1680,22 @@ def _plain(x):
 
 
 def evaluate(rubric: dict, part: Part) -> dict:
+    """需求没有规定旋向时（如两组错位的孔谁在前），rubric 的 axis_frame 写 either_hand: true，
+    在右手与镜像两种坐标系下各评一次，取得分高者。"""
+    specs = rubric.get("entities", {})
+    either = any(isinstance(spec, dict) and (spec.get("axis_frame") or {}).get("either_hand")
+                 for spec in specs.values())
+    if not either:
+        return _evaluate(rubric, part, 1)
+    right, mirrored = _evaluate(rubric, part, 1), _evaluate(rubric, part, -1)
+    best = mirrored if mirrored["score"] > right["score"] else right
+    return {**best, "hand": "mirrored" if best is mirrored else "right"}
+
+
+def _evaluate(rubric: dict, part: Part, hand: int) -> dict:
     tol = rubric.get("tolerance", {})
     ctx = Ctx(part, tol.get("length_mm", 0.1), tol.get("angle_deg", 0.5), tol.get("volume_rel", 0.01),
-              rubric.get("entities", {}))
+              rubric.get("entities", {}), hand=hand)
     rows = []
     empty = part.shape is None or part.shape.IsNull()
     for item in rubric["rubrics"]:

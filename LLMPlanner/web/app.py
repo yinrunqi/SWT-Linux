@@ -1762,6 +1762,8 @@ def _image_mime(image_b64: str, declared: str = "") -> str:
 
 
 REASONING_EFFORTS = ("none", "minimal", "low", "medium", "high", "xhigh")
+# action_level → workflow 版本；L1 保持原样，L1_v2 是在 L1 失败轨迹上改进后的版本
+WORKFLOW_VERSIONS = {"L1": "v1", "L1_v2": "v2"}
 
 
 def _run_workflow_l1(
@@ -1778,6 +1780,7 @@ def _run_workflow_l1(
     reasoning_effort: str | None = None,
     checkpoint_path: str = "",
     resume: bool = False,
+    version: str = "v1",
 ) -> dict:
     """L1：工程师级工具 + 闭环 Agent。results 只列建模工具调用，供打分统计失败次数。
 
@@ -1789,7 +1792,7 @@ def _run_workflow_l1(
     from openai import OpenAI
 
     from planner.workflow.agent import WorkflowAgent
-    from planner.workflow.tools import WorkflowSession
+    from planner.workflow.tools_v2 import create_session
 
     extra_tools = ["render_views"] if image_b64 and views_tool else None
     # TT Switch 只有在同一 X-Session-Id 下才复用 prompt 缓存；显式缓存模型不带此头时每轮都按缓存写计费。
@@ -1802,11 +1805,11 @@ def _run_workflow_l1(
         max_retries=2,
         default_headers={"X-Session-Id": f"workflow-l1-{uuid.uuid4().hex}"},
     )
-    session = WorkflowSession(base_url=executor.base_url, executor=executor, extra_tools=extra_tools)
+    session = create_session(version, base_url=executor.base_url, executor=executor, extra_tools=extra_tools)
     session.start_part()
     agent = WorkflowAgent(
         client, model, session, max_llm_calls=max_llm_calls, extra_tools=extra_tools,
-        reasoning_effort=reasoning_effort, stream=True, checkpoint_path=checkpoint_path or None,
+        reasoning_effort=reasoning_effort, stream=True, checkpoint_path=checkpoint_path or None, version=version,
     )
     outcome = agent.run(instruction, image_b64=image_b64 or None, image_mime=image_mime, resume=resume)
     modeling_calls = [item for item in outcome["tool_calls"] if item["tool"] not in WORKFLOW_QUERY_TOOLS]
@@ -1824,7 +1827,7 @@ def _run_workflow_l1(
     payload = {
         "success": True,
         "mode": "workflow",
-        "action_level": "L1",
+        "action_level": "L1" if version == "v1" else "L1_v2",
         "plan": {
             "user_intent": instruction,
             "steps": [{"operation": item["tool"], "params": item["args"]} for item in modeling_calls],
@@ -1891,7 +1894,9 @@ def run():
     if mode not in ("single_turn", "multi_turn"):
         return jsonify({"success": False, "error": f"未知 mode: {mode}"}), 400
     action_level = str(data.get("action_level", "L0")).strip().upper()
-    if action_level not in ("L0", "L1"):
+    if action_level == "L1_V2":
+        action_level = "L1_v2"
+    if action_level not in ("L0", *WORKFLOW_VERSIONS):
         return jsonify({"success": False, "error": f"未知 action_level: {action_level}"}), 400
     raw_max_turns = data.get("max_turns")
     max_turns = None
@@ -1910,7 +1915,7 @@ def run():
                 "success": False,
                 "error": f"未知 reasoning_effort: {reasoning_effort}，可选 {', '.join(REASONING_EFFORTS)}",
             }), 400
-        if action_level != "L1":
+        if action_level not in WORKFLOW_VERSIONS:
             return jsonify({"success": False, "error": "reasoning_effort 目前只支持 L1 workflow"}), 400
     # 多模态：可选图片（base64，可含或不含 data URI 前缀；不含时按 JPEG 处理）
     image_raw = data.get("image", "") or ""
@@ -1934,7 +1939,7 @@ def run():
             "error": "Multi-turn MVP 不支持 dry_run",
         }), 400
 
-    if action_level == "L1":
+    if action_level in WORKFLOW_VERSIONS:
         if dry_run:
             return jsonify({"success": False, "error": "L1 workflow 不支持 dry_run"}), 400
         checkpoint_path = str(data.get("checkpoint_path") or "").strip()
@@ -1958,6 +1963,7 @@ def run():
                     reasoning_effort=reasoning_effort,
                     checkpoint_path=checkpoint_path,
                     resume=bool(data.get("resume", False)),
+                    version=WORKFLOW_VERSIONS[action_level],
                 ))
         except Exception as exc:
             traceback.print_exc()
