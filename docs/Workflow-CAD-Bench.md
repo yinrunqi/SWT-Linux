@@ -328,7 +328,9 @@ L1 运行过程中，每次拿到 LLM 回复、每轮工具执行完，都会把
 | 二级门格海绵 `menger_sponge` | 7 | 两级分形挖孔（共 27 个方孔）必须全部贯穿且位置准确 |
 | 万向节叉 `u_joint_yoke` | 9 | 双叉臂与同轴十字轴承孔、半圆叉头、孔内键槽与径向紧定螺钉孔、叉臂外侧的轴承盖螺孔 |
 
-22 题共 217 个显式条目，配了 50 个针对性错误变体（相位转错、方向反了、少一级特征、孔不通等），每个都恰好在预期条目上失败。连同前 8 题，困难子集共 30 题、304 个条目、73 个错误变体。下面的参考结果只覆盖前 8 题；22 道新题还没有跑过任何模型。
+22 题共 217 个显式条目，配了 50 个针对性错误变体（相位转错、方向反了、少一级特征、孔不通等），每个都恰好在预期条目上失败。连同前 8 题，困难子集共 30 题、304 个条目、73 个错误变体。下面 Qwen 的参考结果只覆盖前 8 题；22 道新题上 claude-sonnet-5 的结果见 7.2 节。
+
+除了 OCC 参考实体，22 道新题还在 SolidWorks 里用 L1 的 24 个工具逐题建了一遍参考解（`LLMPlanner/eval/hard_l1_reference.py`，只调用模型能拿到的同一套工具），22 题全部 100 分，说明每道题在这套工具下都是可解的。其中最绕的是火箭尾段：`ref_plane` 只能建平行偏移面，45° 方位的尾翼要先阵列 8 片、再切掉 4 片。
 
 打分和汇总时用 `--rubric-dir` 指向这个目录：
 
@@ -363,6 +365,76 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 对推理模型，L1 agent 还做了两处处理，都与具体题目无关：
 - 回复因长度上限被截断、又没有完整的工具调用时，不再算作停滞，而是把输出上限翻倍（最多 32000）后重新请求。
 - 请求改为流式，避免长回复在网关处读超时。
+
+### 7.2 claude-sonnet-5 在加难 22 题上的结果
+
+**评测方式**
+
+- 系统：Workflow-CAD L1（24 个工具，闭环 agent，每轮工具执行后把结果和模型状态反馈给模型）。
+- 骨干模型：claude-sonnet-5（经 TT Switch 网关），`reasoning_effort = medium`，中文题面。
+- 预算：每题最多 40 次 LLM 调用；每题 1 次运行（pass@1）。
+- 打分：只看 rubric（`eval/rubrics_hard/<case>.yaml`）。题目分数是通过的显式条目占比；所有显式条目都通过才算合格（`accepted`）；`hard_ok` 表示核心条目（有效实体和主体形状）都通过。
+- 代码版本：提交 7d73ae1 及之后。这一版修了两个会让正确操作失败的工具 bug：一是先做过旋转、又建过参考面之后，在 top_plane 上画的圆会被 SolidWorks 自动捕捉偏移，导致切除失败；二是很短的旋转轴中心线会被吞掉。更早的 L1 结果都受这两个 bug 影响，不要和这里的结果直接比较。
+- 结果 JSON 里的 `score` 是旧的 v2 分（包围盒、体积、特征计数），比 rubric 宽松得多，**不作为本节的结果**。`status` 只表示每次工具调用是否都成功；L1 里被 agent 自己纠正的失败调用也会让它变成 `failed`，agent 是否正常收尾要看 `workflow_status`。
+
+复现命令（SolidWorks、C# 服务和 Web 后端已按第 6 节启动；Web 后端需要在拉取新代码后重启）：
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --action-level L1 --split hard `
+    --provider ttswitch --model claude-sonnet-5 --reasoning-effort medium --max-llm-calls 40 --repeats 1 `
+    --sw-restarts 2 --sw-max-private-gb 12 `
+    --ids crankshaft brake_disc wheel_rim geneva_wheel spiral_staircase engine_piston pipe_manifold `
+          gearbox_housing heat_sink honeycomb_panel gear_pump_body cold_plate truss_beam turbine_disk `
+          bt40_holder hydraulic_manifold rocket_fin_can ratchet_wheel injector_plate robot_arm_link `
+          menger_sponge u_joint_yoke `
+    --output eval\text_workflow_l1_mymodel_hard22_result.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric --rubric-dir eval\rubrics_hard `
+    --artifacts eval\artifacts\text_workflow_l1_mymodel_hard22_result --output eval\rubric_mymodel_hard22.json
+```
+
+说明：
+- 评测脚本在每题导出 STEP 后会自动调用 `venv-occ` 打 rubric 分，写进结果 JSON 的 `rubric` 字段，并在控制台打印未通过的条目；上面第二条命令用来生成单独的打分文件。
+- `--sw-restarts` 打开 SolidWorks 看门狗。SolidWorks 在长时间运行中有内存泄漏，大约每 5 道复杂件就会超过 12 GB：
+  - 每题开始前，如果 SolidWorks 进程不在、C# 服务无响应，或私有内存超过 `--sw-max-private-gb`，就重启 SolidWorks 和 C# 服务；
+  - 运行中丢失 SolidWorks 的题会在重启后从检查点续跑，每题最多续跑这么多次。
+  - SolidWorks 不在默认路径时，用环境变量 `SW_EXE` 指定 `SLDWORKS.exe`。
+- 在别的模型或系统上跑时，只要把每题导出成 `<case>_r1.step` 放进一个目录，用第二条命令打分即可，不必用 Workflow-CAD。
+
+**结果**（19 题，均为上面的协议）
+
+| 均分 | pass@1 | 核心形体率 | 平均 token | 平均 LLM 调用 | 平均工具调用 | 平均耗时 |
+|---|---|---|---|---|---|---|
+| 76.2（95% CI [64.9, 86.6]） | 0.368（7/19） | 0.84（16/19） | 648k | 21.9（1 题用满 40 次） | 35.2 | 753 s |
+
+| 任务 | rubric 分 | 合格 | LLM 调用 | 未通过的条目 |
+|---|---|---|---|---|
+| `wheel_rim` | 100 | ✓ | 26 | — |
+| `spiral_staircase` | 100 | ✓ | 16 | — |
+| `heat_sink` | 100 | ✓ | 14 | — |
+| `truss_beam` | 100 | ✓ | 13 | — |
+| `injector_plate` | 100 | ✓ | 15 | — |
+| `robot_arm_link` | 100 | ✓ | 15 | — |
+| `u_joint_yoke` | 100 | ✓ | 18 | — |
+| `cold_plate` | 90 | | 27 | channel_depth |
+| `turbine_disk` | 90 | | 9 | hub |
+| `engine_piston` | 81.8 | | 20 | pin_bore, volume |
+| `brake_disc` | 80 | | 39 | rings, cross_holes |
+| `bt40_holder` | 70 | | 16 | flange, v_groove, volume |
+| `crankshaft` | 64.3 | | 39 | crankpins, phasing, web_profile, oil_holes, volume |
+| `ratchet_wheel` | 62.5 | | 11 | outer, hex_bore, volume |
+| `gearbox_housing` | 58.3 | | 23 | bearing_bores, bosses, ribs, drain_and_sight, volume |
+| `honeycomb_panel` | 50 | | 13 | middle_row, offset_rows, outer_rows, hex_orientation, volume |
+| `geneva_wheel` | 44.4 | | 33 | disc_and_hub, slots, slot_tips, locking_arcs, lightening_holes |
+| `gear_pump_body` | 30 | | 40 | outer, chamber, ports, port_bosses, tapped_holes, dowels, volume |
+| `pipe_manifold` | 27.3 | | 29 | solid, outer, branches, branch_bores, branch_flanges, branch_bolts, drain, volume |
+
+19 题共用 1231 万 token（416 次 LLM 调用），总耗时约 4 小时。打分文件是 `eval/rubric_hard22_sonnet5_medium.json`，完整结果（含每次 LLM 回复、工具调用与返回、token 和耗时）是 `eval/text_workflow_l1_sonnet5_medium_hard19_result.json`。
+
+另外 3 题（`hydraulic_manifold`、`menger_sponge`、`rocket_fin_can`）是在上面两个工具 bug 修复之前试跑的，协议也不一致：前两题没有设置 `reasoning_effort`（用网关默认值），火箭尾段中途中断后续跑过。所以它们**不计入上面的均分**，仅供参考：液压阀块 100、门格海绵 100、火箭尾段 55.6（尾翼方位和平面形状不对）。
+
+在用 SolidWorks 参考解验证可解性时发现了两处 rubric 问题，已在跑上面 19 题之前修正。两处都只放宽了与题意无关的判定，并在 OCC 参考实体和 SolidWorks 参考解上重新验证过：
+- 材料区间探测忽略零长度区间。探测线恰好擦过一条棱时会得到零长度区间，它不代表材料。
+- 齿轮泵体：油口凸台从侧面起建，还是略嵌入块体（参考实体从 y=±44 起），题面没有规定，两种都接受。
 
 ---
 
