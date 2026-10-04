@@ -529,13 +529,22 @@ def path_start_tangent(start: tuple[float, float], step: dict) -> tuple[float, f
     return target[0] - start[0], target[1] - start[1]
 
 
-def _with_hint(error: dict, original: dict) -> dict:
+_ADDING_TOOLS = {"extrude", "sweep", "revolve", "loft", "rib"}
+
+
+def _with_hint(error: dict, original: dict, tool: str = "") -> dict:
     code = error.get("code")
     if code in ("REF_NOT_FOUND", "REF_NOT_PLANAR", "REF_AMBIGUOUS") and "face#" in json.dumps(original, ensure_ascii=False):
         error.setdefault(
             "hint",
             "face# 编号在每次特征之后都会重新编号；请用最新的 get_model_state，"
             "或改用 face(+Z, outermost) 或 \"Z=40\" 这类不随编号变化的写法。",
+        )
+    elif code == "FEATURE_FAILED" and not original.get("cut") and tool in _ADDING_TOOLS:
+        error["hint"] = (
+            "新凸台/扫描体常见的失败原因：轮廓只和已有实体相切或线接触（例如轮廓边恰好落在圆柱面半径上、截面贴着轮毂外圆），"
+            "SolidWorks 无法合并零厚度接触。让新轮廓伸入已有实体 ≥0.5mm，或离开足够距离后再连接。"
+            + (f" 原提示：{error['hint']}" if error.get("hint") else "")
         )
     elif code == "PARAM_FORBIDDEN":
         error.setdefault(
@@ -635,7 +644,7 @@ class WorkflowSessionV2(WorkflowSession):
         try:
             prepared = self._prepare_args(name, coerce_args(original)) if self.has_part else coerce_args(original)
         except WorkflowError as exc:
-            result = {"ok": False, "error": _with_hint(exc.to_dict(), original)}
+            result = {"ok": False, "error": _with_hint(exc.to_dict(), original, name)}
             self.log.append({"tool": name, "args": original, "result": result})
             return result
         except (KeyError, TypeError, ValueError) as exc:
@@ -647,7 +656,7 @@ class WorkflowSessionV2(WorkflowSession):
         if self._notes:
             result["notes"] = [*result.get("notes", []), *self._notes]
         if result.get("error"):
-            _with_hint(result["error"], original)
+            _with_hint(result["error"], original, name)
         return result
 
     def _prepare_args(self, name: str, args: dict) -> dict:
@@ -823,6 +832,11 @@ class WorkflowSessionV2(WorkflowSession):
                     )
         if mode == "both" and depth and not through:
             result["note"] = f"both：以 {frame.axis}={frame.offset_mm:g} 为中面，两侧各 {depth / 2:g}mm（depth 是总厚度）"
+        if removing and mode == "both" and not args.get("direction"):
+            warnings.append(
+                f"没有给 direction，草图平面 {frame.axis}={frame.offset_mm:g} 在实体中间，按 both 向两侧切除；"
+                "只想切一侧时写 direction=+轴/-轴。"
+            )
         if removing and through and mode == "one" and bbox_before:
             lo, hi = bbox_before[frame.axis]
             offset = frame.offset_mm

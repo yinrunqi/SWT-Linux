@@ -179,6 +179,18 @@ def test_sweep_profile_is_placed_at_path_start():
     assert slanted["error"]["code"] == "TOOL_ARGS" and "profile_plane" in slanted["error"]["hint"]
 
 
+def test_failed_boss_hints_tangency_and_implicit_both_cut_is_flagged():
+    failed = FakeV2(run_ok=False).call("extrude", {
+        "plane": "top", "loops": [{"type": "circle", "center": [0, 0], "diameter": 8}], "depth": 5,
+    })
+    assert failed["error"]["code"] == "FEATURE_FAILED" and "相切" in failed["error"]["hint"]
+    cut = FakeV2(delta=-200).call("cut", {
+        "plane": "front_plane", "loops": [{"type": "rect", "center": [0, 5], "size": [10, 4]}], "depth": 10,
+    })
+    assert cut["ok"] is True, cut
+    assert any("没有给 direction" in text for text in cut["warnings"])
+
+
 def test_param_and_face_edge_errors_get_hints():
     session = FakeV2()
     result = session.call("set_parameters", {"values": {"a": "=10/tan(30)"}})
