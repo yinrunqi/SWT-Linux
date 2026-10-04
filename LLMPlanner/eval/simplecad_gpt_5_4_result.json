@@ -1,0 +1,2321 @@
+{
+  "summary": {
+    "model": "gpt-5.4",
+    "runs": 100,
+    "submitted": 100,
+    "finished": 100,
+    "errors": 0,
+    "mean_llm_calls": 15.1,
+    "mean_elapsed_s": 196.0,
+    "mean_total_tokens": 490096,
+    "token_totals": {
+      "prompt_tokens": 47656829,
+      "completion_tokens": 1352800,
+      "total_tokens": 49009629,
+      "cached_tokens": 43736576
+    },
+    "credit_total": 4105.78
+  },
+  "runs": [
+    {
+      "case": "bent_tube",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 24,
+        "run_python": 7,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 340222,
+        "completion_tokens": 13636,
+        "total_tokens": 353858,
+        "cached_tokens": 320256,
+        "credit": 33.48
+      },
+      "elapsed_s": 189.8,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/bent_tube_r1.step"
+    },
+    {
+      "case": "bent_tube",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 12,
+      "tool_counts": {
+        "read_doc": 24,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 313518,
+        "completion_tokens": 11597,
+        "total_tokens": 325115,
+        "cached_tokens": 267264,
+        "credit": 35.67
+      },
+      "elapsed_s": 159.4,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/bent_tube_r2.step"
+    },
+    {
+      "case": "clevis_bracket",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 14,
+      "tool_counts": {
+        "read_doc": 28,
+        "run_python": 9,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 424454,
+        "completion_tokens": 14653,
+        "total_tokens": 439107,
+        "cached_tokens": 398080,
+        "credit": 38.55
+      },
+      "elapsed_s": 196.1,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/clevis_bracket_r1.step"
+    },
+    {
+      "case": "clevis_bracket",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 16,
+      "tool_counts": {
+        "read_doc": 26,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 476365,
+        "completion_tokens": 14029,
+        "total_tokens": 490394,
+        "cached_tokens": 449664,
+        "credit": 39.0
+      },
+      "elapsed_s": 188.1,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/clevis_bracket_r2.step"
+    },
+    {
+      "case": "corner_rib_stand",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 15,
+      "tool_counts": {
+        "read_doc": 23,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 469189,
+        "completion_tokens": 12743,
+        "total_tokens": 481932,
+        "cached_tokens": 414592,
+        "credit": 43.16
+      },
+      "elapsed_s": 192.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/corner_rib_stand_r1.step"
+    },
+    {
+      "case": "corner_rib_stand",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 12,
+      "tool_counts": {
+        "read_doc": 29,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 459049,
+        "completion_tokens": 16026,
+        "total_tokens": 475075,
+        "cached_tokens": 422400,
+        "credit": 43.79
+      },
+      "elapsed_s": 193.3,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/corner_rib_stand_r2.step"
+    },
+    {
+      "case": "counterbore_plate",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 16,
+      "tool_counts": {
+        "read_doc": 18,
+        "run_python": 10,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 502553,
+        "completion_tokens": 17205,
+        "total_tokens": 519758,
+        "cached_tokens": 472832,
+        "credit": 45.08
+      },
+      "elapsed_s": 229.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/counterbore_plate_r1.step"
+    },
+    {
+      "case": "counterbore_plate",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 17,
+      "tool_counts": {
+        "read_doc": 21,
+        "run_python": 12,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 448976,
+        "completion_tokens": 11316,
+        "total_tokens": 460292,
+        "cached_tokens": 393984,
+        "credit": 40.62
+      },
+      "elapsed_s": 187.8,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/counterbore_plate_r2.step"
+    },
+    {
+      "case": "crank",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 15,
+      "tool_counts": {
+        "read_doc": 21,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 382439,
+        "completion_tokens": 11222,
+        "total_tokens": 393661,
+        "cached_tokens": 331648,
+        "credit": 37.82
+      },
+      "elapsed_s": 182.5,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/crank_r1.step"
+    },
+    {
+      "case": "crank",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 12,
+      "tool_counts": {
+        "read_doc": 23,
+        "run_python": 7,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 335985,
+        "completion_tokens": 16334,
+        "total_tokens": 352319,
+        "cached_tokens": 314624,
+        "credit": 37.75
+      },
+      "elapsed_s": 200.1,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/crank_r2.step"
+    },
+    {
+      "case": "csk_cover",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 21,
+      "tool_counts": {
+        "read_doc": 34,
+        "run_python": 11,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 797230,
+        "completion_tokens": 19326,
+        "total_tokens": 816556,
+        "cached_tokens": 715776,
+        "credit": 67.31
+      },
+      "elapsed_s": 278.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/csk_cover_r1.step"
+    },
+    {
+      "case": "csk_cover",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 11,
+      "tool_counts": {
+        "read_doc": 19,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 290651,
+        "completion_tokens": 9926,
+        "total_tokens": 300577,
+        "cached_tokens": 265600,
+        "credit": 27.82
+      },
+      "elapsed_s": 140.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/csk_cover_r2.step"
+    },
+    {
+      "case": "diamond_flange",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 11,
+      "tool_counts": {
+        "read_doc": 21,
+        "run_python": 7,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 318517,
+        "completion_tokens": 18021,
+        "total_tokens": 336538,
+        "cached_tokens": 290688,
+        "credit": 41.27
+      },
+      "elapsed_s": 203.1,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/diamond_flange_r1.step"
+    },
+    {
+      "case": "diamond_flange",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 10,
+      "tool_counts": {
+        "read_doc": 17,
+        "run_python": 7,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 240127,
+        "completion_tokens": 16419,
+        "total_tokens": 256546,
+        "cached_tokens": 223872,
+        "credit": 34.3
+      },
+      "elapsed_s": 201.3,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/diamond_flange_r2.step"
+    },
+    {
+      "case": "end_cap",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 12,
+      "tool_counts": {
+        "read_doc": 12,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 269013,
+        "completion_tokens": 6376,
+        "total_tokens": 275389,
+        "cached_tokens": 235904,
+        "credit": 23.77
+      },
+      "elapsed_s": 113.5,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/end_cap_r1.step"
+    },
+    {
+      "case": "end_cap",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 7,
+      "tool_counts": {
+        "read_doc": 18,
+        "run_python": 2,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 152836,
+        "completion_tokens": 6442,
+        "total_tokens": 159278,
+        "cached_tokens": 131712,
+        "credit": 18.25
+      },
+      "elapsed_s": 87.0,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/end_cap_r2.step"
+    },
+    {
+      "case": "flange",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 17,
+      "tool_counts": {
+        "read_doc": 22,
+        "run_python": 11,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 463507,
+        "completion_tokens": 10635,
+        "total_tokens": 474142,
+        "cached_tokens": 429056,
+        "credit": 35.32
+      },
+      "elapsed_s": 172.9,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/flange_r1.step"
+    },
+    {
+      "case": "flange",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 20,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 354874,
+        "completion_tokens": 10696,
+        "total_tokens": 365570,
+        "cached_tokens": 292096,
+        "credit": 39.07
+      },
+      "elapsed_s": 162.0,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/flange_r2.step"
+    },
+    {
+      "case": "flanged_bushing",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 11,
+      "tool_counts": {
+        "read_doc": 18,
+        "run_python": 5,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 286735,
+        "completion_tokens": 9280,
+        "total_tokens": 296015,
+        "cached_tokens": 242304,
+        "credit": 31.1
+      },
+      "elapsed_s": 127.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/flanged_bushing_r1.step"
+    },
+    {
+      "case": "flanged_bushing",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 9,
+      "tool_counts": {
+        "read_doc": 12,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 178773,
+        "completion_tokens": 7872,
+        "total_tokens": 186645,
+        "cached_tokens": 161920,
+        "credit": 20.09
+      },
+      "elapsed_s": 116.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/flanged_bushing_r2.step"
+    },
+    {
+      "case": "flanged_elbow",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 32,
+      "tool_counts": {
+        "read_doc": 31,
+        "run_python": 22,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1181884,
+        "completion_tokens": 28470,
+        "total_tokens": 1210354,
+        "cached_tokens": 1149952,
+        "credit": 79.55
+      },
+      "elapsed_s": 480.4,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/flanged_elbow_r1.step"
+    },
+    {
+      "case": "flanged_elbow",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 9,
+      "tool_counts": {
+        "read_doc": 15,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 229688,
+        "completion_tokens": 11888,
+        "total_tokens": 241576,
+        "cached_tokens": 207104,
+        "credit": 28.68
+      },
+      "elapsed_s": 164.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/flanged_elbow_r2.step"
+    },
+    {
+      "case": "fork_end",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 17,
+      "tool_counts": {
+        "read_doc": 28,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 599599,
+        "completion_tokens": 21075,
+        "total_tokens": 620674,
+        "cached_tokens": 539264,
+        "credit": 60.22
+      },
+      "elapsed_s": 262.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/fork_end_r1.step"
+    },
+    {
+      "case": "fork_end",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 18,
+      "tool_counts": {
+        "read_doc": 12,
+        "run_python": 14,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 460444,
+        "completion_tokens": 11554,
+        "total_tokens": 471998,
+        "cached_tokens": 429568,
+        "credit": 35.81
+      },
+      "elapsed_s": 202.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/fork_end_r2.step"
+    },
+    {
+      "case": "gear_disc",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 15,
+      "tool_counts": {
+        "read_doc": 18,
+        "run_python": 10,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 342248,
+        "completion_tokens": 12183,
+        "total_tokens": 354431,
+        "cached_tokens": 295552,
+        "credit": 37.36
+      },
+      "elapsed_s": 187.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/gear_disc_r1.step"
+    },
+    {
+      "case": "gear_disc",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 28,
+        "run_python": 5,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 372230,
+        "completion_tokens": 8175,
+        "total_tokens": 380405,
+        "cached_tokens": 313984,
+        "credit": 34.69
+      },
+      "elapsed_s": 134.8,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/gear_disc_r2.step"
+    },
+    {
+      "case": "gusset_bracket",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 16,
+      "tool_counts": {
+        "read_doc": 21,
+        "run_python": 10,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 543366,
+        "completion_tokens": 12703,
+        "total_tokens": 556069,
+        "cached_tokens": 472704,
+        "credit": 48.56
+      },
+      "elapsed_s": 181.4,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/gusset_bracket_r1.step"
+    },
+    {
+      "case": "gusset_bracket",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 16,
+      "tool_counts": {
+        "read_doc": 24,
+        "run_python": 11,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 483220,
+        "completion_tokens": 11512,
+        "total_tokens": 494732,
+        "cached_tokens": 458112,
+        "credit": 35.02
+      },
+      "elapsed_s": 180.8,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/gusset_bracket_r2.step"
+    },
+    {
+      "case": "hex_nut",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 21,
+        "run_python": 7,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 275601,
+        "completion_tokens": 7898,
+        "total_tokens": 283499,
+        "cached_tokens": 239872,
+        "credit": 26.8
+      },
+      "elapsed_s": 129.9,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/hex_nut_r1.step"
+    },
+    {
+      "case": "hex_nut",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 14,
+      "tool_counts": {
+        "read_doc": 20,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 361268,
+        "completion_tokens": 10132,
+        "total_tokens": 371400,
+        "cached_tokens": 313600,
+        "credit": 34.98
+      },
+      "elapsed_s": 157.4,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/hex_nut_r2.step"
+    },
+    {
+      "case": "hex_standoff",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 14,
+      "tool_counts": {
+        "read_doc": 26,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 482628,
+        "completion_tokens": 9414,
+        "total_tokens": 492042,
+        "cached_tokens": 416000,
+        "credit": 41.2
+      },
+      "elapsed_s": 147.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/hex_standoff_r1.step"
+    },
+    {
+      "case": "hex_standoff",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 27,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 417178,
+        "completion_tokens": 11483,
+        "total_tokens": 428661,
+        "cached_tokens": 366336,
+        "credit": 39.11
+      },
+      "elapsed_s": 150.3,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/hex_standoff_r2.step"
+    },
+    {
+      "case": "key",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 9,
+      "tool_counts": {
+        "read_doc": 20,
+        "run_python": 4,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 220066,
+        "completion_tokens": 10440,
+        "total_tokens": 230506,
+        "cached_tokens": 198400,
+        "credit": 26.06
+      },
+      "elapsed_s": 140.5,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/key_r1.step"
+    },
+    {
+      "case": "key",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 10,
+      "tool_counts": {
+        "read_doc": 23,
+        "run_python": 4,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 260974,
+        "completion_tokens": 15445,
+        "total_tokens": 276419,
+        "cached_tokens": 197632,
+        "credit": 43.95
+      },
+      "elapsed_s": 177.4,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/key_r2.step"
+    },
+    {
+      "case": "knob",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 22,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 338692,
+        "completion_tokens": 11954,
+        "total_tokens": 350646,
+        "cached_tokens": 313984,
+        "credit": 31.98
+      },
+      "elapsed_s": 169.3,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/knob_r1.step"
+    },
+    {
+      "case": "knob",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 10,
+      "tool_counts": {
+        "read_doc": 24,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 279672,
+        "completion_tokens": 15433,
+        "total_tokens": 295105,
+        "cached_tokens": 248576,
+        "credit": 37.15
+      },
+      "elapsed_s": 188.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/knob_r2.step"
+    },
+    {
+      "case": "l_bracket",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 12,
+      "tool_counts": {
+        "read_doc": 26,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 364256,
+        "completion_tokens": 11919,
+        "total_tokens": 376175,
+        "cached_tokens": 308608,
+        "credit": 39.52
+      },
+      "elapsed_s": 161.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/l_bracket_r1.step"
+    },
+    {
+      "case": "l_bracket",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 17,
+      "tool_counts": {
+        "read_doc": 30,
+        "run_python": 5,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 527210,
+        "completion_tokens": 10602,
+        "total_tokens": 537812,
+        "cached_tokens": 494592,
+        "credit": 36.45
+      },
+      "elapsed_s": 172.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/l_bracket_r2.step"
+    },
+    {
+      "case": "lidless_housing",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 14,
+      "tool_counts": {
+        "read_doc": 20,
+        "run_python": 7,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 437071,
+        "completion_tokens": 13051,
+        "total_tokens": 450122,
+        "cached_tokens": 405376,
+        "credit": 37.66
+      },
+      "elapsed_s": 180.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/lidless_housing_r1.step"
+    },
+    {
+      "case": "lidless_housing",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 10,
+      "tool_counts": {
+        "read_doc": 26,
+        "run_python": 2,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 251720,
+        "completion_tokens": 4767,
+        "total_tokens": 256487,
+        "cached_tokens": 222592,
+        "credit": 20.02
+      },
+      "elapsed_s": 88.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/lidless_housing_r2.step"
+    },
+    {
+      "case": "link_bar",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 28,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 414342,
+        "completion_tokens": 17696,
+        "total_tokens": 432038,
+        "cached_tokens": 382848,
+        "credit": 44.01
+      },
+      "elapsed_s": 206.0,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/link_bar_r1.step"
+    },
+    {
+      "case": "link_bar",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 11,
+      "tool_counts": {
+        "read_doc": 17,
+        "run_python": 7,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 247453,
+        "completion_tokens": 11937,
+        "total_tokens": 259390,
+        "cached_tokens": 228608,
+        "credit": 28.35
+      },
+      "elapsed_s": 163.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/link_bar_r2.step"
+    },
+    {
+      "case": "mounting_plate",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 18,
+      "tool_counts": {
+        "read_doc": 36,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 760147,
+        "completion_tokens": 15379,
+        "total_tokens": 775526,
+        "cached_tokens": 717568,
+        "credit": 51.7
+      },
+      "elapsed_s": 217.4,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/mounting_plate_r1.step"
+    },
+    {
+      "case": "mounting_plate",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 32,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 508074,
+        "completion_tokens": 14338,
+        "total_tokens": 522412,
+        "cached_tokens": 448128,
+        "credit": 47.71
+      },
+      "elapsed_s": 197.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/mounting_plate_r2.step"
+    },
+    {
+      "case": "mug",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 16,
+      "tool_counts": {
+        "read_doc": 20,
+        "run_python": 10,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 421110,
+        "completion_tokens": 15310,
+        "total_tokens": 436420,
+        "cached_tokens": 398208,
+        "credit": 38.67
+      },
+      "elapsed_s": 224.8,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/mug_r1.step"
+    },
+    {
+      "case": "mug",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 30,
+      "tool_counts": {
+        "read_doc": 28,
+        "run_python": 20,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1176096,
+        "completion_tokens": 23671,
+        "total_tokens": 1199767,
+        "cached_tokens": 1135616,
+        "credit": 74.11
+      },
+      "elapsed_s": 380.1,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/mug_r2.step"
+    },
+    {
+      "case": "open_box",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 14,
+      "tool_counts": {
+        "read_doc": 21,
+        "run_python": 9,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 392431,
+        "completion_tokens": 9009,
+        "total_tokens": 401440,
+        "cached_tokens": 366208,
+        "credit": 29.25
+      },
+      "elapsed_s": 139.1,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/open_box_r1.step"
+    },
+    {
+      "case": "open_box",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 18,
+      "tool_counts": {
+        "read_doc": 29,
+        "run_python": 9,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 587861,
+        "completion_tokens": 10700,
+        "total_tokens": 598561,
+        "cached_tokens": 553472,
+        "credit": 38.53
+      },
+      "elapsed_s": 217.5,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/open_box_r2.step"
+    },
+    {
+      "case": "phone_stand",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 16,
+      "tool_counts": {
+        "read_doc": 21,
+        "run_python": 11,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 715332,
+        "completion_tokens": 31758,
+        "total_tokens": 747090,
+        "cached_tokens": 653312,
+        "credit": 79.53
+      },
+      "elapsed_s": 371.3,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/phone_stand_r1.step"
+    },
+    {
+      "case": "phone_stand",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 18,
+      "tool_counts": {
+        "read_doc": 25,
+        "run_python": 13,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 780644,
+        "completion_tokens": 31096,
+        "total_tokens": 811740,
+        "cached_tokens": 742144,
+        "credit": 74.87
+      },
+      "elapsed_s": 401.3,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/phone_stand_r2.step"
+    },
+    {
+      "case": "pillow_block",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 19,
+      "tool_counts": {
+        "read_doc": 22,
+        "run_python": 16,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 593154,
+        "completion_tokens": 16242,
+        "total_tokens": 609396,
+        "cached_tokens": 568704,
+        "credit": 44.73
+      },
+      "elapsed_s": 249.9,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/pillow_block_r1.step"
+    },
+    {
+      "case": "pillow_block",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 11,
+      "tool_counts": {
+        "read_doc": 24,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 360452,
+        "completion_tokens": 16959,
+        "total_tokens": 377411,
+        "cached_tokens": 328192,
+        "credit": 41.72
+      },
+      "elapsed_s": 197.9,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/pillow_block_r2.step"
+    },
+    {
+      "case": "pulley",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 9,
+      "tool_counts": {
+        "read_doc": 26,
+        "run_python": 4,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 227683,
+        "completion_tokens": 11881,
+        "total_tokens": 239564,
+        "cached_tokens": 193664,
+        "credit": 31.19
+      },
+      "elapsed_s": 150.3,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/pulley_r1.step"
+    },
+    {
+      "case": "pulley",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 29,
+      "tool_counts": {
+        "read_doc": 46,
+        "run_python": 13,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1282345,
+        "completion_tokens": 24391,
+        "total_tokens": 1306736,
+        "cached_tokens": 1190272,
+        "credit": 89.45
+      },
+      "elapsed_s": 362.0,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/pulley_r2.step"
+    },
+    {
+      "case": "rect_to_circle",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 14,
+      "tool_counts": {
+        "read_doc": 27,
+        "run_python": 7,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 444570,
+        "completion_tokens": 11066,
+        "total_tokens": 455636,
+        "cached_tokens": 407808,
+        "credit": 36.01
+      },
+      "elapsed_s": 170.4,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/rect_to_circle_r1.step"
+    },
+    {
+      "case": "rect_to_circle",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 23,
+      "tool_counts": {
+        "read_doc": 34,
+        "run_python": 12,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 834217,
+        "completion_tokens": 13902,
+        "total_tokens": 848119,
+        "cached_tokens": 792064,
+        "credit": 51.26
+      },
+      "elapsed_s": 236.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/rect_to_circle_r2.step"
+    },
+    {
+      "case": "rounded_stool",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 14,
+      "tool_counts": {
+        "read_doc": 18,
+        "run_python": 11,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 453658,
+        "completion_tokens": 10055,
+        "total_tokens": 463713,
+        "cached_tokens": 425344,
+        "credit": 32.83
+      },
+      "elapsed_s": 159.5,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/rounded_stool_r1.step"
+    },
+    {
+      "case": "rounded_stool",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 26,
+        "run_python": 5,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 461691,
+        "completion_tokens": 10196,
+        "total_tokens": 471887,
+        "cached_tokens": 418176,
+        "credit": 36.66
+      },
+      "elapsed_s": 157.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/rounded_stool_r2.step"
+    },
+    {
+      "case": "sheet_angle",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 9,
+      "tool_counts": {
+        "read_doc": 5,
+        "run_python": 7,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 144238,
+        "completion_tokens": 3286,
+        "total_tokens": 147524,
+        "cached_tokens": 132224,
+        "credit": 11.25
+      },
+      "elapsed_s": 70.4,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/sheet_angle_r1.step"
+    },
+    {
+      "case": "sheet_angle",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 8,
+      "tool_counts": {
+        "read_doc": 18,
+        "run_python": 1,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 175396,
+        "completion_tokens": 3319,
+        "total_tokens": 178715,
+        "cached_tokens": 152960,
+        "credit": 14.43
+      },
+      "elapsed_s": 86.9,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/sheet_angle_r2.step"
+    },
+    {
+      "case": "sheet_channel",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 12,
+      "tool_counts": {
+        "read_doc": 17,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 315482,
+        "completion_tokens": 6436,
+        "total_tokens": 321918,
+        "cached_tokens": 266112,
+        "credit": 28.67
+      },
+      "elapsed_s": 111.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/sheet_channel_r1.step"
+    },
+    {
+      "case": "sheet_channel",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 10,
+      "tool_counts": {
+        "read_doc": 16,
+        "run_python": 5,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 232305,
+        "completion_tokens": 5741,
+        "total_tokens": 238046,
+        "cached_tokens": 206080,
+        "credit": 20.35
+      },
+      "elapsed_s": 102.0,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/sheet_channel_r2.step"
+    },
+    {
+      "case": "side_pad",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 12,
+      "tool_counts": {
+        "read_doc": 21,
+        "run_python": 5,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 357952,
+        "completion_tokens": 10299,
+        "total_tokens": 368251,
+        "cached_tokens": 321920,
+        "credit": 32.52
+      },
+      "elapsed_s": 143.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/side_pad_r1.step"
+    },
+    {
+      "case": "side_pad",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 24,
+      "tool_counts": {
+        "read_doc": 30,
+        "run_python": 11,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 957993,
+        "completion_tokens": 15796,
+        "total_tokens": 973789,
+        "cached_tokens": 877056,
+        "credit": 65.91
+      },
+      "elapsed_s": 254.9,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/side_pad_r2.step"
+    },
+    {
+      "case": "soap_dish",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 24,
+      "tool_counts": {
+        "read_doc": 26,
+        "run_python": 18,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1093162,
+        "completion_tokens": 22401,
+        "total_tokens": 1115563,
+        "cached_tokens": 979456,
+        "credit": 86.56
+      },
+      "elapsed_s": 319.8,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/soap_dish_r1.step"
+    },
+    {
+      "case": "soap_dish",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 20,
+      "tool_counts": {
+        "read_doc": 28,
+        "run_python": 12,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 634067,
+        "completion_tokens": 15777,
+        "total_tokens": 649844,
+        "cached_tokens": 606976,
+        "credit": 45.65
+      },
+      "elapsed_s": 235.1,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/soap_dish_r2.step"
+    },
+    {
+      "case": "socket_bolt",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 15,
+      "tool_counts": {
+        "read_doc": 26,
+        "run_python": 10,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 540756,
+        "completion_tokens": 17161,
+        "total_tokens": 557917,
+        "cached_tokens": 509312,
+        "credit": 46.37
+      },
+      "elapsed_s": 246.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/socket_bolt_r1.step"
+    },
+    {
+      "case": "socket_bolt",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 27,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 373560,
+        "completion_tokens": 13378,
+        "total_tokens": 386938,
+        "cached_tokens": 345600,
+        "credit": 35.72
+      },
+      "elapsed_s": 183.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/socket_bolt_r2.step"
+    },
+    {
+      "case": "spacer_ring",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 26,
+        "run_python": 4,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 391406,
+        "completion_tokens": 10844,
+        "total_tokens": 402250,
+        "cached_tokens": 334080,
+        "credit": 38.96
+      },
+      "elapsed_s": 152.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/spacer_ring_r1.step"
+    },
+    {
+      "case": "spacer_ring",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 12,
+      "tool_counts": {
+        "read_doc": 26,
+        "run_python": 5,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 406477,
+        "completion_tokens": 9764,
+        "total_tokens": 416241,
+        "cached_tokens": 371328,
+        "credit": 32.74
+      },
+      "elapsed_s": 146.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/spacer_ring_r2.step"
+    },
+    {
+      "case": "spoked_wheel",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 21,
+      "tool_counts": {
+        "read_doc": 18,
+        "run_python": 14,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 516706,
+        "completion_tokens": 14694,
+        "total_tokens": 531400,
+        "cached_tokens": 482048,
+        "credit": 42.78
+      },
+      "elapsed_s": 235.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/spoked_wheel_r1.step"
+    },
+    {
+      "case": "spoked_wheel",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 18,
+      "tool_counts": {
+        "read_doc": 20,
+        "run_python": 13,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 506601,
+        "completion_tokens": 13533,
+        "total_tokens": 520134,
+        "cached_tokens": 482944,
+        "credit": 38.33
+      },
+      "elapsed_s": 208.5,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/spoked_wheel_r2.step"
+    },
+    {
+      "case": "square_to_round",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 21,
+      "tool_counts": {
+        "read_doc": 33,
+        "run_python": 11,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 632333,
+        "completion_tokens": 11789,
+        "total_tokens": 644122,
+        "cached_tokens": 593664,
+        "credit": 42.26
+      },
+      "elapsed_s": 209.4,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/square_to_round_r1.step"
+    },
+    {
+      "case": "square_to_round",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 16,
+      "tool_counts": {
+        "read_doc": 24,
+        "run_python": 11,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 446267,
+        "completion_tokens": 9559,
+        "total_tokens": 455826,
+        "cached_tokens": 415104,
+        "credit": 32.53
+      },
+      "elapsed_s": 170.3,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/square_to_round_r2.step"
+    },
+    {
+      "case": "standard_die",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 21,
+      "tool_counts": {
+        "read_doc": 33,
+        "run_python": 11,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 930380,
+        "completion_tokens": 19427,
+        "total_tokens": 949807,
+        "cached_tokens": 881920,
+        "credit": 63.35
+      },
+      "elapsed_s": 281.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/standard_die_r1.step"
+    },
+    {
+      "case": "standard_die",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 17,
+      "tool_counts": {
+        "read_doc": 18,
+        "run_python": 12,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 487137,
+        "completion_tokens": 16035,
+        "total_tokens": 503172,
+        "cached_tokens": 464384,
+        "credit": 41.39
+      },
+      "elapsed_s": 222.1,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/standard_die_r2.step"
+    },
+    {
+      "case": "stepped_block",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 19,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 339286,
+        "completion_tokens": 11635,
+        "total_tokens": 350921,
+        "cached_tokens": 279936,
+        "credit": 39.31
+      },
+      "elapsed_s": 170.5,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/stepped_block_r1.step"
+    },
+    {
+      "case": "stepped_block",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 14,
+      "tool_counts": {
+        "read_doc": 20,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 354496,
+        "completion_tokens": 13318,
+        "total_tokens": 367814,
+        "cached_tokens": 318080,
+        "credit": 37.05
+      },
+      "elapsed_s": 191.5,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/stepped_block_r2.step"
+    },
+    {
+      "case": "stepped_shaft",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 29,
+        "run_python": 5,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 471674,
+        "completion_tokens": 9220,
+        "total_tokens": 480894,
+        "cached_tokens": 431616,
+        "credit": 34.65
+      },
+      "elapsed_s": 134.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/stepped_shaft_r1.step"
+    },
+    {
+      "case": "stepped_shaft",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 9,
+      "tool_counts": {
+        "read_doc": 15,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 200809,
+        "completion_tokens": 7297,
+        "total_tokens": 208106,
+        "cached_tokens": 182656,
+        "credit": 20.07
+      },
+      "elapsed_s": 97.5,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/stepped_shaft_r2.step"
+    },
+    {
+      "case": "stool",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 18,
+      "tool_counts": {
+        "read_doc": 20,
+        "run_python": 10,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 468903,
+        "completion_tokens": 11408,
+        "total_tokens": 480311,
+        "cached_tokens": 413440,
+        "credit": 41.35
+      },
+      "elapsed_s": 183.0,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/stool_r1.step"
+    },
+    {
+      "case": "stool",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 6,
+      "tool_counts": {
+        "read_doc": 21,
+        "run_python": 1,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 113866,
+        "completion_tokens": 6186,
+        "total_tokens": 120052,
+        "cached_tokens": 79232,
+        "credit": 19.93
+      },
+      "elapsed_s": 85.0,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/stool_r2.step"
+    },
+    {
+      "case": "storage_box",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 20,
+      "tool_counts": {
+        "read_doc": 36,
+        "run_python": 13,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 678084,
+        "completion_tokens": 17410,
+        "total_tokens": 695494,
+        "cached_tokens": 638720,
+        "credit": 51.96
+      },
+      "elapsed_s": 237.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/storage_box_r1.step"
+    },
+    {
+      "case": "storage_box",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 26,
+      "tool_counts": {
+        "read_doc": 36,
+        "run_python": 15,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1005645,
+        "completion_tokens": 20047,
+        "total_tokens": 1025692,
+        "cached_tokens": 966784,
+        "credit": 64.0
+      },
+      "elapsed_s": 294.8,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/storage_box_r2.step"
+    },
+    {
+      "case": "support_seat",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 22,
+      "tool_counts": {
+        "read_doc": 33,
+        "run_python": 14,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 685273,
+        "completion_tokens": 15142,
+        "total_tokens": 700415,
+        "cached_tokens": 658304,
+        "credit": 45.97
+      },
+      "elapsed_s": 247.9,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/support_seat_r1.step"
+    },
+    {
+      "case": "support_seat",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 22,
+        "run_python": 7,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 329023,
+        "completion_tokens": 11319,
+        "total_tokens": 340342,
+        "cached_tokens": 280064,
+        "credit": 36.23
+      },
+      "elapsed_s": 159.0,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/support_seat_r2.step"
+    },
+    {
+      "case": "three_lug_housing",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 18,
+      "tool_counts": {
+        "read_doc": 26,
+        "run_python": 10,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 682336,
+        "completion_tokens": 19258,
+        "total_tokens": 701594,
+        "cached_tokens": 644352,
+        "credit": 54.55
+      },
+      "elapsed_s": 259.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/three_lug_housing_r1.step"
+    },
+    {
+      "case": "three_lug_housing",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 20,
+      "tool_counts": {
+        "read_doc": 24,
+        "run_python": 12,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 640624,
+        "completion_tokens": 29007,
+        "total_tokens": 669631,
+        "cached_tokens": 592896,
+        "credit": 70.29
+      },
+      "elapsed_s": 361.9,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/three_lug_housing_r2.step"
+    },
+    {
+      "case": "through_boss",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 19,
+        "run_python": 9,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 295653,
+        "completion_tokens": 8419,
+        "total_tokens": 304072,
+        "cached_tokens": 274560,
+        "credit": 24.78
+      },
+      "elapsed_s": 140.5,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/through_boss_r1.step"
+    },
+    {
+      "case": "through_boss",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 15,
+      "tool_counts": {
+        "read_doc": 30,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 467402,
+        "completion_tokens": 14775,
+        "total_tokens": 482177,
+        "cached_tokens": 439296,
+        "credit": 40.2
+      },
+      "elapsed_s": 195.9,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/through_boss_r2.step"
+    },
+    {
+      "case": "twin_arm_rocker",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 18,
+      "tool_counts": {
+        "read_doc": 37,
+        "run_python": 12,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 591559,
+        "completion_tokens": 22633,
+        "total_tokens": 614192,
+        "cached_tokens": 560512,
+        "credit": 55.75
+      },
+      "elapsed_s": 301.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/twin_arm_rocker_r1.step"
+    },
+    {
+      "case": "twin_arm_rocker",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 21,
+      "tool_counts": {
+        "read_doc": 36,
+        "run_python": 11,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 944671,
+        "completion_tokens": 16128,
+        "total_tokens": 960799,
+        "cached_tokens": 902784,
+        "credit": 57.3
+      },
+      "elapsed_s": 252.3,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/twin_arm_rocker_r2.step"
+    },
+    {
+      "case": "u_channel",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 19,
+      "tool_counts": {
+        "read_doc": 27,
+        "run_python": 10,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 631997,
+        "completion_tokens": 16038,
+        "total_tokens": 648035,
+        "cached_tokens": 598912,
+        "credit": 47.34
+      },
+      "elapsed_s": 234.9,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/u_channel_r1.step"
+    },
+    {
+      "case": "u_channel",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 18,
+      "tool_counts": {
+        "read_doc": 23,
+        "run_python": 7,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 559678,
+        "completion_tokens": 14354,
+        "total_tokens": 574032,
+        "cached_tokens": 493568,
+        "credit": 50.45
+      },
+      "elapsed_s": 215.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/u_channel_r2.step"
+    },
+    {
+      "case": "vase",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 17,
+      "tool_counts": {
+        "read_doc": 37,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 561770,
+        "completion_tokens": 15790,
+        "total_tokens": 577560,
+        "cached_tokens": 517632,
+        "credit": 47.69
+      },
+      "elapsed_s": 250.9,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/vase_r1.step"
+    },
+    {
+      "case": "vase",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 14,
+      "tool_counts": {
+        "read_doc": 21,
+        "run_python": 10,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 377683,
+        "completion_tokens": 14976,
+        "total_tokens": 392659,
+        "cached_tokens": 352768,
+        "credit": 37.54
+      },
+      "elapsed_s": 189.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/vase_r2.step"
+    },
+    {
+      "case": "wedge_block",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 11,
+      "tool_counts": {
+        "read_doc": 16,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 199890,
+        "completion_tokens": 5604,
+        "total_tokens": 205494,
+        "cached_tokens": 185600,
+        "credit": 16.64
+      },
+      "elapsed_s": 105.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/wedge_block_r1.step"
+    },
+    {
+      "case": "wedge_block",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 14,
+      "tool_counts": {
+        "read_doc": 23,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 533349,
+        "completion_tokens": 10293,
+        "total_tokens": 543642,
+        "cached_tokens": 495232,
+        "credit": 37.39
+      },
+      "elapsed_s": 157.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/wedge_block_r2.step"
+    },
+    {
+      "case": "wrench",
+      "repeat": 1,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 15,
+      "tool_counts": {
+        "read_doc": 24,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 398560,
+        "completion_tokens": 11632,
+        "total_tokens": 410192,
+        "cached_tokens": 333056,
+        "credit": 42.17
+      },
+      "elapsed_s": 200.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/wrench_r1.step"
+    },
+    {
+      "case": "wrench",
+      "repeat": 2,
+      "model": "gpt-5.4",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 28,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 387092,
+        "completion_tokens": 12234,
+        "total_tokens": 399326,
+        "cached_tokens": 356992,
+        "credit": 34.83
+      },
+      "elapsed_s": 172.0,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_gpt_5_4_result/wrench_r2.step"
+    }
+  ]
+}

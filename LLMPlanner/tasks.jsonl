@@ -1,0 +1,50 @@
+{"case": "phone_stand", "kind": "Everyday objects", "prompt": "创建一个一体式桌面手机支架，所有结构必须合并为单一实体。底座长110mm、宽78mm、厚8mm； 78mm宽的倾斜背板厚6mm，与水平面成74°，从底座上表面升起，成品总高度118mm。 底座前端设置贯穿全宽的挡唇，前后厚10mm，高出底座上表面12mm，使成品前端总高度20mm。 背板左右两侧各有一个三角加强筋。背板下部中央开一个宽16mm、向下开口高度28mm的充电线U形通槽； 背板中上部开3个36×8mm的水平贯穿散热槽，槽中心竖向间距18mm。 底面加工两个24×10mm、深1.5mm的防滑垫浅凹槽。 最后尽可能对适合的外轮廓做R4mm圆角，同时保持底面平整、支架左右对称。"}
+{"case": "stool", "kind": "Everyday objects", "prompt": "创建四脚板凳：凳面 200×200×20mm；四条圆柱腿直径 20mm、长 150mm，腿中心距相邻边 30mm。"}
+{"case": "rounded_stool", "kind": "Everyday objects", "prompt": "创建四脚板凳：凳面 200×200×20mm；四条圆柱腿直径 20mm、长 150mm，距边 30mm；凳面顶部四条边做 R5mm 圆角。"}
+{"case": "storage_box", "kind": "Everyday objects", "prompt": "创建顶部敞开的长方形收纳盒，外部 120×80×50mm，壁厚和底厚均为 8mm，顶部开口边做 R3mm 圆角。"}
+{"case": "standard_die", "kind": "Everyday objects", "prompt": "创建边长 20mm 的标准六面骰子，全部棱边 R1.5mm；六面分别为 1 至 6 点、相对面点数和为 7；点为直径 3mm、深 1.5mm 的凹坑。"}
+{"case": "mug", "kind": "Everyday objects", "prompt": "创建高 90mm、外径 70mm、壁厚 5mm、底厚 10mm 的圆柱形马克杯，并添加外径 40mm、条粗 8mm、厚 8mm 的环形把手。"}
+{"case": "vase", "kind": "Everyday objects", "prompt": "创建高 150mm 的轴对称空心花瓶：底部平坦，中部最大直径 90mm，瓶颈直径 40mm，瓶口直径 55mm，底厚 10mm。"}
+{"case": "key", "kind": "Everyday objects", "prompt": "创建厚 2mm 的小型钥匙：外径 20mm 的钥匙圈头、10×5mm 圈孔、42×8mm 钥匙杆，并在杆的一侧均布 5 个齿槽。"}
+{"case": "soap_dish", "kind": "Everyday objects", "prompt": "创建一个顶部敞开的长方形肥皂盒，单一实体。外部尺寸 110×75×25mm（高 25mm），侧壁厚 3mm，底厚 3mm；外侧四条竖直棱边做 R8mm 圆角。底板上开 15 个直径 5mm 的贯穿排水孔，排成 3 行 × 5 列：沿 110mm 方向 5 列、列距 18mm，沿 75mm 方向 3 行、行距 18mm，孔阵中心与底面中心重合。"}
+{"case": "hex_nut", "kind": "Common machined parts", "prompt": "创建对边距 30mm、厚 8mm 的正六角螺母，中心有直径 10mm 的贯穿孔，厚度方向关于原点居中。"}
+{"case": "wrench", "kind": "Common machined parts", "prompt": "创建厚 8mm 的单头扳手：头部外径 40mm、中心正六角卡口对边距 13mm；手柄长 120mm、宽 15mm，并与头部可靠合并。"}
+{"case": "gear_disc", "kind": "Common machined parts", "prompt": "创建直径 60mm、厚 8mm 的圆盘，中心有直径 12mm 贯穿孔，并在接近外缘处均布 12 个相同的小贯穿槽。"}
+{"case": "flange", "kind": "Common machined parts", "prompt": "创建直径 100mm、厚 12mm 的圆形法兰，中心贯穿孔直径 30mm，并在节圆直径 80mm 上均布 6 个直径 8mm 的贯穿孔。"}
+{"case": "pulley", "kind": "Common machined parts", "prompt": "创建直径 100mm、厚 20mm 的简化皮带轮，中心贯穿孔直径 25mm，顶部有外径 90mm、内径 70mm、深 10mm 的环槽，外轮缘做 C1mm 倒角。"}
+{"case": "stepped_shaft", "kind": "Common machined parts", "prompt": "使用一次旋转创建总长 90mm 的三段阶梯轴：各段直径和长度依次为 35×40mm、50×30mm、25×20mm，轴向关于原点居中。"}
+{"case": "socket_bolt", "kind": "Common machined parts", "prompt": "创建简化内六角圆柱头螺栓：杆径 10mm、杆长 50mm；头部直径 18mm、高 6mm；顶部内六角对边距 8mm、盲孔深 4mm；头杆交界 R0.5mm。"}
+{"case": "l_bracket", "kind": "Common machined parts", "prompt": "创建厚 5mm 的 L 形角码，两条边宽度均为 30mm：水平边外侧长 50mm，竖直边外侧高 40mm，两边在拐角处连成一体。 水平边上沿长度方向打 2 个直径 6mm 的贯穿孔，孔心位于宽度中线、距竖直边外侧面分别 20mm 和 38mm； 竖直边上在宽度中线、距底面 25mm 处打 1 个直径 6mm 的贯穿孔。"}
+{"case": "spacer_ring", "kind": "Common machined parts", "prompt": "创建外径 40mm、内径 20mm、厚 10mm 的隔套，两个端面的外圆边都做 C1mm 倒角。"}
+{"case": "mounting_plate", "kind": "Common machined parts", "prompt": "安装板 120×80×6mm，四个角做 R8 圆角（竖直棱边），4-Ø7 贯穿孔，孔心距相邻两边各 12mm；板中央开一个 40×20mm 的矩形贯穿窗口。"}
+{"case": "stepped_block", "kind": "Common machined parts", "prompt": "创建台阶块：下层 80×50×15mm；上层 40×50×15mm，放在下层的一端，与下层的端面和两个侧面齐平，整体高 30mm。 在下层露出的上表面中央打一个直径 10mm、深 8mm 的盲孔。"}
+{"case": "knob", "kind": "Common machined parts", "prompt": "创建旋钮：圆柱主体直径 30mm、高 20mm；顶面中央凸起一个直径 10mm、高 5mm 的小圆柱； 主体外圆周均布 12 条竖直防滑槽，每条宽 2mm、深 1mm，沿主体全高贯通；底面中央有直径 6mm、深 12mm 的安装盲孔。"}
+{"case": "hex_standoff", "kind": "Common machined parts", "prompt": "M3 六角隔离柱：对边距 8mm、长 20mm 的正六棱柱，两个端面中心各有一个 Ø3.3mm、深 6mm 的螺纹底孔（不做螺纹）。"}
+{"case": "u_channel", "kind": "Common machined parts", "prompt": "创建长 100mm 的 U 形槽：外宽 40mm、外高 30mm，两侧壁厚和底板厚都是 4mm，槽口朝上； 底板上沿长度方向打 3 个直径 8mm 的贯穿孔，孔距 30mm，整体在长度方向居中。"}
+{"case": "flanged_bushing", "kind": "Common machined parts", "prompt": "创建带法兰的衬套：套筒外径 20mm、内径 12mm、总长 30mm；一端带外径 36mm、厚 5mm 的法兰，法兰厚度计入总长；内孔全长贯通。"}
+{"case": "wedge_block", "kind": "Common machined parts", "prompt": "创建斜楔块：长 60mm、宽 30mm，一端高 20mm、另一端高 5mm，上表面是连续的平斜面，底面平整。"}
+{"case": "spoked_wheel", "kind": "Common machined parts", "prompt": "创建直径 120mm、厚 10mm 的轮盘，中心轴孔直径 20mm；在轴孔与外缘之间均布 4 个扇形减重孔， 每个减重孔是内半径 20mm、外半径 50mm、张角 60° 的扇环，全部贯穿。"}
+{"case": "end_cap", "kind": "Common machined parts", "prompt": "创建圆形端盖：外径 60mm、总高 15mm；从底面向上挖出直径 50mm、深 12mm 的内腔，使顶板厚 3mm；顶板中心打一个直径 8mm 的通孔。"}
+{"case": "link_bar", "kind": "Common machined parts", "prompt": "创建厚 6mm 的连杆：两端是直径 24mm 的圆头，两圆心相距 80mm，中间用宽 14mm 的杆身连接，整体是一个外轮廓； 两个圆心处各有一个直径 10mm 的贯穿孔。"}
+{"case": "fork_end", "kind": "Multi-feature parts", "prompt": "创建叉形接头，所有结构合并为单一实体。杆部为直径 20mm、长 35mm 的圆柱； 杆部顶端连接一个 40×24mm、高 10mm 的叉根方块，杆部轴线穿过方块中心。 叉根顶面伸出两片相同的叉耳：每片厚 8mm，外侧面与叉根 40mm 方向的两个端面齐平（两耳间开口 24mm）， 耳宽 24mm 与叉根等宽，耳端为 R12mm 半圆，半圆圆心距叉根顶面 18mm。 在半圆圆心处沿厚度方向开一个直径 10mm 的横销孔，贯穿两片叉耳； 杆部底端面中心有直径 6.8mm、深 20mm 的螺纹底孔（不做螺纹）。"}
+{"case": "three_lug_housing", "kind": "Multi-feature parts", "prompt": "创建三耳法兰轴承座。法兰厚 10mm，外形为半径 32mm 的圆盘加 3 个沿圆周 120° 均布的径向安装耳： 每个耳宽 22mm，两侧边平行于径向，端部为与侧边相切的 R11mm 半圆，半圆圆心距中心 48mm， 并在该圆心处开直径 9mm 的贯穿安装孔。法兰上方同轴设置直径 46mm 的轮毂，轮毂顶面距法兰底面 38mm。 中心轴承孔直径 30mm 全长贯通，轮毂顶端再加工直径 38mm、深 9mm 的轴承座沉孔。"}
+{"case": "pillow_block", "kind": "Multi-feature parts", "prompt": "创建立式轴承座，左右对称，所有结构合并为单一实体。底座 120×40mm、厚 12mm。 底座上表面中央立起座体：座体沿底座 40mm 方向全宽，正视轮廓为宽 60mm 的矩形加顶部 R30mm 半圆， 半圆圆心距底座底面 45mm。在该圆心处开直径 35mm 的轴承孔，沿 40mm 方向贯穿。 底座两端各有一个沿 120mm 方向的安装长圆孔，宽 11mm、两端半圆圆心相距 10mm， 长圆孔中心距座体中心 45mm，贯穿底座。"}
+{"case": "twin_arm_rocker", "kind": "Multi-feature parts", "prompt": "创建双臂摇臂，所有结构合并为单一实体。轮毂为直径 30mm、长 40mm 的圆柱，中心有直径 12mm 的贯穿轴孔。 两片相同的摇臂板垂直于轮毂轴线，厚度均为 8mm，外侧面分别与轮毂两个端面齐平； 摇臂板外形为以轮毂轴线为圆心的 R15mm 圆弧和以距轴线 70mm 处为圆心的 R10mm 圆弧，两圆弧由两条公切直线连接。 在 R10mm 圆弧圆心处开直径 8mm 的销孔，贯穿两片摇臂板。"}
+{"case": "clevis_bracket", "kind": "Multi-feature parts", "prompt": "创建双耳支座。底板 80×50mm、厚 10mm，四个直径 9mm 的贯穿安装孔，孔心相对底板中心位于 (±30mm, ±17mm)， 其中 ±30mm 沿 80mm 方向。底板上表面立起两片相同的耳板：每片厚 10mm（沿 80mm 方向），宽 30mm 与底板 50mm 方向居中， 两耳内侧面相距 30mm 且关于底板中心对称；耳板顶端为 R15mm 半圆，圆心距底板上表面 25mm。 在该圆心处开直径 12mm 的销孔，沿 80mm 方向贯穿两片耳板。"}
+{"case": "diamond_flange", "kind": "Multi-feature parts", "prompt": "创建菱形法兰座。法兰板厚 8mm，外形由中心 R25mm 圆弧与两侧 R12mm 圆弧（圆心分别距中心 42mm，三个圆心共线） 通过公切直线连接而成的凸轮廓；两个 R12mm 圆弧圆心处各开直径 10mm 的贯穿孔。 法兰板上方同轴设置直径 34mm 的凸台，凸台顶面距法兰底面 26mm；中心直径 20mm 的孔全长贯通。"}
+{"case": "support_seat", "kind": "Multi-feature parts", "prompt": "创建轴支撑座，所有结构合并为单一实体。底座 100×50mm、厚 10mm；底座上表面中央立起厚 20mm 的立板， 立板在底座 50mm 方向居中，正视轮廓为宽 50mm 的矩形加顶部 R25mm 半圆，半圆圆心距底座底面 40mm； 在该圆心处开直径 24mm 的轴孔，沿立板厚度方向贯穿。 底座上在 100mm 方向中线上、距中心 38mm 处左右各开一个直径 10mm 的贯穿孔。"}
+{"case": "crank", "kind": "Multi-feature parts", "prompt": "创建曲柄，所有结构合并为单一实体。轮毂为直径 36mm、长 24mm 的圆柱，中心有直径 16mm 的贯穿轴孔。 曲柄臂垂直于轮毂轴线，厚 10mm，一个侧面与轮毂一个端面齐平；臂外形为以轮毂轴线为圆心的 R18mm 圆弧 和以距轴线 60mm 处为圆心的 R11mm 圆弧，两圆弧由公切直线连接。 在 R11mm 圆弧圆心处、臂与轮毂齐平的那一侧，凸起直径 22mm、高 15mm 的曲柄销座； 销座中心开直径 10mm 的孔，贯穿销座和曲柄臂。"}
+{"case": "gusset_bracket", "kind": "Operation-specific parts", "prompt": "创建带筋角码，单一实体。水平底板 60×40mm、厚 6mm；在 60mm 方向的一端立起 40mm 宽、高 30mm、厚 6mm 的立板， 立板外侧面与底板该端面齐平。在底板与立板的内侧拐角加一块厚 4mm 的直角筋，筋的两条直角边分别沿底板和立板各 18mm， 筋位于 40mm 方向的对称中面。"}
+{"case": "corner_rib_stand", "kind": "Operation-specific parts", "prompt": "创建带筋支架，单一实体。水平底板 80×50mm、厚 8mm；在 80mm 方向的一端立起 50mm 宽、高 36mm、厚 8mm 的立板， 立板外侧面与底板该端面齐平。在底板与立板的内侧拐角加一块厚 5mm 的直角筋，筋的两条直角边分别沿底板和立板各 24mm， 筋位于 50mm 方向的对称中面。"}
+{"case": "open_box", "kind": "Operation-specific parts", "prompt": "创建顶部敞开的盒体：外部 80×50×40mm，壁厚和底厚均为 4mm，用抽壳完成。"}
+{"case": "lidless_housing", "kind": "Operation-specific parts", "prompt": "创建顶部敞开的壳体：外部 100×60×50mm，壁厚和底厚均为 5mm，用抽壳完成。"}
+{"case": "counterbore_plate", "kind": "Operation-specific parts", "prompt": "创建 80×60×10mm 的安装板，四个沉头孔：通孔直径 6mm，沉头直径 11mm、深 3.5mm； 孔心距相邻两边各 14mm（即相对板中心位于 (±26mm, ±16mm)）。沉头在板的上表面。"}
+{"case": "csk_cover", "kind": "Operation-specific parts", "prompt": "创建 90×70×12mm 的盖板，四个沉头孔：通孔直径 8mm，沉头直径 14mm、深 4mm； 孔心距相邻两边各 15mm。沉头在板的上表面。"}
+{"case": "side_pad", "kind": "Operation-specific parts", "prompt": "创建 50×40×30mm 的长方体（50 沿 X，30 沿 Y 为高，40 沿 Z），底面在 Y=0。 在右端面外侧 20mm 处的平行平面上画直径 16mm 的圆，向实体拉伸直到贴上右端面，形成侧凸台。"}
+{"case": "through_boss", "kind": "Operation-specific parts", "prompt": "创建 60×48×36mm 的长方体（60 沿 X，36 沿 Y 为高，48 沿 Z），底面在 Y=0。 在右端面外侧 24mm 处的平行平面上画直径 20mm 的圆，向实体拉伸直到贴上右端面。"}
+{"case": "sheet_angle", "kind": "Operation-specific parts", "prompt": "创建钣金平板：轮廓 70×40mm，板厚 1.5mm。"}
+{"case": "sheet_channel", "kind": "Operation-specific parts", "prompt": "创建钣金平板：轮廓 90×50mm，板厚 1.2mm。"}
+{"case": "flanged_elbow", "kind": "Operation-specific parts", "prompt": "创建带法兰的 90° 弯管。中心线是半径 40mm 的四分之一圆弧；管子外径 16mm、实心。 两端各有外径 36mm、厚 4mm 的圆形法兰，法兰厚度沿管轴线向外凸出，中心孔与管子相贯。"}
+{"case": "bent_tube", "kind": "Operation-specific parts", "prompt": "创建带法兰的 90° 弯管。中心线是半径 50mm 的四分之一圆弧；管子外径 20mm、实心。 两端各有外径 44mm、厚 5mm 的圆形法兰，法兰厚度沿管轴线向外凸出。"}
+{"case": "square_to_round", "kind": "Operation-specific parts", "prompt": "创建一个高 40mm 的过渡接管：底面是边长 30mm 的正方形，顶面是直径 24mm 的圆，两截面平行且中心同轴，用放样连接。"}
+{"case": "rect_to_circle", "kind": "Operation-specific parts", "prompt": "创建一个高 50mm 的过渡管：底面是 40×24mm 的矩形，顶面是直径 28mm 的圆，两截面平行且中心同轴，用放样连接。"}

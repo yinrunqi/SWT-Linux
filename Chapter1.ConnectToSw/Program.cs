@@ -206,6 +206,10 @@ namespace Chapter1.ConnectToSw
                     RequirePost(method, resp, () => HandleExportStep(req, resp));
                     break;
 
+                case "/api/import-step":
+                    RequirePost(method, resp, () => HandleImportStep(req, resp));
+                    break;
+
                 case "/api/sketch/profile":
                     RequirePost(method, resp, () => HandleSketchProfile(req, resp));
                     break;
@@ -2022,6 +2026,20 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"导出 STEP 失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleImportStep(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.ImportStep(GetString(body, "stepPath"), GetString(body, "savePath"));
+                SendJson(resp, 200, new { success = true, message = $"STEP 已导入: {result["path"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"导入 STEP 失败: {ex.Message}" });
             }
         }
 

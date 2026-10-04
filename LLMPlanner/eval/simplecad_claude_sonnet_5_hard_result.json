@@ -1,0 +1,389 @@
+{
+  "summary": {
+    "model": "claude-sonnet-5",
+    "runs": 16,
+    "submitted": 13,
+    "finished": 11,
+    "errors": 0,
+    "mean_llm_calls": 32.9,
+    "mean_elapsed_s": 1618.6,
+    "mean_total_tokens": 2005485,
+    "token_totals": {
+      "prompt_tokens": 30496331,
+      "completion_tokens": 1591429,
+      "total_tokens": 32087760,
+      "cached_tokens": 25932949
+    },
+    "credit_total": 3250.65
+  },
+  "runs": [
+    {
+      "case": "camshaft",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "budget_exhausted",
+      "error": null,
+      "llm_calls": 40,
+      "tool_counts": {
+        "read_doc": 33,
+        "run_python": 28,
+        "finish": 0,
+        "no_tool": 1
+      },
+      "token_usage": {
+        "prompt_tokens": 2428672,
+        "completion_tokens": 196352,
+        "total_tokens": 2625024,
+        "cached_tokens": 1868548,
+        "credit": 373.73
+      },
+      "elapsed_s": 4040.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard_result/camshaft_r1.step"
+    },
+    {
+      "case": "camshaft",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 39,
+      "tool_counts": {
+        "read_doc": 33,
+        "run_python": 28,
+        "finish": 1,
+        "no_tool": 1
+      },
+      "token_usage": {
+        "prompt_tokens": 1919615,
+        "completion_tokens": 189061,
+        "total_tokens": 2108676,
+        "cached_tokens": 1512378,
+        "credit": 321.09
+      },
+      "elapsed_s": 2984.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard_result/camshaft_r2.step"
+    },
+    {
+      "case": "connecting_rod",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 37,
+      "tool_counts": {
+        "read_doc": 36,
+        "run_python": 28,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 2360431,
+        "completion_tokens": 109403,
+        "total_tokens": 2469834,
+        "cached_tokens": 1871321,
+        "credit": 269.08
+      },
+      "elapsed_s": 1947.9,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard_result/connecting_rod_r1.step"
+    },
+    {
+      "case": "connecting_rod",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "budget_exhausted",
+      "error": null,
+      "llm_calls": 40,
+      "tool_counts": {
+        "read_doc": 26,
+        "run_python": 33,
+        "finish": 0,
+        "no_tool": 1
+      },
+      "token_usage": {
+        "prompt_tokens": 2309972,
+        "completion_tokens": 105151,
+        "total_tokens": 2415123,
+        "cached_tokens": 1874244,
+        "credit": 251.54
+      },
+      "elapsed_s": 2170.1,
+      "step": null
+    },
+    {
+      "case": "finned_housing",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 35,
+      "tool_counts": {
+        "read_doc": 29,
+        "run_python": 26,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 2482517,
+        "completion_tokens": 105711,
+        "total_tokens": 2588228,
+        "cached_tokens": 2260783,
+        "credit": 206.33
+      },
+      "elapsed_s": 1471.3,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard_result/finned_housing_r1.step"
+    },
+    {
+      "case": "finned_housing",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 19,
+      "tool_counts": {
+        "read_doc": 26,
+        "run_python": 10,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 967008,
+        "completion_tokens": 49200,
+        "total_tokens": 1016208,
+        "cached_tokens": 863399,
+        "credit": 92.34
+      },
+      "elapsed_s": 711.5,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard_result/finned_housing_r2.step"
+    },
+    {
+      "case": "handwheel",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 40,
+      "tool_counts": {
+        "read_doc": 22,
+        "run_python": 32,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1655248,
+        "completion_tokens": 68541,
+        "total_tokens": 1723789,
+        "cached_tokens": 1577387,
+        "credit": 119.54
+      },
+      "elapsed_s": 940.3,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard_result/handwheel_r1.step"
+    },
+    {
+      "case": "handwheel",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "budget_exhausted",
+      "error": null,
+      "llm_calls": 40,
+      "tool_counts": {
+        "read_doc": 20,
+        "run_python": 34,
+        "finish": 0,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 2469143,
+        "completion_tokens": 65816,
+        "total_tokens": 2534959,
+        "cached_tokens": 2303888,
+        "credit": 153.21
+      },
+      "elapsed_s": 879.2,
+      "step": null
+    },
+    {
+      "case": "impeller",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "budget_exhausted",
+      "error": null,
+      "llm_calls": 40,
+      "tool_counts": {
+        "read_doc": 29,
+        "run_python": 31,
+        "finish": 0,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 2236313,
+        "completion_tokens": 112018,
+        "total_tokens": 2348331,
+        "cached_tokens": 1950019,
+        "credit": 222.58
+      },
+      "elapsed_s": 1627.1,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard_result/impeller_r1.step"
+    },
+    {
+      "case": "impeller",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "budget_exhausted",
+      "error": null,
+      "llm_calls": 40,
+      "tool_counts": {
+        "read_doc": 28,
+        "run_python": 32,
+        "finish": 0,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 2021794,
+        "completion_tokens": 113898,
+        "total_tokens": 2135692,
+        "cached_tokens": 1704377,
+        "credit": 227.32
+      },
+      "elapsed_s": 1795.4,
+      "step": null
+    },
+    {
+      "case": "planet_carrier",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 22,
+      "tool_counts": {
+        "read_doc": 28,
+        "run_python": 11,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1321195,
+        "completion_tokens": 43850,
+        "total_tokens": 1365045,
+        "cached_tokens": 1160889,
+        "credit": 107.11
+      },
+      "elapsed_s": 548.8,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard_result/planet_carrier_r1.step"
+    },
+    {
+      "case": "planet_carrier",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 22,
+      "tool_counts": {
+        "read_doc": 28,
+        "run_python": 12,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1455762,
+        "completion_tokens": 47250,
+        "total_tokens": 1503012,
+        "cached_tokens": 1360955,
+        "credit": 98.19
+      },
+      "elapsed_s": 630.1,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard_result/planet_carrier_r2.step"
+    },
+    {
+      "case": "quad_frame",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 36,
+      "tool_counts": {
+        "read_doc": 39,
+        "run_python": 24,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 2387456,
+        "completion_tokens": 118135,
+        "total_tokens": 2505591,
+        "cached_tokens": 1873723,
+        "credit": 284.06
+      },
+      "elapsed_s": 2183.1,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard_result/quad_frame_r1.step"
+    },
+    {
+      "case": "quad_frame",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 38,
+      "tool_counts": {
+        "read_doc": 40,
+        "run_python": 24,
+        "finish": 1,
+        "no_tool": 1
+      },
+      "token_usage": {
+        "prompt_tokens": 2989038,
+        "completion_tokens": 157951,
+        "total_tokens": 3146989,
+        "cached_tokens": 2399881,
+        "credit": 353.2
+      },
+      "elapsed_s": 2555.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard_result/quad_frame_r2.step"
+    },
+    {
+      "case": "sprocket",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 27,
+      "tool_counts": {
+        "read_doc": 18,
+        "run_python": 21,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1112867,
+        "completion_tokens": 85658,
+        "total_tokens": 1198525,
+        "cached_tokens": 1010871,
+        "credit": 131.36
+      },
+      "elapsed_s": 1066.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard_result/sprocket_r1.step"
+    },
+    {
+      "case": "sprocket",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 12,
+      "tool_counts": {
+        "read_doc": 12,
+        "run_python": 7,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 379300,
+        "completion_tokens": 23434,
+        "total_tokens": 402734,
+        "cached_tokens": 340286,
+        "credit": 39.97
+      },
+      "elapsed_s": 345.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard_result/sprocket_r2.step"
+    }
+  ]
+}

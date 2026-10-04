@@ -1,0 +1,1780 @@
+{
+ "model": "reference",
+ "artifacts": "eval/artifacts/assembly_simplecad_reference",
+ "runs": [
+  {
+   "case_id": "crank_rocker_linkage",
+   "case_name": "crank_rocker",
+   "repeat": 1,
+   "condition": "gen",
+   "model": "reference",
+   "parts": [
+    {
+     "part_id": "cr_frame",
+     "status": "reference",
+     "step": "parts/cr_frame.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "cr_frame",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           8.0,
+           120.0,
+           140.0
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 8.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            110.0,
+            30.0
+           ]
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 8.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            30.0,
+            30.0
+           ]
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "cr_shaft",
+     "status": "reference",
+     "step": "parts/cr_shaft.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "cr_shaft",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "size",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           24.0
+          ]
+         },
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           10.0,
+           10.0,
+           24.0
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "cr_crank",
+     "status": "reference",
+     "step": "parts/cr_crank.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "cr_crank",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           6.0,
+           16.0,
+           36.0
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            28.0,
+            8.0
+           ]
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            8.0,
+            8.0
+           ]
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "cr_pin12",
+     "status": "reference",
+     "step": "parts/cr_pin12.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "cr_pin12",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "size",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           12.0
+          ]
+         },
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           6.0,
+           6.0,
+           12.0
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "cr_coupler",
+     "status": "reference",
+     "step": "parts/cr_coupler.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "cr_coupler",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           6.0,
+           12.0,
+           82.0
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 2,
+          "expected": 2
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           },
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            6.0,
+            6.0
+           ],
+           [
+            76.0,
+            6.0
+           ]
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "cr_rocker",
+     "status": "reference",
+     "step": "parts/cr_rocker.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "cr_rocker",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           6.0,
+           12.0,
+           62.0
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 2,
+          "expected": 2
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           },
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            6.0,
+            6.0
+           ],
+           [
+            56.0,
+            6.0
+           ]
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "cr_pin26",
+     "status": "reference",
+     "step": "parts/cr_pin26.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "cr_pin26",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "size",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           26.0
+          ]
+         },
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           6.0,
+           6.0,
+           26.0
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ],
+   "assembly": {
+    "status": "reference",
+    "export_ok": true,
+    "export_detail": "{\"components\": 8, \"constraints\": 8, \"missing_roles\": [], \"extra_components\": [], \"problems\": []}"
+   },
+   "part_pass_rate": 1.0
+  },
+  {
+   "case_id": "offset_slider_crank",
+   "case_name": "offset_slider_crank",
+   "repeat": 1,
+   "condition": "gen",
+   "model": "reference",
+   "parts": [
+    {
+     "part_id": "os_frame",
+     "status": "reference",
+     "step": "parts/os_frame.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "os_frame",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           8.0,
+           70.0,
+           140.0
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 8.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            30.0,
+            30.0
+           ]
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "os_shaft",
+     "status": "reference",
+     "step": "parts/os_shaft.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "os_shaft",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "size",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           24.0
+          ]
+         },
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           10.0,
+           10.0,
+           24.0
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "os_crank",
+     "status": "reference",
+     "step": "parts/os_crank.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "os_crank",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           6.0,
+           16.0,
+           31.0
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            23.0,
+            8.0
+           ]
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            8.0,
+            8.0
+           ]
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "os_pin12",
+     "status": "reference",
+     "step": "parts/os_pin12.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "os_pin12",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "size",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           12.0
+          ]
+         },
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           6.0,
+           6.0,
+           12.0
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "os_rod",
+     "status": "reference",
+     "step": "parts/os_rod.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "os_rod",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           6.0,
+           12.0,
+           72.0
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 2,
+          "expected": 2
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           },
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            6.0,
+            6.0
+           ],
+           [
+            66.0,
+            6.0
+           ]
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "os_slider",
+     "status": "reference",
+     "step": "parts/os_slider.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "os_slider",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           6.0,
+           16.0,
+           24.0
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            12.0,
+            8.0
+           ]
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ],
+   "assembly": {
+    "status": "reference",
+    "export_ok": true,
+    "export_detail": "{\"components\": 7, \"constraints\": 7, \"missing_roles\": [], \"extra_components\": [], \"problems\": []}"
+   },
+   "part_pass_rate": 1.0
+  },
+  {
+   "case_id": "hand_winch",
+   "case_name": "hand_winch",
+   "repeat": 1,
+   "condition": "gen",
+   "model": "reference",
+   "parts": [
+    {
+     "part_id": "hw_frame",
+     "status": "reference",
+     "step": "parts/hw_frame.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "hw_frame",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           8.0,
+           80.0,
+           110.0
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 2,
+          "expected": 2
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 8.0,
+            "blocked": false,
+            "ends_open": true
+           },
+           {
+            "length": 8.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            30.0,
+            40.0
+           ],
+           [
+            78.0,
+            40.0
+           ]
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "hw_handle_shaft",
+     "status": "reference",
+     "step": "parts/hw_handle_shaft.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "hw_handle_shaft",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "size",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           30.0
+          ]
+         },
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           10.0,
+           10.0,
+           30.0
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "hw_drum_shaft",
+     "status": "reference",
+     "step": "parts/hw_drum_shaft.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "hw_drum_shaft",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "size",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           56.0
+          ]
+         },
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           10.0,
+           10.0,
+           56.0
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "hw_pinion",
+     "status": "reference",
+     "step": "parts/hw_pinion.step",
+     "accepted": false,
+     "score": 66.67,
+     "grade": {
+      "case": "hw_pinion",
+      "score": 66.67,
+      "passed": 2,
+      "total": 3,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": false,
+      "accepted": false,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "bore",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 8.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "id": "teeth",
+        "ok": false,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "angular_openings",
+          "ok": false,
+          "sections": [
+           {
+            "t": 4,
+            "count": 0,
+            "ok": false
+           }
+          ]
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           8.0
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "hw_gear",
+     "status": "reference",
+     "step": "parts/hw_gear.step",
+     "accepted": false,
+     "score": 66.67,
+     "grade": {
+      "case": "hw_gear",
+      "score": 66.67,
+      "passed": 2,
+      "total": 3,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": false,
+      "accepted": false,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "bore",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 8.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "id": "teeth",
+        "ok": false,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "angular_openings",
+          "ok": false,
+          "sections": [
+           {
+            "t": 4,
+            "count": 0,
+            "ok": false
+           }
+          ]
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           8.0
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "hw_handle",
+     "status": "reference",
+     "step": "parts/hw_handle.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "hw_handle",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           6.0,
+           14.0,
+           54.0
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            47.0,
+            7.0
+           ]
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            7.0,
+            7.0
+           ]
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "hw_knob",
+     "status": "reference",
+     "step": "parts/hw_knob.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "hw_knob",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "size",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           30.0
+          ]
+         },
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           6.0,
+           6.0,
+           30.0
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "part_id": "hw_drum",
+     "status": "reference",
+     "step": "parts/hw_drum.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "hw_drum",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "coaxial",
+          "ok": true,
+          "coaxial": [
+           true
+          ]
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 40.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           40.0
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ],
+   "assembly": {
+    "status": "reference",
+    "export_ok": true,
+    "export_detail": "{\"components\": 8, \"constraints\": 8, \"missing_roles\": [], \"extra_components\": [], \"problems\": []}"
+   },
+   "part_pass_rate": 0.75
+  }
+ ]
+}

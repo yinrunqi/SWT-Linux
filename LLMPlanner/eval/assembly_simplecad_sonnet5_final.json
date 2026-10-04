@@ -1,0 +1,3512 @@
+{
+  "model": "claude-sonnet-5",
+  "summary": {
+    "n_valid": 19,
+    "n_infra_error": 8,
+    "part_pass_rate": 1.0,
+    "assembly_score": 15.79,
+    "motion_score": 15.79,
+    "e2e": 3
+  },
+  "rows": [
+    {
+      "case_id": "two_stage_gearbox",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "housing",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 48744,
+            "completion_tokens": 1335,
+            "total_tokens": 50079,
+            "cached_tokens": 35526,
+            "credit": 5.34
+          },
+          "elapsed_s": 23.3
+        },
+        {
+          "part_id": "shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 71552,
+            "completion_tokens": 1042,
+            "total_tokens": 72594,
+            "cached_tokens": 57768,
+            "credit": 5.63
+          },
+          "elapsed_s": 29.8
+        },
+        {
+          "part_id": "pinion_z12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 9,
+          "token_usage": {
+            "prompt_tokens": 167469,
+            "completion_tokens": 2585,
+            "total_tokens": 170054,
+            "cached_tokens": 122624,
+            "credit": 16.24
+          },
+          "elapsed_s": 84.6
+        },
+        {
+          "part_id": "wheel_z24",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 87226,
+            "completion_tokens": 1317,
+            "total_tokens": 88543,
+            "cached_tokens": 55079,
+            "credit": 10.44
+          },
+          "elapsed_s": 46.8
+        },
+        {
+          "part_id": "pinion_z12b",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 9,
+          "token_usage": {
+            "prompt_tokens": 138107,
+            "completion_tokens": 1912,
+            "total_tokens": 140019,
+            "cached_tokens": 113978,
+            "credit": 10.2
+          },
+          "elapsed_s": 67.7
+        },
+        {
+          "part_id": "wheel_z36",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 8,
+          "token_usage": {
+            "prompt_tokens": 118741,
+            "completion_tokens": 1558,
+            "total_tokens": 120299,
+            "cached_tokens": 98798,
+            "credit": 8.53
+          },
+          "elapsed_s": 111.5
+        }
+      ],
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 40,
+          "run_python": 44,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 3034373,
+          "completion_tokens": 114068,
+          "total_tokens": 3148441,
+          "cached_tokens": 2866754,
+          "credit": 213.24
+        },
+        "elapsed_s": 3212.9,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "single_cylinder_engine",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 51822,
+            "completion_tokens": 1532,
+            "total_tokens": 53354,
+            "cached_tokens": 35450,
+            "credit": 6.33
+          },
+          "elapsed_s": 23.8
+        },
+        {
+          "part_id": "crank",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 8,
+          "token_usage": {
+            "prompt_tokens": 156167,
+            "completion_tokens": 4309,
+            "total_tokens": 160476,
+            "cached_tokens": 126720,
+            "credit": 14.21
+          },
+          "elapsed_s": 74.3
+        },
+        {
+          "part_id": "rod",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 7,
+          "token_usage": {
+            "prompt_tokens": 98705,
+            "completion_tokens": 4633,
+            "total_tokens": 103338,
+            "cached_tokens": 79256,
+            "credit": 11.07
+          },
+          "elapsed_s": 77.3
+        },
+        {
+          "part_id": "piston",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 34943,
+            "completion_tokens": 1112,
+            "total_tokens": 36055,
+            "cached_tokens": 22322,
+            "credit": 4.7
+          },
+          "elapsed_s": 26.8
+        },
+        {
+          "part_id": "pin",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33427,
+            "completion_tokens": 525,
+            "total_tokens": 33952,
+            "cached_tokens": 32360,
+            "credit": 1.44
+          },
+          "elapsed_s": 43.5
+        },
+        {
+          "part_id": "flywheel",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 50535,
+            "completion_tokens": 1265,
+            "total_tokens": 51800,
+            "cached_tokens": 35677,
+            "credit": 5.7
+          },
+          "elapsed_s": 39.6
+        },
+        {
+          "part_id": "crank_gear",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 87787,
+            "completion_tokens": 1599,
+            "total_tokens": 89386,
+            "cached_tokens": 56023,
+            "credit": 10.65
+          },
+          "elapsed_s": 53.2
+        },
+        {
+          "part_id": "cam_gear",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 67771,
+            "completion_tokens": 1534,
+            "total_tokens": 69305,
+            "cached_tokens": 65056,
+            "credit": 3.51
+          },
+          "elapsed_s": 52.6
+        },
+        {
+          "part_id": "camshaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 58632,
+            "completion_tokens": 1224,
+            "total_tokens": 59856,
+            "cached_tokens": 45246,
+            "credit": 5.47
+          },
+          "elapsed_s": 37.2
+        },
+        {
+          "part_id": "cam",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 48931,
+            "completion_tokens": 1173,
+            "total_tokens": 50104,
+            "cached_tokens": 45173,
+            "credit": 3.02
+          },
+          "elapsed_s": 63.2
+        }
+      ],
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 49,
+          "run_python": 41,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 3682886,
+          "completion_tokens": 92480,
+          "total_tokens": 3775366,
+          "cached_tokens": 3582379,
+          "credit": 189.2
+        },
+        "elapsed_s": 2123.0,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "adjustable_desk_lamp",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "lamp_base",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 80690,
+            "completion_tokens": 1808,
+            "total_tokens": 82498,
+            "cached_tokens": 63394,
+            "credit": 7.4
+          },
+          "elapsed_s": 34.1
+        },
+        {
+          "part_id": "lamp_lower_arm",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 73874,
+            "completion_tokens": 3127,
+            "total_tokens": 77001,
+            "cached_tokens": 54051,
+            "credit": 9.15
+          },
+          "elapsed_s": 52.5
+        },
+        {
+          "part_id": "lamp_upper_arm",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 8,
+          "token_usage": {
+            "prompt_tokens": 112119,
+            "completion_tokens": 3275,
+            "total_tokens": 115394,
+            "cached_tokens": 92603,
+            "credit": 10.01
+          },
+          "elapsed_s": 78.1
+        },
+        {
+          "part_id": "lamp_shade",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 48672,
+            "completion_tokens": 1487,
+            "total_tokens": 50159,
+            "cached_tokens": 35294,
+            "credit": 5.54
+          },
+          "elapsed_s": 38.1
+        },
+        {
+          "part_id": "lamp_pin",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33434,
+            "completion_tokens": 519,
+            "total_tokens": 33953,
+            "cached_tokens": 21785,
+            "credit": 3.86
+          },
+          "elapsed_s": 15.1
+        }
+      ],
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 33,
+          "run_python": 44,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2804144,
+          "completion_tokens": 142029,
+          "total_tokens": 2946173,
+          "cached_tokens": 2700516,
+          "credit": 221.91
+        },
+        "elapsed_s": 2800.5,
+        "delivered": true,
+        "export_ok": true,
+        "export_detail": "{\"components\": 7, \"constraints\": 6, \"missing_roles\": [], \"extra_components\": [], \"problems\": []}"
+      },
+      "bridge": {
+        "assembly": "C:\\Users\\38409\\Desktop\\Workflow-CAD\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_simplecad_sonnet5\\adjustable_desk_lamp\\r1\\sw\\adjustable_desk_lamp.SLDASM",
+        "aliases": {
+          "base": "lamp_base-1",
+          "elbow_pin": "lamp_pin-1",
+          "lower_arm": "lamp_lower_arm-1",
+          "shade": "lamp_shade-1",
+          "shoulder_pin": "lamp_pin-2",
+          "upper_arm": "lamp_upper_arm-1",
+          "wrist_pin": "lamp_pin-3"
+        },
+        "constraints": 6,
+        "translated": 6,
+        "failed": [],
+        "unsupported": [],
+        "off_pose_mates": 0,
+        "final_drift": {
+          "mm": 0.0,
+          "deg": 0.0,
+          "role": null
+        }
+      },
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "base",
+            "body": "base",
+            "ok": true
+          },
+          {
+            "role": "lower_arm",
+            "body": "lower_arm",
+            "ok": true
+          },
+          {
+            "role": "upper_arm",
+            "body": "upper_arm",
+            "ok": true
+          },
+          {
+            "role": "shade",
+            "body": "shade",
+            "ok": true
+          },
+          {
+            "role": "shoulder_pin",
+            "body": "base|lower_arm",
+            "ok": true
+          },
+          {
+            "role": "elbow_pin",
+            "body": "lower_arm|upper_arm",
+            "ok": true
+          },
+          {
+            "role": "wrist_pin",
+            "body": "upper_arm|shade",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "lower_arm",
+              "base"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "upper_arm",
+              "lower_arm"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "shade",
+              "upper_arm"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 3,
+          "target": 3,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "mode": "poses",
+        "passed": true,
+        "score": 100.0,
+        "poses": [
+          {
+            "name": "reach_low",
+            "variants": [
+              {
+                "flip": true
+              },
+              {
+                "flip": true
+              },
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 51.962,
+                  "expected": 51.96,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": 90.0,
+                  "expected": 90.0,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "x",
+                  "got": 126.111,
+                  "expected": 126.11,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "y",
+                  "got": 167.581,
+                  "expected": 167.58,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "x",
+                  "got": 174.009,
+                  "expected": 174.01,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "y",
+                  "got": 245.804,
+                  "expected": 245.8,
+                  "err_mm": 0.004,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "reach_mid",
+            "variants": [
+              {
+                "flip": false
+              },
+              {
+                "flip": true
+              },
+              {
+                "flip": true
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 30.0,
+                  "expected": 30.0,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": 111.962,
+                  "expected": 111.96,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "x",
+                  "got": 107.581,
+                  "expected": 107.58,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "y",
+                  "got": 186.111,
+                  "expected": 186.11,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "x",
+                  "got": 195.01,
+                  "expected": 195.01,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "y",
+                  "got": 204.812,
+                  "expected": 204.81,
+                  "err_mm": 0.002,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.002,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "reach_high",
+            "variants": [
+              {
+                "flip": false
+              },
+              {
+                "flip": false
+              },
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 8.35,
+                  "expected": 8.35,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": 119.416,
+                  "expected": 119.42,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "x",
+                  "got": 61.223,
+                  "expected": 61.22,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "y",
+                  "got": 206.653,
+                  "expected": 206.65,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "x",
+                  "got": 144.721,
+                  "expected": 144.72,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "y",
+                  "got": 225.476,
+                  "expected": 225.48,
+                  "err_mm": 0.004,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          }
+        ]
+      },
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "e2e": true
+    },
+    {
+      "case_id": "folding_umbrella",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "umb_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 46510,
+            "completion_tokens": 734,
+            "total_tokens": 47244,
+            "cached_tokens": 33428,
+            "credit": 4.67
+          },
+          "elapsed_s": 29.7
+        },
+        {
+          "part_id": "umb_hub",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 50295,
+            "completion_tokens": 2513,
+            "total_tokens": 52808,
+            "cached_tokens": 36463,
+            "credit": 6.7
+          },
+          "elapsed_s": 51.9
+        },
+        {
+          "part_id": "umb_runner",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 54726,
+            "completion_tokens": 2054,
+            "total_tokens": 56780,
+            "cached_tokens": 36455,
+            "credit": 7.35
+          },
+          "elapsed_s": 32.2
+        },
+        {
+          "part_id": "umb_rib",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 125752,
+            "completion_tokens": 3820,
+            "total_tokens": 129572,
+            "cached_tokens": 92517,
+            "credit": 13.97
+          },
+          "elapsed_s": 53.7
+        },
+        {
+          "part_id": "umb_stretcher",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 70172,
+            "completion_tokens": 2948,
+            "total_tokens": 73120,
+            "cached_tokens": 62176,
+            "credit": 6.18
+          },
+          "elapsed_s": 66.2
+        }
+      ],
+      "agent": {
+        "status": "error",
+        "error": "RuntimeError: LLM 请求重试 6 次仍失败",
+        "llm_calls": 41,
+        "tool_counts": {
+          "read_doc": 31,
+          "run_python": 35,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 1917635,
+          "completion_tokens": 105306,
+          "total_tokens": 2022941,
+          "cached_tokens": 1850428,
+          "credit": 159.05
+        },
+        "elapsed_s": 7683.9,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": null,
+      "motion_score": null,
+      "e2e": false,
+      "note": "没有可读的装配包",
+      "infra_error": "LLM 网关超时（TT Switch 上游响应头 180 s）：RuntimeError: LLM 请求重试 6 次仍失败，第 41 次调用时中断"
+    },
+    {
+      "case_id": "drill_planetary_gearbox",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "drill_housing",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 35376,
+            "completion_tokens": 1034,
+            "total_tokens": 36410,
+            "cached_tokens": 22639,
+            "credit": 4.66
+          },
+          "elapsed_s": 18.8
+        },
+        {
+          "part_id": "drill_ring48",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 19,
+          "token_usage": {
+            "prompt_tokens": 529321,
+            "completion_tokens": 6091,
+            "total_tokens": 535412,
+            "cached_tokens": 482855,
+            "credit": 27.36
+          },
+          "elapsed_s": 230.6
+        },
+        {
+          "part_id": "drill_ring45",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 13,
+          "token_usage": {
+            "prompt_tokens": 260579,
+            "completion_tokens": 5294,
+            "total_tokens": 265873,
+            "cached_tokens": 231031,
+            "credit": 17.3
+          },
+          "elapsed_s": 131.9
+        },
+        {
+          "part_id": "drill_sun12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 87895,
+            "completion_tokens": 1375,
+            "total_tokens": 89270,
+            "cached_tokens": 68197,
+            "credit": 7.66
+          },
+          "elapsed_s": 36.0
+        },
+        {
+          "part_id": "drill_planet18",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 89391,
+            "completion_tokens": 1787,
+            "total_tokens": 91178,
+            "cached_tokens": 69215,
+            "credit": 8.21
+          },
+          "elapsed_s": 51.7
+        },
+        {
+          "part_id": "drill_gear15",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 82649,
+            "completion_tokens": 1745,
+            "total_tokens": 84394,
+            "cached_tokens": 67573,
+            "credit": 6.86
+          },
+          "elapsed_s": 70.6
+        },
+        {
+          "part_id": "drill_carrier",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 51738,
+            "completion_tokens": 1544,
+            "total_tokens": 53282,
+            "cached_tokens": 35956,
+            "credit": 6.2
+          },
+          "elapsed_s": 29.1
+        },
+        {
+          "part_id": "drill_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33431,
+            "completion_tokens": 573,
+            "total_tokens": 34004,
+            "cached_tokens": 32359,
+            "credit": 1.49
+          },
+          "elapsed_s": 19.3
+        }
+      ],
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 62,
+          "run_python": 35,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 3396543,
+          "completion_tokens": 105880,
+          "total_tokens": 3502423,
+          "cached_tokens": 3287089,
+          "credit": 198.9
+        },
+        "elapsed_s": 1802.5,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "sewing_machine_drive",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "agent": {
+        "status": "error",
+        "error": "RuntimeError: LLM 请求重试 6 次仍失败",
+        "llm_calls": 45,
+        "tool_counts": {
+          "read_doc": 37,
+          "run_python": 38,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2871402,
+          "completion_tokens": 114050,
+          "total_tokens": 2985452,
+          "cached_tokens": 2661981,
+          "credit": 219.53
+        },
+        "elapsed_s": 11021.7,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": null,
+      "motion_score": null,
+      "e2e": false,
+      "note": "没有可读的装配包",
+      "infra_error": "LLM 网关超时（TT Switch 上游响应头 180 s）：RuntimeError: LLM 请求重试 6 次仍失败，第 45 次调用时中断"
+    },
+    {
+      "case_id": "film_projector_drive",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "proj_frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 67585,
+            "completion_tokens": 2028,
+            "total_tokens": 69613,
+            "cached_tokens": 36880,
+            "credit": 10.43
+          },
+          "elapsed_s": 34.6
+        },
+        {
+          "part_id": "proj_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 59229,
+            "completion_tokens": 970,
+            "total_tokens": 60199,
+            "cached_tokens": 45671,
+            "credit": 5.27
+          },
+          "elapsed_s": 65.1
+        },
+        {
+          "part_id": "proj_gear24",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 89495,
+            "completion_tokens": 1787,
+            "total_tokens": 91282,
+            "cached_tokens": 69265,
+            "credit": 8.21
+          },
+          "elapsed_s": 56.7
+        },
+        {
+          "part_id": "proj_idler18",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 87019,
+            "completion_tokens": 1552,
+            "total_tokens": 88571,
+            "cached_tokens": 67698,
+            "credit": 7.73
+          },
+          "elapsed_s": 40.4
+        },
+        {
+          "part_id": "proj_pinion16",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 7,
+          "token_usage": {
+            "prompt_tokens": 103012,
+            "completion_tokens": 1335,
+            "total_tokens": 104347,
+            "cached_tokens": 83143,
+            "credit": 7.95
+          },
+          "elapsed_s": 44.5
+        },
+        {
+          "part_id": "proj_gear64",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 11,
+          "token_usage": {
+            "prompt_tokens": 179006,
+            "completion_tokens": 2722,
+            "total_tokens": 181728,
+            "cached_tokens": 140944,
+            "credit": 15.05
+          },
+          "elapsed_s": 89.7
+        },
+        {
+          "part_id": "proj_shutter",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 50797,
+            "completion_tokens": 1598,
+            "total_tokens": 52395,
+            "cached_tokens": 34889,
+            "credit": 6.26
+          },
+          "elapsed_s": 26.6
+        },
+        {
+          "part_id": "proj_sprocket",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 48951,
+            "completion_tokens": 1155,
+            "total_tokens": 50106,
+            "cached_tokens": 34601,
+            "credit": 5.43
+          },
+          "elapsed_s": 22.4
+        }
+      ],
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 45,
+          "run_python": 44,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 3793339,
+          "completion_tokens": 145753,
+          "total_tokens": 3939092,
+          "cached_tokens": 3702174,
+          "credit": 242.5
+        },
+        "elapsed_s": 1919.0,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "crank_rocker_linkage",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "agent": {
+        "status": "error",
+        "error": "RuntimeError: LLM 请求重试 6 次仍失败",
+        "llm_calls": 46,
+        "tool_counts": {
+          "read_doc": 44,
+          "run_python": 35,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2612688,
+          "completion_tokens": 156507,
+          "total_tokens": 2769195,
+          "cached_tokens": 2553212,
+          "credit": 222.37
+        },
+        "elapsed_s": 10209.7,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": null,
+      "motion_score": null,
+      "e2e": false,
+      "note": "没有可读的装配包",
+      "infra_error": "LLM 网关超时（TT Switch 上游响应头 180 s）：RuntimeError: LLM 请求重试 6 次仍失败，第 46 次调用时中断"
+    },
+    {
+      "case_id": "offset_slider_crank",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "os_frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 48596,
+            "completion_tokens": 1577,
+            "total_tokens": 50173,
+            "cached_tokens": 35444,
+            "credit": 5.57
+          },
+          "elapsed_s": 28.9
+        },
+        {
+          "part_id": "os_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 71400,
+            "completion_tokens": 946,
+            "total_tokens": 72346,
+            "cached_tokens": 57704,
+            "credit": 5.53
+          },
+          "elapsed_s": 30.0
+        },
+        {
+          "part_id": "os_crank",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 55503,
+            "completion_tokens": 2249,
+            "total_tokens": 57752,
+            "cached_tokens": 47916,
+            "credit": 5.08
+          },
+          "elapsed_s": 33.4
+        },
+        {
+          "part_id": "os_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33466,
+            "completion_tokens": 596,
+            "total_tokens": 34062,
+            "cached_tokens": 11216,
+            "credit": 6.38
+          },
+          "elapsed_s": 13.1
+        },
+        {
+          "part_id": "os_rod",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 8,
+          "token_usage": {
+            "prompt_tokens": 184157,
+            "completion_tokens": 3245,
+            "total_tokens": 187402,
+            "cached_tokens": 150415,
+            "credit": 14.68
+          },
+          "elapsed_s": 58.2
+        },
+        {
+          "part_id": "os_slider",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 51509,
+            "completion_tokens": 1232,
+            "total_tokens": 52741,
+            "cached_tokens": 35279,
+            "credit": 5.99
+          },
+          "elapsed_s": 22.8
+        }
+      ],
+      "agent": {
+        "status": "error",
+        "error": "RuntimeError: LLM 请求重试 6 次仍失败",
+        "llm_calls": 20,
+        "tool_counts": {
+          "read_doc": 30,
+          "run_python": 18,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 598674,
+          "completion_tokens": 31746,
+          "total_tokens": 630420,
+          "cached_tokens": 493673,
+          "credit": 67.78
+        },
+        "elapsed_s": 3221.4,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": null,
+      "motion_score": null,
+      "e2e": false,
+      "note": "没有可读的装配包",
+      "infra_error": "LLM 网关超时（TT Switch 上游响应头 180 s）：RuntimeError: LLM 请求重试 6 次仍失败，第 20 次调用时中断"
+    },
+    {
+      "case_id": "twin_cylinder_pump",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "agent": {
+        "status": "error",
+        "error": "RuntimeError: LLM 请求重试 6 次仍失败",
+        "llm_calls": 41,
+        "tool_counts": {
+          "read_doc": 56,
+          "run_python": 26,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2062410,
+          "completion_tokens": 66547,
+          "total_tokens": 2128957,
+          "cached_tokens": 1990806,
+          "credit": 124.17
+        },
+        "elapsed_s": 4870.3,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": null,
+      "motion_score": null,
+      "e2e": false,
+      "note": "没有可读的装配包",
+      "infra_error": "LLM 网关超时（TT Switch 上游响应头 180 s）：RuntimeError: LLM 请求重试 6 次仍失败，第 41 次调用时中断"
+    },
+    {
+      "case_id": "pumpjack_drive",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 36,
+          "run_python": 43,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 3371910,
+          "completion_tokens": 109873,
+          "total_tokens": 3481783,
+          "cached_tokens": 3278493,
+          "credit": 198.7
+        },
+        "elapsed_s": 1840.3,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "windshield_wiper_linkage",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "agent": {
+        "status": "error",
+        "error": "RuntimeError: LLM 请求重试 6 次仍失败",
+        "llm_calls": 27,
+        "tool_counts": {
+          "read_doc": 34,
+          "run_python": 22,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 1071687,
+          "completion_tokens": 42727,
+          "total_tokens": 1114414,
+          "cached_tokens": 1005639,
+          "credit": 79.24
+        },
+        "elapsed_s": 4009.0,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": null,
+      "motion_score": null,
+      "e2e": false,
+      "note": "没有可读的装配包",
+      "infra_error": "LLM 网关超时（TT Switch 上游响应头 180 s）：RuntimeError: LLM 请求重试 6 次仍失败，第 27 次调用时中断"
+    },
+    {
+      "case_id": "beam_engine",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "be_frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 82304,
+            "completion_tokens": 1841,
+            "total_tokens": 84145,
+            "cached_tokens": 64129,
+            "credit": 7.66
+          },
+          "elapsed_s": 32.8
+        },
+        {
+          "part_id": "be_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 47472,
+            "completion_tokens": 904,
+            "total_tokens": 48376,
+            "cached_tokens": 34081,
+            "credit": 4.93
+          },
+          "elapsed_s": 21.8
+        },
+        {
+          "part_id": "be_crank",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 124180,
+            "completion_tokens": 3244,
+            "total_tokens": 127424,
+            "cached_tokens": 91379,
+            "credit": 13.26
+          },
+          "elapsed_s": 43.4
+        },
+        {
+          "part_id": "be_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 46459,
+            "completion_tokens": 773,
+            "total_tokens": 47232,
+            "cached_tokens": 33404,
+            "credit": 4.71
+          },
+          "elapsed_s": 20.7
+        },
+        {
+          "part_id": "be_conrod",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 51629,
+            "completion_tokens": 2430,
+            "total_tokens": 54059,
+            "cached_tokens": 37406,
+            "credit": 6.73
+          },
+          "elapsed_s": 31.8
+        },
+        {
+          "part_id": "be_beam",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 53759,
+            "completion_tokens": 3335,
+            "total_tokens": 57094,
+            "cached_tokens": 38427,
+            "credit": 7.92
+          },
+          "elapsed_s": 42.6
+        },
+        {
+          "part_id": "be_pivot_pin",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33479,
+            "completion_tokens": 540,
+            "total_tokens": 34019,
+            "cached_tokens": 21793,
+            "credit": 3.9
+          },
+          "elapsed_s": 13.2
+        },
+        {
+          "part_id": "be_piston_rod",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 55761,
+            "completion_tokens": 2576,
+            "total_tokens": 58337,
+            "cached_tokens": 37472,
+            "credit": 7.88
+          },
+          "elapsed_s": 35.0
+        },
+        {
+          "part_id": "be_piston",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 49458,
+            "completion_tokens": 1416,
+            "total_tokens": 50874,
+            "cached_tokens": 46563,
+            "credit": 3.07
+          },
+          "elapsed_s": 24.4
+        }
+      ],
+      "agent": {
+        "status": "error",
+        "error": "RuntimeError: LLM 请求重试 6 次仍失败",
+        "llm_calls": 45,
+        "tool_counts": {
+          "read_doc": 54,
+          "run_python": 34,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2670503,
+          "completion_tokens": 91197,
+          "total_tokens": 2761700,
+          "cached_tokens": 2582637,
+          "credit": 164.72
+        },
+        "elapsed_s": 4343.6,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": null,
+      "motion_score": null,
+      "e2e": false,
+      "note": "没有可读的装配包",
+      "infra_error": "LLM 网关超时（TT Switch 上游响应头 180 s）：RuntimeError: LLM 请求重试 6 次仍失败，第 45 次调用时中断"
+    },
+    {
+      "case_id": "clock_motion_works",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "ck_frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 53426,
+            "completion_tokens": 1456,
+            "total_tokens": 54882,
+            "cached_tokens": 46678,
+            "credit": 4.07
+          },
+          "elapsed_s": 24.0
+        },
+        {
+          "part_id": "ck_minute_arbor",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33458,
+            "completion_tokens": 503,
+            "total_tokens": 33961,
+            "cached_tokens": 32368,
+            "credit": 1.41
+          },
+          "elapsed_s": 13.4
+        },
+        {
+          "part_id": "ck_wheel_arbor",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 58183,
+            "completion_tokens": 775,
+            "total_tokens": 58958,
+            "cached_tokens": 55553,
+            "credit": 2.54
+          },
+          "elapsed_s": 21.7
+        },
+        {
+          "part_id": "ck_cannon_pinion",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 9,
+          "token_usage": {
+            "prompt_tokens": 145317,
+            "completion_tokens": 2388,
+            "total_tokens": 147705,
+            "cached_tokens": 124423,
+            "credit": 10.1
+          },
+          "elapsed_s": 60.3
+        },
+        {
+          "part_id": "ck_minute_wheel",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 7,
+          "token_usage": {
+            "prompt_tokens": 103186,
+            "completion_tokens": 1482,
+            "total_tokens": 104668,
+            "cached_tokens": 83183,
+            "credit": 8.14
+          },
+          "elapsed_s": 55.5
+        },
+        {
+          "part_id": "ck_minute_pinion",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 88948,
+            "completion_tokens": 2024,
+            "total_tokens": 90972,
+            "cached_tokens": 72657,
+            "credit": 7.55
+          },
+          "elapsed_s": 45.1
+        },
+        {
+          "part_id": "ck_hour_wheel",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 68241,
+            "completion_tokens": 1601,
+            "total_tokens": 69842,
+            "cached_tokens": 53291,
+            "credit": 6.41
+          },
+          "elapsed_s": 36.1
+        },
+        {
+          "part_id": "ck_hour_tube",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 49046,
+            "completion_tokens": 1129,
+            "total_tokens": 50175,
+            "cached_tokens": 34606,
+            "credit": 5.42
+          },
+          "elapsed_s": 24.2
+        },
+        {
+          "part_id": "ck_minute_hand",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 63181,
+            "completion_tokens": 2375,
+            "total_tokens": 65556,
+            "cached_tokens": 49139,
+            "credit": 6.85
+          },
+          "elapsed_s": 38.2
+        },
+        {
+          "part_id": "ck_hour_hand",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 84470,
+            "completion_tokens": 2491,
+            "total_tokens": 86961,
+            "cached_tokens": 66046,
+            "credit": 8.41
+          },
+          "elapsed_s": 40.4
+        }
+      ],
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 67,
+          "run_python": 36,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 3488467,
+          "completion_tokens": 156119,
+          "total_tokens": 3644586,
+          "cached_tokens": 3388814,
+          "credit": 248.69
+        },
+        "elapsed_s": 3544.4,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "hand_winch",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "hw_frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 53425,
+            "completion_tokens": 1379,
+            "total_tokens": 54804,
+            "cached_tokens": 46663,
+            "credit": 4.0
+          },
+          "elapsed_s": 24.5
+        },
+        {
+          "part_id": "hw_handle_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 46390,
+            "completion_tokens": 705,
+            "total_tokens": 47095,
+            "cached_tokens": 33378,
+            "credit": 4.62
+          },
+          "elapsed_s": 21.0
+        },
+        {
+          "part_id": "hw_drum_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33459,
+            "completion_tokens": 513,
+            "total_tokens": 33972,
+            "cached_tokens": 21794,
+            "credit": 3.86
+          },
+          "elapsed_s": 14.4
+        },
+        {
+          "part_id": "hw_pinion",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 72097,
+            "completion_tokens": 1095,
+            "total_tokens": 73192,
+            "cached_tokens": 53040,
+            "credit": 6.92
+          },
+          "elapsed_s": 26.9
+        },
+        {
+          "part_id": "hw_gear",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 8,
+          "token_usage": {
+            "prompt_tokens": 118135,
+            "completion_tokens": 1698,
+            "total_tokens": 119833,
+            "cached_tokens": 98167,
+            "credit": 8.66
+          },
+          "elapsed_s": 42.6
+        },
+        {
+          "part_id": "hw_handle",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 8,
+          "token_usage": {
+            "prompt_tokens": 220857,
+            "completion_tokens": 3295,
+            "total_tokens": 224152,
+            "cached_tokens": 196762,
+            "credit": 13.24
+          },
+          "elapsed_s": 55.1
+        },
+        {
+          "part_id": "hw_knob",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33474,
+            "completion_tokens": 626,
+            "total_tokens": 34100,
+            "cached_tokens": 21791,
+            "credit": 3.98
+          },
+          "elapsed_s": 13.2
+        },
+        {
+          "part_id": "hw_drum",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 48926,
+            "completion_tokens": 1020,
+            "total_tokens": 49946,
+            "cached_tokens": 34587,
+            "credit": 5.3
+          },
+          "elapsed_s": 22.2
+        }
+      ],
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 44,
+          "run_python": 42,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2695785,
+          "completion_tokens": 188193,
+          "total_tokens": 2883978,
+          "cached_tokens": 2455938,
+          "credit": 297.16
+        },
+        "elapsed_s": 4694.6,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "turntable_ring_drive",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 48,
+          "run_python": 39,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 3335520,
+          "completion_tokens": 128294,
+          "total_tokens": 3463814,
+          "cached_tokens": 3027750,
+          "credit": 265.77
+        },
+        "elapsed_s": 4313.7,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "star_gear_reducer",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 50,
+          "run_python": 46,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2605248,
+          "completion_tokens": 88043,
+          "total_tokens": 2693291,
+          "cached_tokens": 2526725,
+          "credit": 158.13
+        },
+        "elapsed_s": 1390.6,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "lead_screw_stage",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "ls_frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 48657,
+            "completion_tokens": 1657,
+            "total_tokens": 50314,
+            "cached_tokens": 46059,
+            "credit": 3.23
+          },
+          "elapsed_s": 38.7
+        },
+        {
+          "part_id": "ls_screw",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33455,
+            "completion_tokens": 532,
+            "total_tokens": 33987,
+            "cached_tokens": 32367,
+            "credit": 1.45
+          },
+          "elapsed_s": 23.2
+        },
+        {
+          "part_id": "ls_handwheel",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 50742,
+            "completion_tokens": 1266,
+            "total_tokens": 52008,
+            "cached_tokens": 35779,
+            "credit": 5.72
+          },
+          "elapsed_s": 219.5
+        },
+        {
+          "part_id": "ls_guide_rod",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33482,
+            "completion_tokens": 569,
+            "total_tokens": 34051,
+            "cached_tokens": 21791,
+            "credit": 3.92
+          },
+          "elapsed_s": 16.0
+        },
+        {
+          "part_id": "ls_carriage",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 83490,
+            "completion_tokens": 2202,
+            "total_tokens": 85692,
+            "cached_tokens": 64642,
+            "credit": 8.2
+          },
+          "elapsed_s": 39.5
+        },
+        {
+          "part_id": "ls_nut",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 8,
+          "token_usage": {
+            "prompt_tokens": 103441,
+            "completion_tokens": 1657,
+            "total_tokens": 105098,
+            "cached_tokens": 87671,
+            "credit": 7.36
+          },
+          "elapsed_s": 43.1
+        }
+      ],
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 32,
+          "run_python": 42,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2142541,
+          "completion_tokens": 130546,
+          "total_tokens": 2273087,
+          "cached_tokens": 2075569,
+          "credit": 188.76
+        },
+        "elapsed_s": 2073.2,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "gear_driven_slider_crank",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "gs_frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 9,
+          "token_usage": {
+            "prompt_tokens": 129623,
+            "completion_tokens": 2422,
+            "total_tokens": 132045,
+            "cached_tokens": 109949,
+            "credit": 9.56
+          },
+          "elapsed_s": 55.9
+        },
+        {
+          "part_id": "gs_motor_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33451,
+            "completion_tokens": 498,
+            "total_tokens": 33949,
+            "cached_tokens": 21792,
+            "credit": 3.84
+          },
+          "elapsed_s": 15.0
+        },
+        {
+          "part_id": "gs_crank_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 46487,
+            "completion_tokens": 886,
+            "total_tokens": 47373,
+            "cached_tokens": 43993,
+            "credit": 2.39
+          },
+          "elapsed_s": 24.6
+        },
+        {
+          "part_id": "gs_pinion",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 7,
+          "token_usage": {
+            "prompt_tokens": 104098,
+            "completion_tokens": 1331,
+            "total_tokens": 105429,
+            "cached_tokens": 84203,
+            "credit": 7.98
+          },
+          "elapsed_s": 37.3
+        },
+        {
+          "part_id": "gs_gear",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 8,
+          "token_usage": {
+            "prompt_tokens": 122753,
+            "completion_tokens": 1914,
+            "total_tokens": 124667,
+            "cached_tokens": 101746,
+            "credit": 9.21
+          },
+          "elapsed_s": 48.3
+        },
+        {
+          "part_id": "gs_crank",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 70334,
+            "completion_tokens": 3217,
+            "total_tokens": 73551,
+            "cached_tokens": 51732,
+            "credit": 8.9
+          },
+          "elapsed_s": 41.0
+        },
+        {
+          "part_id": "gs_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33456,
+            "completion_tokens": 661,
+            "total_tokens": 34117,
+            "cached_tokens": 21791,
+            "credit": 4.01
+          },
+          "elapsed_s": 14.3
+        },
+        {
+          "part_id": "gs_rod",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 57621,
+            "completion_tokens": 2428,
+            "total_tokens": 60049,
+            "cached_tokens": 28128,
+            "credit": 10.36
+          },
+          "elapsed_s": 36.7
+        },
+        {
+          "part_id": "gs_slider",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 51525,
+            "completion_tokens": 1276,
+            "total_tokens": 52801,
+            "cached_tokens": 35269,
+            "credit": 6.04
+          },
+          "elapsed_s": 23.6
+        }
+      ],
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 39,
+          "run_python": 41,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 1
+        },
+        "token_usage": {
+          "prompt_tokens": 2686089,
+          "completion_tokens": 98411,
+          "total_tokens": 2784500,
+          "cached_tokens": 2473508,
+          "credit": 200.96
+        },
+        "elapsed_s": 4112.3,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "epicyclic_carrier_output",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 30,
+          "run_python": 49,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 3508010,
+          "completion_tokens": 150453,
+          "total_tokens": 3658463,
+          "cached_tokens": 3415063,
+          "credit": 241.89
+        },
+        "elapsed_s": 5324.6,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "excavator_arm",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "agent": {
+        "status": "error",
+        "error": "RuntimeError: LLM 请求重试 6 次仍失败",
+        "llm_calls": 49,
+        "tool_counts": {
+          "read_doc": 30,
+          "run_python": 46,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 3323801,
+          "completion_tokens": 128797,
+          "total_tokens": 3452598,
+          "cached_tokens": 3070290,
+          "credit": 253.47
+        },
+        "elapsed_s": 7640.6,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": null,
+      "motion_score": null,
+      "e2e": false,
+      "note": "没有可读的装配包",
+      "infra_error": "LLM 网关超时（TT Switch 上游响应头 180 s）：RuntimeError: LLM 请求重试 6 次仍失败，第 49 次调用时中断"
+    },
+    {
+      "case_id": "scara_arm",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 32,
+          "run_python": 44,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2479827,
+          "completion_tokens": 158638,
+          "total_tokens": 2638465,
+          "cached_tokens": 2419636,
+          "credit": 222.02
+        },
+        "elapsed_s": 7056.7,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "pantograph",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 44,
+          "run_python": 46,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 3229032,
+          "completion_tokens": 167244,
+          "total_tokens": 3396276,
+          "cached_tokens": 3078135,
+          "credit": 266.46
+        },
+        "elapsed_s": 4860.2,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "ackermann_steering",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "ak_axle",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 52508,
+            "completion_tokens": 1529,
+            "total_tokens": 54037,
+            "cached_tokens": 35484,
+            "credit": 6.48
+          },
+          "elapsed_s": 26.8
+        },
+        {
+          "part_id": "ak_knuckle",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 55574,
+            "completion_tokens": 2505,
+            "total_tokens": 58079,
+            "cached_tokens": 37379,
+            "credit": 7.79
+          },
+          "elapsed_s": 37.1
+        },
+        {
+          "part_id": "ak_tie_rod",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 98005,
+            "completion_tokens": 2557,
+            "total_tokens": 100562,
+            "cached_tokens": 65632,
+            "credit": 11.95
+          },
+          "elapsed_s": 37.5
+        },
+        {
+          "part_id": "ak_pin14",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33445,
+            "completion_tokens": 522,
+            "total_tokens": 33967,
+            "cached_tokens": 21790,
+            "credit": 3.87
+          },
+          "elapsed_s": 13.3
+        },
+        {
+          "part_id": "ak_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33483,
+            "completion_tokens": 561,
+            "total_tokens": 34044,
+            "cached_tokens": 21793,
+            "credit": 3.92
+          },
+          "elapsed_s": 13.2
+        }
+      ],
+      "agent": {
+        "status": "finished",
+        "error": null,
+        "llm_calls": 43,
+        "tool_counts": {
+          "read_doc": 34,
+          "run_python": 43,
+          "finish": 1,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2280116,
+          "completion_tokens": 228899,
+          "total_tokens": 2509015,
+          "cached_tokens": 2202567,
+          "credit": 292.26
+        },
+        "elapsed_s": 2669.9,
+        "delivered": true,
+        "export_ok": true,
+        "export_detail": "{\"components\": 8, \"constraints\": 8, \"missing_roles\": [], \"extra_components\": [], \"problems\": []}"
+      },
+      "bridge": {
+        "assembly": "C:\\Users\\38409\\Desktop\\Workflow-CAD\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_simplecad_sonnet5\\ackermann_steering\\r1\\sw\\ackermann_steering.SLDASM",
+        "aliases": {
+          "axle": "ak_axle-1",
+          "kingpin_l": "ak_pin14-1",
+          "kingpin_r": "ak_pin14-2",
+          "knuckle_l": "ak_knuckle-1",
+          "knuckle_r": "ak_knuckle-2",
+          "tie_pin_l": "ak_pin12-1",
+          "tie_pin_r": "ak_pin12-2",
+          "tie_rod": "ak_tie_rod-1"
+        },
+        "constraints": 8,
+        "translated": 7,
+        "failed": [
+          "tie_pin_r_to_tie_rod(revolute): RuntimeError: distance 配合全部失败：[{'align': 'aligned', 'distance': 0.006, 'flip': False, 'error': '[FEATURE_FAILED] distance 配合失败: errStatus=5（装配过定义（与已有配合冲突））'}, {'align': 'aligned', 'distance': 0.006, 'flip': True, 'error': '[FEATURE_FAILED] distance 配合失败: errStatus=5（装配过定义（与已有配合冲突））'}, {'align': 'anti', 'distance': 0.006, 'flip': False, 'error': '[FEATURE_FAILED] distance 配合失败: errStatus=5（装配过定义（与已"
+        ],
+        "unsupported": [],
+        "off_pose_mates": 0,
+        "final_drift": {
+          "mm": 0.0,
+          "deg": 0.0006,
+          "role": "tie_pin_r"
+        }
+      },
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "axle",
+            "body": "axle",
+            "ok": true
+          },
+          {
+            "role": "knuckle_l",
+            "body": "knuckle_l",
+            "ok": true
+          },
+          {
+            "role": "knuckle_r",
+            "body": "knuckle_r",
+            "ok": true
+          },
+          {
+            "role": "tie_rod",
+            "body": "tie_rod",
+            "ok": true
+          },
+          {
+            "role": "kingpin_l",
+            "body": "axle|knuckle_l",
+            "ok": true
+          },
+          {
+            "role": "kingpin_r",
+            "body": "axle|knuckle_r",
+            "ok": true
+          },
+          {
+            "role": "tie_pin_l",
+            "body": "knuckle_l|tie_rod",
+            "ok": true
+          },
+          {
+            "role": "tie_pin_r",
+            "body": "knuckle_r|tie_rod",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "knuckle_l",
+              "axle"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "knuckle_r",
+              "axle"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "tie_rod",
+              "knuckle_l"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "tie_rod",
+              "knuckle_r"
+            ],
+            "expected": [
+              "revolute",
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "mode": "poses",
+        "passed": true,
+        "score": 100.0,
+        "poses": [
+          {
+            "name": "left_small",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "knuckle_l",
+                  "coord": "x",
+                  "got": -47.124,
+                  "expected": -47.12,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_l",
+                  "coord": "y",
+                  "got": -21.429,
+                  "expected": -21.43,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "x",
+                  "got": 59.037,
+                  "expected": 59.03,
+                  "err_mm": 0.007,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "y",
+                  "got": -24.981,
+                  "expected": -24.98,
+                  "err_mm": 0.001,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.007,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "left_full",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "knuckle_l",
+                  "coord": "x",
+                  "got": -42.634,
+                  "expected": -42.63,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_l",
+                  "coord": "y",
+                  "got": -17.983,
+                  "expected": -17.98,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "x",
+                  "got": 63.369,
+                  "expected": 63.37,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "y",
+                  "got": -24.772,
+                  "expected": -24.77,
+                  "err_mm": 0.002,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "right",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "knuckle_l",
+                  "coord": "x",
+                  "got": -61.744,
+                  "expected": -61.74,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_l",
+                  "coord": "y",
+                  "got": -24.939,
+                  "expected": -24.94,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "x",
+                  "got": 44.336,
+                  "expected": 44.33,
+                  "err_mm": 0.006,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "y",
+                  "got": -19.484,
+                  "expected": -19.48,
+                  "err_mm": 0.004,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.006,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          }
+        ]
+      },
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "e2e": true
+    },
+    {
+      "case_id": "toggle_clamp",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 44,
+          "run_python": 40,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 1
+        },
+        "token_usage": {
+          "prompt_tokens": 2520687,
+          "completion_tokens": 202509,
+          "total_tokens": 2723196,
+          "cached_tokens": 2400928,
+          "credit": 280.35
+        },
+        "elapsed_s": 7382.6,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "parallel_gripper",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 52,
+          "run_python": 42,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 3587808,
+          "completion_tokens": 299659,
+          "total_tokens": 3887467,
+          "cached_tokens": 3483630,
+          "credit": 395.29
+        },
+        "elapsed_s": 6234.3,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "double_wishbone",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "dw_chassis",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 79563,
+            "completion_tokens": 1598,
+            "total_tokens": 81161,
+            "cached_tokens": 62019,
+            "credit": 7.21
+          },
+          "elapsed_s": 32.0
+        },
+        {
+          "part_id": "dw_lower_arm",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 67581,
+            "completion_tokens": 2581,
+            "total_tokens": 70162,
+            "cached_tokens": 49338,
+            "credit": 8.12
+          },
+          "elapsed_s": 37.1
+        },
+        {
+          "part_id": "dw_upper_arm",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 7,
+          "token_usage": {
+            "prompt_tokens": 175593,
+            "completion_tokens": 3737,
+            "total_tokens": 179330,
+            "cached_tokens": 140883,
+            "credit": 15.23
+          },
+          "elapsed_s": 59.9
+        },
+        {
+          "part_id": "dw_knuckle",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 7,
+          "token_usage": {
+            "prompt_tokens": 189195,
+            "completion_tokens": 4045,
+            "total_tokens": 193240,
+            "cached_tokens": 153719,
+            "credit": 15.98
+          },
+          "elapsed_s": 59.6
+        },
+        {
+          "part_id": "dw_hub",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 74888,
+            "completion_tokens": 1479,
+            "total_tokens": 76367,
+            "cached_tokens": 59990,
+            "credit": 6.39
+          },
+          "elapsed_s": 30.1
+        },
+        {
+          "part_id": "dw_pin14",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33446,
+            "completion_tokens": 513,
+            "total_tokens": 33959,
+            "cached_tokens": 21791,
+            "credit": 3.87
+          },
+          "elapsed_s": 12.7
+        },
+        {
+          "part_id": "dw_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 46441,
+            "completion_tokens": 755,
+            "total_tokens": 47196,
+            "cached_tokens": 22818,
+            "credit": 7.12
+          },
+          "elapsed_s": 20.1
+        }
+      ],
+      "agent": {
+        "status": "finished",
+        "error": null,
+        "llm_calls": 39,
+        "tool_counts": {
+          "read_doc": 56,
+          "run_python": 30,
+          "finish": 1,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2405935,
+          "completion_tokens": 170173,
+          "total_tokens": 2576108,
+          "cached_tokens": 2315199,
+          "credit": 239.06
+        },
+        "elapsed_s": 2273.4,
+        "delivered": true,
+        "export_ok": true,
+        "export_detail": "{\"components\": 10, \"constraints\": 10, \"missing_roles\": [], \"extra_components\": [], \"problems\": []}"
+      },
+      "bridge": {
+        "assembly": "C:\\Users\\38409\\Desktop\\Workflow-CAD\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_simplecad_sonnet5\\double_wishbone\\r1\\sw\\double_wishbone.SLDASM",
+        "aliases": {
+          "chassis": "dw_chassis-1",
+          "hub": "dw_hub-1",
+          "knuckle": "dw_knuckle-1",
+          "lower_arm": "dw_lower_arm-1",
+          "lower_ball": "dw_pin12-1",
+          "lower_pin": "dw_pin14-1",
+          "spindle": "dw_pin12-2",
+          "upper_arm": "dw_upper_arm-1",
+          "upper_ball": "dw_pin12-3",
+          "upper_pin": "dw_pin14-2"
+        },
+        "constraints": 10,
+        "translated": 9,
+        "failed": [
+          "knuckle_upper_revolute(revolute): RuntimeError: distance 配合全部失败：[{'align': 'aligned', 'distance': 0.006, 'flip': False, 'error': '[FEATURE_FAILED] distance 配合失败: errStatus=5（装配过定义（与已有配合冲突））'}, {'align': 'aligned', 'distance': 0.006, 'flip': True, 'error': '[FEATURE_FAILED] distance 配合失败: errStatus=5（装配过定义（与已有配合冲突））'}, {'align': 'anti', 'distance': 0.006, 'flip': False, 'error': '[FEATURE_FAILED] distance 配合失败: errStatus=5（装配过定义（与已"
+        ],
+        "unsupported": [],
+        "off_pose_mates": 0,
+        "final_drift": {
+          "mm": 0.0,
+          "deg": 0.0,
+          "role": "spindle"
+        }
+      },
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "chassis",
+            "body": "chassis",
+            "ok": true
+          },
+          {
+            "role": "lower_arm",
+            "body": "lower_arm",
+            "ok": true
+          },
+          {
+            "role": "upper_arm",
+            "body": "upper_arm",
+            "ok": true
+          },
+          {
+            "role": "knuckle",
+            "body": "knuckle",
+            "ok": true
+          },
+          {
+            "role": "spindle",
+            "body": "knuckle",
+            "ok": true
+          },
+          {
+            "role": "hub",
+            "body": "knuckle",
+            "ok": true
+          },
+          {
+            "role": "lower_pin",
+            "body": "chassis|lower_arm",
+            "ok": true
+          },
+          {
+            "role": "upper_pin",
+            "body": "chassis|upper_arm",
+            "ok": true
+          },
+          {
+            "role": "lower_ball",
+            "body": "lower_arm|knuckle",
+            "ok": true
+          },
+          {
+            "role": "upper_ball",
+            "body": "upper_arm|knuckle",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "lower_arm",
+              "chassis"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "upper_arm",
+              "chassis"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "knuckle",
+              "lower_arm"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "knuckle",
+              "upper_arm"
+            ],
+            "expected": [
+              "revolute",
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "mode": "poses",
+        "passed": true,
+        "score": 100.0,
+        "poses": [
+          {
+            "name": "rebound",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 97.815,
+                  "expected": 97.81,
+                  "err_mm": 0.005,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": -20.791,
+                  "expected": -20.79,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "x",
+                  "got": 78.695,
+                  "expected": 78.7,
+                  "err_mm": 0.005,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "y",
+                  "got": 46.547,
+                  "expected": 46.55,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "x",
+                  "got": 88.255,
+                  "expected": 88.25,
+                  "err_mm": 0.005,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "y",
+                  "got": 12.878,
+                  "expected": 12.88,
+                  "err_mm": 0.002,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.005,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "ride",
+            "variants": [
+              {
+                "flip": true
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 99.619,
+                  "expected": 99.62,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": 8.716,
+                  "expected": 8.72,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "x",
+                  "got": 78.288,
+                  "expected": 78.29,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "y",
+                  "got": 75.386,
+                  "expected": 75.39,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "x",
+                  "got": 88.954,
+                  "expected": 88.95,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "y",
+                  "got": 42.051,
+                  "expected": 42.05,
+                  "err_mm": 0.001,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "bump",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 96.593,
+                  "expected": 96.59,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": 25.882,
+                  "expected": 25.88,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "x",
+                  "got": 72.465,
+                  "expected": 72.47,
+                  "err_mm": 0.005,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "y",
+                  "got": 91.592,
+                  "expected": 91.59,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "x",
+                  "got": 84.529,
+                  "expected": 84.53,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "y",
+                  "got": 58.737,
+                  "expected": 58.74,
+                  "err_mm": 0.003,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.005,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          }
+        ]
+      },
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "e2e": true
+    }
+  ]
+}

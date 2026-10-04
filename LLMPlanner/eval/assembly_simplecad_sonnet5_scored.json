@@ -1,0 +1,2622 @@
+{
+  "model": "claude-sonnet-5",
+  "summary": {
+    "n": 11,
+    "part_pass_rate": 1.0,
+    "assembly_score": 27.27,
+    "motion_score": 27.27,
+    "e2e": 3
+  },
+  "rows": [
+    {
+      "case_id": "adjustable_desk_lamp",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "lamp_base",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 80690,
+            "completion_tokens": 1808,
+            "total_tokens": 82498,
+            "cached_tokens": 63394,
+            "credit": 7.4
+          },
+          "elapsed_s": 34.1
+        },
+        {
+          "part_id": "lamp_lower_arm",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 73874,
+            "completion_tokens": 3127,
+            "total_tokens": 77001,
+            "cached_tokens": 54051,
+            "credit": 9.15
+          },
+          "elapsed_s": 52.5
+        },
+        {
+          "part_id": "lamp_upper_arm",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 8,
+          "token_usage": {
+            "prompt_tokens": 112119,
+            "completion_tokens": 3275,
+            "total_tokens": 115394,
+            "cached_tokens": 92603,
+            "credit": 10.01
+          },
+          "elapsed_s": 78.1
+        },
+        {
+          "part_id": "lamp_shade",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 48672,
+            "completion_tokens": 1487,
+            "total_tokens": 50159,
+            "cached_tokens": 35294,
+            "credit": 5.54
+          },
+          "elapsed_s": 38.1
+        },
+        {
+          "part_id": "lamp_pin",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33434,
+            "completion_tokens": 519,
+            "total_tokens": 33953,
+            "cached_tokens": 21785,
+            "credit": 3.86
+          },
+          "elapsed_s": 15.1
+        }
+      ],
+      "agent": {
+        "status": "budget_exhausted",
+        "error": null,
+        "llm_calls": 50,
+        "tool_counts": {
+          "read_doc": 33,
+          "run_python": 44,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2804144,
+          "completion_tokens": 142029,
+          "total_tokens": 2946173,
+          "cached_tokens": 2700516,
+          "credit": 221.91
+        },
+        "elapsed_s": 2800.5,
+        "delivered": true,
+        "export_ok": true,
+        "export_detail": "{\"components\": 7, \"constraints\": 6, \"missing_roles\": [], \"extra_components\": [], \"problems\": []}"
+      },
+      "bridge": {
+        "assembly": "C:\\Users\\38409\\Desktop\\Workflow-CAD\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_simplecad_sonnet5\\adjustable_desk_lamp\\r1\\sw\\adjustable_desk_lamp.SLDASM",
+        "aliases": {
+          "base": "lamp_base-1",
+          "elbow_pin": "lamp_pin-1",
+          "lower_arm": "lamp_lower_arm-1",
+          "shade": "lamp_shade-1",
+          "shoulder_pin": "lamp_pin-2",
+          "upper_arm": "lamp_upper_arm-1",
+          "wrist_pin": "lamp_pin-3"
+        },
+        "constraints": 6,
+        "translated": 6,
+        "failed": [],
+        "unsupported": [],
+        "off_pose_mates": 0,
+        "final_drift": {
+          "mm": 0.0,
+          "deg": 0.0,
+          "role": null
+        }
+      },
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "base",
+            "body": "base",
+            "ok": true
+          },
+          {
+            "role": "lower_arm",
+            "body": "lower_arm",
+            "ok": true
+          },
+          {
+            "role": "upper_arm",
+            "body": "upper_arm",
+            "ok": true
+          },
+          {
+            "role": "shade",
+            "body": "shade",
+            "ok": true
+          },
+          {
+            "role": "shoulder_pin",
+            "body": "base|lower_arm",
+            "ok": true
+          },
+          {
+            "role": "elbow_pin",
+            "body": "lower_arm|upper_arm",
+            "ok": true
+          },
+          {
+            "role": "wrist_pin",
+            "body": "upper_arm|shade",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "lower_arm",
+              "base"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "upper_arm",
+              "lower_arm"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "shade",
+              "upper_arm"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 3,
+          "target": 3,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "mode": "poses",
+        "passed": true,
+        "score": 100.0,
+        "poses": [
+          {
+            "name": "reach_low",
+            "variants": [
+              {
+                "flip": true
+              },
+              {
+                "flip": true
+              },
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 51.962,
+                  "expected": 51.96,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": 90.0,
+                  "expected": 90.0,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "x",
+                  "got": 126.111,
+                  "expected": 126.11,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "y",
+                  "got": 167.581,
+                  "expected": 167.58,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "x",
+                  "got": 174.009,
+                  "expected": 174.01,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "y",
+                  "got": 245.804,
+                  "expected": 245.8,
+                  "err_mm": 0.004,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "reach_mid",
+            "variants": [
+              {
+                "flip": false
+              },
+              {
+                "flip": true
+              },
+              {
+                "flip": true
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 30.0,
+                  "expected": 30.0,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": 111.962,
+                  "expected": 111.96,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "x",
+                  "got": 107.581,
+                  "expected": 107.58,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "y",
+                  "got": 186.111,
+                  "expected": 186.11,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "x",
+                  "got": 195.01,
+                  "expected": 195.01,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "y",
+                  "got": 204.812,
+                  "expected": 204.81,
+                  "err_mm": 0.002,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.002,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "reach_high",
+            "variants": [
+              {
+                "flip": false
+              },
+              {
+                "flip": false
+              },
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 8.35,
+                  "expected": 8.35,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": 119.416,
+                  "expected": 119.42,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "x",
+                  "got": 61.223,
+                  "expected": 61.22,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "y",
+                  "got": 206.653,
+                  "expected": 206.65,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "x",
+                  "got": 144.721,
+                  "expected": 144.72,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "y",
+                  "got": 225.476,
+                  "expected": 225.48,
+                  "err_mm": 0.004,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          }
+        ]
+      },
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "e2e": true
+    },
+    {
+      "case_id": "ackermann_steering",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "ak_axle",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 52508,
+            "completion_tokens": 1529,
+            "total_tokens": 54037,
+            "cached_tokens": 35484,
+            "credit": 6.48
+          },
+          "elapsed_s": 26.8
+        },
+        {
+          "part_id": "ak_knuckle",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 55574,
+            "completion_tokens": 2505,
+            "total_tokens": 58079,
+            "cached_tokens": 37379,
+            "credit": 7.79
+          },
+          "elapsed_s": 37.1
+        },
+        {
+          "part_id": "ak_tie_rod",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 98005,
+            "completion_tokens": 2557,
+            "total_tokens": 100562,
+            "cached_tokens": 65632,
+            "credit": 11.95
+          },
+          "elapsed_s": 37.5
+        },
+        {
+          "part_id": "ak_pin14",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33445,
+            "completion_tokens": 522,
+            "total_tokens": 33967,
+            "cached_tokens": 21790,
+            "credit": 3.87
+          },
+          "elapsed_s": 13.3
+        },
+        {
+          "part_id": "ak_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33483,
+            "completion_tokens": 561,
+            "total_tokens": 34044,
+            "cached_tokens": 21793,
+            "credit": 3.92
+          },
+          "elapsed_s": 13.2
+        }
+      ],
+      "agent": {
+        "status": "finished",
+        "error": null,
+        "llm_calls": 43,
+        "tool_counts": {
+          "read_doc": 34,
+          "run_python": 43,
+          "finish": 1,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2280116,
+          "completion_tokens": 228899,
+          "total_tokens": 2509015,
+          "cached_tokens": 2202567,
+          "credit": 292.26
+        },
+        "elapsed_s": 2669.9,
+        "delivered": true,
+        "export_ok": true,
+        "export_detail": "{\"components\": 8, \"constraints\": 8, \"missing_roles\": [], \"extra_components\": [], \"problems\": []}"
+      },
+      "bridge": {
+        "assembly": "C:\\Users\\38409\\Desktop\\Workflow-CAD\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_simplecad_sonnet5\\ackermann_steering\\r1\\sw\\ackermann_steering.SLDASM",
+        "aliases": {
+          "axle": "ak_axle-1",
+          "kingpin_l": "ak_pin14-1",
+          "kingpin_r": "ak_pin14-2",
+          "knuckle_l": "ak_knuckle-1",
+          "knuckle_r": "ak_knuckle-2",
+          "tie_pin_l": "ak_pin12-1",
+          "tie_pin_r": "ak_pin12-2",
+          "tie_rod": "ak_tie_rod-1"
+        },
+        "constraints": 8,
+        "translated": 7,
+        "failed": [
+          "tie_pin_r_to_tie_rod(revolute): RuntimeError: distance 配合全部失败：[{'align': 'aligned', 'distance': 0.006, 'flip': False, 'error': '[FEATURE_FAILED] distance 配合失败: errStatus=5（装配过定义（与已有配合冲突））'}, {'align': 'aligned', 'distance': 0.006, 'flip': True, 'error': '[FEATURE_FAILED] distance 配合失败: errStatus=5（装配过定义（与已有配合冲突））'}, {'align': 'anti', 'distance': 0.006, 'flip': False, 'error': '[FEATURE_FAILED] distance 配合失败: errStatus=5（装配过定义（与已"
+        ],
+        "unsupported": [],
+        "off_pose_mates": 0,
+        "final_drift": {
+          "mm": 0.0,
+          "deg": 0.0006,
+          "role": "tie_pin_r"
+        }
+      },
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "axle",
+            "body": "axle",
+            "ok": true
+          },
+          {
+            "role": "knuckle_l",
+            "body": "knuckle_l",
+            "ok": true
+          },
+          {
+            "role": "knuckle_r",
+            "body": "knuckle_r",
+            "ok": true
+          },
+          {
+            "role": "tie_rod",
+            "body": "tie_rod",
+            "ok": true
+          },
+          {
+            "role": "kingpin_l",
+            "body": "axle|knuckle_l",
+            "ok": true
+          },
+          {
+            "role": "kingpin_r",
+            "body": "axle|knuckle_r",
+            "ok": true
+          },
+          {
+            "role": "tie_pin_l",
+            "body": "knuckle_l|tie_rod",
+            "ok": true
+          },
+          {
+            "role": "tie_pin_r",
+            "body": "knuckle_r|tie_rod",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "knuckle_l",
+              "axle"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "knuckle_r",
+              "axle"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "tie_rod",
+              "knuckle_l"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "tie_rod",
+              "knuckle_r"
+            ],
+            "expected": [
+              "revolute",
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "mode": "poses",
+        "passed": true,
+        "score": 100.0,
+        "poses": [
+          {
+            "name": "left_small",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "knuckle_l",
+                  "coord": "x",
+                  "got": -47.124,
+                  "expected": -47.12,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_l",
+                  "coord": "y",
+                  "got": -21.429,
+                  "expected": -21.43,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "x",
+                  "got": 59.037,
+                  "expected": 59.03,
+                  "err_mm": 0.007,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "y",
+                  "got": -24.981,
+                  "expected": -24.98,
+                  "err_mm": 0.001,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.007,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "left_full",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "knuckle_l",
+                  "coord": "x",
+                  "got": -42.634,
+                  "expected": -42.63,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_l",
+                  "coord": "y",
+                  "got": -17.983,
+                  "expected": -17.98,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "x",
+                  "got": 63.369,
+                  "expected": 63.37,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "y",
+                  "got": -24.772,
+                  "expected": -24.77,
+                  "err_mm": 0.002,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "right",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "knuckle_l",
+                  "coord": "x",
+                  "got": -61.744,
+                  "expected": -61.74,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_l",
+                  "coord": "y",
+                  "got": -24.939,
+                  "expected": -24.94,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "x",
+                  "got": 44.336,
+                  "expected": 44.33,
+                  "err_mm": 0.006,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle_r",
+                  "coord": "y",
+                  "got": -19.484,
+                  "expected": -19.48,
+                  "err_mm": 0.004,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.006,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          }
+        ]
+      },
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "e2e": true
+    },
+    {
+      "case_id": "double_wishbone",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "dw_chassis",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 79563,
+            "completion_tokens": 1598,
+            "total_tokens": 81161,
+            "cached_tokens": 62019,
+            "credit": 7.21
+          },
+          "elapsed_s": 32.0
+        },
+        {
+          "part_id": "dw_lower_arm",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 67581,
+            "completion_tokens": 2581,
+            "total_tokens": 70162,
+            "cached_tokens": 49338,
+            "credit": 8.12
+          },
+          "elapsed_s": 37.1
+        },
+        {
+          "part_id": "dw_upper_arm",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 7,
+          "token_usage": {
+            "prompt_tokens": 175593,
+            "completion_tokens": 3737,
+            "total_tokens": 179330,
+            "cached_tokens": 140883,
+            "credit": 15.23
+          },
+          "elapsed_s": 59.9
+        },
+        {
+          "part_id": "dw_knuckle",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 7,
+          "token_usage": {
+            "prompt_tokens": 189195,
+            "completion_tokens": 4045,
+            "total_tokens": 193240,
+            "cached_tokens": 153719,
+            "credit": 15.98
+          },
+          "elapsed_s": 59.6
+        },
+        {
+          "part_id": "dw_hub",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 74888,
+            "completion_tokens": 1479,
+            "total_tokens": 76367,
+            "cached_tokens": 59990,
+            "credit": 6.39
+          },
+          "elapsed_s": 30.1
+        },
+        {
+          "part_id": "dw_pin14",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33446,
+            "completion_tokens": 513,
+            "total_tokens": 33959,
+            "cached_tokens": 21791,
+            "credit": 3.87
+          },
+          "elapsed_s": 12.7
+        },
+        {
+          "part_id": "dw_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 46441,
+            "completion_tokens": 755,
+            "total_tokens": 47196,
+            "cached_tokens": 22818,
+            "credit": 7.12
+          },
+          "elapsed_s": 20.1
+        }
+      ],
+      "agent": {
+        "status": "finished",
+        "error": null,
+        "llm_calls": 39,
+        "tool_counts": {
+          "read_doc": 56,
+          "run_python": 30,
+          "finish": 1,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2405935,
+          "completion_tokens": 170173,
+          "total_tokens": 2576108,
+          "cached_tokens": 2315199,
+          "credit": 239.06
+        },
+        "elapsed_s": 2273.4,
+        "delivered": true,
+        "export_ok": true,
+        "export_detail": "{\"components\": 10, \"constraints\": 10, \"missing_roles\": [], \"extra_components\": [], \"problems\": []}"
+      },
+      "bridge": {
+        "assembly": "C:\\Users\\38409\\Desktop\\Workflow-CAD\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_simplecad_sonnet5\\double_wishbone\\r1\\sw\\double_wishbone.SLDASM",
+        "aliases": {
+          "chassis": "dw_chassis-1",
+          "hub": "dw_hub-1",
+          "knuckle": "dw_knuckle-1",
+          "lower_arm": "dw_lower_arm-1",
+          "lower_ball": "dw_pin12-1",
+          "lower_pin": "dw_pin14-1",
+          "spindle": "dw_pin12-2",
+          "upper_arm": "dw_upper_arm-1",
+          "upper_ball": "dw_pin12-3",
+          "upper_pin": "dw_pin14-2"
+        },
+        "constraints": 10,
+        "translated": 9,
+        "failed": [
+          "knuckle_upper_revolute(revolute): RuntimeError: distance 配合全部失败：[{'align': 'aligned', 'distance': 0.006, 'flip': False, 'error': '[FEATURE_FAILED] distance 配合失败: errStatus=5（装配过定义（与已有配合冲突））'}, {'align': 'aligned', 'distance': 0.006, 'flip': True, 'error': '[FEATURE_FAILED] distance 配合失败: errStatus=5（装配过定义（与已有配合冲突））'}, {'align': 'anti', 'distance': 0.006, 'flip': False, 'error': '[FEATURE_FAILED] distance 配合失败: errStatus=5（装配过定义（与已"
+        ],
+        "unsupported": [],
+        "off_pose_mates": 0,
+        "final_drift": {
+          "mm": 0.0,
+          "deg": 0.0,
+          "role": "spindle"
+        }
+      },
+      "rubric": {
+        "score": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "rigid_groups": [
+          {
+            "role": "chassis",
+            "body": "chassis",
+            "ok": true
+          },
+          {
+            "role": "lower_arm",
+            "body": "lower_arm",
+            "ok": true
+          },
+          {
+            "role": "upper_arm",
+            "body": "upper_arm",
+            "ok": true
+          },
+          {
+            "role": "knuckle",
+            "body": "knuckle",
+            "ok": true
+          },
+          {
+            "role": "spindle",
+            "body": "knuckle",
+            "ok": true
+          },
+          {
+            "role": "hub",
+            "body": "knuckle",
+            "ok": true
+          },
+          {
+            "role": "lower_pin",
+            "body": "chassis|lower_arm",
+            "ok": true
+          },
+          {
+            "role": "upper_pin",
+            "body": "chassis|upper_arm",
+            "ok": true
+          },
+          {
+            "role": "lower_ball",
+            "body": "lower_arm|knuckle",
+            "ok": true
+          },
+          {
+            "role": "upper_ball",
+            "body": "upper_arm|knuckle",
+            "ok": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "lower_arm",
+              "chassis"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "upper_arm",
+              "chassis"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "knuckle",
+              "lower_arm"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok": true
+          },
+          {
+            "bodies": [
+              "knuckle",
+              "upper_arm"
+            ],
+            "expected": [
+              "revolute",
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "mode": "poses",
+        "passed": true,
+        "score": 100.0,
+        "poses": [
+          {
+            "name": "rebound",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 97.815,
+                  "expected": 97.81,
+                  "err_mm": 0.005,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": -20.791,
+                  "expected": -20.79,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "x",
+                  "got": 78.695,
+                  "expected": 78.7,
+                  "err_mm": 0.005,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "y",
+                  "got": 46.547,
+                  "expected": 46.55,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "x",
+                  "got": 88.255,
+                  "expected": 88.25,
+                  "err_mm": 0.005,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "y",
+                  "got": 12.878,
+                  "expected": 12.88,
+                  "err_mm": 0.002,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.005,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "ride",
+            "variants": [
+              {
+                "flip": true
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 99.619,
+                  "expected": 99.62,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": 8.716,
+                  "expected": 8.72,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "x",
+                  "got": 78.288,
+                  "expected": 78.29,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "y",
+                  "got": 75.386,
+                  "expected": 75.39,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "x",
+                  "got": 88.954,
+                  "expected": 88.95,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "y",
+                  "got": 42.051,
+                  "expected": 42.05,
+                  "err_mm": 0.001,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          },
+          {
+            "name": "bump",
+            "variants": [
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 96.593,
+                  "expected": 96.59,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": 25.882,
+                  "expected": 25.88,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "x",
+                  "got": 72.465,
+                  "expected": 72.47,
+                  "err_mm": 0.005,
+                  "ok": true
+                },
+                {
+                  "role": "knuckle",
+                  "coord": "y",
+                  "got": 91.592,
+                  "expected": 91.59,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "x",
+                  "got": 84.529,
+                  "expected": 84.53,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "hub",
+                  "coord": "y",
+                  "got": 58.737,
+                  "expected": 58.74,
+                  "err_mm": 0.003,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.005,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true
+          }
+        ]
+      },
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "e2e": true
+    },
+    {
+      "case_id": "beam_engine",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "be_frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 82304,
+            "completion_tokens": 1841,
+            "total_tokens": 84145,
+            "cached_tokens": 64129,
+            "credit": 7.66
+          },
+          "elapsed_s": 32.8
+        },
+        {
+          "part_id": "be_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 47472,
+            "completion_tokens": 904,
+            "total_tokens": 48376,
+            "cached_tokens": 34081,
+            "credit": 4.93
+          },
+          "elapsed_s": 21.8
+        },
+        {
+          "part_id": "be_crank",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 124180,
+            "completion_tokens": 3244,
+            "total_tokens": 127424,
+            "cached_tokens": 91379,
+            "credit": 13.26
+          },
+          "elapsed_s": 43.4
+        },
+        {
+          "part_id": "be_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 46459,
+            "completion_tokens": 773,
+            "total_tokens": 47232,
+            "cached_tokens": 33404,
+            "credit": 4.71
+          },
+          "elapsed_s": 20.7
+        },
+        {
+          "part_id": "be_conrod",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 51629,
+            "completion_tokens": 2430,
+            "total_tokens": 54059,
+            "cached_tokens": 37406,
+            "credit": 6.73
+          },
+          "elapsed_s": 31.8
+        },
+        {
+          "part_id": "be_beam",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 53759,
+            "completion_tokens": 3335,
+            "total_tokens": 57094,
+            "cached_tokens": 38427,
+            "credit": 7.92
+          },
+          "elapsed_s": 42.6
+        },
+        {
+          "part_id": "be_pivot_pin",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33479,
+            "completion_tokens": 540,
+            "total_tokens": 34019,
+            "cached_tokens": 21793,
+            "credit": 3.9
+          },
+          "elapsed_s": 13.2
+        },
+        {
+          "part_id": "be_piston_rod",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 55761,
+            "completion_tokens": 2576,
+            "total_tokens": 58337,
+            "cached_tokens": 37472,
+            "credit": 7.88
+          },
+          "elapsed_s": 35.0
+        },
+        {
+          "part_id": "be_piston",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 49458,
+            "completion_tokens": 1416,
+            "total_tokens": 50874,
+            "cached_tokens": 46563,
+            "credit": 3.07
+          },
+          "elapsed_s": 24.4
+        }
+      ],
+      "agent": {
+        "status": "error",
+        "error": "RuntimeError: LLM 请求重试 6 次仍失败",
+        "llm_calls": 45,
+        "tool_counts": {
+          "read_doc": 54,
+          "run_python": 34,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2670503,
+          "completion_tokens": 91197,
+          "total_tokens": 2761700,
+          "cached_tokens": 2582637,
+          "credit": 164.72
+        },
+        "elapsed_s": 4343.6,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "folding_umbrella",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "umb_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 46510,
+            "completion_tokens": 734,
+            "total_tokens": 47244,
+            "cached_tokens": 33428,
+            "credit": 4.67
+          },
+          "elapsed_s": 29.7
+        },
+        {
+          "part_id": "umb_hub",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 50295,
+            "completion_tokens": 2513,
+            "total_tokens": 52808,
+            "cached_tokens": 36463,
+            "credit": 6.7
+          },
+          "elapsed_s": 51.9
+        },
+        {
+          "part_id": "umb_runner",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 54726,
+            "completion_tokens": 2054,
+            "total_tokens": 56780,
+            "cached_tokens": 36455,
+            "credit": 7.35
+          },
+          "elapsed_s": 32.2
+        },
+        {
+          "part_id": "umb_rib",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 125752,
+            "completion_tokens": 3820,
+            "total_tokens": 129572,
+            "cached_tokens": 92517,
+            "credit": 13.97
+          },
+          "elapsed_s": 53.7
+        },
+        {
+          "part_id": "umb_stretcher",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 70172,
+            "completion_tokens": 2948,
+            "total_tokens": 73120,
+            "cached_tokens": 62176,
+            "credit": 6.18
+          },
+          "elapsed_s": 66.2
+        }
+      ],
+      "agent": {
+        "status": "error",
+        "error": "RuntimeError: LLM 请求重试 6 次仍失败",
+        "llm_calls": 41,
+        "tool_counts": {
+          "read_doc": 31,
+          "run_python": 35,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 1917635,
+          "completion_tokens": 105306,
+          "total_tokens": 2022941,
+          "cached_tokens": 1850428,
+          "credit": 159.05
+        },
+        "elapsed_s": 7683.9,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "offset_slider_crank",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "os_frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 48596,
+            "completion_tokens": 1577,
+            "total_tokens": 50173,
+            "cached_tokens": 35444,
+            "credit": 5.57
+          },
+          "elapsed_s": 28.9
+        },
+        {
+          "part_id": "os_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 71400,
+            "completion_tokens": 946,
+            "total_tokens": 72346,
+            "cached_tokens": 57704,
+            "credit": 5.53
+          },
+          "elapsed_s": 30.0
+        },
+        {
+          "part_id": "os_crank",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 55503,
+            "completion_tokens": 2249,
+            "total_tokens": 57752,
+            "cached_tokens": 47916,
+            "credit": 5.08
+          },
+          "elapsed_s": 33.4
+        },
+        {
+          "part_id": "os_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33466,
+            "completion_tokens": 596,
+            "total_tokens": 34062,
+            "cached_tokens": 11216,
+            "credit": 6.38
+          },
+          "elapsed_s": 13.1
+        },
+        {
+          "part_id": "os_rod",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 8,
+          "token_usage": {
+            "prompt_tokens": 184157,
+            "completion_tokens": 3245,
+            "total_tokens": 187402,
+            "cached_tokens": 150415,
+            "credit": 14.68
+          },
+          "elapsed_s": 58.2
+        },
+        {
+          "part_id": "os_slider",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 51509,
+            "completion_tokens": 1232,
+            "total_tokens": 52741,
+            "cached_tokens": 35279,
+            "credit": 5.99
+          },
+          "elapsed_s": 22.8
+        }
+      ],
+      "agent": {
+        "status": "error",
+        "error": "RuntimeError: LLM 请求重试 6 次仍失败",
+        "llm_calls": 20,
+        "tool_counts": {
+          "read_doc": 30,
+          "run_python": 18,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 598674,
+          "completion_tokens": 31746,
+          "total_tokens": 630420,
+          "cached_tokens": 493673,
+          "credit": 67.78
+        },
+        "elapsed_s": 3221.4,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "crank_rocker_linkage",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "cr_frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 52321,
+            "completion_tokens": 1395,
+            "total_tokens": 53716,
+            "cached_tokens": 35410,
+            "credit": 6.32
+          },
+          "elapsed_s": 24.0
+        },
+        {
+          "part_id": "cr_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 8,
+          "token_usage": {
+            "prompt_tokens": 98208,
+            "completion_tokens": 1528,
+            "total_tokens": 99736,
+            "cached_tokens": 73045,
+            "credit": 9.29
+          },
+          "elapsed_s": 36.2
+        },
+        {
+          "part_id": "cr_crank",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 131627,
+            "completion_tokens": 5520,
+            "total_tokens": 137147,
+            "cached_tokens": 86540,
+            "credit": 18.52
+          },
+          "elapsed_s": 67.2
+        },
+        {
+          "part_id": "cr_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 46405,
+            "completion_tokens": 728,
+            "total_tokens": 47133,
+            "cached_tokens": 22802,
+            "credit": 7.08
+          },
+          "elapsed_s": 17.8
+        },
+        {
+          "part_id": "cr_coupler",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 8,
+          "token_usage": {
+            "prompt_tokens": 214412,
+            "completion_tokens": 3829,
+            "total_tokens": 218241,
+            "cached_tokens": 180287,
+            "credit": 15.96
+          },
+          "elapsed_s": 58.1
+        },
+        {
+          "part_id": "cr_rocker",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 7,
+          "token_usage": {
+            "prompt_tokens": 184767,
+            "completion_tokens": 3598,
+            "total_tokens": 188365,
+            "cached_tokens": 150719,
+            "credit": 15.12
+          },
+          "elapsed_s": 53.9
+        },
+        {
+          "part_id": "cr_pin26",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 46444,
+            "completion_tokens": 774,
+            "total_tokens": 47218,
+            "cached_tokens": 33402,
+            "credit": 4.7
+          },
+          "elapsed_s": 17.1
+        }
+      ],
+      "agent": {
+        "status": "error",
+        "error": "RuntimeError: LLM 请求重试 6 次仍失败",
+        "llm_calls": 46,
+        "tool_counts": {
+          "read_doc": 44,
+          "run_python": 35,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2612688,
+          "completion_tokens": 156507,
+          "total_tokens": 2769195,
+          "cached_tokens": 2553212,
+          "credit": 222.37
+        },
+        "elapsed_s": 10209.7,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "excavator_arm",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "ex_base",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 8,
+          "token_usage": {
+            "prompt_tokens": 110354,
+            "completion_tokens": 2806,
+            "total_tokens": 113160,
+            "cached_tokens": 91839,
+            "credit": 9.27
+          },
+          "elapsed_s": 49.8
+        },
+        {
+          "part_id": "ex_boom",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 71011,
+            "completion_tokens": 3233,
+            "total_tokens": 74244,
+            "cached_tokens": 54704,
+            "credit": 8.39
+          },
+          "elapsed_s": 42.6
+        },
+        {
+          "part_id": "ex_stick",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 123975,
+            "completion_tokens": 2887,
+            "total_tokens": 126862,
+            "cached_tokens": 91305,
+            "credit": 12.87
+          },
+          "elapsed_s": 41.9
+        },
+        {
+          "part_id": "ex_bucket",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 157051,
+            "completion_tokens": 3928,
+            "total_tokens": 160979,
+            "cached_tokens": 123067,
+            "credit": 14.88
+          },
+          "elapsed_s": 56.2
+        },
+        {
+          "part_id": "ex_barrel",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 8,
+          "token_usage": {
+            "prompt_tokens": 110764,
+            "completion_tokens": 3288,
+            "total_tokens": 114052,
+            "cached_tokens": 92276,
+            "credit": 9.75
+          },
+          "elapsed_s": 49.5
+        },
+        {
+          "part_id": "ex_ram",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 154660,
+            "completion_tokens": 3528,
+            "total_tokens": 158188,
+            "cached_tokens": 121476,
+            "credit": 14.25
+          },
+          "elapsed_s": 49.6
+        },
+        {
+          "part_id": "ex_pin26",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 73320,
+            "completion_tokens": 1110,
+            "total_tokens": 74430,
+            "cached_tokens": 68647,
+            "credit": 3.64
+          },
+          "elapsed_s": 29.5
+        },
+        {
+          "part_id": "ex_pin14",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33464,
+            "completion_tokens": 534,
+            "total_tokens": 33998,
+            "cached_tokens": 21792,
+            "credit": 3.89
+          },
+          "elapsed_s": 13.5
+        },
+        {
+          "part_id": "ex_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33449,
+            "completion_tokens": 506,
+            "total_tokens": 33955,
+            "cached_tokens": 32366,
+            "credit": 1.42
+          },
+          "elapsed_s": 13.3
+        }
+      ],
+      "agent": {
+        "status": "error",
+        "error": "RuntimeError: LLM 请求重试 6 次仍失败",
+        "llm_calls": 49,
+        "tool_counts": {
+          "read_doc": 30,
+          "run_python": 46,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 3323801,
+          "completion_tokens": 128797,
+          "total_tokens": 3452598,
+          "cached_tokens": 3070290,
+          "credit": 253.47
+        },
+        "elapsed_s": 7640.6,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "sewing_machine_drive",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "sew_frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 7,
+          "token_usage": {
+            "prompt_tokens": 184408,
+            "completion_tokens": 2851,
+            "total_tokens": 187259,
+            "cached_tokens": 150532,
+            "credit": 14.32
+          },
+          "elapsed_s": 48.6
+        },
+        {
+          "part_id": "sew_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 46423,
+            "completion_tokens": 789,
+            "total_tokens": 47212,
+            "cached_tokens": 33384,
+            "credit": 4.71
+          },
+          "elapsed_s": 21.7
+        },
+        {
+          "part_id": "sew_crank",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 55906,
+            "completion_tokens": 3072,
+            "total_tokens": 58978,
+            "cached_tokens": 37542,
+            "credit": 8.4
+          },
+          "elapsed_s": 41.2
+        },
+        {
+          "part_id": "sew_pin",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33432,
+            "completion_tokens": 516,
+            "total_tokens": 33948,
+            "cached_tokens": 21785,
+            "credit": 3.86
+          },
+          "elapsed_s": 14.2
+        },
+        {
+          "part_id": "sew_rod",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 11,
+          "token_usage": {
+            "prompt_tokens": 307133,
+            "completion_tokens": 6451,
+            "total_tokens": 313584,
+            "cached_tokens": 243645,
+            "credit": 27.17
+          },
+          "elapsed_s": 122.8
+        },
+        {
+          "part_id": "sew_needle_bar",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 49089,
+            "completion_tokens": 1256,
+            "total_tokens": 50345,
+            "cached_tokens": 34634,
+            "credit": 5.56
+          },
+          "elapsed_s": 26.5
+        },
+        {
+          "part_id": "sew_main_gear",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 7,
+          "token_usage": {
+            "prompt_tokens": 107657,
+            "completion_tokens": 1830,
+            "total_tokens": 109487,
+            "cached_tokens": 98387,
+            "credit": 6.12
+          },
+          "elapsed_s": 47.5
+        },
+        {
+          "part_id": "sew_hook_gear",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 7,
+          "token_usage": {
+            "prompt_tokens": 103498,
+            "completion_tokens": 1622,
+            "total_tokens": 105120,
+            "cached_tokens": 83521,
+            "credit": 8.3
+          },
+          "elapsed_s": 41.4
+        },
+        {
+          "part_id": "sew_hook",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 61697,
+            "completion_tokens": 1335,
+            "total_tokens": 63032,
+            "cached_tokens": 47117,
+            "credit": 5.92
+          },
+          "elapsed_s": 31.8
+        },
+        {
+          "part_id": "sew_feed_crank",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 129550,
+            "completion_tokens": 3182,
+            "total_tokens": 132732,
+            "cached_tokens": 95843,
+            "credit": 13.52
+          },
+          "elapsed_s": 46.2
+        },
+        {
+          "part_id": "sew_coupler",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 129105,
+            "completion_tokens": 3646,
+            "total_tokens": 132751,
+            "cached_tokens": 95224,
+            "credit": 14.02
+          },
+          "elapsed_s": 52.7
+        },
+        {
+          "part_id": "sew_rocker",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 53447,
+            "completion_tokens": 3537,
+            "total_tokens": 56984,
+            "cached_tokens": 38668,
+            "credit": 8.0
+          },
+          "elapsed_s": 54.0
+        },
+        {
+          "part_id": "sew_rocker_pin",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33468,
+            "completion_tokens": 536,
+            "total_tokens": 34004,
+            "cached_tokens": 32362,
+            "credit": 1.45
+          },
+          "elapsed_s": 16.1
+        }
+      ],
+      "agent": {
+        "status": "error",
+        "error": "RuntimeError: LLM 请求重试 6 次仍失败",
+        "llm_calls": 45,
+        "tool_counts": {
+          "read_doc": 37,
+          "run_python": 38,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2871402,
+          "completion_tokens": 114050,
+          "total_tokens": 2985452,
+          "cached_tokens": 2661981,
+          "credit": 219.53
+        },
+        "elapsed_s": 11021.7,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "twin_cylinder_pump",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "tp_frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 51754,
+            "completion_tokens": 1415,
+            "total_tokens": 53169,
+            "cached_tokens": 35404,
+            "credit": 6.2
+          },
+          "elapsed_s": 24.0
+        },
+        {
+          "part_id": "tp_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 46455,
+            "completion_tokens": 800,
+            "total_tokens": 47255,
+            "cached_tokens": 33405,
+            "credit": 4.72
+          },
+          "elapsed_s": 17.6
+        },
+        {
+          "part_id": "tp_crank",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 6,
+          "token_usage": {
+            "prompt_tokens": 90496,
+            "completion_tokens": 4000,
+            "total_tokens": 94496,
+            "cached_tokens": 69933,
+            "credit": 10.52
+          },
+          "elapsed_s": 59.0
+        },
+        {
+          "part_id": "tp_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33445,
+            "completion_tokens": 545,
+            "total_tokens": 33990,
+            "cached_tokens": 21791,
+            "credit": 3.9
+          },
+          "elapsed_s": 20.3
+        },
+        {
+          "part_id": "tp_rod",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 8,
+          "token_usage": {
+            "prompt_tokens": 219346,
+            "completion_tokens": 3384,
+            "total_tokens": 222730,
+            "cached_tokens": 184469,
+            "credit": 15.78
+          },
+          "elapsed_s": 58.9
+        },
+        {
+          "part_id": "tp_piston",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 52661,
+            "completion_tokens": 1358,
+            "total_tokens": 54019,
+            "cached_tokens": 36008,
+            "credit": 6.24
+          },
+          "elapsed_s": 23.4
+        }
+      ],
+      "agent": {
+        "status": "error",
+        "error": "RuntimeError: LLM 请求重试 6 次仍失败",
+        "llm_calls": 41,
+        "tool_counts": {
+          "read_doc": 56,
+          "run_python": 26,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 2062410,
+          "completion_tokens": 66547,
+          "total_tokens": 2128957,
+          "cached_tokens": 1990806,
+          "credit": 124.17
+        },
+        "elapsed_s": 4870.3,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    },
+    {
+      "case_id": "windshield_wiper_linkage",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "wp_frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 54080,
+            "completion_tokens": 1675,
+            "total_tokens": 55755,
+            "cached_tokens": 36128,
+            "credit": 6.88
+          },
+          "elapsed_s": 29.7
+        },
+        {
+          "part_id": "wp_motor_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 45343,
+            "completion_tokens": 804,
+            "total_tokens": 46147,
+            "cached_tokens": 33419,
+            "credit": 4.46
+          },
+          "elapsed_s": 19.8
+        },
+        {
+          "part_id": "wp_crank",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 7,
+          "token_usage": {
+            "prompt_tokens": 105643,
+            "completion_tokens": 3620,
+            "total_tokens": 109263,
+            "cached_tokens": 74622,
+            "credit": 12.86
+          },
+          "elapsed_s": 53.8
+        },
+        {
+          "part_id": "wp_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 46036,
+            "completion_tokens": 1069,
+            "total_tokens": 47105,
+            "cached_tokens": 22800,
+            "credit": 7.34
+          },
+          "elapsed_s": 23.2
+        },
+        {
+          "part_id": "wp_pivot_pin",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33481,
+            "completion_tokens": 630,
+            "total_tokens": 34111,
+            "cached_tokens": 32369,
+            "credit": 1.55
+          },
+          "elapsed_s": 13.1
+        },
+        {
+          "part_id": "wp_link1",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 124434,
+            "completion_tokens": 3342,
+            "total_tokens": 127776,
+            "cached_tokens": 91553,
+            "credit": 13.38
+          },
+          "elapsed_s": 48.5
+        },
+        {
+          "part_id": "wp_arm1",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 8,
+          "token_usage": {
+            "prompt_tokens": 218110,
+            "completion_tokens": 5181,
+            "total_tokens": 223291,
+            "cached_tokens": 182531,
+            "credit": 17.72
+          },
+          "elapsed_s": 74.2
+        },
+        {
+          "part_id": "wp_arm2",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 124027,
+            "completion_tokens": 3160,
+            "total_tokens": 127187,
+            "cached_tokens": 91336,
+            "credit": 13.15
+          },
+          "elapsed_s": 47.8
+        },
+        {
+          "part_id": "wp_link2",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 7,
+          "token_usage": {
+            "prompt_tokens": 106955,
+            "completion_tokens": 3069,
+            "total_tokens": 110024,
+            "cached_tokens": 86244,
+            "credit": 9.96
+          },
+          "elapsed_s": 48.0
+        }
+      ],
+      "agent": {
+        "status": "error",
+        "error": "RuntimeError: LLM 请求重试 6 次仍失败",
+        "llm_calls": 27,
+        "tool_counts": {
+          "read_doc": 34,
+          "run_python": 22,
+          "finish": 0,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 1071687,
+          "completion_tokens": 42727,
+          "total_tokens": 1114414,
+          "cached_tokens": 1005639,
+          "credit": 79.24
+        },
+        "elapsed_s": 4009.0,
+        "delivered": false,
+        "export_ok": false,
+        "export_detail": "没有交付 assembly.scadpkg"
+      },
+      "assembly_score": 0.0,
+      "motion_score": 0.0,
+      "e2e": false,
+      "note": "没有可读的装配包"
+    }
+  ]
+}

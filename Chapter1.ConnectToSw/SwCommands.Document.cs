@@ -246,6 +246,50 @@ namespace Chapter1.ConnectToSw
             };
         }
 
+        /// <summary>
+        /// 导入 STEP 零件并另存为 .SLDPRT（导入后关闭该文档），供外部 CAD 生成的零件参与装配。
+        /// </summary>
+        public Dictionary<string, object> ImportStep(string stepPath, string savePath)
+        {
+            if (string.IsNullOrWhiteSpace(stepPath) || !File.Exists(stepPath))
+                throw new FileNotFoundException($"STEP 文件不存在: {stepPath}", stepPath);
+            if (string.IsNullOrWhiteSpace(savePath) || Path.GetExtension(savePath).ToLowerInvariant() != ".sldprt")
+                throw new ArgumentException("savePath 必须以 .SLDPRT 结尾", nameof(savePath));
+            var directory = Path.GetDirectoryName(savePath);
+            if (!string.IsNullOrEmpty(directory))
+                Directory.CreateDirectory(directory);
+
+            int errors = 0, warnings = 0;
+            var importData = _swApp.GetImportFileData(stepPath);
+            var doc = _swApp.LoadFile4(stepPath, "r", importData, ref errors) as IModelDoc2;
+            if (doc == null)
+                throw new InvalidOperationException($"导入 STEP 失败: {stepPath} (errors={errors})");
+            if (doc.GetType() != (int)swDocumentTypes_e.swDocPART)
+            {
+                _swApp.CloseDoc(doc.GetTitle());
+                throw new InvalidOperationException($"STEP 导入后不是零件文档: {stepPath}");
+            }
+            int bodies = (doc as IPartDoc)?.GetBodies2((int)swBodyType_e.swSolidBody, true) is object[] arr ? arr.Length : 0;
+            bool saved = doc.Extension.SaveAs(
+                savePath,
+                (int)swSaveAsVersion_e.swSaveAsCurrentVersion,
+                (int)swSaveAsOptions_e.swSaveAsOptions_Silent,
+                null,
+                ref errors,
+                ref warnings);
+            var title = doc.GetTitle();
+            _swApp.CloseDoc(title);
+            if (ReferenceEquals(ActiveDoc, doc))
+                ActiveDoc = null;
+            if (!saved || !File.Exists(savePath))
+                throw new InvalidOperationException($"另存 SLDPRT 失败: {savePath} (errors={errors}, warnings={warnings})");
+            return new Dictionary<string, object>
+            {
+                ["path"] = savePath,
+                ["solidBodies"] = bodies,
+            };
+        }
+
         #endregion
     }
 }

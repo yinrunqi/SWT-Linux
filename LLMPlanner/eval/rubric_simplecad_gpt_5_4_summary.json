@@ -1,0 +1,471 @@
+{
+  "all": {
+    "tasks": 50,
+    "runs": 100,
+    "score": 99.4,
+    "ci95": [
+      98.4,
+      100.0
+    ],
+    "accepted": 98,
+    "core_form": 0.99,
+    "pass@1": 0.98,
+    "pass@2": 0.98
+  },
+  "by_kind": {
+    "Everyday objects": {
+      "tasks": 9,
+      "runs": 18,
+      "score": 96.7,
+      "ci95": [
+        91.1,
+        100.0
+      ],
+      "accepted": 16,
+      "core_form": 0.944,
+      "pass@1": 0.889,
+      "pass@2": 0.889
+    },
+    "Common machined parts": {
+      "tasks": 19,
+      "runs": 38,
+      "score": 100.0,
+      "ci95": [
+        100.0,
+        100.0
+      ],
+      "accepted": 38,
+      "core_form": 1.0,
+      "pass@1": 1.0,
+      "pass@2": 1.0
+    },
+    "Multi-feature parts": {
+      "tasks": 8,
+      "runs": 16,
+      "score": 100.0,
+      "ci95": [
+        100.0,
+        100.0
+      ],
+      "accepted": 16,
+      "core_form": 1.0,
+      "pass@1": 1.0,
+      "pass@2": 1.0
+    },
+    "Operation-specific parts": {
+      "tasks": 14,
+      "runs": 28,
+      "score": 100.0,
+      "ci95": [
+        100.0,
+        100.0
+      ],
+      "accepted": 28,
+      "core_form": 1.0,
+      "pass@1": 1.0,
+      "pass@2": 1.0
+    }
+  },
+  "per_task": {
+    "phone_stand": {
+      "scores": [
+        80.0,
+        60.0
+      ],
+      "accepted": 0,
+      "missing": 0
+    },
+    "stool": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "rounded_stool": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "storage_box": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "standard_die": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "mug": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "vase": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "key": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "soap_dish": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "hex_nut": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "wrench": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "gear_disc": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "flange": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "pulley": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "stepped_shaft": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "socket_bolt": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "l_bracket": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "spacer_ring": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "mounting_plate": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "stepped_block": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "knob": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "hex_standoff": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "u_channel": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "flanged_bushing": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "wedge_block": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "spoked_wheel": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "end_cap": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "link_bar": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "fork_end": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "three_lug_housing": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "pillow_block": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "twin_arm_rocker": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "clevis_bracket": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "diamond_flange": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "support_seat": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "crank": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "gusset_bracket": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "corner_rib_stand": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "open_box": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "lidless_housing": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "counterbore_plate": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "csk_cover": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "side_pad": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "through_boss": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "sheet_angle": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "sheet_channel": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "flanged_elbow": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "bent_tube": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "square_to_round": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "rect_to_circle": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    }
+  }
+}

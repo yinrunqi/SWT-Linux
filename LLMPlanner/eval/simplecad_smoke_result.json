@@ -1,0 +1,67 @@
+{
+  "summary": {
+    "model": "claude-sonnet-5",
+    "runs": 2,
+    "submitted": 2,
+    "finished": 2,
+    "errors": 0,
+    "mean_llm_calls": 9.5,
+    "mean_elapsed_s": 105.1,
+    "mean_total_tokens": 388848,
+    "token_totals": {
+      "prompt_tokens": 763598,
+      "completion_tokens": 14099,
+      "total_tokens": 777697,
+      "cached_tokens": 684122
+    },
+    "credit_total": 47.63
+  },
+  "runs": [
+    {
+      "case": "soap_dish",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 14,
+      "tool_counts": {
+        "read_doc": 20,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 699662,
+        "completion_tokens": 12906,
+        "total_tokens": 712568,
+        "cached_tokens": 637668,
+        "credit": 41.15
+      },
+      "elapsed_s": 182.8,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_smoke_result/soap_dish_r1.step"
+    },
+    {
+      "case": "square_to_round",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 5,
+      "tool_counts": {
+        "read_doc": 6,
+        "run_python": 2,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 63936,
+        "completion_tokens": 1193,
+        "total_tokens": 65129,
+        "cached_tokens": 46454,
+        "credit": 6.48
+      },
+      "elapsed_s": 27.4,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_smoke_result/square_to_round_r1.step"
+    }
+  ]
+}

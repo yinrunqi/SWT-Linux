@@ -426,9 +426,32 @@ namespace Chapter1.ConnectToSw
             {
                 if (!DefaultPlaneNames.ContainsKey(value))
                     throw new ArgumentException($"未知基准面 {value}，可选 front/top/right");
-                if (!SelectByIDInAssembly(DefaultPlaneNames[value], componentName, "PLANE", mark, append))
-                    throw new InvalidOperationException($"选择 {componentName} 的基准面 {value} 失败");
-                return;
+                if (SelectByIDInAssembly(DefaultPlaneNames[value], componentName, "PLANE", mark, append))
+                    return;
+                // 导入件（如 STEP）默认基准面可能不是中文名：按特征树顺序取前三个 RefPlane
+                int planeIndex = value == "front" ? 0 : value == "top" ? 1 : 2;
+                int seen = 0;
+                var feature = component.FirstFeature() as IFeature;
+                while (feature != null)
+                {
+                    if (feature.GetTypeName2() == "RefPlane")
+                    {
+                        if (seen == planeIndex)
+                        {
+                            if (!append)
+                                model.ClearSelection2(true);
+                            if (feature.Select2(true, mark))
+                            {
+                                Console.WriteLine($"[SwCommands] 按序选中 {componentName} 基准面 {feature.Name} ({value})");
+                                return;
+                            }
+                            break;
+                        }
+                        seen++;
+                    }
+                    feature = feature.GetNextFeature() as IFeature;
+                }
+                throw new InvalidOperationException($"选择 {componentName} 的基准面 {value} 失败");
             }
             throw new ArgumentException($"未知引用类型 {kind}");
         }

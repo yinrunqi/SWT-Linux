@@ -1,0 +1,96 @@
+{
+  "all": {
+    "tasks": 8,
+    "runs": 16,
+    "score": 79.0,
+    "ci95": [
+      59.8,
+      96.7
+    ],
+    "accepted": 10,
+    "core_form": 0.812,
+    "pass@1": 0.625,
+    "pass@2": 0.875
+  },
+  "by_kind": {
+    "Showcase parts": {
+      "tasks": 8,
+      "runs": 16,
+      "score": 79.0,
+      "ci95": [
+        59.8,
+        96.7
+      ],
+      "accepted": 10,
+      "core_form": 0.812,
+      "pass@1": 0.625,
+      "pass@2": 0.875
+    }
+  },
+  "per_task": {
+    "quad_frame": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "connecting_rod": {
+      "scores": [
+        83.33,
+        0.0
+      ],
+      "accepted": 0,
+      "missing": 1
+    },
+    "finned_housing": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "sprocket": {
+      "scores": [
+        100.0,
+        100.0
+      ],
+      "accepted": 2,
+      "missing": 0
+    },
+    "handwheel": {
+      "scores": [
+        100.0,
+        0.0
+      ],
+      "accepted": 1,
+      "missing": 1
+    },
+    "camshaft": {
+      "scores": [
+        90.0,
+        100.0
+      ],
+      "accepted": 1,
+      "missing": 0
+    },
+    "planet_carrier": {
+      "scores": [
+        90.91,
+        100.0
+      ],
+      "accepted": 1,
+      "missing": 0
+    },
+    "impeller": {
+      "scores": [
+        100.0,
+        0.0
+      ],
+      "accepted": 1,
+      "missing": 1
+    }
+  }
+}

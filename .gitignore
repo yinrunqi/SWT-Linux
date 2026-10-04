@@ -66,6 +66,8 @@ Chapter1.ConnectToSw/obj/**
 # LLMPlanner 中需要排除的缓存/生成物
 LLMPlanner/venv/**
 LLMPlanner/venv-occ/**
+LLMPlanner/venv-t2c/**
+LLMPlanner/third_party/text-to-cad/**
 LLMPlanner/.env
 LLMPlanner/**/__pycache__/**
 LLMPlanner/**/.llm_cache/**
