@@ -1,0 +1,88 @@
+case: d29_hanger_bracket
+title: D29 吊架
+prompt: 根据所附三视图（第三角画法，单位 mm）建模吊架，单一实体。
+prompt_en: Model the hanger bracket from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d29_hanger_bracket.png
+reference: eval/three_view/references/d29_hanger_bracket.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-40, 70, 20], b: [40, 70, 20], side: top, tier: 2, text: "80"}
+    - {view: front, a: [-22, 60, 20], b: [22, 60, 20], side: top, tier: 1, text: "44"}
+    - {view: front, a: [22, 40, 20], b: [30, 40, 20], side: bottom, text: "8"}
+    - {view: front, a: [40, 70, 20], b: [40, 60, 20], side: right, tier: 1, text: "10"}
+    - {view: front, a: [40, 70, 20], b: [30, 20, 20], side: right, tier: 2, text: "50"}
+    - {view: right, a: [40, 0, -20], b: [40, 70, -20], side: right, text: "70"}
+    - {view: right, a: [40, 70, 20], b: [40, 70, -20], side: top, text: "40"}
+    - {view: top, a: [-40, 70, -12], b: [-40, 70, 12], side: left, text: "24"}
+  callouts:
+    - {view: right, at: [40, 20, 0], r: 8, angle: 210, leader: 60, text: "Ø16 通孔"}
+    - {view: right, at: [40, 20, 0], r: 20, angle: -30, leader: 40, text: "R20"}
+    - {view: top, at: [0, 70, 12], r: 4.5, angle: 30, leader: 60, text: "2×Ø9 通孔"}
+  centers:
+    - {view: right, at: [40, 20, 0], r: 8}
+    - {view: top, at: [0, 70, 12], r: 4.5}
+    - {view: top, at: [0, 70, -12], r: 4.5}
+  axes:
+    - {view: front, a: [0, 0, 20], b: [0, 74, 20]}
+  notes:
+    - "两吊耳相同、对称于中心；吊耳下端为 R20 半圆，与 Ø16 孔同心"
+    - "顶板 80×40×10；2×Ø9 孔位于顶板左右中心线上"
+
+# frame：轴 0 = 前后 40，轴 1 = 高度 70（顶面低），轴 2 = 宽度 80
+entities:
+  pin: {cylinder: {d: 16, side: inner}}
+  holes: {cylinder: {d: 9, side: inner}, count: 2}
+  frame: {principal_frame: {signs: {1: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 80；右视图 70、40
+    hard: true
+    check:
+      - bbox_sorted: [40, 70, 80]
+
+  - id: plate
+    source: 主视图顶板厚 10；俯视图 80×40
+    check:
+      - line_material: {frame: frame, along: 1, at: [20, null, 40], expect: [[0, 10]]}
+      - line_material: {frame: frame, along: 2, at: [20, 5, null], expect: [[0, 80]]}
+
+  - id: legs
+    source: 主视图两吊耳内距 44、厚 8；右视图 R20；注释：对称于中心
+    derivation: 距中面 10 处，R20 圆弧下沿高 20 − √(20² − 10²) = 2.68，即自顶面 67.32
+    check:
+      - line_material: {frame: frame, along: 2, at: [10, 30, null], expect: [[10, 18], [62, 70]]}
+      - line_material: {frame: frame, along: 1, at: [10, null, 14], expect: [[0, 67.32]]}
+
+  - id: pin_hole
+    source: 右视图 Ø16 通孔；主视图孔心距顶面 50；注释：与 R20 同心
+    check:
+      - exists: pin
+      - through: {holes: pin}
+      - parallel_to_frame: {frame: frame, axis: 2, items: pin}
+      - line_material: {frame: frame, along: 2, at: [20, 50, null], expect: []}
+      - line_material: {frame: frame, along: 2, at: [20, 43, null], expect: []}
+      - line_material: {frame: frame, along: 0, at: [null, 41, 14], expect: [[0, 40]]}
+
+  - id: plate_holes
+    source: 俯视图 2×Ø9 通孔，孔距 24；注释：位于左右中心线上
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [0, 2], expect: [[8, 40], [32, 40]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 63163.76
+    check:
+      - volume: 63163.76
+
+ungraded: []

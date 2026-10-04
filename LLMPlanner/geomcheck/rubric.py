@@ -836,6 +836,8 @@ def _frame_point(frame: Frame, a: dict, along: int | None = None) -> np.ndarray:
 
 
 def _match_intervals(ctx: Ctx, got: list, expect: list) -> bool:
+    # 探测线恰好擦过一条棱时会得到零长度区间，它不代表材料
+    got = [g for g in got if g[1] - g[0] > ctx.tol_len]
     return len(got) == len(expect) and all(
         ctx.near(g[0], e[0]) and ctx.near(g[1], e[1]) for g, e in zip(got, expect)
     )
@@ -1679,10 +1681,15 @@ def evaluate(rubric: dict, part: Part) -> dict:
     ctx = Ctx(part, tol.get("length_mm", 0.1), tol.get("angle_deg", 0.5), tol.get("volume_rel", 0.01),
               rubric.get("entities", {}))
     rows = []
+    empty = part.shape is None or part.shape.IsNull()
     for item in rubric["rubrics"]:
         checks, ok_all = [], True
         for chk in item["check"]:
             (name, args), = chk.items()
+            if empty:
+                checks.append({"check": name, "ok": False, "error": "STEP 中没有形体"})
+                ok_all = False
+                continue
             try:
                 ok, detail = CHECKS[name](ctx, args)
             except EntityMissing as exc:

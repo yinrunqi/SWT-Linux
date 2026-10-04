@@ -1,0 +1,115 @@
+case: engine_piston
+prompt: >-
+  创建一个发动机活塞，单一实体，所有回转结构同轴。活塞外径 86mm、总高 70mm；以活塞顶面为 0、沿轴线向下量：
+  顶面外圆棱边倒 1mm×45° 倒角。外圆上有三道环槽，槽底直径都是 78mm：第一道气环槽位于 7~9mm（宽 2mm），
+  第二道气环槽位于 13~15mm（宽 2mm），油环槽位于 19~23mm（宽 4mm）。活塞底部敞开，内腔是直径 74mm 的圆柱孔，
+  从底面一直挖到距顶面 12mm 处（即顶部厚 12mm）。内腔中有两个活塞销座：它们是轴线沿同一水平直径方向、
+  位于距顶面 40mm 高度的直径 30mm 圆柱，各从内腔壁向内伸到距活塞轴线 22mm 处。直径 22mm 的活塞销孔沿这条直径
+  贯穿两个销座和活塞外壁。顶面上有两个直径 30mm、深 2mm 的平底气门避让坑，坑心位于垂直于活塞销孔的直径上、
+  距活塞轴线 18mm 的两侧。油环槽槽底沿圆周均布 8 个直径 3mm 的径向回油孔（孔轴线在油环槽宽度中点），
+  从槽底钻通到内腔，其中两个孔与活塞销孔方向一致。
+prompt_en: >-
+  Create an engine piston as a single solid body; all revolved features are coaxial. The piston has an outer
+  diameter of 86mm and an overall height of 70mm; measuring downward along the axis from the piston crown face
+  at 0: the outer edge of the crown is chamfered 1mm×45°. The outer surface has three ring grooves, all with a
+  root diameter of 78mm: the first compression-ring groove is at 7~9mm (2mm wide), the second compression-ring
+  groove is at 13~15mm (2mm wide), and the oil-ring groove is at 19~23mm (4mm wide). The piston is open at the
+  bottom; its cavity is a 74mm-diameter cylindrical bore cut from the bottom face up to 12mm from the crown face
+  (so the crown is 12mm thick). Inside the cavity there are two piston-pin bosses: cylinders of 30mm diameter
+  whose axis lies along one horizontal diameter at a depth of 40mm from the crown face, each reaching inward
+  from the cavity wall to 22mm from the piston axis. A 22mm-diameter piston-pin bore runs along this diameter
+  through both bosses and the outer wall of the piston. The crown face has two flat-bottomed valve reliefs 30mm
+  in diameter and 2mm deep, centered on the diameter perpendicular to the pin bore, 18mm from the piston axis on
+  either side. The root of the oil-ring groove has 8 radial oil drain holes of 3mm diameter evenly spaced around
+  the circumference (hole axes at mid-width of the oil-ring groove), drilled from the groove root through to the
+  cavity, two of which are in line with the pin bore.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿活塞轴线，t = 0 在顶面（两端平面面积较大的一端）指向底面；轴 1 沿活塞销孔方向。
+# 零件关于过轴线的两个对称面都镜像对称，轴 1、轴 2 的正负不影响探测。
+entities:
+  outer:    {cylinder: {d: 86, side: outer}}
+  cavity:   {cylinder: {d: 74, side: inner}}
+  pin:      {cylinder: {d: 22, side: inner}, count: 2}
+  bosses:   {cylinder: {d: 30, side: outer}, count: 2}
+  reliefs:  {cylinder: {d: 30, side: inner}, count: 2}
+  drains:   {cylinder: {d: 3, side: inner}, count: 8}
+  chamfer:  {cone: {semi_angle: 45, side: outer, max_r: 43}, count: 1}
+  frame:    {axis_frame: {axis: outer, low: larger_area, ref_dir: pin}}
+
+rubrics:
+  - id: solid
+    source: 单一实体，所有回转结构同轴
+    hard: true
+    check:
+      - single_valid_solid: {}
+      - coaxial: [cavity, outer]
+
+  - id: outer
+    source: 外径 86mm、总高 70mm
+    hard: true
+    check:
+      - bbox_sorted: [70, 86, 86]
+
+  - id: crown
+    source: 内腔挖到距顶面 12mm 处，顶部厚 12mm
+    check:
+      - line_material: {frame: frame, along: 0, polar: [0, 0], expect: [[0, 12]]}
+      - line_material: {frame: frame, along: 0, polar: [30, 45], expect: [[0, 12]]}
+
+  - id: ring_grooves
+    source: 槽底直径 78mm 的三道环槽：7~9、13~15、19~23mm
+    check:
+      - line_material: {frame: frame, along: 0, polar: [41, 90], expect: [[0, 7], [9, 13], [15, 19], [23, 70]]}
+      - radial_material: {frame: frame, t: 8, deg: 90, expect: [[0, 39]]}
+      - radial_material: {frame: frame, t: 21, deg: 22.5, expect: [[37, 39]]}
+
+  - id: skirt
+    source: 外径 86mm、内腔直径 74mm（裙部壁厚 6mm）
+    check:
+      - exists: cavity
+      - radial_material: {frame: frame, t: 40, deg: 90, expect: [[37, 43]]}
+
+  - id: pin_bosses
+    source: 距顶面 40mm、直径 30mm 的两个销座，各伸到距活塞轴线 22mm 处
+    derivation: 距顶面 53mm（销孔中心下方 13mm，在销孔 R11 之外、销座 R15 之内）沿销孔方向，材料从 22 到外壁 43
+    check:
+      - exists: bosses
+      - radial_material: {frame: frame, t: 53, deg: 0, expect: [[22, 43]]}
+      - radial_material: {frame: frame, t: 53, deg: 180, expect: [[22, 43]]}
+
+  - id: pin_bore
+    source: 直径 22mm 的活塞销孔沿销座轴线贯穿两个销座和外壁
+    check:
+      - exists: pin
+      - through: {holes: pin}
+      - coaxial: [pin, bosses]
+      - axis_positions: {frame: frame, items: pin, axes: [0, 2], expect: [[40, 0], [40, 0]]}
+
+  - id: valve_reliefs
+    source: 顶面两个直径 30mm、深 2mm 的平底避让坑，坑心在垂直于销孔的直径上、距轴线 18mm
+    check:
+      - exists: reliefs
+      - pocket_depth: {pocket: reliefs, value: 2, open_at_extreme: true}
+      - axis_positions: {frame: frame, items: reliefs, axes: [1, 2], expect: [[0, 18], [0, -18]]}
+
+  - id: drain_holes
+    source: 油环槽槽底均布 8 个直径 3mm 径向回油孔，孔轴线在槽宽中点，钻通到内腔，其中两个与销孔方向一致
+    check:
+      - exists: drains
+      - angular_openings: {frame: frame, t: 21, r: 38, count: 8, chord: 3}
+      - radial_material: {frame: frame, t: 21, deg: 0, expect: []}
+
+  - id: crown_chamfer
+    source: 顶面外圆棱边倒 1mm×45°
+    check:
+      - exists: chamfer
+      - cone_size: {cones: chamfer, radial: 1, axial: 1}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 150262.2
+    check:
+      - volume: 150262.2
+
+ungraded: []

@@ -1,4 +1,4 @@
-"""离线补算装配评测里依赖 OCC 的部分：零件接口 rubric、齿隙，以及由它们决定的运动分与 e2e。
+"""离线补算装配评测里依赖 OCC 的部分：零件接口 rubric 和由它决定的 e2e，并补量齿隙（只记录不计分）。
 
 用于建模机器上 OCC 不可用（例如 Windows 智能应用控制拦截 OCP 的 DLL）的情况：
 装配 rubric 与其余运动检查在建模时已经算好，这里只读拷过来的零件 STEP 重新打分，不需要 SolidWorks。
@@ -72,23 +72,18 @@ def regrade_row(row: dict, artifacts: Path) -> dict:
     if row.get("parts") is not None and row["condition"] != "gold":
         row["part_pass_rate"] = _rate(row["parts"])
 
+    # 齿隙只记录不计分（见文档 4.2 节），这里只补量，不改运动分
     motion = (row.get("assembly") or {}).get("motion") or {}
-    pre = motion.get("pre_clearance")
-    if motion.get("clearance") and pre:
-        gaps = []
-        for item in motion["clearance"]:
+    gaps = motion.get("clearance") or []
+    if gaps and all(item.get("transforms") for item in gaps):
+        for item in gaps:
             steps = [parts_dir / _local_name(p) for p in item["steps"]]
             gap = clearance_mm(steps[0], steps[1], *item["transforms"]) if all(p.is_file() for p in steps) else None
             lo, hi = item.get("range_mm") or [0.02, 2.0]
             item.update({"mm": None if gap is None else round(gap, 4), "ok": gap is not None and lo <= gap <= hi})
-            gaps.append(item)
-        all_ok = all(item["ok"] for item in gaps)
-        motion["score"] = pre["score"] if all_ok else max(0.0, pre["score"] - 10)
-        motion["passed"] = bool(pre["passed"]) and all_ok
-        row["motion_score"] = float(motion["score"])
         log["clearance"] = [{"pair": item["pair"], "mm": item["mm"], "ok": item["ok"]} for item in gaps]
-    elif motion.get("clearance"):
-        log["clearance"] = "缺少 pre_clearance/transforms（旧版结果），无法补算齿隙"
+    elif gaps:
+        log["clearance"] = "缺少 transforms（旧版结果），无法补量齿隙"
 
     if row.get("assembly") is not None:
         row["e2e"] = row["part_pass_rate"] == 1.0 and bool(motion.get("passed"))

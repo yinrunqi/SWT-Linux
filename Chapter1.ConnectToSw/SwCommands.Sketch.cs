@@ -211,7 +211,7 @@ namespace Chapter1.ConnectToSw
         }
 
         public Dictionary<string, object> SketchCircles(
-            List<Dictionary<string, object>> circles)
+            List<Dictionary<string, object>> circles, bool noInference = false)
         {
             if (circles == null || circles.Count == 0)
                 throw new ArgumentException("circles 至少包含一个圆");
@@ -224,7 +224,7 @@ namespace Chapter1.ConnectToSw
                 double radius = Convert.ToDouble(circle["radius"]);
                 if (radius <= 0)
                     throw new ArgumentOutOfRangeException("radius", "半径必须为正数");
-                SketchCircle(cx, cy, radius, cz);
+                SketchCircle(cx, cy, radius, cz, noInference);
             }
             return new Dictionary<string, object>
             {
@@ -395,7 +395,21 @@ namespace Chapter1.ConnectToSw
             double sx1, sy1, sx2, sy2;
             ModelToSketchPoint(x1, y1, z1, out sx1, out sy1);
             ModelToSketchPoint(x2, y2, z2, out sx2, out sy2);
-            ActiveDoc.SketchManager.CreateCenterLine(sx1, sy1, 0, sx2, sy2, 0);
+            var sketchManager = ActiveDoc.SketchManager;
+            bool previousAddToDb = sketchManager.AddToDB;
+            object line;
+            try
+            {
+                // 视图缩得很小时，短中心线的端点会被自动吸附到原点上，线就退化掉了，旋转随之找不到轴。
+                sketchManager.AddToDB = true;
+                line = sketchManager.CreateCenterLine(sx1, sy1, 0, sx2, sy2, 0);
+            }
+            finally
+            {
+                sketchManager.AddToDB = previousAddToDb;
+            }
+            if (line == null)
+                throw new InvalidOperationException($"中心线创建失败: ({x1},{y1},{z1}) -> ({x2},{y2},{z2})");
             Console.WriteLine($"[SwCommands] 绘制中心线: 模型({x1},{y1},{z1}) -> ({x2},{y2},{z2})，草图({sx1:F4},{sy1:F4}) -> ({sx2:F4},{sy2:F4})");
         }
 
@@ -413,7 +427,17 @@ namespace Chapter1.ConnectToSw
             ModelToSketchPoint(cx, cy, cz, out scx, out scy);
             ModelToSketchPoint(startX, startY, startZ, out ssx, out ssy);
             ModelToSketchPoint(endX, endY, endZ, out sex, out sey);
-            ActiveDoc.SketchManager.CreateArc(scx, scy, 0, ssx, ssy, 0, sex, sey, 0, direction);
+            var sketchManager = ActiveDoc.SketchManager;
+            bool previousAddToDb = sketchManager.AddToDB;
+            try
+            {
+                sketchManager.AddToDB = true;
+                sketchManager.CreateArc(scx, scy, 0, ssx, ssy, 0, sex, sey, 0, direction);
+            }
+            finally
+            {
+                sketchManager.AddToDB = previousAddToDb;
+            }
             Console.WriteLine($"[SwCommands] 绘制圆弧: 圆心({cx},{cy}), 起点({startX},{startY}), 终点({endX},{endY}), 方向={direction}");
         }
 

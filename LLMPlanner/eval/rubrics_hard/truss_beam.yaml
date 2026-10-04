@@ -1,0 +1,96 @@
+case: truss_beam
+prompt: >-
+  创建一根平面华伦桁架连杆梁，单一实体，Z 轴向上。主体是 420×60×8mm 的底板（x ∈ [0, 420]、y ∈ [0, 60]、z = 0~8），
+  两端各有一个与底板等厚（z = 0~8）的圆形凸台，圆心 (0, 30) 和 (420, 30)、直径 60mm，与底板融合。
+  左端凸台中心开直径 20mm 的通孔，右端凸台中心开直径 16mm 的通孔。底板两条长边的上表面各有一条加强筋：
+  宽 8mm、高 8mm，即 y ∈ [0, 8] 和 y ∈ [52, 60]、z = 8~16，x 从 0 到 420。底板上贯穿切出 9 个三角形减重孔，
+  形成华伦桁架：5 个尖角朝 +Y 的三角形，顶点为 (x0, 10)、(x0 + 60, 10)、(x0 + 30, 50)，x0 = 20、100、180、260、340；
+  4 个尖角朝 −Y 的三角形，顶点为 (x0 + 40, 50)、(x0 + 100, 50)、(x0 + 70, 10)，x0 = 20、100、180、260。
+  所有三角孔的 27 个竖直内角都倒 R4mm 圆角。
+prompt_en: >-
+  Create a flat Warren-truss link beam as a single solid body, with the Z axis pointing up. The main body is a
+  420×60×8mm plate (x ∈ [0, 420], y ∈ [0, 60], z = 0~8). Each end has a round boss of the same thickness
+  (z = 0~8), centered at (0, 30) and (420, 30) with a diameter of 60mm, fused with the plate. The left boss has
+  a 20mm-diameter through hole at its center and the right boss a 16mm-diameter through hole at its center. The
+  top face of the plate carries a stiffening rib along each of its two long edges: 8mm wide and 8mm high, i.e.
+  y ∈ [0, 8] and y ∈ [52, 60], z = 8~16, running from x = 0 to 420. Cut 9 triangular lightening holes through
+  the plate to form a Warren truss: 5 triangles pointing to +Y with vertices (x0, 10), (x0 + 60, 10) and
+  (x0 + 30, 50) for x0 = 20, 100, 180, 260, 340; and 4 triangles pointing to −Y with vertices (x0 + 40, 50),
+  (x0 + 100, 50) and (x0 + 70, 10) for x0 = 20, 100, 180, 260. Round all 27 vertical inner corners of the
+  triangular holes with R4mm fillets.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿左端 D20 孔轴线向上，t = 0 在底面；轴 1 指向右端 D16 孔；轴 2 = 轴 0 × 轴 1。
+# frame 坐标 = (z, x, y − 30)。
+entities:
+  left:     {cylinder: {d: 20, side: inner}, count: 1}
+  right:    {cylinder: {d: 16, side: inner}, count: 1}
+  # 三角孔内角圆角：圆心角 106°/127°，超出 blend_faces 的 100° 上限，按 R4 圆柱面计数
+  fillets:  {cylinder: {d: 8, side: inner}, count: 27}
+  frame:    {axis_frame: {axis: left, low: larger_area, ref: right}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 底板 420×60mm，两端 D60 凸台；加强筋顶面 z = 16
+    hard: true
+    check:
+      - bbox_sorted: [16, 60, 480]
+
+  - id: end_bosses
+    source: 两端 D60 凸台，左孔 D20、右孔 D16，孔距 420mm
+    derivation: x = −20 沿 Y：凸台弦长 ±√(30² − 20²) = ±22.361
+    check:
+      - exists: left
+      - exists: right
+      - through: {holes: left}
+      - through: {holes: right}
+      - axis_distance: {from: left, to: right, value: 420}
+      - line_material: {frame: frame, along: 2, at: [4, -20, null], expect: [[-22.361, 22.361]]}
+
+  - id: truss_mid
+    source: 9 个三角孔：尖角朝 +Y 的 x0 = 20 + 80k，尖角朝 −Y 的在其后 40mm
+    derivation: >-
+      y = 30（三角形半高）沿 X：朝 +Y 的孔占 [x0 + 15, x0 + 45]，朝 −Y 的占 [x0 + 55, x0 + 85]；
+      端孔 R10 / R8
+    check:
+      - line_material: {frame: frame, along: 1, at: [4, null, 0],
+                        expect: [[-30, -10], [10, 35], [65, 75], [105, 115], [145, 155], [185, 195], [225, 235],
+                                 [265, 275], [305, 315], [345, 355], [385, 412], [428, 450]]}
+
+  - id: truss_orientation
+    source: 尖角朝 +Y 的三角形底边在 y = 10、顶点在 y = 50；朝 −Y 的相反
+    derivation: >-
+      y = 21 沿 X：朝 +Y 的孔半宽 30·(1 − 11/40) = 21.75，朝 −Y 的半宽 30·11/40 = 8.25；
+      左孔弦 ±√(10² − 9²) = ±4.359，凸台 ±√(30² − 9²) = ±28.618，右孔 R8 不到 y = 21
+    check:
+      - line_material: {frame: frame, along: 1, at: [4, null, -9],
+                        expect: [[-28.618, -4.359], [4.359, 28.25], [71.75, 81.75], [98.25, 108.25], [151.75, 161.75],
+                                 [178.25, 188.25], [231.75, 241.75], [258.25, 268.25], [311.75, 321.75],
+                                 [338.25, 348.25], [391.75, 448.618]]}
+
+  - id: ribs
+    source: 两条长边上 8×8mm 加强筋，y ∈ [0, 8] 与 [52, 60]，z = 8~16
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 200, -26], expect: [[0, 16]]}
+      - line_material: {frame: frame, along: 0, at: [null, 200, 26], expect: [[0, 16]]}
+      - line_material: {frame: frame, along: 0, at: [null, 200, -21], expect: [[0, 8]]}
+      - line_material: {frame: frame, along: 1, at: [12, null, -26], expect: [[0, 420]]}
+
+  - id: corner_fillets
+    source: 三角孔 27 个竖直内角 R4mm 圆角
+    check:
+      - exists: fillets
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 189982.6
+    check:
+      - volume: 189982.6
+
+ungraded: []

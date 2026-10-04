@@ -1,0 +1,123 @@
+case: robot_arm_link
+prompt: >-
+  创建一根机械臂大臂连杆，单一实体，Z 轴向上。臂身是厚 30mm（z = 5~35）的平板，外形是两个圆的外公切线围成的轮廓：
+  肩部圆心 (0, 0)、半径 40mm，肘部圆心 (200, 0)、半径 28mm。肩部另有一个圆心 (0, 0)、直径 80mm、高 40mm（z = 0~40）的
+  凸台，与臂身融合。肩部中心开直径 52mm 的轴承通孔，肘部中心开直径 35mm 的通孔。臂身上下两面各铣一个深 10mm 的
+  减重槽（上槽 z = 25~35，下槽 z = 5~15，中间留 10mm 腹板），两个槽的外形相同：两个圆的外公切线围成的轮廓，
+  圆心 (70, 0)、半径 22mm 与圆心 (150, 0)、半径 14mm。腹板中心 (110, 0) 处开直径 16mm 的走线通孔。
+  肩部凸台顶面（z = 40）上在半径 33mm 的圆上、极角 30°、90°、…、330° 处均布 6 个直径 5mm、深 12mm 的螺纹底孔。
+  肘部做成夹紧结构：沿 y = 0 开一条宽 2mm 的开口缝，从肘部孔一直切到臂端（x ≥ 200），贯穿整个厚度；
+  在 x = 219、z = 20 处沿 Y 方向钻一个直径 6.6mm 的夹紧螺钉通孔，横穿开口缝两侧。
+prompt_en: >-
+  Create the upper-arm link of a robot arm as a single solid body, with the Z axis pointing up. The arm body is a
+  30mm-thick plate (z = 5~35) whose outline is bounded by the outer common tangents of two circles: the shoulder
+  circle centered at (0, 0) with a radius of 40mm and the elbow circle centered at (200, 0) with a radius of 28mm.
+  The shoulder also has a boss centered at (0, 0), 80mm in diameter and 40mm high (z = 0~40), fused with the arm
+  body. The shoulder has a 52mm-diameter bearing through hole at its center, and the elbow a 35mm-diameter through
+  hole at its center. Each of the top and bottom faces of the arm body has a 10mm-deep lightening pocket (top
+  pocket z = 25~35, bottom pocket z = 5~15, leaving a 10mm web in between). Both pockets have the same outline,
+  bounded by the outer common tangents of a circle centered at (70, 0) with a radius of 22mm and a circle centered
+  at (150, 0) with a radius of 14mm. The web has a 16mm-diameter cable through hole at (110, 0). The top face of
+  the shoulder boss (z = 40) has 6 tapping holes of 5mm diameter and 12mm depth evenly spaced on a circle of
+  radius 33mm at polar angles 30°, 90°, …, 330°. The elbow is a clamp: cut a 2mm-wide slit along y = 0 from the
+  elbow bore all the way to the end of the arm (x ≥ 200), through the full thickness; at x = 219, z = 20, drill a
+  6.6mm-diameter clamp-screw through hole along Y, crossing both sides of the slit.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿肩部孔轴线向上，t = 0 在凸台底面 z = 0（两端平面面积较大的一端）；轴 1 指向肘部孔（+X），
+# 轴 2 = 轴 0 × 轴 1（+Y）。frame 坐标 = (z, x, y)。
+entities:
+  shoulder: {cylinder: {d: 52, side: inner}, count: 1}
+  elbow:    {cylinder: {d: 35, side: inner}, count: 1}
+  cable:    {cylinder: {d: 16, side: inner}, count: 1}
+  taps:     {cylinder: {d: 5, side: inner}, count: 6}
+  # 夹紧螺钉孔被开口缝分成两段
+  clamp:    {cylinder: {d: 6.6, side: inner}, count: 2}
+  frame:    {axis_frame: {axis: shoulder, low: larger_area, ref: elbow}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 肩部 R40 到肘部 R28（圆心距 200mm）；凸台高 40mm
+    derivation: >-
+      主方向可能取到公切线侧面（与 X 轴成 3.44°），总长在 267.6（沿侧面）与 268（沿 X）之间；
+      y = 10、z = 20 沿 X：肩部 −√(40² − 10²) = −38.730，肩孔 ±24，肘孔 200 ± 14.361，夹紧孔 219 ± 3.3，
+      肘部端 200 + √(28² − 10²) = 226.153
+    hard: true
+    check:
+      - bbox_sorted: [40, 80, [267.5, 268]]
+      - line_material: {frame: frame, along: 1, at: [20, null, 10],
+                        expect: [[-38.730, -24], [24, 185.639], [214.361, 215.7], [222.3, 226.153]]}
+
+  - id: arm_body
+    source: 厚 30mm（z = 5~35）的臂身，外形为 R40 与 R28 两圆的外公切线轮廓
+    derivation: 公切线法向 (0.06, ±0.9982)：x = 40 处半宽 (40 − 0.06·40)/0.9982 = 37.668
+    check:
+      - line_material: {frame: frame, along: 2, at: [20, 40, null], expect: [[-37.668, 37.668]]}
+      - line_material: {frame: frame, along: 0, at: [null, 40, 30], expect: [[5, 35]]}
+
+  - id: shoulder
+    source: 直径 80mm、高 40mm 的肩部凸台；直径 52mm 轴承通孔
+    check:
+      - exists: shoulder
+      - through: {holes: shoulder}
+      - line_material: {frame: frame, along: 0, polar: [33, 0], expect: [[0, 40]]}
+
+  - id: elbow
+    source: 肘部 R28，中心直径 35mm 通孔
+    check:
+      - exists: elbow
+      - through: {holes: elbow}
+      - axis_distance: {from: shoulder, to: elbow, value: 200}
+
+  - id: pockets
+    source: 上下两面各一个深 10mm 的减重槽，外形为 R22@(70, 0) 与 R14@(150, 0) 的外公切线轮廓，中间留 10mm 腹板
+    derivation: >-
+      槽轮廓公切线法向 (0.1, ±0.995)：x = 110 处半宽 (22 − 0.1·40)/0.995 = 18.091；臂身半宽 33.46。
+      y = 5、z = 30 沿 X：槽从 70 − √(22² − 5²) = 48.576 到 150 + √(14² − 5²) = 163.077；
+      肩部 −√(40² − 5²) = −39.686，肩孔 ±√(26² − 5²) = ±25.515，肘孔 200 ± √(17.5² − 5²) = 200 ± 16.770，肘部端 200 + √(28² − 5²) = 227.550（开口缝只占 ±1）
+    check:
+      - line_material: {frame: frame, along: 2, at: [30, 110, null], expect: [[-33.46, -18.091], [18.091, 33.46]]}
+      - line_material: {frame: frame, along: 2, at: [10, 110, null], expect: [[-33.46, -18.091], [18.091, 33.46]]}
+      - line_material: {frame: frame, along: 1, at: [30, null, 5],
+                        expect: [[-39.686, -25.515], [25.515, 48.576], [163.077, 183.23], [216.77, 227.55]]}
+      - line_material: {frame: frame, along: 0, at: [null, 80, 10], expect: [[15, 25]]}
+
+  - id: cable_hole
+    source: 腹板中心 (110, 0) 处直径 16mm 走线通孔
+    check:
+      - exists: cable
+      - through: {holes: cable}
+      - axis_positions: {frame: frame, items: cable, axes: [1, 2], expect: [[110, 0]]}
+
+  - id: taps
+    source: 凸台顶面半径 33mm 圆上 30° + 60°k 处 6 个直径 5mm、深 12mm 螺纹底孔
+    check:
+      - exists: taps
+      - axis_distance: {from: shoulder, to: taps, value: 33}
+      - equal_angular: {about: shoulder, items: taps}
+      - pocket_depth: {pocket: taps, value: 12}
+      - line_material: {frame: frame, along: 0, polar: [33, 30], expect: [[0, 28]]}
+
+  - id: clamp
+    source: 肘部沿 y = 0 宽 2mm 开口缝通到臂端；x = 219、z = 20 处沿 Y 的直径 6.6mm 夹紧螺钉通孔
+    derivation: x = 219、z = 30 沿 Y：肘部圆弦 ±√(28² − 19²) = ±20.567，开口缝占 ±1
+    check:
+      - line_material: {frame: frame, along: 2, at: [30, 219, null], expect: [[-20.567, -1], [1, 20.567]]}
+      - line_material: {frame: frame, along: 0, at: [null, 222, 0], expect: []}
+      - exists: clamp
+      - parallel_to_frame: {frame: frame, items: clamp, axis: 2}
+      - axis_positions: {frame: frame, items: clamp, axes: [0, 1], expect: [[20, 219], [20, 219]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 372951.4
+    check:
+      - volume: 372951.4
+
+ungraded: []

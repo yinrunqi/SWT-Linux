@@ -1,0 +1,91 @@
+case: d31_lever_arm
+title: D31 摇臂
+prompt: 根据所附三视图（第三角画法，单位 mm）建模摇臂，单一实体。
+prompt_en: Model the lever arm from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d31_lever_arm.png
+reference: eval/three_view/references/d31_lever_arm.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [0, -15, 20], b: [80, -10, 20], side: bottom, text: "80"}
+    - {view: front, a: [-15, 0, 20], b: [-10, 50, 20], side: left, text: "50"}
+    - {view: front, a: [40, -6, 20], b: [40, 6, 20], side: right, text: "12"}
+    - {view: front, a: [-6, 30, 20], b: [6, 30, 20], side: top, text: "12"}
+    - {view: front, a: [-9, -2, 20], b: [-9, 2, 20], side: left, tier: 2, text: "4"}
+    - {view: top, a: [90, 0, 0], b: [90, 0, 10], side: right, tier: 1, text: "10"}
+    - {view: top, a: [90, 0, 0], b: [90, 0, 14], side: right, tier: 2, text: "14"}
+    - {view: top, a: [-15, 0, 0], b: [-15, 0, 20], side: left, text: "20"}
+  callouts:
+    - {view: front, at: [0, 0, 20], r: 7, angle: 240, leader: 80, text: "Ø14"}
+    - {view: front, at: [0, 0, 20], r: 15, angle: 135, leader: 40, text: "Ø30"}
+    - {view: front, at: [80, 0, 14], r: 4, angle: 60, leader: 50, text: "Ø8 通孔"}
+    - {view: front, at: [80, 0, 14], r: 10, angle: -45, leader: 40, text: "Ø20"}
+    - {view: front, at: [0, 50, 14], r: 5, angle: 30, leader: 60, text: "Ø10 通孔"}
+  centers:
+    - {view: front, at: [0, 0, 20], r: 15}
+    - {view: front, at: [80, 0, 14], r: 10}
+    - {view: front, at: [0, 50, 14], r: 10}
+  notes:
+    - "两臂互相垂直，厚 10，宽 12，对称于各自中心线；两端凸台 Ø20 高 14"
+    - "键槽宽 4，槽底距 Ø14 孔中心 9，开在两臂夹角的反侧"
+
+# frame：轴 0 沿 Ø14 孔轴线（底面低），轴 1 指向 Ø8 孔，轴 2 = 轴 0 × 轴 1
+entities:
+  bore: {cylinder: {d: 14, side: inner}, count: 1}
+  hub: {cylinder: {d: 30, side: outer}}
+  hole8: {cylinder: {d: 8, side: inner}, count: 1}
+  hole10: {cylinder: {d: 10, side: inner}, count: 1}
+  frame: {axis_frame: {axis: bore, ref: hole8, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 80 + Ø30/2 + Ø20/2、50 + Ø30/2 + Ø20/2；俯视图高 20
+    hard: true
+    check:
+      - bbox_sorted: [20, 75, 105]
+
+  - id: hub
+    source: 主视图 Ø30、Ø14；俯视图高 20
+    check:
+      - exists: hub
+      - coaxial: [hub, bore]
+      - radial_material: {frame: frame, t: 15, deg: 90, expect: [[7, 15]]}
+      - line_material: {frame: frame, along: 0, polar: [11, 135], expect: [[0, 20]]}
+
+  - id: keyway
+    source: 主视图键槽宽 4，槽底距孔中心 9；注释：在两臂夹角反侧
+    check:
+      - angular_openings: {frame: frame, t: 10, r: 8, count: 1, chord: 4, radial: [null, 9]}
+      - line_material: {frame: frame, along: 1, at: [16, 0, null], expect: [[-15, -9], [7, 15]]}
+
+  - id: arms
+    source: 主视图两臂宽 12，长 80、50；俯视图臂厚 10
+    check:
+      - line_material: {frame: frame, along: 2, at: [5, 40, null], expect: [[-6, 6]]}
+      - line_material: {frame: frame, along: 1, at: [5, null, 30], expect: [[-6, 6]]}
+      - line_material: {frame: frame, along: 0, at: [null, 40, 0], expect: [[0, 10]]}
+
+  - id: bosses
+    source: 主视图 Ø8、Ø10 通孔，Ø20 凸台；俯视图凸台高 14
+    check:
+      - exists: hole8
+      - exists: hole10
+      - axis_positions: {frame: frame, items: hole8, axes: [1, 2], expect: [[80, 0]]}
+      - axis_positions: {frame: frame, items: hole10, axes: [1, 2], expect: [[0, 50]]}
+      - line_material: {frame: frame, along: 0, at: [null, 80, 7], expect: [[0, 14]]}
+      - line_material: {frame: frame, along: 0, at: [null, 7, 50], expect: [[0, 14]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 27735.32
+    check:
+      - volume: 27735.32
+
+ungraded: []

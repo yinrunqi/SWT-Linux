@@ -1,0 +1,116 @@
+case: wheel_rim
+prompt: >-
+  创建一个五辐汽车轮毂（轮辋），单一实体，所有回转结构同轴。以轮辋外侧端面为 0、沿轴线量：轮辋筒是内径 340mm、
+  外径 352mm 的圆筒，位于 0~200mm；两端各有一圈轮缘，轮缘是内径 340mm、外径 380mm、厚 12mm 的圆环，
+  分别位于 0~12mm 和 188~200mm。轮辐盘是一块厚 20mm 的圆盘（150~170mm），外缘与轮辋筒内壁相连；
+  中心轮毂座是直径 120mm 的圆柱，位于 140~210mm。轮毂座中心开直径 70mm 的中心通孔，并在直径 114.3mm 的圆上
+  均布 5 个直径 15mm 的螺栓通孔。轮辐盘上开 5 个贯穿的扇环形减重窗，每个窗口内半径 75mm、外半径 155mm、
+  圆心角 44°，5 个窗口均布，每个窗口的角平分线位于相邻两个螺栓孔方位的正中间（因此 5 根轮辐正对 5 个螺栓孔）；
+  每个窗口的 4 个角（沿轮辐盘厚度方向的棱边，共 20 条）倒 R8mm 圆角。轮辋筒上在 100mm 高度处开一个直径 11mm 的
+  气门嘴孔，沿径向贯穿筒壁，方位与某一个减重窗的角平分线相同。
+prompt_en: >-
+  Create a five-spoke automotive wheel (rim) as a single solid body; all revolved features are coaxial.
+  Measuring along the axis from the outer end face of the rim at 0: the rim barrel is a tube with an inner
+  diameter of 340mm and an outer diameter of 352mm, at 0~200mm; at each end there is a rim flange, an annulus
+  with an inner diameter of 340mm, an outer diameter of 380mm and a thickness of 12mm, at 0~12mm and 188~200mm
+  respectively. The spoke disc is a 20mm-thick disc (150~170mm) whose outer edge joins the inner wall of the
+  barrel; the central hub seat is a 120mm-diameter cylinder at 140~210mm. The hub seat has a 70mm-diameter
+  through center bore and 5 through bolt holes of 15mm diameter evenly spaced on a 114.3mm-diameter circle. The
+  spoke disc has 5 through annular-sector lightening windows, each with an inner radius of 75mm, an outer radius
+  of 155mm and a central angle of 44°; the 5 windows are evenly spaced, and the bisector of each window lies
+  exactly midway between the directions of two adjacent bolt holes (so the 5 spokes face the 5 bolt holes).
+  The 4 corners of each window (the edges along the thickness of the spoke disc, 20 in total) are rounded with
+  R8mm fillets. The barrel has an 11mm-diameter valve hole at a height of 100mm, bored radially through the
+  barrel wall, in the same direction as the bisector of one of the windows.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿轴线，t = 0 在轮辋外侧端面（两端平面面积较大的一端）；轴 1 指向气门嘴孔。
+# 窗口在 72°k，轮辐与螺栓孔在 36° + 72°k（气门嘴是唯一打破镜像对称的特征，所以用它定方位）。
+entities:
+  bore:    {cylinder: {d: 70, side: inner}, count: 1}
+  lugs:    {cylinder: {d: 15, side: inner}, count: 5}
+  valve:   {cylinder: {d: 11, side: inner}, count: 1}
+  frame:   {axis_frame: {axis: bore, low: larger_area, ref_dir: valve, ref_dir_toward: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体，所有回转结构同轴
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 轮缘外径 380mm；从轮辋外侧端面到轮毂座端面 210mm
+    hard: true
+    check:
+      - bbox_sorted: [210, 380, 380]
+      - extent_along: {axis: bore, of: all, value: 210}
+
+  - id: barrel
+    source: 内径 340、外径 352mm 的轮辋筒，位于 0~200mm
+    check:
+      - line_material: {frame: frame, along: 0, polar: [173, 10], expect: [[0, 200]]}
+      - radial_material: {frame: frame, t: 100, deg: 10, expect: [[170, 176]]}
+
+  - id: flanges
+    source: 两端轮缘内径 340、外径 380、厚 12mm，位于 0~12 和 188~200mm
+    check:
+      - radial_material: {frame: frame, t: 6, deg: 10, expect: [[170, 190]]}
+      - radial_material: {frame: frame, t: 194, deg: 10, expect: [[35, 60], [170, 190]]}
+      - line_material: {frame: frame, along: 0, polar: [185, 10], expect: [[0, 12], [188, 200]]}
+
+  - id: disc_and_hub
+    source: 轮辐盘厚 20mm（150~170mm）；轮毂座直径 120mm，位于 140~210mm
+    check:
+      - line_material: {frame: frame, along: 0, polar: [100, 36], expect: [[150, 170]]}
+      - line_material: {frame: frame, along: 0, polar: [50, 0], expect: [[140, 210]]}
+
+  - id: windows
+    source: 5 个贯穿的扇环窗，内半径 75、外半径 155mm、圆心角 44°，均布，角平分线在相邻螺栓孔方位正中间
+    derivation: 窗口角平分线在 72°k；圆角只影响四角，窗口中线与中间半径处不受影响
+    check:
+      - angular_openings: {frame: frame, t: 160, r: 115, count: 5, arc_deg: 44, radial: [75, 155]}
+      - radial_material: {frame: frame, t: 160, deg: 0, expect: [[35, 75], [155, 176]]}
+
+  - id: spokes
+    source: 5 根轮辐正对 5 个螺栓孔
+    derivation: 36° 方位穿过螺栓孔 57.15 ± 7.5 后沿轮辐直到轮辋筒外壁
+    check:
+      - radial_material: {frame: frame, t: 160, deg: 36, expect: [[35, 49.65], [64.65, 176]]}
+
+  - id: window_fillets
+    source: 每个窗口 4 个角倒 R8mm 圆角，共 20 处
+    check:
+      - blend_faces: {radius: 8, side: inner, min_count: 20}
+
+  - id: center_bore
+    source: 轮毂座中心开直径 70mm 的中心通孔
+    check:
+      - exists: bore
+      - through: {holes: bore}
+
+  - id: lug_holes
+    source: 直径 114.3mm 的圆上均布 5 个直径 15mm 的螺栓通孔
+    check:
+      - exists: lugs
+      - through: {holes: lugs}
+      - axis_distance: {from: bore, to: lugs, value: 57.15}
+      - equal_angular: {about: bore, items: lugs}
+
+  - id: valve_hole
+    source: 轮辋筒 100mm 高度处直径 11mm 的径向气门嘴孔，方位与某一个窗口的角平分线相同
+    derivation: 孔在 R173 处半宽对应 asin(5.5/173) = 1.82°
+    check:
+      - exists: valve
+      - through: {holes: valve}
+      - radial_material: {frame: frame, t: 100, deg: 0, expect: []}
+      - radial_material: {frame: frame, t: 100, deg: 6, expect: [[170, 176]]}
+      - radial_material: {frame: frame, t: 160, deg: 0, expect: [[35, 75], [155, 176]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算，20 处 R8 圆角）体积 3051222.0
+    check:
+      - volume: 3051222.0
+
+ungraded: []

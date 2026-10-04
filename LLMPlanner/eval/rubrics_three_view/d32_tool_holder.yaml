@@ -1,0 +1,87 @@
+case: d32_tool_holder
+title: D32 刀具座
+prompt: 根据所附三视图（第三角画法，单位 mm）建模刀具座，单一实体。
+prompt_en: Model the tool holder block from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d32_tool_holder.png
+reference: eval/three_view/references/d32_tool_holder.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-65, 0, 20], b: [65, 0, 20], side: bottom, tier: 2, text: "130"}
+    - {view: front, a: [-50, 0, 20], b: [50, 0, 20], side: bottom, tier: 1, text: "100"}
+    - {view: front, a: [-50, 0, 20], b: [-50, 30, 20], side: left, tier: 2, text: "30"}
+    - {view: front, a: [-65, 0, 20], b: [-65, 10, 20], side: left, tier: 1, text: "10"}
+    - {view: top, a: [-33, 30, 0], b: [-11, 30, 0], side: top, text: "22"}
+    - {view: top, a: [-11, 30, 0], b: [11, 30, 0], side: top, text: "22"}
+    - {view: top, a: [11, 30, 0], b: [33, 30, 0], side: top, text: "22"}
+    - {view: top, a: [-57.5, 10, 0], b: [57.5, 10, 0], side: top, tier: 2, text: "115"}
+    - {view: right, a: [65, 0, 20], b: [65, 0, -20], side: bottom, text: "40"}
+  callouts:
+    - {view: top, at: [33, 30, 0], r: 6, angle: -30, leader: 50, text: "4×Ø12 深 20"}
+    - {view: top, at: [57.5, 10, 0], r: 4, angle: -60, leader: 40, text: "2×Ø8 通孔"}
+  centers:
+    - {view: top, at: [-33, 30, 0], r: 6}
+    - {view: top, at: [-11, 30, 0], r: 6}
+    - {view: top, at: [11, 30, 0], r: 6}
+    - {view: top, at: [33, 30, 0], r: 6}
+    - {view: top, at: [57.5, 10, 0], r: 4}
+    - {view: top, at: [-57.5, 10, 0], r: 4}
+  axes:
+    - {view: top, a: [-69, 30, 0], b: [69, 30, 0]}
+  notes:
+    - "所有孔位于前后中心线上；4×Ø12 刀孔等距、左右对称，自顶面向下"
+
+# frame：轴 0 = 高度 30（底面低），轴 1 = 前后 40，轴 2 = 长度 130
+entities:
+  holes: {cylinder: {d: 12, side: inner}, count: 4}
+  ear_holes: {cylinder: {d: 8, side: inner}, count: 2}
+  frame: {principal_frame: {signs: {0: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 130、30；右视图 40
+    hard: true
+    check:
+      - bbox_sorted: [30, 40, 130]
+
+  - id: body
+    source: 主视图主体长 100、高 30
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 5, 65], expect: [[0, 30]]}
+      - line_material: {frame: frame, along: 2, at: [20, 5, null], expect: [[15, 115]]}
+
+  - id: holes
+    source: 俯视图 4×Ø12 深 20，孔距 22；注释：等距、左右对称，位于前后中心线
+    check:
+      - exists: holes
+      - pocket_depth: {pocket: holes, value: 20}
+      - parallel_to_frame: {frame: frame, axis: 0, items: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[20, 32], [20, 54], [20, 76], [20, 98]]}
+
+  - id: ears
+    source: 主视图耳板厚 10、两端各伸出 15
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 5, 2], expect: [[0, 10]]}
+      - line_material: {frame: frame, along: 0, at: [null, 5, 128], expect: [[0, 10]]}
+
+  - id: ear_holes
+    source: 俯视图 2×Ø8 通孔，孔距 115
+    check:
+      - exists: ear_holes
+      - through: {holes: ear_holes}
+      - axis_positions: {frame: frame, items: ear_holes, axes: [1, 2], expect: [[20, 7.5], [20, 122.5]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 121946.90
+    check:
+      - volume: 121946.90
+
+ungraded: []

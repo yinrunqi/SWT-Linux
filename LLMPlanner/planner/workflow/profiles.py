@@ -189,7 +189,7 @@ def draw_operations(frame: SketchFrame, loops: Sequence[dict]) -> list[dict]:
         points = [frame.point_params(u, v) for u, v in _vertices(loop)]
         operations.append({"operation": "sketch_polyline", "params": {"points": points, "closed": True}})
     if circles:
-        operations.insert(0, {"operation": "sketch_circles", "params": {"circles": circles}})
+        operations.insert(0, {"operation": "sketch_circles", "params": {"circles": circles, "noInference": True}})
     return operations
 
 

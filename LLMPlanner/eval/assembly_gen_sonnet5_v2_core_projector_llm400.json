@@ -1,0 +1,2424 @@
+{
+  "summary": {
+    "n": 1,
+    "part_pass_rate": 1.0,
+    "assembly_score": 41.67,
+    "assembly_score_std": null,
+    "motion_score": 0.0,
+    "motion_score_std": null,
+    "motion_score_gated": 0.0,
+    "assembly_score_v1": 52.5,
+    "motion_score_v1": 25.0,
+    "structure_ok_rate": 0.0,
+    "e2e": 0.0,
+    "finish_rate": 0.0,
+    "saved_by_agent_rate": 0.0,
+    "budget_exhausted_rate": 0.0,
+    "llm_calls_mean": 15.0
+  },
+  "by_workflow": {
+    "v2": {
+      "all": {
+        "n": 1,
+        "part_pass_rate": 1.0,
+        "assembly_score": 41.67,
+        "assembly_score_std": null,
+        "motion_score": 0.0,
+        "motion_score_std": null,
+        "motion_score_gated": 0.0,
+        "assembly_score_v1": 52.5,
+        "motion_score_v1": 25.0,
+        "structure_ok_rate": 0.0,
+        "e2e": 0.0,
+        "finish_rate": 0.0,
+        "saved_by_agent_rate": 0.0,
+        "budget_exhausted_rate": 0.0,
+        "llm_calls_mean": 15.0
+      },
+      "film_projector_drive": {
+        "n": 1,
+        "part_pass_rate": 1.0,
+        "assembly_score": 41.67,
+        "assembly_score_std": null,
+        "motion_score": 0.0,
+        "motion_score_std": null,
+        "motion_score_gated": 0.0,
+        "assembly_score_v1": 52.5,
+        "motion_score_v1": 25.0,
+        "structure_ok_rate": 0.0,
+        "e2e": 0.0,
+        "finish_rate": 0.0,
+        "saved_by_agent_rate": 0.0,
+        "budget_exhausted_rate": 0.0,
+        "llm_calls_mean": 15.0
+      }
+    }
+  },
+  "recipes": {
+    "v2": [
+      "assembly_topology.md",
+      "assembly_joint_mapping.md",
+      "assembly_coupling.md",
+      "assembly_linkage.md",
+      "assembly_motion_check.md"
+    ]
+  },
+  "results": [
+    {
+      "case_id": "film_projector_drive",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "v2",
+      "parts": [
+        {
+          "part_id": "proj_frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "proj_frame",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      8.0,
+                      150.0,
+                      160.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 4,
+                    "expected": 4
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 56954,
+            "completion_tokens": 991,
+            "total_tokens": 57945,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 389.8,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_frame.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_frame.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_frame.agent.json"
+        },
+        {
+          "part_id": "proj_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "proj_shaft",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      50.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      10.0,
+                      10.0,
+                      50.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 55848,
+            "completion_tokens": 987,
+            "total_tokens": 56835,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 25.75,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_shaft.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_shaft.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_shaft.agent.json"
+        },
+        {
+          "part_id": "proj_gear24",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "proj_gear24",
+            "score": 100.0,
+            "passed": 3,
+            "total": 3,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "bore",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "teeth",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "angular_openings",
+                    "ok": true,
+                    "sections": [
+                      {
+                        "t": 4,
+                        "r": 16.5,
+                        "count": 24,
+                        "gaps_deg": [
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0,
+                          15.0
+                        ],
+                        "arc_deg": [
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84,
+                          2.84
+                        ],
+                        "chord": [
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819,
+                          0.819
+                        ],
+                        "r_in": [
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125,
+                          16.125
+                        ],
+                        "r_out": [
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null
+                        ],
+                        "ok": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      8.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 46748,
+            "completion_tokens": 597,
+            "total_tokens": 47345,
+            "calls": 3
+          },
+          "llm_calls": 3,
+          "duration_seconds": 79.81,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_gear24.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_gear24.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_gear24.agent.json"
+        },
+        {
+          "part_id": "proj_idler18",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "proj_idler18",
+            "score": 100.0,
+            "passed": 3,
+            "total": 3,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "bore",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "teeth",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "angular_openings",
+                    "ok": true,
+                    "sections": [
+                      {
+                        "t": 4,
+                        "r": 12.0,
+                        "count": 18,
+                        "gaps_deg": [
+                          20.0,
+                          20.0,
+                          20.0,
+                          20.0,
+                          20.0,
+                          20.0,
+                          20.0,
+                          20.0,
+                          20.0,
+                          20.0,
+                          20.0,
+                          20.0,
+                          20.0,
+                          20.0,
+                          20.0,
+                          20.0,
+                          20.0,
+                          20.0
+                        ],
+                        "arc_deg": [
+                          4.37,
+                          4.37,
+                          4.37,
+                          4.37,
+                          4.37,
+                          4.37,
+                          4.37,
+                          4.37,
+                          4.37,
+                          4.37,
+                          4.37,
+                          4.37,
+                          4.37,
+                          4.37,
+                          4.37,
+                          4.37,
+                          4.37,
+                          4.37
+                        ],
+                        "chord": [
+                          0.916,
+                          0.916,
+                          0.916,
+                          0.916,
+                          0.916,
+                          0.916,
+                          0.916,
+                          0.916,
+                          0.916,
+                          0.916,
+                          0.916,
+                          0.916,
+                          0.916,
+                          0.916,
+                          0.916,
+                          0.916,
+                          0.916,
+                          0.916
+                        ],
+                        "r_in": [
+                          11.624,
+                          11.624,
+                          11.624,
+                          11.624,
+                          11.624,
+                          11.624,
+                          11.624,
+                          11.624,
+                          11.624,
+                          11.624,
+                          11.624,
+                          11.624,
+                          11.624,
+                          11.624,
+                          11.624,
+                          11.624,
+                          11.624,
+                          11.624
+                        ],
+                        "r_out": [
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null
+                        ],
+                        "ok": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      8.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 46940,
+            "completion_tokens": 851,
+            "total_tokens": 47791,
+            "calls": 3
+          },
+          "llm_calls": 3,
+          "duration_seconds": 67.1,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_idler18.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_idler18.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_idler18.agent.json"
+        },
+        {
+          "part_id": "proj_pinion16",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "proj_pinion16",
+            "score": 100.0,
+            "passed": 3,
+            "total": 3,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "bore",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "teeth",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "angular_openings",
+                    "ok": true,
+                    "sections": [
+                      {
+                        "t": 4,
+                        "r": 10.5,
+                        "count": 16,
+                        "gaps_deg": [
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5,
+                          22.5
+                        ],
+                        "arc_deg": [
+                          5.31,
+                          5.31,
+                          5.31,
+                          5.31,
+                          5.31,
+                          5.31,
+                          5.31,
+                          5.31,
+                          5.31,
+                          5.31,
+                          5.31,
+                          5.31,
+                          5.31,
+                          5.31,
+                          5.31,
+                          5.31
+                        ],
+                        "chord": [
+                          0.973,
+                          0.973,
+                          0.973,
+                          0.973,
+                          0.973,
+                          0.973,
+                          0.973,
+                          0.973,
+                          0.973,
+                          0.973,
+                          0.973,
+                          0.973,
+                          0.973,
+                          0.973,
+                          0.973,
+                          0.973
+                        ],
+                        "r_in": [
+                          10.124,
+                          10.124,
+                          10.124,
+                          10.124,
+                          10.124,
+                          10.124,
+                          10.124,
+                          10.124,
+                          10.124,
+                          10.124,
+                          10.124,
+                          10.124,
+                          10.124,
+                          10.124,
+                          10.124,
+                          10.124
+                        ],
+                        "r_out": [
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null
+                        ],
+                        "ok": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      8.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 28487,
+            "completion_tokens": 632,
+            "total_tokens": 29119,
+            "calls": 2
+          },
+          "llm_calls": 2,
+          "duration_seconds": 54.36,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_pinion16.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_pinion16.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_pinion16.agent.json"
+        },
+        {
+          "part_id": "proj_gear64",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "proj_gear64",
+            "score": 100.0,
+            "passed": 3,
+            "total": 3,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "bore",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "teeth",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "angular_openings",
+                    "ok": true,
+                    "sections": [
+                      {
+                        "t": 4,
+                        "r": 46.688,
+                        "count": 64,
+                        "gaps_deg": [
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.62,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.63,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62,
+                          5.62
+                        ],
+                        "arc_deg": [
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09,
+                          1.09
+                        ],
+                        "chord": [
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885,
+                          0.885
+                        ],
+                        "r_in": [
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125,
+                          46.125
+                        ],
+                        "r_out": [
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null
+                        ],
+                        "ok": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      8.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 61936,
+            "completion_tokens": 1121,
+            "total_tokens": 63057,
+            "calls": 3
+          },
+          "llm_calls": 3,
+          "duration_seconds": 119.91,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_gear64.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_gear64.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_gear64.agent.json"
+        },
+        {
+          "part_id": "proj_shutter",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "proj_shutter",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "coaxial",
+                    "ok": true,
+                    "coaxial": [
+                      true
+                    ]
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      3.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 3.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 3.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_distance",
+                    "ok": true,
+                    "measured": [
+                      15.0,
+                      15.0
+                    ]
+                  },
+                  {
+                    "check": "equal_angular",
+                    "ok": true,
+                    "gaps_deg": [
+                      180.0,
+                      180.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 51682,
+            "completion_tokens": 1104,
+            "total_tokens": 52786,
+            "calls": 3
+          },
+          "llm_calls": 3,
+          "duration_seconds": 26.84,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_shutter.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_shutter.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_shutter.agent.json"
+        },
+        {
+          "part_id": "proj_sprocket",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "proj_sprocket",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "coaxial",
+                    "ok": true,
+                    "coaxial": [
+                      true
+                    ]
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      16.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 90677,
+            "completion_tokens": 1374,
+            "total_tokens": 92051,
+            "calls": 5
+          },
+          "llm_calls": 5,
+          "duration_seconds": 35.74,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_sprocket.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_sprocket.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_sprocket.agent.json"
+        }
+      ],
+      "assembly": {
+        "status": "llm_error",
+        "infra_error": null,
+        "static": {
+          "component_count": 12,
+          "saved": false
+        },
+        "rubric": {
+          "score": 41.67,
+          "score_v1": 52.5,
+          "parts": {
+            "rigid_groups": 0.417,
+            "joints": 1.0,
+            "mobility": 0.0,
+            "grounded": 0.417,
+            "not_over_defined": 0.417,
+            "couplings": 0.0
+          },
+          "completeness": 0.417,
+          "missing_roles": [],
+          "wrongly_fixed": [],
+          "rigid_groups": [
+            {
+              "role": "frame",
+              "body": "frame",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "drive_shaft",
+              "body": "drive",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "drive_gear",
+              "body": "drive",
+              "ok": false,
+              "ok_v1": false
+            },
+            {
+              "role": "drive_pinion",
+              "body": "drive",
+              "ok": false,
+              "ok_v1": false
+            },
+            {
+              "role": "idler_shaft",
+              "body": "idler",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "idler_gear",
+              "body": "idler",
+              "ok": false,
+              "ok_v1": false
+            },
+            {
+              "role": "shutter_shaft",
+              "body": "shutter",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "shutter_gear",
+              "body": "shutter",
+              "ok": false,
+              "ok_v1": false
+            },
+            {
+              "role": "shutter",
+              "body": "shutter",
+              "ok": false,
+              "ok_v1": false
+            },
+            {
+              "role": "sprocket_shaft",
+              "body": "sprocket",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "sprocket_gear",
+              "body": "sprocket",
+              "ok": false,
+              "ok_v1": false
+            },
+            {
+              "role": "sprocket",
+              "body": "sprocket",
+              "ok": false,
+              "ok_v1": false
+            }
+          ],
+          "joints": [
+            {
+              "bodies": [
+                "drive",
+                "frame"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok_v1": true,
+              "ok": true,
+              "anchor_err_mm": {
+                "frame:1": 0.0,
+                "frame:2": -0.0,
+                "frame:3": 0.0
+              },
+              "anchor_ok": true
+            },
+            {
+              "bodies": [
+                "idler",
+                "frame"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok_v1": true,
+              "ok": true,
+              "anchor_err_mm": {
+                "frame:0": 0.0,
+                "frame:2": -0.0,
+                "frame:3": 0.0
+              },
+              "anchor_ok": true
+            },
+            {
+              "bodies": [
+                "shutter",
+                "frame"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok_v1": true,
+              "ok": true,
+              "anchor_err_mm": {
+                "frame:0": -0.0,
+                "frame:1": -0.0,
+                "frame:3": -0.0
+              },
+              "anchor_ok": true
+            },
+            {
+              "bodies": [
+                "sprocket",
+                "frame"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok_v1": true,
+              "ok": true,
+              "anchor_err_mm": {
+                "frame:0": 0.0,
+                "frame:1": 0.0,
+                "frame:2": -0.0
+              },
+              "anchor_ok": true
+            }
+          ],
+          "mobility": {
+            "actual": 46,
+            "target": 1,
+            "ok": false,
+            "skipped": []
+          },
+          "floating": [
+            "drive_gear",
+            "drive_pinion",
+            "idler_gear",
+            "shutter",
+            "shutter_gear",
+            "sprocket",
+            "sprocket_gear"
+          ],
+          "ground_ok": true,
+          "over_defined": {},
+          "broken_mates": [],
+          "suppressed_mates": [],
+          "couplings": [
+            {
+              "pair": [
+                "drive_gear",
+                "idler_gear"
+              ],
+              "mate": null,
+              "center_distance_mm": 31.5,
+              "expected_mm": 31.5,
+              "center_ok": true,
+              "score_v1": 0.25,
+              "score": 0.0
+            },
+            {
+              "pair": [
+                "idler_gear",
+                "shutter_gear"
+              ],
+              "mate": null,
+              "center_distance_mm": 31.5,
+              "expected_mm": 31.5,
+              "center_ok": true,
+              "score_v1": 0.25,
+              "score": 0.0
+            },
+            {
+              "pair": [
+                "drive_pinion",
+                "sprocket_gear"
+              ],
+              "mate": null,
+              "center_distance_mm": 60.0,
+              "expected_mm": 60.0,
+              "center_ok": true,
+              "score_v1": 0.25,
+              "score": 0.0
+            }
+          ]
+        },
+        "static_score": 41.67,
+        "motion": {
+          "passed": false,
+          "score": 0.0,
+          "score_v1": 25.0,
+          "checks": [
+            {
+              "name": "interference",
+              "weight": 2.0,
+              "score": 0.0,
+              "frames_with_interference": 13,
+              "frames": 13
+            },
+            {
+              "name": "moving",
+              "weight": 1.0,
+              "score": 0.0
+            },
+            {
+              "name": "fixed",
+              "weight": 1.0,
+              "score": 0.0
+            },
+            {
+              "name": "kinematics",
+              "weight": 2.0,
+              "score": 0.0,
+              "passed": 0,
+              "items": 2
+            }
+          ],
+          "interference_frames": [
+            {
+              "frame": 0,
+              "count": 10,
+              "volume_mm3": 3917.1538846915714
+            },
+            {
+              "frame": 1,
+              "count": 10,
+              "volume_mm3": 3917.1538846915714
+            },
+            {
+              "frame": 2,
+              "count": 10,
+              "volume_mm3": 3917.1538846915714
+            },
+            {
+              "frame": 3,
+              "count": 10,
+              "volume_mm3": 3917.1538846915714
+            },
+            {
+              "frame": 4,
+              "count": 10,
+              "volume_mm3": 3917.1538846915714
+            },
+            {
+              "frame": 5,
+              "count": 10,
+              "volume_mm3": 3917.1538846915714
+            },
+            {
+              "frame": 6,
+              "count": 10,
+              "volume_mm3": 3917.1538846915714
+            },
+            {
+              "frame": 7,
+              "count": 10,
+              "volume_mm3": 3917.1538846915714
+            },
+            {
+              "frame": 8,
+              "count": 10,
+              "volume_mm3": 3917.1538846915714
+            },
+            {
+              "frame": 9,
+              "count": 10,
+              "volume_mm3": 3917.1538846915714
+            },
+            {
+              "frame": 10,
+              "count": 10,
+              "volume_mm3": 3917.1538846915714
+            },
+            {
+              "frame": 11,
+              "count": 10,
+              "volume_mm3": 3917.1538846915714
+            },
+            {
+              "frame": 12,
+              "count": 10,
+              "volume_mm3": 3917.1538846915714
+            }
+          ],
+          "stuck": [
+            "idler_gear",
+            "shutter",
+            "sprocket"
+          ],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_sweep_deg": 3437.747,
+            "frames": 121,
+            "driver_max_step_deg": 28.65,
+            "ratios": [
+              {
+                "role": "shutter",
+                "measured": 0.0,
+                "expected": 1.0,
+                "max_step_deg": 0.0,
+                "ok": false,
+                "same_direction": false
+              },
+              {
+                "role": "sprocket",
+                "measured": 0.0,
+                "expected": 0.25,
+                "max_step_deg": 0.0,
+                "ok": false,
+                "same_direction": false
+              }
+            ]
+          }
+        },
+        "token_usage": {
+          "prompt_tokens": 501902,
+          "completion_tokens": 40691,
+          "total_tokens": 542593,
+          "calls": 15
+        },
+        "llm_calls": 15,
+        "duration_seconds": 1430.91,
+        "aliases": {
+          "frame": "proj_frame-1",
+          "drive_shaft": "proj_shaft-1",
+          "idler_shaft": "proj_shaft-2",
+          "shutter_shaft": "proj_shaft-3",
+          "sprocket_shaft": "proj_shaft-4",
+          "drive_gear": "proj_gear24-1",
+          "idler_gear": "proj_idler18-1",
+          "shutter_gear": "proj_gear24-2",
+          "drive_pinion": "proj_pinion16-1",
+          "sprocket_gear": "proj_gear64-1",
+          "shutter": "proj_shutter-1",
+          "sprocket": "proj_sprocket-1"
+        },
+        "agent_texts": [],
+        "llm_calls_detail": [
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 6900,
+            "n_tool_calls": 5,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 151,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 6720,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1124,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 924,
+            "n_tool_calls": 3,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 308,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "length",
+            "completion_tokens": 8000,
+            "n_tool_calls": 4,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 600,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 77,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 146,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 370,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 50,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 6929,
+            "n_tool_calls": 7,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 392,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "length",
+            "completion_tokens": 8000,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          }
+        ],
+        "agent_last_motion": null,
+        "agent_last_pose": null,
+        "truncations": 0,
+        "joints": [
+          {
+            "kind": "revolute",
+            "a": "proj_shaft-3",
+            "b": "proj_frame-1",
+            "mates": [
+              "同心3",
+              "距离3"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "proj_shaft-4",
+            "b": "proj_frame-1",
+            "mates": [
+              "同心4",
+              "距离4"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "proj_shaft-1",
+            "b": "proj_frame-1",
+            "mates": [
+              "同心5",
+              "距离5"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "proj_shaft-2",
+            "b": "proj_frame-1",
+            "mates": [
+              "同心7",
+              "距离7"
+            ]
+          }
+        ],
+        "infra_flags": [],
+        "infra_attempts": 1,
+        "call_budget": 50
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_frame.SLDPRT",
+            "name": "frame",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_shaft.SLDPRT",
+            "name": "drive_shaft",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_shaft.SLDPRT",
+            "name": "idler_shaft",
+            "at": [
+              31.5,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_shaft.SLDPRT",
+            "name": "shutter_shaft",
+            "at": [
+              63,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_shaft.SLDPRT",
+            "name": "sprocket_shaft",
+            "at": [
+              0,
+              -60,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "frame"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "drive_shaft:face(-Z, outermost)",
+            "b": "frame:face(-Z, largest)",
+            "offset": 0
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] concentric 配合失败: errStatus=0（未知原因）"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "drive_shaft:cyl(d=10)",
+            "b": "frame:cyl(d=10.4, near=[0,0])",
+            "face_a": "drive_shaft:face(-Z, outermost)",
+            "face_b": "frame:face(-Z, largest)",
+            "offset": -20
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "idler_shaft:cyl(d=10)",
+            "b": "frame:cyl(d=10.4, near=[31.5,0])",
+            "face_a": "idler_shaft:face(-Z, outermost)",
+            "face_b": "frame:face(-Z, largest)",
+            "offset": -20
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "shutter_shaft:cyl(d=10)",
+            "b": "frame:cyl(d=10.4, near=[63,0])",
+            "face_a": "shutter_shaft:face(-Z, outermost)",
+            "face_b": "frame:face(-Z, largest)",
+            "offset": -20
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "sprocket_shaft:cyl(d=10)",
+            "b": "frame:cyl(d=10.4, near=[0,-60])",
+            "face_a": "sprocket_shaft:face(-Z, outermost)",
+            "face_b": "frame:face(-Z, largest)",
+            "offset": -20
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 找不到配合 "
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "drive_shaft:cyl(d=10)",
+            "b": "frame:cyl(d=10.4, near=[0,0])",
+            "face_a": "drive_shaft:face(-Z, outermost)",
+            "face_b": "frame:face(-Z, largest)",
+            "offset": -20
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "idler_shaft:cyl(d=10)",
+            "b": "frame:cyl(d=10.4, near=[31.5,0])",
+            "face_a": "idler_shaft:face(-Z, outermost)",
+            "face_b": "frame:face(-Z, largest)",
+            "offset": -20
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] distance 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "idler_shaft:cyl(d=10)",
+            "b": "frame:cyl(d=10.4, near=[31.5,0])",
+            "face_a": "idler_shaft:face(-Z, outermost)",
+            "face_b": "frame:face(-Z, largest)",
+            "offset": -20
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_gear24.SLDPRT",
+            "name": "drive_gear",
+            "at": [
+              0,
+              0,
+              20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_idler18.SLDPRT",
+            "name": "idler_gear",
+            "at": [
+              31.5,
+              0,
+              20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_gear24.SLDPRT",
+            "name": "shutter_gear",
+            "at": [
+              63,
+              0,
+              20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_pinion16.SLDPRT",
+            "name": "drive_pinion",
+            "at": [
+              0,
+              0,
+              30
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_gear64.SLDPRT",
+            "name": "sprocket_gear",
+            "at": [
+              0,
+              -60,
+              30
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_shutter.SLDPRT",
+            "name": "shutter",
+            "at": [
+              63,
+              0,
+              90
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_core\\v2\\film_projector_drive\\gen_r1\\parts\\proj_sprocket.SLDPRT",
+            "name": "sprocket",
+            "at": [
+              0,
+              -60,
+              -10
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "_raw": "{\"part\": \"drive_gear\", \"shaft\": \"drive_shaft\", \"diameter\": 10"
+          },
+          "ok": false,
+          "error_code": "TOOL_ARGS",
+          "message": "参数不是合法 JSON: Expecting ',' delimiter: line 1 column 62 (char 61)"
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 41.67,
+      "assembly_score_v1": 52.5,
+      "motion_score": 0.0,
+      "motion_score_v1": 25.0,
+      "structure_ok": false,
+      "motion_score_gated": 0.0,
+      "infra_contaminated": false,
+      "e2e": false
+    }
+  ],
+  "model": "claude-sonnet-5",
+  "asm_max_tokens": 8000,
+  "max_asm_calls": 50,
+  "asm_calls_per_role": 0,
+  "extra_toolset": "v2"
+}

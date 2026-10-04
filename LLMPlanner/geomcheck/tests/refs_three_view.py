@@ -1,4 +1,4 @@
-"""三视图 track 33 道题的参考实体：按图纸尺寸用 OCP 直接构造。
+"""三视图 track 50 道题的参考实体：按图纸尺寸用 OCP 直接构造。
 
 B/C 组取自 Web Demo 的三视图样例；D 组是自行设计的零件，图纸由这里的参考实体投影生成。
 
@@ -24,7 +24,7 @@ from OCP.BRepBuilderAPI import (
     BRepBuilderAPI_Sewing,
     BRepBuilderAPI_Transform,
 )
-from OCP.GeomAbs import GeomAbs_Line
+from OCP.GeomAbs import GeomAbs_Circle, GeomAbs_Line
 from OCP.TopoDS import TopoDS, TopoDS_Compound
 from OCP.gp import gp_Pnt, gp_Trsf, gp_Vec
 
@@ -44,10 +44,14 @@ CASES = [
 D_BASIC = [
     "d01_v_block", "d04_flange_cover", "d05_stepped_shaft", "d06_u_clevis", "d07_eccentric_cam",
     "d09_angle_bracket", "d10_clamp_plate", "d11_dovetail_slide", "d12_cut_block", "d18_gear_rack",
+    "d21_t_slot_block", "d22_flanged_bushing", "d23_cross_plate", "d24_u_channel", "d25_step_pin",
+    "d26_square_flange", "d27_guide_rail", "d35_shaft_collar",
 ]
 D_COMPOSITE = [
     "d02_bearing_block", "d03_rib_bracket", "d08_pipe_tee", "d13_v_pulley", "d14_link_rod",
     "d15_motor_mount", "d16_heat_sink", "d17_pipe_clamp", "d19_hinge_leaf", "d20_ribbed_base",
+    "d28_round_cup", "d29_hanger_bracket", "d30_valve_body", "d31_lever_arm", "d32_tool_holder",
+    "d33_shell_housing", "d34_fixture_plate", "d36_flanged_tube", "d37_column_base",
 ]
 CASES = CASES + sorted(D_BASIC + D_COMPOSITE)
 
@@ -474,6 +478,157 @@ def d20_ribbed_base(rib_h=15.0, center_depth=20.0, boss_x=55.0):
     body = fuse(body, *bosses, *ribs, cyl((0, 10, 0), Y, 15, 25))
     tools = [box(-40, -1, -25, 40, 4, 25), cyl((0, 35 - center_depth, 0), Y, 8, center_depth + 1)]
     tools += [cyl((sx * boss_x, -1, sz * 32), Y, 4, 32) for sx in (1, -1) for sz in (1, -1)]
+    return clean(cut(body, *tools))
+
+
+# ---------------------------------------------------------------- D 组（第二批）
+
+
+def _circle_edges(r, z):
+    """半径 r、位于高度 z 的水平圆棱边。"""
+    def pick(c):
+        if c.GetType() != GeomAbs_Circle:
+            return False
+        return abs(c.Circle().Radius() - r) < 1e-6 and abs(c.Value(c.FirstParameter()).Z() - z) < 1e-6
+    return pick
+
+
+def d21_t_slot_block(neck_w=12.0, head_h=8.0, hole_x=30.0):
+    tools = [box(-neck_w / 2, 30, -26, neck_w / 2, 41, 26), box(-12, 30 - head_h, -26, 12, 30, 26)]
+    tools += [cyl((sx * hole_x, -1, 0), Y, 4.5, 42) for sx in (1, -1)]
+    return clean(cut(box(-40, 0, -25, 40, 40, 25), *tools))
+
+
+def d22_flanged_bushing(cbore_depth=5.0, pcd=50.0, oil_z=25.0):
+    body = fuse(cyl((0, 0, 0), Z, 30, 8), cyl((0, 0, 8), Z, 20, 30))
+    tools = [cyl((0, 0, -1), Z, 12.5, 40), cyl((0, 0, 38 - cbore_depth), Z, 15, cbore_depth + 1),
+             cyl((-21, 0, oil_z), X, 2, 42)]
+    tools += [cyl((*_polar(pcd / 2, 45 + 90 * k), -1), Z, 3, 10) for k in range(4)]
+    return clean(cut(body, *tools))
+
+
+def d23_cross_plate(arm_w=30.0, hole_r=45.0, fillet_r=5.0):
+    a = arm_w / 2
+    body = clean(fuse(box(-60, -a, 0, 60, a, 10), box(-a, -60, 0, a, 60, 10)))
+    if fillet_r:
+        body = clean(fillet(body, fillet_r, _vertical_edges([(sx * a, sy * a) for sx in (1, -1) for sy in (1, -1)])))
+    tools = [cyl((0, 0, -1), Z, 15, 12)]
+    tools += [cyl((*_polar(hole_r, 90 * k), -1), Z, 4, 12) for k in range(4)]
+    return clean(cut(body, *tools))
+
+
+def d24_u_channel(wall_t=8.0, hole_y=28.0, slot_len=40.0):
+    body = fuse(box(-50, 0, -30, 50, 8, 30), box(-50, 8, -30, 50, 48, -30 + wall_t), box(-50, 8, 30 - wall_t, 50, 48, 30))
+    s = slot_len / 2 - 5
+    tools = [_stadium((-s, 0), (s, 0), 5, "y", 10, -1)]
+    tools += [cyl((sx * 30, hole_y, -31), Z, 6, 62) for sx in (1, -1)]
+    return clean(cut(body, *tools))
+
+
+def d25_step_pin(groove_z=10.0, hole_z=5.0, head_d=24.0):
+    g0 = 66 - groove_z - 3
+    rz = [(0, 0), (head_d / 2, 0), (head_d / 2, 6), (8, 6), (8, g0), (6.5, g0), (6.5, g0 + 3), (8, g0 + 3),
+          (8, 65), (7, 66), (0, 66)]
+    return clean(cut(revolve(rz), cyl((-13, 0, 66 - hole_z), X, 2, 26)))
+
+
+def d26_square_flange(square=60.0, bore_d=20.0, fillet_r=10.0):
+    plate = box(-40, -40, 0, 40, 40, 10)
+    if fillet_r:
+        plate = clean(fillet(plate, fillet_r, _vertical_edges([(sx * 40, sy * 40) for sx in (1, -1) for sy in (1, -1)])))
+    body = fuse(plate, cyl((0, 0, 10), Z, 20, 20))
+    h = square / 2
+    tools = [cyl((0, 0, -1), Z, bore_d / 2, 32)]
+    tools += [cyl((sx * h, sy * h, -1), Z, 4.5, 12) for sx in (1, -1) for sy in (1, -1)]
+    return clean(cut(body, *tools))
+
+
+def d27_guide_rail(pitch=60.0, cbore_depth=6.0, rail_w=20.0):
+    body = fuse(box(0, 0, -20, 150, 10, 20), box(0, 10, -rail_w / 2, 150, 25, rail_w / 2))
+    tools = []
+    for k in (-1, 0, 1):
+        x = 75 + k * pitch
+        tools += [cyl((x, -1, 0), Y, 3.3, 27), cyl((x, 25 - cbore_depth, 0), Y, 5.5, cbore_depth + 1)]
+    return clean(cut(body, *tools))
+
+
+def d35_shaft_collar(bore_d=20.0, slit_w=2.0, hole_x=15.0):
+    tools = [cyl((0, 0, -1), Z, bore_d / 2, 16), box(0, -slit_w / 2, -1, 21, slit_w / 2, 15),
+             cyl((hole_x, -21, 7), Y, 2.25, 42)]
+    return clean(cut(cyl((0, 0, 0), Z, 20, 14), *tools))
+
+
+def d28_round_cup(wall=4.0, n_holes=3, side_z=18.0):
+    body = fuse(cyl((0, 0, 0), Z, 40, 30), cyl((0, 0, 26), Z, 48, 4))
+    tools = [cyl((0, 0, 6), Z, 40 - wall, 25), cyl((30, 0, side_z), X, 6, 20)]
+    tools += [cyl((*_polar(25, 360 / n_holes * k), -1), Z, 3, 8) for k in range(n_holes)]
+    return clean(cut(body, *tools))
+
+
+def d29_hanger_bracket(hole_y=20.0, leg_gap=44.0, plate_dz=12.0):
+    body = box(-40, 60, -20, 40, 70, 20)
+    for x0 in (-leg_gap / 2 - 8, leg_gap / 2):
+        body = fuse(body, box(x0, 20, -20, x0 + 8, 60, 20), cyl((x0, 20, 0), X, 20, 8))
+    tools = [cyl((-41, hole_y, 0), X, 8, 82)] + [cyl((0, 59, sz * plate_dz), Y, 4.5, 12) for sz in (1, -1)]
+    return clean(cut(body, *tools))
+
+
+def d30_valve_body(port_d=16.0, boss_r=15.0, hole_sq=36.0):
+    body = fuse(box(-35, 0, -25, 35, 50, 25), cyl((0, 50, 0), Y, boss_r, 10))
+    h = hole_sq / 2
+    tools = [cyl((-36, 25, 0), X, 10, 72), cyl((0, 24, 0), Y, port_d / 2, 37)]
+    tools += [cyl((sx * h, 25 + sy * h, 26), (0, 0, -1), 2.5, 11) for sx in (1, -1) for sy in (1, -1)]
+    return clean(cut(body, *tools))
+
+
+def d31_lever_arm(arm_w=12.0, boss_h=14.0, keyway=True):
+    a = arm_w / 2
+    body = fuse(cyl((0, 0, 0), Z, 15, 20), box(0, -a, 0, 80, a, 10), box(-a, 0, 0, a, 50, 10),
+                cyl((80, 0, 0), Z, 10, boss_h), cyl((0, 50, 0), Z, 10, boss_h))
+    tools = [cyl((0, 0, -1), Z, 7, 22), cyl((80, 0, -1), Z, 4, boss_h + 2), cyl((0, 50, -1), Z, 5, boss_h + 2)]
+    if keyway:
+        tools.append(box(-9, -2, -1, 0, 2, 21))
+    return clean(cut(body, *tools))
+
+
+def d32_tool_holder(pitch=22.0, depth=20.0, n=4):
+    body = fuse(box(-50, 0, -20, 50, 30, 20), box(-65, 0, -20, -50, 10, 20), box(50, 0, -20, 65, 10, 20))
+    tools = [cyl(((k - (n - 1) / 2) * pitch, 30 - depth, 0), Y, 6, depth + 1) for k in range(n)]
+    tools += [cyl((sx * 57.5, -1, 0), Y, 4, 12) for sx in (1, -1)]
+    return clean(cut(body, *tools))
+
+
+def d33_shell_housing(wall=5.0, top_hole_d=20.0, ear_hole_x=47.5):
+    body = fuse(box(-40, 0, -25, 40, 40, 25), box(-55, 0, -25, -40, 6, 25), box(40, 0, -25, 55, 6, 25))
+    tools = [box(-40 + wall, -1, -25 + wall, 40 - wall, 34, 25 - wall), cyl((0, 33, 0), Y, top_hole_d / 2, 8)]
+    tools += [cyl((sx * ear_hole_x, -1, 0), Y, 4, 8) for sx in (1, -1)]
+    return clean(cut(body, *tools))
+
+
+def d34_fixture_plate(pocket_depth=6.0, pitch=40.0, fillet_r=5.0):
+    pocket = box(-20, -15, 15 - pocket_depth, 20, 15, 16)
+    if fillet_r:
+        pocket = fillet(pocket, fillet_r, _vertical_edges([(sx * 20, sy * 15) for sx in (1, -1) for sy in (1, -1)]))
+    tools = [pocket] + [cyl((k * pitch, sy * 25, -1), Z, 4, 17) for k in (-1, 0, 1) for sy in (1, -1)]
+    tools += [cyl((sx * 52, 0, 5), Z, 3, 11) for sx in (1, -1)]
+    return clean(cut(box(-60, -40, 0, 60, 40, 15), *tools))
+
+
+def d36_flanged_tube(sq=54.0, pcd=56.0, bore_d=30.0):
+    body = fuse(cyl((0, 0, 0), Z, 20, 60), box(-35, -35, 0, 35, 35, 8), cyl((0, 0, 52), Z, 35, 8))
+    h = sq / 2
+    tools = [cyl((0, 0, -1), Z, bore_d / 2, 62)]
+    tools += [cyl((sx * h, sy * h, -1), Z, 3.5, 10) for sx in (1, -1) for sy in (1, -1)]
+    tools += [cyl((*_polar(pcd / 2, 90 * k), 51), Z, 4.5, 10) for k in range(4)]
+    return clean(cut(body, *tools))
+
+
+def d37_column_base(fillet_r=5.0, depth=20.0, pcd=60.0):
+    body = clean(fuse(cyl((0, 0, 0), Z, 40, 12), cyl((0, 0, 12), Z, 15, 60)))
+    if fillet_r:
+        body = clean(fillet(body, fillet_r, _circle_edges(15, 12)))
+    tools = [cyl((0, 0, 72 - depth), Z, 5, depth + 1), cyl((-16, 0, 40), X, 4, 32)]
+    tools += [cyl((*_polar(pcd / 2, 45 + 90 * k), -1), Z, 4.5, 14) for k in range(4)]
     return clean(cut(body, *tools))
 
 

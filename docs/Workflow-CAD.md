@@ -5,7 +5,7 @@ Workflow-CAD 让大语言模型（LLM）直接在 SolidWorks 里建出原生参�
 - **L0（原子操作）**：LLM 一次性规划出草图、拉伸、切除、圆角等原子操作序列，再按顺序执行。这是以往 API 级规划器的做法。
 - **L1（工程师级工作流）**：LLM 作为闭环 Agent，调用 24 个从专业建模过程中提炼出来的工具。每次调用后读取真实模型状态，再决定下一步。每个特征都作为一个事务执行，失败或不起作用就回滚。
 
-本文说明如何在一台 Windows 机器上把系统跑起来，以及各部分分别负责什么。评测方法见 [`Workflow-CAD-Bench.md`](./Workflow-CAD-Bench.md)。
+本文说明如何在一台 Windows 机器上把系统跑起来，以及各部分分别负责什么。评测方法见 [`Workflow-CAD-Bench.md`](./Workflow-CAD-Bench.md)。由三视图生成零件（多模态 L1 端到端）的运行方式见 [`Workflow-CAD-3Views.md`](./Workflow-CAD-3Views.md)。
 
 ---
 

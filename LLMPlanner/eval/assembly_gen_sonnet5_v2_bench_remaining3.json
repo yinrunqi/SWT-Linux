@@ -1,0 +1,6102 @@
+{
+  "summary": {
+    "n": 3,
+    "part_pass_rate": 1.0,
+    "assembly_score": 82.83,
+    "motion_score": 66.67,
+    "e2e": 0.667
+  },
+  "by_workflow": {
+    "v2": {
+      "all": {
+        "n": 3,
+        "part_pass_rate": 1.0,
+        "assembly_score": 82.83,
+        "motion_score": 66.67,
+        "e2e": 0.667
+      },
+      "double_wishbone": {
+        "n": 1,
+        "part_pass_rate": 1.0,
+        "assembly_score": 100.0,
+        "motion_score": 100.0,
+        "e2e": 1.0
+      },
+      "parallel_gripper": {
+        "n": 1,
+        "part_pass_rate": 1.0,
+        "assembly_score": 100.0,
+        "motion_score": 100.0,
+        "e2e": 1.0
+      },
+      "toggle_clamp": {
+        "n": 1,
+        "part_pass_rate": 1.0,
+        "assembly_score": 48.5,
+        "motion_score": 0.0,
+        "e2e": 0.0
+      }
+    }
+  },
+  "recipes": {
+    "v2": [
+      "assembly_topology.md",
+      "assembly_joint_mapping.md",
+      "assembly_coupling.md",
+      "assembly_linkage.md",
+      "assembly_motion_check.md"
+    ]
+  },
+  "results": [
+    {
+      "case_id": "toggle_clamp",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "v2",
+      "parts": [
+        {
+          "part_id": "tc_base",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "tc_base",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      8.0,
+                      70.0,
+                      120.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        30.0,
+                        40.0
+                      ],
+                      [
+                        90.0,
+                        20.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 92916,
+            "completion_tokens": 676,
+            "total_tokens": 93592,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 38.59,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_base.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_base.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_base.agent.json"
+        },
+        {
+          "part_id": "tc_arm",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "tc_arm",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      12.0,
+                      112.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        6.0,
+                        6.0
+                      ],
+                      [
+                        36.0,
+                        6.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 77946,
+            "completion_tokens": 391,
+            "total_tokens": 78337,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 34.04,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_arm.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_arm.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_arm.agent.json"
+        },
+        {
+          "part_id": "tc_handle",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "tc_handle",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      12.0,
+                      92.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 12.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 12.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        6.0,
+                        6.0
+                      ],
+                      [
+                        31.0,
+                        6.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 78215,
+            "completion_tokens": 394,
+            "total_tokens": 78609,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 34.18,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_handle.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_handle.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_handle.agent.json"
+        },
+        {
+          "part_id": "tc_link",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "tc_link",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      10.0,
+                      50.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        5.0,
+                        5.0
+                      ],
+                      [
+                        45.0,
+                        5.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 90027,
+            "completion_tokens": 590,
+            "total_tokens": 90617,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 35.86,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_link.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_link.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_link.agent.json"
+        },
+        {
+          "part_id": "tc_pin14",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "tc_pin14",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      14.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      6.0,
+                      14.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 33897,
+            "completion_tokens": 162,
+            "total_tokens": 34059,
+            "calls": 2
+          },
+          "llm_calls": 2,
+          "duration_seconds": 16.08,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_pin14.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_pin14.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_pin14.agent.json"
+        },
+        {
+          "part_id": "tc_pin26",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "tc_pin26",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      26.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      6.0,
+                      26.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 37238,
+            "completion_tokens": 233,
+            "total_tokens": 37471,
+            "calls": 2
+          },
+          "llm_calls": 2,
+          "duration_seconds": 16.79,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_pin26.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_pin26.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_pin26.agent.json"
+        },
+        {
+          "part_id": "tc_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "tc_pin12",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      12.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      6.0,
+                      12.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 44284,
+            "completion_tokens": 322,
+            "total_tokens": 44606,
+            "calls": 2
+          },
+          "llm_calls": 2,
+          "duration_seconds": 17.44,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_pin12.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_pin12.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_pin12.agent.json"
+        }
+      ],
+      "assembly": {
+        "status": "stalled",
+        "infra_error": null,
+        "static": {
+          "component_count": 5,
+          "saved": false
+        },
+        "rubric": {
+          "score": 48.5,
+          "parts": {
+            "rigid_groups": 0.625,
+            "joints": 0.0,
+            "mobility": 0.0,
+            "grounded": 0.6,
+            "not_over_defined": 1.0,
+            "couplings": 1.0
+          },
+          "rigid_groups": [
+            {
+              "role": "base",
+              "body": "base",
+              "ok": true
+            },
+            {
+              "role": "arm",
+              "body": "arm",
+              "ok": true
+            },
+            {
+              "role": "handle",
+              "body": "handle",
+              "ok": true
+            },
+            {
+              "role": "link",
+              "body": "link",
+              "ok": false
+            },
+            {
+              "role": "pin_a",
+              "body": "base|arm",
+              "ok": true
+            },
+            {
+              "role": "pin_h",
+              "body": "base|handle",
+              "ok": true
+            },
+            {
+              "role": "pin_j",
+              "body": "arm|link",
+              "ok": false
+            },
+            {
+              "role": "pin_k",
+              "body": "handle|link",
+              "ok": false
+            }
+          ],
+          "joints": [
+            {
+              "bodies": [
+                "arm",
+                "base"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "free",
+              "ok": false
+            },
+            {
+              "bodies": [
+                "handle",
+                "base"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "free",
+              "ok": false
+            },
+            {
+              "bodies": [
+                "link",
+                "arm"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": null,
+              "ok": false
+            },
+            {
+              "bodies": [
+                "link",
+                "handle"
+              ],
+              "expected": [
+                "revolute",
+                "cylindrical"
+              ],
+              "actual": null,
+              "ok": false
+            }
+          ],
+          "mobility": {
+            "actual": 12,
+            "target": 1,
+            "ok": false,
+            "skipped": []
+          },
+          "floating": [
+            "arm",
+            "handle"
+          ],
+          "ground_ok": true,
+          "over_defined": {},
+          "broken_mates": [],
+          "suppressed_mates": [],
+          "couplings": []
+        },
+        "static_score": 48.5,
+        "motion": {
+          "mode": "poses",
+          "passed": false,
+          "score": 0.0,
+          "poses": [
+            {
+              "name": "open",
+              "variants": [
+                {
+                  "flip": false
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "handle",
+                    "coord": "x",
+                    "got": -9.282,
+                    "expected": -9.28,
+                    "err_mm": 0.002,
+                    "ok": true
+                  },
+                  {
+                    "role": "handle",
+                    "coord": "y",
+                    "got": -60.0,
+                    "expected": 20.0,
+                    "err_mm": 80.0,
+                    "ok": false
+                  },
+                  {
+                    "role": "arm",
+                    "coord": "x",
+                    "got": 100.0,
+                    "expected": 52.57,
+                    "err_mm": 47.43,
+                    "ok": false
+                  },
+                  {
+                    "role": "arm",
+                    "coord": "y",
+                    "got": 0.0,
+                    "expected": 85.06,
+                    "err_mm": 85.06,
+                    "ok": false
+                  }
+                ],
+                "max_err_mm": 85.06,
+                "ok": false
+              },
+              "interference_count": 1,
+              "interference_mm3": 97.5861,
+              "interference_pairs": [
+                {
+                  "components": [
+                    "tc_pin26-1",
+                    "tc_handle-1"
+                  ],
+                  "volume": 9.758609994951873e-08,
+                  "isPossibleInterference": false
+                }
+              ],
+              "drifted_fixed": [],
+              "ok": false
+            },
+            {
+              "name": "mid",
+              "variants": [
+                {
+                  "flip": true
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "handle",
+                    "coord": "x",
+                    "got": 20.0,
+                    "expected": 20.0,
+                    "err_mm": 0.0,
+                    "ok": true
+                  },
+                  {
+                    "role": "handle",
+                    "coord": "y",
+                    "got": 49.282,
+                    "expected": 49.28,
+                    "err_mm": 0.002,
+                    "ok": true
+                  },
+                  {
+                    "role": "arm",
+                    "coord": "x",
+                    "got": 100.0,
+                    "expected": 51.73,
+                    "err_mm": 48.27,
+                    "ok": false
+                  },
+                  {
+                    "role": "arm",
+                    "coord": "y",
+                    "got": 0.0,
+                    "expected": 85.58,
+                    "err_mm": 85.58,
+                    "ok": false
+                  }
+                ],
+                "max_err_mm": 85.58,
+                "ok": false
+              },
+              "interference_count": 1,
+              "interference_mm3": 97.5861,
+              "interference_pairs": [
+                {
+                  "components": [
+                    "tc_pin26-1",
+                    "tc_handle-1"
+                  ],
+                  "volume": 9.758609994951792e-08,
+                  "isPossibleInterference": false
+                }
+              ],
+              "drifted_fixed": [],
+              "ok": false
+            },
+            {
+              "name": "clamp",
+              "variants": [
+                {
+                  "flip": false
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "handle",
+                    "coord": "x",
+                    "got": 60.0,
+                    "expected": 60.0,
+                    "err_mm": 0.0,
+                    "ok": true
+                  },
+                  {
+                    "role": "handle",
+                    "coord": "y",
+                    "got": 60.0,
+                    "expected": 60.0,
+                    "err_mm": 0.0,
+                    "ok": true
+                  },
+                  {
+                    "role": "arm",
+                    "coord": "x",
+                    "got": 100.0,
+                    "expected": 75.82,
+                    "err_mm": 24.18,
+                    "ok": false
+                  },
+                  {
+                    "role": "arm",
+                    "coord": "y",
+                    "got": 0.0,
+                    "expected": 65.21,
+                    "err_mm": 65.21,
+                    "ok": false
+                  }
+                ],
+                "max_err_mm": 65.21,
+                "ok": false
+              },
+              "interference_count": 1,
+              "interference_mm3": 97.5861,
+              "interference_pairs": [
+                {
+                  "components": [
+                    "tc_pin26-1",
+                    "tc_handle-1"
+                  ],
+                  "volume": 9.758609994951792e-08,
+                  "isPossibleInterference": false
+                }
+              ],
+              "drifted_fixed": [],
+              "ok": false
+            }
+          ]
+        },
+        "token_usage": {
+          "prompt_tokens": 329859,
+          "completion_tokens": 36510,
+          "total_tokens": 366369,
+          "calls": 11
+        },
+        "llm_calls": 11,
+        "duration_seconds": 423.91,
+        "aliases": {
+          "base": "tc_base-1",
+          "pin_a": "tc_pin14-1",
+          "pin_h": "tc_pin26-1",
+          "arm": "tc_arm-1",
+          "handle": "tc_handle-1"
+        },
+        "agent_texts": [
+          {
+            "turn": 2,
+            "text": "先读取装配体状态，确认是空装配体，然后按拓扑顺序逐步装配。",
+            "with_tools": true
+          },
+          {
+            "turn": 4,
+            "text": "确认空装配体，开始按拓扑顺序装配肘节夹钳。\n\n**关节图规划：**\n- base → ground（固定）\n- pin_a → base，fixed（压入 (0,0) 孔）\n- arm → pin_a，revolute（绕 A 转）\n- pin_j → arm，fixed（压入 arm X=30 孔）\n- pin_h → base，fixed（压入 (60,-20) 孔）\n- handle → pin_h，revolute（绕 H 转）\n- pin_k → handle，fixed（压入 handle X=25 孔）\n- link → pin_j，revolute（连杆大端）\n- link → pin_k，close_loop（连杆小端，闭环）\n\nZ 分层：base[0,8]，pin_a[0,14]，arm[8,14]，pin_j[8,20]，pin_h[0,26]，handle[20,26]，pin_k[14,26]，link[14,20]。\n\n先插入 base 并固定：",
+            "with_tools": true
+          },
+          {
+            "turn": 6,
+            "text": "base 已插入，立即固定它，然后并行插入 pin_a 和 pin_h。",
+            "with_tools": true
+          },
+          {
+            "turn": 13,
+            "text": "pin_a 和 pin_h 已插入，现在用 fixed 关节把它们压入 base 的孔中，底面对齐使其 z 范围符合要求。",
+            "with_tools": true
+          },
+          {
+            "turn": 16,
+            "text": "Pins已固定，Z范围符合预期。现在插入 arm 和 handle。",
+            "with_tools": true
+          }
+        ],
+        "llm_calls_detail": [
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 87,
+            "n_tool_calls": 1,
+            "text_chars": 29
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 628,
+            "n_tool_calls": 1,
+            "text_chars": 443
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 69,
+            "n_tool_calls": 1,
+            "text_chars": 36
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 514,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 95,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 3807,
+            "n_tool_calls": 2,
+            "text_chars": 61
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 874,
+            "n_tool_calls": 2,
+            "text_chars": 34
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 36,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "length",
+            "completion_tokens": 11200,
+            "n_tool_calls": 0,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "length",
+            "completion_tokens": 8000,
+            "n_tool_calls": 0,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "length",
+            "completion_tokens": 11200,
+            "n_tool_calls": 0,
+            "text_chars": 0
+          }
+        ],
+        "agent_last_motion": null,
+        "joints": [
+          {
+            "kind": "fixed",
+            "a": "tc_pin14-1",
+            "b": "tc_base-1",
+            "mates": [
+              "同心1",
+              "重合1"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "tc_pin26-1",
+            "b": "tc_base-1",
+            "mates": [
+              "同心2",
+              "重合2"
+            ]
+          }
+        ]
+      },
+      "tool_calls": [
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "_call": "确认空装配体状态"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              0,
+              0,
+              0
+            ],
+            "name": "base",
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_base.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "base"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_pin14.SLDPRT",
+            "name": "pin_a",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_pin26.SLDPRT",
+            "name": "pin_h",
+            "at": [
+              60,
+              -20,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "pin_a:cyl(d=6)",
+            "b": "base:cyl(d=6, near=[0,0])",
+            "face_a": "pin_a:face(-Z, outermost)",
+            "face_b": "base:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "pin_h:cyl(d=6)",
+            "b": "base:cyl(d=6, near=[60,-20])",
+            "face_a": "pin_h:face(-Z, outermost)",
+            "face_b": "base:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              0,
+              0,
+              8
+            ],
+            "name": "arm",
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_arm.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              60,
+              -20,
+              20
+            ],
+            "name": "handle",
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\toggle_clamp\\gen_r1\\parts\\tc_handle.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 48.5,
+      "motion_score": 0.0,
+      "e2e": false
+    },
+    {
+      "case_id": "parallel_gripper",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "v2",
+      "parts": [
+        {
+          "part_id": "gp_base",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "gp_base",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      8.0,
+                      70.0,
+                      160.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 4,
+                    "expected": 4
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        20.0,
+                        50.0
+                      ],
+                      [
+                        140.0,
+                        20.0
+                      ],
+                      [
+                        140.0,
+                        50.0
+                      ],
+                      [
+                        20.0,
+                        20.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 66839,
+            "completion_tokens": 949,
+            "total_tokens": 67788,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 30.78,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_base.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_base.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_base.agent.json"
+        },
+        {
+          "part_id": "gp_link",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "gp_link",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      10.0,
+                      50.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        5.0,
+                        5.0
+                      ],
+                      [
+                        45.0,
+                        5.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 55123,
+            "completion_tokens": 1023,
+            "total_tokens": 56146,
+            "calls": 3
+          },
+          "llm_calls": 3,
+          "duration_seconds": 22.2,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_link.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_link.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_link.agent.json"
+        },
+        {
+          "part_id": "gp_finger",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "gp_finger",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      12.0,
+                      72.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        6.0,
+                        6.0
+                      ],
+                      [
+                        36.0,
+                        6.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 46822,
+            "completion_tokens": 804,
+            "total_tokens": 47626,
+            "calls": 3
+          },
+          "llm_calls": 3,
+          "duration_seconds": 22.49,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_finger.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_finger.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_finger.agent.json"
+        },
+        {
+          "part_id": "gp_pin14",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "gp_pin14",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      14.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      6.0,
+                      14.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 32617,
+            "completion_tokens": 525,
+            "total_tokens": 33142,
+            "calls": 2
+          },
+          "llm_calls": 2,
+          "duration_seconds": 14.31,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_pin14.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_pin14.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_pin14.agent.json"
+        },
+        {
+          "part_id": "gp_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "gp_pin12",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      12.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      6.0,
+                      12.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 27115,
+            "completion_tokens": 450,
+            "total_tokens": 27565,
+            "calls": 2
+          },
+          "llm_calls": 2,
+          "duration_seconds": 14.13,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_pin12.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_pin12.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_pin12.agent.json"
+        }
+      ],
+      "assembly": {
+        "status": "max_llm_calls",
+        "infra_error": null,
+        "static": {
+          "component_count": 15,
+          "saved": false
+        },
+        "rubric": {
+          "score": 100.0,
+          "parts": {
+            "rigid_groups": 1.0,
+            "joints": 1.0,
+            "mobility": 1.0,
+            "grounded": 1.0,
+            "not_over_defined": 1.0,
+            "couplings": 1.0
+          },
+          "rigid_groups": [
+            {
+              "role": "base",
+              "body": "base",
+              "ok": true
+            },
+            {
+              "role": "lower_l",
+              "body": "lower_l",
+              "ok": true
+            },
+            {
+              "role": "upper_l",
+              "body": "upper_l",
+              "ok": true
+            },
+            {
+              "role": "finger_l",
+              "body": "finger_l",
+              "ok": true
+            },
+            {
+              "role": "lower_r",
+              "body": "lower_r",
+              "ok": true
+            },
+            {
+              "role": "upper_r",
+              "body": "upper_r",
+              "ok": true
+            },
+            {
+              "role": "finger_r",
+              "body": "finger_r",
+              "ok": true
+            },
+            {
+              "role": "base_pin_lo_l",
+              "body": "base|lower_l",
+              "ok": true
+            },
+            {
+              "role": "base_pin_up_l",
+              "body": "base|upper_l",
+              "ok": true
+            },
+            {
+              "role": "link_pin_lo_l",
+              "body": "lower_l|finger_l",
+              "ok": true
+            },
+            {
+              "role": "link_pin_up_l",
+              "body": "upper_l|finger_l",
+              "ok": true
+            },
+            {
+              "role": "base_pin_lo_r",
+              "body": "base|lower_r",
+              "ok": true
+            },
+            {
+              "role": "base_pin_up_r",
+              "body": "base|upper_r",
+              "ok": true
+            },
+            {
+              "role": "link_pin_lo_r",
+              "body": "lower_r|finger_r",
+              "ok": true
+            },
+            {
+              "role": "link_pin_up_r",
+              "body": "upper_r|finger_r",
+              "ok": true
+            }
+          ],
+          "joints": [
+            {
+              "bodies": [
+                "lower_l",
+                "base"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "upper_l",
+                "base"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "finger_l",
+                "lower_l"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "finger_l",
+                "upper_l"
+              ],
+              "expected": [
+                "revolute",
+                "cylindrical"
+              ],
+              "actual": "cylindrical",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "lower_r",
+                "base"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "upper_r",
+                "base"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "finger_r",
+                "lower_r"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "finger_r",
+                "upper_r"
+              ],
+              "expected": [
+                "revolute",
+                "cylindrical"
+              ],
+              "actual": "cylindrical",
+              "ok": true
+            }
+          ],
+          "mobility": {
+            "actual": 2,
+            "target": 2,
+            "ok": true,
+            "skipped": []
+          },
+          "floating": [],
+          "ground_ok": true,
+          "over_defined": {},
+          "broken_mates": [],
+          "suppressed_mates": [],
+          "couplings": []
+        },
+        "static_score": 100.0,
+        "motion": {
+          "mode": "poses",
+          "passed": true,
+          "score": 100.0,
+          "poses": [
+            {
+              "name": "open",
+              "variants": [
+                {
+                  "flip": true
+                },
+                {
+                  "flip": true
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "finger_l",
+                    "coord": "x",
+                    "got": -20.608,
+                    "expected": -20.61,
+                    "err_mm": 0.002,
+                    "ok": true
+                  },
+                  {
+                    "role": "finger_l",
+                    "coord": "y",
+                    "got": 66.946,
+                    "expected": 66.95,
+                    "err_mm": 0.004,
+                    "ok": true
+                  },
+                  {
+                    "role": "finger_r",
+                    "coord": "x",
+                    "got": 20.608,
+                    "expected": 20.61,
+                    "err_mm": 0.002,
+                    "ok": true
+                  },
+                  {
+                    "role": "finger_r",
+                    "coord": "y",
+                    "got": 66.946,
+                    "expected": 66.95,
+                    "err_mm": 0.004,
+                    "ok": true
+                  }
+                ],
+                "max_err_mm": 0.004,
+                "ok": true
+              },
+              "interference_count": 0,
+              "interference_mm3": 0.0,
+              "drifted_fixed": [],
+              "ok": true
+            },
+            {
+              "name": "close",
+              "variants": [
+                {
+                  "flip": true
+                },
+                {
+                  "flip": true
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "finger_l",
+                    "coord": "x",
+                    "got": -21.363,
+                    "expected": -21.36,
+                    "err_mm": 0.003,
+                    "ok": true
+                  },
+                  {
+                    "role": "finger_l",
+                    "coord": "y",
+                    "got": 49.647,
+                    "expected": 49.65,
+                    "err_mm": 0.003,
+                    "ok": true
+                  },
+                  {
+                    "role": "finger_r",
+                    "coord": "x",
+                    "got": 21.363,
+                    "expected": 21.36,
+                    "err_mm": 0.003,
+                    "ok": true
+                  },
+                  {
+                    "role": "finger_r",
+                    "coord": "y",
+                    "got": 49.647,
+                    "expected": 49.65,
+                    "err_mm": 0.003,
+                    "ok": true
+                  }
+                ],
+                "max_err_mm": 0.003,
+                "ok": true
+              },
+              "interference_count": 0,
+              "interference_mm3": 0.0,
+              "drifted_fixed": [],
+              "ok": true
+            },
+            {
+              "name": "skew",
+              "variants": [
+                {
+                  "flip": true
+                },
+                {
+                  "flip": false
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "finger_l",
+                    "coord": "x",
+                    "got": -22.412,
+                    "expected": -22.41,
+                    "err_mm": 0.002,
+                    "ok": true
+                  },
+                  {
+                    "role": "finger_l",
+                    "coord": "y",
+                    "got": 73.681,
+                    "expected": 73.68,
+                    "err_mm": 0.001,
+                    "ok": true
+                  },
+                  {
+                    "role": "finger_r",
+                    "coord": "x",
+                    "got": 20.608,
+                    "expected": 20.61,
+                    "err_mm": 0.002,
+                    "ok": true
+                  },
+                  {
+                    "role": "finger_r",
+                    "coord": "y",
+                    "got": 53.054,
+                    "expected": 53.05,
+                    "err_mm": 0.004,
+                    "ok": true
+                  }
+                ],
+                "max_err_mm": 0.004,
+                "ok": true
+              },
+              "interference_count": 0,
+              "interference_mm3": 0.0,
+              "drifted_fixed": [],
+              "ok": true
+            }
+          ]
+        },
+        "token_usage": {
+          "prompt_tokens": 3523362,
+          "completion_tokens": 98171,
+          "total_tokens": 3621533,
+          "calls": 50
+        },
+        "llm_calls": 50,
+        "duration_seconds": 1993.7,
+        "aliases": {
+          "base": "gp_base-1",
+          "base_pin_lo_l": "gp_pin14-1",
+          "base_pin_up_l": "gp_pin14-2",
+          "base_pin_lo_r": "gp_pin14-3",
+          "base_pin_up_r": "gp_pin14-4",
+          "lower_l": "gp_link-1",
+          "upper_l": "gp_link-2",
+          "lower_r": "gp_link-3",
+          "upper_r": "gp_link-4",
+          "link_pin_lo_l": "gp_pin12-1",
+          "link_pin_up_l": "gp_pin12-2",
+          "link_pin_lo_r": "gp_pin12-3",
+          "link_pin_up_r": "gp_pin12-4",
+          "finger_l": "gp_finger-1",
+          "finger_r": "gp_finger-2"
+        },
+        "agent_texts": [
+          {
+            "turn": 40,
+            "text": "Lower/upper link 都已转动装好。接下来放 link_pin（装在摆杆 X=40 孔，锁死=fixed）。",
+            "with_tools": true
+          },
+          {
+            "turn": 58,
+            "text": "现在闭合环路：finger 的 X=30 孔套在 link_pin_up 上，这是闭环关节。",
+            "with_tools": true
+          },
+          {
+            "turn": 63,
+            "text": "自由度正好等于2，符合预期。接下来做干涉检查和运动验证。",
+            "with_tools": true
+          },
+          {
+            "turn": 65,
+            "text": "干涉体积均在微米量级且标记为 `isPossibleInterference: false`，属于配合容差内的接触，非真实穿模。现在做运动验证，驱动左右摆杆各转一圈。",
+            "with_tools": true
+          },
+          {
+            "turn": 69,
+            "text": "我发现问题：link 的轴向定位用了 pin 的\"前视基准面\"重合，没有真正贴合到 base 的顶面，导致 link 实际还在 z=0 附近（与 base 穿模）。需要删除这 4 组转动配合，重新用 \"pin同心 + base顶面贴合link底面\" 的方式精确定位。",
+            "with_tools": true
+          },
+          {
+            "turn": 81,
+            "text": "Lower/upper link 现在原点 z=8，符合要求（z∈[8,14]）。finger 也跟着到 z=8，这会与 link_pin 高度匹配(z∈[8,20]已对应z=8起点)。重新检查干涉。",
+            "with_tools": true
+          },
+          {
+            "turn": 83,
+            "text": "干涉基本消失，残留微米级非真正干涉。现在重新做运动检查。",
+            "with_tools": true
+          },
+          {
+            "turn": 89,
+            "text": "发现 finger 的 Z 层定位有误：它现在与 lower_l/upper_l 叠在同一层（z≈8-14），而需求要求 finger 在 z∈[14,20]，即比摆杆高一层以避免碰撞。我需要修正 finger 与摆杆下销的转动配合，使其底面对齐到摆杆顶面（z=14）而非共享同一基准面。",
+            "with_tools": true
+          },
+          {
+            "turn": 103,
+            "text": "finger_r 现在在 z=14。现在重新建闭环关节（link_pin_up 与 finger 的 X=30 孔）。",
+            "with_tools": true
+          },
+          {
+            "turn": 109,
+            "text": "自由度正确（=2），干涉已清除（仅剩微米量级非真正干涉）。现在重新做运动验证，分别驱动左右两指。",
+            "with_tools": true
+          },
+          {
+            "turn": 117,
+            "text": "我发现了根本问题：之前的 \"fixed\" 关节（只给圆柱引用）自动选择了 \"前视基准面重合\"，这只能锁定旋转相位，并不能锁定沿轴向（Z）的位置。这导致销钉的 Z 位置在运动求解时发生漂移。需要显式用端面重合替换这些相位配合，真正锁定 Z。",
+            "with_tools": true
+          },
+          {
+            "turn": 128,
+            "text": "让我重新查询当前真实状态，排查问题根源。",
+            "with_tools": true
+          },
+          {
+            "turn": 130,
+            "text": "好，现在位置都恢复正确。pin14 的原点在 z=0，保留 z=0 高度不变(这是正确的，因为 pin14 装在 base 的孔里，z∈[0,14] 要求 pin14 本身从 z=0 到 z=14,其原点在z=0)。现在重做运动检查。",
+            "with_tools": true
+          },
+          {
+            "turn": 133,
+            "text": "自由度依然为2，干涉基本消除。现在重新运行运动验证。",
+            "with_tools": true
+          },
+          {
+            "turn": 137,
+            "text": "运动检查显示左右两侧存在非预期的耦合漂移，这是因为右侧机构有独立自由度但未设驱动，运动求解器对其进行了数值上的随意求解。我先用更少的扫描角度单独验证，并把未参与驱动的右侧从 expect_fixed 中移除（它本身不是\"接地\"而是\"未驱动的自由自由度\"）。",
+            "with_tools": true
+          }
+        ],
+        "llm_calls_detail": [
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 3893,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 77,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 61,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1018,
+            "n_tool_calls": 4,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 863,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1637,
+            "n_tool_calls": 4,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 174,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2293,
+            "n_tool_calls": 4,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 58,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2906,
+            "n_tool_calls": 4,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1921,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 432,
+            "n_tool_calls": 3,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 974,
+            "n_tool_calls": 4,
+            "text_chars": 60
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 729,
+            "n_tool_calls": 4,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 822,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 197,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 701,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 353,
+            "n_tool_calls": 2,
+            "text_chars": 46
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 54,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 83,
+            "n_tool_calls": 1,
+            "text_chars": 28
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 501,
+            "n_tool_calls": 1,
+            "text_chars": 83
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 6192,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 7431,
+            "n_tool_calls": 4,
+            "text_chars": 133
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 837,
+            "n_tool_calls": 4,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 38,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 139,
+            "n_tool_calls": 1,
+            "text_chars": 100
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 400,
+            "n_tool_calls": 1,
+            "text_chars": 28
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1472,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 707,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 5498,
+            "n_tool_calls": 4,
+            "text_chars": 144
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 174,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1458,
+            "n_tool_calls": 4,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 47,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 423,
+            "n_tool_calls": 2,
+            "text_chars": 59
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 80,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 308,
+            "n_tool_calls": 1,
+            "text_chars": 48
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 684,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 988,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1400,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "length",
+            "completion_tokens": 10400,
+            "n_tool_calls": 5,
+            "text_chars": 119
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 4298,
+            "n_tool_calls": 4,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 6526,
+            "n_tool_calls": 1,
+            "text_chars": 20
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 266,
+            "n_tool_calls": 2,
+            "text_chars": 117
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 340,
+            "n_tool_calls": 1,
+            "text_chars": 26
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2717,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 8013,
+            "n_tool_calls": 1,
+            "text_chars": 128
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 6302,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 48,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 38,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "length",
+            "completion_tokens": 11200,
+            "n_tool_calls": 0,
+            "text_chars": 0
+          }
+        ],
+        "agent_last_motion": {
+          "passed": false,
+          "frames": 13,
+          "duration": 0.3333333333333333,
+          "interference_frames": [
+            {
+              "frame": 5,
+              "time": 0.13888888888888887,
+              "count": 3,
+              "volume_mm3": 497.9705,
+              "pairs": [
+                [
+                  "gp_link-1",
+                  "gp_link-2"
+                ],
+                [
+                  "gp_link-1",
+                  "gp_pin12-2"
+                ],
+                [
+                  "gp_pin14-1",
+                  "gp_link-2"
+                ]
+              ]
+            },
+            {
+              "frame": 6,
+              "time": 0.16666666666666666,
+              "count": 3,
+              "volume_mm3": 1052.5102,
+              "pairs": [
+                [
+                  "gp_link-1",
+                  "gp_link-2"
+                ],
+                [
+                  "gp_pin14-1",
+                  "gp_link-2"
+                ],
+                [
+                  "gp_link-1",
+                  "gp_pin12-2"
+                ]
+              ]
+            },
+            {
+              "frame": 7,
+              "time": 0.1944444444444444,
+              "count": 3,
+              "volume_mm3": 977.25,
+              "pairs": [
+                [
+                  "gp_link-1",
+                  "gp_link-2"
+                ],
+                [
+                  "gp_pin14-1",
+                  "gp_link-2"
+                ],
+                [
+                  "gp_link-1",
+                  "gp_pin12-2"
+                ]
+              ]
+            },
+            {
+              "frame": 8,
+              "time": 0.2222222222222222,
+              "count": 3,
+              "volume_mm3": 888.2929,
+              "pairs": [
+                [
+                  "gp_link-1",
+                  "gp_link-2"
+                ],
+                [
+                  "gp_pin14-1",
+                  "gp_link-2"
+                ],
+                [
+                  "gp_link-1",
+                  "gp_pin12-2"
+                ]
+              ]
+            },
+            {
+              "frame": 9,
+              "time": 0.25,
+              "count": 17,
+              "volume_mm3": 20780.4334,
+              "pairs": [
+                [
+                  "gp_base-1",
+                  "gp_finger-2"
+                ],
+                [
+                  "gp_base-1",
+                  "gp_finger-1"
+                ],
+                [
+                  "gp_base-1",
+                  "gp_link-3"
+                ],
+                [
+                  "gp_base-1",
+                  "gp_link-4"
+                ],
+                [
+                  "gp_base-1",
+                  "gp_link-2"
+                ],
+                [
+                  "gp_link-1",
+                  "gp_finger-1"
+                ],
+                [
+                  "gp_base-1",
+                  "gp_link-1"
+                ],
+                [
+                  "gp_link-1",
+                  "gp_link-2"
+                ],
+                [
+                  "gp_link-2",
+                  "gp_finger-1"
+                ],
+                [
+                  "gp_link-4",
+                  "gp_finger-2"
+                ],
+                [
+                  "gp_link-3",
+                  "gp_finger-2"
+                ],
+                [
+                  "gp_base-1",
+                  "gp_pin12-4"
+                ],
+                [
+                  "gp_base-1",
+                  "gp_pin12-2"
+                ],
+                [
+                  "gp_base-1",
+                  "gp_pin12-3"
+                ],
+                [
+                  "gp_pin14-1",
+                  "gp_link-2"
+                ],
+                [
+                  "gp_link-1",
+                  "gp_pin12-2"
+                ],
+                [
+                  "gp_pin14-1",
+                  "gp_finger-1"
+                ]
+              ]
+            },
+            {
+              "frame": 10,
+              "time": 0.27777777777777773,
+              "count": 3,
+              "volume_mm3": 704.906,
+              "pairs": [
+                [
+                  "gp_link-1",
+                  "gp_link-2"
+                ],
+                [
+                  "gp_pin14-1",
+                  "gp_link-2"
+                ],
+                [
+                  "gp_link-1",
+                  "gp_pin12-2"
+                ]
+              ]
+            },
+            {
+              "frame": 11,
+              "time": 0.3055555555555555,
+              "count": 3,
+              "volume_mm3": 637.9553,
+              "pairs": [
+                [
+                  "gp_link-1",
+                  "gp_link-2"
+                ],
+                [
+                  "gp_pin14-1",
+                  "gp_link-2"
+                ],
+                [
+                  "gp_link-1",
+                  "gp_pin12-2"
+                ]
+              ]
+            },
+            {
+              "frame": 12,
+              "time": 0.3333333333333333,
+              "count": 1,
+              "volume_mm3": 606.9397,
+              "pairs": [
+                [
+                  "gp_link-1",
+                  "gp_link-2"
+                ]
+              ]
+            }
+          ],
+          "moved": [
+            "gp_link-1",
+            "gp_link-2",
+            "gp_finger-1",
+            "gp_pin12-2",
+            "gp_pin12-1"
+          ],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_turned_deg": 191.0,
+            "sample_ratio": {
+              "lower_l": 1.0,
+              "upper_l": 0.5742,
+              "finger_l": 0.6317
+            }
+          }
+        },
+        "joints": [
+          {
+            "kind": "fixed",
+            "a": "gp_base-1",
+            "b": "gp_pin14-1",
+            "mates": [
+              "同心1"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "gp_base-1",
+            "b": "gp_pin14-2",
+            "mates": [
+              "同心2"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "gp_base-1",
+            "b": "gp_pin14-3",
+            "mates": [
+              "同心3"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "gp_base-1",
+            "b": "gp_pin14-4",
+            "mates": [
+              "同心4"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "gp_pin14-1",
+            "b": "gp_link-1",
+            "mates": [
+              "同心9"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "gp_pin14-2",
+            "b": "gp_link-2",
+            "mates": [
+              "同心10"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "gp_pin14-3",
+            "b": "gp_link-3",
+            "mates": [
+              "同心11"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "gp_pin14-4",
+            "b": "gp_link-4",
+            "mates": [
+              "同心12"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "gp_link-1",
+            "b": "gp_pin12-1",
+            "mates": [
+              "同心13",
+              "重合13"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "gp_link-2",
+            "b": "gp_pin12-2",
+            "mates": [
+              "同心14",
+              "重合14"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "gp_link-3",
+            "b": "gp_pin12-3",
+            "mates": [
+              "同心15",
+              "重合15"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "gp_link-4",
+            "b": "gp_pin12-4",
+            "mates": [
+              "同心16",
+              "重合16"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "gp_pin12-2",
+            "b": "gp_finger-1",
+            "mates": [
+              "同心19"
+            ],
+            "loop": true,
+            "minimal": true
+          },
+          {
+            "kind": "revolute",
+            "a": "gp_pin12-4",
+            "b": "gp_finger-2",
+            "mates": [
+              "同心20"
+            ],
+            "loop": true,
+            "minimal": true
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "gp_base-1",
+            "b": "gp_link-1",
+            "mates": [
+              "重合19"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "gp_base-1",
+            "b": "gp_link-2",
+            "mates": [
+              "重合20"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "gp_base-1",
+            "b": "gp_link-3",
+            "mates": [
+              "重合21"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "gp_base-1",
+            "b": "gp_link-4",
+            "mates": [
+              "重合22"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "gp_pin12-1",
+            "b": "gp_finger-1",
+            "mates": [
+              "同心21"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "gp_link-1",
+            "b": "gp_finger-1",
+            "mates": [
+              "重合23"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "gp_pin12-3",
+            "b": "gp_finger-2",
+            "mates": [
+              "同心22"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "gp_link-3",
+            "b": "gp_finger-2",
+            "mates": [
+              "重合24"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "gp_pin12-2",
+            "b": "gp_finger-1",
+            "mates": [
+              "同心23"
+            ],
+            "loop": true,
+            "minimal": true
+          },
+          {
+            "kind": "revolute",
+            "a": "gp_pin12-4",
+            "b": "gp_finger-2",
+            "mates": [
+              "同心24"
+            ],
+            "loop": true,
+            "minimal": true
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "gp_base-1",
+            "b": "gp_pin14-1",
+            "mates": [
+              "重合25"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "gp_base-1",
+            "b": "gp_pin14-2",
+            "mates": [
+              "重合26"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "gp_base-1",
+            "b": "gp_pin14-3",
+            "mates": [
+              "重合27"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "gp_base-1",
+            "b": "gp_pin14-4",
+            "mates": [
+              "重合28"
+            ]
+          }
+        ]
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_base.SLDPRT",
+            "name": "base",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "base"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              -60,
+              0,
+              0
+            ],
+            "name": "base_pin_lo_l",
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_pin14.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              -60,
+              30,
+              0
+            ],
+            "name": "base_pin_up_l",
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_pin14.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              60,
+              0,
+              0
+            ],
+            "name": "base_pin_lo_r",
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_pin14.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              60,
+              30,
+              0
+            ],
+            "name": "base_pin_up_r",
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_pin14.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "base:cyl(d=6, near=[-60,0])",
+            "b": "base_pin_lo_l:cyl(d=6)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "base:cyl(d=6, near=[-60,30])",
+            "b": "base_pin_up_l:cyl(d=6)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "base:cyl(d=6, near=[60,0])",
+            "b": "base_pin_lo_r:cyl(d=6)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "base:cyl(d=6, near=[60,30])",
+            "b": "base_pin_up_r:cyl(d=6)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              -60,
+              0,
+              8
+            ],
+            "name": "lower_l",
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_link.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              -60,
+              30,
+              8
+            ],
+            "name": "upper_l",
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_link.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              60,
+              0,
+              8
+            ],
+            "name": "lower_r",
+            "rotate_deg": 180,
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_link.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              60,
+              30,
+              8
+            ],
+            "name": "upper_r",
+            "rotate_deg": 180,
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_link.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "base_pin_lo_l:cyl(d=6)",
+            "b": "lower_l:cyl(d=6, near=[0,0])",
+            "face_a": "base_pin_lo_l:face(+Z, outermost)",
+            "face_b": "lower_l:face(-Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "base_pin_up_l:cyl(d=6)",
+            "b": "upper_l:cyl(d=6, near=[0,0])",
+            "face_a": "base_pin_up_l:face(+Z, outermost)",
+            "face_b": "upper_l:face(-Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "base_pin_lo_r:cyl(d=6)",
+            "b": "lower_r:cyl(d=6, near=[0,0])",
+            "face_a": "base_pin_lo_r:face(+Z, outermost)",
+            "face_b": "lower_r:face(-Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "base_pin_up_r:cyl(d=6)",
+            "b": "upper_r:cyl(d=6, near=[0,0])",
+            "face_a": "base_pin_up_r:face(+Z, outermost)",
+            "face_b": "upper_r:face(-Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "a": "base_pin_lo_l:cyl(d=6)",
+            "b": "lower_l:cyl(d=6, near=[0,0])",
+            "type": "revolute"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "a": "base_pin_up_l:cyl(d=6)",
+            "b": "upper_l:cyl(d=6, near=[0,0])",
+            "type": "revolute"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "a": "base_pin_lo_r:cyl(d=6)",
+            "b": "lower_r:cyl(d=6, near=[0,0])",
+            "type": "revolute"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "a": "base_pin_up_r:cyl(d=6)",
+            "b": "upper_r:cyl(d=6, near=[0,0])",
+            "type": "revolute"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              -20,
+              0,
+              8
+            ],
+            "name": "link_pin_lo_l",
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_pin12.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              -20,
+              30,
+              8
+            ],
+            "name": "link_pin_up_l",
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_pin12.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              20,
+              0,
+              8
+            ],
+            "name": "link_pin_lo_r",
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_pin12.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              20,
+              30,
+              8
+            ],
+            "name": "link_pin_up_r",
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_pin12.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "a": "lower_l:cyl(d=6, near=[40,0])",
+            "b": "link_pin_lo_l:cyl(d=6)",
+            "type": "fixed"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "a": "upper_l:cyl(d=6, near=[40,0])",
+            "b": "link_pin_up_l:cyl(d=6)",
+            "type": "fixed"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "a": "lower_r:cyl(d=6, near=[40,0])",
+            "b": "link_pin_lo_r:cyl(d=6)",
+            "type": "fixed"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "a": "upper_r:cyl(d=6, near=[40,0])",
+            "b": "link_pin_up_r:cyl(d=6)",
+            "type": "fixed"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              -20,
+              0,
+              14
+            ],
+            "name": "finger_l",
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_finger.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "at": [
+              20,
+              0,
+              14
+            ],
+            "name": "finger_r",
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\parallel_gripper\\gen_r1\\parts\\gp_finger.SLDPRT"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "a": "link_pin_lo_l:cyl(d=6)",
+            "b": "finger_l:cyl(d=6, near=[0,0])",
+            "type": "revolute"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "a": "link_pin_lo_r:cyl(d=6)",
+            "b": "finger_r:cyl(d=6, near=[0,0])",
+            "type": "revolute"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "close_loop",
+          "args": {
+            "a": "link_pin_up_l:cyl(d=6)",
+            "b": "finger_l:cyl(d=6, near=[30,0])",
+            "type": "revolute"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "close_loop",
+          "args": {
+            "a": "link_pin_up_r:cyl(d=6)",
+            "b": "finger_r:cyl(d=6, near=[30,0])",
+            "type": "revolute"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 2
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "lower_l",
+            "driver_ref": "lower_l:cyl(d=6, near=[0,0])",
+            "sweep_deg": 30,
+            "frames": 13,
+            "expect_moving": [
+              "lower_l",
+              "upper_l",
+              "finger_l",
+              "link_pin_lo_l",
+              "link_pin_up_l"
+            ],
+            "expect_fixed": [
+              "base",
+              "lower_r",
+              "upper_r",
+              "finger_r"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合9"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合10"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合11"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合12"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "base:face(+Z, outermost)",
+            "b": "lower_l:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "base:face(+Z, outermost)",
+            "b": "upper_l:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "base:face(+Z, outermost)",
+            "b": "lower_r:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "base:face(+Z, outermost)",
+            "b": "upper_r:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "lower_l",
+            "driver_ref": "lower_l:cyl(d=6, near=[0,0])",
+            "expect_fixed": [
+              "base",
+              "lower_r",
+              "upper_r",
+              "finger_r"
+            ],
+            "expect_moving": [
+              "lower_l",
+              "upper_l",
+              "finger_l",
+              "link_pin_lo_l",
+              "link_pin_up_l"
+            ],
+            "frames": 13,
+            "sweep_deg": 30
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心17"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合17"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心18"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合18"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "a": "link_pin_lo_l:cyl(d=6)",
+            "b": "finger_l:cyl(d=6, near=[0,0])",
+            "type": "concentric"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "a": "lower_l:face(+Z, outermost)",
+            "b": "finger_l:face(-Z, outermost)",
+            "type": "coincident"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "a": "link_pin_lo_r:cyl(d=6)",
+            "b": "finger_r:cyl(d=6, near=[0,0])",
+            "type": "concentric"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "a": "lower_r:face(+Z, outermost)",
+            "b": "finger_r:face(-Z, outermost)",
+            "type": "coincident"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "close_loop",
+          "args": {
+            "a": "link_pin_up_l:cyl(d=6)",
+            "b": "finger_l:cyl(d=6, near=[30,0])",
+            "type": "revolute"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "close_loop",
+          "args": {
+            "a": "link_pin_up_r:cyl(d=6)",
+            "b": "finger_r:cyl(d=6, near=[30,0])",
+            "type": "revolute"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 2
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "lower_l",
+            "driver_ref": "lower_l:cyl(d=6, near=[0,0])",
+            "expect_fixed": [
+              "base",
+              "lower_r",
+              "upper_r",
+              "finger_r"
+            ],
+            "expect_moving": [
+              "lower_l",
+              "upper_l",
+              "finger_l",
+              "link_pin_lo_l",
+              "link_pin_up_l"
+            ],
+            "frames": 13,
+            "sweep_deg": 30
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合3"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合4"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {},
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] 找不到配合 "
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "a": "base:face(-Z, outermost)",
+            "b": "base_pin_lo_l:face(-Z, outermost)",
+            "type": "coincident"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "a": "base:face(-Z, outermost)",
+            "b": "base_pin_up_l:face(-Z, outermost)",
+            "type": "coincident"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "a": "base:face(-Z, outermost)",
+            "b": "base_pin_lo_r:face(-Z, outermost)",
+            "type": "coincident"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "a": "base:face(-Z, outermost)",
+            "b": "base_pin_up_r:face(-Z, outermost)",
+            "type": "coincident"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 2
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "lower_l",
+            "driver_ref": "lower_l:cyl(d=6, near=[0,0])",
+            "expect_fixed": [
+              "base",
+              "lower_r",
+              "upper_r",
+              "finger_r"
+            ],
+            "expect_moving": [
+              "lower_l",
+              "upper_l",
+              "finger_l",
+              "link_pin_lo_l",
+              "link_pin_up_l"
+            ],
+            "frames": 13,
+            "sweep_deg": 30
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "lower_l",
+            "driver_ref": "lower_l:cyl(d=6, near=[0,0])",
+            "expect_fixed": [
+              "base"
+            ],
+            "expect_moving": [
+              "lower_l",
+              "upper_l",
+              "finger_l"
+            ],
+            "frames": 13,
+            "sweep_deg": 20
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "lower_l",
+            "driver_ref": "lower_l:cyl(d=6, near=[0,0])",
+            "expect_fixed": [
+              "base"
+            ],
+            "expect_moving": [
+              "lower_l",
+              "upper_l",
+              "finger_l"
+            ],
+            "frames": 25,
+            "sweep_deg": 20
+          },
+          "ok": false,
+          "error_code": "SW_UNAVAILABLE",
+          "message": "[SW_UNAVAILABLE] HTTPConnectionPool(host='localhost', port=5100): Read timed out. (read timeout=180)"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": false,
+          "error_code": "SW_UNAVAILABLE",
+          "message": "[SW_UNAVAILABLE] ('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None))"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "e2e": true
+    },
+    {
+      "case_id": "double_wishbone",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "v2",
+      "parts": [
+        {
+          "part_id": "dw_chassis",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "dw_chassis",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      8.0,
+                      60.0,
+                      100.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        30.0,
+                        20.0
+                      ],
+                      [
+                        40.0,
+                        80.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 49782,
+            "completion_tokens": 722,
+            "total_tokens": 50504,
+            "calls": 3
+          },
+          "llm_calls": 3,
+          "duration_seconds": 19.2,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_chassis.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_chassis.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_chassis.agent.json"
+        },
+        {
+          "part_id": "dw_lower_arm",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "dw_lower_arm",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      12.0,
+                      112.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        6.0,
+                        6.0
+                      ],
+                      [
+                        106.0,
+                        6.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 66465,
+            "completion_tokens": 959,
+            "total_tokens": 67424,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 24.12,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_lower_arm.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_lower_arm.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_lower_arm.agent.json"
+        },
+        {
+          "part_id": "dw_upper_arm",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "dw_upper_arm",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      12.0,
+                      82.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        6.0,
+                        6.0
+                      ],
+                      [
+                        76.0,
+                        6.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 41447,
+            "completion_tokens": 986,
+            "total_tokens": 42433,
+            "calls": 3
+          },
+          "llm_calls": 3,
+          "duration_seconds": 22.24,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_upper_arm.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_upper_arm.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_upper_arm.agent.json"
+        },
+        {
+          "part_id": "dw_knuckle",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "dw_knuckle",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      14.0,
+                      84.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 3,
+                    "expected": 3
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        7.0,
+                        7.0
+                      ],
+                      [
+                        42.0,
+                        7.0
+                      ],
+                      [
+                        77.0,
+                        7.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 47177,
+            "completion_tokens": 1129,
+            "total_tokens": 48306,
+            "calls": 3
+          },
+          "llm_calls": 3,
+          "duration_seconds": 21.52,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_knuckle.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_knuckle.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_knuckle.agent.json"
+        },
+        {
+          "part_id": "dw_hub",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "dw_hub",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "coaxial",
+                    "ok": true,
+                    "coaxial": [
+                      true
+                    ]
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      6.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 71302,
+            "completion_tokens": 1071,
+            "total_tokens": 72373,
+            "calls": 5
+          },
+          "llm_calls": 5,
+          "duration_seconds": 30.42,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_hub.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_hub.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_hub.agent.json"
+        },
+        {
+          "part_id": "dw_pin14",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "dw_pin14",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      14.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      6.0,
+                      14.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 32536,
+            "completion_tokens": 582,
+            "total_tokens": 33118,
+            "calls": 2
+          },
+          "llm_calls": 2,
+          "duration_seconds": 12.14,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_pin14.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_pin14.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_pin14.agent.json"
+        },
+        {
+          "part_id": "dw_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "dw_pin12",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      12.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      6.0,
+                      12.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 65808,
+            "completion_tokens": 1104,
+            "total_tokens": 66912,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 22.59,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_pin12.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_pin12.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_pin12.agent.json"
+        }
+      ],
+      "assembly": {
+        "status": "finished",
+        "infra_error": null,
+        "static": {
+          "component_count": 10,
+          "saved": true
+        },
+        "rubric": {
+          "score": 100.0,
+          "parts": {
+            "rigid_groups": 1.0,
+            "joints": 1.0,
+            "mobility": 1.0,
+            "grounded": 1.0,
+            "not_over_defined": 1.0,
+            "couplings": 1.0
+          },
+          "rigid_groups": [
+            {
+              "role": "chassis",
+              "body": "chassis",
+              "ok": true
+            },
+            {
+              "role": "lower_arm",
+              "body": "lower_arm",
+              "ok": true
+            },
+            {
+              "role": "upper_arm",
+              "body": "upper_arm",
+              "ok": true
+            },
+            {
+              "role": "knuckle",
+              "body": "knuckle",
+              "ok": true
+            },
+            {
+              "role": "spindle",
+              "body": "knuckle",
+              "ok": true
+            },
+            {
+              "role": "hub",
+              "body": "knuckle",
+              "ok": true
+            },
+            {
+              "role": "lower_pin",
+              "body": "chassis|lower_arm",
+              "ok": true
+            },
+            {
+              "role": "upper_pin",
+              "body": "chassis|upper_arm",
+              "ok": true
+            },
+            {
+              "role": "lower_ball",
+              "body": "lower_arm|knuckle",
+              "ok": true
+            },
+            {
+              "role": "upper_ball",
+              "body": "upper_arm|knuckle",
+              "ok": true
+            }
+          ],
+          "joints": [
+            {
+              "bodies": [
+                "lower_arm",
+                "chassis"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "upper_arm",
+                "chassis"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "knuckle",
+                "lower_arm"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "knuckle",
+                "upper_arm"
+              ],
+              "expected": [
+                "revolute",
+                "cylindrical"
+              ],
+              "actual": "cylindrical",
+              "ok": true
+            }
+          ],
+          "mobility": {
+            "actual": 1,
+            "target": 1,
+            "ok": true,
+            "skipped": []
+          },
+          "floating": [],
+          "ground_ok": true,
+          "over_defined": {},
+          "broken_mates": [],
+          "suppressed_mates": [],
+          "couplings": []
+        },
+        "static_score": 100.0,
+        "motion": {
+          "mode": "poses",
+          "passed": true,
+          "score": 100.0,
+          "poses": [
+            {
+              "name": "rebound",
+              "variants": [
+                {
+                  "flip": false
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "lower_arm",
+                    "coord": "x",
+                    "got": 97.815,
+                    "expected": 97.81,
+                    "err_mm": 0.005,
+                    "ok": true
+                  },
+                  {
+                    "role": "lower_arm",
+                    "coord": "y",
+                    "got": -20.791,
+                    "expected": -20.79,
+                    "err_mm": 0.001,
+                    "ok": true
+                  },
+                  {
+                    "role": "knuckle",
+                    "coord": "x",
+                    "got": 78.695,
+                    "expected": 78.7,
+                    "err_mm": 0.005,
+                    "ok": true
+                  },
+                  {
+                    "role": "knuckle",
+                    "coord": "y",
+                    "got": 46.547,
+                    "expected": 46.55,
+                    "err_mm": 0.003,
+                    "ok": true
+                  },
+                  {
+                    "role": "hub",
+                    "coord": "x",
+                    "got": 88.255,
+                    "expected": 88.25,
+                    "err_mm": 0.005,
+                    "ok": true
+                  },
+                  {
+                    "role": "hub",
+                    "coord": "y",
+                    "got": 12.878,
+                    "expected": 12.88,
+                    "err_mm": 0.002,
+                    "ok": true
+                  }
+                ],
+                "max_err_mm": 0.005,
+                "ok": true
+              },
+              "interference_count": 0,
+              "interference_mm3": 0.0,
+              "drifted_fixed": [],
+              "ok": true
+            },
+            {
+              "name": "ride",
+              "variants": [
+                {
+                  "flip": true
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "lower_arm",
+                    "coord": "x",
+                    "got": 99.619,
+                    "expected": 99.62,
+                    "err_mm": 0.001,
+                    "ok": true
+                  },
+                  {
+                    "role": "lower_arm",
+                    "coord": "y",
+                    "got": 8.716,
+                    "expected": 8.72,
+                    "err_mm": 0.004,
+                    "ok": true
+                  },
+                  {
+                    "role": "knuckle",
+                    "coord": "x",
+                    "got": 78.288,
+                    "expected": 78.29,
+                    "err_mm": 0.002,
+                    "ok": true
+                  },
+                  {
+                    "role": "knuckle",
+                    "coord": "y",
+                    "got": 75.386,
+                    "expected": 75.39,
+                    "err_mm": 0.004,
+                    "ok": true
+                  },
+                  {
+                    "role": "hub",
+                    "coord": "x",
+                    "got": 88.954,
+                    "expected": 88.95,
+                    "err_mm": 0.004,
+                    "ok": true
+                  },
+                  {
+                    "role": "hub",
+                    "coord": "y",
+                    "got": 42.051,
+                    "expected": 42.05,
+                    "err_mm": 0.001,
+                    "ok": true
+                  }
+                ],
+                "max_err_mm": 0.004,
+                "ok": true
+              },
+              "interference_count": 0,
+              "interference_mm3": 0.0,
+              "drifted_fixed": [],
+              "ok": true
+            },
+            {
+              "name": "bump",
+              "variants": [
+                {
+                  "flip": false
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "lower_arm",
+                    "coord": "x",
+                    "got": 96.593,
+                    "expected": 96.59,
+                    "err_mm": 0.003,
+                    "ok": true
+                  },
+                  {
+                    "role": "lower_arm",
+                    "coord": "y",
+                    "got": 25.882,
+                    "expected": 25.88,
+                    "err_mm": 0.002,
+                    "ok": true
+                  },
+                  {
+                    "role": "knuckle",
+                    "coord": "x",
+                    "got": 72.465,
+                    "expected": 72.47,
+                    "err_mm": 0.005,
+                    "ok": true
+                  },
+                  {
+                    "role": "knuckle",
+                    "coord": "y",
+                    "got": 91.592,
+                    "expected": 91.59,
+                    "err_mm": 0.002,
+                    "ok": true
+                  },
+                  {
+                    "role": "hub",
+                    "coord": "x",
+                    "got": 84.529,
+                    "expected": 84.53,
+                    "err_mm": 0.001,
+                    "ok": true
+                  },
+                  {
+                    "role": "hub",
+                    "coord": "y",
+                    "got": 58.737,
+                    "expected": 58.74,
+                    "err_mm": 0.003,
+                    "ok": true
+                  }
+                ],
+                "max_err_mm": 0.005,
+                "ok": true
+              },
+              "interference_count": 0,
+              "interference_mm3": 0.0,
+              "drifted_fixed": [],
+              "ok": true
+            }
+          ]
+        },
+        "token_usage": {
+          "prompt_tokens": 1993500,
+          "completion_tokens": 43307,
+          "total_tokens": 2036807,
+          "calls": 40
+        },
+        "llm_calls": 40,
+        "duration_seconds": 778.43,
+        "aliases": {
+          "chassis": "dw_chassis-1",
+          "lower_pin": "dw_pin14-1",
+          "upper_pin": "dw_pin14-2",
+          "lower_arm": "dw_lower_arm-1",
+          "upper_arm": "dw_upper_arm-1",
+          "lower_ball": "dw_pin12-1",
+          "upper_ball": "dw_pin12-2",
+          "knuckle": "dw_knuckle-1",
+          "spindle": "dw_pin12-3",
+          "hub": "dw_hub-1"
+        },
+        "agent_texts": [
+          {
+            "turn": 36,
+            "text": "Good, the revolute joints for the arms worked. Now let's connect the balls to the arms (fixed, since they're pressed into the arm holes).",
+            "with_tools": true
+          },
+          {
+            "turn": 55,
+            "text": "Good, mobility matches expected (1). Now let's continue with spindle and hub.",
+            "with_tools": true
+          },
+          {
+            "turn": 61,
+            "text": "Now let's insert the hub and fix it to the spindle.",
+            "with_tools": true
+          },
+          {
+            "turn": 67,
+            "text": "Now let's check assembly state and DOF budget.",
+            "with_tools": true
+          },
+          {
+            "turn": 71,
+            "text": "No interference. Now let's run the motion check driving the lower_arm (which is connected via revolute to lower_pin on chassis).",
+            "with_tools": true
+          },
+          {
+            "turn": 85,
+            "text": "Within ±20-30° sweep range, no interference occurs and all parts move correctly with chassis/pins fixed. The suspension travels freely without excess motion. Let's save and finish.",
+            "with_tools": true
+          }
+        ],
+        "llm_calls_detail": [
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 5322,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 4105,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 68,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 64,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 619,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 86,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 3606,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 480,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 404,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 180,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 4130,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1186,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 4073,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1819,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 75,
+            "n_tool_calls": 1,
+            "text_chars": 137
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 893,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 374,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1042,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 27,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 725,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 983,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 477,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 118,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 278,
+            "n_tool_calls": 1,
+            "text_chars": 77
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 759,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 100,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 286,
+            "n_tool_calls": 1,
+            "text_chars": 51
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 32,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 222,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 92,
+            "n_tool_calls": 1,
+            "text_chars": 46
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 53,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 352,
+            "n_tool_calls": 1,
+            "text_chars": 128
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 611,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 6826,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 459,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 496,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 488,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 582,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 126,
+            "n_tool_calls": 1,
+            "text_chars": 180
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 689,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          }
+        ],
+        "agent_last_motion": {
+          "passed": true,
+          "frames": 13,
+          "duration": 1.0,
+          "interference_frames": [],
+          "moved": [
+            "dw_pin12-1",
+            "dw_pin12-2",
+            "dw_knuckle-1",
+            "dw_hub-1",
+            "dw_pin12-3",
+            "dw_lower_arm-1",
+            "dw_upper_arm-1"
+          ],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_turned_deg": 35.8,
+            "sample_ratio": {
+              "lower_arm": 1.0,
+              "upper_arm": 1.5516,
+              "knuckle": -0.1358,
+              "spindle": -0.1358,
+              "hub": -0.1358,
+              "lower_ball": 1.0,
+              "upper_ball": 1.5516
+            }
+          }
+        },
+        "joints": [
+          {
+            "kind": "fixed",
+            "a": "dw_chassis-1",
+            "b": "dw_pin14-1",
+            "mates": [
+              "同心1",
+              "重合1"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "dw_chassis-1",
+            "b": "dw_pin14-2",
+            "mates": [
+              "同心2",
+              "重合2"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "dw_lower_arm-1",
+            "b": "dw_pin14-1",
+            "mates": [
+              "同心5",
+              "重合5"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "dw_upper_arm-1",
+            "b": "dw_pin14-2",
+            "mates": [
+              "同心6",
+              "重合6"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "dw_lower_arm-1",
+            "b": "dw_pin12-1",
+            "mates": [
+              "同心7",
+              "重合7"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "dw_upper_arm-1",
+            "b": "dw_pin12-2",
+            "mates": [
+              "同心8",
+              "重合8"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "dw_knuckle-1",
+            "b": "dw_pin12-1",
+            "mates": [
+              "同心9",
+              "重合9"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "dw_knuckle-1",
+            "b": "dw_pin12-2",
+            "mates": [
+              "同心10"
+            ],
+            "loop": true,
+            "minimal": true
+          },
+          {
+            "kind": "fixed",
+            "a": "dw_knuckle-1",
+            "b": "dw_pin12-3",
+            "mates": [
+              "同心11",
+              "重合10"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "dw_hub-1",
+            "b": "dw_pin12-3",
+            "mates": [
+              "同心12",
+              "重合11"
+            ]
+          }
+        ]
+      },
+      "tool_calls": [
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_chassis.SLDPRT",
+            "name": "chassis",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "chassis"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_pin14.SLDPRT",
+            "name": "lower_pin",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_pin14.SLDPRT",
+            "name": "upper_pin",
+            "at": [
+              10,
+              60,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "chassis:cyl(d=6, near=[0,0])",
+            "b": "lower_pin:cyl(d=6)",
+            "face_a": "chassis:face(-Z, outermost)",
+            "face_b": "lower_pin:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "chassis:cyl(d=6, near=[10,60])",
+            "b": "upper_pin:cyl(d=6)",
+            "face_a": "chassis:face(-Z, outermost)",
+            "face_b": "upper_pin:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_lower_arm.SLDPRT",
+            "name": "lower_arm",
+            "at": [
+              0,
+              0,
+              8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_upper_arm.SLDPRT",
+            "name": "upper_arm",
+            "at": [
+              10,
+              60,
+              8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_pin12.SLDPRT",
+            "name": "lower_ball",
+            "at": [
+              100,
+              0,
+              8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_pin12.SLDPRT",
+            "name": "upper_ball",
+            "at": [
+              80,
+              60,
+              8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "lower_arm:cyl(d=6, near=[0,0])",
+            "b": "lower_pin:cyl(d=6)",
+            "face_a": "chassis:face(+Z, largest)",
+            "face_b": "lower_arm:face(-Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "upper_arm:cyl(d=6, near=[0,0])",
+            "b": "upper_pin:cyl(d=6)",
+            "face_a": "chassis:face(+Z, largest)",
+            "face_b": "upper_arm:face(-Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "lower_arm:cyl(d=6, near=[0,0])",
+            "b": "lower_pin:cyl(d=6)",
+            "face_a": "lower_arm:face(+Z, outermost)",
+            "face_b": "lower_pin:face(+Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "upper_arm:cyl(d=6, near=[0,0])",
+            "b": "upper_pin:cyl(d=6)",
+            "face_a": "upper_arm:face(+Z, outermost)",
+            "face_b": "upper_pin:face(+Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "lower_arm:cyl(d=6, near=[100,0])",
+            "b": "lower_ball:cyl(d=6)",
+            "face_a": "lower_arm:face(+Z, outermost)",
+            "face_b": "lower_ball:face(+Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "upper_arm:cyl(d=6, near=[70,0])",
+            "b": "upper_ball:cyl(d=6)",
+            "face_a": "upper_arm:face(+Z, outermost)",
+            "face_b": "upper_ball:face(+Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_knuckle.SLDPRT",
+            "name": "knuckle",
+            "at": [
+              100,
+              0,
+              14
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "knuckle:cyl(d=6, near=[0,0])",
+            "b": "lower_ball:cyl(d=6)",
+            "face_a": "knuckle:face(-Z, outermost)",
+            "face_b": "lower_ball:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "close_loop",
+          "args": {
+            "type": "revolute",
+            "a": "knuckle:cyl(d=6, near=[70,0])",
+            "b": "upper_ball:cyl(d=6)",
+            "face_a": "knuckle:face(+Z, largest)",
+            "face_b": "upper_ball:face(+Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 1
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_pin12.SLDPRT",
+            "name": "spindle",
+            "at": [
+              135,
+              0,
+              14
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "knuckle:cyl(d=6, near=[35,0])",
+            "b": "spindle:cyl(d=6)",
+            "face_a": "knuckle:face(+Z, largest)",
+            "face_b": "spindle:face(+Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench\\v2\\double_wishbone\\gen_r1\\parts\\dw_hub.SLDPRT",
+            "name": "hub",
+            "at": [
+              135,
+              0,
+              20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "hub:cyl(d=6)",
+            "b": "spindle:cyl(d=6)",
+            "face_a": "hub:face(-Z, outermost)",
+            "face_b": "spindle:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 1
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "lower_arm",
+            "driver_ref": "lower_arm:cyl(d=6, near=[0,0])",
+            "sweep_deg": 30,
+            "frames": 13,
+            "expect_moving": [
+              "lower_arm",
+              "upper_arm",
+              "knuckle",
+              "spindle",
+              "hub",
+              "lower_ball",
+              "upper_ball"
+            ],
+            "expect_fixed": [
+              "chassis",
+              "lower_pin",
+              "upper_pin"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "lower_arm",
+            "sweep_deg": 20,
+            "frames": 9,
+            "expect_moving": [
+              "lower_arm",
+              "upper_arm",
+              "knuckle",
+              "spindle",
+              "hub",
+              "lower_ball",
+              "upper_ball"
+            ],
+            "expect_fixed": [
+              "chassis",
+              "lower_pin",
+              "upper_pin"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "lower_arm",
+            "driver_ref": "lower_arm:cyl(d=6,near=[0,0])",
+            "sweep_deg": 360,
+            "frames": 13,
+            "rpm": 10,
+            "expect_moving": [
+              "lower_arm",
+              "upper_arm",
+              "knuckle",
+              "spindle",
+              "hub",
+              "lower_ball",
+              "upper_ball"
+            ],
+            "expect_fixed": [
+              "chassis",
+              "lower_pin",
+              "upper_pin"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "lower_arm",
+            "driver_ref": "lower_arm:cyl(d=6,near=[0,0])",
+            "sweep_deg": 20,
+            "frames": 13,
+            "rpm": 5,
+            "expect_moving": [
+              "lower_arm",
+              "upper_arm",
+              "knuckle",
+              "spindle",
+              "hub",
+              "lower_ball",
+              "upper_ball"
+            ],
+            "expect_fixed": [
+              "chassis",
+              "lower_pin",
+              "upper_pin"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "lower_arm",
+            "driver_ref": "lower_arm:cyl(d=6,near=[0,0])",
+            "sweep_deg": -20,
+            "frames": 13,
+            "rpm": 5,
+            "expect_moving": [
+              "lower_arm",
+              "upper_arm",
+              "knuckle",
+              "spindle",
+              "hub",
+              "lower_ball",
+              "upper_ball"
+            ],
+            "expect_fixed": [
+              "chassis",
+              "lower_pin",
+              "upper_pin"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "lower_arm",
+            "driver_ref": "lower_arm:cyl(d=6,near=[0,0])",
+            "sweep_deg": 30,
+            "frames": 13,
+            "rpm": 5,
+            "expect_moving": [
+              "lower_arm",
+              "upper_arm",
+              "knuckle",
+              "spindle",
+              "hub",
+              "lower_ball",
+              "upper_ball"
+            ],
+            "expect_fixed": [
+              "chassis",
+              "lower_pin",
+              "upper_pin"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "save_assembly",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "finish",
+          "args": {
+            "summary": "双横臂悬架（平面简化）装配完成。chassis 固定作为地，lower_pin/upper_pin 分别用 fixed 关节固定在 chassis 的下/上摆臂铰孔中。lower_arm、upper_arm 用 revolute 关节分别套在 lower_pin、upper_pin 上转动。lower_ball、upper_ball 用 fixed 关节分别固定在 lower_arm 的 X=100 孔、upper_arm 的 X=70 孔中。knuckle 的原点孔用 revolute 套在 lower_ball 上，X=70 孔用 revolute（close_loop 闭合）套在 upper_ball 上，构成四连杆闭环。spindle 用 fixed 关节固定在 knuckle 的 X=35 孔中，hub 用 fixed 关节固定在 spindle 上。自由度预算 check_dof(expected_mobility=1) 显示 mobility_planar=1，与设计活动度（悬架上下跳动自由，无额外角度约束）完全匹配，无浮动件、无过约束。静态 check_interference 无干涉。动态 check_motion 驱动 lower_arm 在合理摆角范围内（±20~30°）往复运动，chassis/lower_pin/upper_pin 保持固定不动，upper_arm、knuckle、lower_ball/upper_ball、spindle、hub 均联动，全程无干涉、无 stuck、无 drifted_fixed，通过验证。装配已保存至 double_wishbone.SLDASM。"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "e2e": true
+    }
+  ],
+  "model": "claude-sonnet-5",
+  "asm_max_tokens": 8000,
+  "extra_toolset": "v2"
+}

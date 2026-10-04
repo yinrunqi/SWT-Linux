@@ -1,0 +1,167 @@
+case: crankshaft
+prompt: >-
+  创建一根双拐曲轴，单一实体，所有主轴颈同轴。以后端法兰外端面为 0、沿轴线向前量：后端法兰直径 100mm、位于 0~15mm；
+  后主轴颈直径 50mm、位于 15~45mm；中主轴颈直径 50mm、位于 115~145mm；前主轴颈直径 50mm、位于 215~245mm；
+  前端轴头直径 30mm、位于 245~295mm。曲拐 A 的两块曲柄臂位于 45~60mm 和 100~115mm，两臂之间是直径 40mm 的曲柄销
+  （60~100mm）；曲拐 B 的两块曲柄臂位于 145~160mm 和 200~215mm，两臂之间是直径 40mm 的曲柄销（160~200mm）。
+  两个曲柄销的轴线都与主轴线平行、相距 38mm，曲拐 B 与曲拐 A 方向相反（相差 180°）。每块曲柄臂厚 15mm，
+  轮廓是以下两部分的并集：一是与主轴同心的直径 64mm 圆、与本曲拐曲柄销同心的直径 52mm 圆及这两个圆的两条外公切线
+  围成的长圆形；二是一块平衡重——以主轴线为圆心、半径 70mm、圆心角 120° 的扇形，扇形的角平分线指向与本曲拐曲柄销相反的方向。
+  法兰外端面中心有直径 20mm、深 12mm 的止口孔；法兰外端面上有一个直径 8mm、深 10mm 的定位销孔，孔心距轴线 25mm，
+  与曲柄销 A 位于同一方位；法兰上在直径 76mm 的圆上均布 6 个直径 9mm 的螺栓通孔，螺栓孔与定位销孔的方位错开 30°。
+  每个曲柄销在其长度中点钻一个直径 6mm 的油孔：油孔轴线与曲柄销轴线相交，并同时垂直于主轴线和该曲拐的方向，贯穿曲柄销。
+  前端轴头上开一条宽 8mm 的平键槽，槽底平面距轴线 11mm，从 255mm 处一直开到轴端，键槽开在曲拐 B 一侧。
+prompt_en: >-
+  Create a two-throw crankshaft as a single solid body; all main journals are coaxial. Measuring forward along
+  the axis from the outer end face of the rear flange at 0: the rear flange is 100mm in diameter, at 0~15mm;
+  the rear main journal is 50mm in diameter, at 15~45mm; the middle main journal is 50mm in diameter, at
+  115~145mm; the front main journal is 50mm in diameter, at 215~245mm; the front stub is 30mm in diameter, at
+  245~295mm. The two crank webs of throw A are at 45~60mm and 100~115mm, with a 40mm-diameter crankpin between
+  them (60~100mm); the two crank webs of throw B are at 145~160mm and 200~215mm, with a 40mm-diameter crankpin
+  between them (160~200mm). Both crankpin axes are parallel to the main axis at a distance of 38mm, and throw B
+  points opposite to throw A (180° apart). Each crank web is 15mm thick and its outline is the union of two
+  parts: first, the obround formed by a 64mm-diameter circle concentric with the main axis, a 52mm-diameter circle
+  concentric with the crankpin of that throw, and the two external common tangents of these circles; second, a
+  counterweight, a sector centered on the main axis with radius 70mm and a 120° central angle, whose bisector
+  points away from the crankpin of that throw. The outer end face of the flange has a 20mm-diameter, 12mm-deep
+  spigot bore at its center, and a locating pin hole 8mm in diameter and 10mm deep, with its center 25mm from
+  the axis in the same direction as crankpin A. The flange has 6 through bolt holes of 9mm diameter evenly
+  spaced on a 76mm-diameter circle, rotated 30° from the direction of the locating pin hole. Each crankpin has a
+  6mm-diameter oil hole bored at the middle of its length: the oil hole axis intersects the crankpin axis, is
+  perpendicular to both the main axis and the direction of that throw, and goes through the crankpin. The front
+  stub has an 8mm-wide flat keyway whose bottom plane is 11mm from the axis, running from 255mm to the end of the
+  shaft, on the side of throw B.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿主轴线，t = 0 在法兰外端面（两端平面面积较大的一端）；轴 1 指向定位销孔（即曲柄销 A 的方向）；
+# 轴 2 = 轴 0 × 轴 1。曲拐 A 在 0°，曲拐 B 与键槽在 180°。
+entities:
+  journals:  {cylinder: {d: 50, side: outer}, count: 3}
+  flange:    {cylinder: {d: 100, side: outer}, count: 1}
+  pins:      {cylinder: {d: 40, side: outer}, count: 2}
+  pilot:     {cylinder: {d: 20, side: inner}, count: 1}
+  dowel:     {cylinder: {d: 8, side: inner}, count: 1}
+  bolts:     {cylinder: {d: 9, side: inner}, count: 6}
+  oil:       {cylinder: {d: 6, side: inner}, count: 2}
+  stub:      {cylinder: {d: 30, side: outer}, count: 1}
+  frame:     {axis_frame: {axis: journals, low: larger_area, ref: dowel}}
+
+rubrics:
+  - id: solid
+    source: 单一实体，所有主轴颈同轴
+    hard: true
+    check:
+      - single_valid_solid: {}
+      - coaxial: [journals, flange]
+      - coaxial: [stub, flange]
+
+  - id: length
+    source: 从法兰外端面 0 到轴头末端 295mm
+    hard: true
+    check:
+      - extent_along: {axis: journals, of: all, value: 295}
+
+  - id: journals
+    source: 三个直径 50mm 的主轴颈，各长 30mm（15~45、115~145、215~245mm）
+    check:
+      - exists: journals
+      - extent_along: {axis: journals, of: journals, value: 30}
+      - radial_material: {frame: frame, t: 30, deg: 90, expect: [[0, 25]]}
+      - radial_material: {frame: frame, t: 130, deg: 90, expect: [[0, 25]]}
+      - radial_material: {frame: frame, t: 230, deg: 90, expect: [[0, 25]]}
+
+  - id: webs
+    source: 曲柄臂位于 45~60、100~115、145~160、200~215mm，厚 15mm
+    derivation: 与曲拐成 90° 的方向上，长圆轮廓在此是直径 64mm 的圆；半径 27mm 处只穿过法兰和 4 块曲柄臂
+    check:
+      - line_material: {frame: frame, along: 0, polar: [27, 90],
+                        expect: [[0, 15], [45, 60], [100, 115], [145, 160], [200, 215]]}
+
+  - id: crankpins
+    source: 两个直径 40mm 的曲柄销，长 40mm，轴线距主轴线 38mm，曲拐 A 与定位销孔同方位，曲拐 B 相反
+    check:
+      - exists: pins
+      - extent_along: {axis: journals, of: pins, value: 40}
+      - axis_distance: {from: journals, to: pins, value: 38}
+      - axis_positions: {frame: frame, items: pins, axes: [1, 2], expect: [[38, 0], [-38, 0]]}
+
+  - id: phasing
+    source: 曲拐 A 的销在 60~100mm，曲拐 B 的销在 160~200mm，方向相差 180°；平衡重与本曲拐的销相反
+    derivation: >-
+      半径 48mm、0° 方位：法兰、曲拐 A 的臂和销连成 [45, 115]，曲拐 B 只有平衡重 [145, 160]、[200, 215]；
+      180° 方位反之
+    check:
+      - line_material: {frame: frame, along: 0, polar: [48, 0], expect: [[0, 15], [45, 115], [145, 160], [200, 215]]}
+      - line_material: {frame: frame, along: 0, polar: [48, 180], expect: [[0, 15], [45, 60], [100, 115], [145, 215]]}
+
+  - id: web_profile
+    source: 直径 64mm 主轴圆、直径 52mm 销圆及其两条外公切线
+    derivation: >-
+      公切线法向与曲拐方向夹角 acos((32 − 26)/38) = 80.915°；切线段两端的方位角为 31.4° 与 80.9°，
+      40° 方位处轮廓半径 32 / cos(80.915° − 40°) = 42.330；120° 以外（不在平衡重内）是 R32 圆
+    check:
+      - radial_material: {frame: frame, t: 52.5, deg: 40, expect: [[0, 42.33]]}
+      - radial_material: {frame: frame, t: 207.5, deg: 220, expect: [[0, 42.33]]}
+      - radial_material: {frame: frame, t: 52.5, deg: 115, expect: [[0, 32]]}
+
+  - id: counterweights
+    source: 半径 70mm、圆心角 120° 的扇形平衡重，角平分线指向本曲拐曲柄销的反方向
+    derivation: 曲拐 A 的平衡重占 120°~240°，曲拐 B 的占 −60°~60°
+    check:
+      - radial_material: {frame: frame, t: 52.5, deg: 180, expect: [[0, 70]]}
+      - radial_material: {frame: frame, t: 107.5, deg: 235, expect: [[0, 70]]}
+      - radial_material: {frame: frame, t: 107.5, deg: 245, expect: [[0, 32]]}
+      - radial_material: {frame: frame, t: 152.5, deg: 0, expect: [[0, 70]]}
+      - radial_material: {frame: frame, t: 207.5, deg: -55, expect: [[0, 70]]}
+
+  - id: flange
+    source: 法兰直径 100mm、厚 15mm；外端面中心直径 20mm、深 12mm 的止口孔
+    check:
+      - exists: flange
+      - exists: pilot
+      - coaxial: [pilot, flange]
+      - pocket_depth: {pocket: pilot, value: 12, open_at_extreme: true}
+      - radial_material: {frame: frame, t: 7.5, deg: 60, expect: [[10, 50]]}
+      - radial_material: {frame: frame, t: 13.5, deg: 60, expect: [[0, 50]]}
+
+  - id: dowel
+    source: 直径 8mm、深 10mm 的定位销孔，孔心距轴线 25mm，与曲柄销 A 同方位
+    check:
+      - exists: dowel
+      - pocket_depth: {pocket: dowel, value: 10, open_at_extreme: true}
+      - axis_distance: {from: journals, to: dowel, value: 25}
+
+  - id: bolt_holes
+    source: 直径 76mm 圆上均布 6 个直径 9mm 螺栓通孔，与定位销孔方位错开 30°
+    derivation: 孔位方位角 30° + 60°k，坐标 (38 cos, 38 sin)
+    check:
+      - exists: bolts
+      - through: {holes: bolts}
+      - axis_positions: {frame: frame, items: bolts, axes: [1, 2],
+                         expect: [[32.909, 19], [0, 38], [-32.909, 19], [-32.909, -19], [0, -38], [32.909, -19]]}
+
+  - id: oil_holes
+    source: 每个曲柄销长度中点一个直径 6mm 油孔，过销轴线、垂直于主轴线和曲拐方向，贯穿曲柄销
+    check:
+      - exists: oil
+      - through: {holes: oil}
+      - parallel_to_frame: {frame: frame, items: oil, axis: 2}
+      - axis_positions: {frame: frame, items: oil, axes: [0, 1], expect: [[80, 38], [180, -38]]}
+
+  - id: keyway
+    source: 轴头直径 30mm；宽 8mm 平键槽，槽底距轴线 11mm，从 255mm 开到轴端，位于曲拐 B 一侧
+    derivation: 距轴线 12mm 横截轴头：外圆 ±√(15² − 12²) = ±9，键槽占 [−4, 4]
+    check:
+      - exists: stub
+      - radial_material: {frame: frame, t: 275, deg: 180, expect: [[0, 11]]}
+      - radial_material: {frame: frame, t: 275, deg: 0, expect: [[0, 15]]}
+      - radial_material: {frame: frame, t: 250, deg: 180, expect: [[0, 15]]}
+      - line_material: {frame: frame, along: 2, at: [275, -12, null], expect: [[-9, -4], [4, 9]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 954571.4
+    check:
+      - volume: 954571.4
+
+ungraded: []

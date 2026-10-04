@@ -1,0 +1,120 @@
+case: gear_pump_body
+prompt: >-
+  创建一个外啮合齿轮泵的泵体，单一实体，Z 轴向上。泵体是 120×90×40mm 的块（x ∈ [−60, 60]、y ∈ [−45, 45]、z = 0~40），
+  四个竖直角棱倒 R12mm 圆角。从顶面向下挖出“8”字形齿轮腔：两个直径 50.5mm 的圆柱腔，圆心分别在 (−21, 0) 和 (21, 0)，
+  深 30mm（腔底 z = 10），两圆相交部分连通。腔底在 (−21, 0) 处开直径 20mm 的主动轴通孔（贯穿底板），
+  在 (21, 0) 处开直径 15mm、深 8mm 的从动轴盲孔（从腔底向下）。泵体 −Y 侧面中央有进油口凸台、+Y 侧面中央有出油口凸台：
+  凸台都是直径 36mm、轴线沿 Y、中心在 x = 0、z = 25 的圆柱，从侧面向外伸出 8mm（到 y = ±53）；进油口是直径 24mm 的孔，
+  出油口是直径 16mm 的孔，都沿 Y 从凸台端面钻通到齿轮腔。顶面上在 (±46, ±32) 处有 4 个 M8 螺纹底孔：直径 6.8mm、深 20mm；
+  另有 2 个直径 6mm、深 12mm 的定位销孔，位于对角的 (−30, 33) 和 (30, −33)。
+prompt_en: >-
+  Create the body of an external gear pump as a single solid body, with the Z axis pointing up. The body is a
+  120×90×40mm block (x ∈ [−60, 60], y ∈ [−45, 45], z = 0~40) whose four vertical corner edges are rounded with
+  R12mm fillets. From the top face, cut a figure-8 gear chamber: two cylindrical cavities 50.5mm in diameter
+  centered at (−21, 0) and (21, 0), 30mm deep (chamber floor at z = 10), joined where the two circles overlap.
+  The chamber floor has a 20mm-diameter through hole for the drive shaft at (−21, 0) (through the floor), and a
+  15mm-diameter, 8mm-deep blind hole for the idler shaft at (21, 0) (downward from the chamber floor). The
+  middle of the −Y side has an inlet boss and the middle of the +Y side an outlet boss: both bosses are cylinders
+  of 36mm diameter with their axes along Y, centered at x = 0, z = 25, protruding 8mm outward from the side
+  faces (to y = ±53). The inlet is a 24mm-diameter hole and the outlet a 16mm-diameter hole, both bored along Y
+  from the boss end faces through to the gear chamber. The top face has 4 M8 threaded-hole pilot bores at (±46, ±32):
+  6.8mm in diameter and 20mm deep; there are also 2 locating pin holes, 6mm in diameter and 12mm deep, at the
+  diagonal positions (−30, 33) and (30, −33).
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿主动轴孔轴线向上，t = 0 在底面（两端平面面积较大的一端）；轴 1 指向从动轴孔（+X），
+# 原点在主动轴孔轴线上，所以 frame 坐标 = (z, x + 21, y)。
+entities:
+  drive:    {cylinder: {d: 20, side: inner}, count: 1}
+  idler:    {cylinder: {d: 15, side: inner}, count: 1}
+  chambers: {cylinder: {d: 50.5, side: inner}, count: 2}
+  bosses:   {cylinder: {d: 36, side: outer}, count: 2}
+  inlet:    {cylinder: {d: 24, side: inner}, count: 1}
+  outlet:   {cylinder: {d: 16, side: inner}, count: 1}
+  taps:     {cylinder: {d: 6.8, side: inner}, count: 4}
+  dowels:   {cylinder: {d: 6, side: inner}, count: 2}
+  frame:    {axis_frame: {axis: drive, low: larger_area, ref: idler}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 120×90×40mm 块；凸台伸出到 y = ±53、顶端 z = 25 + 18 = 43
+    hard: true
+    check:
+      - bbox_sorted: [43, 106, 120]
+
+  - id: block_corners
+    source: 四个竖直角棱倒 R12mm 圆角
+    check:
+      - blend_faces: {radius: 12, side: outer, min_count: 4}
+
+  - id: chamber
+    source: 两个直径 50.5mm 的圆柱腔，圆心 (±21, 0)，深 30mm，相交连通
+    derivation: >-
+      z = 25、y = 0 沿 X：腔占 x ∈ [−46.25, 46.25]；x = 0、z = 38 沿 Y：两圆交点 ±√(25.25² − 21²) = ±14.02，
+      两侧到凸台端面 53
+    check:
+      - exists: chambers
+      - pocket_depth: {pocket: chambers, value: 30, probe_r: 15}
+      - line_material: {frame: frame, along: 1, at: [25, null, 0], expect: [[-39, -25.25], [67.25, 81]]}
+      - line_material: {frame: frame, along: 2, at: [38, 21, null], expect: [[-53, -14.02], [14.02, 53]]}
+
+  - id: shaft_holes
+    source: (−21, 0) 处直径 20mm 主动轴通孔；(21, 0) 处直径 15mm、深 8mm 从动轴盲孔；中心距 42mm
+    check:
+      - exists: drive
+      - through: {holes: drive}
+      - exists: idler
+      - pocket_depth: {pocket: idler, value: 8}
+      - axis_distance: {from: drive, to: idler, value: 42}
+      - line_material: {frame: frame, along: 0, polar: [42, 0], expect: [[0, 2]]}
+
+  - id: ports
+    source: −Y 侧直径 24mm 进油口、+Y 侧直径 16mm 出油口，中心 x = 0、z = 25，钻通到齿轮腔
+    derivation: x = 10、z = 25 沿 Y：−Y 侧整段落在进油孔 R12 内；+Y 侧从腔壁 √(25.25² − 11²) = 22.728 到凸台端面 53
+    check:
+      - exists: inlet
+      - exists: outlet
+      - parallel_to_frame: {frame: frame, items: inlet, axis: 2}
+      - axis_positions: {frame: frame, items: inlet, axes: [0, 1], expect: [[25, 21]]}
+      - axis_positions: {frame: frame, items: outlet, axes: [0, 1], expect: [[25, 21]]}
+      - line_material: {frame: frame, along: 2, at: [25, 31, null], expect: [[22.728, 53]]}
+
+  - id: port_bosses
+    source: 直径 36mm 的凸台，轴线沿 Y，伸出 8mm 到 y = ±53
+    derivation: >-
+      z = 41（箱体顶面之上、凸台顶 43 之下）只剩两个凸台；x = 16、z = 25 沿 Y：在两个油口之外，
+      腔壁 ±√(25.25² − 5²) = ±24.75 到凸台端面
+    check:
+      - exists: bosses
+      - coaxial: [inlet, bosses]
+      # 凸台从侧面 y = ±45 起还是略嵌入块体（参考件从 ±44 起）题面未规定，两种都接受
+      - line_material: {frame: frame, along: 2, at: [41, 21, null], expect_any: [[[-53, -44], [44, 53]], [[-53, -45], [45, 53]]]}
+      - line_material: {frame: frame, along: 2, at: [25, 37, null], expect: [[-53, -24.75], [24.75, 53]]}
+
+  - id: tapped_holes
+    source: 顶面 (±46, ±32) 处 4 个 M8 螺纹底孔：直径 6.8mm、深 20mm
+    check:
+      - exists: taps
+      - pocket_depth: {pocket: taps, value: 20}
+      - axis_positions: {frame: frame, items: taps, axes: [1, 2], expect: [[67, 32], [67, -32], [-25, 32], [-25, -32]]}
+
+  - id: dowels
+    source: 对角 (−30, 33)、(30, −33) 处 2 个直径 6mm、深 12mm 定位销孔
+    check:
+      - exists: dowels
+      - pocket_depth: {pocket: dowels, value: 12}
+      - axis_positions: {frame: frame, items: dowels, axes: [1, 2], expect: [[-9, 33], [51, -33]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 297590.7
+    check:
+      - volume: 297590.7
+
+ungraded: []

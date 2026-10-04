@@ -50,6 +50,16 @@ L1（可选 spur_gear）→ 接口 rubric
 
 v2 的规则都来自 AutoMate 与 Fusion 360 Gallery 的统计，不来自试点案例，见 [Workflow-CAD-Assembly-Mining.md](Workflow-CAD-Assembly-Mining.md)。离线单测：`venv\Scripts\python.exe -m pytest test\test_assembly_workflow_v2.py -q`。
 
+v3（`--workflow v3`）在 v2 上改的是工具反馈和智能体循环，不加新的机构知识。改动来自对 20 个扩展测例 v2 结果的审查（用满调用预算、截断停滞、闭环最后一个铰过定义、层位压在同一 Z 上），不针对具体测例。配方多一份 `assembly_v3_tools`。
+
+- 状态：零件面列表按组件缓存；改结构的工具返回增量 `after`（活动度、冗余、过定义、悬空件）；`insert_component` 返回面摘要；`get_assembly_state` 默认精简，可用 `faces` / `components` 参数按需展开；对话里只保留最新一次完整状态，更早的用占位符替换。
+- 关节：`joint` 先加主约束（同心或导向），再按秩判断轴向位置（滑块是止转）是否已被别的关节定住，定住了就不加并返回 `note`，所以闭环的最后一个铰不会冗余过定义；`close_loop` 与 `joint` 等价。新增 `at_z`：直接写 a 的零件原点装好后的 Z，换算成相对 b 的偏距。`errStatus=5` 时返回两条轴线当前的距离和排查提示。
+- 诊断：`check_dof` 改为按 SolidWorks 里的真实配合求秩，给出三维活动度、冗余约束数、每个零件相对机架剩余的转动 / 平移自由度；`screw_pair` 建好后按约束零空间核对实际导程；同一对零件反复加删配合 3 次以上时提示；引用解析失败时列出候选圆柱面和平面。
+- 验证：新增 `check_pose`（与评测器的多位姿模式同一实现），用于有限行程、多输入或直线输入的机构；`check_motion` 附 `interference_pairs`，单帧转角过大时自动加密采样；驱动件在相邻帧间跳转时返回 `sampling.driver_jump_deg` 和提示（多半是机构卡死或闭环没装上）。`finish` 要求已保存，并且 `check_motion` 通过，或 `check_pose` 通过且 `check_dof` 活动度符合。
+- 智能体循环：回复因 `finish_reason=length` 截断且工具参数不完整时，丢弃这条回复、把 `max_tokens` 翻倍（最多 32000）重试，第一次截断时提示少写分析，不计入停滞；每轮最后一条工具结果附 `budget.remaining_llm_calls`，剩 5 次以内且未保存时提示先保存。
+
+C# 端的 Animation 马达只支持旋转，所以直线输入由 `check_pose` 覆盖，C# 端不需要改。离线单测：`test\test_assembly_workflow_v3.py`（假 HTTP 层按零件位姿给出配合实体，秩法诊断能真实运行）。
+
 ### 2.2 C# 端
 
 端点在 `/api/asmwf/*`（`SwCommands.AssemblyWorkflow.cs`）：按组件面、边序号或默认基准面选实体，加配合，Motion Study 驱动与逐帧采样。

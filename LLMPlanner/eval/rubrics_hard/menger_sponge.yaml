@@ -1,0 +1,82 @@
+case: menger_sponge
+prompt: >-
+  创建一个二级门格海绵（Menger sponge），单一实体。起始是边长 81mm 的立方体（x、y、z ∈ [0, 81]）。
+  第一级：把立方体按 27mm 分成 3×3×3 个子立方体，挖掉每个面中心的子立方体和整个立方体中心的子立方体，
+  即沿 X、Y、Z 三个方向各贯穿切出一个 27×27mm 的方孔，方孔位于另外两个坐标都在 [27, 54] 的范围内。
+  第二级：对剩下的 20 个边长 27mm 的子立方体，每个都再按 9mm 分成 3×3×3 份，同样挖掉各面中心和中心的 9mm 小立方体，
+  即在每个子立方体内沿 X、Y、Z 各贯穿切出一个 9×9mm 的方孔（位于该子立方体中间三分之一）。
+  等价地说：一个点被挖掉，当且仅当在 27mm 或 9mm 某一级的划分中，它有至少两个坐标落在该级的中间三分之一。
+prompt_en: >-
+  Create a second-level Menger sponge as a single solid body. Start from a cube with an edge of 81mm (x, y, z ∈ [0, 81]).
+  First level: divide the cube into 3×3×3 sub-cubes of 27mm and remove the sub-cube at the center of each face and the
+  sub-cube at the center of the whole cube, i.e. cut a 27×27mm square hole through the cube along each of X, Y
+  and Z, where the hole lies in the range [27, 54] of the other two coordinates. Second level: divide each of the 20
+  remaining 27mm sub-cubes again into 3×3×3 parts of 9mm and likewise remove the 9mm cubes at the center of each
+  face and at the center, i.e. cut a 9×9mm square hole through each sub-cube along each of X, Y and Z (in the
+  middle third of that sub-cube). Equivalently: a point is removed if and only if, at the 27mm level or at the
+  9mm level of subdivision, at least two of its coordinates fall in the middle third at that level.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：主方向坐标系，原点在包围盒最小角，各轴即立方体的三条棱（零件在立方体对称群下不变，轴的次序与正负不影响判分）。
+# 记 L1(c) = 1 表示 c ∈ [27, 54]，L2(c) = 1 表示 c mod 27 ∈ [9, 18]。
+entities:
+  frame:    {principal_frame: {}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 边长 81mm 的立方体
+    hard: true
+    check:
+      - bbox_sorted: [81, 81, 81]
+
+  - id: level1
+    source: 第一级：沿三个方向各贯穿一个 27×27mm 中心方孔
+    derivation: 中心线 L1 两两为 1，全空；一条 L1(y) = 1、其余坐标落在角上的线只在 x 的中段被挖
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 40.5, 40.5], expect: []}
+      - line_material: {frame: frame, along: 1, at: [40.5, null, 40.5], expect: []}
+      - line_material: {frame: frame, along: 2, at: [40.5, 40.5, null], expect: []}
+      - line_material: {frame: frame, along: 0, at: [null, 31.5, 4.5], expect: [[0, 27], [54, 81]]}
+      - line_material: {frame: frame, along: 1, at: [4.5, null, 31.5], expect: [[0, 27], [54, 81]]}
+      - line_material: {frame: frame, along: 2, at: [31.5, 4.5, null], expect: [[0, 27], [54, 81]]}
+
+  - id: corner_edges
+    source: 第一、二级都不挖立方体的 12 条棱
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 4.5, 4.5], expect: [[0, 81]]}
+      - line_material: {frame: frame, along: 1, at: [76.5, null, 4.5], expect: [[0, 81]]}
+      - line_material: {frame: frame, along: 2, at: [4.5, 76.5, null], expect: [[0, 81]]}
+
+  - id: level2_holes
+    source: 第二级：每个 27mm 子立方体内沿三个方向各贯穿一个 9×9mm 方孔
+    derivation: >-
+      L2(y) = L2(z) = 1 的线整条被挖；L2(z) = 1、y 在角上的线在 L2(x) = 1 的三段被挖
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 13.5, 40.5], expect: []}
+      - line_material: {frame: frame, along: 1, at: [13.5, null, 67.5], expect: []}
+      - line_material: {frame: frame, along: 2, at: [67.5, 13.5, null], expect: []}
+      - line_material: {frame: frame, along: 0, at: [null, 4.5, 13.5], expect: [[0, 9], [18, 36], [45, 63], [72, 81]]}
+      - line_material: {frame: frame, along: 1, at: [13.5, null, 4.5], expect: [[0, 9], [18, 36], [45, 63], [72, 81]]}
+      - line_material: {frame: frame, along: 2, at: [4.5, 13.5, null], expect: [[0, 9], [18, 36], [45, 63], [72, 81]]}
+
+  - id: mixed_levels
+    source: 一点被挖当且仅当某一级有至少两个坐标落在中间三分之一
+    derivation: >-
+      y 在角上、z = 40.5（L1 = L2 = 1）：x 的 L1 中段 [27, 54] 与各 L2 中段 [9, 18]、[63, 72] 都被挖
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 4.5, 40.5], expect: [[0, 9], [18, 27], [54, 63], [72, 81]]}
+      - line_material: {frame: frame, along: 1, at: [40.5, null, 4.5], expect: [[0, 9], [18, 27], [54, 63], [72, 81]]}
+      - line_material: {frame: frame, along: 2, at: [4.5, 40.5, null], expect: [[0, 9], [18, 27], [54, 63], [72, 81]]}
+
+  - id: volume
+    source: 二级门格海绵体积 81³·(20/27)² = 291600
+    check:
+      - volume: 291600.0
+
+ungraded: []

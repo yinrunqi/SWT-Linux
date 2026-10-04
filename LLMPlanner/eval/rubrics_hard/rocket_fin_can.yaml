@@ -1,0 +1,110 @@
+case: rocket_fin_can
+prompt: >-
+  创建一个探空火箭尾段，单一实体，Z 轴为箭体轴线、向上为箭头方向。箭体是外径 80mm、内径 72mm 的薄壁圆筒，
+  从 z = 0 到 z = 300。圆筒底端内侧有一块隔板：内径 60mm、外径 72mm 的圆环，位于 z = 0~8，与筒壁相连。
+  隔板下方是拉瓦尔喷管（回转薄壁壳体），其内、外轮廓都是折线：内轮廓从 (r = 30, z = 0) 收缩到喉部
+  (r = 12, z = −30)，再扩张到出口 (r = 34, z = −100)；外轮廓从 (r = 36, z = 0) 到 (r = 16, z = −30)，
+  再到 (r = 38, z = −100)；出口端面在 z = −100。筒外有 4 片均布的平板尾翼，厚 4mm，关于自身径向中面对称，
+  分别位于 45°、135°、225°、315° 方位（从 +X 轴量起）。每片尾翼在其中面内是一个四边形：翼根从筒壁内的
+  r = 37 起与筒体融合；前缘是直线，从 (r = 40, z = 110) 到翼尖 (r = 100, z = 30)；后缘是直线，从
+  (r = 40, z = 10) 到 (r = 100, z = −20)；翼尖是 r = 100 处的轴向直边（z = −20~30），前、后缘的直线延长到
+  r = 37 处与翼根相接。筒壁上在 z = 250 处、0°、90°、180°、270° 方位各开一个直径 6mm 的径向通气孔，穿透筒壁。
+prompt_en: >-
+  Create the aft section of a sounding rocket as a single solid body; the Z axis is the vehicle axis, with up
+  pointing toward the nose. The airframe is a thin-walled tube with an outer diameter of 80mm and an inner
+  diameter of 72mm, from z = 0 to z = 300. Inside the bottom end of the tube is a bulkhead: an annulus with an
+  inner diameter of 60mm and an outer diameter of 72mm at z = 0~8, joined to the tube wall. Below the bulkhead is
+  a de Laval nozzle (a thin-walled shell of revolution) whose inner and outer profiles are both polylines: the
+  inner profile converges from (r = 30, z = 0) to the throat at (r = 12, z = −30) and then diverges to the exit
+  at (r = 34, z = −100); the outer profile runs from (r = 36, z = 0) to (r = 16, z = −30) and then to
+  (r = 38, z = −100); the exit face is at z = −100. Outside the tube are 4 evenly spaced flat fins, 4mm thick and
+  symmetric about their own radial mid-planes, at azimuths 45°, 135°, 225° and 315° (measured from the +X axis).
+  In its mid-plane each fin is a quadrilateral: the fin root starts at r = 37 inside the tube wall and is fused
+  with the tube; the leading edge is a straight line from (r = 40, z = 110) to the tip at (r = 100, z = 30); the
+  trailing edge is a straight line from (r = 40, z = 10) to (r = 100, z = −20); the tip is an axial straight edge
+  at r = 100 (z = −20~30), and the leading and trailing edge lines are extended to r = 37 to meet the root. The
+  tube wall has a 6mm-diameter radial vent hole through the wall at z = 250 at each of the azimuths 0°, 90°, 180°
+  and 270°.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿箭体轴线，t = 0 在筒顶端 z = 300（两端平面面积较大的一端），t = 300 − z；
+# 轴 1 指向某一个通气孔；尾翼在 ±45°、±135°。
+entities:
+  tube:     {cylinder: {d: 80, side: outer}, count: 1}
+  vents:    {cylinder: {d: 6, side: inner}, count: 4}
+  frame:    {axis_frame: {axis: tube, low: larger_area, ref_dir: vents, ref_dir_toward: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 筒顶 z = 300 到喷管出口 z = −100；尾翼翼尖 r = 100、厚 4mm
+    derivation: >-
+      横截面外形随所取方向在 144.25（沿 0°：翼尖外角 (100, −2) 投影 (100 + 2)·cos45° = 72.125）与 200（沿尾翼）之间
+    hard: true
+    check:
+      - bbox_sorted: [[144.25, 200], [144.25, 200], 400]
+      - extent_along: {axis: tube, of: all, value: 400}
+
+  - id: tube
+    source: 外径 80、内径 72mm 的圆筒，z = 0~300
+    check:
+      - exists: tube
+      - line_material: {frame: frame, along: 0, polar: [38, 20], expect: [[0, 300]]}
+      - radial_material: {frame: frame, t: 150, deg: 20, expect: [[36, 40]]}
+
+  - id: bulkhead
+    source: 内径 60、外径 72mm 的隔板，z = 0~8
+    check:
+      - radial_material: {frame: frame, t: 296, deg: 20, expect: [[30, 40]]}
+
+  - id: nozzle
+    source: 喷管内轮廓 (30, 0) → (12, −30) → (34, −100)，外轮廓 (36, 0) → (16, −30) → (38, −100)
+    derivation: z = −15：21~26；z = −30：12~16；z = −65：23~27；z = −99.5：33.843~37.843
+    check:
+      - radial_material: {frame: frame, t: 315, deg: 20, expect: [[21, 26]]}
+      - radial_material: {frame: frame, t: 330, deg: 20, expect: [[12, 16]]}
+      - radial_material: {frame: frame, t: 365, deg: 20, expect: [[23, 27]]}
+      - radial_material: {frame: frame, t: 399.5, deg: 20, expect: [[33.843, 37.843]]}
+      - line_material: {frame: frame, along: 0, polar: [0, 0], expect: []}
+
+  - id: fins
+    source: 4 片厚 4mm 的尾翼，位于 45°、135°、225°、315°，翼尖 r = 100
+    derivation: >-
+      z = 20 处前缘在 r = 107.5 之外，翼面一直到翼尖 r = 100；偏离中面 2° 的射线在 r = 2/sin2° = 57.31 处穿出翼面
+    check:
+      - radial_material: {frame: frame, t: 280, deg: 45, expect: [[36, 100]]}
+      - radial_material: {frame: frame, t: 280, deg: 135, expect: [[36, 100]]}
+      - radial_material: {frame: frame, t: 280, deg: -45, expect: [[36, 100]]}
+      - radial_material: {frame: frame, t: 280, deg: -135, expect: [[36, 100]]}
+      - radial_material: {frame: frame, t: 280, deg: 47, expect: [[36, 57.31]]}
+      - radial_material: {frame: frame, t: 280, deg: 0, expect: [[36, 40]]}
+
+  - id: fin_planform
+    source: 前缘 (40, 110) → (100, 30)，后缘 (40, 10) → (100, −20)
+    derivation: >-
+      r = 70：前缘 z = 70、后缘 z = −5，即 t ∈ [230, 305]；r = 99：前缘 z = 31.333、后缘 z = −19.5，即 t ∈ [268.667, 319.5]
+    check:
+      - line_material: {frame: frame, along: 0, polar: [70, 45], expect: [[230, 305]]}
+      - line_material: {frame: frame, along: 0, polar: [99, 45], expect: [[268.667, 319.5]]}
+
+  - id: vents
+    source: z = 250 处 0°、90°、180°、270° 方位 4 个直径 6mm 径向通气孔
+    check:
+      - exists: vents
+      - radial_material: {frame: frame, t: 50, deg: 0, expect: []}
+      - radial_material: {frame: frame, t: 50, deg: 90, expect: []}
+      - radial_material: {frame: frame, t: 50, deg: 45, expect: [[36, 40]]}
+      - angular_openings: {frame: frame, t: 50, r: 38, count: 4, chord: 6}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 434767.3
+    check:
+      - volume: 434767.3
+
+ungraded: []

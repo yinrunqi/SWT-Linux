@@ -133,6 +133,7 @@ def test_draw_operations_batches_circles_and_polylines():
     operations = draw_operations(frame, loops)
     assert [op["operation"] for op in operations] == ["sketch_circles", "sketch_polyline"]
     assert len(operations[0]["params"]["circles"]) == 2
+    assert operations[0]["params"]["noInference"] is True
     assert len(operations[1]["params"]["points"]) == 4
 
 
@@ -187,6 +188,22 @@ def test_cut_without_volume_change_is_rolled_back():
     assert result["error"]["code"] == "FEATURE_NO_EFFECT"
     assert session.deleted == ["特征2", "草图1"]
     assert session.features == []
+
+
+def test_failed_cut_explains_that_nothing_may_be_left_to_remove():
+    session = FakeSession(run_ok=False)
+    result = session.call("cut", {"plane": "top", "loops": [{"type": "circle", "center": [0, 0], "diameter": 5}], "depth": 2})
+    assert result["error"]["code"] == "FEATURE_FAILED"
+    assert "已有的孔" in result["error"]["hint"]
+    extrude = FakeSession(run_ok=False).call(
+        "extrude", {"plane": "top", "loops": [{"type": "circle", "center": [0, 0], "diameter": 5}], "depth": 2})
+    assert "hint" not in extrude["error"]
+
+
+def test_missing_reference_names_the_argument():
+    result = FakeSession().call("ref_plane", {})
+    assert result["error"]["code"] == "TOOL_ARGS"
+    assert "reference" in result["error"]["message"]
 
 
 def test_cut_missing_face_is_rejected():

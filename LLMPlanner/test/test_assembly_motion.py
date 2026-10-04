@@ -14,7 +14,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from geomcheck.assembly_motion import (  # noqa: E402
-    analyze_frames, analyze_poses, local_to_world, run_poses, score_pose_points, world_to_local,
+    analyze_frames, analyze_poses, local_to_world, refine_aliased, run_poses, sample_chunked, score_pose_points,
+    world_to_local,
 )
 from planner.gears import generate_internal_cavity, generate_involute_outline  # noqa: E402
 
@@ -62,7 +63,9 @@ def test_ratios_list_and_direction():
 
     spec["ratios"][0]["same_direction"] = False
     out = analyze_frames(frames, spec, ALIASES, [])
-    assert not out["passed"] and out["score"] == 85
+    # 三项运动学（两个比值 + 行程）错一项：(干涉 2 + 动 1 + 固定 1 + 运动学 2·2/3) / 6
+    assert not out["passed"] and out["score"] == pytest.approx(100 * (4 + 4 / 3) / 6, abs=0.01)
+    assert out["score_v1"] == 85
 
 
 def test_small_ratio_uses_relative_tolerance():
@@ -94,11 +97,12 @@ def test_leads_strokes_swings_antiphase():
     assert out["passed"] and out["score"] == 100, out["kinematics"]
     assert abs(abs(out["kinematics"]["leads"][0]["measured_mm_per_rev"]) - 2) < 1e-6
 
+    # 五项运动学（导程、摆角、两个行程、反相）错一项：(干涉 2 + 固定 1 + 运动学 2·4/5) / 5
     spec["leads"][0]["mm_per_rev"] = 3
-    assert analyze_frames(frames, spec, ALIASES, [])["score"] == 85
+    assert analyze_frames(frames, spec, ALIASES, [])["score"] == 92
     spec["leads"][0]["mm_per_rev"] = 2
     spec["swings"][0]["deg"] = 40
-    assert analyze_frames(frames, spec, ALIASES, [])["score"] == 85
+    assert analyze_frames(frames, spec, ALIASES, [])["score"] == 92
     spec["swings"][0]["deg"] = 50
     spec["antiphase"] = [{"roles": ["slider", "slider"], "axis": "y"}]
     out = analyze_frames(frames, spec, ALIASES, [])
@@ -138,8 +142,19 @@ def test_analyze_poses_score():
         {"name": "d", "points": {"ok": False}, "interference_count": 0},
     ]
     out = analyze_poses(rows, {"max_interference": 0})
-    assert out["score"] == 25 and not out["passed"]
+    # a 满分；b 位姿对但有干涉 (2+1)/5；c 无解、d 位姿错都是 0
+    assert out["score"] == 40 and out["score_v1"] == 25 and not out["passed"]
     assert [r["ok"] for r in out["poses"]] == [True, False, False, False]
+    assert [r["score"] for r in out["poses"]] == [100, 60, 0, 0]
+
+
+def test_stuck_mechanism_gets_no_free_credit():
+    """输出件完全卡死时，“没穿模、机架没漂”不再白拿分（旧扣分制还剩 65）。"""
+    frames = _frames(13, 360, out=(lambda t: 0.0, lambda t: 0.0))
+    spec = {"driver": "driver", "expect_fixed": ["frame"], "expect_moving": ["out"],
+            "swings": [{"role": "out", "deg": 40}]}
+    out = analyze_frames(frames, spec, ALIASES, [])
+    assert out["stuck"] == ["out"] and out["score"] == 0 and out["score_v1"] == 65
 
 
 class FakeSession:
@@ -212,3 +227,31 @@ def test_internal_gear_cavity_meshes_planet():
                                  th * 48 / 18, origin=(0, 0))
         planet = affinity.translate(planet, a, 0)
         assert planet.difference(affinity.rotate(ring, th, origin=(0, 0))).area < 1e-12
+
+
+def _rot_z(deg: float) -> list[float]:
+    c, s = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+    return [c, -s, 0, s, c, 0, 0, 0, 1, 0, 0, 0]
+
+
+def test_refine_aliased_resamples_fast_driver_and_flags_jumps():
+    """驱动件每帧转 170°：加密后单帧转角变小、总转角正确；位形跳变加密也消不掉，保留原帧并标出。"""
+    duration, rate = 6.0, 170.0 * 120 / 6.0
+    calls: list[int] = []
+
+    def fast(times):
+        calls.append(len(times))
+        return [{"transforms": {"d": _rot_z(rate * t)}} for t in times]
+
+    coarse = fast([duration * i / 120 for i in range(121)])
+    frames, info = refine_aliased(fast, "d", duration, coarse)
+    assert info["resampled_frames"] > 121 and max(calls[1:]) <= 121
+    assert "aliasing_risk_deg" not in info and len(frames) == info["resampled_frames"]
+
+    def jump(times):
+        return [{"transforms": {"d": _rot_z(0 if t < duration / 2 else 180)}} for t in times]
+
+    coarse = jump([duration * i / 120 for i in range(121)])
+    frames, info = refine_aliased(jump, "d", duration, coarse)
+    assert frames is coarse and info == {"driver_jump_deg": 180.0}
+    assert len(sample_chunked(fast, [0.0] * 300)) == 300

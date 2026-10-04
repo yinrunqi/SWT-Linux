@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 import time
 from dataclasses import dataclass
@@ -22,9 +23,11 @@ from planner.observer import SwObserver
 try:
     from .eval_three_view_multiturn import ROOT, _query_balance
     from . import metrics as geo_metrics
+    from . import sw_watchdog
 except ImportError:
     from eval_three_view_multiturn import ROOT, _query_balance
     import metrics as geo_metrics
+    import sw_watchdog
 
 
 MODEL = "Qwen3.5-397B-A17B"
@@ -644,7 +647,7 @@ EXTRA_CASES = (
         split="heldout4",
     ),
 )
-# 复杂综合件（showcase）8 题，rubric 在 eval/rubrics_hard；题面与 rubric 在首次运行前写定。
+# 复杂综合件（showcase）30 题（最初 8 题 + 加难的 22 题），rubric 在 eval/rubrics_hard；题面与 rubric 在首次运行前写定。
 HARD_CASES = (
     TextCase(
         "quad_frame",
@@ -774,6 +777,435 @@ HARD_CASES = (
         2.0,
         # rubric impeller：参考实体 110009.5
         (106710.0, 113310.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "crankshaft",
+        "双拐曲轴",
+        "创建一根双拐曲轴，单一实体，所有主轴颈同轴。以后端法兰外端面为 0、沿轴线向前量：后端法兰直径 100mm、位"
+        "于 0~15mm； 后主轴颈直径 50mm、位于 15~45mm；中主轴颈直径 50mm、位于 115~145"
+        "mm；前主轴颈直径 50mm、位于 215~245mm； 前端轴头直径 30mm、位于 245~295mm。曲"
+        "拐 A 的两块曲柄臂位于 45~60mm 和 100~115mm，两臂之间是直径 40mm 的曲柄销 （60~"
+        "100mm）；曲拐 B 的两块曲柄臂位于 145~160mm 和 200~215mm，两臂之间是直径 40mm"
+        " 的曲柄销（160~200mm）。 两个曲柄销的轴线都与主轴线平行、相距 38mm，曲拐 B 与曲拐 A 方向"
+        "相反（相差 180°）。每块曲柄臂厚 15mm， 轮廓是以下两部分的并集：一是与主轴同心的直径 64mm 圆、"
+        "与本曲拐曲柄销同心的直径 52mm 圆及这两个圆的两条外公切线 围成的长圆形；二是一块平衡重——以主轴线为圆心"
+        "、半径 70mm、圆心角 120° 的扇形，扇形的角平分线指向与本曲拐曲柄销相反的方向。 法兰外端面中心有直径"
+        " 20mm、深 12mm 的止口孔；法兰外端面上有一个直径 8mm、深 10mm 的定位销孔，孔心距轴线 25"
+        "mm， 与曲柄销 A 位于同一方位；法兰上在直径 76mm 的圆上均布 6 个直径 9mm 的螺栓通孔，螺栓孔"
+        "与定位销孔的方位错开 30°。 每个曲柄销在其长度中点钻一个直径 6mm 的油孔：油孔轴线与曲柄销轴线相交，并"
+        "同时垂直于主轴线和该曲拐的方向，贯穿曲柄销。 前端轴头上开一条宽 8mm 的平键槽，槽底平面距轴线 11mm，"
+        "从 255mm 处一直开到轴端，键槽开在曲拐 B 一侧。",
+        (121.24, 140.0, 295.0),
+        2.0,
+        # rubric crankshaft：参考实体 954571.4
+        (925930.0, 983210.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "brake_disc",
+        "通风刹车盘",
+        "创建一个通风式汽车刹车盘，单一实体，所有回转结构同轴。以下摩擦环底面为 0、沿轴线向上量：两片摩擦环都是外径 "
+        "300mm、 内径 180mm、厚 10mm 的圆环，下环位于 0~10mm，上环位于 22~32mm。两环之"
+        "间的 12mm 间隙内有 40 片径向通风筋， 每片筋宽 5mm（两侧面平行，且关于径向中线对称），沿径向从半"
+        "径 90mm 延伸到 150mm，与两片摩擦环的内外圆齐平， 在高度上填满两环之间的间隙，40 片沿圆周均布。"
+        "上环之上是盘帽：一个外径 190mm、内径 170mm 的圆筒，从 22mm 延伸到 70mm， 顶端是一块外"
+        "径 190mm、厚 8mm 的顶板（62~70mm），顶板中心开直径 70mm 的中心孔，并在直径 114.3"
+        "mm 的圆上均布 5 个直径 14mm 的轮毂螺栓孔，其中一个螺栓孔与某一片通风筋位于同一方位。两片摩擦环上在"
+        "半径 120mm 的圆上均布 20 个 直径 8mm 的轴向通孔（打孔散热），孔位于相邻两片通风筋的正中间，每"
+        "个孔同时穿过上下两片摩擦环（孔不穿过任何筋）， 相邻两个孔之间隔一个筋间隙。",
+        (70.0, 300.0, 300.0),
+        2.0,
+        # rubric brake_disc：参考实体 1415696.4
+        (1373230.0, 1458170.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "wheel_rim",
+        "五辐轮毂",
+        "创建一个五辐汽车轮毂（轮辋），单一实体，所有回转结构同轴。以轮辋外侧端面为 0、沿轴线量：轮辋筒是内径 340"
+        "mm、 外径 352mm 的圆筒，位于 0~200mm；两端各有一圈轮缘，轮缘是内径 340mm、外径 380"
+        "mm、厚 12mm 的圆环， 分别位于 0~12mm 和 188~200mm。轮辐盘是一块厚 20mm 的圆盘"
+        "（150~170mm），外缘与轮辋筒内壁相连； 中心轮毂座是直径 120mm 的圆柱，位于 140~210mm"
+        "。轮毂座中心开直径 70mm 的中心通孔，并在直径 114.3mm 的圆上 均布 5 个直径 15mm 的螺栓"
+        "通孔。轮辐盘上开 5 个贯穿的扇环形减重窗，每个窗口内半径 75mm、外半径 155mm、 圆心角 44°，5"
+        " 个窗口均布，每个窗口的角平分线位于相邻两个螺栓孔方位的正中间（因此 5 根轮辐正对 5 个螺栓孔）； 每个窗"
+        "口的 4 个角（沿轮辐盘厚度方向的棱边，共 20 条）倒 R8mm 圆角。轮辋筒上在 100mm 高度处开一个"
+        "直径 11mm 的 气门嘴孔，沿径向贯穿筒壁，方位与某一个减重窗的角平分线相同。",
+        (210.0, 380.0, 380.0),
+        2.0,
+        # rubric wheel_rim：参考实体 3051222.0
+        (2959690.0, 3142760.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "geneva_wheel",
+        "槽轮机构",
+        "创建一个六槽槽轮机构的槽轮（日内瓦轮），单一实体。轮盘是直径 140mm、厚 12mm 的圆盘，盘的一面中心有"
+        "一个同轴的 直径 40mm、高 12mm 的轮毂凸台（总高 24mm），中心开直径 16mm 的贯穿轴孔。盘上"
+        "开 6 条均布的径向槽： 槽宽 10mm（两侧平行、关于径向中线对称），从轮盘外缘一直开到内端，内端是半圆，半"
+        "圆圆心距轴心 40mm，槽贯穿盘厚。 相邻两槽之间的轮缘上各切一段内凹的锁止圆弧：圆弧半径 32mm，圆心位于"
+        "两槽角平分线方向、距轴心 80mm 处， 沿盘厚贯穿切除（共 6 处）。在两槽之间的角平分线方向上、距轴心 2"
+        "8mm 处各开一个直径 8mm 的减重通孔（共 6 个）。 轮毂凸台上在其高度中点（距盘底面 18mm）沿某一"
+        "条槽的方向开一个直径 5mm 的径向紧定螺钉孔，从凸台外圆钻通到轴孔。",
+        (24.0, 128.45, 139.64),
+        2.0,
+        # rubric geneva_wheel：参考实体 104989.6
+        (101840.0, 108140.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "spiral_staircase",
+        "螺旋楼梯",
+        "创建一座旋转楼梯模型，单一实体，Z 轴竖直向上。底座是直径 300mm、厚 10mm 的圆盘（z = 0~10"
+        "mm），圆心在原点。 中心立柱是直径 60mm 的圆柱，从 z = 0 一直到 z = 280mm，柱顶是半径"
+        " 30mm 的半球（顶点 z = 310mm）。 立柱周围有 12 级台阶，每级台阶是以立柱轴线为圆心、外半径"
+        " 140mm（内侧一直连到立柱）、圆心角 30°、厚 8mm 的扇形板。 从上往下看，第 1 级台阶占方位角 "
+        "0°~30°（方位角从 +X 轴量起、逆时针为正），之后每一级都比前一级逆时针转过 30°、 升高 20mm："
+        "第 k 级（k = 1~12）占方位角 30(k−1)°~30k°，上表面高 z = 30 + 20(k−1)"
+        " mm。每级台阶的上表面上立一根 直径 8mm、高 90mm 的栏杆柱，柱轴线位于该级台阶的角平分线上、距立柱"
+        "轴线 130mm。底座上开一个直径 20mm 的进线通孔， 孔心在 (100, 0)；另在半径 130mm 的"
+        "圆上、方位角 45°、135°、225°、315° 处开 4 个直径 12mm 的地脚螺栓通孔。",
+        (300.0, 300.0, 340.0),
+        2.0,
+        # rubric spiral_staircase：参考实体 2043417.5
+        (1982110.0, 2104720.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "engine_piston",
+        "发动机活塞",
+        "创建一个发动机活塞，单一实体，所有回转结构同轴。活塞外径 86mm、总高 70mm；以活塞顶面为 0、沿轴线向"
+        "下量： 顶面外圆棱边倒 1mm×45° 倒角。外圆上有三道环槽，槽底直径都是 78mm：第一道气环槽位于 7~"
+        "9mm（宽 2mm）， 第二道气环槽位于 13~15mm（宽 2mm），油环槽位于 19~23mm（宽 4mm"
+        "）。活塞底部敞开，内腔是直径 74mm 的圆柱孔， 从底面一直挖到距顶面 12mm 处（即顶部厚 12mm）。"
+        "内腔中有两个活塞销座：它们是轴线沿同一水平直径方向、 位于距顶面 40mm 高度的直径 30mm 圆柱，各从内"
+        "腔壁向内伸到距活塞轴线 22mm 处。直径 22mm 的活塞销孔沿这条直径 贯穿两个销座和活塞外壁。顶面上有两"
+        "个直径 30mm、深 2mm 的平底气门避让坑，坑心位于垂直于活塞销孔的直径上、 距活塞轴线 18mm 的两侧"
+        "。油环槽槽底沿圆周均布 8 个直径 3mm 的径向回油孔（孔轴线在油环槽宽度中点）， 从槽底钻通到内腔，其中两"
+        "个孔与活塞销孔方向一致。",
+        (70.0, 86.0, 86.0),
+        2.0,
+        # rubric engine_piston：参考实体 150262.2
+        (145750.0, 154770.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "pipe_manifold",
+        "法兰歧管",
+        "创建一个带三个支管的分配歧管，单一实体。主管沿 X 轴，轴线过原点，是外径 60mm、内径 48mm 的圆管，"
+        "从 x = 0 到 x = 300mm， 两端敞开。主管两端各有一块直径 140mm、厚 16mm 的圆形法兰"
+        "（x = 0~16 和 284~300mm），法兰中心孔与主管内孔相同； 每块法兰在直径 110mm 的圆上均"
+        "布 8 个直径 14mm 的螺栓通孔，螺栓孔与竖直方向（Z 轴）错开 22.5°（即正上、正下方都没有螺栓孔）"
+        "。 主管上方（+Z）在 x = 75、150、225mm 处各竖直伸出一根支管：外径 40mm、内径 30mm"
+        "，支管顶端距主管轴线 120mm， 支管内孔向下与主管内孔贯通；每根支管顶端有一块直径 90mm、厚 12mm"
+        " 的圆形法兰（顶面距主管轴线 120mm）， 法兰上在直径 70mm 的圆上开 4 个直径 11mm 的螺栓通"
+        "孔，孔位于支管轴线沿 X、Y 两个方向的 45° 斜线上（即 4 孔与 X 轴成 45°）。 主管正下方（−Z"
+        "）在 x = 150mm 处有一个外径 30mm 的排污凸台，凸台底面距主管轴线 50mm，中心开直径 12m"
+        "m 的排污孔， 向上与主管内孔贯通。",
+        (140.0, 190.0, 300.0),
+        2.0,
+        # rubric pipe_manifold：参考实体 977670.4
+        (948340.0, 1007000.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "gearbox_housing",
+        "减速箱体",
+        "创建一个单级减速器下箱体，单一实体，Z 轴竖直向上，底面在 z = 0。箱体外形是 200×120×100mm"
+        " 的长方体 （x ∈ [−100, 100]、y ∈ [−60, 60]、z ∈ [0, 100]），顶面敞开"
+        "，四周壁厚 8mm，底板厚 10mm。顶端有一圈 240×160mm、厚 10mm 的矩形法兰（z = 90~"
+        "100，与箱口齐平，中间开口与箱体内腔相同），法兰上在 (±110, ±70) 和 (0, ±70) 处开 6"
+        " 个直径 11mm 的螺栓通孔。两侧长壁（±Y 面）上各有两个轴承座凸台：凸台是轴线沿 Y、直径 70mm 的"
+        "圆柱， 中心高 z = 50mm，从箱壁外表面向外伸出 15mm（到 y = ±75）；高速轴轴承座位于 x "
+        "= −45mm，轴承孔直径 47mm； 低速轴轴承座位于 x = 50mm，轴承孔直径 52mm；两个轴承孔都"
+        "沿 Y 贯穿两侧凸台和箱壁。每个凸台正下方有一条厚 8mm 的 竖直加强筋（筋的中面与凸台轴线在同一 x 处）"
+        "，从箱壁外表面伸出到 y = ±75，从底面 z = 0 一直到 z = 25 与凸台相连。 箱体两端（±X）"
+        "各有一个安装脚：x ∈ [100, 130] 和 [−130, −100]、y ∈ [−60, 60]、厚 1"
+        "2mm（z = 0~12）， 每个安装脚上在 (±115, ±40) 处开直径 13mm 的地脚螺栓通孔（共 "
+        "4 个）。底板中心 (0, 0) 处开一个直径 10.2mm 的 放油通孔；+X 端壁上在 y = 0、z ="
+        " 40 处开一个直径 14mm 的油位观察孔，沿 X 贯穿端壁。",
+        (100.0, 160.0, 260.0),
+        2.0,
+        # rubric gearbox_housing：参考实体 954683.5
+        (926040.0, 983320.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "heat_sink",
+        "针状散热器",
+        "创建一个针状鳍片散热器，单一实体，Z 轴向上。底板是 100×100mm、厚 8mm 的正方形板（x、y ∈ "
+        "[−50, 50]，z = 0~8）， 底板下表面中心凸出一块 60×60mm、厚 2mm 的导热接触台（z "
+        "= −2~0）。底板上表面上按 10mm 间距排成 9×9 方阵的 圆柱针鳍：针鳍直径 6mm、高 40mm（"
+        "z = 8~48），圆心坐标 x、y 各取 −40、−30、…、30、40，但方阵 4 个角上的 针鳍（(±4"
+        "0, ±40) 处）省去，共 77 根。省去针鳍的 4 个角上各开一个直径 4.5mm 的安装通孔，孔心 (±"
+        "40, ±40)， 孔口在底板上表面一侧有直径 8mm、深 4mm 的沉孔。",
+        (50.0, 100.0, 100.0),
+        2.0,
+        # rubric heat_sink：参考实体 173226.2
+        (168030.0, 178420.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "honeycomb_panel",
+        "蜂窝减重板",
+        "创建一块蜂窝减重面板，单一实体，Z 轴向上。面板外形 200×120mm、厚 10mm（x ∈ [−100, "
+        "100]、y ∈ [−60, 60]、z = 0~10）， 四个竖直角棱倒 R10mm 圆角。从上表面向下铣出"
+        " 43 个正六边形盲槽，槽深 7mm（槽底板厚 3mm），六边形对边距 16mm， 每个六边形都有一对对边平行"
+        "于 Y 轴（即两个顶点分别指向 ±Y）。六边形按蜂窝排列成 5 行：中间一行（y = 0）9 个， 中心 x "
+        "= 0、±19、±38、±57、±76；y = ±16.454mm 的两行各 8 个，中心 x = ±9.5、"
+        "±28.5、±47.5、±66.5； y = ±32.909mm 的两行与中间一行相同（各 9 个），相邻六边"
+        "形之间的筋宽都是 3mm。面板四角在 (±90, ±50) 处 各开一个直径 8.5mm 的安装通孔（与角部圆"
+        "角同心）。",
+        (10.0, 120.0, 200.0),
+        2.0,
+        # rubric honeycomb_panel：参考实体 170139.3
+        (165040.0, 175240.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "gear_pump_body",
+        "齿轮泵体",
+        "创建一个外啮合齿轮泵的泵体，单一实体，Z 轴向上。泵体是 120×90×40mm 的块（x ∈ [−60, 6"
+        "0]、y ∈ [−45, 45]、z = 0~40）， 四个竖直角棱倒 R12mm 圆角。从顶面向下挖出“8”"
+        "字形齿轮腔：两个直径 50.5mm 的圆柱腔，圆心分别在 (−21, 0) 和 (21, 0)， 深 30mm"
+        "（腔底 z = 10），两圆相交部分连通。腔底在 (−21, 0) 处开直径 20mm 的主动轴通孔（贯穿底板"
+        "）， 在 (21, 0) 处开直径 15mm、深 8mm 的从动轴盲孔（从腔底向下）。泵体 −Y 侧面中央有进"
+        "油口凸台、+Y 侧面中央有出油口凸台： 凸台都是直径 36mm、轴线沿 Y、中心在 x = 0、z = 25 "
+        "的圆柱，从侧面向外伸出 8mm（到 y = ±53）；进油口是直径 24mm 的孔， 出油口是直径 16mm "
+        "的孔，都沿 Y 从凸台端面钻通到齿轮腔。顶面上在 (±46, ±32) 处有 4 个 M8 螺纹底孔：直径 6"
+        ".8mm、深 20mm； 另有 2 个直径 6mm、深 12mm 的定位销孔，位于对角的 (−30, 33) "
+        "和 (30, −33)。",
+        (43.0, 106.0, 120.0),
+        2.0,
+        # rubric gear_pump_body：参考实体 297590.7
+        (288660.0, 306520.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "cold_plate",
+        "液冷板",
+        "创建一块带蛇形流道的液冷板，单一实体，Z 轴向上。板外形 170×100mm、厚 12mm（x ∈ [−85,"
+        " 85]、y ∈ [−50, 50]、z = 0~12）。 从上表面向下铣一条宽 10mm、深 7mm（槽底 "
+        "z = 5）的蛇形流道，流道中心线如下：起点 (−55, −36)，沿 +X 直线到 (55, −36)， 以"
+        " (55, −27) 为圆心、半径 9mm 向 +X 一侧绕半圈到 (55, −18)，沿 −X 直线到 (−"
+        "55, −18)，以 (−55, −9) 为圆心向 −X 一侧 绕半圈到 (−55, 0)，沿 +X 到 (5"
+        "5, 0)，以 (55, 9) 为圆心向 +X 一侧绕半圈到 (55, 18)，沿 −X 到 (−55, 18"
+        ")， 以 (−55, 27) 为圆心向 −X 一侧绕半圈到 (−55, 36)，最后沿 +X 到终点 (55,"
+        " 36)；流道两端是半圆端头。 进液口：从 −X 端面在 y = −36、z = 8 处沿 +X 钻直径 6m"
+        "m、深 30mm 的孔，正好通到流道起点； 出液口：从 +X 端面在 y = 36、z = 8 处沿 −X 钻"
+        "直径 5mm、深 30mm 的孔，通到流道终点。 上表面环绕流道有一圈密封槽：槽宽 3mm、深 2mm，槽中心"
+        "线是以原点为中心、146×90mm、四角 R8mm 的圆角矩形。 板上在 (±79, −40)、(±79, 0"
+        ")、(±79, 40) 处开 6 个直径 5.5mm 的安装通孔；板底面中心有一个直径 4mm、深 4mm 的"
+        "测温盲孔。",
+        (12.0, 100.0, 170.0),
+        2.0,
+        # rubric cold_plate：参考实体 151362.4
+        (146820.0, 155900.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "truss_beam",
+        "华伦桁架梁",
+        "创建一根平面华伦桁架连杆梁，单一实体，Z 轴向上。主体是 420×60×8mm 的底板（x ∈ [0, 420"
+        "]、y ∈ [0, 60]、z = 0~8）， 两端各有一个与底板等厚（z = 0~8）的圆形凸台，圆心 (0"
+        ", 30) 和 (420, 30)、直径 60mm，与底板融合。 左端凸台中心开直径 20mm 的通孔，右端凸"
+        "台中心开直径 16mm 的通孔。底板两条长边的上表面各有一条加强筋： 宽 8mm、高 8mm，即 y ∈ [0"
+        ", 8] 和 y ∈ [52, 60]、z = 8~16，x 从 0 到 420。底板上贯穿切出 9 个三角形"
+        "减重孔， 形成华伦桁架：5 个尖角朝 +Y 的三角形，顶点为 (x0, 10)、(x0 + 60, 10)、("
+        "x0 + 30, 50)，x0 = 20、100、180、260、340； 4 个尖角朝 −Y 的三角形，顶点"
+        "为 (x0 + 40, 50)、(x0 + 100, 50)、(x0 + 70, 10)，x0 = 20、10"
+        "0、180、260。 所有三角孔的 27 个竖直内角都倒 R4mm 圆角。",
+        (16.0, 60.0, 480.0),
+        2.0,
+        # rubric truss_beam：参考实体 189982.6
+        (184280.0, 195680.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "turbine_disk",
+        "涡轮盘",
+        "创建一个航空发动机涡轮盘，单一实体，所有回转结构同轴。以盘底面为 0、沿轴线向上量：中心轮毂是外径 90mm、"
+        "内径 40mm、 高 40mm 的圆筒（0~40mm），内孔两端各倒 1×1mm 的 45° 倒角；轮毂外侧是"
+        "一块厚 10mm 的辐板（15~25mm）， 从半径 45mm 延伸到半径 100mm；辐板外缘连着轮缘：内半"
+        "径 100mm、外半径 130mm、高 30mm（5~35mm）的圆环。 辐板与轮毂、辐板与轮缘相交处的四条环"
+        "形凹角都倒 R5mm 圆角。辐板上在直径 140mm 的圆上均布 10 个直径 10mm 的 轴向减重通孔。轮"
+        "缘外周均布 30 个沿轴向贯穿轮缘的燕尾榫槽：每个槽关于自身的径向中线对称，槽底是距轴线 112mm、 宽 1"
+        "6mm 的平面（垂直于径向中线），两侧壁为直线、向外收窄，在距轴线 130mm 处槽宽 10mm（外口窄、底部"
+        "宽）； 每个减重孔都正好位于相邻两个榫槽的角平分线上。",
+        (40.0, 259.81, 260.0),
+        2.0,
+        # rubric turbine_disk：参考实体 896539.2
+        (869640.0, 923440.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "bt40_holder",
+        "BT40 刀柄",
+        "创建一个 BT40 刀柄（简化），单一实体，所有回转结构同轴。以锥柄大端面（法兰端面）为 0、指向锥柄小端为正"
+        "方向沿轴线量： 锥柄是 7:24 的圆锥（长度每 24mm 直径变化 7mm），大端直径 44.45mm 在 "
+        "0 处，长 65.4mm（到 65.4 处）。 法兰是直径 63mm 的圆盘，位于 −15.9~0；法兰外圆柱"
+        "面上有一圈 60° V 形槽：槽中心在 −8，槽底直径 56mm（深 3.5mm）， 两个槽侧面都与端面成 3"
+        "0°（两侧面夹角 60°）。法兰上沿一条直径对称地开两个驱动键槽：键槽宽 16.1mm， 槽底平面距轴线 23"
+        ".5mm，沿轴向贯穿整个法兰厚度。法兰朝刀具一侧的端面（−15.9 处）上，在距轴线 25mm、 与两个键槽各"
+        "相差 90° 的方位，有一个直径 8mm、深 6mm 的定向盲孔。刀具端是直径 40mm 的圆柱，从 −15."
+        "9 延伸到 −60， 末端外缘倒 1×1mm 的 45° 倒角。从刀具端面沿轴线钻直径 20mm、深 50mm"
+        " 的平底装刀孔（孔底在 −10）； 从锥柄小端面沿轴线钻直径 14mm、深 30mm 的平底拉钉孔（孔底在 3"
+        "5.4）；两个孔底之间用直径 6mm 的中心冷却孔贯通。",
+        (60.91, 63.0, 125.4),
+        2.0,
+        # rubric bt40_holder：参考实体 142138.2
+        (137870.0, 146400.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "hydraulic_manifold",
+        "液压阀块",
+        "创建一个液压阀块，单一实体，Z 轴向上。阀块是 100×80×60mm 的长方体（x ∈ [−50, 50]、"
+        "y ∈ [−40, 40]、z = 0~60）， 内部有一组相互贯通的油道：P 口从顶面 (−25, 0) 处"
+        "向下钻直径 12mm、深 40mm 的孔（孔底在 z = 20），孔口有直径 20mm、 深 3mm 的沉孔；"
+        "主油道从 −X 端面在 y = 0、z = 20 处沿 +X 钻直径 10mm 的孔，一直钻到 x = 20，"
+        "与 P 孔相交； 主油道入口有直径 16mm、深 8mm 的工艺堵头沉孔。A 口从 +Y 端面在 x = 10"
+        "、z = 20 处沿 −Y 钻直径 10mm、深 40mm 的孔， 孔底到 y = 0，与主油道相交。T 口从"
+        "底面 (25, −15) 处向上钻直径 14mm、深 45mm 的孔（孔底在 z = 45）； 从 +X 端面"
+        "在 y = −15、z = 35 处沿 −X 钻直径 10mm、深 30mm 的横孔，与 T 孔相交。四角 ("
+        "±40, ±30) 处有 4 个 直径 9mm 的安装通孔；顶面上绕 P 口在 (−25 ± 16, ±16)"
+        " 处有 4 个直径 4.2mm、深 10mm 的螺纹底孔（阀安装螺钉孔）。",
+        (60.0, 80.0, 100.0),
+        2.0,
+        # rubric hydraulic_manifold：参考实体 441811.3
+        (428560.0, 455070.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "rocket_fin_can",
+        "火箭尾段",
+        "创建一个探空火箭尾段，单一实体，Z 轴为箭体轴线、向上为箭头方向。箭体是外径 80mm、内径 72mm 的薄壁"
+        "圆筒， 从 z = 0 到 z = 300。圆筒底端内侧有一块隔板：内径 60mm、外径 72mm 的圆环，位"
+        "于 z = 0~8，与筒壁相连。 隔板下方是拉瓦尔喷管（回转薄壁壳体），其内、外轮廓都是折线：内轮廓从 (r "
+        "= 30, z = 0) 收缩到喉部 (r = 12, z = −30)，再扩张到出口 (r = 34, z "
+        "= −100)；外轮廓从 (r = 36, z = 0) 到 (r = 16, z = −30)， 再到 (r"
+        " = 38, z = −100)；出口端面在 z = −100。筒外有 4 片均布的平板尾翼，厚 4mm，关于"
+        "自身径向中面对称， 分别位于 45°、135°、225°、315° 方位（从 +X 轴量起）。每片尾翼在其中面"
+        "内是一个四边形：翼根从筒壁内的 r = 37 起与筒体融合；前缘是直线，从 (r = 40, z = 110)"
+        " 到翼尖 (r = 100, z = 30)；后缘是直线，从 (r = 40, z = 10) 到 (r = "
+        "100, z = −20)；翼尖是 r = 100 处的轴向直边（z = −20~30），前、后缘的直线延长到"
+        " r = 37 处与翼根相接。筒壁上在 z = 250 处、0°、90°、180°、270° 方位各开一个直径"
+        " 6mm 的径向通气孔，穿透筒壁。",
+        (144.25, 144.25, 400.0),
+        2.0,
+        # rubric rocket_fin_can：参考实体 434767.3
+        (421720.0, 447810.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "ratchet_wheel",
+        "棘轮",
+        "创建一个棘轮，单一实体，Z 轴向上。棘轮盘厚 15mm（z = 0~15），外周有 24 个锯齿形棘齿：齿根半"
+        "径 50mm、齿顶半径 60mm； 在极角 θk = 15°·k（k = 0…23，从 +X 轴逆时针量）处各"
+        "有一条径向齿面，从 (r = 50, θk) 直到 (r = 60, θk)； 齿背是直线，从齿顶 (r = "
+        "60, θk) 连到下一个齿的齿根 (r = 50, θk + 15°)，即逆时针方向看，每个齿顶后面跟着一段"
+        "下降的齿背。 盘上表面中心有一个直径 50mm、高 10mm 的轮毂（z = 15~25）。中心开一个对边距 "
+        "24mm 的正六边形贯穿孔（穿过盘和轮毂）， 六边形有一条边与 +X 轴垂直（该边的外法线指向 +X）。盘上在"
+        "半径 33mm 的圆上、极角 0°、60°、…、300° 处均布 6 个直径 14mm 的通孔（只穿过盘）。",
+        (25.0, 120.0, 120.0),
+        2.0,
+        # rubric ratchet_wheel：参考实体 133072.0
+        (129080.0, 137060.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "injector_plate",
+        "喷注器面板",
+        "创建一个液体火箭发动机喷注器面板，单一实体，Z 轴向上，所有回转结构同轴。面板是直径 160mm、厚 20mm"
+        " 的圆盘 （z = 0~20），z = 20 是喷注面，喷注面外缘倒 1×1mm 的 45° 倒角。背面（z "
+        "= 0）上有 4 条同心的环形集液槽： 槽宽 6mm、深 8mm（槽底 z = 8），槽中心半径分别为 20、"
+        "35、50、65mm。每条槽底到喷注面之间钻一圈轴向喷孔 （从槽底 z = 8 一直通到 z = 20）：半径"
+        " 20mm 的圈上 8 个直径 2mm 的孔，从极角 0° 起均布；半径 35mm 的圈上 16 个直径 2m"
+        "m 的孔，从 11.25° 起均布；半径 50mm 的圈上 24 个直径 2mm 的孔，从 0° 起均布；半径"
+        " 65mm 的圈上 32 个直径 1.5mm 的孔，从 5.625° 起均布（极角从 +X 轴量起）。面板中心"
+        "有一个直径 6mm 的贯穿点火孔； 喷注面上在 (57.5, 0) 处有一个直径 4mm、深 6mm 的定位销"
+        "盲孔；外圈在半径 72.5mm 的圆上、从 15° 起均布 12 个 直径 8.5mm 的螺栓通孔。",
+        (20.0, 160.0, 160.0),
+        2.0,
+        # rubric injector_plate：参考实体 333855.0
+        (323840.0, 343870.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "robot_arm_link",
+        "机械臂连杆",
+        "创建一根机械臂大臂连杆，单一实体，Z 轴向上。臂身是厚 30mm（z = 5~35）的平板，外形是两个圆的外公"
+        "切线围成的轮廓： 肩部圆心 (0, 0)、半径 40mm，肘部圆心 (200, 0)、半径 28mm。肩部另有"
+        "一个圆心 (0, 0)、直径 80mm、高 40mm（z = 0~40）的 凸台，与臂身融合。肩部中心开直径 "
+        "52mm 的轴承通孔，肘部中心开直径 35mm 的通孔。臂身上下两面各铣一个深 10mm 的 减重槽（上槽 z"
+        " = 25~35，下槽 z = 5~15，中间留 10mm 腹板），两个槽的外形相同：两个圆的外公切线围成的轮"
+        "廓， 圆心 (70, 0)、半径 22mm 与圆心 (150, 0)、半径 14mm。腹板中心 (110, 0"
+        ") 处开直径 16mm 的走线通孔。 肩部凸台顶面（z = 40）上在半径 33mm 的圆上、极角 30°、9"
+        "0°、…、330° 处均布 6 个直径 5mm、深 12mm 的螺纹底孔。 肘部做成夹紧结构：沿 y = 0 "
+        "开一条宽 2mm 的开口缝，从肘部孔一直切到臂端（x ≥ 200），贯穿整个厚度； 在 x = 219、z ="
+        " 20 处沿 Y 方向钻一个直径 6.6mm 的夹紧螺钉通孔，横穿开口缝两侧。",
+        (40.0, 80.0, 267.98),
+        2.0,
+        # rubric robot_arm_link：参考实体 372951.4
+        (361760.0, 384140.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "menger_sponge",
+        "门格海绵",
+        "创建一个二级门格海绵（Menger sponge），单一实体。起始是边长 81mm 的立方体（x、y、z ∈ "
+        "[0, 81]）。 第一级：把立方体按 27mm 分成 3×3×3 个子立方体，挖掉每个面中心的子立方体和整个"
+        "立方体中心的子立方体， 即沿 X、Y、Z 三个方向各贯穿切出一个 27×27mm 的方孔，方孔位于另外两个坐标"
+        "都在 [27, 54] 的范围内。 第二级：对剩下的 20 个边长 27mm 的子立方体，每个都再按 9mm "
+        "分成 3×3×3 份，同样挖掉各面中心和中心的 9mm 小立方体， 即在每个子立方体内沿 X、Y、Z 各贯穿切"
+        "出一个 9×9mm 的方孔（位于该子立方体中间三分之一）。 等价地说：一个点被挖掉，当且仅当在 27mm 或 "
+        "9mm 某一级的划分中，它有至少两个坐标落在该级的中间三分之一。",
+        (81.0, 81.0, 81.0),
+        2.0,
+        # rubric menger_sponge：参考实体 291600.0
+        (282850.0, 300350.0),
+        (("solid_features", 1),),
+        split="hard",
+    ),
+    TextCase(
+        "u_joint_yoke",
+        "万向节叉",
+        "创建一个万向节叉，单一实体，Z 轴向上。底部轮毂是直径 50mm、高 45mm 的圆柱（z = 0~45），其"
+        "上是直径 80mm、 厚 10mm 的法兰盘（z = 45~55）。法兰上竖起两片叉臂，关于 YZ 平面对称："
+        "每片叉臂是厚 12mm（X 方向）、宽 40mm （y ∈ [−20, 20]）的竖板，内侧面分别在 x = "
+        "±24（两叉臂内侧间距 48mm），即 x ∈ [24, 36] 和 x ∈ [−36, −24]， 从 z "
+        "= 45 升到 z = 90，顶端做成以 (z = 90, y = 0) 为圆心、半径 20mm 的半圆（轴线"
+        "沿 X）。两片叉臂在 z = 90、 y = 0 处同轴开直径 22mm、轴线沿 X 的十字轴承孔，贯穿两片叉"
+        "臂。轮毂中心沿轴线开直径 25mm 的通孔 （贯穿轮毂和法兰），孔内在 +Y 一侧有一条宽 8mm 的通长键槽"
+        "，键槽底面距轴线 15.8mm。轮毂在 z = 20 处从 +Y 方向 沿 −Y 钻一个直径 6.8mm 的紧"
+        "定螺钉孔，穿过轮毂壁通到中心孔（键槽中间）。每片叉臂外侧面上，在 z = 90、 y = ±14.5 处各有 "
+        "2 个直径 5mm、深 10mm、轴线沿 X 的轴承盖螺纹底孔（共 4 个）。",
+        (80.0, 80.0, 110.0),
+        2.0,
+        # rubric u_joint_yoke：参考实体 148584.2
+        (144130.0, 153040.0),
         (("solid_features", 1),),
         split="hard",
     ),
@@ -1181,6 +1613,336 @@ PROMPTS_EN = {
         "end of each blade extends into the hub and merges with it. The other 7 blades are obtained by patterning"
         " blade 1 about the axis every 45°."
     ),
+    "crankshaft": (
+        "Create a two-throw crankshaft as a single solid body; all main journals are coaxial. Measuring forward "
+        "along the axis from the outer end face of the rear flange at 0: the rear flange is 100mm in diameter, "
+        "at 0~15mm; the rear main journal is 50mm in diameter, at 15~45mm; the middle main journal is 50mm in "
+        "diameter, at 115~145mm; the front main journal is 50mm in diameter, at 215~245mm; the front stub is "
+        "30mm in diameter, at 245~295mm. The two crank webs of throw A are at 45~60mm and 100~115mm, with a "
+        "40mm-diameter crankpin between them (60~100mm); the two crank webs of throw B are at 145~160mm and "
+        "200~215mm, with a 40mm-diameter crankpin between them (160~200mm). Both crankpin axes are parallel to "
+        "the main axis at a distance of 38mm, and throw B points opposite to throw A (180° apart). Each crank "
+        "web is 15mm thick and its outline is the union of two parts: first, the obround formed by a 64mm-diameter "
+        "circle concentric with the main axis, a 52mm-diameter circle concentric with the crankpin of that "
+        "throw, and the two external common tangents of these circles; second, a counterweight, a sector centered on "
+        "the main axis with radius 70mm and a 120° central angle, whose bisector points away from the crankpin "
+        "of that throw. The outer end face of the flange has a 20mm-diameter, 12mm-deep spigot bore at its "
+        "center, and a locating pin hole 8mm in diameter and 10mm deep, with its center 25mm from the axis in "
+        "the same direction as crankpin A. The flange has 6 through bolt holes of 9mm diameter evenly spaced on "
+        "a 76mm-diameter circle, rotated 30° from the direction of the locating pin hole. Each crankpin has a "
+        "6mm-diameter oil hole bored at the middle of its length: the oil hole axis intersects the crankpin "
+        "axis, is perpendicular to both the main axis and the direction of that throw, and goes through the "
+        "crankpin. The front stub has an 8mm-wide flat keyway whose bottom plane is 11mm from the axis, running "
+        "from 255mm to the end of the shaft, on the side of throw B."
+    ),
+    "brake_disc": (
+        "Create a ventilated automotive brake disc as a single solid body; all revolved features are coaxial. "
+        "Measuring upward along the axis from the bottom face of the lower friction ring at 0: both friction "
+        "rings are annuli with an outer diameter of 300mm, an inner diameter of 180mm and a thickness of 10mm; "
+        "the lower ring is at 0~10mm and the upper ring at 22~32mm. In the 12mm gap between the rings there are "
+        "40 radial cooling vanes, each 5mm wide (parallel sides, symmetric about its radial centerline), "
+        "extending radially from radius 90mm to 150mm, flush with the inner and outer circles of the friction "
+        "rings and filling the gap between the rings in height; the 40 vanes are evenly spaced around the "
+        "circumference. Above the upper ring is the hat: a tube with an outer diameter of 190mm and an inner "
+        "diameter of 170mm running from 22mm to 70mm, closed at its top by a top plate 190mm in outer diameter "
+        "and 8mm thick (62~70mm). The top plate has a 70mm center hole and 5 wheel-bolt holes of 14mm diameter "
+        "evenly spaced on a 114.3mm-diameter circle, one of which is in the same angular position as one of the "
+        "vanes. The friction rings have 20 axial through holes of 8mm diameter evenly spaced on a circle of "
+        "radius 120mm; each hole lies exactly midway between two adjacent vanes and goes through both the upper "
+        "and the lower ring (no hole passes through a vane), so that the holes occupy every other gap between "
+        "vanes."
+    ),
+    "wheel_rim": (
+        "Create a five-spoke automotive wheel (rim) as a single solid body; all revolved features are coaxial. "
+        "Measuring along the axis from the outer end face of the rim at 0: the rim barrel is a tube with an "
+        "inner diameter of 340mm and an outer diameter of 352mm, at 0~200mm; at each end there is a rim flange, "
+        "an annulus with an inner diameter of 340mm, an outer diameter of 380mm and a thickness of 12mm, at "
+        "0~12mm and 188~200mm respectively. The spoke disc is a 20mm-thick disc (150~170mm) whose outer edge "
+        "joins the inner wall of the barrel; the central hub seat is a 120mm-diameter cylinder at 140~210mm. The "
+        "hub seat has a 70mm-diameter through center bore and 5 through bolt holes of 15mm diameter evenly "
+        "spaced on a 114.3mm-diameter circle. The spoke disc has 5 through annular-sector lightening windows, "
+        "each with an inner radius of 75mm, an outer radius of 155mm and a central angle of 44°; the 5 windows "
+        "are evenly spaced, and the bisector of each window lies exactly midway between the directions of two "
+        "adjacent bolt holes (so the 5 spokes face the 5 bolt holes). The 4 corners of each window (the edges "
+        "along the thickness of the spoke disc, 20 in total) are rounded with R8mm fillets. The barrel has an "
+        "11mm-diameter valve hole at a height of 100mm, bored radially through the barrel wall, in the same "
+        "direction as the bisector of one of the windows."
+    ),
+    "geneva_wheel": (
+        "Create the wheel of a six-slot Geneva drive as a single solid body. The wheel is a disc 140mm in "
+        "diameter and 12mm thick; one face has a coaxial hub boss 40mm in diameter and 12mm high at its center "
+        "(24mm overall), and there is a 16mm-diameter through bore at the center. The disc has 6 evenly spaced "
+        "radial slots: each slot is 10mm wide (parallel sides, symmetric about its radial centerline), runs from "
+        "the rim of the disc inward and ends in a semicircle whose center is 40mm from the axis; the slots go "
+        "through the disc thickness. On the rim between each pair of adjacent slots, cut a concave locking arc: "
+        "the arc radius is 32mm and its center lies on the bisector between the two slots, 80mm from the axis; "
+        "the cut goes through the disc thickness (6 places). On each bisector between two slots, 28mm from the "
+        "axis, there is an 8mm-diameter through lightening hole (6 in total). The hub boss has a 5mm-diameter "
+        "radial set-screw hole at mid-height of the boss (18mm from the bottom face of the disc), in the "
+        "direction of one of the slots, drilled from the outer surface of the boss through to the bore."
+    ),
+    "spiral_staircase": (
+        "Create a spiral staircase model as a single solid body, with the Z axis pointing up. The base is a disc "
+        "300mm in diameter and 10mm thick (z = 0~10mm), centered at the origin. The central column is a "
+        "60mm-diameter cylinder running from z = 0 to z = 280mm, topped by a hemisphere of radius 30mm (apex at "
+        "z = 310mm). Around the column there are 12 steps; each step is a sector plate centered on the column "
+        "axis, with an outer radius of 140mm (its inner side joins the column), a central angle of 30° and a "
+        "thickness of 8mm. Viewed from above, step 1 occupies azimuth 0°~30° (azimuth measured from the +X axis, "
+        "counterclockwise positive), and each following step is rotated 30° counterclockwise and raised 20mm "
+        "relative to the previous one: step k (k = 1~12) occupies azimuth 30(k−1)°~30k° and its top surface is "
+        "at z = 30 + 20(k−1) mm. On the top surface of each step stands a baluster post 8mm in diameter and 90mm "
+        "high, whose axis lies on the bisector of that step, 130mm from the column axis. The base has a "
+        "20mm-diameter through cable hole centered at (100, 0), and 4 through anchor-bolt holes of 12mm diameter "
+        "on a circle of radius 130mm at azimuths 45°, 135°, 225° and 315°."
+    ),
+    "engine_piston": (
+        "Create an engine piston as a single solid body; all revolved features are coaxial. The piston has an "
+        "outer diameter of 86mm and an overall height of 70mm; measuring downward along the axis from the piston "
+        "crown face at 0: the outer edge of the crown is chamfered 1mm×45°. The outer surface has three ring "
+        "grooves, all with a root diameter of 78mm: the first compression-ring groove is at 7~9mm (2mm wide), "
+        "the second compression-ring groove is at 13~15mm (2mm wide), and the oil-ring groove is at 19~23mm (4mm "
+        "wide). The piston is open at the bottom; its cavity is a 74mm-diameter cylindrical bore cut from the "
+        "bottom face up to 12mm from the crown face (so the crown is 12mm thick). Inside the cavity there are "
+        "two piston-pin bosses: cylinders of 30mm diameter whose axis lies along one horizontal diameter at a "
+        "depth of 40mm from the crown face, each reaching inward from the cavity wall to 22mm from the piston "
+        "axis. A 22mm-diameter piston-pin bore runs along this diameter through both bosses and the outer wall "
+        "of the piston. The crown face has two flat-bottomed valve reliefs 30mm in diameter and 2mm deep, "
+        "centered on the diameter perpendicular to the pin bore, 18mm from the piston axis on either side. The "
+        "root of the oil-ring groove has 8 radial oil drain holes of 3mm diameter evenly spaced around the "
+        "circumference (hole axes at mid-width of the oil-ring groove), drilled from the groove root through to "
+        "the cavity, two of which are in line with the pin bore."
+    ),
+    "pipe_manifold": (
+        "Create a distribution manifold with three branch pipes as a single solid body. The main pipe runs along "
+        "the X axis with its axis through the origin; it is a tube with an outer diameter of 60mm and an inner "
+        "diameter of 48mm, from x = 0 to x = 300mm, open at both ends. Each end of the main pipe has a circular "
+        "flange 140mm in diameter and 16mm thick (x = 0~16 and 284~300mm), whose center hole is the same as the "
+        "bore of the main pipe; each flange has 8 through bolt holes of 14mm diameter evenly spaced on a "
+        "110mm-diameter circle, rotated 22.5° from the vertical direction (Z axis), so that there is no bolt "
+        "hole directly above or below the axis. On top of the main pipe (+Z), at x = 75, 150 and 225mm, a branch "
+        "pipe rises vertically: outer diameter 40mm, inner diameter 30mm, with its top 120mm from the main-pipe "
+        "axis, and its bore opens downward into the bore of the main pipe. The top of each branch has a circular "
+        "flange 90mm in diameter and 12mm thick (its top face 120mm from the main-pipe axis), with 4 through "
+        "bolt holes of 11mm diameter on a 70mm-diameter circle, located on the 45° diagonals between the X and Y "
+        "directions around the branch axis (that is, the 4 holes are at 45° to the X axis). Directly below the "
+        "main pipe (−Z), at x = 150mm, there is a drain boss with an outer diameter of 30mm whose bottom face is "
+        "50mm from the main-pipe axis, with a 12mm-diameter drain hole at its center that opens upward into the "
+        "bore of the main pipe."
+    ),
+    "gearbox_housing": (
+        "Create the lower housing of a single-stage gear reducer as a single solid body, with the Z axis "
+        "pointing up and the bottom face at z = 0. The housing is a 200×120×100mm box (x ∈ [−100, 100], y ∈ "
+        "[−60, 60], z ∈ [0, 100]), open at the top, with 8mm walls all round and a 10mm-thick floor. At the top "
+        "there is a 240×160mm rectangular flange 10mm thick (z = 90~100, flush with the top of the housing, its "
+        "central opening the same as the cavity of the housing), with 6 through bolt holes of 11mm diameter at "
+        "(±110, ±70) and (0, ±70). Each long side wall (the ±Y faces) has two bearing bosses: each boss is a "
+        "cylinder of 70mm diameter with its axis along Y, centered at height z = 50mm, protruding 15mm outward "
+        "from the outer surface of the wall (to y = ±75). The high-speed bearing seat is at x = −45mm with a "
+        "47mm-diameter bearing bore; the low-speed bearing seat is at x = 50mm with a 52mm-diameter bearing "
+        "bore; both bores run along Y through the bosses and walls on both sides. Directly below each boss there "
+        "is a vertical stiffening rib 8mm thick (its mid-plane at the same x as the boss axis), protruding from "
+        "the outer surface of the wall to y = ±75 and running from the bottom z = 0 up to z = 25, where it joins "
+        "the boss. Each end of the housing (±X) has a mounting foot: x ∈ [100, 130] and [−130, −100], y ∈ [−60, "
+        "60], 12mm thick (z = 0~12), with 13mm-diameter through holes for foundation bolts at (±115, ±40) (4 in "
+        "total). The floor has a 10.2mm-diameter through oil-drain hole at its center (0, 0), and the +X end "
+        "wall has a 14mm-diameter oil-level sight hole at y = 0, z = 40, running along X through the end wall."
+    ),
+    "heat_sink": (
+        "Create a pin-fin heat sink as a single solid body, with the Z axis pointing up. The base is a 100×100mm "
+        "square plate 8mm thick (x, y ∈ [−50, 50], z = 0~8); a 60×60mm, 2mm-thick thermal contact pad protrudes "
+        "from the center of its bottom face (z = −2~0). On the top face of the base, cylindrical pin fins are "
+        "arranged in a 9×9 square array with a 10mm pitch: each pin is 6mm in diameter and 40mm high (z = 8~48), "
+        "and the pin centers take x and y values of −40, −30, …, 30, 40, except that the pins at the 4 corners "
+        "of the array (at (±40, ±40)) are omitted, leaving 77 pins. At each of these 4 corners there is a "
+        "4.5mm-diameter through mounting hole centered at (±40, ±40), with an 8mm-diameter, 4mm-deep counterbore "
+        "at its mouth on the top-face side of the base."
+    ),
+    "honeycomb_panel": (
+        "Create a honeycomb lightweight panel as a single solid body, with the Z axis pointing up. The panel is "
+        "200×120mm and 10mm thick (x ∈ [−100, 100], y ∈ [−60, 60], z = 0~10), and its four vertical corner edges "
+        "are rounded with R10mm fillets. From the top face, mill 43 regular-hexagon blind pockets, 7mm deep "
+        "(leaving a 3mm floor); each hexagon is 16mm across flats and has one pair of opposite sides parallel to "
+        "the Y axis (so two of its vertices point toward ±Y). The hexagons are arranged as a honeycomb in 5 "
+        "rows: the middle row (y = 0) has 9 pockets centered at x = 0, ±19, ±38, ±57, ±76; the two rows at y = "
+        "±16.454mm have 8 pockets each, centered at x = ±9.5, ±28.5, ±47.5, ±66.5; the two rows at y = ±32.909mm "
+        "are the same as the middle row (9 each); the rib between adjacent hexagons is 3mm wide everywhere. At "
+        "the four corners of the panel, at (±90, ±50), there is an 8.5mm-diameter through mounting hole in each "
+        "corner (concentric with the corner fillet)."
+    ),
+    "gear_pump_body": (
+        "Create the body of an external gear pump as a single solid body, with the Z axis pointing up. The body "
+        "is a 120×90×40mm block (x ∈ [−60, 60], y ∈ [−45, 45], z = 0~40) whose four vertical corner edges are "
+        "rounded with R12mm fillets. From the top face, cut a figure-8 gear chamber: two cylindrical "
+        "cavities 50.5mm in diameter centered at (−21, 0) and (21, 0), 30mm deep (chamber floor at z = 10), "
+        "joined where the two circles overlap. The chamber floor has a 20mm-diameter through hole for the drive "
+        "shaft at (−21, 0) (through the floor), and a 15mm-diameter, 8mm-deep blind hole for the idler shaft at "
+        "(21, 0) (downward from the chamber floor). The middle of the −Y side has an inlet boss and the middle "
+        "of the +Y side an outlet boss: both bosses are cylinders of 36mm diameter with their axes along Y, "
+        "centered at x = 0, z = 25, protruding 8mm outward from the side faces (to y = ±53). The inlet is a "
+        "24mm-diameter hole and the outlet a 16mm-diameter hole, both bored along Y from the boss end faces "
+        "through to the gear chamber. The top face has 4 M8 threaded-hole pilot bores at (±46, ±32): 6.8mm in diameter and "
+        "20mm deep; there are also 2 locating pin holes, 6mm in diameter and 12mm deep, at the diagonal "
+        "positions (−30, 33) and (30, −33)."
+    ),
+    "cold_plate": (
+        "Create a liquid cold plate with a serpentine channel as a single solid body, with the Z axis pointing "
+        "up. The plate is 170×100mm and 12mm thick (x ∈ [−85, 85], y ∈ [−50, 50], z = 0~12). From the top face, "
+        "mill a serpentine channel 10mm wide and 7mm deep (channel floor at z = 5), whose centerline is: start "
+        "at (−55, −36), go straight along +X to (55, −36), make a half turn of radius 9mm about (55, −27) on the "
+        "+X side to (55, −18), go straight along −X to (−55, −18), make a half turn about (−55, −9) on the −X "
+        "side to (−55, 0), go along +X to (55, 0), make a half turn about (55, 9) on the +X side to (55, 18), go "
+        "along −X to (−55, 18), make a half turn about (−55, 27) on the −X side to (−55, 36), and finally go "
+        "along +X to the end point (55, 36); both ends of the channel are semicircular. Inlet: from the −X end "
+        "face, at y = −36, z = 8, bore a 6mm-diameter hole 30mm deep along +X, reaching exactly the start of "
+        "the channel. Outlet: from the +X end face, at y = 36, z = 8, bore a 5mm-diameter hole 30mm deep along "
+        "−X, reaching the end of the channel. The top face has a sealing groove around the channel: 3mm wide and "
+        "2mm deep, whose centerline is a 146×90mm rounded rectangle centered at the origin with R8mm corners. "
+        "The plate has 6 through mounting holes of 5.5mm diameter at (±79, −40), (±79, 0) and (±79, 40), and a "
+        "4mm-diameter, 4mm-deep blind hole for a temperature sensor at the center of the bottom face."
+    ),
+    "truss_beam": (
+        "Create a flat Warren-truss link beam as a single solid body, with the Z axis pointing up. The main body "
+        "is a 420×60×8mm plate (x ∈ [0, 420], y ∈ [0, 60], z = 0~8). Each end has a round boss of the same "
+        "thickness (z = 0~8), centered at (0, 30) and (420, 30) with a diameter of 60mm, fused with the plate. "
+        "The left boss has a 20mm-diameter through hole at its center and the right boss a 16mm-diameter through "
+        "hole at its center. The top face of the plate carries a stiffening rib along each of its two long "
+        "edges: 8mm wide and 8mm high, i.e. y ∈ [0, 8] and y ∈ [52, 60], z = 8~16, running from x = 0 to 420. "
+        "Cut 9 triangular lightening holes through the plate to form a Warren truss: 5 triangles pointing to +Y "
+        "with vertices (x0, 10), (x0 + 60, 10) and (x0 + 30, 50) for x0 = 20, 100, 180, 260, 340; and 4 "
+        "triangles pointing to −Y with vertices (x0 + 40, 50), (x0 + 100, 50) and (x0 + 70, 10) for x0 = 20, "
+        "100, 180, 260. Round all 27 vertical inner corners of the triangular holes with R4mm fillets."
+    ),
+    "turbine_disk": (
+        "Create an aero-engine turbine disk as a single solid body; all revolved features are coaxial. Measuring "
+        "upward along the axis from the bottom face of the disk at 0: the central hub is a tube with an outer "
+        "diameter of 90mm, an inner diameter of 40mm and a height of 40mm (0~40mm), with a 1×1mm 45° chamfer at "
+        "both ends of the bore. Outside the hub is a 10mm-thick web (15~25mm) running from radius 45mm to radius "
+        "100mm; the outer edge of the web joins the rim, an annulus with an inner radius of 100mm, an outer "
+        "radius of 130mm and a height of 30mm (5~35mm). The four circular concave corners where the web meets "
+        "the hub and the rim are rounded with R5mm fillets. The web has 10 axial lightening through holes of "
+        "10mm diameter evenly spaced on a 140mm-diameter circle. The periphery of the rim has 30 evenly spaced "
+        "dovetail slots running axially through the rim: each slot is symmetric about its own radial centerline; "
+        "the slot bottom is a 16mm-wide flat (perpendicular to the radial centerline) 112mm from the axis, and "
+        "the two side walls are straight and narrow outward, so that the slot is 10mm wide at 130mm from the "
+        "axis (narrow at the mouth, wide at the bottom). Each lightening hole lies exactly on the bisector "
+        "between two adjacent slots."
+    ),
+    "bt40_holder": (
+        "Create a (simplified) BT40 tool holder as a single solid body; all revolved features are coaxial. "
+        "Measure along the axis from the large-end face of the taper (the flange face) at 0, positive toward the "
+        "small end of the taper: the shank is a 7:24 cone (the diameter changes by 7mm per 24mm of length) with "
+        "a large-end diameter of 44.45mm at 0 and a length of 65.4mm (to 65.4). The flange is a 63mm-diameter "
+        "disk at −15.9~0; its outer cylindrical face carries a 60° V-groove centered at −8 with a groove-bottom "
+        "diameter of 56mm (3.5mm deep), both groove flanks making 30° with the end face (60° between the "
+        "flanks). Two drive slots are cut through the flange symmetrically about one diameter: each slot is "
+        "16.1mm wide, its flat bottom is 23.5mm from the axis, and it runs axially through the full flange "
+        "thickness. On the tool-side face of the flange (at −15.9), 25mm from the axis and at 90° from both "
+        "drive slots, there is an 8mm-diameter, 6mm-deep orientation blind hole. The tool end is a 40mm-diameter "
+        "cylinder running from −15.9 to −60, with a 1×1mm 45° chamfer on its outer edge at the end. From the "
+        "tool-end face, bore a flat-bottomed tool bore of 20mm diameter and 50mm depth along the axis (bottom "
+        "at −10); from the small-end face of the taper, bore a flat-bottomed retention-knob bore of 14mm "
+        "diameter and 30mm depth along the axis (bottom at 35.4); connect the two bore bottoms with a "
+        "6mm-diameter central coolant hole."
+    ),
+    "hydraulic_manifold": (
+        "Create a hydraulic manifold block as a single solid body, with the Z axis pointing up. The block is a "
+        "100×80×60mm box (x ∈ [−50, 50], y ∈ [−40, 40], z = 0~60) with a network of intersecting oil passages "
+        "inside. Port P: from the top face at (−25, 0), bore a 12mm-diameter hole 40mm deep downward (bottom at "
+        "z = 20), with a 20mm-diameter, 3mm-deep counterbore at its mouth. Main gallery: from the −X end face at "
+        "y = 0, z = 20, bore a 10mm-diameter hole along +X all the way to x = 20, intersecting the P hole; the "
+        "gallery entrance has a 16mm-diameter, 8mm-deep counterbore for a plug. Port A: from the +Y face at x = "
+        "10, z = 20, bore a 10mm-diameter hole 40mm deep along −Y, reaching y = 0 and intersecting the main "
+        "gallery. Port T: from the bottom face at (25, −15), bore a 14mm-diameter hole 45mm deep upward (bottom "
+        "at z = 45); from the +X end face at y = −15, z = 35, bore a 10mm-diameter cross hole 30mm deep along "
+        "−X, intersecting the T hole. The four corners have 4 mounting through holes of 9mm diameter at (±40, "
+        "±30); the top face has 4 tapping holes of 4.2mm diameter and 10mm depth around port P at (−25 ± 16, "
+        "±16) for the valve mounting screws."
+    ),
+    "rocket_fin_can": (
+        "Create the aft section of a sounding rocket as a single solid body; the Z axis is the vehicle axis, "
+        "with up pointing toward the nose. The airframe is a thin-walled tube with an outer diameter of 80mm and "
+        "an inner diameter of 72mm, from z = 0 to z = 300. Inside the bottom end of the tube is a bulkhead: an "
+        "annulus with an inner diameter of 60mm and an outer diameter of 72mm at z = 0~8, joined to the tube "
+        "wall. Below the bulkhead is a de Laval nozzle (a thin-walled shell of revolution) whose inner and outer "
+        "profiles are both polylines: the inner profile converges from (r = 30, z = 0) to the throat at (r = 12, "
+        "z = −30) and then diverges to the exit at (r = 34, z = −100); the outer profile runs from (r = 36, z = "
+        "0) to (r = 16, z = −30) and then to (r = 38, z = −100); the exit face is at z = −100. Outside the tube "
+        "are 4 evenly spaced flat fins, 4mm thick and symmetric about their own radial mid-planes, at azimuths "
+        "45°, 135°, 225° and 315° (measured from the +X axis). In its mid-plane each fin is a quadrilateral: the "
+        "fin root starts at r = 37 inside the tube wall and is fused with the tube; the leading edge is a "
+        "straight line from (r = 40, z = 110) to the tip at (r = 100, z = 30); the trailing edge is a straight "
+        "line from (r = 40, z = 10) to (r = 100, z = −20); the tip is an axial straight edge at r = 100 (z = "
+        "−20~30), and the leading and trailing edge lines are extended to r = 37 to meet the root. The tube wall "
+        "has a 6mm-diameter radial vent hole through the wall at z = 250 at each of the azimuths 0°, 90°, 180° "
+        "and 270°."
+    ),
+    "ratchet_wheel": (
+        "Create a ratchet wheel as a single solid body, with the Z axis pointing up. The wheel disk is 15mm "
+        "thick (z = 0~15) and has 24 sawtooth ratchet teeth around its periphery, with a root radius of 50mm and "
+        "a tip radius of 60mm. At each polar angle θk = 15°·k (k = 0…23, measured counterclockwise from the +X "
+        "axis) there is a radial tooth face running from (r = 50, θk) to (r = 60, θk); the back of each tooth is "
+        "a straight line from the tip (r = 60, θk) to the root of the next tooth (r = 50, θk + 15°), i.e. going "
+        "counterclockwise, each tip is followed by a descending tooth back. The center of the top face of the "
+        "disk carries a 50mm-diameter, 10mm-high hub (z = 15~25). A regular hexagonal through hole 24mm across "
+        "flats is cut at the center (through the disk and the hub); one side of the hexagon is perpendicular to "
+        "the +X axis (its outward normal points to +X). The disk has 6 through holes of 14mm diameter (through "
+        "the disk only) evenly spaced on a circle of radius 33mm at polar angles 0°, 60°, …, 300°."
+    ),
+    "injector_plate": (
+        "Create the injector face plate of a liquid rocket engine as a single solid body, with the Z axis "
+        "pointing up; all revolved features are coaxial. The plate is a disk 160mm in diameter and 20mm thick (z "
+        "= 0~20); z = 20 is the injector face, and its outer edge has a 1×1mm 45° chamfer. The back face (z = 0) "
+        "has 4 concentric annular manifold grooves, each 6mm wide and 8mm deep (groove floor at z = 8), centered "
+        "on radii 20, 35, 50 and 65mm. From each groove floor, a ring of axial injection orifices is bored "
+        "through to the injector face (from z = 8 to z = 20): 8 holes of 2mm diameter on radius 20mm, evenly "
+        "spaced starting at polar angle 0°; 16 holes of 2mm diameter on radius 35mm, evenly spaced starting at "
+        "11.25°; 24 holes of 2mm diameter on radius 50mm, evenly spaced starting at 0°; and 32 holes of 1.5mm "
+        "diameter on radius 65mm, evenly spaced starting at 5.625° (polar angles measured from the +X axis). The "
+        "center of the plate has a 6mm-diameter through hole for the igniter; the injector face has a "
+        "4mm-diameter, 6mm-deep blind dowel hole at (57.5, 0); and the outer zone has 12 through bolt holes of "
+        "8.5mm diameter evenly spaced on a circle of radius 72.5mm starting at 15°."
+    ),
+    "robot_arm_link": (
+        "Create the upper-arm link of a robot arm as a single solid body, with the Z axis pointing up. The arm "
+        "body is a 30mm-thick plate (z = 5~35) whose outline is bounded by the outer common tangents of two "
+        "circles: the shoulder circle centered at (0, 0) with a radius of 40mm and the elbow circle centered at "
+        "(200, 0) with a radius of 28mm. The shoulder also has a boss centered at (0, 0), 80mm in diameter and "
+        "40mm high (z = 0~40), fused with the arm body. The shoulder has a 52mm-diameter bearing through hole at "
+        "its center, and the elbow a 35mm-diameter through hole at its center. Each of the top and bottom faces "
+        "of the arm body has a 10mm-deep lightening pocket (top pocket z = 25~35, bottom pocket z = 5~15, "
+        "leaving a 10mm web in between). Both pockets have the same outline, bounded by the outer common "
+        "tangents of a circle centered at (70, 0) with a radius of 22mm and a circle centered at (150, 0) with a "
+        "radius of 14mm. The web has a 16mm-diameter cable through hole at (110, 0). The top face of the "
+        "shoulder boss (z = 40) has 6 tapping holes of 5mm diameter and 12mm depth evenly spaced on a circle of "
+        "radius 33mm at polar angles 30°, 90°, …, 330°. The elbow is a clamp: cut a 2mm-wide slit along y = 0 "
+        "from the elbow bore all the way to the end of the arm (x ≥ 200), through the full thickness; at x = "
+        "219, z = 20, drill a 6.6mm-diameter clamp-screw through hole along Y, crossing both sides of the slit."
+    ),
+    "menger_sponge": (
+        "Create a second-level Menger sponge as a single solid body. Start from a cube with an edge of 81mm (x, y, z "
+        "∈ [0, 81]). First level: divide the cube into 3×3×3 sub-cubes of 27mm and remove the sub-cube at the center "
+        "of each face and the sub-cube at the center of the whole cube, i.e. cut a 27×27mm square hole through "
+        "the cube along each of X, Y and Z, where the hole lies in the range [27, 54] of the other two "
+        "coordinates. Second level: divide each of the 20 remaining 27mm sub-cubes again into 3×3×3 parts of 9mm and "
+        "likewise remove the 9mm cubes at the center of each face and at the center, i.e. cut a 9×9mm square "
+        "hole through each sub-cube along each of X, Y and Z (in the middle third of that sub-cube). "
+        "Equivalently: a point is removed if and only if, at the 27mm level or at the 9mm level of subdivision, "
+        "at least two of its coordinates fall in the middle third at that level."
+    ),
+    "u_joint_yoke": (
+        "Create a universal-joint yoke as a single solid body, with the Z axis pointing up. The bottom hub is a "
+        "cylinder 50mm in diameter and 45mm high (z = 0~45), topped by a flange disk 80mm in diameter and 10mm "
+        "thick (z = 45~55). Two yoke arms rise from the flange, symmetric about the YZ plane: each arm is an "
+        "upright plate 12mm thick (in X) and 40mm wide (y ∈ [−20, 20]) with its inner face at x = ±24 (48mm "
+        "between the inner faces), i.e. x ∈ [24, 36] and x ∈ [−36, −24], rising from z = 45 to z = 90, with a "
+        "semicircular top of radius 20mm centered at (z = 90, y = 0) (axis along X). Both arms have a coaxial "
+        "22mm-diameter cross-bearing bore along X at z = 90, y = 0, through both arms. The hub has a "
+        "25mm-diameter through bore along its axis (through the hub and the flange); the bore has a full-length "
+        "8mm-wide keyway on its +Y side whose bottom face is 15.8mm from the axis. At z = 20, bore a "
+        "6.8mm-diameter set-screw hole from the +Y side along −Y, through the hub wall into the bore (in the "
+        "middle of the keyway). The outer face of each arm has 2 tapping holes for the bearing cap, 5mm in "
+        "diameter, 10mm deep, with axes along X, at z = 90, y = ±14.5 (4 in total)."
+    ),
 }
 PROMPT_LANGS = ("zh", "en")
 
@@ -1269,6 +2031,36 @@ def _save_artifacts(sw_url: str, stem: Path | None) -> dict:
         except Exception as exc:
             saved[f"{key}_error"] = str(exc)
     return saved
+
+
+RUBRIC_DIRS = (LLM_ROOT / "eval" / "rubrics_hard", LLM_ROOT / "eval" / "rubrics")
+OCC_PYTHON = LLM_ROOT / "venv-occ" / "Scripts" / "python.exe"
+
+
+def _rubric_score(case_id: str, artifacts: dict) -> dict | None:
+    """用 geomcheck rubric 给导出的 STEP 打分；pythonocc 只装在 venv-occ，所以走子进程。"""
+    rubric = next((d / f"{case_id}.yaml" for d in RUBRIC_DIRS if (d / f"{case_id}.yaml").exists()), None)
+    if rubric is None or not artifacts.get("step") or not OCC_PYTHON.exists():
+        return None
+    step = Path(artifacts["step"])
+    step = step if step.is_absolute() else ROOT / step
+    out = step.with_suffix(".rubric.json")
+    try:
+        subprocess.run(
+            [str(OCC_PYTHON), "-X", "utf8", "-m", "geomcheck.rubric",
+             "--step", str(step), "--rubric", str(rubric), "--output", str(out)],
+            cwd=LLM_ROOT, capture_output=True, timeout=1800, check=True,
+        )
+        res = json.loads(out.read_text(encoding="utf-8"))[0]
+    except Exception as exc:
+        return {"rubric": rubric.name, "error": f"{type(exc).__name__}: {str(exc)[:300]}"}
+    return {
+        "rubric": rubric.name,
+        "score": res["score"],
+        "accepted": res["accepted"],
+        "hard_ok": res["hard_ok"],
+        "failed": [r["id"] for r in res["rubrics"] if not r["ok"]],
+    }
 
 
 def _observation(sw_url: str) -> dict:
@@ -1574,6 +2366,8 @@ def run_one(
     lang: str = "zh",
     provider: str = "aiping",
     reasoning_effort: str | None = None,
+    checkpoint: Path | None = None,
+    resume: bool = False,
 ) -> dict:
     started = time.perf_counter()
     cleanup_before = _close_documents(sw_url)
@@ -1593,6 +2387,9 @@ def run_one(
     }
     if action_level == "L1":
         request_payload["max_turns"] = max_llm_calls
+        if checkpoint is not None:
+            request_payload["checkpoint_path"] = str(checkpoint)
+            request_payload["resume"] = resume
     if reasoning_effort:
         request_payload["reasoning_effort"] = reasoning_effort
     trace = {
@@ -1608,8 +2405,8 @@ def run_one(
         response = requests.post(
             f"{web_url}/api/run",
             json=request_payload,
-            # 复杂件 40 次调用可能超过 15 分钟；超时后客户端会在服务端仍在建模时发起下一次运行
-            timeout=3600,
+            # 复杂件 40 次调用、推理模型单次回复数分钟时可能接近 1 小时；超时后客户端会在服务端仍在建模时发起下一次运行
+            timeout=7200,
         )
         trace["response_status"] = response.status_code
         try:
@@ -1638,6 +2435,7 @@ def run_one(
             "case_id": case.case_id,
             "name": case.name,
             **scoring,
+            # 只表示每一步都执行成功；L1 中被 agent 自行纠正的失败调用也会使其为 failed，agent 是否收尾看 workflow_status
             "status": scoring_v1["status"],
             "plan_steps": scoring_v1["plan_steps"],
             "successful_steps": scoring_v1["successful_steps"],
@@ -1665,10 +2463,15 @@ def run_one(
                 for reason in (payload.get("workflow") or {}).get("finish_reasons") or []
             ),
             "tool_calls": (payload.get("summary") or {}).get("tool_calls"),
+            "resumed": (payload.get("workflow") or {}).get("resumed"),
+            "max_llm_calls": max_llm_calls if action_level == "L1" else None,
             "duration_seconds": round(time.perf_counter() - started, 2),
+            # 续跑时 duration_seconds 只是本段；agent 的计时包含所有中断前的段
+            "workflow_duration_seconds": (payload.get("workflow") or {}).get("duration_seconds"),
             "cleanup_before": cleanup_before,
             "error": None,
             "artifacts": artifacts,
+            "rubric": _rubric_score(case.case_id, artifacts),
             "trace": trace,
         }
     except Exception as exc:
@@ -1794,7 +2597,10 @@ def _write_report(
         ),
         "total": len(results),
         "total_duration_seconds": round(
-            sum(float(item.get("duration_seconds") or 0) for item in results), 2
+            sum(
+                max(float(item.get("workflow_duration_seconds") or 0), float(item.get("duration_seconds") or 0))
+                for item in results
+            ), 2
         ),
         "per_case": per_case,
         "token_totals": {
@@ -1860,6 +2666,11 @@ def rescore_report(source: Path, output: Path, strict_orientation: bool = False)
         reasoning_effort=old.get("reasoning_effort"),
     )
     return report
+
+
+def _needs_rerun(result: dict) -> bool:
+    """--resume 时重跑的记录：请求异常、LLM 接口出错、SolidWorks 文档丢失或续跑重放失败，都不是模型能力的结果。"""
+    return result.get("status") == "error" or result.get("workflow_status") in ("llm_error", "sw_lost", "resume_failed")
 
 
 def main() -> int:
@@ -1944,6 +2755,21 @@ def main() -> int:
         action="store_false",
         help="Do not keep each run's SLDPRT and STEP under eval/artifacts/<result name>/",
     )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Keep finished runs from --output and continue interrupted L1 runs from their checkpoints "
+        "(eval/artifacts/<result name>/<case>_r<k>.checkpoint.json); runs that errored are retried",
+    )
+    parser.add_argument(
+        "--sw-restarts",
+        type=int,
+        default=0,
+        help="SolidWorks watchdog: before each case restart SolidWorks and the HTTP service when either is down "
+        "or SolidWorks exceeds --sw-max-private-gb; a run that loses SolidWorks is restarted and continued from "
+        "its checkpoint up to this many times. 0 = off",
+    )
+    parser.add_argument("--sw-max-private-gb", type=float, default=12.0)
     args = parser.parse_args()
     if args.reasoning_effort and args.action_level != "L1":
         parser.error("--reasoning-effort requires --action-level L1")
@@ -1980,25 +2806,49 @@ def main() -> int:
         output = ROOT / "eval" / f"{prefix}_{safe_model}_{args.split}{lang_suffix}_result.json"
     balance_before = _query_balance(ROOT / ".env")
     results: list[dict] = []
-    jobs = [(case, repeat) for case in selected for repeat in range(repeats)]
+    if args.resume and output.is_file():
+        old = json.loads(output.read_text(encoding="utf-8"))
+        balance_before = old.get("balance_before") or balance_before
+        results = [item for item in old.get("results") or [] if not _needs_rerun(item)]
+        print(f"resume: keeping {len(results)} finished runs from {output.name}", flush=True)
+    done = {(item["case_id"], item.get("repeat", 0)) for item in results}
+    artifact_root = ROOT / "eval" / "artifacts" / output.stem
+    jobs = [(case, repeat) for case in selected for repeat in range(repeats) if (case.case_id, repeat) not in done]
+    sw_url = args.sw_url.rstrip("/")
     for index, (case, repeat) in enumerate(jobs, 1):
-        print(f"[{index}/{len(jobs)}] {case.name} (run {repeat + 1}/{repeats})", flush=True)
-        result = run_one(
-            case,
-            web_url=args.web_url.rstrip("/"),
-            sw_url=args.sw_url.rstrip("/"),
-            model=args.model,
-            strict_orientation=args.strict_orientation,
-            action_level=args.action_level,
-            max_llm_calls=args.max_llm_calls,
-            artifact_stem=(
-                ROOT / "eval" / "artifacts" / output.stem / f"{case.case_id}_r{repeat + 1}"
-                if args.save_artifacts else None
-            ),
-            lang=args.lang,
-            provider=args.provider,
-            reasoning_effort=args.reasoning_effort,
-        )
+        checkpoint = artifact_root / f"{case.case_id}_r{repeat + 1}.checkpoint.json"
+        resuming = args.resume and checkpoint.is_file()
+        print(f"[{index}/{len(jobs)}] {case.name} (run {repeat + 1}/{repeats})"
+              f"{' resume from checkpoint' if resuming else ''}", flush=True)
+        for attempt in range(1 + args.sw_restarts):
+            if args.sw_restarts:
+                reason = sw_watchdog.check(sw_url, args.sw_max_private_gb)
+                if reason:
+                    print(f"  [watchdog] {reason}", flush=True)
+                    sw_watchdog.restart(sw_url)
+            result = run_one(
+                case,
+                web_url=args.web_url.rstrip("/"),
+                sw_url=sw_url,
+                model=args.model,
+                strict_orientation=args.strict_orientation,
+                action_level=args.action_level,
+                max_llm_calls=args.max_llm_calls,
+                artifact_stem=artifact_root / f"{case.case_id}_r{repeat + 1}" if args.save_artifacts else None,
+                lang=args.lang,
+                provider=args.provider,
+                reasoning_effort=args.reasoning_effort,
+                checkpoint=checkpoint if args.action_level == "L1" else None,
+                resume=resuming,
+            )
+            lost = result.get("workflow_status") == "sw_lost" or (
+                result.get("status") == "error" and sw_watchdog.check(sw_url, 0) is not None
+            )
+            if not lost or attempt == args.sw_restarts:
+                break
+            print(f"  [watchdog] SolidWorks lost during the run ({result.get('workflow_status') or result.get('error')}); "
+                  "restarting and continuing from the checkpoint", flush=True)
+            resuming = args.action_level == "L1" and checkpoint.is_file()
         result["repeat"] = repeat
         results.append(result)
         usage = result.get("token_usage") or {}
@@ -2010,6 +2860,10 @@ def main() -> int:
             f"duration={result['duration_seconds']}s",
             flush=True,
         )
+        if result.get("rubric"):
+            rub = result["rubric"]
+            print(f"  rubric={rub.get('score')} accepted={rub.get('accepted')} "
+                  f"failed={rub.get('failed') or rub.get('error')}", flush=True)
         if result.get("workflow_status") not in (None, "finished") or result.get("error"):
             print(
                 f"  workflow_status={result.get('workflow_status')} "

@@ -1,0 +1,77 @@
+case: d27_guide_rail
+title: D27 导轨
+prompt: 根据所附三视图（第三角画法，单位 mm）建模导轨，单一实体。
+prompt_en: Model the guide rail from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d27_guide_rail.png
+reference: eval/three_view/references/d27_guide_rail.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [0, 0, 20], b: [150, 0, 20], side: bottom, text: "150"}
+    - {view: front, a: [0, 0, 20], b: [0, 10, 20], side: left, tier: 1, text: "10"}
+    - {view: front, a: [0, 0, 20], b: [0, 25, 10], side: left, tier: 2, text: "25"}
+    - {view: top, a: [0, 25, 0], b: [15, 25, 0], side: top, text: "15"}
+    - {view: top, a: [15, 25, 0], b: [75, 25, 0], side: top, text: "60"}
+    - {view: top, a: [75, 25, 0], b: [135, 25, 0], side: top, text: "60"}
+    - {view: right, a: [150, 0, 20], b: [150, 0, -20], side: bottom, text: "40"}
+    - {view: right, a: [150, 25, 10], b: [150, 25, -10], side: top, text: "20"}
+  callouts:
+    - {view: top, at: [135, 25, 0], r: 5.5, angle: -40, leader: 60, text: "3×Ø6.6 通孔，沉孔 Ø11 深 6"}
+  centers:
+    - {view: top, at: [15, 25, 0], r: 5.5}
+    - {view: top, at: [75, 25, 0], r: 5.5}
+    - {view: top, at: [135, 25, 0], r: 5.5}
+  axes:
+    - {view: top, a: [-4, 25, 0], b: [154, 25, 0]}
+  notes:
+    - "截面为倒 T 形：底座 40×10，导轨 20×15 居中；沉孔从导轨顶面加工"
+
+# frame：轴 0 = 高度 25（底面低），轴 1 = 宽度 40，轴 2 = 长度 150
+entities:
+  holes: {cylinder: {d: 6.6, side: inner}, count: 3}
+  cbores: {cylinder: {d: 11, side: inner}, count: 3}
+  frame: {principal_frame: {signs: {0: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 150、25；右视图 40
+    hard: true
+    check:
+      - bbox_sorted: [25, 40, 150]
+
+  - id: profile
+    source: 右视图底座宽 40、导轨宽 20；主视图底座厚 10
+    check:
+      - line_material: {frame: frame, along: 1, at: [5, null, 45], expect: [[0, 40]]}
+      - line_material: {frame: frame, along: 1, at: [20, null, 45], expect: [[10, 30]]}
+      - line_material: {frame: frame, along: 0, at: [null, 5, 45], expect: [[0, 10]]}
+
+  - id: holes
+    source: 俯视图 3×Ø6.6 通孔，距左端 15、孔距 60
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - parallel_to_frame: {frame: frame, axis: 0, items: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[20, 15], [20, 75], [20, 135]]}
+
+  - id: counterbores
+    source: 俯视图沉孔 Ø11 深 6；注释：从导轨顶面加工
+    check:
+      - exists: cbores
+      - recess: {holes: holes, top_d: 11, depth: 6}
+      - line_material: {frame: frame, along: 0, at: [null, 15, 75], expect: [[0, 19]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 101339.32
+    check:
+      - volume: 101339.32
+
+ungraded: []

@@ -9,6 +9,7 @@ import sys
 import time
 from pathlib import Path
 
+import openai
 import requests
 import yaml
 
@@ -68,6 +69,15 @@ RECIPE_SETS = {
         "assembly_linkage.md",
         "assembly_motion_check.md",
     ),
+    # v3：v2 的配方原样保留，加一份 v3 工具差异说明（增量状态、自动闭环、层位、秩法自由度、位姿自检、预算）
+    "v3": (
+        "assembly_topology.md",
+        "assembly_joint_mapping.md",
+        "assembly_coupling.md",
+        "assembly_linkage.md",
+        "assembly_motion_check.md",
+        "assembly_v3_tools.md",
+    ),
 }
 
 
@@ -122,6 +132,8 @@ def _openai():
                 if os.environ.get("EVAL_DUMP_REJECTED"):
                     Path(os.environ["EVAL_DUMP_REJECTED"]).write_text(
                         json.dumps(kwargs, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
+                if isinstance(exc, openai.BadRequestError) and delay > 5:
+                    raise
                 time.sleep(delay)
         return logged(**kwargs)
 
@@ -130,21 +142,57 @@ def _openai():
 
 
 ASSEMBLY_RUBRIC_DIR = CASES_DIR / "assembly_rubrics"
+# 由参考装配体导出的关节轴线锚点与导程（derive_joint_anchors.py），按 joints 下标合并进 rubric
+JOINT_ANCHORS = ASSEMBLY_RUBRIC_DIR / "joint_anchors.json"
 
 
-def score_assembly_rubric(session, case: dict) -> dict | None:
-    """装配级 rubric（关节 / 活动度 / 浮动件 / 过定义 / 齿轮中心距），替代旧的“保存且 ≥3 件”静态分。"""
+def load_assembly_rubric(case_id: str) -> dict | None:
+    path = ASSEMBLY_RUBRIC_DIR / f"{case_id}.yaml"
+    if not path.is_file():
+        return None
+    rubric = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if JOINT_ANCHORS.is_file():
+        extra = json.loads(JOINT_ANCHORS.read_text(encoding="utf-8")).get(case_id) or {}
+        for index, item in extra.items():
+            rubric["joints"][int(index)].update(item)
+    return rubric
+
+
+def score_assembly_rubric(session, case: dict, inputs: dict | None = None) -> dict | None:
+    """装配级 rubric（关节 / 活动度 / 浮动件 / 过定义 / 齿轮中心距），替代旧的“保存且 ≥3 件”静态分。
+    inputs 非空时写入打分用的原始组件与配合，之后改 rubric 可以离线重算。"""
     from geomcheck.assembly_rubric import evaluate
 
-    path = ASSEMBLY_RUBRIC_DIR / f"{case['case_id']}.yaml"
-    if not path.is_file():
+    rubric = load_assembly_rubric(case["case_id"])
+    if rubric is None:
         return None
     try:
         components = session.asmwf("components").get("components") or []
         mates = session.asmwf("mates").get("mates") or []
-        return evaluate(components, mates, session.aliases, yaml.safe_load(path.read_text(encoding="utf-8")))
+        if inputs is not None:
+            inputs.update({"components": components, "mates": mates, "aliases": dict(session.aliases)})
+        return evaluate(components, mates, session.aliases, rubric)
     except Exception as exc:
         return {"score": 0.0, "error": str(exc)}
+
+
+# 评测过程中 SolidWorks 崩溃 / 服务卡死的痕迹；出现即判为基础设施污染
+INFRA_MARKERS = ("SW_UNAVAILABLE", "0x800706BA", "RPC", "timed out", "ConnectionError", "Max retries",
+                 "Connection aborted", "RemoteDisconnected")
+
+
+def infra_flags(assembly: dict) -> list[str]:
+    flags = []
+    lost = sum(1 for c in assembly.get("tool_calls") or [] if c.get("error_code") == "SW_UNAVAILABLE")
+    if lost:
+        flags.append(f"agent 工具调用 SW_UNAVAILABLE ×{lost}")
+    for key in ("motion", "rubric"):
+        err = str((assembly.get(key) or {}).get("error") or "")
+        if any(m in err for m in INFRA_MARKERS):
+            flags.append(f"{key}: {err[:160]}")
+    if assembly.get("infra_error"):
+        flags.append(str(assembly["infra_error"])[:160])
+    return flags
 
 
 def _grade_step(step: Path, rubric_path: Path) -> dict:
@@ -163,6 +211,10 @@ def _grade_step(step: Path, rubric_path: Path) -> dict:
         return evaluate(load_rubric(rubric_path), Part.from_step(step))
     except Exception as exc:
         return {"accepted": False, "score": 0.0, "error": f"{type(exc).__name__}: {exc}"}
+
+
+def _write_json(path: Path, value) -> None:
+    path.write_text(json.dumps(value, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
 
 
 def generate_part(
@@ -187,7 +239,8 @@ def generate_part(
         _openai(), model, session, max_llm_calls=max_llm_calls, extra_tools=extra,
         reasoning_effort=reasoning_effort,
     ).run(spec["prompt"])
-    _dump_llm_io(dest.parent / spec["id"], outcome)
+    trace = dest.with_suffix(".agent.json")
+    _write_json(trace, outcome)
     step, sldprt = dest.with_suffix(".step"), dest.with_suffix(".SLDPRT")
     artifacts = {}
     try:
@@ -214,14 +267,8 @@ def generate_part(
         "agent_summary": outcome.get("summary"),
         "duration_seconds": round(time.perf_counter() - started, 2),
         "artifacts": artifacts,
+        "trace": str(trace),
     }
-
-
-def _dump_llm_io(stem: Path, outcome: dict) -> None:
-    """完整对话与每次调用的原始响应存到产物目录，结果 JSON 只留摘要。"""
-    for suffix, key in ((".agent_messages.json", "messages"), (".llm_responses.json", "llm_responses")):
-        stem.with_name(stem.name + suffix).write_text(
-            json.dumps(outcome.get(key) or [], ensure_ascii=False, indent=1, default=str), encoding="utf-8")
 
 
 def assemble(
@@ -253,27 +300,28 @@ def assemble(
         tools=tool_specs(workflow), reasoning_effort=reasoning_effort,
     ).run(goal)
     messages = outcome.get("messages") or []
-    dest.with_name("agent_messages.json").write_text(
-        json.dumps(messages, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
-    dest.with_name("llm_responses.json").write_text(
-        json.dumps(outcome.get("llm_responses") or [], ensure_ascii=False, indent=1, default=str), encoding="utf-8")
+    _write_json(dest.with_name("agent_messages.json"), messages)
+    _write_json(dest.with_name("agent_llm_responses.json"), outcome.get("llm_responses") or [])
     agent_texts = [
         {"turn": i, "text": m.get("content") or "", "with_tools": bool(m.get("tool_calls"))}
         for i, m in enumerate(messages)
         if m.get("role") == "assistant" and (m.get("content") or "").strip()
     ]
     static = {"component_count": len(session.aliases), "saved": session.saved}
-    rubric = score_assembly_rubric(session, case)
-    try:
-        motion = _motion(session, case["motion"], parts, sw)
-    except Exception as exc:
-        motion = {"passed": False, "score": 0.0, "error": str(exc)}
+    # 先存检查点：存下的是智能体结束时的状态（运动评测会加马达、临时配合），之后可离线重评
     # SolidWorks 卡死后装配文档可能已丢失：记为基础设施错误，不让整批评测中断
     infra_error = None
     try:
         session.save_assembly({})
     except Exception as exc:
         infra_error = f"save_assembly: {exc}"
+    rubric_inputs: dict = {}
+    rubric = score_assembly_rubric(session, case, rubric_inputs)
+    _write_json(dest.with_name("rubric_inputs.json"), rubric_inputs)
+    try:
+        motion = _motion(session, case["motion"], parts, sw)
+    except Exception as exc:
+        motion = {"passed": False, "score": 0.0, "score_v1": 0.0, "error": str(exc)}
     _close(sw)
     return {
         "status": outcome["status"],
@@ -291,13 +339,17 @@ def assemble(
         "agent_texts": agent_texts,
         "llm_calls_detail": list(LLM_CALL_LOG),
         "agent_last_motion": outcome.get("last_motion"),
+        "agent_last_pose": session.last_pose,
+        "truncations": outcome.get("truncations"),
         "joints": session.joints,
     }
 
 
 def _motion(session, spec: dict, parts: dict[str, Path], sw: str) -> dict:
     """mode: motor（默认，马达驱动整周回转）或 poses（逐位姿临时配合）。"""
-    from geomcheck.assembly_motion import analyze_frames, clearance_mm, run_poses, sample_motion
+    from geomcheck.assembly_motion import (
+        analyze_frames, clearance_mm, run_poses, sample_motion,
+    )
 
     if spec.get("mode") == "poses":
         return run_poses(session, spec)
@@ -309,12 +361,12 @@ def _motion(session, spec: dict, parts: dict[str, Path], sw: str) -> dict:
     sampled = sample_motion(sw, spec, driver, ref)
     motion = analyze_frames(sampled.get("frames") or [], spec, session.aliases,
                             sampled.get("interference_frames"))
+    if sampled.get("sampling"):
+        motion["sampling"] = sampled["sampling"]
     if spec.get("clearance_pairs"):
         lo, hi = spec.get("clearance_mm") or [0.02, 2.0]
         gaps = []
         frame0 = (sampled.get("frames") or [{}])[0].get("transforms") or {}
-        # 齿隙前的分数和首帧位姿一并记下：本机 OCC 不可用（gap=None）时可离线补算，见 regrade_offline.py
-        motion["pre_clearance"] = {"score": motion["score"], "passed": motion["passed"]}
         for a, b in spec["clearance_pairs"]:
             if a not in parts or b not in parts:
                 continue
@@ -326,10 +378,9 @@ def _motion(session, spec: dict, parts: dict[str, Path], sw: str) -> dict:
             gaps.append({"pair": [a, b], "mm": None if gap is None else round(gap, 4),
                          "ok": gap is not None and lo <= gap <= hi, "range_mm": [lo, hi],
                          "steps": [str(pa), str(pb)], "transforms": [frame0[sa], frame0[sb]]})
+        # 只记录不计分：planner/gears.py 的外啮合齿轮不留侧隙（齿厚正好半个齿距），标准零件实测只有
+        # 约 0.006–0.009 mm，低于 0.02 mm 下限，这一项过不了阳性对照。首帧位姿一并记下，OCC 不可用时可离线补量
         motion["clearance"] = gaps
-        if gaps and not all(item["ok"] for item in gaps):
-            motion["passed"] = False
-            motion["score"] = max(0.0, motion["score"] - 10)
     return motion
 
 
@@ -378,14 +429,34 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
                 "part_pass_rate": _rate(part_results),
                 "assembly_score": 0, "motion_score": 0, "e2e": False,
             }
-    assembly = assemble(
-        case, parts, out / f"{case_id}.SLDASM",
-        sw=args.sw, model=args.model, max_llm_calls=args.max_asm_calls, workflow=workflow,
-        max_tokens=args.asm_max_tokens, reasoning_effort=args.reasoning_effort,
-    )
+    budget = asm_call_budget(case, args)
+    retries = max(0, int(getattr(args, "infra_retries", 0) or 0))
+    for attempt in range(retries + 1):
+        try:
+            assembly = assemble(
+                case, parts, out / f"{case_id}.SLDASM",
+                sw=args.sw, model=args.model, max_llm_calls=budget, workflow=workflow,
+                max_tokens=args.asm_max_tokens, reasoning_effort=args.reasoning_effort,
+            )
+        except Exception as exc:  # SolidWorks 已经死掉时连新建装配体都会失败
+            assembly = {"status": "infra_exception", "infra_error": f"{type(exc).__name__}: {exc}",
+                        "static": {}, "rubric": None, "static_score": 0.0, "motion": {"score": 0.0},
+                        "tool_calls": []}
+        flags = infra_flags(assembly)
+        if not flags or attempt == retries:
+            break
+        print(f"  基础设施污染，重启 SolidWorks 后重跑装配（第 {attempt + 1} 次）：{flags}", flush=True)
+        from eval.assembly_scratch.sw_restart import restart_solidworks
+        restart_solidworks()
+    assembly["infra_flags"] = flags
+    assembly["infra_attempts"] = attempt + 1
+    assembly["call_budget"] = budget
     part_rate = 1.0 if condition == "gold" else _rate(part_results)
-    motion_score = float((assembly.get("motion") or {}).get("score") or 0)
-    e2e = part_rate == 1.0 and bool((assembly.get("motion") or {}).get("passed"))
+    motion = assembly.get("motion") or {}
+    motion_score = float(motion.get("score") or 0)
+    rubric = assembly.get("rubric") or {}
+    ok = structure_ok(rubric)
+    e2e = part_rate == 1.0 and bool(motion.get("passed"))
     return {
         "case_id": case_id,
         "condition": condition,
@@ -396,9 +467,29 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
         "tool_calls": assembly.get("tool_calls"),
         "part_pass_rate": part_rate,
         "assembly_score": assembly.get("static_score"),
+        "assembly_score_v1": rubric.get("score_v1"),
         "motion_score": motion_score,
+        "motion_score_v1": motion.get("score_v1"),
+        "structure_ok": ok,
+        "motion_score_gated": motion_score if ok else 0.0,
+        "infra_contaminated": bool(flags),
         "e2e": e2e,
     }
+
+
+def structure_ok(rubric: dict | None) -> bool:
+    """结构成立 = 所有角色装上并连到机架、活动度正确；结构不成立时运动分另记为 0（motion_score_gated）。"""
+    rubric = rubric or {}
+    return bool(rubric) and not rubric.get("error") and rubric.get("completeness") == 1 \
+        and bool((rubric.get("mobility") or {}).get("ok"))
+
+
+def asm_call_budget(case: dict, args) -> int:
+    """装配 LLM 调用预算：固定值，或在跑之前按角色数 × 系数冻结（取两者较大者）。"""
+    per_role = float(getattr(args, "asm_calls_per_role", 0) or 0)
+    if per_role <= 0:
+        return int(args.max_asm_calls)
+    return max(int(args.max_asm_calls), int(round(per_role * len(case.get("gold_roles") or {}))))
 
 
 def _rate(results: list[dict]) -> float:
@@ -407,16 +498,50 @@ def _rate(results: list[dict]) -> float:
     return sum(1 for item in results if item.get("accepted")) / len(results)
 
 
-def summarize(rows: list[dict]) -> dict:
+def _mean(values: list[float], digits: int = 2) -> float | None:
+    values = [float(v) for v in values if v is not None]
+    return round(sum(values) / len(values), digits) if values else None
+
+
+def _std(values: list[float], digits: int = 2) -> float | None:
+    values = [float(v) for v in values if v is not None]
+    if len(values) < 2:
+        return None
+    mu = sum(values) / len(values)
+    return round((sum((v - mu) ** 2 for v in values) / (len(values) - 1)) ** 0.5, digits)
+
+
+def _summarize(rows: list[dict]) -> dict:
     if not rows:
         return {}
+    asm = [r.get("assembly") or {} for r in rows]
     return {
         "n": len(rows),
-        "part_pass_rate": round(sum(r["part_pass_rate"] for r in rows) / len(rows), 3),
-        "assembly_score": round(sum(r["assembly_score"] or 0 for r in rows) / len(rows), 2),
-        "motion_score": round(sum(r["motion_score"] or 0 for r in rows) / len(rows), 2),
-        "e2e": round(sum(1 for r in rows if r["e2e"]) / len(rows), 3),
+        "part_pass_rate": _mean([r["part_pass_rate"] for r in rows], 3),
+        "assembly_score": _mean([r["assembly_score"] or 0 for r in rows]),
+        "assembly_score_std": _std([r["assembly_score"] or 0 for r in rows]),
+        "motion_score": _mean([r["motion_score"] or 0 for r in rows]),
+        "motion_score_std": _std([r["motion_score"] or 0 for r in rows]),
+        "motion_score_gated": _mean([r.get("motion_score_gated", r["motion_score"]) or 0 for r in rows]),
+        "assembly_score_v1": _mean([r.get("assembly_score_v1") for r in rows]),
+        "motion_score_v1": _mean([r.get("motion_score_v1") for r in rows]),
+        "structure_ok_rate": _mean([float(bool(r.get("structure_ok"))) for r in rows], 3),
+        "e2e": _mean([float(bool(r["e2e"])) for r in rows], 3),
+        "finish_rate": _mean([float(a.get("status") == "finished") for a in asm], 3),
+        "saved_by_agent_rate": _mean([float(bool((a.get("static") or {}).get("saved"))) for a in asm], 3),
+        "budget_exhausted_rate": _mean([float(a.get("status") == "max_llm_calls") for a in asm], 3),
+        "llm_calls_mean": _mean([a.get("llm_calls") for a in asm], 1),
     }
+
+
+def summarize(rows: list[dict]) -> dict:
+    """主统计只用没有基础设施污染的行；被污染的行单独计数。"""
+    clean = [r for r in rows if not r.get("infra_contaminated")]
+    out = _summarize(clean)
+    if len(clean) != len(rows):
+        out["n_infra_contaminated"] = len(rows) - len(clean)
+        out["all_rows"] = _summarize(rows)
+    return out
 
 
 def main() -> None:
@@ -424,12 +549,17 @@ def main() -> None:
     parser.add_argument("--cases", default="gearbox,engine")
     parser.add_argument("--condition", default="gold", choices=["gold", "gen", "e2e", "all"])
     parser.add_argument("--repeats", type=int, default=2)
-    parser.add_argument("--workflow", default="v1", choices=["v1", "v2", "both"],
-                        help="v1=手写场景配方与原工具集；v2=数据导出的通用配方与扩展工具集")
+    parser.add_argument("--workflow", default="v1", choices=["v1", "v2", "v3", "both"],
+                        help="v1=手写场景配方与原工具集；v2=数据导出的通用配方与扩展工具集；"
+                             "v3=v2 + 增量状态、秩法自由度、自动闭环、位姿自检、截断重试与预算提示")
     parser.add_argument("--model", default=MODEL)
     parser.add_argument("--sw", default="http://localhost:5100")
     parser.add_argument("--max-part-calls", type=int, default=40)
     parser.add_argument("--max-asm-calls", type=int, default=50)
+    parser.add_argument("--asm-calls-per-role", type=float, default=0,
+                        help=">0 时装配预算 = max(--max-asm-calls, 系数 × 角色数)，在跑之前冻结")
+    parser.add_argument("--infra-retries", type=int, default=1,
+                        help="装配阶段出现 SolidWorks 崩溃 / 超时痕迹时，重启 SolidWorks 后重跑的次数")
     parser.add_argument("--asm-max-tokens", type=int, default=8000)
     parser.add_argument(
         "--reasoning-effort",
@@ -499,6 +629,8 @@ def main() -> None:
             "reasoning_effort": args.reasoning_effort,
             "prompt_lang": "zh",
             "asm_max_tokens": args.asm_max_tokens,
+            "max_asm_calls": args.max_asm_calls,
+            "asm_calls_per_role": args.asm_calls_per_role,
             "extra_toolset": EXTRA_TOOLSET_VERSION,
         }
         Path(args.output).write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -521,9 +653,9 @@ def main() -> None:
                         f"  parts={row['part_pass_rate']} static={row['assembly_score']} "
                         f"motion={row['motion_score']} e2e={row['e2e']} "
                         f"asm_status={asm.get('status')} asm_calls={asm.get('llm_calls')}"
+                        + (" [infra]" if row.get("infra_contaminated") else "")
                         + (f" error={asm.get('error') or asm.get('infra_error')}"
-                           if asm.get("error") or asm.get("infra_error") else ""),
-                        flush=True,
+                           if asm.get("error") or asm.get("infra_error") else ""),                        flush=True,
                     )
                     write()
     report = write()

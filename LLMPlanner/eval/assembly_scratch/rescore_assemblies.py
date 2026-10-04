@@ -13,8 +13,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
-import subprocess
 import sys
 import time
 from pathlib import Path
@@ -26,39 +24,18 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from eval.assembly_scratch.build_standard_parts import call  # noqa: E402
-from eval.eval_assembly_scratch import CASE_ALIASES, CASES_DIR, _load_case, _motion, score_assembly_rubric  # noqa: E402
+from eval.assembly_scratch.sw_restart import SW, restart_solidworks  # noqa: E402,F401
+from eval.eval_assembly_scratch import (  # noqa: E402
+    CASE_ALIASES, CASES_DIR, _load_case, _motion, score_assembly_rubric, structure_ok,
+)
 from planner.assembly_workflow.session import AssemblySession  # noqa: E402
 
 # case_id → 测例 yaml 文件名
 CASE_FILES = dict(CASE_ALIASES)
-SW = "http://localhost:5100"
-SW_EXE = os.environ.get(
-    "SOLIDWORKS_EXE", r"C:\Program Files\softwares\solidworks2025\Corp\SOLIDWORKS\SLDWORKS.exe")
-SERVICE_EXE = ROOT.parent / "Chapter1.ConnectToSw" / "bin" / "Debug" / "Chapter1.ConnectToSw.exe"
 
 
 class ServiceHung(RuntimeError):
     pass
-
-
-def restart_solidworks() -> None:
-    print("  重启 SolidWorks 与服务", flush=True)
-    for image in ("Chapter1.ConnectToSw.exe", "SLDWORKS.exe"):
-        subprocess.run(["taskkill", "/F", "/IM", image], capture_output=True)
-    time.sleep(3)
-    subprocess.Popen([SW_EXE])
-    time.sleep(90)
-    log = open(Path(os.environ.get("TEMP", ".")) / "svc.log", "ab")
-    subprocess.Popen([str(SERVICE_EXE)], cwd=str(SERVICE_EXE.parent), stdout=log, stderr=log,
-                     creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-    for _ in range(60):
-        time.sleep(2)
-        try:
-            if requests.get(f"{SW}/api/ping", timeout=3).ok:
-                return
-        except requests.RequestException:
-            pass
-    raise RuntimeError("服务重启后仍无响应")
 
 
 def rescore(path: Path, case: dict, aliases: dict[str, str]) -> dict:
@@ -71,16 +48,27 @@ def rescore(path: Path, case: dict, aliases: dict[str, str]) -> dict:
         raise ServiceHung(str(exc)) from exc
     session.aliases = {role: name for role, name in aliases.items() if name in present}
     started = time.perf_counter()
-    rubric = score_assembly_rubric(session, case)
+    inputs: dict = {}
+    rubric = score_assembly_rubric(session, case, inputs)
+    if inputs:
+        path.with_name("rubric_inputs.json").write_text(json.dumps(inputs, ensure_ascii=False), encoding="utf-8")
     spec = case["motion"]
+    # 齿侧间隙要用零件 STEP，按 gold_roles（角色 → 零件）找，与 run_condition 相同：
+    # gen 产物在装配体旁的 parts/<零件 id>，参考装配体用 gold_parts/<gold_dir>/ 下的标准零件
+    gen_dir, gold = path.parent / "parts", CASES_DIR / "gold_parts" / case["gold_dir"]
+    parts = {}
+    for role, part_id in (case.get("gold_roles") or {}).items():
+        candidates = [gen_dir / f"{part_id}.SLDPRT"] if gen_dir.is_dir() else \
+            [gold / f"{role}.SLDPRT", gold / f"{part_id}.SLDPRT"]
+        parts[role] = next((p for p in candidates if p.is_file()), candidates[-1])
     hung = None
     try:
-        motion = _motion(session, spec, {}, SW)
+        motion = _motion(session, spec, parts, SW)
     except requests.RequestException as exc:
         hung = exc
         motion = {"passed": False, "score": 0.0, "error": f"{type(exc).__name__}: {exc}"}
     except Exception as exc:
-        motion = {"passed": False, "score": 0.0, "error": f"{type(exc).__name__}: {exc}"}
+        motion = {"passed": False, "score": 0.0, "score_v1": 0.0, "error": f"{type(exc).__name__}: {exc}"}
     try:
         call("/api/close-all-documents")
     except requests.RequestException as exc:
@@ -90,6 +78,9 @@ def rescore(path: Path, case: dict, aliases: dict[str, str]) -> dict:
         "missing_roles": sorted(set(aliases) - set(session.aliases)),
         "assembly_score": (rubric or {}).get("score"),
         "motion_score": motion.get("score"),
+        "assembly_score_v1": (rubric or {}).get("score_v1"),
+        "motion_score_v1": motion.get("score_v1"),
+        "structure_ok": structure_ok(rubric),
         "rubric": rubric,
         "motion": motion,
         "seconds": round(time.perf_counter() - started, 1),
@@ -152,12 +143,13 @@ def main() -> None:
         result_file, art_dir = pair.split("=", 1)
         data = json.loads(Path(result_file).read_text(encoding="utf-8"))
         for r in data["results"]:
-            if r.get("condition", "gold") != "gold" or not (r.get("assembly") or {}).get("aliases"):
+            if not (r.get("assembly") or {}).get("aliases"):
                 continue
             cid = r["case_id"]
             if cid not in cases or (cid, r["workflow"], r["repeat"], result_file) in done:
                 continue
-            path = (Path(art_dir) / r["workflow"] / cid / f"gold_r{r['repeat']}" / f"{cid}.SLDASM").resolve()
+            condition = r.get("condition", "gold")
+            path = (Path(art_dir) / r["workflow"] / cid / f"{condition}_r{r['repeat']}" / f"{cid}.SLDASM").resolve()
             if not path.is_file():
                 print("missing", path)
                 continue

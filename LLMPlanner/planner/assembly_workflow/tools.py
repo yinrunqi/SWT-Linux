@@ -338,7 +338,93 @@ TOOL_SPECS_V2: list[dict] = [_v2_spec(spec) for spec in TOOL_SPECS] + [
 ]
 
 
+# ------------------------------------------------------------------ v3：增量状态、秩法自由度、按需轴向约束、位姿自检
+
+_POSE_SET = {
+    "type": "array",
+    "description": "按运动链顺序的临时配合：{type: angle, a, b, angle_deg} 两个平面 / 基准面夹角；"
+                   "{type: offset, a, b, offset_mm} a 面落在 b 面法向一侧的有符号距离；{type: distance, a, b, distance_mm}。",
+    "items": {"type": "object"},
+}
+_POSE_POINTS = {
+    "type": "array",
+    "description": "要核对的关键点：{role, local: [x,y,z] 该零件局部 mm, expect: {x|y|z|r_xy: mm}}，"
+                   "坐标在固定件（frame 参数，默认第一个固定件）的局部坐标系里取。",
+    "items": {"type": "object"},
+}
+
+_V3_OVERRIDES = {
+    "get_assembly_state": (
+        "读取装配体当前状态：每个组件的别名、固定、约束状态、原点、绕 Z 转角、剩余自由度 free；全部配合；"
+        "按真实配合求秩得到的活动度 mobility 与冗余约束数 redundant。面列表默认不返回"
+        "（insert_component 时已给过），需要时 faces=true 或 components=[别名…]。",
+        {"faces": {"type": "boolean"}, "components": {"type": "array", "items": {"type": "string"}}},
+        [],
+    ),
+    "check_dof": (
+        "自由度诊断：按 SolidWorks 里的全部真实配合（含直接 mate 与耦合）求约束秩，返回活动度 mobility、"
+        "冗余约束数 redundant、每个零件相对机架剩余的自由度 free、悬空件、过定义件。"
+        "expected_mobility 给出设计活动度时比对（matches_expected）。",
+        {"expected_mobility": {"type": "integer"}},
+        [],
+    ),
+    "finish": (
+        "装配完成。要求已经保存，并且：最近一次 check_motion 通过（整周回转机构）；"
+        "或最近一次 check_pose 通过且 check_dof(expected_mobility) 吻合（有限行程 / 多自由度机构）。"
+        "之后又改了结构的话需要重新检查。",
+        {"summary": {"type": "string"}},
+        ["summary"],
+    ),
+}
+
+_V3_DESCRIPTION_SUFFIX = {
+    "insert_component": "返回该零件的圆柱面 / 平面 / 球面摘要（零件局部坐标），可直接用 face:序号 引用。",
+    "joint": "转动副、销槽、圆柱导向滑块会先加主约束（同心 / 槽口），再看轴向位置（或止转）是否已被其他关节定住："
+             "闭环里已定住就不再加，避免冗余过定义，返回 note；否则按 face_a/face_b、offset 或 at_z 加上。"
+             "at_z：a 的零件原点（前视基准面）装好后的装配 Z 坐标（mm），按 b 当前位姿换算成 offset。",
+    "close_loop": "v3 中 joint 已经自动处理闭环，close_loop 与 joint 等价。",
+    "check_motion": "返回 interference_pairs：按零件对汇总首次干涉帧、帧数与最大体积。",
+}
+
+
+def _v3_spec(spec: dict) -> dict:
+    name = spec["function"]["name"]
+    if name in _V3_OVERRIDES:
+        description, properties, required = _V3_OVERRIDES[name]
+        return _tool(name, description, properties, required)
+    params = spec["function"]["parameters"]
+    properties = dict(params["properties"])
+    if name in ("joint", "close_loop"):
+        properties["at_z"] = _NUM
+    description = spec["function"]["description"]
+    if name in _V3_DESCRIPTION_SUFFIX:
+        description += _V3_DESCRIPTION_SUFFIX[name]
+    return _tool(name, description, properties, params["required"])
+
+
+TOOL_SPECS_V3: list[dict] = [_v3_spec(spec) for spec in TOOL_SPECS_V2] + [
+    _tool(
+        "check_pose",
+        "位姿自检（有限行程、多自由度或直线输入的机构用它代替 check_motion）：按 set 加临时配合把机构摆到一个位形，"
+        "核对 points 关键点、做静态干涉与固定件漂移检查，最后自动删掉临时配合。"
+        "可一次给多个位姿 poses=[{name, set, points}]。angle 的转向有两种解，工具会按 points 自动选。",
+        {
+            "name": {"type": "string"},
+            "set": _POSE_SET,
+            "points": _POSE_POINTS,
+            "poses": {"type": "array", "items": {"type": "object"}},
+            "expect_fixed": {"type": "array", "items": {"type": "string"}},
+            "frame": {"type": "string"},
+            "tolerance_mm": _NUM,
+        },
+        [],
+    ),
+]
+
+
 def tool_specs(workflow: str) -> list[dict]:
+    if workflow == "v3":
+        return TOOL_SPECS_V3
     return TOOL_SPECS_V2 if workflow == "v2" else TOOL_SPECS
 
 

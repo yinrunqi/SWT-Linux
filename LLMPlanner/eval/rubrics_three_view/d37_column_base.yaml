@@ -1,0 +1,104 @@
+case: d37_column_base
+title: D37 立柱底座
+prompt: 根据所附三视图（第三角画法，单位 mm）建模立柱底座，单一实体。
+prompt_en: Model the column base from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d37_column_base.png
+reference: eval/three_view/references/d37_column_base.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: top, a: [-40, 0, 0], b: [40, 0, 0], side: top, text: "Ø80"}
+    - {view: top, a: [-15, 0, 72], b: [15, 0, 72], side: bottom, text: "Ø30"}
+    - {view: top, a: [40, 0, 0], b: [40, 0, 12], side: right, tier: 1, text: "12"}
+    - {view: top, a: [40, 0, 0], b: [15, 0, 72], side: right, tier: 2, text: "72"}
+    - {view: right, a: [15, 15, 72], b: [15, 15, 40], side: top, text: "32"}
+    - {view: right, a: [0, -15, 72], b: [0, -5, 52], side: bottom, text: "20"}
+  callouts:
+    - {view: front, at: [0, 0, 72], r: 5, angle: 200, leader: 90, text: "Ø10 深 20"}
+    - {view: front, at: [21.213, 21.213, 12], r: 4.5, angle: 45, leader: 40, text: "4×Ø9 通孔"}
+    - {view: front, at: [0, 0, 12], r: 30, angle: 150, leader: 50, text: "Ø60"}
+    - {view: right, at: [16, 0, 40], r: 4, angle: 60, leader: 60, text: "Ø8 通孔"}
+    - {view: top, at: [-20, 0, 17], r: -5, angle: 225, leader: 40, text: "R5"}
+  circles:
+    - {view: front, at: [0, 0, 12], r: 30}
+  centers:
+    - {view: front, at: [0, 0, 72], r: 40}
+    - {view: right, at: [16, 0, 40], r: 4}
+  axes:
+    - {view: top, a: [0, 0, -4], b: [0, 0, 76]}
+    - {view: right, a: [0, 0, -4], b: [0, 0, 76]}
+  notes:
+    - "Ø8 横孔垂直于轴线贯通立柱，孔心距顶面 32；4×Ø9 孔与横孔方向成 45°"
+
+# frame：轴 0 沿立柱轴线（底面低），轴 1 沿横孔方向
+entities:
+  column: {cylinder: {d: 30, side: outer}}
+  top_hole: {cylinder: {d: 10, side: inner}, count: 1}
+  cross: {cylinder: {d: 8, side: inner}}
+  holes: {cylinder: {d: 9, side: inner}, count: 4}
+  frame: {axis_frame: {axis: column, ref_dir: cross, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 俯视图 Ø80、总高 72
+    hard: true
+    check:
+      - bbox_sorted: [72, 80, 80]
+      - exists: column
+
+  - id: base
+    source: 俯视图底盘 Ø80、厚 12
+    check:
+      - line_material: {frame: frame, along: 0, polar: [30, 0], expect: [[0, 12]]}
+      - radial_material: {frame: frame, t: 6, deg: 0, expect: [[0, 40]]}
+
+  - id: column
+    source: 俯视图立柱 Ø30、总高 72
+    check:
+      - radial_material: {frame: frame, t: 30, deg: 90, expect: [[0, 15]]}
+      - line_material: {frame: frame, along: 0, polar: [12, 90], expect: [[0, 72]]}
+
+  - id: fillet
+    source: 俯视图 R5（立柱根部）
+    derivation: 半径 17 处圆角面高 17 − √(5² − 3²) = 13
+    check:
+      - blend_faces: {radius: 5, min_count: 1}
+      - line_material: {frame: frame, along: 0, polar: [17, 90], expect: [[0, 13]]}
+
+  - id: top_hole
+    source: 主视图 Ø10 深 20，居中
+    check:
+      - exists: top_hole
+      - coaxial: [top_hole, column]
+      - pocket_depth: {pocket: top_hole, value: 20}
+
+  - id: cross_hole
+    source: 右视图 Ø8 通孔，距顶面 32；注释：垂直于轴线贯通立柱
+    check:
+      - exists: cross
+      - through: {holes: cross}
+      - line_material: {frame: frame, along: 0, polar: [12, 0], expect: [[0, 36], [44, 72]]}
+
+  - id: base_holes
+    source: 主视图 4×Ø9 通孔均布于 Ø60；注释：与横孔方向成 45°
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_distance: {from: column, to: holes, value: 30}
+      - equal_angular: {about: column, items: holes}
+      - line_material: {frame: frame, along: 0, polar: [30, 45], expect: []}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 97154.49
+    check:
+      - volume: 97154.49
+
+ungraded: []

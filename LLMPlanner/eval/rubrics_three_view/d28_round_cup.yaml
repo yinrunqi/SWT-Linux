@@ -1,0 +1,87 @@
+case: d28_round_cup
+title: D28 带缘圆杯
+prompt: 根据所附三视图（第三角画法，单位 mm）建模带缘圆杯，单一实体。
+prompt_en: Model the flanged round cup from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d28_round_cup.png
+reference: eval/three_view/references/d28_round_cup.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: top, a: [-48, 0, 26], b: [48, 0, 26], side: bottom, tier: 2, text: "Ø96"}
+    - {view: top, a: [-40, 0, 0], b: [40, 0, 0], side: top, text: "Ø80"}
+    - {view: top, a: [48, 0, 30], b: [48, 0, 26], side: right, tier: 1, text: "4"}
+    - {view: top, a: [40, 0, 0], b: [48, 0, 30], side: right, tier: 2, text: "30"}
+    - {view: right, a: [40, 0, 0], b: [40, 0, 18], side: bottom, text: "18"}
+  callouts:
+    - {view: front, at: [0, 0, 30], r: 36, angle: 135, leader: 60, text: "Ø72 深 24"}
+    - {view: front, at: [25, 0, 6], r: 3, angle: 30, leader: 60, text: "3×Ø6 通孔"}
+    - {view: front, at: [0, 0, 6], r: 25, angle: 250, leader: 70, text: "Ø50"}
+    - {view: right, at: [40, 0, 18], r: 6, angle: 45, leader: 50, text: "Ø12（单侧）"}
+  circles:
+    - {view: front, at: [0, 0, 6], r: 25}
+  centers:
+    - {view: front, at: [0, 0, 30], r: 48}
+    - {view: right, at: [40, 0, 18], r: 6}
+  axes:
+    - {view: top, a: [0, 0, -4], b: [0, 0, 34]}
+  notes:
+    - "杯底厚 6；3×Ø6 孔均布于 Ø50 圆，其中一孔与侧孔同方向"
+    - "Ø12 侧孔只穿一侧杯壁，孔心距杯底 18"
+
+# frame：轴 0 沿杯轴线（杯底低），轴 1 指向侧孔一侧
+entities:
+  cup: {cylinder: {d: 80, side: outer}}
+  side: {cylinder: {d: 12, side: inner}, count: 1}
+  holes: {cylinder: {d: 6, side: inner}, count: 3}
+  frame: {axis_frame: {axis: cup, ref_dir: side, ref_dir_toward: true, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 俯视图 Ø96、总高 30
+    hard: true
+    check:
+      - bbox_sorted: [30, 96, 96]
+      - exists: cup
+
+  - id: wall
+    source: 俯视图 Ø80；主视图 Ø72 深 24；注释：杯底厚 6
+    check:
+      - radial_material: {frame: frame, t: 15, deg: 90, expect: [[36, 40]]}
+      - line_material: {frame: frame, along: 0, polar: [38, 90], expect: [[0, 30]]}
+      - line_material: {frame: frame, along: 0, polar: [20, 60], expect: [[0, 6]]}
+
+  - id: flange
+    source: 俯视图凸缘 Ø96、厚 4
+    check:
+      - line_material: {frame: frame, along: 0, polar: [44, 90], expect: [[26, 30]]}
+      - line_material: {frame: frame, along: 0, polar: [47.5, 270], expect: [[26, 30]]}
+
+  - id: side_hole
+    source: 右视图 Ø12，孔心距杯底 18；注释：只穿一侧杯壁
+    check:
+      - exists: side
+      - line_material: {frame: frame, along: 0, polar: [38, 0], expect: [[0, 12], [24, 30]]}
+      - line_material: {frame: frame, along: 0, polar: [38, 180], expect: [[0, 30]]}
+
+  - id: bottom_holes
+    source: 主视图 3×Ø6 通孔均布于 Ø50；注释：一孔与侧孔同方向
+    check:
+      - exists: holes
+      - axis_distance: {from: cup, to: holes, value: 25}
+      - equal_angular: {about: cup, items: holes}
+      - line_material: {frame: frame, along: 0, polar: [25, 0], expect: []}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 60964.33
+    check:
+      - volume: 60964.33
+
+ungraded: []

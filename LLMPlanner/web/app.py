@@ -12,9 +12,11 @@ import sys
 import os
 import threading
 import traceback
+from pathlib import Path
 
+PLANNER_ROOT = Path(__file__).resolve().parents[1]
 # 将 LLMPlanner 目录加入 sys.path，以便导入 planner 模块
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, str(PLANNER_ROOT))
 
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -1744,7 +1746,21 @@ def set_projector_animation_pose():
         return jsonify({"success": False, "error": str(exc)}), 500
 
 
-WORKFLOW_QUERY_TOOLS = {"get_model_state", "set_parameters", "finish"}
+WORKFLOW_QUERY_TOOLS = {"get_model_state", "set_parameters", "render_views", "finish"}
+
+
+def _image_mime(image_b64: str, declared: str = "") -> str:
+    if declared:
+        return declared
+    if image_b64.startswith("iVBORw0KGgo"):
+        return "image/png"
+    if image_b64.startswith("R0lGOD"):
+        return "image/gif"
+    if image_b64.startswith("UklGR"):
+        return "image/webp"
+    return "image/jpeg"
+
+
 REASONING_EFFORTS = ("none", "minimal", "low", "medium", "high", "xhigh")
 
 
@@ -1756,9 +1772,18 @@ def _run_workflow_l1(
     model: str,
     max_llm_calls: int,
     capture_trace: bool,
+    image_b64: str = "",
+    image_mime: str = "image/png",
+    views_tool: bool = True,
     reasoning_effort: str | None = None,
+    checkpoint_path: str = "",
+    resume: bool = False,
 ) -> dict:
-    """L1：工程师级工具 + 闭环 Agent。results 只列建模工具调用，供打分统计失败次数。"""
+    """L1：工程师级工具 + 闭环 Agent。results 只列建模工具调用，供打分统计失败次数。
+
+    带图纸时（看图建模）图纸直接交给规划模型，所以 model 必须支持图片输入；
+    views_tool 打开时 Agent 额外获得 render_views，可以把当前零件投影成三视图与图纸对照。
+    """
     import uuid
 
     from openai import OpenAI
@@ -1766,24 +1791,24 @@ def _run_workflow_l1(
     from planner.workflow.agent import WorkflowAgent
     from planner.workflow.tools import WorkflowSession
 
+    extra_tools = ["render_views"] if image_b64 and views_tool else None
     # TT Switch 只有在同一 X-Session-Id 下才复用 prompt 缓存；显式缓存模型不带此头时每轮都按缓存写计费。
     # 每次运行一个新值，不跨任务共享上下文。其他 OpenAI 兼容服务会忽略这个头。
+    # 截断重试会把输出上限放到 32000，推理模型生成这么长需要数分钟
     client = OpenAI(
         api_key=api_key,
         base_url=base_url or None,
-        timeout=180,
+        timeout=600,
         max_retries=2,
         default_headers={"X-Session-Id": f"workflow-l1-{uuid.uuid4().hex}"},
     )
-    session = WorkflowSession(base_url=executor.base_url, executor=executor)
+    session = WorkflowSession(base_url=executor.base_url, executor=executor, extra_tools=extra_tools)
     session.start_part()
-    outcome = WorkflowAgent(
-        client,
-        model,
-        session,
-        max_llm_calls=max_llm_calls,
-        reasoning_effort=reasoning_effort,
-    ).run(instruction)
+    agent = WorkflowAgent(
+        client, model, session, max_llm_calls=max_llm_calls, extra_tools=extra_tools,
+        reasoning_effort=reasoning_effort, stream=True, checkpoint_path=checkpoint_path or None,
+    )
+    outcome = agent.run(instruction, image_b64=image_b64 or None, image_mime=image_mime, resume=resume)
     modeling_calls = [item for item in outcome["tool_calls"] if item["tool"] not in WORKFLOW_QUERY_TOOLS]
     results = [
         {
@@ -1840,6 +1865,8 @@ def run():
       "max_turns": 8,              (multi_turn 可选)
       "use_cache": true,           (可选；评测冷启动可设 false)
       "capture_trace": false,      (可选；返回原始 LLM 请求/响应)
+      "image": "<base64>",         (可选；L1 时直接交给 plan_model，须为多模态模型)
+      "views_tool": true,          (可选；L1 带图时是否提供 render_views)
       "dry_run": false
     }
     """
@@ -1888,9 +1915,11 @@ def run():
     # 多模态：可选图片（base64，可含或不含 data URI 前缀；不含时按 JPEG 处理）
     image_raw = data.get("image", "") or ""
     image_b64 = image_raw.strip()
+    declared_mime = ""
     # 若前端传的是完整 data URI（data:image/png;base64,...），后端只需 base64 部分即可
     if image_b64.startswith("data:") and "," in image_b64:
-        image_b64 = image_b64.split(",", 1)[1]
+        header, image_b64 = image_b64.split(",", 1)
+        declared_mime = header[5:].split(";", 1)[0]
 
     # 有图片时允许 instruction 为空；纯文本时必须有 instruction
     if not instruction and not image_b64:
@@ -1906,10 +1935,14 @@ def run():
         }), 400
 
     if action_level == "L1":
-        if image_b64:
-            return jsonify({"success": False, "error": "L1 workflow 暂只支持文本输入"}), 400
         if dry_run:
             return jsonify({"success": False, "error": "L1 workflow 不支持 dry_run"}), 400
+        checkpoint_path = str(data.get("checkpoint_path") or "").strip()
+        if checkpoint_path:
+            resolved = Path(checkpoint_path).resolve()
+            if resolved.suffix != ".json" or not resolved.is_relative_to(PLANNER_ROOT / "eval"):
+                return jsonify({"success": False, "error": "checkpoint_path 必须是 LLMPlanner/eval 下的 .json 文件"}), 400
+            checkpoint_path = str(resolved)
         try:
             with _sw_execution_lock:
                 return jsonify(_run_workflow_l1(
@@ -1919,7 +1952,12 @@ def run():
                     model=plan_model,
                     max_llm_calls=max_turns or 40,
                     capture_trace=capture_trace,
+                    image_b64=image_b64,
+                    image_mime=_image_mime(image_b64, declared_mime) if image_b64 else "image/png",
+                    views_tool=bool(data.get("views_tool", True)),
                     reasoning_effort=reasoning_effort,
+                    checkpoint_path=checkpoint_path,
+                    resume=bool(data.get("resume", False)),
                 ))
         except Exception as exc:
             traceback.print_exc()

@@ -311,3 +311,14 @@ def _callout(cv: _Canvas, c: dict):
     cv.line([tip, elbow, tail], width=0.8)
     cv.arrow(tip, elbow)
     cv.text((elbow[0] + (4 if right else -4) * SS, elbow[1] - 12 * SS), c["text"], anchor="lm" if right else "rm")
+
+
+if __name__ == "__main__":
+    # 不带标注地投影一个 STEP：python -m geomcheck.drawing in.step out.png [标题]
+    import sys
+
+    from .occ_part import Part
+
+    step, out = sys.argv[1], sys.argv[2]
+    title = sys.argv[3] if len(sys.argv) > 3 else "当前模型"
+    render(Part.from_step(step).shape, None, title, out, max_w=1200, max_h=840)

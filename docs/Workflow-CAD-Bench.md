@@ -1,14 +1,14 @@
-# Workflow-CAD-Bench：零件建模 track 的评测指南
+# Workflow-CAD-Bench：text-to-CAD track 的评测指南
 
 Workflow-CAD-Bench 有三个 track：
 
 | track | 输入 | 任务数 | 文档 |
 |---|---|---|---|
-| text-to-CAD | 自然语言设计要求 | 50（另有 8 道困难子集） | 本文第 1–7 节 |
-| 三视图生成 CAD | 工程图（三视图 PNG）+ 一句中性题面 | 33 | 本文第 8 节 |
+| text-to-CAD | 自然语言设计要求 | 50（另有 30 道困难子集） | 本文第 1–7 节 |
+| 三视图生成 CAD | 工程图（三视图 PNG）+ 一句中性题面 | 50 | [`Workflow-CAD-Bench-3Views.md`](./Workflow-CAD-Bench-3Views.md) |
 | 复杂装配体生成 | 自然语言装配要求 | 见装配文档 | [`Workflow-CAD-Bench-Assembly.md`](./Workflow-CAD-Bench-Assembly.md) |
 
-text-to-CAD track 共有 **50 个任务**。每个任务是一段自然语言设计要求，配有一份 **rubric**：它把题面里的每条要求写成对最终实体的确定性几何检查。三视图 track 用同一套检查器，rubric 只检查图纸上标注或画出的内容，另外附一个基于投影图像的相似度分。
+text-to-CAD track 共有 **50 个任务**。每个任务是一段自然语言设计要求，配有一份 **rubric**：它把题面里的每条要求写成对最终实体的确定性几何检查。三视图 track 用同一套检查器和本文第 0 节的环境，题目、打分和命令见 [`Workflow-CAD-Bench-3Views.md`](./Workflow-CAD-Bench-3Views.md)。
 
 **评测与建模系统解耦。** 你只需要为每个任务交一个 STEP 文件。用什么模型、什么 CAD 软件（SolidWorks、Onshape、FreeCAD、CadQuery……）、什么方式建模都可以。打分只读 STEP 的几何，不看建模过程、特征树或系统自己的日志。我们自己的系统 Workflow-CAD（见 [`Workflow-CAD.md`](./Workflow-CAD.md)）只是其中一个被评测的系统。
 
@@ -60,7 +60,7 @@ venv-occ\Scripts\python.exe -c "import OCP, numpy, yaml; print('occ ok')"
 venv-occ\Scripts\python.exe -m pytest geomcheck/tests -q -p no:cacheprovider
 ```
 
-测试会用 OpenCASCADE 直接构造三组参考实体和变体：text-to-CAD 的 50 个参考实体、12 个合法变体和 62 个错误变体，困难子集的 8 个参考实体和 24 个变体，以及三视图 track 的 33 个参考实体和 83 个错误变体（第 8 节）。它们分别用 rubric 和图像分打分，再加上检查器其余模块的单元测试，应该显示 `407 passed`，全部跑完约 5 分钟。这一步通过，说明你机器上的检查器和我们的打分结果完全一致。
+测试会用 OpenCASCADE 直接构造三组参考实体和变体：text-to-CAD 的 50 个参考实体、12 个合法变体和 62 个错误变体，困难子集的 30 个参考实体和 74 个变体，以及三视图 track 的 50 个参考实体和 133 个错误变体（见 [`Workflow-CAD-Bench-3Views.md`](./Workflow-CAD-Bench-3Views.md) 第 4 节）。它们分别用 rubric 和图像分打分，再加上检查器其余模块的单元测试，应该显示 `612 passed`，全部跑完约 8 分钟。这一步通过，说明你机器上的检查器和我们的打分结果完全一致。
 
 Linux 和 macOS 上把 `venv-occ\Scripts\python.exe` 换成 `venv-occ/bin/python` 即可，下文同理。以下命令都在 `LLMPlanner` 目录下执行。
 
@@ -261,6 +261,13 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench summary eval\rubric_mymod
 
 评测脚本会自动把每次运行的 STEP 和 SLDPRT 存到 `eval/artifacts/<输出文件名>/`，并在结果 JSON 里记录 token、调用次数、失败操作数、耗时和费用。
 
+L1 运行过程中，每次拿到 LLM 回复、每轮工具执行完，都会把完整对话、工具结果和原始回复写到同一目录下的 `<题号>_r<k>.checkpoint.json`。如果中途 SolidWorks 卡死或进程被结束，重启服务后在原命令后加 `--resume` 即可续跑：
+- 已经跑完的运行直接保留；
+- 中断的运行会先在新零件上按原顺序重放已执行的工具恢复模型，再接着原对话继续，已经拿到的回复不会重新请求；
+- 请求异常和 LLM 接口出错的运行会重跑。
+
+如果重放结果与记录不一致，这次运行会标记为 `resume_failed`，不会在错误的模型上继续建模。
+
 参考结果（Workflow-CAD L1 共 24 个工具，骨干模型 Qwen3.5-397B-A17B，温度 0，每题 2 次，共 100 次运行）：
 
 | 零件类型 | 任务数 | 均分 | pass@1 | pass@2 | 平均 token | 平均 LLM 调用 |
@@ -275,11 +282,13 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench summary eval\rubric_mymod
 
 ### 6.1 GPT-6-Astra（英文题面，2026-10-02）
 
+这一轮早于提交 7d73ae1 的两处 L1 工具修复（见 7.2 节），按那里的说明不要与 7.2 节的结果直接比较。
+
 设置：
 
 - Workflow-CAD L1，24 个工具，每次运行最多 40 次 LLM 调用；
 - 模型 `gpt-6-astra`，`--reasoning-effort medium`，温度 0，经 TT Switch 网关轨道 B（`/native`），每次运行带独立的 `X-Session-Id` 以复用 prompt 缓存；
-- 英文题面（`--lang en`），每题 1 次，50 道核心题和 8 道困难题各跑一轮。
+- 英文题面（`--lang en`），每题 1 次，50 道核心题和最初 8 道困难题各跑一轮。
 
 命令：
 
@@ -289,7 +298,7 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --provider 
     --output eval\text_workflow_l1_gpt6_astra_medium_all_en_result.json
 ```
 
-困难题把 `--split all` 换成 `--split hard`。结果文件是 `eval/text_workflow_l1_gpt6_astra_medium_{all,hard}_en_result.json`，rubric 打分是 `eval/rubric_gpt6_astra_medium_{all,hard}_en.json`。
+最初 8 道困难题把 `--split all` 换成 `--split hard --ids quad_frame connecting_rod finned_housing sprocket handwheel camshaft planet_carrier impeller`（`hard` 现在共 30 题，见第 7 节）。结果文件是 `eval/text_workflow_l1_gpt6_astra_medium_{all,hard}_en_result.json`，rubric 打分是 `eval/rubric_gpt6_astra_medium_{all,hard}_en.json`。
 
 | 零件类型 | 任务数 | 均分 | pass@1 | 平均 token | 平均 LLM 调用 | 平均耗时 |
 |---|---|---|---|---|---|---|
@@ -298,7 +307,7 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --provider 
 | 多特征零件 | 8 | 100 | 1.0 | 76.3k | 9.0 | 77 s |
 | 特定操作零件 | 14 | 97.1 | 0.93 | 52.5k | 6.4 | 52 s |
 | **全部 50 题** | **50** | **99.2**（95% CI [97.6, 100]） | **0.98** | 71.5k | 8.1 | 70 s |
-| 困难子集 | 8 | 100 | 1.0 | 166.4k | 16.2 | 153 s |
+| 困难子集（最初 8 题） | 8 | 100 | 1.0 | 166.4k | 16.2 | 153 s |
 
 两轮的核心形体率都是 1.0。对照第 6、7 节的 Qwen3.5-397B-A17B：50 题均分 84.9、pass@1 0.74，困难子集均分 62.2、pass@1 0.125。两者不完全可比：Qwen 用中文题面、每题 2 次、推理强度为服务端默认。
 
@@ -316,9 +325,9 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --provider 
 
 ---
 
-## 7. 困难子集：8 个复杂综合件（showcase）
+## 7. 困难子集：30 个复杂综合件（showcase）
 
-上面 50 题对当前系统已经偏简单（pass@1 = 0.74），所以另外准备了 8 道复杂零件。它们都是能直接当演示用的真实机械件，每题需要十几个特征，并且要把阵列相位、切线轮廓、径向孔、对称槽等关系全部做对。困难子集**不计入** 50 题的统计，rubric 单独放在 `LLMPlanner/eval/rubrics_hard/`。
+上面 50 题对当前系统已经偏简单（pass@1 = 0.74），所以另外准备了复杂零件：最初 8 道，后来又加了 22 道更难的（见 7.1 节）。下表是最初的 8 道。它们都是能直接当演示用的真实机械件，每题需要十几个特征，并且要把阵列相位、切线轮廓、径向孔、对称槽等关系全部做对。困难子集**不计入** 50 题的统计，rubric 单独放在 `LLMPlanner/eval/rubrics_hard/`。
 
 | 任务（case id） | 显式条目 | 主要难点 |
 |---|---|---|
@@ -332,6 +341,39 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --provider 
 | 后弯叶片离心叶轮 `impeller` | 10 | 给定圆心和半径的圆弧叶片、45° 阵列、叶片高度与外端截止半径、轮毂倒角 |
 
 8 题共 87 个显式条目。rubric 的验证方式与 50 题相同：参考实体满分、1 个合法变体（叶轮叶片外端改为径向端面）满分、23 个针对性错误变体恰好在预期条目上失败（`geomcheck/tests/test_refs_hard.py`）。
+
+### 7.1 加难的 22 题
+
+在上面 8 题的基础上，又按同样的写法加了 22 道更难的综合件。和前 8 题相比，它们的特征更多，并且大量依赖“阵列 + 相位 + 与另一组特征的相对方位”这类必须整体做对的关系。它们和前 8 题放在同一个目录、同一个 `split="hard"` 里；`bench.py` 中单列为 `Showcase parts (hard)` 一类。参考实体在 `geomcheck/tests/refs_hard2.py`。
+
+| 任务（case id） | 显式条目 | 主要难点 |
+|---|---|---|
+| 双拐曲轴 `crankshaft` | 14 | 两拐相差 180°、长圆 + 扇形平衡重的曲柄臂轮廓、穿过曲柄销且垂直于曲拐方向的油孔、键槽与定位销孔的方位 |
+| 通风刹车盘 `brake_disc` | 10 | 双摩擦环之间 40 片径向通风筋、20 个散热孔隔一个筋间隙排布、盘帽与轮毂螺栓孔对筋 |
+| 五辐轮毂 `wheel_rim` | 12 | 扇环形减重窗的相位、20 条窗角 R8 圆角、轮辐正对螺栓孔、与减重窗同方位的径向气门嘴孔 |
+| 六槽槽轮 `geneva_wheel` | 9 | 6 条径向槽与 6 段内凹锁止圆弧交错、减重孔在角平分线上、凸台上沿槽方向的径向螺钉孔 |
+| 旋转楼梯 `spiral_staircase` | 10 | 12 级逆时针递升的扇形台阶、每级角平分线上的栏杆柱、半球柱顶 |
+| 发动机活塞 `engine_piston` | 11 | 三道环槽、内腔中的销座与贯穿销孔、垂直于销孔的两个气门避让坑、油环槽底的径向回油孔 |
+| 三支管法兰歧管 `pipe_manifold` | 11 | 主管与三根支管内孔贯通、端法兰螺栓孔错开 22.5°、支管法兰孔在 45° 斜线上、底部排放凸台 |
+| 减速器下箱体 `gearbox_housing` | 12 | 薄壁开口箱体、两侧各两个不同孔径的轴承座凸台、凸台下的加强筋、法兰与底脚孔 |
+| 针状散热器 `heat_sink` | 9 | 9×9 针阵省去 4 角（77 根）、角上带沉孔的安装孔、底面导热台 |
+| 蜂窝减重板 `honeycomb_panel` | 10 | 5 行交错排列的 43 个正六边形盲槽、六边形朝向、3mm 筋宽、角部圆角与安装孔同心 |
+| 齿轮泵体 `gear_pump_body` | 10 | “8”字形双圆齿轮腔、主动轴通孔与从动轴盲孔、两侧不同孔径的油口凸台、对角定位销孔 |
+| 蛇形流道液冷板 `cold_plate` | 10 | 5 段直线 + 4 个半圈的蛇形流道、侧面进出液孔正好通到流道端头、圆角矩形密封槽 |
+| 华伦桁架梁 `truss_beam` | 8 | 9 个朝向交替的三角孔、27 个内角 R4 圆角、两端不同孔径的凸台、长边加强筋 |
+| 燕尾榫槽涡轮盘 `turbine_disk` | 10 | 30 个外窄内宽的燕尾榫槽、减重孔在两槽角平分线上、辐板与轮毂/轮缘之间的环形圆角 |
+| BT40 刀柄 `bt40_holder` | 10 | 7:24 锥柄、60° V 形槽、两个驱动键槽与定向孔相差 90°、两端孔用中心冷却孔贯通 |
+| 液压阀块 `hydraulic_manifold` | 9 | 四个方向钻入、彼此必须相交但不能多穿的油道（P/A/T 口、主油道、横孔）、堵头沉孔 |
+| 火箭尾段 `rocket_fin_can` | 9 | 拉瓦尔喷管薄壳、4 片后掠梯形尾翼的平面形状与方位、尾翼与通气孔错开 45° |
+| 棘轮 `ratchet_wheel` | 8 | 24 个单向锯齿（齿背方向）、正六边形孔的朝向与安装孔对齐 |
+| 喷注器面板 `injector_plate` | 9 | 背面 4 条集液槽、80 个喷孔分 4 圈且各圈起始角不同、定位销孔与螺栓孔 |
+| 机械臂连杆 `robot_arm_link` | 10 | 两圆公切线臂身、正反两面减重槽、肩部螺纹孔阵列、肘部开口缝与横穿的夹紧螺钉孔 |
+| 二级门格海绵 `menger_sponge` | 7 | 两级分形挖孔（共 27 个方孔）必须全部贯穿且位置准确 |
+| 万向节叉 `u_joint_yoke` | 9 | 双叉臂与同轴十字轴承孔、半圆叉头、孔内键槽与径向紧定螺钉孔、叉臂外侧的轴承盖螺孔 |
+
+22 题共 217 个显式条目，配了 50 个针对性错误变体（相位转错、方向反了、少一级特征、孔不通等），每个都恰好在预期条目上失败。连同前 8 题，困难子集共 30 题、304 个条目、73 个错误变体。下面 Qwen 的参考结果只覆盖前 8 题；22 道新题上 claude-sonnet-5 的结果见 7.2 节。
+
+除了 OCC 参考实体，22 道新题还在 SolidWorks 里用 L1 的 24 个工具逐题建了一遍参考解（`LLMPlanner/eval/hard_l1_reference.py`，只调用模型能拿到的同一套工具），22 题全部 100 分，说明每道题在这套工具下都是可解的。其中最绕的是火箭尾段：`ref_plane` 只能建平行偏移面，45° 方位的尾翼要先阵列 8 片、再切掉 4 片。
 
 打分和汇总时用 `--rubric-dir` 指向这个目录：
 
@@ -355,107 +397,93 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 - 连杆的油孔或减重槽把实体拆成多块；
 - 机架只做了 1 个内角圆角。
 
-打分文件是 `eval/rubric_hard_tools24.json`，汇总在 `eval/rubric_hard_tools24_summary.json`。GPT-6-Astra 在困难子集上的结果（英文题面，8/8 合格）见 6.1 节。
+打分文件是 `eval/rubric_hard_tools24.json`，汇总在 `eval/rubric_hard_tools24_summary.json`。GPT-6-Astra 在这 8 题上的结果（英文题面，8/8 合格）见 6.1 节。
 
 需要说明两处在看过首批结果后对 rubric 的修正，两处都只放宽了与题意无关的判定：
 - 凸轮轴：模型按切点坐标画弧时，同一段基圆被拆成了圆心相差几微米的两张面，被数成了 5 个基圆。现在不再要求基圆和桃尖圆的数量恰好为 4，四个凸轮是否齐全改由逐个凸轮的探测保证。
 - 叶轮：后盘和轮毂的探测原本依赖叶片圆柱面来定方位。叶片缺失时，这两项会被连带判失败。现在它们改用与方位无关的坐标系。
 
-另外，评测脚本等待 Web 后端的超时从 900 s 放宽到了 3600 s。复杂件用满 40 次调用可能超过 15 分钟，原来的超时会在服务端还在建模时就发起下一次运行。
+另外，评测脚本等待 Web 后端的超时从 900 s 先放宽到 3600 s，后来又放宽到 7200 s。复杂件用满 40 次调用可能超过 15 分钟；推理模型（如 claude-sonnet-5）单次回复要几分钟，门格海绵一题就用了约 53 分钟。超时太短时，评测端会在服务端还在建模时就发起下一次运行。
 
----
+对推理模型，L1 agent 还做了两处处理，都与具体题目无关：
+- 回复因长度上限被截断、又没有完整的工具调用时，不再算作停滞，而是把输出上限翻倍（最多 32000）后重新请求。
+- 请求改为流式，避免长回复在网关处读超时。
 
-## 8. 三视图 track：33 道看图建模题
+### 7.2 claude-sonnet-5 在加难 22 题上的结果
 
-### 8.1 任务与文件
+**评测方式**
 
-共 33 道题，分两部分：B/C 组 13 道来自 Web Demo 的三视图样例；D 组 20 道是为 benchmark 新设计的零件（见下文）。
+- 系统：Workflow-CAD L1（24 个工具，闭环 agent，每轮工具执行后把结果和模型状态反馈给模型）。
+- 骨干模型：claude-sonnet-5（经 TT Switch 网关），`reasoning_effort = medium`，中文题面。
+- 预算：每题最多 40 次 LLM 调用；每题 1 次运行（pass@1）。
+- 打分：只看 rubric（`eval/rubrics_hard/<case>.yaml`）。题目分数是通过的显式条目占比；所有显式条目都通过才算合格（`accepted`）；`hard_ok` 表示核心条目（有效实体和主体形状）都通过。
+- 代码版本：提交 7d73ae1 及之后。这一版修了两个会让正确操作失败的工具 bug：一是先做过旋转、又建过参考面之后，在 top_plane 上画的圆会被 SolidWorks 自动捕捉偏移，导致切除失败；二是很短的旋转轴中心线会被吞掉。更早的 L1 结果都受这两个 bug 影响，不要和这里的结果直接比较。
+- 结果 JSON 里的 `score` 是旧的 v2 分（包围盒、体积、特征计数），比 rubric 宽松得多，**不作为本节的结果**。`status` 只表示每次工具调用是否都成功；L1 里被 agent 自己纠正的失败调用也会让它变成 `failed`，agent 是否正常收尾要看 `workflow_status`。
 
-B/C 组 13 道题来自 Web Demo 的三视图样例（`datasets/manual_three_view/`）。原样例不适合直接用作 benchmark，原因有三点：
-- C1–C3 的图纸只画了外框；
-- B22 没有隐藏线和内腔尺寸，B07 缺少凹槽和孔的标注；
-- 文字提示里写了 SolidWorks 建模步骤。
-
-因此 benchmark 版本**重新生成了这 13 张图纸**：先按图纸尺寸用 OpenCASCADE 构造参考实体（`geomcheck/tests/refs_three_view.py`），再用 HLR 投影出三视图。可见边画粗实线，隐藏边画虚线，尺寸、引线、中心线和注释按每题 rubric 里的 `drawing` 清单绘制。原 demo 的图纸和数据保持不变。
-
-D 组 20 道题全部是自行设计的常见机械零件，参考实体、图纸和 rubric 的生成流程与 B/C 组相同。没有使用任何外部数据集的图纸或模型，这样一来不涉及许可问题，题目也不会出现在模型的训练数据里。设计时让每道题覆盖不同的建模操作组合：
-- 拉伸截面：V 形块、燕尾槽；
-- 回转：阶梯轴、V 带轮；
-- 孔：阵列孔、沉孔、沉头孔、盲孔、交叉孔；
-- 筋板与圆角，斜切面；
-- 长圆孔、键槽；
-- 公切线轮廓（连杆）；
-- 等距阵列（散热片、齿条）；
-- 两实体装配位（管夹）。
-
-| 文件 | 内容 |
-|---|---|
-| `eval/rubrics_three_view/<case>.yaml` | 题面（`prompt` / `prompt_en`）、图纸标注清单 `drawing`、rubric 条目 |
-| `eval/three_view/drawings/<case>.png` | 交给建模系统的图纸（第三角画法：俯视图在主视图上方，右视图在主视图右方） |
-| `eval/three_view/references/<case>.step` | 参考实体，图像分的比较对象 |
-
-题面只有一句中性的话，例如“根据所附三视图（第三角画法，单位 mm）建模 L 型支架，单一实体。”，全部尺寸都从图纸读取。C3 和 D17 的题面另外说明零件由两个分开的实体组成。
-
-| 类型 | 任务（case id，括号内为显式条目数） |
-|---|---|
-| 基础零件（9） | L 型支架 `b01_l_bracket`（5）、带孔平板 `b02_plate_with_holes`（5）、T 型支架 `b03_t_bracket`（6）、键帽 `b04_keycap`（6）、带圆角和底槽的键帽 `b05_keycap_full`（6）、门锁扣板 `b06_lock_striker`（6）、86 型开关面板 `b07_switch_panel`（6）、齿轮盘 `b11_gear_disc`（5）、圆碗 `b22_round_bowl`（4） |
-| 组合零件（4） | 迷你机械键盘 `c1_mech_keyboard`（7，65 个键帽阵列）、齿轮减速器外壳 `c2_gearbox`（8）、齿轮组 `c3_gear_pair`（7，两个实体）、一体式桌面笔筒 `c4_desktop_pen_holder`（10） |
-| 投影基础零件（10） | V 形块 `d01_v_block`（7）、法兰盖 `d04_flange_cover`（8）、阶梯轴 `d05_stepped_shaft`（6）、U 形叉头 `d06_u_clevis`（7）、偏心轮 `d07_eccentric_cam`（7）、角钢支架 `d09_angle_bracket`（7）、沉孔压板 `d10_clamp_plate`（7）、燕尾滑块 `d11_dovetail_slide`（6）、切角支座 `d12_cut_block`（7）、齿条 `d18_gear_rack`（7） |
-| 投影组合零件（10） | 轴承座 `d02_bearing_block`（10）、带筋支架 `d03_rib_bracket`（9）、法兰三通 `d08_pipe_tee`（7）、双槽 V 带轮 `d13_v_pulley`（9）、连杆 `d14_link_rod`（7）、电机安装座 `d15_motor_mount`（8）、散热器 `d16_heat_sink`（6）、管夹 `d17_pipe_clamp`（7，两个实体）、合页片 `d19_hinge_leaf`（6）、带筋底座 `d20_ribbed_base`（7） |
-
-33 题共 226 个显式条目（B/C 组 81 个，D 组 145 个）。
-
-B/C 组与原 demo 相比，有三处几何改动：
-- B06 的 R3 圆角从“3 mm 厚板的长边”改到板的四个竖直角。原来的圆角半径等于板厚，是退化几何。
-- C3 的矩形齿嵌入齿根圆 1 mm，避免齿与轮盘只在一条线上相切。
-- 体积一律取 OCC 参考实体的精确值。原 GT 忽略了圆角，圆也用多边形近似。
-
-### 8.2 打分
-
-**主分是 rubric**，规则与第 4 节相同：每个条目只检查图纸上标注或画出的内容，`source` 写明出自哪个视图的哪个标注或注释。例如“主视图：孔心距左端 20、孔距 40、距底边 20”。检查都在零件自身的坐标系里进行，摆放方向不限。
-
-**辅助指标是图像分**（`geomcheck/views.py`），把提交实体和参考实体沿三个正交方向投影后逐像素比较：
-- 每个方向生成四张图，像素边长取参考件最大尺寸的 1/400：轮廓；近侧深度和远侧深度（对应正、背两个视图）；沿视线的材料厚度（类似 X 光片，能看到盲腔、背面凹槽和内部空腔）。
-- 一个像素算“一致”，需要两件在该像素都有材料，且三种深度之差都不超过参考件最大尺寸的 0.5%。允许 1 个像素的位置误差。
-- 某方向的得分是一致像素数除以两件轮廓并集的像素数；图像分是 100 乘以三个方向得分的平均。
-- 提交件可以任意摆放：比较前在 24 种正交旋转中取最好的一种。**镜像不算旋转**，所以镜像件得不到满分。
-
-图像分对图纸上任何可见差异都敏感，但不区分差异是否重要，所以只作为辅助指标单独报告，合格与否只看 rubric。
-
-### 8.3 rubric 与图像分的验证
-
-`geomcheck/tests/test_refs_three_view.py` 共 234 个测试：
-- 从参考 STEP 读回的实体得 100 分，体积与 rubric 一致。
-- 83 个针对性错误变体（B/C 组 28 个，D 组 55 个）恰好在预期条目上失败。例如：孔距 36、凹槽深 5、去掉充电线孔、齿轮中心距 72、12 列键帽；D 组如燕尾角 50°、6 片散热片、去掉油孔、沉孔深 4、管夹无间隙。少数变体会连带另一个条目失败，原因是两处几何确实相互关联（例如齿条改成 11 个齿后，沉孔上方正好是齿）；这些情况在测试里逐条注明。
-- 参考实体在原位和旋转后的图像分都是 100（旋转后要求不低于 99.9）。
-- 83 个错误变体和 C4 的镜像件，图像分都低于 99.5。
-
-### 8.4 命令
+复现命令（SolidWorks、C# 服务和 Web 后端已按第 6 节启动；Web 后端需要在拉取新代码后重启）：
 
 ```powershell
-# 导出题目：每行 {"case", "kind", "prompt", "image"}，image 是相对 LLMPlanner 的图纸路径
-venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_three_view tasks --output tasks_three_view.jsonl
-
-# 打分：rubric + 图像分；--diff-dir 输出差异图（灰 = 一致，红 = 深度不一致，蓝 = 多出的材料，绿 = 缺少的材料）
-venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view --artifacts my_tv_run --output my_tv_scores.json --diff-dir my_tv_diffs
-
-# 汇总：在第 1 节的指标之外附带平均图像分（缺失的运行记 0）
-venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_three_view summary my_tv_scores.json --repeats 2
-
-# 修改标注清单或参考实体后，重新生成图纸 PNG 和参考 STEP
-venv-occ\Scripts\python.exe -X utf8 -m geomcheck.tests.refs_three_view
+venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --action-level L1 --split hard `
+    --provider ttswitch --model claude-sonnet-5 --reasoning-effort medium --max-llm-calls 40 --repeats 1 `
+    --sw-restarts 2 --sw-max-private-gb 12 `
+    --ids crankshaft brake_disc wheel_rim geneva_wheel spiral_staircase engine_piston pipe_manifold `
+          gearbox_housing heat_sink honeycomb_panel gear_pump_body cold_plate truss_beam turbine_disk `
+          bt40_holder hydraulic_manifold rocket_fin_can ratchet_wheel injector_plate robot_arm_link `
+          menger_sponge u_joint_yoke `
+    --output eval\text_workflow_l1_mymodel_hard22_result.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric --rubric-dir eval\rubrics_hard `
+    --artifacts eval\artifacts\text_workflow_l1_mymodel_hard22_result --output eval\rubric_mymodel_hard22.json
 ```
 
-提交要求同第 3 节。区别是 C3 和 D17 要求恰好两个有效实体，其余 31 题要求单一实体。`scores.json` 的每条记录比 `geomcheck.rubric` 多一个 `image` 字段，内容包括 `image_score`、`silhouette_iou`、三个视图各自的得分，以及选中的旋转。
+说明：
+- 评测脚本在每题导出 STEP 后会自动调用 `venv-occ` 打 rubric 分，写进结果 JSON 的 `rubric` 字段，并在控制台打印未通过的条目；上面第二条命令用来生成单独的打分文件。
+- `--sw-restarts` 打开 SolidWorks 看门狗。SolidWorks 在长时间运行中有内存泄漏，大约每 5 道复杂件就会超过 12 GB：
+  - 每题开始前，如果 SolidWorks 进程不在、C# 服务无响应，或私有内存超过 `--sw-max-private-gb`，就重启 SolidWorks 和 C# 服务；
+  - 运行中丢失 SolidWorks 的题会在重启后从检查点续跑，每题最多续跑这么多次。
+  - SolidWorks 不在默认路径时，用环境变量 `SW_EXE` 指定 `SLDWORKS.exe`。
+- 在别的模型或系统上跑时，只要把每题导出成 `<case>_r1.step` 放进一个目录，用第二条命令打分即可，不必用 Workflow-CAD。
 
-用 Workflow-CAD 跑时用 `eval/eval_three_view_bench.py`。它把图纸和题面发给 `/api/run`，并把每次运行的 STEP 存到 `eval/artifacts/<name>/<case>_r<k>.step`，之后按上面的命令离线打分。这个 track 目前还没有参考结果。
+**结果**（19 题，均为上面的协议）
+
+| 均分 | pass@1 | 核心形体率 | 平均 token | 平均 LLM 调用 | 平均工具调用 | 平均耗时 |
+|---|---|---|---|---|---|---|
+| 76.2（95% CI [64.9, 86.6]） | 0.368（7/19） | 0.84（16/19） | 648k | 21.9（1 题用满 40 次） | 35.2 | 753 s |
+
+| 任务 | rubric 分 | 合格 | LLM 调用 | 未通过的条目 |
+|---|---|---|---|---|
+| `wheel_rim` | 100 | ✓ | 26 | — |
+| `spiral_staircase` | 100 | ✓ | 16 | — |
+| `heat_sink` | 100 | ✓ | 14 | — |
+| `truss_beam` | 100 | ✓ | 13 | — |
+| `injector_plate` | 100 | ✓ | 15 | — |
+| `robot_arm_link` | 100 | ✓ | 15 | — |
+| `u_joint_yoke` | 100 | ✓ | 18 | — |
+| `cold_plate` | 90 | | 27 | channel_depth |
+| `turbine_disk` | 90 | | 9 | hub |
+| `engine_piston` | 81.8 | | 20 | pin_bore, volume |
+| `brake_disc` | 80 | | 39 | rings, cross_holes |
+| `bt40_holder` | 70 | | 16 | flange, v_groove, volume |
+| `crankshaft` | 64.3 | | 39 | crankpins, phasing, web_profile, oil_holes, volume |
+| `ratchet_wheel` | 62.5 | | 11 | outer, hex_bore, volume |
+| `gearbox_housing` | 58.3 | | 23 | bearing_bores, bosses, ribs, drain_and_sight, volume |
+| `honeycomb_panel` | 50 | | 13 | middle_row, offset_rows, outer_rows, hex_orientation, volume |
+| `geneva_wheel` | 44.4 | | 33 | disc_and_hub, slots, slot_tips, locking_arcs, lightening_holes |
+| `gear_pump_body` | 30 | | 40 | outer, chamber, ports, port_bosses, tapped_holes, dowels, volume |
+| `pipe_manifold` | 27.3 | | 29 | solid, outer, branches, branch_bores, branch_flanges, branch_bolts, drain, volume |
+
+19 题共用 1231 万 token（416 次 LLM 调用），总耗时约 4 小时。打分文件是 `eval/rubric_hard22_sonnet5_medium.json`，完整结果（含每次 LLM 回复、工具调用与返回、token 和耗时）是 `eval/text_workflow_l1_sonnet5_medium_hard19_result.json`。
+
+另外 3 题（`hydraulic_manifold`、`menger_sponge`、`rocket_fin_can`）是在上面两个工具 bug 修复之前试跑的，协议也不一致：前两题没有设置 `reasoning_effort`（用网关默认值），火箭尾段中途中断后续跑过。所以它们**不计入上面的均分**，仅供参考：液压阀块 100、门格海绵 100、火箭尾段 55.6（尾翼方位和平面形状不对）。
+
+在用 SolidWorks 参考解验证可解性时发现了两处 rubric 问题，已在跑上面 19 题之前修正。两处都只放宽了与题意无关的判定，并在 OCC 参考实体和 SolidWorks 参考解上重新验证过：
+- 材料区间探测忽略零长度区间。探测线恰好擦过一条棱时会得到零长度区间，它不代表材料。
+- 齿轮泵体：油口凸台从侧面起建，还是略嵌入块体（参考实体从 y=±44 起），题面没有规定，两种都接受。
 
 ---
 
-## 9. 已知局限
+## 8. 已知局限
 
 - rubric 是人工编写的。rubric 没写到的要求不会被检查，标为 `ungraded` 的内容也不打分。
 - 目前只有 OpenCASCADE 一个检查器。一个通过 SolidWorks API 评估同一套 rubric 的检查器正在开发，用来交叉验证。
 - 题面是中文。如果翻译成其他语言使用，请以 YAML 中的原文为准，并在报告里说明。
 - 旧的评分方式（包围盒、体积区间、特征树计数）已经被 rubric 取代，只在论文里用来对比说明两者的差别。
-- 三视图 track 的 rubric 坐标系允许左手系，所以对称性足够强的零件，其镜像件可能通过 rubric。镜像件的图像分低于满分，这种情况由图像分发现。

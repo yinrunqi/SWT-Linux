@@ -1,0 +1,112 @@
+case: brake_disc
+prompt: >-
+  创建一个通风式汽车刹车盘，单一实体，所有回转结构同轴。以下摩擦环底面为 0、沿轴线向上量：两片摩擦环都是外径 300mm、
+  内径 180mm、厚 10mm 的圆环，下环位于 0~10mm，上环位于 22~32mm。两环之间的 12mm 间隙内有 40 片径向通风筋，
+  每片筋宽 5mm（两侧面平行，且关于径向中线对称），沿径向从半径 90mm 延伸到 150mm，与两片摩擦环的内外圆齐平，
+  在高度上填满两环之间的间隙，40 片沿圆周均布。上环之上是盘帽：一个外径 190mm、内径 170mm 的圆筒，从 22mm 延伸到 70mm，
+  顶端是一块外径 190mm、厚 8mm 的顶板（62~70mm），顶板中心开直径 70mm 的中心孔，并在直径 114.3mm 的圆上均布
+  5 个直径 14mm 的轮毂螺栓孔，其中一个螺栓孔与某一片通风筋位于同一方位。两片摩擦环上在半径 120mm 的圆上均布 20 个
+  直径 8mm 的轴向通孔（打孔散热），孔位于相邻两片通风筋的正中间，每个孔同时穿过上下两片摩擦环（孔不穿过任何筋），
+  相邻两个孔之间隔一个筋间隙。
+prompt_en: >-
+  Create a ventilated automotive brake disc as a single solid body; all revolved features are coaxial.
+  Measuring upward along the axis from the bottom face of the lower friction ring at 0: both friction rings
+  are annuli with an outer diameter of 300mm, an inner diameter of 180mm and a thickness of 10mm; the lower
+  ring is at 0~10mm and the upper ring at 22~32mm. In the 12mm gap between the rings there are 40 radial
+  cooling vanes, each 5mm wide (parallel sides, symmetric about its radial centerline), extending radially from
+  radius 90mm to 150mm, flush with the inner and outer circles of the friction rings and filling the gap
+  between the rings in height; the 40 vanes are evenly spaced around the circumference. Above the upper ring is
+  the hat: a tube with an outer diameter of 190mm and an inner diameter of 170mm running from 22mm to 70mm,
+  closed at its top by a top plate 190mm in outer diameter and 8mm thick (62~70mm). The top plate has a 70mm
+  center hole and 5 wheel-bolt holes of 14mm diameter evenly spaced on a 114.3mm-diameter circle, one of which
+  is in the same angular position as one of the vanes. The friction rings have 20 axial through holes of 8mm
+  diameter evenly spaced on a circle of radius 120mm; each hole lies exactly midway between two adjacent vanes
+  and goes through both the upper and the lower ring (no hole passes through a vane), so that the holes occupy
+  every other gap between vanes.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿轴线，t = 0 在下摩擦环底面（两端平面面积较大的一端）；轴 1 指向某一个轮毂螺栓孔。
+# 通风筋在 9°k，打孔在 4.5° + 18°k。
+entities:
+  bore:     {cylinder: {d: 70, side: inner}, count: 1}
+  lugs:     {cylinder: {d: 14, side: inner}, count: 5}
+  # 每个散热孔在上下两片环中各有一段孔壁
+  holes:    {cylinder: {d: 8, side: inner}, count: 40}
+  frame:    {axis_frame: {axis: bore, low: larger_area, ref: lugs}}
+
+rubrics:
+  - id: solid
+    source: 单一实体，所有回转结构同轴
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 摩擦环外径 300mm；从下环底面到顶板顶面 70mm
+    hard: true
+    check:
+      - bbox_sorted: [70, 300, 300]
+      - extent_along: {axis: bore, of: all, value: 70}
+
+  - id: rings
+    source: 两片外径 300、内径 180、厚 10mm 的摩擦环，位于 0~10 和 22~32mm
+    derivation: 13.5° 方位在两片筋的正中间且没有散热孔；上环内侧与盘帽圆筒（半径 85~95）相连
+    check:
+      - line_material: {frame: frame, along: 0, polar: [140, 13.5], expect: [[0, 10], [22, 32]]}
+      - radial_material: {frame: frame, t: 5, deg: 13.5, expect: [[90, 150]]}
+      - radial_material: {frame: frame, t: 27, deg: 13.5, expect: [[85, 150]]}
+
+  - id: vanes
+    source: 40 片宽 5mm 的径向通风筋，从半径 90 到 150mm，填满两环间隙，均布
+    derivation: 半径 120mm 处每片筋占 2·asin(2.5/120) = 2.387°，筋间空隙 9° − 2.387° = 6.613°
+    check:
+      - angular_openings: {frame: frame, t: 16, r: 120, count: 40, arc_deg: 6.613}
+      - radial_material: {frame: frame, t: 16, deg: 13.5, expect: []}
+
+  - id: vane_phase
+    source: 其中一个螺栓孔与某一片通风筋位于同一方位
+    check:
+      - radial_material: {frame: frame, t: 16, deg: 0, expect: [[90, 150]]}
+      - line_material: {frame: frame, along: 0, polar: [120, 0], expect: [[0, 32]]}
+
+  - id: hat
+    source: 外径 190、内径 170mm 的圆筒从 22mm 到 70mm；顶板外径 190、厚 8mm（62~70mm）
+    check:
+      - radial_material: {frame: frame, t: 45, deg: 36, expect: [[85, 95]]}
+      - line_material: {frame: frame, along: 0, polar: [88, 36], expect: [[22, 70]]}
+      - line_material: {frame: frame, along: 0, polar: [70, 36], expect: [[62, 70]]}
+
+  - id: center_hole
+    source: 顶板中心开直径 70mm 的中心孔
+    check:
+      - exists: bore
+      - through: {holes: bore}
+      - radial_material: {frame: frame, t: 66, deg: 36, expect: [[35, 95]]}
+
+  - id: lug_holes
+    source: 直径 114.3mm 的圆上均布 5 个直径 14mm 的轮毂螺栓孔
+    check:
+      - exists: lugs
+      - through: {holes: lugs}
+      - axis_distance: {from: bore, to: lugs, value: 57.15}
+      - equal_angular: {about: bore, items: lugs}
+
+  - id: cross_holes
+    source: 半径 120mm 圆上均布 20 个直径 8mm 的轴向通孔，位于相邻两片筋正中间，穿过上下两片摩擦环
+    derivation: 孔位 4.5° + 18°k；孔径在 R120 圆上对应 2·asin(4/120) = 3.820°
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_distance: {from: bore, to: holes, value: 120}
+      - angular_openings: {frame: frame, t: 5, r: 120, count: 20, arc_deg: 3.82}
+      - angular_openings: {frame: frame, t: 27, r: 120, count: 20, arc_deg: 3.82}
+      - line_material: {frame: frame, along: 0, polar: [120, 4.5], expect: []}
+      - line_material: {frame: frame, along: 0, polar: [120, 13.5], expect: [[0, 10], [22, 32]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 1415696.4
+    check:
+      - volume: 1415696.4
+
+ungraded: []

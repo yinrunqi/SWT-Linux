@@ -1,0 +1,89 @@
+case: d26_square_flange
+title: D26 方形法兰座
+prompt: 根据所附三视图（第三角画法，单位 mm）建模方形法兰座，单一实体。
+prompt_en: Model the square flange seat from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d26_square_flange.png
+reference: eval/three_view/references/d26_square_flange.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-30, -30, 10], b: [30, -30, 10], side: bottom, tier: 1, text: "60"}
+    - {view: front, a: [-40, -40, 10], b: [40, -40, 10], side: bottom, tier: 2, text: "80"}
+    - {view: front, a: [30, -30, 10], b: [30, 30, 10], side: right, tier: 1, text: "60"}
+    - {view: front, a: [40, -40, 10], b: [40, 40, 10], side: right, tier: 2, text: "80"}
+    - {view: top, a: [40, 0, 0], b: [40, 0, 10], side: right, tier: 1, text: "10"}
+    - {view: top, a: [40, 0, 0], b: [20, 0, 30], side: right, tier: 2, text: "30"}
+    - {view: top, a: [-20, 0, 30], b: [20, 0, 30], side: bottom, text: "Ø40"}
+  callouts:
+    - {view: front, at: [0, 0, 30], r: 10, angle: 200, leader: 110, text: "Ø20 通孔"}
+    - {view: front, at: [30, 30, 10], r: 4.5, angle: 135, leader: 40, text: "4×Ø9 通孔"}
+    - {view: front, at: [-30, 30, 10], r: 10, angle: 135, leader: 30, text: "4×R10"}
+  centers:
+    - {view: front, at: [0, 0, 30], r: 20}
+    - {view: front, at: [30, 30, 10], r: 4.5}
+    - {view: front, at: [-30, 30, 10], r: 4.5}
+    - {view: front, at: [30, -30, 10], r: 4.5}
+    - {view: front, at: [-30, -30, 10], r: 4.5}
+  notes:
+    - "Ø40 凸台与底板同心，高出底板 20；Ø20 孔贯通"
+
+# frame：轴 0 = 高度 30（底面低），轴 1、2 = 底板两边（各 80）
+entities:
+  boss: {cylinder: {d: 40, side: outer}, count: 1}
+  bore: {cylinder: {d: 20, side: inner}, count: 1}
+  holes: {cylinder: {d: 9, side: inner}, count: 4}
+  frame: {principal_frame: {signs: {0: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 80×80；俯视图总高 30
+    hard: true
+    check:
+      - bbox_sorted: [30, 80, 80]
+
+  - id: plate
+    source: 俯视图底板厚 10
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 5, 40], expect: [[0, 10]]}
+
+  - id: corners
+    source: 主视图 4×R10
+    check:
+      - blend_faces: {radius: 10, side: outer, min_count: 4}
+
+  - id: boss
+    source: 俯视图 Ø40 凸台，总高 30；注释：与底板同心
+    check:
+      - exists: boss
+      - axis_positions: {frame: frame, items: boss, axes: [1, 2], expect: [[40, 40]]}
+      - line_material: {frame: frame, along: 0, at: [null, 40, 25], expect: [[0, 30]]}
+
+  - id: bore
+    source: 主视图 Ø20 通孔，居中
+    check:
+      - exists: bore
+      - through: {holes: bore}
+      - axis_positions: {frame: frame, items: bore, axes: [1, 2], expect: [[40, 40]]}
+
+  - id: holes
+    source: 主视图 4×Ø9 通孔，孔距 60×60
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - parallel_to_frame: {frame: frame, axis: 0, items: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[10, 10], [10, 70], [70, 10], [70, 70]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 76304.87
+    check:
+      - volume: 76304.87
+
+ungraded: []

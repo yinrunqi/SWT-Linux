@@ -1,0 +1,139 @@
+case: gearbox_housing
+prompt: >-
+  创建一个单级减速器下箱体，单一实体，Z 轴竖直向上，底面在 z = 0。箱体外形是 200×120×100mm 的长方体
+  （x ∈ [−100, 100]、y ∈ [−60, 60]、z ∈ [0, 100]），顶面敞开，四周壁厚 8mm，底板厚 10mm。顶端有一圈
+  240×160mm、厚 10mm 的矩形法兰（z = 90~100，与箱口齐平，中间开口与箱体内腔相同），法兰上在 (±110, ±70) 和 (0, ±70)
+  处开 6 个直径 11mm 的螺栓通孔。两侧长壁（±Y 面）上各有两个轴承座凸台：凸台是轴线沿 Y、直径 70mm 的圆柱，
+  中心高 z = 50mm，从箱壁外表面向外伸出 15mm（到 y = ±75）；高速轴轴承座位于 x = −45mm，轴承孔直径 47mm；
+  低速轴轴承座位于 x = 50mm，轴承孔直径 52mm；两个轴承孔都沿 Y 贯穿两侧凸台和箱壁。每个凸台正下方有一条厚 8mm 的
+  竖直加强筋（筋的中面与凸台轴线在同一 x 处），从箱壁外表面伸出到 y = ±75，从底面 z = 0 一直到 z = 25 与凸台相连。
+  箱体两端（±X）各有一个安装脚：x ∈ [100, 130] 和 [−130, −100]、y ∈ [−60, 60]、厚 12mm（z = 0~12），
+  每个安装脚上在 (±115, ±40) 处开直径 13mm 的地脚螺栓通孔（共 4 个）。底板中心 (0, 0) 处开一个直径 10.2mm 的
+  放油通孔；+X 端壁上在 y = 0、z = 40 处开一个直径 14mm 的油位观察孔，沿 X 贯穿端壁。
+prompt_en: >-
+  Create the lower housing of a single-stage gear reducer as a single solid body, with the Z axis pointing up
+  and the bottom face at z = 0. The housing is a 200×120×100mm box (x ∈ [−100, 100], y ∈ [−60, 60],
+  z ∈ [0, 100]), open at the top, with 8mm walls all round and a 10mm-thick floor. At the top there is a
+  240×160mm rectangular flange 10mm thick (z = 90~100, flush with the top of the housing, its central opening
+  the same as the cavity of the housing), with 6 through bolt holes of 11mm diameter at (±110, ±70) and
+  (0, ±70). Each long side wall (the ±Y faces) has two bearing bosses: each boss is a cylinder of 70mm diameter
+  with its axis along Y, centered at height z = 50mm, protruding 15mm outward from the outer surface of the wall
+  (to y = ±75). The high-speed bearing seat is at x = −45mm with a 47mm-diameter bearing bore; the low-speed
+  bearing seat is at x = 50mm with a 52mm-diameter bearing bore; both bores run along Y through the bosses and
+  walls on both sides. Directly below each boss there is a vertical stiffening rib 8mm thick (its mid-plane at
+  the same x as the boss axis), protruding from the outer surface of the wall to y = ±75 and running from the
+  bottom z = 0 up to z = 25, where it joins the boss. Each end of the housing (±X) has a mounting foot:
+  x ∈ [100, 130] and [−130, −100], y ∈ [−60, 60], 12mm thick (z = 0~12), with 13mm-diameter through holes for
+  foundation bolts at (±115, ±40) (4 in total). The floor has a 10.2mm-diameter through oil-drain hole at its
+  center (0, 0), and the +X end wall has a 14mm-diameter oil-level sight hole at y = 0, z = 40, running along X
+  through the end wall.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿放油孔轴线向上，t = 0 在底面（两端平面面积较大的一端），原点在 (0, 0, 0)；
+# 轴 1 指向油位观察孔一侧（+X），轴 2 = 轴 0 × 轴 1（+Y）。frame 坐标与题面世界坐标一致。
+entities:
+  drain:    {cylinder: {d: 10.2, side: inner}, count: 1}
+  sight:    {cylinder: {d: 14, side: inner}, count: 1}
+  bore_hs:  {cylinder: {d: 47, side: inner}, count: 2}
+  bore_ls:  {cylinder: {d: 52, side: inner}, count: 2}
+  bosses:   {cylinder: {d: 70, side: outer}, count: 4}
+  fholes:   {cylinder: {d: 11, side: inner}, count: 6}
+  feet:     {cylinder: {d: 13, side: inner}, count: 4}
+  frame:    {axis_frame: {axis: drain, low: larger_area, ref_dir: sight, ref_dir_toward: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 安装脚两端 260mm；法兰 160mm 宽；总高 100mm
+    hard: true
+    check:
+      - bbox_sorted: [100, 160, 260]
+
+  - id: walls
+    source: 200×120×100mm 箱体，四周壁厚 8mm
+    check:
+      - line_material: {frame: frame, along: 1, at: [70, null, 0], expect: [[-100, -92], [92, 100]]}
+      - line_material: {frame: frame, along: 2, at: [70, 0, null], expect: [[-60, -52], [52, 60]]}
+
+  - id: floor
+    source: 底板厚 10mm，顶面敞开
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 0, 30], expect: [[0, 10]]}
+      - line_material: {frame: frame, along: 0, at: [null, 70, -30], expect: [[0, 10]]}
+
+  - id: flange
+    source: 240×160mm、厚 10mm 的顶部法兰，z = 90~100
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 0, 76], expect: [[90, 100]]}
+      - line_material: {frame: frame, along: 1, at: [95, null, 76], expect: [[-120, 120]]}
+      - line_material: {frame: frame, along: 2, at: [95, 118, null], expect: [[-80, 80]]}
+
+  - id: flange_holes
+    source: 法兰上 (±110, ±70)、(0, ±70) 处 6 个直径 11mm 螺栓通孔
+    check:
+      - exists: fholes
+      - through: {holes: fholes}
+      - axis_positions: {frame: frame, items: fholes, axes: [1, 2],
+                         expect: [[110, 70], [110, -70], [0, 70], [0, -70], [-110, 70], [-110, -70]]}
+
+  - id: bearing_bores
+    source: 高速轴承孔 x = −45、直径 47mm；低速轴承孔 x = 50、直径 52mm；中心高 50mm，沿 Y 贯穿两侧
+    check:
+      - exists: bore_hs
+      - exists: bore_ls
+      - through: {holes: bore_hs}
+      - through: {holes: bore_ls}
+      - parallel_to_frame: {frame: frame, items: bore_hs, axis: 2}
+      - axis_positions: {frame: frame, items: bore_hs, axes: [0, 1], expect: [[50, -45], [50, -45]]}
+      - axis_positions: {frame: frame, items: bore_ls, axes: [0, 1], expect: [[50, 50], [50, 50]]}
+
+  - id: bosses
+    source: 直径 70mm 的轴承座凸台，从箱壁外表面伸出 15mm 到 y = ±75
+    derivation: >-
+      y = 70（凸台内）、z = 50 沿 X：高速凸台 [−80, −10] 去掉孔 [−68.5, −21.5]，低速凸台 [15, 85] 去掉孔 [24, 76]；
+      x = −15 沿 Y：凸台与箱壁连成 [−75, −52]、[52, 75]
+    check:
+      - exists: bosses
+      - line_material: {frame: frame, along: 1, at: [50, null, 70],
+                        expect: [[-80, -68.5], [-21.5, -10], [15, 24], [76, 85]]}
+      - line_material: {frame: frame, along: 2, at: [50, -15, null], expect: [[-75, -52], [52, 75]]}
+
+  - id: ribs
+    source: 每个凸台正下方一条厚 8mm 竖直加强筋，伸出到 y = ±75，从 z = 0 到 z = 25 与凸台相连
+    derivation: x = −45、y = 68 竖直穿过：筋 [0, 25] 与凸台下半部连成 [0, 26.5]（孔底 50 − 23.5），孔上方凸台 [73.5, 85]
+    check:
+      - line_material: {frame: frame, along: 1, at: [10, null, 68], expect: [[-49, -41], [46, 54]]}
+      - line_material: {frame: frame, along: 1, at: [10, null, -68], expect: [[-49, -41], [46, 54]]}
+      - line_material: {frame: frame, along: 0, at: [null, -45, 68], expect: [[0, 26.5], [73.5, 85], [90, 100]]}
+
+  - id: feet
+    source: 两端安装脚 x ∈ ±[100, 130]、厚 12mm，(±115, ±40) 处直径 13mm 地脚螺栓通孔
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 115, 0], expect: [[0, 12], [90, 100]]}
+      - line_material: {frame: frame, along: 1, at: [6, null, 20], expect: [[-130, 130]]}
+      - exists: feet
+      - through: {holes: feet}
+      - axis_positions: {frame: frame, items: feet, axes: [1, 2],
+                         expect: [[115, 40], [115, -40], [-115, 40], [-115, -40]]}
+
+  - id: drain_and_sight
+    source: 底板中心直径 10.2mm 放油通孔；+X 端壁 y = 0、z = 40 处直径 14mm 观察孔
+    check:
+      - exists: drain
+      - through: {holes: drain}
+      - exists: sight
+      - through: {holes: sight}
+      - axis_positions: {frame: frame, items: sight, axes: [0, 2], expect: [[40, 0]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 954683.5
+    check:
+      - volume: 954683.5
+
+ungraded: []

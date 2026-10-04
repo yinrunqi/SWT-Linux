@@ -1,0 +1,90 @@
+case: d25_step_pin
+title: D25 带头销轴
+prompt: 根据所附三视图（第三角画法，单位 mm）建模带头销轴，单一实体。
+prompt_en: Model the headed pin from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d25_step_pin.png
+reference: eval/three_view/references/d25_step_pin.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: right, a: [0, -12, 0], b: [0, -12, 6], side: bottom, tier: 1, text: "6"}
+    - {view: right, a: [0, -12, 0], b: [0, -8, 66], side: bottom, tier: 2, text: "66"}
+    - {view: right, a: [0, 8, 53], b: [0, 8, 56], side: top, tier: 1, text: "3"}
+    - {view: right, a: [0, 8, 56], b: [0, 7, 66], side: top, tier: 1, text: "10"}
+    - {view: right, a: [0, 2, 61], b: [0, 7, 66], side: top, tier: 2, text: "5"}
+    - {view: right, a: [0, -12, 0], b: [0, 12, 0], side: right, text: "Ø24"}
+    - {view: right, a: [0, -8, 30], b: [0, 8, 30], side: left, tier: 1, text: "Ø16"}
+    - {view: right, a: [0, -6.5, 54.5], b: [0, 6.5, 54.5], side: left, tier: 2, text: "Ø13"}
+  callouts:
+    - {view: right, at: [0, 0, 61], r: 2, angle: -60, leader: 80, text: "Ø4 通孔"}
+    - {view: right, at: [0, 7.5, 65.5], r: 0, angle: 120, leader: 40, text: "C1"}
+  centers:
+    - {view: right, at: [0, 0, 61], r: 2}
+  axes:
+    - {view: right, a: [0, 0, -4], b: [0, 0, 70]}
+    - {view: top, a: [0, 0, -4], b: [0, 0, 70]}
+  notes:
+    - "退刀槽宽 3、槽底 Ø13，槽右侧距端面 10；端部倒角 1×45°"
+    - "Ø4 横孔垂直于轴线贯通，孔心距端面 5"
+
+# frame：轴 0 沿 Ø16 轴线（头部端低），轴 1 沿横孔方向
+entities:
+  shank: {cylinder: {d: 16, side: outer}}
+  groove: {cylinder: {d: 13, side: outer}, count: 1}
+  cross: {cylinder: {d: 4, side: inner}, count: 1}
+  chamfer: {cone: {semi_angle: 45, side: outer}, count: 1}
+  frame: {axis_frame: {axis: shank, ref_dir: cross, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 右视图总长 66、头部 Ø24
+    hard: true
+    check:
+      - bbox_sorted: [24, 24, 66]
+      - exists: shank
+
+  - id: head
+    source: 右视图头部 Ø24、厚 6
+    check:
+      - line_material: {frame: frame, along: 0, polar: [10, 90], expect: [[0, 6]]}
+      - radial_material: {frame: frame, t: 3, deg: 90, expect: [[0, 12]]}
+
+  - id: shank
+    source: 右视图销杆 Ø16
+    check:
+      - radial_material: {frame: frame, t: 30, deg: 90, expect: [[0, 8]]}
+
+  - id: groove
+    source: 右视图退刀槽宽 3、Ø13，距端面 10
+    derivation: 槽占 [53, 56]；半径 7.5 处端部倒角止于 65.5
+    check:
+      - exists: groove
+      - line_material: {frame: frame, along: 0, polar: [7.5, 90], expect: [[0, 53], [56, 65.5]]}
+
+  - id: chamfer
+    source: 右视图 C1；注释：端部倒角 1×45°
+    check:
+      - exists: chamfer
+      - radial_material: {frame: frame, t: 65.5, deg: 90, expect: [[0, 7.5]]}
+
+  - id: cross_hole
+    source: 右视图 Ø4 通孔，距端面 5；注释：垂直于轴线贯通
+    check:
+      - exists: cross
+      - through: {holes: cross}
+      - line_material: {frame: frame, along: 0, polar: [5, 0], expect: [[0, 59], [63, 66]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 旋转与布尔运算）体积 14349.49
+    check:
+      - volume: 14349.49
+
+ungraded: []

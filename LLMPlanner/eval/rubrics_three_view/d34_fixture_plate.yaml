@@ -1,0 +1,88 @@
+case: d34_fixture_plate
+title: D34 夹具底板
+prompt: 根据所附三视图（第三角画法，单位 mm）建模夹具底板，单一实体。
+prompt_en: Model the fixture base plate from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d34_fixture_plate.png
+reference: eval/three_view/references/d34_fixture_plate.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-60, -40, 15], b: [60, -40, 15], side: bottom, tier: 2, text: "120"}
+    - {view: front, a: [-40, -25, 15], b: [0, -25, 15], side: bottom, tier: 1, text: "40"}
+    - {view: front, a: [0, -25, 15], b: [40, -25, 15], side: bottom, tier: 1, text: "40"}
+    - {view: front, a: [-60, -40, 15], b: [-60, 40, 15], side: left, tier: 2, text: "80"}
+    - {view: front, a: [-60, -25, 15], b: [-60, 25, 15], side: left, tier: 1, text: "50"}
+    - {view: front, a: [-20, 15, 15], b: [20, 15, 15], side: top, text: "40"}
+    - {view: front, a: [60, -15, 15], b: [60, 15, 15], side: right, tier: 1, text: "30"}
+    - {view: front, a: [60, 0, 15], b: [52, 0, 15], side: top, tier: 2, text: "8"}
+    - {view: right, a: [60, 40, 0], b: [60, 40, 15], side: top, text: "15"}
+    - {view: right, a: [60, -40, 15], b: [60, -40, 9], side: bottom, text: "6"}
+  callouts:
+    - {view: front, at: [40, 25, 15], r: 4, angle: 45, leader: 40, text: "6×Ø8 通孔"}
+    - {view: front, at: [52, 0, 15], r: 3, angle: 60, leader: 50, text: "2×Ø6 深 10"}
+    - {view: front, at: [15, 10, 15], r: -5, angle: 225, leader: 40, text: "4×R5"}
+  centers:
+    - {view: front, at: [40, 25, 15], r: 4}
+    - {view: front, at: [0, 25, 15], r: 4}
+    - {view: front, at: [-40, 25, 15], r: 4}
+    - {view: front, at: [40, -25, 15], r: 4}
+    - {view: front, at: [0, -25, 15], r: 4}
+    - {view: front, at: [-40, -25, 15], r: 4}
+    - {view: front, at: [52, 0, 15], r: 3}
+    - {view: front, at: [-52, 0, 15], r: 3}
+  notes:
+    - "中央矩形槽 40×30 深 6，居中，四角 R5；所有孔组对称于两条中心线"
+
+# frame：轴 0 = 厚度 15（底面低），轴 1 = 宽度 80，轴 2 = 长度 120
+entities:
+  grid: {cylinder: {d: 8, side: inner}, count: 6}
+  dowels: {cylinder: {d: 6, side: inner}, count: 2}
+  frame: {principal_frame: {signs: {0: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 120×80；右视图厚 15
+    hard: true
+    check:
+      - bbox_sorted: [15, 80, 120]
+
+  - id: pocket
+    source: 主视图槽 40×30，居中；右视图槽深 6
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 40, 60], expect: [[0, 9]]}
+      - line_material: {frame: frame, along: 2, at: [12, 50, null], expect: [[0, 40], [80, 120]]}
+      - line_material: {frame: frame, along: 1, at: [12, null, 70], expect: [[0, 25], [55, 80]]}
+
+  - id: corners
+    source: 主视图 4×R5
+    check:
+      - blend_faces: {radius: 5, side: inner, min_count: 4}
+
+  - id: grid
+    source: 主视图 6×Ø8 通孔，孔距 40、50；注释：对称于两条中心线
+    check:
+      - exists: grid
+      - through: {holes: grid}
+      - axis_positions: {frame: frame, items: grid, axes: [1, 2], expect: [[15, 20], [15, 60], [15, 100], [65, 20], [65, 60], [65, 100]]}
+
+  - id: dowels
+    source: 主视图 2×Ø6 深 10，距边 8；注释：位于中心线上
+    check:
+      - exists: dowels
+      - pocket_depth: {pocket: dowels, value: 10}
+      - axis_positions: {frame: frame, items: dowels, axes: [1, 2], expect: [[40, 8], [40, 112]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 131839.38
+    check:
+      - volume: 131839.38
+
+ungraded: []

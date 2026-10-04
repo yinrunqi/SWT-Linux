@@ -1,0 +1,85 @@
+case: d24_u_channel
+title: D24 U 形槽座
+prompt: 根据所附三视图（第三角画法，单位 mm）建模 U 形槽座，单一实体。
+prompt_en: Model the U-channel seat from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d24_u_channel.png
+reference: eval/three_view/references/d24_u_channel.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-50, 0, 30], b: [50, 0, 30], side: bottom, text: "100"}
+    - {view: front, a: [-50, 0, 30], b: [-50, 48, 30], side: left, text: "48"}
+    - {view: front, a: [-30, 28, 30], b: [30, 28, 30], side: top, text: "60"}
+    - {view: front, a: [50, 0, 30], b: [30, 28, 30], side: right, text: "28"}
+    - {view: right, a: [50, 0, 30], b: [50, 0, -30], side: bottom, text: "60"}
+    - {view: right, a: [50, 48, 30], b: [50, 48, 22], side: top, text: "8"}
+    - {view: right, a: [50, 0, -30], b: [50, 8, -30], side: right, text: "8"}
+    - {view: top, a: [-20, 8, 0], b: [20, 8, 0], side: top, text: "40"}
+    - {view: top, a: [20, 8, -5], b: [20, 8, 5], side: right, text: "10"}
+  callouts:
+    - {view: front, at: [30, 28, 30], r: 6, angle: 60, leader: 50, text: "2×Ø12 通孔"}
+  centers:
+    - {view: front, at: [30, 28, 30], r: 6}
+    - {view: front, at: [-30, 28, 30], r: 6}
+  axes:
+    - {view: top, a: [0, 48, -34], b: [0, 48, 34]}
+  notes:
+    - "两侧壁厚 8、高至 48；2×Ø12 孔贯通前后两侧壁"
+    - "底板长圆通孔 40×10，两端半圆，居中"
+
+# frame：轴 0 = 高度 48（底面低），轴 1 = 前后 60，轴 2 = 长度 100
+entities:
+  holes: {cylinder: {d: 12, side: inner}}
+  slot_ends: {cylinder: {d: 10, side: inner}, count: 2}
+  frame: {principal_frame: {signs: {0: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 100、48；右视图 60
+    hard: true
+    check:
+      - bbox_sorted: [48, 60, 100]
+
+  - id: base
+    source: 右视图底板厚 8
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 30, 10], expect: [[0, 8]]}
+
+  - id: walls
+    source: 右视图侧壁厚 8；主视图高 48
+    check:
+      - line_material: {frame: frame, along: 1, at: [40, null, 10], expect: [[0, 8], [52, 60]]}
+      - line_material: {frame: frame, along: 0, at: [null, 4, 10], expect: [[0, 48]]}
+
+  - id: slot
+    source: 俯视图长圆孔 40×10；注释：两端半圆，居中
+    check:
+      - exists: slot_ends
+      - parallel_to_frame: {frame: frame, axis: 0, items: slot_ends}
+      - line_material: {frame: frame, along: 2, at: [4, 30, null], expect: [[0, 30], [70, 100]]}
+      - line_material: {frame: frame, along: 1, at: [4, null, 50], expect: [[0, 25], [35, 60]]}
+
+  - id: holes
+    source: 主视图 2×Ø12 通孔，孔距 60、孔心高 28；注释：贯通两侧壁
+    derivation: 侧壁中面上，孔占长度方向 [14, 26] 与 [74, 86]
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - parallel_to_frame: {frame: frame, axis: 1, items: holes}
+      - line_material: {frame: frame, along: 1, at: [28, null, 20], expect: []}
+      - line_material: {frame: frame, along: 2, at: [28, 4, null], expect: [[0, 14], [26, 74], [86, 100]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 105352.57
+    check:
+      - volume: 105352.57
+
+ungraded: []

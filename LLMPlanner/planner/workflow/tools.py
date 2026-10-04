@@ -8,8 +8,13 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import math
+import os
+import subprocess
+import tempfile
+from pathlib import Path
 from typing import Any, Callable
 
 import requests
@@ -26,6 +31,11 @@ from .sketch_check import check_profile, to_geometry
 
 VOLUME_EPS_MM3 = 1e-3
 AXES = ("X", "Y", "Z")
+LLMPLANNER_ROOT = Path(__file__).resolve().parents[2]
+RENDER_PYTHON = os.getenv("GEOMCHECK_PYTHON") or str(LLMPLANNER_ROOT / "venv-occ" / "Scripts" / "python.exe")
+RENDER_TIMEOUT_S = 180
+# 工具结果里以 PNG base64 返回的图片；Agent 取出后作为图片消息发送，不写进 tool 文本
+IMAGE_KEY = "_image_png_b64"
 MAX_PLANAR_FACES = 40
 MAX_CYLINDER_FACES = 30
 
@@ -364,7 +374,19 @@ INTERNAL_GEAR_SPEC = _tool(
     },
     ["module", "teeth", "face_width", "outer_diameter"],
 )
-EXTRA_TOOL_SPECS = {"spur_gear": SPUR_GEAR_SPEC, "internal_gear": INTERNAL_GEAR_SPEC}
+RENDER_VIEWS_SPEC = _tool(
+    "render_views",
+    "把当前零件按第三角画法投影成三视图（不带尺寸标注），图片附在下一条消息里，用来和输入图纸逐个视图对照。"
+    "主视图沿 -Z 方向看（图上右 = +X、上 = +Y），俯视图在主视图上方（从 +Y 往下看，图上下 = +Z），"
+    "右视图在主视图右方（从 +X 看，图上右 = -Z）。可见边为实线，隐藏边为虚线。只在看图建模会话中可用。",
+    {},
+    [],
+)
+EXTRA_TOOL_SPECS = {
+    "spur_gear": SPUR_GEAR_SPEC,
+    "internal_gear": INTERNAL_GEAR_SPEC,
+    "render_views": RENDER_VIEWS_SPEC,
+}
 # 装配零件附加工具集的版本：v1 = {spur_gear}；v2 加入 internal_gear。结果文件按此标注。
 EXTRA_TOOLSET_VERSION = "v2"
 
@@ -441,6 +463,8 @@ class WorkflowSession:
             self._handlers["spur_gear"] = self.spur_gear
         if "internal_gear" in extra_tools:
             self._handlers["internal_gear"] = self.internal_gear
+        if "render_views" in extra_tools:
+            self._handlers["render_views"] = self.render_views
 
     # ------------------------------------------------------------ HTTP
 
@@ -590,6 +614,37 @@ class WorkflowSession:
     def get_model_state(self, args: dict) -> dict:
         return {"state": self.state_summary()}
 
+    def _render_png(self, step: Path, png: Path) -> None:
+        """在 OCC 环境里投影 STEP；后端环境没有 OCP，所以走子进程。"""
+        try:
+            proc = subprocess.run(
+                [RENDER_PYTHON, "-X", "utf8", "-m", "geomcheck.drawing", str(step), str(png)],
+                cwd=LLMPLANNER_ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                timeout=RENDER_TIMEOUT_S,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise WorkflowError("RENDER_FAILED", f"{type(exc).__name__}: {exc}") from None
+        if proc.returncode != 0 or not png.is_file():
+            raise WorkflowError("RENDER_FAILED", (proc.stderr or proc.stdout or "").strip()[-300:])
+
+    def render_views(self, args: dict) -> dict:
+        state = self.state_summary()
+        if not state.get("volume_mm3"):
+            raise WorkflowError("NO_BODY", "零件中还没有实体，无法投影")
+        with tempfile.TemporaryDirectory(prefix="render_views_") as tmp:
+            step, png = Path(tmp) / "current.step", Path(tmp) / "views.png"
+            data = self._request("POST", "/api/export-step", {"stepPath": str(step)})
+            if not data.get("success") or not step.is_file():
+                raise WorkflowError("RENDER_FAILED", str(data.get("message") or data.get("error") or "STEP 导出失败"))
+            self._render_png(step, png)
+            image = base64.b64encode(png.read_bytes()).decode("ascii")
+        return {
+            "bbox_mm": state["bbox_mm"],
+            "volume_mm3": state["volume_mm3"],
+            "note": "三视图图片附在下一条消息里",
+            IMAGE_KEY: image,
+        }
+
     # ------------------------------------------------------------ 调度
 
     def call(self, name: str, args: dict | None) -> dict:
@@ -651,9 +706,9 @@ class WorkflowSession:
 
     # ------------------------------------------------------------ 平面与草图
 
-    def _frame(self, plane: str, snapshot: dict) -> SketchFrame:
+    def _frame(self, plane: str, snapshot: dict, *, arg: str = "plane") -> SketchFrame:
         if not plane:
-            raise WorkflowError("TOOL_ARGS", "缺少 plane")
+            raise WorkflowError("TOOL_ARGS", f"缺少 {arg}")
         frame = base_plane_frame(plane)
         if frame is not None:
             return frame
@@ -736,10 +791,16 @@ class WorkflowSession:
         failure: WorkflowError | None = None
         if not ok:
             failed = next((item for item in results if not item.get("success")), results[-1] if results else {})
+            extra = {}
+            if expect == "decrease":
+                extra["hint"] = (
+                    "SolidWorks 在切除范围内找不到可去除的材料时也会报这个错：检查轮廓沿切除方向是否真的穿过实体，"
+                    "是否与已有的孔/槽/空腔完全重合（已切过的部分不能再切），方向是否朝向实体外侧。"
+                )
             failure = WorkflowError(
                 "FEATURE_FAILED",
                 f"{failed.get('operation')}: {failed.get('message')}",
-                **context,
+                **{**context, **extra},
             )
         elif expect == "increase" and delta <= VOLUME_EPS_MM3:
             failure = WorkflowError("FEATURE_NO_EFFECT", f"体积没有增加（Δ={delta:.3f} mm³）", **context)
@@ -1024,7 +1085,7 @@ class WorkflowSession:
 
     def ref_plane(self, args: dict) -> dict:
         before = self.snapshot()
-        base = self._frame(args.get("reference"), before)
+        base = self._frame(args.get("reference"), before, arg="reference")
         offset = self._num(args, "offset", required=True)
         target = base.offset_mm + base.normal_sign * offset
         index = AXES.index(base.axis)
@@ -1200,9 +1261,13 @@ class WorkflowSession:
                 **shared, "plane": args.get("plane"),
                 "loops": [{"type": "circle", "center": center, "diameter": through_d} for center in centers],
             })
-        except WorkflowError:
+        except WorkflowError as exc:
             for name in reversed(head.get("created") or []):
                 self._request("POST", "/api/delete-feature", {"featureName": name})
+            exc.context["hint"] = (
+                f"沉头部分已成功并已回滚，失败的是直径 {through_d:g} 的通孔部分。"
+                "如果这个位置已经有同径的孔，只需用 cut 单独切出沉头。"
+            )
             raise
         after = self.snapshot()
         return {
@@ -1250,8 +1315,8 @@ class WorkflowSession:
         is_cut = bool(args.get("cut", False))
         if is_cut and self._volume(before) <= 0:
             raise WorkflowError("NO_BODY", "零件中还没有实体，无法扫描切除")
-        path_frame = self._frame(args.get("path_plane"), before)
-        profile_frame = self._frame(args.get("profile_plane"), before)
+        path_frame = self._frame(args.get("path_plane"), before, arg="path_plane")
+        profile_frame = self._frame(args.get("profile_plane"), before, arg="profile_plane")
         start = self._uv_pair(args.get("path_start"), "path_start")
         steps = args.get("path_segments")
         if not isinstance(steps, list) or not steps:
@@ -1323,7 +1388,7 @@ class WorkflowSession:
         if self._volume(before) <= 0:
             raise WorkflowError("NO_BODY", "零件中还没有实体，无法拔模")
         angle = self._num(args, "angle_deg", required=True)
-        neutral = self._frame(args.get("neutral"), before)
+        neutral = self._frame(args.get("neutral"), before, arg="neutral")
         faces = [self._frame(item, before).sw_reference for item in (args.get("faces") or [])]
         if not faces:
             raise WorkflowError("TOOL_ARGS", "faces 不能为空")
@@ -1481,6 +1546,6 @@ def dumps_result(result: dict, limit: int = 6000) -> str:
 
 
 __all__ = [
-    "TOOL_SPECS", "TOOL_NAMES", "EXTRA_TOOL_SPECS", "SPUR_GEAR_SPEC",
+    "TOOL_SPECS", "TOOL_NAMES", "EXTRA_TOOL_SPECS", "SPUR_GEAR_SPEC", "RENDER_VIEWS_SPEC", "IMAGE_KEY",
     "WorkflowSession", "dumps_result", "tool_specs", "BASE_PLANES",
 ]

@@ -1,0 +1,81 @@
+case: d21_t_slot_block
+title: D21 T 形槽块
+prompt: 根据所附三视图（第三角画法，单位 mm）建模 T 形槽块，单一实体。
+prompt_en: Model the T-slot block from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d21_t_slot_block.png
+reference: eval/three_view/references/d21_t_slot_block.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-40, 0, 25], b: [40, 0, 25], side: bottom, text: "80"}
+    - {view: front, a: [-40, 0, 25], b: [-40, 40, 25], side: left, text: "40"}
+    - {view: front, a: [-6, 40, 25], b: [6, 40, 25], side: top, tier: 1, text: "12"}
+    - {view: front, a: [-12, 22, 25], b: [12, 22, 25], side: top, tier: 2, text: "24"}
+    - {view: front, a: [40, 40, 25], b: [6, 30, 25], side: right, tier: 1, text: "10"}
+    - {view: front, a: [40, 40, 25], b: [12, 22, 25], side: right, tier: 2, text: "18"}
+    - {view: top, a: [-30, 40, 0], b: [30, 40, 0], side: top, text: "60"}
+    - {view: right, a: [40, 0, 25], b: [40, 0, -25], side: bottom, text: "50"}
+  callouts:
+    - {view: top, at: [30, 40, 0], r: 4.5, angle: -45, leader: 40, text: "2×Ø9 通孔"}
+  centers:
+    - {view: top, at: [30, 40, 0], r: 4.5}
+    - {view: top, at: [-30, 40, 0], r: 4.5}
+  axes:
+    - {view: front, a: [0, -4, 25], b: [0, 44, 25]}
+  notes:
+    - "T 形槽贯通前后，左右对称：槽口宽 12、深 10，槽底宽 24、高 8"
+    - "2×Ø9 孔竖直贯通，前后居中"
+
+# frame：轴 0 = 高度 40（底面低），轴 1 = 前后 50，轴 2 = 长度 80
+entities:
+  holes: {cylinder: {d: 9, side: inner}, count: 2}
+  frame: {principal_frame: {signs: {0: larger_area_low}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 80、40；右视图 50
+    hard: true
+    check:
+      - bbox_sorted: [40, 50, 80]
+
+  - id: neck
+    source: 主视图槽口宽 12、深 10
+    check:
+      - line_material: {frame: frame, along: 2, at: [35, 10, null], expect: [[0, 34], [46, 80]]}
+      - line_material: {frame: frame, along: 2, at: [35, 40, null], expect: [[0, 34], [46, 80]]}
+
+  - id: head
+    source: 主视图槽底宽 24，槽深至 18
+    derivation: 槽底在高 40 − 18 = 22，槽底段高 8 占 [22, 30]
+    check:
+      - line_material: {frame: frame, along: 0, at: [null, 25, 40], expect: [[0, 22]]}
+      - line_material: {frame: frame, along: 2, at: [26, 10, null], expect: [[0, 28], [52, 80]]}
+
+  - id: through
+    source: 注释：T 形槽贯通前后
+    check:
+      - line_material: {frame: frame, along: 1, at: [35, null, 40], expect: []}
+      - line_material: {frame: frame, along: 1, at: [26, null, 30], expect: []}
+
+  - id: holes
+    source: 俯视图 2×Ø9 通孔，孔距 60；注释：前后居中
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - parallel_to_frame: {frame: frame, axis: 0, items: holes}
+      - axis_positions: {frame: frame, items: holes, axes: [1, 2], expect: [[25, 10], [25, 70]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 80·40·50 − 12·10·50 − 24·8·50 − 2·π·4.5²·40 = 139310.62
+    check:
+      - volume: 139310.62
+
+ungraded: []

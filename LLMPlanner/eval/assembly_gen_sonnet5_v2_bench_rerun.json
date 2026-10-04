@@ -1,0 +1,6388 @@
+{
+  "summary": {
+    "n": 3,
+    "part_pass_rate": 1.0,
+    "assembly_score": 75.11,
+    "motion_score": 20.0,
+    "e2e": 0.0
+  },
+  "by_workflow": {
+    "v2": {
+      "all": {
+        "n": 3,
+        "part_pass_rate": 1.0,
+        "assembly_score": 75.11,
+        "motion_score": 20.0,
+        "e2e": 0.0
+      },
+      "excavator_arm": {
+        "n": 1,
+        "part_pass_rate": 1.0,
+        "assembly_score": 95.83,
+        "motion_score": 0.0,
+        "e2e": 0.0
+      },
+      "offset_slider_crank": {
+        "n": 1,
+        "part_pass_rate": 1.0,
+        "assembly_score": 72.5,
+        "motion_score": 60.0,
+        "e2e": 0.0
+      },
+      "pantograph": {
+        "n": 1,
+        "part_pass_rate": 1.0,
+        "assembly_score": 57.0,
+        "motion_score": 0.0,
+        "e2e": 0.0
+      }
+    }
+  },
+  "recipes": {
+    "v2": [
+      "assembly_topology.md",
+      "assembly_joint_mapping.md",
+      "assembly_coupling.md",
+      "assembly_linkage.md",
+      "assembly_motion_check.md"
+    ]
+  },
+  "results": [
+    {
+      "case_id": "offset_slider_crank",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "v2",
+      "parts": [
+        {
+          "part_id": "os_frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "os_frame",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      8.0,
+                      70.0,
+                      140.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        30.0,
+                        30.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 72391,
+            "completion_tokens": 1070,
+            "total_tokens": 73461,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 28.07,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_frame.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_frame.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_frame.agent.json"
+        },
+        {
+          "part_id": "os_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "os_shaft",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      24.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      10.0,
+                      10.0,
+                      24.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 37970,
+            "completion_tokens": 701,
+            "total_tokens": 38671,
+            "calls": 2
+          },
+          "llm_calls": 2,
+          "duration_seconds": 13.26,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_shaft.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_shaft.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_shaft.agent.json"
+        },
+        {
+          "part_id": "os_crank",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "os_crank",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      16.0,
+                      31.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        23.0,
+                        8.0
+                      ]
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        8.0,
+                        8.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 70509,
+            "completion_tokens": 1233,
+            "total_tokens": 71742,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 26.7,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_crank.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_crank.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_crank.agent.json"
+        },
+        {
+          "part_id": "os_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "os_pin12",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      12.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      6.0,
+                      12.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 32458,
+            "completion_tokens": 584,
+            "total_tokens": 33042,
+            "calls": 2
+          },
+          "llm_calls": 2,
+          "duration_seconds": 12.9,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_pin12.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_pin12.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_pin12.agent.json"
+        },
+        {
+          "part_id": "os_rod",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "os_rod",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      12.0,
+                      72.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        6.0,
+                        6.0
+                      ],
+                      [
+                        66.0,
+                        6.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 70977,
+            "completion_tokens": 1272,
+            "total_tokens": 72249,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 27.4,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_rod.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_rod.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_rod.agent.json"
+        },
+        {
+          "part_id": "os_slider",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "os_slider",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      16.0,
+                      24.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        12.0,
+                        8.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 64731,
+            "completion_tokens": 890,
+            "total_tokens": 65621,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 21.68,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_slider.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_slider.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_slider.agent.json"
+        }
+      ],
+      "assembly": {
+        "status": "max_llm_calls",
+        "infra_error": null,
+        "static": {
+          "component_count": 7,
+          "saved": false
+        },
+        "rubric": {
+          "score": 72.5,
+          "parts": {
+            "rigid_groups": 1.0,
+            "joints": 0.5,
+            "mobility": 0.0,
+            "grounded": 1.0,
+            "not_over_defined": 1.0,
+            "couplings": 1.0
+          },
+          "rigid_groups": [
+            {
+              "role": "frame",
+              "body": "frame",
+              "ok": true
+            },
+            {
+              "role": "shaft",
+              "body": "crank",
+              "ok": true
+            },
+            {
+              "role": "crank",
+              "body": "crank",
+              "ok": true
+            },
+            {
+              "role": "rod",
+              "body": "rod",
+              "ok": true
+            },
+            {
+              "role": "slider",
+              "body": "slider",
+              "ok": true
+            },
+            {
+              "role": "crank_pin",
+              "body": "crank|rod",
+              "ok": true
+            },
+            {
+              "role": "wrist_pin",
+              "body": "rod|slider",
+              "ok": true
+            }
+          ],
+          "joints": [
+            {
+              "bodies": [
+                "crank",
+                "frame"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "rod",
+                "crank"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "slider",
+                "rod"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "cylindrical",
+              "ok": false
+            },
+            {
+              "bodies": [
+                "slider",
+                "frame"
+              ],
+              "expected": [
+                "slider",
+                "planar"
+              ],
+              "actual": "free",
+              "ok": false
+            }
+          ],
+          "mobility": {
+            "actual": 4,
+            "target": 1,
+            "ok": false,
+            "skipped": []
+          },
+          "floating": [],
+          "ground_ok": true,
+          "over_defined": {},
+          "broken_mates": [],
+          "suppressed_mates": [],
+          "couplings": []
+        },
+        "static_score": 72.5,
+        "motion": {
+          "passed": false,
+          "score": 60.0,
+          "interference_frames": [
+            {
+              "frame": 0,
+              "count": 1,
+              "volume_mm3": 1033.6460032938487
+            },
+            {
+              "frame": 1,
+              "count": 1,
+              "volume_mm3": 1033.6460032938492
+            },
+            {
+              "frame": 2,
+              "count": 1,
+              "volume_mm3": 1033.6460032938492
+            },
+            {
+              "frame": 3,
+              "count": 1,
+              "volume_mm3": 1033.6460032938483
+            },
+            {
+              "frame": 4,
+              "count": 1,
+              "volume_mm3": 1033.6460032938476
+            },
+            {
+              "frame": 5,
+              "count": 1,
+              "volume_mm3": 1033.646003293849
+            },
+            {
+              "frame": 6,
+              "count": 1,
+              "volume_mm3": 1033.646003293849
+            },
+            {
+              "frame": 7,
+              "count": 1,
+              "volume_mm3": 1033.6460032938485
+            },
+            {
+              "frame": 8,
+              "count": 1,
+              "volume_mm3": 1033.6460032938487
+            },
+            {
+              "frame": 9,
+              "count": 1,
+              "volume_mm3": 1033.6460032938478
+            },
+            {
+              "frame": 10,
+              "count": 1,
+              "volume_mm3": 1033.646003293849
+            },
+            {
+              "frame": 11,
+              "count": 1,
+              "volume_mm3": 1033.646003293849
+            },
+            {
+              "frame": 12,
+              "count": 1,
+              "volume_mm3": 1033.6460032938492
+            }
+          ],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_sweep_deg": 3437.747,
+            "frames": 121,
+            "driver_max_step_deg": 28.65,
+            "strokes": [
+              {
+                "role": "slider",
+                "axis": "x",
+                "measured_mm": 29.999,
+                "expected": 30.46,
+                "ok": true
+              }
+            ]
+          }
+        },
+        "token_usage": {
+          "prompt_tokens": 2365391,
+          "completion_tokens": 47485,
+          "total_tokens": 2412876,
+          "calls": 50
+        },
+        "llm_calls": 50,
+        "duration_seconds": 668.23,
+        "aliases": {
+          "frame": "os_frame-1",
+          "shaft": "os_shaft-1",
+          "crank": "os_crank-1",
+          "crank_pin": "os_pin12-1",
+          "rod": "os_rod-1",
+          "wrist_pin": "os_pin12-2",
+          "slider": "os_slider-1"
+        },
+        "agent_texts": [
+          {
+            "turn": 59,
+            "text": "Rod is now correctly positioned z∈[14,20], revolute with crank_pin. Now insert wrist_pin.",
+            "with_tools": true
+          },
+          {
+            "turn": 88,
+            "text": "Now need axial face distance between wrist_pin and rod (rod other end face). Let's add a distance mate along Z axis.",
+            "with_tools": true
+          },
+          {
+            "turn": 92,
+            "text": "I need to fix the axial position — wrist_pin should align with rod's bottom face (z=14), not top face.",
+            "with_tools": true
+          },
+          {
+            "turn": 98,
+            "text": "Now insert the slider and connect it with revolute to wrist_pin, then slider to frame.",
+            "with_tools": true
+          }
+        ],
+        "llm_calls_detail": [
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 3808,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 75,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 473,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 203,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 4463,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 112,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 497,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 27,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1126,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 96,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2702,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2476,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 150,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 3888,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2507,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 32,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 636,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 38,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1061,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 27,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 446,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 38,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1562,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 32,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 658,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 409,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 62,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 306,
+            "n_tool_calls": 1,
+            "text_chars": 89
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 529,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 300,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 419,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 248,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 56,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 802,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 209,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 984,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 353,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 666,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1715,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 27,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 256,
+            "n_tool_calls": 1,
+            "text_chars": 116
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 38,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 3069,
+            "n_tool_calls": 1,
+            "text_chars": 102
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 437,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 27,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 514,
+            "n_tool_calls": 1,
+            "text_chars": 86
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 38,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 7843,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 27,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1018,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          }
+        ],
+        "agent_last_motion": null,
+        "joints": [
+          {
+            "kind": "revolute",
+            "a": "os_frame-1",
+            "b": "os_shaft-1",
+            "mates": [
+              "同心1",
+              "距离1"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "os_crank-1",
+            "b": "os_shaft-1",
+            "mates": [
+              "同心4",
+              "距离5"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "os_pin12-1",
+            "b": "os_crank-1",
+            "mates": [
+              "同心5",
+              "重合2"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "os_rod-1",
+            "b": "os_pin12-1",
+            "mates": [
+              "同心6"
+            ]
+          },
+          {
+            "kind": "mate:distance",
+            "a": "os_rod-1",
+            "b": "os_pin12-1",
+            "mates": [
+              "距离6"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "os_pin12-2",
+            "b": "os_rod-1",
+            "mates": [
+              "同心11"
+            ]
+          },
+          {
+            "kind": "mate:distance",
+            "a": "os_pin12-2",
+            "b": "os_rod-1",
+            "mates": [
+              "距离10"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "os_slider-1",
+            "b": "os_pin12-2",
+            "mates": [
+              "同心12"
+            ]
+          }
+        ]
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_frame.SLDPRT",
+            "name": "frame",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "frame"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_shaft.SLDPRT",
+            "name": "shaft",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "frame:cyl(d=10)",
+            "b": "shaft:cyl(d=10)",
+            "face_a": "frame:face(-Z, outermost)",
+            "face_b": "shaft:face(-Z, outermost)",
+            "offset": -10
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_crank.SLDPRT",
+            "name": "crank",
+            "at": [
+              0,
+              0,
+              8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "crank",
+            "shaft": "shaft",
+            "diameter": 10,
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "crank",
+            "shaft": "shaft",
+            "diameter": 10,
+            "lock_rotation": true,
+            "offset": 15
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心3"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离3"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "crank",
+            "shaft": "shaft",
+            "diameter": 10,
+            "lock_rotation": true,
+            "offset": 18
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_pin12.SLDPRT",
+            "name": "crank_pin",
+            "at": [
+              15,
+              0,
+              8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "crank_pin",
+            "shaft": "crank",
+            "diameter": 6,
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_rod.SLDPRT",
+            "name": "rod",
+            "at": [
+              15,
+              0,
+              14
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "rod:cyl(d=6, near=[0,6])",
+            "b": "crank_pin:cyl(d=6)",
+            "face_a": "rod:face(-Z, outermost)",
+            "face_b": "crank_pin:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合3"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "distance",
+            "a": "rod:face(-Z, outermost)",
+            "b": "crank_pin:face(-Z, outermost)",
+            "distance": 6
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_pin12.SLDPRT",
+            "name": "wrist_pin",
+            "at": [
+              75,
+              0,
+              14
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "wrist_pin",
+            "shaft": "rod",
+            "diameter": 6,
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心7"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合4"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "wrist_pin",
+            "shaft": "rod",
+            "diameter": 6,
+            "lock_rotation": true,
+            "offset": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心8"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离7"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "wrist_pin",
+            "shaft": "rod",
+            "diameter": 6,
+            "lock_rotation": true,
+            "offset": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心9"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离8"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "wrist_pin:cyl(d=6)",
+            "b": "rod:cyl(d=6, near=[60,0])",
+            "face_a": "wrist_pin:face(-Z, outermost)",
+            "face_b": "rod:face(+Z, outermost)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "wrist_pin:cyl(d=6)",
+            "b": "rod:cyl(d=6, near=[60,0])",
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "distance",
+            "a": "wrist_pin:face(-Z, outermost)",
+            "b": "rod:face(+Z, outermost)",
+            "distance": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离9"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "distance",
+            "a": "wrist_pin:face(-Z, outermost)",
+            "b": "rod:face(-Z, outermost)",
+            "distance": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\offset_slider_crank\\gen_r1\\parts\\os_slider.SLDPRT",
+            "name": "slider",
+            "at": [
+              75,
+              10,
+              14
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "revolute_joint",
+          "args": {
+            "a": "slider:cyl(d=6)",
+            "b": "wrist_pin:cyl(d=6)",
+            "face_a": "slider:face(-Z, outermost)",
+            "face_b": "wrist_pin:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合6"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 72.5,
+      "motion_score": 60.0,
+      "e2e": false
+    },
+    {
+      "case_id": "excavator_arm",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "v2",
+      "parts": [
+        {
+          "part_id": "ex_base",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "ex_base",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      8.0,
+                      100.0,
+                      200.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        60.0,
+                        70.0
+                      ],
+                      [
+                        170.0,
+                        30.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 62357,
+            "completion_tokens": 1114,
+            "total_tokens": 63471,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 28.54,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_base.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_base.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_base.agent.json"
+        },
+        {
+          "part_id": "ex_boom",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "ex_boom",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      14.0,
+                      174.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 3,
+                    "expected": 3
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        7.0,
+                        7.0
+                      ],
+                      [
+                        67.0,
+                        7.0
+                      ],
+                      [
+                        167.0,
+                        7.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 62262,
+            "completion_tokens": 834,
+            "total_tokens": 63096,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 24.54,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_boom.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_boom.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_boom.agent.json"
+        },
+        {
+          "part_id": "ex_stick",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "ex_stick",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      12.0,
+                      122.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        6.0,
+                        6.0
+                      ],
+                      [
+                        116.0,
+                        6.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 68148,
+            "completion_tokens": 1023,
+            "total_tokens": 69171,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 25.2,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_stick.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_stick.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_stick.agent.json"
+        },
+        {
+          "part_id": "ex_bucket",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "ex_bucket",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      20.0,
+                      70.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        10.0,
+                        10.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 76145,
+            "completion_tokens": 1192,
+            "total_tokens": 77337,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 25.47,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_bucket.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_bucket.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_bucket.agent.json"
+        },
+        {
+          "part_id": "ex_barrel",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "ex_barrel",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      14.0,
+                      104.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        7.0,
+                        7.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 59388,
+            "completion_tokens": 1085,
+            "total_tokens": 60473,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 27.36,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_barrel.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_barrel.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_barrel.agent.json"
+        },
+        {
+          "part_id": "ex_ram",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "ex_ram",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      10.0,
+                      100.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        5.0,
+                        5.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 76266,
+            "completion_tokens": 1002,
+            "total_tokens": 77268,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 24.2,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_ram.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_ram.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_ram.agent.json"
+        },
+        {
+          "part_id": "ex_pin26",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "ex_pin26",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      26.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      6.0,
+                      26.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 29788,
+            "completion_tokens": 523,
+            "total_tokens": 30311,
+            "calls": 2
+          },
+          "llm_calls": 2,
+          "duration_seconds": 12.97,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_pin26.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_pin26.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_pin26.agent.json"
+        },
+        {
+          "part_id": "ex_pin14",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "ex_pin14",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      14.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      6.0,
+                      14.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 35290,
+            "completion_tokens": 649,
+            "total_tokens": 35939,
+            "calls": 2
+          },
+          "llm_calls": 2,
+          "duration_seconds": 12.38,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_pin14.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_pin14.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_pin14.agent.json"
+        },
+        {
+          "part_id": "ex_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "ex_pin12",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      12.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      6.0,
+                      12.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 37959,
+            "completion_tokens": 654,
+            "total_tokens": 38613,
+            "calls": 2
+          },
+          "llm_calls": 2,
+          "duration_seconds": 16.6,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_pin12.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_pin12.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_pin12.agent.json"
+        }
+      ],
+      "assembly": {
+        "status": "max_llm_calls",
+        "infra_error": null,
+        "static": {
+          "component_count": 11,
+          "saved": false
+        },
+        "rubric": {
+          "score": 95.83,
+          "parts": {
+            "rigid_groups": 1.0,
+            "joints": 0.833,
+            "mobility": 1.0,
+            "grounded": 1.0,
+            "not_over_defined": 1.0,
+            "couplings": 1.0
+          },
+          "rigid_groups": [
+            {
+              "role": "base",
+              "body": "base",
+              "ok": true
+            },
+            {
+              "role": "boom",
+              "body": "boom",
+              "ok": true
+            },
+            {
+              "role": "stick",
+              "body": "stick",
+              "ok": true
+            },
+            {
+              "role": "bucket",
+              "body": "bucket",
+              "ok": true
+            },
+            {
+              "role": "barrel",
+              "body": "barrel",
+              "ok": true
+            },
+            {
+              "role": "ram",
+              "body": "ram",
+              "ok": true
+            },
+            {
+              "role": "boom_pin",
+              "body": "base|boom",
+              "ok": true
+            },
+            {
+              "role": "barrel_pin",
+              "body": "base|barrel",
+              "ok": true
+            },
+            {
+              "role": "ram_pin",
+              "body": "boom|ram",
+              "ok": true
+            },
+            {
+              "role": "stick_pin",
+              "body": "boom|stick",
+              "ok": true
+            },
+            {
+              "role": "bucket_pin",
+              "body": "stick|bucket",
+              "ok": true
+            }
+          ],
+          "joints": [
+            {
+              "bodies": [
+                "boom",
+                "base"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "barrel",
+                "base"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "ram",
+                "boom"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "ram",
+                "barrel"
+              ],
+              "expected": [
+                "slider",
+                "planar"
+              ],
+              "actual": "cylindrical",
+              "ok": false
+            },
+            {
+              "bodies": [
+                "stick",
+                "boom"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "bucket",
+                "stick"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            }
+          ],
+          "mobility": {
+            "actual": 3,
+            "target": 3,
+            "ok": true,
+            "skipped": []
+          },
+          "floating": [],
+          "ground_ok": true,
+          "over_defined": {},
+          "broken_mates": [],
+          "suppressed_mates": [],
+          "couplings": []
+        },
+        "static_score": 95.83,
+        "motion": {
+          "mode": "poses",
+          "passed": false,
+          "score": 0.0,
+          "poses": [
+            {
+              "name": "dig",
+              "variants": [
+                {
+                  "flip": true
+                },
+                {
+                  "flip": false
+                },
+                {
+                  "flip": true
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "boom",
+                    "coord": "x",
+                    "got": 122.567,
+                    "expected": 122.57,
+                    "err_mm": 0.003,
+                    "ok": true
+                  },
+                  {
+                    "role": "boom",
+                    "coord": "y",
+                    "got": 142.846,
+                    "expected": 142.85,
+                    "err_mm": 0.004,
+                    "ok": true
+                  },
+                  {
+                    "role": "stick",
+                    "coord": "x",
+                    "got": 225.933,
+                    "expected": 225.93,
+                    "err_mm": 0.003,
+                    "ok": true
+                  },
+                  {
+                    "role": "stick",
+                    "coord": "y",
+                    "got": 105.224,
+                    "expected": 105.22,
+                    "err_mm": 0.004,
+                    "ok": true
+                  },
+                  {
+                    "role": "bucket",
+                    "coord": "x",
+                    "got": 250.933,
+                    "expected": 250.93,
+                    "err_mm": 0.003,
+                    "ok": true
+                  },
+                  {
+                    "role": "bucket",
+                    "coord": "y",
+                    "got": 61.923,
+                    "expected": 61.92,
+                    "err_mm": 0.003,
+                    "ok": true
+                  }
+                ],
+                "max_err_mm": 0.004,
+                "ok": true
+              },
+              "interference_count": 2,
+              "interference_mm3": 1450.3873,
+              "interference_pairs": [
+                {
+                  "components": [
+                    "ex_stick-1",
+                    "ex_bucket-1"
+                  ],
+                  "volume": 8.43746668569817e-07,
+                  "isPossibleInterference": false
+                },
+                {
+                  "components": [
+                    "ex_boom-1",
+                    "ex_stick-1"
+                  ],
+                  "volume": 6.066405930165167e-07,
+                  "isPossibleInterference": false
+                }
+              ],
+              "drifted_fixed": [],
+              "ok": false
+            },
+            {
+              "name": "lift",
+              "variants": [
+                {
+                  "flip": false
+                },
+                {
+                  "flip": false
+                },
+                {
+                  "flip": false
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "boom",
+                    "coord": "x",
+                    "got": 91.772,
+                    "expected": 91.77,
+                    "err_mm": 0.002,
+                    "ok": true
+                  },
+                  {
+                    "role": "boom",
+                    "coord": "y",
+                    "got": 171.064,
+                    "expected": 171.06,
+                    "err_mm": 0.004,
+                    "ok": true
+                  },
+                  {
+                    "role": "stick",
+                    "coord": "x",
+                    "got": 191.466,
+                    "expected": 191.47,
+                    "err_mm": 0.004,
+                    "ok": true
+                  },
+                  {
+                    "role": "stick",
+                    "coord": "y",
+                    "got": 124.576,
+                    "expected": 124.58,
+                    "err_mm": 0.004,
+                    "ok": true
+                  },
+                  {
+                    "role": "bucket",
+                    "coord": "x",
+                    "got": 195.824,
+                    "expected": 195.82,
+                    "err_mm": 0.004,
+                    "ok": true
+                  },
+                  {
+                    "role": "bucket",
+                    "coord": "y",
+                    "got": 74.767,
+                    "expected": 74.77,
+                    "err_mm": 0.003,
+                    "ok": true
+                  }
+                ],
+                "max_err_mm": 0.004,
+                "ok": true
+              },
+              "interference_count": 2,
+              "interference_mm3": 1466.4011,
+              "interference_pairs": [
+                {
+                  "components": [
+                    "ex_stick-1",
+                    "ex_bucket-1"
+                  ],
+                  "volume": 8.439092525984775e-07,
+                  "isPossibleInterference": false
+                },
+                {
+                  "components": [
+                    "ex_boom-1",
+                    "ex_stick-1"
+                  ],
+                  "volume": 6.224918220942152e-07,
+                  "isPossibleInterference": false
+                }
+              ],
+              "drifted_fixed": [],
+              "ok": false
+            },
+            {
+              "name": "reach",
+              "variants": [
+                {
+                  "flip": false
+                },
+                {
+                  "flip": false
+                },
+                {
+                  "flip": false
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "boom",
+                    "coord": "x",
+                    "got": 54.723,
+                    "expected": 54.72,
+                    "err_mm": 0.003,
+                    "ok": true
+                  },
+                  {
+                    "role": "boom",
+                    "coord": "y",
+                    "got": 190.351,
+                    "expected": 190.35,
+                    "err_mm": 0.001,
+                    "ok": true
+                  },
+                  {
+                    "role": "stick",
+                    "coord": "x",
+                    "got": 149.986,
+                    "expected": 149.99,
+                    "err_mm": 0.004,
+                    "ok": true
+                  },
+                  {
+                    "role": "stick",
+                    "coord": "y",
+                    "got": 135.351,
+                    "expected": 135.35,
+                    "err_mm": 0.001,
+                    "ok": true
+                  },
+                  {
+                    "role": "bucket",
+                    "coord": "x",
+                    "got": 174.986,
+                    "expected": 174.99,
+                    "err_mm": 0.004,
+                    "ok": true
+                  },
+                  {
+                    "role": "bucket",
+                    "coord": "y",
+                    "got": 92.05,
+                    "expected": 92.05,
+                    "err_mm": 0.0,
+                    "ok": true
+                  }
+                ],
+                "max_err_mm": 0.004,
+                "ok": true
+              },
+              "interference_count": 2,
+              "interference_mm3": 1504.8526,
+              "interference_pairs": [
+                {
+                  "components": [
+                    "ex_stick-1",
+                    "ex_bucket-1"
+                  ],
+                  "volume": 8.437466685698203e-07,
+                  "isPossibleInterference": false
+                },
+                {
+                  "components": [
+                    "ex_boom-1",
+                    "ex_stick-1"
+                  ],
+                  "volume": 6.61105902246901e-07,
+                  "isPossibleInterference": false
+                }
+              ],
+              "drifted_fixed": [],
+              "ok": false
+            }
+          ]
+        },
+        "token_usage": {
+          "prompt_tokens": 2746925,
+          "completion_tokens": 87897,
+          "total_tokens": 2834822,
+          "calls": 50
+        },
+        "llm_calls": 50,
+        "duration_seconds": 1083.54,
+        "aliases": {
+          "base": "ex_base-1",
+          "boom_pin": "ex_pin26-1",
+          "barrel_pin": "ex_pin14-1",
+          "boom": "ex_boom-1",
+          "barrel": "ex_barrel-1",
+          "ram_pin": "ex_pin12-1",
+          "stick_pin": "ex_pin12-2",
+          "ram": "ex_ram-1",
+          "stick": "ex_stick-1",
+          "bucket_pin": "ex_pin12-3",
+          "bucket": "ex_bucket-1"
+        },
+        "agent_texts": [
+          {
+            "turn": 35,
+            "text": "barrel 与 barrel_pin 现在正确约束了（同心5+重合5）。barrel 的 z 现在是 [8,14] 没问题，我注意到 barrel 的 origin 已自动纠正到 (110,0,8)。继续插入 boom_pin 的 X=60 和 X=160 孔上的销。",
+            "with_tools": true
+          },
+          {
+            "turn": 49,
+            "text": "Pin 位置看起来都正确固定了。现在插入 ram, stick, bucket_pin, bucket。",
+            "with_tools": true
+          },
+          {
+            "turn": 67,
+            "text": "这是闭环的闭合关节（barrel-base-boom-ram-barrel 形成闭环），用 close_loop 来加最小约束。",
+            "with_tools": true
+          },
+          {
+            "turn": 83,
+            "text": "Good, ram-ram_pin revolute joint restored. Now the ram-barrel is the closing loop link. Let's use close_loop for that.",
+            "with_tools": true
+          },
+          {
+            "turn": 93,
+            "text": "Cylindrical joint worked. Now check DOF.",
+            "with_tools": true
+          },
+          {
+            "turn": 106,
+            "text": "mobility_planar = 3，匹配预期。现在检查干涉和运动。",
+            "with_tools": true
+          },
+          {
+            "turn": 108,
+            "text": "这两个干涉体积极小（接近零，isPossibleInterference=false），属于销孔接触面的数值误差，可忽略。现在做运动检查。",
+            "with_tools": true
+          }
+        ],
+        "llm_calls_detail": [
+          {
+            "finish_reason": "length",
+            "completion_tokens": 8000,
+            "n_tool_calls": 0,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 4937,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 89,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 739,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 126,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2281,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 992,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 27,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1554,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 7511,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 756,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2153,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 97,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 355,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 641,
+            "n_tool_calls": 2,
+            "text_chars": 135
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2178,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1686,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1117,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 89,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 143,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 412,
+            "n_tool_calls": 2,
+            "text_chars": 52
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 38,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 3125,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1263,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 3200,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1063,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1227,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 5636,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2358,
+            "n_tool_calls": 1,
+            "text_chars": 64
+          },
+          {
+            "finish_reason": "length",
+            "completion_tokens": 9600,
+            "n_tool_calls": 0,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2945,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 4543,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 3348,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 454,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1986,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 446,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 351,
+            "n_tool_calls": 1,
+            "text_chars": 118
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 87,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 402,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 679,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 4065,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 94,
+            "n_tool_calls": 1,
+            "text_chars": 40
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1245,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 273,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 675,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 406,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 53,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 77,
+            "n_tool_calls": 1,
+            "text_chars": 35
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 261,
+            "n_tool_calls": 1,
+            "text_chars": 69
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2114,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          }
+        ],
+        "agent_last_motion": {
+          "passed": false,
+          "frames": 13,
+          "duration": 0.5,
+          "interference_frames": [
+            {
+              "frame": 0,
+              "time": 0,
+              "count": 2,
+              "volume_mm3": 1445.9234,
+              "pairs": [
+                [
+                  "ex_stick-1",
+                  "ex_bucket-1"
+                ],
+                [
+                  "ex_boom-1",
+                  "ex_stick-1"
+                ]
+              ]
+            },
+            {
+              "frame": 1,
+              "time": 0.041666666666666664,
+              "count": 2,
+              "volume_mm3": 1445.9234,
+              "pairs": [
+                [
+                  "ex_stick-1",
+                  "ex_bucket-1"
+                ],
+                [
+                  "ex_boom-1",
+                  "ex_stick-1"
+                ]
+              ]
+            },
+            {
+              "frame": 2,
+              "time": 0.08333333333333333,
+              "count": 2,
+              "volume_mm3": 1446.87,
+              "pairs": [
+                [
+                  "ex_stick-1",
+                  "ex_bucket-1"
+                ],
+                [
+                  "ex_boom-1",
+                  "ex_stick-1"
+                ]
+              ]
+            },
+            {
+              "frame": 3,
+              "time": 0.125,
+              "count": 2,
+              "volume_mm3": 1457.6323,
+              "pairs": [
+                [
+                  "ex_stick-1",
+                  "ex_bucket-1"
+                ],
+                [
+                  "ex_boom-1",
+                  "ex_stick-1"
+                ]
+              ]
+            },
+            {
+              "frame": 4,
+              "time": 0.16666666666666666,
+              "count": 2,
+              "volume_mm3": 1493.2497,
+              "pairs": [
+                [
+                  "ex_stick-1",
+                  "ex_bucket-1"
+                ],
+                [
+                  "ex_boom-1",
+                  "ex_stick-1"
+                ]
+              ]
+            },
+            {
+              "frame": 5,
+              "time": 0.20833333333333337,
+              "count": 2,
+              "volume_mm3": 1586.9577,
+              "pairs": [
+                [
+                  "ex_stick-1",
+                  "ex_bucket-1"
+                ],
+                [
+                  "ex_boom-1",
+                  "ex_stick-1"
+                ]
+              ]
+            },
+            {
+              "frame": 6,
+              "time": 0.25,
+              "count": 2,
+              "volume_mm3": 1855.4926,
+              "pairs": [
+                [
+                  "ex_boom-1",
+                  "ex_stick-1"
+                ],
+                [
+                  "ex_stick-1",
+                  "ex_bucket-1"
+                ]
+              ]
+            },
+            {
+              "frame": 7,
+              "time": 0.2916666666666667,
+              "count": 3,
+              "volume_mm3": 3412.8181,
+              "pairs": [
+                [
+                  "ex_boom-1",
+                  "ex_stick-1"
+                ],
+                [
+                  "ex_stick-1",
+                  "ex_bucket-1"
+                ],
+                [
+                  "ex_pin26-1",
+                  "ex_ram-1"
+                ]
+              ]
+            },
+            {
+              "frame": 8,
+              "time": 0.3333333333333333,
+              "count": 3,
+              "volume_mm3": 3724.5777,
+              "pairs": [
+                [
+                  "ex_boom-1",
+                  "ex_stick-1"
+                ],
+                [
+                  "ex_stick-1",
+                  "ex_bucket-1"
+                ],
+                [
+                  "ex_pin26-1",
+                  "ex_ram-1"
+                ]
+              ]
+            },
+            {
+              "frame": 9,
+              "time": 0.375,
+              "count": 2,
+              "volume_mm3": 1895.174,
+              "pairs": [
+                [
+                  "ex_boom-1",
+                  "ex_stick-1"
+                ],
+                [
+                  "ex_stick-1",
+                  "ex_bucket-1"
+                ]
+              ]
+            },
+            {
+              "frame": 10,
+              "time": 0.4166666666666667,
+              "count": 2,
+              "volume_mm3": 1599.1039,
+              "pairs": [
+                [
+                  "ex_stick-1",
+                  "ex_bucket-1"
+                ],
+                [
+                  "ex_boom-1",
+                  "ex_stick-1"
+                ]
+              ]
+            },
+            {
+              "frame": 11,
+              "time": 0.4583333333333333,
+              "count": 2,
+              "volume_mm3": 1497.8932,
+              "pairs": [
+                [
+                  "ex_stick-1",
+                  "ex_bucket-1"
+                ],
+                [
+                  "ex_boom-1",
+                  "ex_stick-1"
+                ]
+              ]
+            },
+            {
+              "frame": 12,
+              "time": 0.5,
+              "count": 2,
+              "volume_mm3": 1459.299,
+              "pairs": [
+                [
+                  "ex_stick-1",
+                  "ex_bucket-1"
+                ],
+                [
+                  "ex_boom-1",
+                  "ex_stick-1"
+                ]
+              ]
+            }
+          ],
+          "moved": [
+            "ex_boom-1",
+            "ex_barrel-1",
+            "ex_pin12-2",
+            "ex_pin12-1",
+            "ex_ram-1",
+            "ex_stick-1",
+            "ex_pin12-3",
+            "ex_bucket-1"
+          ],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_turned_deg": 286.5,
+            "sample_ratio": {
+              "boom": 1.0,
+              "ram": 0.1234,
+              "barrel": -0.0695
+            }
+          }
+        },
+        "joints": [
+          {
+            "kind": "fixed",
+            "a": "ex_pin26-1",
+            "b": "ex_base-1",
+            "mates": [
+              "同心1",
+              "重合1"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "ex_pin14-1",
+            "b": "ex_base-1",
+            "mates": [
+              "同心2",
+              "重合2"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "ex_boom-1",
+            "b": "ex_pin26-1",
+            "mates": [
+              "同心3",
+              "重合3"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "ex_barrel-1",
+            "b": "ex_pin14-1",
+            "mates": [
+              "同心5",
+              "重合5"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "ex_pin12-1",
+            "b": "ex_boom-1",
+            "mates": [
+              "同心6",
+              "重合6"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "ex_pin12-2",
+            "b": "ex_boom-1",
+            "mates": [
+              "同心8",
+              "重合8"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "ex_stick-1",
+            "b": "ex_pin12-2",
+            "mates": [
+              "同心10",
+              "重合10"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "ex_ram-1",
+            "b": "ex_pin12-1",
+            "mates": [
+              "同心18",
+              "重合11"
+            ]
+          },
+          {
+            "kind": "cylindrical",
+            "a": "ex_ram-1",
+            "b": "ex_barrel-1",
+            "mates": [
+              "同心23"
+            ],
+            "loop": true,
+            "minimal": true
+          },
+          {
+            "kind": "fixed",
+            "a": "ex_pin12-3",
+            "b": "ex_stick-1",
+            "mates": [
+              "同心24",
+              "重合12"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "ex_bucket-1",
+            "b": "ex_pin12-3",
+            "mates": [
+              "同心25",
+              "重合13"
+            ]
+          }
+        ]
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_base.SLDPRT",
+            "name": "base",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "base"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_pin26.SLDPRT",
+            "name": "boom_pin",
+            "at": [
+              0,
+              40,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_pin14.SLDPRT",
+            "name": "barrel_pin",
+            "at": [
+              110,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "boom_pin:cyl(d=6)",
+            "b": "base:cyl(d=6, near=[0,40])",
+            "face_a": "boom_pin:face(-Z, outermost)",
+            "face_b": "base:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "barrel_pin:cyl(d=6)",
+            "b": "base:cyl(d=6, near=[110,0])",
+            "face_a": "barrel_pin:face(-Z, outermost)",
+            "face_b": "base:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_boom.SLDPRT",
+            "name": "boom",
+            "at": [
+              0,
+              40,
+              20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_barrel.SLDPRT",
+            "name": "barrel",
+            "at": [
+              110,
+              0,
+              8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "boom:cyl(d=6, near=[0,0])",
+            "b": "boom_pin:cyl(d=6)",
+            "face_a": "boom:face(+Z, outermost)",
+            "face_b": "boom_pin:face(+Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "barrel:cyl(d=6)",
+            "b": "barrel_pin:cyl(d=6)",
+            "face_a": "barrel:face(-Z, outermost)",
+            "face_b": "barrel_pin:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合4"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "barrel:cyl(d=6)",
+            "b": "barrel_pin:cyl(d=6)",
+            "face_a": "barrel:face(+Z, outermost)",
+            "face_b": "barrel_pin:face(+Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心4"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_pin12.SLDPRT",
+            "name": "ram_pin",
+            "at": [
+              60,
+              40,
+              14
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_pin12.SLDPRT",
+            "name": "stick_pin",
+            "at": [
+              160,
+              40,
+              20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "ram_pin:cyl(d=6)",
+            "b": "boom:cyl(d=6, near=[60,0])",
+            "face_a": "ram_pin:face(+Z, outermost)",
+            "face_b": "boom:face(+Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "stick_pin:cyl(d=6)",
+            "b": "boom:cyl(d=6, near=[160,0])",
+            "face_a": "stick_pin:face(+Z, outermost)",
+            "face_b": "boom:face(+Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合7"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "stick_pin:cyl(d=6)",
+            "b": "boom:cyl(d=6, near=[160,0])",
+            "face_a": "stick_pin:face(-Z, outermost)",
+            "face_b": "boom:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心7"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_ram.SLDPRT",
+            "name": "ram",
+            "at": [
+              60,
+              40,
+              14
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_stick.SLDPRT",
+            "name": "stick",
+            "at": [
+              160,
+              40,
+              26
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "ram:cyl(d=6)",
+            "b": "ram_pin:cyl(d=6)",
+            "face_a": "ram:face(-Z, outermost)",
+            "face_b": "ram_pin:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "stick:cyl(d=6, near=[0,0])",
+            "b": "stick_pin:cyl(d=6)",
+            "face_a": "stick:face(-Z, outermost)",
+            "face_b": "stick_pin:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "slider_joint",
+          "args": {
+            "a": "ram:cyl(d=10)",
+            "b": "barrel:cyl(d=10)",
+            "guide_a": "ram:plane(front)",
+            "guide_b": "barrel:plane(front)"
+          },
+          "ok": false,
+          "error_code": "REF",
+          "message": "没有圆柱面"
+        },
+        {
+          "tool": "slider_joint",
+          "args": {
+            "a": "ram:cyl(d=10, near=[45,0])",
+            "b": "barrel:cyl(d=14, near=[45,0])",
+            "guide_a": "ram:face(+Y, largest)",
+            "guide_b": "barrel:face(+Y, largest)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] concentric 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "close_loop",
+          "args": {
+            "type": "slider",
+            "a": "ram:cyl(d=10, near=[45,0])",
+            "b": "barrel:cyl(d=14, near=[45,0])",
+            "guide_a": "ram:face(+Y, largest)",
+            "guide_b": "barrel:face(+Y, largest)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] concentric 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "close_loop",
+          "args": {
+            "type": "slider",
+            "a": "ram:cyl(d=10, near=[45,0])",
+            "b": "barrel:cyl(d=14, near=[45,0])",
+            "guide_a": "ram:face(+Y, largest)",
+            "guide_b": "barrel:face(+Y, largest)",
+            "minimal": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] concentric 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "close_loop",
+          "args": {
+            "type": "cylindrical",
+            "a": "ram:cyl(d=10, near=[45,0])",
+            "b": "barrel:cyl(d=14, near=[45,0])",
+            "minimal": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] concentric 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "同心9"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合9"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "ram:cyl(d=6)",
+            "b": "ram_pin:cyl(d=6)",
+            "face_a": "ram:face(-Z, outermost)",
+            "face_b": "ram_pin:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "close_loop",
+          "args": {
+            "type": "slider",
+            "a": "ram:cyl(d=10, near=[45,0])",
+            "b": "barrel:cyl(d=14, near=[45,0])",
+            "guide_a": "ram:face(+Y, largest)",
+            "guide_b": "barrel:face(+Y, largest)",
+            "minimal": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] concentric 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 3
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "close_loop",
+          "args": {
+            "type": "slider",
+            "a": "ram:cyl(d=10, near=[45,0])",
+            "b": "barrel:cyl(d=14, near=[45,0])",
+            "guide_a": "ram:face(+Y, largest)",
+            "guide_b": "barrel:face(+Y, largest)",
+            "minimal": true
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] concentric 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "close_loop",
+          "args": {
+            "type": "cylindrical",
+            "a": "ram:cyl(d=10, near=[90,0])",
+            "b": "barrel:cyl(d=14, near=[90,0])",
+            "minimal": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 3
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_pin12.SLDPRT",
+            "name": "bucket_pin",
+            "at": [
+              270,
+              40,
+              26
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\excavator_arm\\gen_r1\\parts\\ex_bucket.SLDPRT",
+            "name": "bucket",
+            "at": [
+              270,
+              40,
+              32
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "bucket_pin:cyl(d=6)",
+            "b": "stick:cyl(d=6, near=[110,0])",
+            "face_a": "bucket_pin:face(-Z, outermost)",
+            "face_b": "stick:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "bucket:cyl(d=6)",
+            "b": "bucket_pin:cyl(d=6)",
+            "face_a": "bucket:face(-Z, outermost)",
+            "face_b": "bucket_pin:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 3
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "boom",
+            "driver_ref": "boom:cyl(d=6, near=[0,0])",
+            "sweep_deg": 30,
+            "frames": 13,
+            "expect_fixed": [
+              "base"
+            ],
+            "expect_moving": [
+              "boom",
+              "ram",
+              "barrel"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 95.83,
+      "motion_score": 0.0,
+      "e2e": false
+    },
+    {
+      "case_id": "pantograph",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "v2",
+      "parts": [
+        {
+          "part_id": "pg_base",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "pg_base",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      8.0,
+                      60.0,
+                      60.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 8.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        30.0,
+                        30.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 78806,
+            "completion_tokens": 836,
+            "total_tokens": 79642,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 19.79,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_base.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_base.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_base.agent.json"
+        },
+        {
+          "part_id": "pg_long_bar",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "pg_long_bar",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      10.0,
+                      130.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 3,
+                    "expected": 3
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        5.0,
+                        5.0
+                      ],
+                      [
+                        65.0,
+                        5.0
+                      ],
+                      [
+                        125.0,
+                        5.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 70596,
+            "completion_tokens": 1070,
+            "total_tokens": 71666,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 24.33,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_long_bar.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_long_bar.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_long_bar.agent.json"
+        },
+        {
+          "part_id": "pg_short_bar",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "pg_short_bar",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "shape",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      10.0,
+                      70.0
+                    ]
+                  },
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 2,
+                    "expected": 2
+                  },
+                  {
+                    "check": "through",
+                    "ok": true,
+                    "holes": [
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      },
+                      {
+                        "length": 6.0,
+                        "blocked": false,
+                        "ends_open": true
+                      }
+                    ]
+                  },
+                  {
+                    "check": "axis_positions",
+                    "ok": true,
+                    "measured": [
+                      [
+                        5.0,
+                        5.0
+                      ],
+                      [
+                        65.0,
+                        5.0
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 76108,
+            "completion_tokens": 1241,
+            "total_tokens": 77349,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 22.44,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_short_bar.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_short_bar.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_short_bar.agent.json"
+        },
+        {
+          "part_id": "pg_pin14",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "pg_pin14",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      14.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      6.0,
+                      14.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 68206,
+            "completion_tokens": 1069,
+            "total_tokens": 69275,
+            "calls": 4
+          },
+          "llm_calls": 4,
+          "duration_seconds": 20.04,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_pin14.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_pin14.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_pin14.agent.json"
+        },
+        {
+          "part_id": "pg_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "grade": {
+            "case": "pg_pin12",
+            "score": 100.0,
+            "passed": 2,
+            "total": 2,
+            "implied_passed": 0,
+            "implied_total": 0,
+            "hard_ok": true,
+            "accepted": true,
+            "rubrics": [
+              {
+                "id": "solid",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "single_valid_solid",
+                    "ok": true,
+                    "solids": 1,
+                    "shells": 1,
+                    "valid": true
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "ok": true,
+                "hard": true,
+                "basis": "explicit",
+                "weight": 1.0,
+                "checks": [
+                  {
+                    "check": "exists",
+                    "ok": true,
+                    "found": 1,
+                    "expected": 1
+                  },
+                  {
+                    "check": "extent_along",
+                    "ok": true,
+                    "measured": [
+                      12.0
+                    ]
+                  },
+                  {
+                    "check": "bbox_sorted",
+                    "ok": true,
+                    "measured": [
+                      6.0,
+                      6.0,
+                      12.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "token_usage": {
+            "prompt_tokens": 29752,
+            "completion_tokens": 508,
+            "total_tokens": 30260,
+            "calls": 2
+          },
+          "llm_calls": 2,
+          "duration_seconds": 13.09,
+          "artifacts": {
+            "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_pin12.step",
+            "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_pin12.SLDPRT"
+          },
+          "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_pin12.agent.json"
+        }
+      ],
+      "assembly": {
+        "status": "stalled",
+        "infra_error": null,
+        "static": {
+          "component_count": 10,
+          "saved": false
+        },
+        "rubric": {
+          "score": 57.0,
+          "parts": {
+            "rigid_groups": 0.6,
+            "joints": 0.2,
+            "mobility": 0.0,
+            "grounded": 1.0,
+            "not_over_defined": 1.0,
+            "couplings": 1.0
+          },
+          "rigid_groups": [
+            {
+              "role": "base",
+              "body": "base",
+              "ok": true
+            },
+            {
+              "role": "bar1",
+              "body": "bar1",
+              "ok": true
+            },
+            {
+              "role": "bar2",
+              "body": "bar2",
+              "ok": true
+            },
+            {
+              "role": "bar3",
+              "body": "bar3",
+              "ok": true
+            },
+            {
+              "role": "bar4",
+              "body": "bar4",
+              "ok": true
+            },
+            {
+              "role": "pin_o",
+              "body": "base|bar1",
+              "ok": true
+            },
+            {
+              "role": "pin_c",
+              "body": "bar1|bar3",
+              "ok": false
+            },
+            {
+              "role": "pin_a",
+              "body": "bar1|bar2",
+              "ok": false
+            },
+            {
+              "role": "pin_d",
+              "body": "bar2|bar4",
+              "ok": false
+            },
+            {
+              "role": "pin_t",
+              "body": "bar3|bar4",
+              "ok": false
+            }
+          ],
+          "joints": [
+            {
+              "bodies": [
+                "bar1",
+                "base"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok": true
+            },
+            {
+              "bodies": [
+                "bar2",
+                "bar1"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "free",
+              "ok": false
+            },
+            {
+              "bodies": [
+                "bar3",
+                "bar1"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "free",
+              "ok": false
+            },
+            {
+              "bodies": [
+                "bar4",
+                "bar3"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "free",
+              "ok": false
+            },
+            {
+              "bodies": [
+                "bar4",
+                "bar2"
+              ],
+              "expected": [
+                "revolute",
+                "cylindrical"
+              ],
+              "actual": "free",
+              "ok": false
+            }
+          ],
+          "mobility": {
+            "actual": 7,
+            "target": 2,
+            "ok": false,
+            "skipped": []
+          },
+          "floating": [],
+          "ground_ok": true,
+          "over_defined": {},
+          "broken_mates": [],
+          "suppressed_mates": [],
+          "couplings": []
+        },
+        "static_score": 57.0,
+        "motion": {
+          "mode": "poses",
+          "passed": false,
+          "score": 0.0,
+          "poses": [
+            {
+              "name": "a",
+              "variants": [
+                {
+                  "flip": true
+                },
+                {
+                  "flip": true
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "bar1",
+                    "coord": "x",
+                    "got": 103.923,
+                    "expected": 103.92,
+                    "err_mm": 0.003,
+                    "ok": true
+                  },
+                  {
+                    "role": "bar1",
+                    "coord": "y",
+                    "got": 60.0,
+                    "expected": 60.0,
+                    "err_mm": 0.0,
+                    "ok": true
+                  },
+                  {
+                    "role": "bar2",
+                    "coord": "x",
+                    "got": 62.881,
+                    "expected": 62.88,
+                    "err_mm": 0.001,
+                    "ok": true
+                  },
+                  {
+                    "role": "bar2",
+                    "coord": "y",
+                    "got": 172.763,
+                    "expected": 172.76,
+                    "err_mm": 0.003,
+                    "ok": true
+                  },
+                  {
+                    "role": "bar3",
+                    "coord": "x",
+                    "got": 103.923,
+                    "expected": 31.44,
+                    "err_mm": 72.483,
+                    "ok": false
+                  },
+                  {
+                    "role": "bar3",
+                    "coord": "y",
+                    "got": 60.0,
+                    "expected": 86.38,
+                    "err_mm": 26.38,
+                    "ok": false
+                  }
+                ],
+                "max_err_mm": 72.483,
+                "ok": false
+              },
+              "interference_count": 1,
+              "interference_mm3": 322.7381,
+              "interference_pairs": [
+                {
+                  "components": [
+                    "pg_long_bar-2",
+                    "pg_short_bar-1"
+                  ],
+                  "volume": 3.2273808430155186e-07,
+                  "isPossibleInterference": false
+                }
+              ],
+              "drifted_fixed": [],
+              "ok": false
+            },
+            {
+              "name": "b",
+              "variants": [
+                {
+                  "flip": false
+                },
+                {
+                  "flip": false
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "bar1",
+                    "coord": "x",
+                    "got": 118.177,
+                    "expected": 118.18,
+                    "err_mm": 0.003,
+                    "ok": true
+                  },
+                  {
+                    "role": "bar1",
+                    "coord": "y",
+                    "got": 20.838,
+                    "expected": 20.84,
+                    "err_mm": 0.002,
+                    "ok": true
+                  },
+                  {
+                    "role": "bar2",
+                    "coord": "x",
+                    "got": 77.135,
+                    "expected": 77.13,
+                    "err_mm": 0.005,
+                    "ok": true
+                  },
+                  {
+                    "role": "bar2",
+                    "coord": "y",
+                    "got": 133.601,
+                    "expected": 133.6,
+                    "err_mm": 0.001,
+                    "ok": true
+                  },
+                  {
+                    "role": "bar3",
+                    "coord": "x",
+                    "got": 118.177,
+                    "expected": 38.57,
+                    "err_mm": 79.607,
+                    "ok": false
+                  },
+                  {
+                    "role": "bar3",
+                    "coord": "y",
+                    "got": 20.838,
+                    "expected": 66.8,
+                    "err_mm": 45.962,
+                    "ok": false
+                  }
+                ],
+                "max_err_mm": 79.607,
+                "ok": false
+              },
+              "interference_count": 1,
+              "interference_mm3": 349.4562,
+              "interference_pairs": [
+                {
+                  "components": [
+                    "pg_long_bar-2",
+                    "pg_short_bar-1"
+                  ],
+                  "volume": 3.4945623973417626e-07,
+                  "isPossibleInterference": false
+                }
+              ],
+              "drifted_fixed": [],
+              "ok": false
+            },
+            {
+              "name": "c",
+              "variants": [
+                {
+                  "flip": false
+                },
+                {
+                  "flip": true
+                }
+              ],
+              "points": {
+                "checks": [
+                  {
+                    "role": "bar1",
+                    "coord": "x",
+                    "got": 77.135,
+                    "expected": 77.13,
+                    "err_mm": 0.005,
+                    "ok": true
+                  },
+                  {
+                    "role": "bar1",
+                    "coord": "y",
+                    "got": 91.925,
+                    "expected": 91.93,
+                    "err_mm": 0.005,
+                    "ok": true
+                  },
+                  {
+                    "role": "bar2",
+                    "coord": "x",
+                    "got": 17.135,
+                    "expected": 17.13,
+                    "err_mm": 0.005,
+                    "ok": true
+                  },
+                  {
+                    "role": "bar2",
+                    "coord": "y",
+                    "got": 195.848,
+                    "expected": 195.85,
+                    "err_mm": 0.002,
+                    "ok": true
+                  },
+                  {
+                    "role": "bar3",
+                    "coord": "x",
+                    "got": 77.135,
+                    "expected": 8.57,
+                    "err_mm": 68.565,
+                    "ok": false
+                  },
+                  {
+                    "role": "bar3",
+                    "coord": "y",
+                    "got": 91.925,
+                    "expected": 97.92,
+                    "err_mm": 5.995,
+                    "ok": false
+                  }
+                ],
+                "max_err_mm": 68.565,
+                "ok": false
+              },
+              "interference_count": 1,
+              "interference_mm3": 314.9942,
+              "interference_pairs": [
+                {
+                  "components": [
+                    "pg_long_bar-2",
+                    "pg_short_bar-1"
+                  ],
+                  "volume": 3.1499423974637363e-07,
+                  "isPossibleInterference": false
+                }
+              ],
+              "drifted_fixed": [],
+              "ok": false
+            }
+          ]
+        },
+        "token_usage": {
+          "prompt_tokens": 1933839,
+          "completion_tokens": 68293,
+          "total_tokens": 2002132,
+          "calls": 41
+        },
+        "llm_calls": 41,
+        "duration_seconds": 809.16,
+        "aliases": {
+          "base": "pg_base-1",
+          "pin_o": "pg_pin14-1",
+          "bar1": "pg_long_bar-1",
+          "pin_c": "pg_pin12-1",
+          "pin_a": "pg_pin12-2",
+          "bar2": "pg_long_bar-2",
+          "bar3": "pg_short_bar-1",
+          "pin_d": "pg_pin12-3",
+          "pin_t": "pg_pin12-4",
+          "bar4": "pg_short_bar-2"
+        },
+        "agent_texts": [
+          {
+            "turn": 17,
+            "text": "Pin_o fully fixed to base. Now insert bar1 and connect to pin_o via revolute.",
+            "with_tools": true
+          },
+          {
+            "turn": 31,
+            "text": "Now fix pin_c and pin_a into bar1's holes (X=60 and X=120). These are fixed (lock_rotation) joints.",
+            "with_tools": true
+          },
+          {
+            "turn": 46,
+            "text": "Good. Pins are rotationally symmetric so the extra \"under\" DOF (spin about own axis) is harmless. Now insert bar2 (mounts on pin_a) and bar3 (mounts on pin_c), each via revolute joint.",
+            "with_tools": true
+          },
+          {
+            "turn": 73,
+            "text": "Now insert bar4 and connect to pin_t and pin_d (two revolute joints, one of which will be the closing loop).",
+            "with_tools": true
+          },
+          {
+            "turn": 77,
+            "text": "Build open chain: bar4 to pin_t first (revolute joint), then close_loop to pin_d.",
+            "with_tools": true
+          },
+          {
+            "turn": 81,
+            "text": "Now close the loop with pin_d (bar4's other hole, X=60 local → global 150+60=210... wait need to check which bore corresponds to far end).",
+            "with_tools": true
+          },
+          {
+            "turn": 83,
+            "text": "Good, the geometry aligns correctly. Now close the loop between bar4's far hole and pin_d.",
+            "with_tools": true
+          },
+          {
+            "turn": 85,
+            "text": "Now let's check DOF before adding the parallel constraint. We need bar3∥bar2 and bar4∥bar1, which gives the overall 2-DOF mechanism (one input angle at pin_o, but since this is a pantograph, actually the whole mechanism has 1 extra constraint reducing it... let's check first).",
+            "with_tools": true
+          },
+          {
+            "turn": 87,
+            "text": "No over_defined or floating components — good. The dof tool miscounts because many joints were built with raw `mate` calls instead of `joint`, but structurally this is a correct closed-loop pantograph (mobility 2 confirmed by hand: 3×4−2×5=2). Let's check interference and motion.",
+            "with_tools": true
+          }
+        ],
+        "llm_calls_detail": [
+          {
+            "finish_reason": "length",
+            "completion_tokens": 11200,
+            "n_tool_calls": 0,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 3752,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 90,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 871,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 62,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1369,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1368,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 309,
+            "n_tool_calls": 1,
+            "text_chars": 77
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 39,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2945,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 253,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 911,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 137,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 556,
+            "n_tool_calls": 2,
+            "text_chars": 99
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2244,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 437,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 103,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 507,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 252,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1366,
+            "n_tool_calls": 2,
+            "text_chars": 184
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 103,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1261,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 524,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 321,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 30,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1280,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 434,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1015,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 741,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 227,
+            "n_tool_calls": 1,
+            "text_chars": 108
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 202,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 266,
+            "n_tool_calls": 1,
+            "text_chars": 81
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 162,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 81,
+            "n_tool_calls": 1,
+            "text_chars": 138
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 494,
+            "n_tool_calls": 1,
+            "text_chars": 90
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 159,
+            "n_tool_calls": 1,
+            "text_chars": 277
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 3707,
+            "n_tool_calls": 1,
+            "text_chars": 280
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 515,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "length",
+            "completion_tokens": 10400,
+            "n_tool_calls": 0,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "length",
+            "completion_tokens": 9600,
+            "n_tool_calls": 0,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "length",
+            "completion_tokens": 8000,
+            "n_tool_calls": 0,
+            "text_chars": 0
+          }
+        ],
+        "agent_last_motion": {
+          "passed": false,
+          "frames": 13,
+          "duration": 1.0,
+          "interference_frames": [
+            {
+              "frame": 0,
+              "time": 0,
+              "count": 1,
+              "volume_mm3": 301.5929,
+              "pairs": [
+                [
+                  "pg_long_bar-2",
+                  "pg_short_bar-1"
+                ]
+              ]
+            },
+            {
+              "frame": 9,
+              "time": 0.75,
+              "count": 3,
+              "volume_mm3": 2005.8869,
+              "pairs": [
+                [
+                  "pg_long_bar-2",
+                  "pg_short_bar-1"
+                ],
+                [
+                  "pg_long_bar-2",
+                  "pg_short_bar-1"
+                ],
+                [
+                  "pg_long_bar-2",
+                  "pg_short_bar-1"
+                ]
+              ]
+            },
+            {
+              "frame": 10,
+              "time": 0.8333333333333334,
+              "count": 3,
+              "volume_mm3": 2484.6591,
+              "pairs": [
+                [
+                  "pg_long_bar-2",
+                  "pg_short_bar-1"
+                ],
+                [
+                  "pg_long_bar-2",
+                  "pg_short_bar-1"
+                ],
+                [
+                  "pg_long_bar-2",
+                  "pg_short_bar-1"
+                ]
+              ]
+            }
+          ],
+          "moved": [
+            "pg_pin12-2",
+            "pg_pin12-1",
+            "pg_long_bar-1",
+            "pg_short_bar-1",
+            "pg_long_bar-2",
+            "pg_pin12-4",
+            "pg_pin12-3",
+            "pg_short_bar-2"
+          ],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_turned_deg": 573.0,
+            "sample_ratio": {
+              "bar1": 1.0,
+              "bar2": 0.7369,
+              "bar3": 0.7369,
+              "bar4": 1.0,
+              "pin_c": 0.0,
+              "pin_a": 0.0,
+              "pin_d": 0.0,
+              "pin_t": 0.0
+            }
+          }
+        },
+        "joints": [
+          {
+            "kind": "fixed",
+            "a": "pg_pin14-1",
+            "b": "pg_base-1",
+            "mates": [
+              "同心1",
+              "重合1"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "pg_long_bar-1",
+            "b": "pg_pin14-1",
+            "mates": [
+              "同心2"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "pg_long_bar-1",
+            "b": "pg_base-1",
+            "mates": [
+              "重合2"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "pg_pin12-1",
+            "b": "pg_long_bar-1",
+            "mates": [
+              "同心5"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "pg_pin12-2",
+            "b": "pg_long_bar-1",
+            "mates": [
+              "同心6"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "pg_pin12-1",
+            "b": "pg_long_bar-1",
+            "mates": [
+              "重合5"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "pg_pin12-2",
+            "b": "pg_long_bar-1",
+            "mates": [
+              "重合6"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "pg_long_bar-2",
+            "b": "pg_pin12-2",
+            "mates": [
+              "同心9"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "pg_short_bar-1",
+            "b": "pg_pin12-1",
+            "mates": [
+              "同心10"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "pg_long_bar-2",
+            "b": "pg_pin12-2",
+            "mates": [
+              "重合9"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "pg_short_bar-1",
+            "b": "pg_pin12-1",
+            "mates": [
+              "重合10"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "pg_pin12-3",
+            "b": "pg_long_bar-2",
+            "mates": [
+              "同心11"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "pg_pin12-4",
+            "b": "pg_short_bar-1",
+            "mates": [
+              "同心12"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "pg_pin12-3",
+            "b": "pg_long_bar-2",
+            "mates": [
+              "重合11"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "pg_pin12-4",
+            "b": "pg_short_bar-1",
+            "mates": [
+              "重合12"
+            ]
+          },
+          {
+            "kind": "mate:concentric",
+            "a": "pg_short_bar-2",
+            "b": "pg_pin12-4",
+            "mates": [
+              "同心13"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "pg_short_bar-2",
+            "b": "pg_pin12-4",
+            "mates": [
+              "重合13"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "pg_short_bar-2",
+            "b": "pg_pin12-3",
+            "mates": [
+              "同心14"
+            ],
+            "loop": true,
+            "minimal": true
+          }
+        ]
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_base.SLDPRT",
+            "name": "base",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "base"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_pin14.SLDPRT",
+            "name": "pin_o",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "pin_o:cyl(d=6)",
+            "b": "base:cyl(d=6)",
+            "face_a": "pin_o:face(-Z, outermost)",
+            "face_b": "base:face(-Z, outermost)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_long_bar.SLDPRT",
+            "name": "bar1",
+            "at": [
+              0,
+              0,
+              8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "bar1:cyl(d=6, near=[0,0])",
+            "b": "pin_o:cyl(d=6)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "bar1:face(-Z, outermost)",
+            "b": "base:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_pin12.SLDPRT",
+            "name": "pin_c",
+            "at": [
+              60,
+              0,
+              8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_pin12.SLDPRT",
+            "name": "pin_a",
+            "at": [
+              120,
+              0,
+              8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "pin_c:cyl(d=6)",
+            "b": "bar1:cyl(d=6, near=[60,0])",
+            "face_a": "pin_c:face(-Z, outermost)",
+            "face_b": "bar1:face(+Z, largest)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "pin_a:cyl(d=6)",
+            "b": "bar1:cyl(d=6, near=[120,0])",
+            "face_a": "pin_a:face(-Z, outermost)",
+            "face_b": "bar1:face(+Z, largest)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "pin_c:cyl(d=6)",
+            "b": "bar1:cyl(d=6, near=[60,0])"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "pin_a:cyl(d=6)",
+            "b": "bar1:cyl(d=6, near=[120,0])"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "pin_c:face(-Z, outermost)",
+            "b": "bar1:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "pin_a:face(-Z, outermost)",
+            "b": "bar1:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_long_bar.SLDPRT",
+            "name": "bar2",
+            "at": [
+              120,
+              0,
+              14
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_short_bar.SLDPRT",
+            "name": "bar3",
+            "at": [
+              60,
+              0,
+              14
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "bar2:cyl(d=6, near=[0,0])",
+            "b": "pin_a:cyl(d=6)",
+            "face_a": "bar2:face(-Z, outermost)",
+            "face_b": "pin_a:face(+Z, largest)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "bar3:cyl(d=6, near=[0,0])",
+            "b": "pin_c:cyl(d=6)",
+            "face_a": "bar3:face(-Z, outermost)",
+            "face_b": "pin_c:face(+Z, largest)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] coincident 配合失败: errStatus=5（装配过定义（与已有配合冲突））"
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "bar2:cyl(d=6, near=[0,0])",
+            "b": "pin_a:cyl(d=6)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "bar3:cyl(d=6, near=[0,0])",
+            "b": "pin_c:cyl(d=6)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "bar2:face(-Z, outermost)",
+            "b": "pin_a:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "bar3:face(-Z, outermost)",
+            "b": "pin_c:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_pin12.SLDPRT",
+            "name": "pin_d",
+            "at": [
+              180,
+              0,
+              14
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_pin12.SLDPRT",
+            "name": "pin_t",
+            "at": [
+              120,
+              0,
+              14
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "pin_d:cyl(d=6)",
+            "b": "bar2:cyl(d=6, near=[60,0])"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "pin_t:cyl(d=6)",
+            "b": "bar3:cyl(d=6, near=[60,0])"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "pin_d:face(-Z, outermost)",
+            "b": "bar2:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "pin_t:face(-Z, outermost)",
+            "b": "bar3:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gen_sonnet5_bench_rerun\\v2\\pantograph\\gen_r1\\parts\\pg_short_bar.SLDPRT",
+            "name": "bar4",
+            "at": [
+              150,
+              0,
+              20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "concentric",
+            "a": "bar4:cyl(d=6, near=[0,0])",
+            "b": "pin_t:cyl(d=6)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "bar4:face(-Z, outermost)",
+            "b": "pin_t:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "close_loop",
+          "args": {
+            "type": "revolute",
+            "a": "bar4:cyl(d=6, near=[60,0])",
+            "b": "pin_d:cyl(d=6)",
+            "face_a": "bar4:face(-Z, outermost)",
+            "face_b": "pin_d:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 2
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "bar1",
+            "driver_ref": "bar1:cyl(d=6, near=[0,0])",
+            "sweep_deg": 60,
+            "frames": 13,
+            "expect_moving": [
+              "bar1",
+              "bar2",
+              "bar3",
+              "bar4",
+              "pin_c",
+              "pin_a",
+              "pin_d",
+              "pin_t"
+            ],
+            "expect_fixed": [
+              "base",
+              "pin_o"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 57.0,
+      "motion_score": 0.0,
+      "e2e": false
+    }
+  ],
+  "model": "claude-sonnet-5",
+  "asm_max_tokens": 8000,
+  "extra_toolset": "v2"
+}

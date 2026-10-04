@@ -27,8 +27,59 @@ def unwrap(degrees: list[float]) -> list[float]:
     return out
 
 
+# Animation 每帧转角按档位量化（实测 0.5 / 0.75 / 1.25 rad），这些都能正确展开；接近 180° 才会混叠
+MAX_STEP_DEG = 120.0
+MAX_DENSE_FRAMES = 481
+SAMPLE_CHUNK = 121
+
+
 def _max_step(degrees: list[float]) -> float:
     return max((abs((b - a + 180) % 360 - 180) for a, b in zip(degrees, degrees[1:])), default=0.0)
+
+
+def sample_chunked(sample, times: list[float]) -> list[dict]:
+    """sample(times) -> frames。每次请求不超过 SAMPLE_CHUNK 帧：一次请求太多帧，SolidWorks 会超时甚至崩溃。"""
+    frames: list[dict] = []
+    for start in range(0, len(times), SAMPLE_CHUNK):
+        frames += sample(times[start:start + SAMPLE_CHUNK])
+    return frames
+
+
+def refine_aliased(sample, driver: str, duration: float, frames: list[dict]) -> tuple[list[dict], dict]:
+    """驱动件单帧转角超过 MAX_STEP_DEG 时加密一次（展开转角会混叠，比值、导程都会算错）。
+
+    加密后单帧转角没有按比例变小，说明是位形跳变（机构卡死时求解器在两个解之间跳），不是混叠：
+    保留原帧并标出 driver_jump，不再加密。"""
+    if not frames or driver not in (frames[0].get("transforms") or {}):
+        return frames, {}
+    step = _max_step([_angle_z(f["transforms"][driver]) for f in frames])
+    if step <= MAX_STEP_DEG:
+        return frames, {}
+    n = min(MAX_DENSE_FRAMES, int(len(frames) * step / (MAX_STEP_DEG / 2)) + 1)
+    if n <= len(frames):
+        return frames, {"aliasing_risk_deg": round(step, 2)}
+    dense = sample_chunked(sample, [duration * i / (n - 1) for i in range(n)])
+    new_step = _max_step([_angle_z(f["transforms"][driver]) for f in dense]) if dense else step
+    if new_step > 0.75 * step:
+        return frames, {"driver_jump_deg": round(new_step, 2)}
+    return dense, {"resampled_frames": n, **({"aliasing_risk_deg": round(new_step, 2)}
+                                             if new_step > MAX_STEP_DEG else {})}
+
+
+# 正向计分：每个适用检查项给 [0,1] 的得分，按权重平均。两种模式共用同一组权重：
+# 运动学（比值 / 导程 / 行程 / 位姿关键点）2、干涉 2、该动的动了 1、该固定的没漂 1、齿侧间隙 1。
+CHECK_WEIGHTS = {"kinematics": 2.0, "interference": 2.0, "moving": 1.0, "fixed": 1.0, "clearance": 1.0}
+
+
+def score_checks(checks: list[dict]) -> float:
+    total = sum(c["weight"] for c in checks)
+    if not total:
+        return 0.0
+    return round(100.0 * sum(c["weight"] * c["score"] for c in checks) / total, 2)
+
+
+def make_check(name: str, score: float, **extra) -> dict:
+    return {"name": name, "weight": CHECK_WEIGHTS[name], "score": round(float(score), 4), **extra}
 
 
 def analyze_frames(
@@ -79,6 +130,7 @@ def analyze_frames(
         "driver_max_step_deg": round(_max_step(raw_driver), 2),
     }
     ratio_ok = True
+    kin_items: list[bool] = []
     ratio_checks = []
     for item in spec.get("ratios") or []:
         raw_out = [_angle_z(frame["transforms"][name(item["role"])]) for frame in frames]
@@ -114,6 +166,7 @@ def analyze_frames(
             check["ok"] = check["ok"] and bool(per_rev * expected > 0)
         lead_checks.append(check)
         ratio_ok = ratio_ok and check["ok"]
+    kin_items += [bool(c["ok"]) for c in ratio_checks + lead_checks]
     if lead_checks:
         kinematics["leads"] = lead_checks
     if spec.get("expect_ratio") and spec.get("expect_moving"):
@@ -125,10 +178,12 @@ def analyze_frames(
         expected = 1.0 / float(spec["expect_ratio"])
         kinematics["output_ratio"] = round(measured, 4)
         kinematics["expected_ratio"] = expected
-        ratio_ok = ratio_ok and abs(measured - expected) <= 0.08
+        legacy_ok = abs(measured - expected) <= 0.08
         if spec.get("expect_same_direction"):
             kinematics["same_direction"] = (out_angles[-1] - out_angles[0]) * sweep > 0
-            ratio_ok = ratio_ok and kinematics["same_direction"]
+            legacy_ok = legacy_ok and kinematics["same_direction"]
+        kin_items.append(bool(legacy_ok))
+        ratio_ok = ratio_ok and legacy_ok
 
     timing_ok = True
     if spec.get("timing_ratio") and spec.get("timing_driven"):
@@ -146,6 +201,7 @@ def analyze_frames(
             opposite = travel * sweep < 0
             kinematics["timing_opposite"] = opposite
             timing_ok = timing_ok and opposite == bool(spec["timing_opposite"])
+        kin_items.append(bool(timing_ok))
 
     stroke_ok = True
     if spec.get("expect_stroke_mm"):
@@ -159,6 +215,7 @@ def analyze_frames(
         kinematics["stroke_mm"] = round(stroke, 3)
         kinematics["expected_stroke_mm"] = spec["expect_stroke_mm"]
         stroke_ok = abs(stroke - float(spec["expect_stroke_mm"])) <= 2.0
+        kin_items.append(bool(stroke_ok))
     stroke_checks = []
     for item in spec.get("strokes") or []:
         axis = "xyz".index(str(item.get("axis") or "y").lower())
@@ -181,24 +238,40 @@ def analyze_frames(
     if stroke_checks:
         kinematics["strokes"] = stroke_checks
         stroke_ok = stroke_ok and all(c["ok"] for c in stroke_checks)
+        kin_items += [bool(c["ok"]) for c in stroke_checks]
 
     passed = not inter_frames and not stuck and not drifted and ratio_ok and stroke_ok and timing_ok
-    score = 100.0
+    legacy = 100.0
     if inter_frames:
-        score -= 40
+        legacy -= 40
     if stuck:
-        score -= 20
+        legacy -= 20
     if drifted:
-        score -= 15
+        legacy -= 15
     if not ratio_ok:
-        score -= 15
+        legacy -= 15
     if not stroke_ok:
-        score -= 15
+        legacy -= 15
     if not timing_ok:
-        score -= 15
+        legacy -= 15
+    # “没有穿模 / 没有漂移”只在机构真的动起来时才有意义：按该动件实际在动的比例折算
+    moving_roles = spec.get("expect_moving") or []
+    moving_frac = 1.0 - len(stuck) / len(moving_roles) if moving_roles else 1.0
+    n_frames = len(interference_frames if interference_frames is not None else frames) or 1
+    checks = [make_check("interference", (1.0 - len(inter_frames) / n_frames) * moving_frac,
+                     frames_with_interference=len(inter_frames), frames=n_frames)]
+    if moving_roles:
+        checks.append(make_check("moving", moving_frac))
+    if spec.get("expect_fixed"):
+        checks.append(make_check("fixed", (1.0 - len(drifted) / len(spec["expect_fixed"])) * moving_frac))
+    if kin_items:
+        checks.append(make_check("kinematics", sum(kin_items) / len(kin_items), passed=sum(kin_items),
+                             items=len(kin_items)))
     return {
         "passed": passed,
-        "score": max(0.0, score),
+        "score": score_checks(checks),
+        "score_v1": max(0.0, legacy),
+        "checks": checks,
         "interference_frames": inter_frames,
         "stuck": stuck,
         "drifted_fixed": drifted,
@@ -255,15 +328,24 @@ def analyze_poses(results: list[dict], spec: dict) -> dict:
     limit = int(spec.get("max_interference") or 0)
     rows = []
     for item in results:
-        ok = (not item.get("error") and bool((item.get("points") or {}).get("ok"))
-              and int(item.get("interference_count") or 0) <= limit and not item.get("drifted_fixed"))
-        rows.append({**item, "ok": ok})
+        points_ok = not item.get("error") and bool((item.get("points") or {}).get("ok"))
+        clean = int(item.get("interference_count") or 0) <= limit
+        still = not item.get("drifted_fixed")
+        # 与马达模式同一组权重；位姿没摆对时“无穿模 / 无漂移”不给分
+        checks = [] if item.get("error") else [
+            make_check("kinematics", float(points_ok)),
+            make_check("interference", float(clean and points_ok)),
+            make_check("fixed", float(still and points_ok)),
+        ]
+        rows.append({**item, "ok": bool(points_ok and clean and still), "score": score_checks(checks),
+                     "checks": checks})
     passed = sum(r["ok"] for r in rows)
     total = len(rows) or 1
     return {
         "mode": "poses",
         "passed": bool(rows) and passed == len(rows),
-        "score": round(100.0 * passed / total, 2),
+        "score": round(sum(r["score"] for r in rows) / total, 2),
+        "score_v1": round(100.0 * passed / total, 2),
         "poses": rows,
     }
 
@@ -394,13 +476,15 @@ def sample_motion(base_url: str, spec: dict, driver_sw: str, driver_ref: str) ->
     })
     # Animation 的马达并不按 rpm 转（实测快 5~10 倍），帧稀了角度会混叠，比值就算错。
     # 运动学用密采样，逐帧干涉检测较慢，只在稀疏帧上做。
-    kinematic = post("/api/asmwf/motion-sample", {
-        "times": [duration * i / (dense - 1) for i in range(dense)], "interference": False,
-    })
+    def sample(times):
+        return post("/api/asmwf/motion-sample", {"times": times, "interference": False}).get("frames") or []
+
+    kinematic = sample_chunked(sample, [duration * i / (dense - 1) for i in range(dense)])
+    kinematic, sampling = refine_aliased(sample, driver_sw, duration, kinematic)
     sparse = post("/api/asmwf/motion-sample", {
         "times": [duration * i / (frames - 1) for i in range(frames)], "interference": True,
     })
-    return {"frames": kinematic.get("frames") or [], "interference_frames": sparse.get("frames") or []}
+    return {"frames": kinematic, "interference_frames": sparse.get("frames") or [], "sampling": sampling}
 
 
 def clearance_mm(step_a: Path, step_b: Path, matrix_a, matrix_b) -> float | None:

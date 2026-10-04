@@ -773,7 +773,8 @@ namespace Chapter1.ConnectToSw
                         throw new ArgumentException("circles 中每项必须是对象");
                     circles.Add(circle);
                 }
-                var result = _commands.SketchCircles(circles);
+                bool noInference = body.ContainsKey("noInference") && Convert.ToBoolean(body["noInference"]);
+                var result = _commands.SketchCircles(circles, noInference);
                 result["success"] = true;
                 result["message"] = $"批量绘制 {circles.Count} 个圆";
                 SendJson(resp, 200, result);

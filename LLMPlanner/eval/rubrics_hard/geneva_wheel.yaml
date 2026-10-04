@@ -1,0 +1,104 @@
+case: geneva_wheel
+prompt: >-
+  创建一个六槽槽轮机构的槽轮（日内瓦轮），单一实体。轮盘是直径 140mm、厚 12mm 的圆盘，盘的一面中心有一个同轴的
+  直径 40mm、高 12mm 的轮毂凸台（总高 24mm），中心开直径 16mm 的贯穿轴孔。盘上开 6 条均布的径向槽：
+  槽宽 10mm（两侧平行、关于径向中线对称），从轮盘外缘一直开到内端，内端是半圆，半圆圆心距轴心 40mm，槽贯穿盘厚。
+  相邻两槽之间的轮缘上各切一段内凹的锁止圆弧：圆弧半径 32mm，圆心位于两槽角平分线方向、距轴心 80mm 处，
+  沿盘厚贯穿切除（共 6 处）。在两槽之间的角平分线方向上、距轴心 28mm 处各开一个直径 8mm 的减重通孔（共 6 个）。
+  轮毂凸台上在其高度中点（距盘底面 18mm）沿某一条槽的方向开一个直径 5mm 的径向紧定螺钉孔，从凸台外圆钻通到轴孔。
+prompt_en: >-
+  Create the wheel of a six-slot Geneva drive as a single solid body. The wheel is a disc 140mm in diameter
+  and 12mm thick; one face has a coaxial hub boss 40mm in diameter and 12mm high at its center (24mm overall),
+  and there is a 16mm-diameter through bore at the center. The disc has 6 evenly spaced radial slots: each slot
+  is 10mm wide (parallel sides, symmetric about its radial centerline), runs from the rim of the disc inward and
+  ends in a semicircle whose center is 40mm from the axis; the slots go through the disc thickness. On the rim
+  between each pair of adjacent slots, cut a concave locking arc: the arc radius is 32mm and its center lies on
+  the bisector between the two slots, 80mm from the axis; the cut goes through the disc thickness (6 places).
+  On each bisector between two slots, 28mm from the axis, there is an 8mm-diameter through lightening hole
+  (6 in total). The hub boss has a 5mm-diameter radial set-screw hole at mid-height of the boss (18mm from the
+  bottom face of the disc), in the direction of one of the slots, drilled from the outer surface of the boss
+  through to the bore.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿轴线，t = 0 在轮盘底面（两端平面面积较大的一端）；轴 1 指向紧定螺钉孔（一条槽的方向）。
+# 槽在 60°k，锁止圆弧与减重孔在 30° + 60°k。
+entities:
+  bore:     {cylinder: {d: 16, side: inner}, count: 1}
+  hub:      {cylinder: {d: 40, side: outer}, count: 1}
+  screw:    {cylinder: {d: 5, side: inner}, count: 1}
+  holes:    {cylinder: {d: 8, side: inner}, count: 6}
+  locks:    {cylinder: {d: 64, side: inner}, count: 6}
+  frame:    {axis_frame: {axis: bore, low: larger_area, ref_dir: screw, ref_dir_toward: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: height
+    source: 盘厚 12mm + 凸台高 12mm，总高 24mm
+    hard: true
+    check:
+      - extent_along: {axis: bore, of: all, value: 24}
+
+  - id: disc_and_hub
+    source: 直径 140mm、厚 12mm 的圆盘；直径 40mm、高 12mm 的同轴轮毂凸台；直径 16mm 贯穿轴孔
+    check:
+      - exists: hub
+      - coaxial: [hub, bore]
+      - through: {holes: bore}
+      - line_material: {frame: frame, along: 0, polar: [45, 30], expect: [[0, 12]]}
+      - line_material: {frame: frame, along: 0, polar: [15, 30], expect: [[0, 24]]}
+      - radial_material: {frame: frame, t: 18, deg: 180, expect: [[8, 20]]}
+
+  - id: slots
+    source: 6 条均布径向槽，宽 10mm，从外缘开到内端半圆，半圆圆心距轴心 40mm，贯穿盘厚
+    derivation: 半径 42mm 的圆只与 6 条槽相交（锁止圆弧最近处在半径 48mm）
+    check:
+      - angular_openings: {frame: frame, t: 6, r: 42, count: 6, chord: 10}
+      - radial_material: {frame: frame, t: 6, deg: 0, expect: [[8, 35]]}
+
+  - id: slot_tips
+    source: 槽宽 10mm、一直开到外缘；槽侧与锁止圆弧之间留下 R70 外圆的轮齿尖
+    derivation: >-
+      5° 方位：先进入槽端半圆 40cos5° − √(25 − (40sin5°)²) = 36.263，离开槽侧直线 5/sin5° = 57.369，
+      此后直到 R70 外圆（该方位不经过锁止圆弧）
+    check:
+      - radial_material: {frame: frame, t: 6, deg: 5, expect: [[8, 36.263], [57.369, 70]]}
+
+  - id: locking_arcs
+    source: 6 段内凹锁止圆弧，半径 32mm，圆心在两槽角平分线上、距轴心 80mm
+    derivation: >-
+      与圆心方向夹角 δ 的射线上轮缘半径 80cosδ − √(32² − (80sinδ)²)：δ = 20° 为 58.582，δ = 15° 为 52.876
+    check:
+      - exists: locks
+      - axis_distance: {from: bore, to: locks, value: 80}
+      - equal_angular: {about: bore, items: locks}
+      - radial_material: {frame: frame, t: 6, deg: 50, expect: [[8, 58.582]]}
+      - radial_material: {frame: frame, t: 6, deg: 15, expect: [[8, 52.876]]}
+
+  - id: lightening_holes
+    source: 两槽角平分线方向、距轴心 28mm 处各一个直径 8mm 减重通孔
+    check:
+      - exists: holes
+      - through: {holes: holes}
+      - axis_distance: {from: bore, to: holes, value: 28}
+      - radial_material: {frame: frame, t: 6, deg: 30, expect: [[8, 24], [32, 48]]}
+
+  - id: set_screw
+    source: 凸台高度中点（距盘底面 18mm）沿某一条槽的方向开直径 5mm 径向紧定螺钉孔，从凸台外圆钻通到轴孔
+    check:
+      - exists: screw
+      - through: {holes: screw}
+      - radial_material: {frame: frame, t: 18, deg: 0, expect: []}
+      - axis_positions: {frame: frame, items: screw, axes: [0, 2], expect: [[18, 0]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 104989.6
+    check:
+      - volume: 104989.6
+
+ungraded: []

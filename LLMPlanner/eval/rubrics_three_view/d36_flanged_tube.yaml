@@ -1,0 +1,100 @@
+case: d36_flanged_tube
+title: D36 双法兰短管
+prompt: 根据所附三视图（第三角画法，单位 mm）建模双法兰短管，单一实体。
+prompt_en: Model the double-flanged short pipe from the attached three-view drawing (third-angle projection, units in mm) as a single solid body.
+image: eval/three_view/drawings/d36_flanged_tube.png
+reference: eval/three_view/references/d36_flanged_tube.step
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+drawing:
+  dims:
+    - {view: front, a: [-35, -35, 60], b: [35, -35, 60], side: bottom, tier: 2, text: "70"}
+    - {view: front, a: [-27, -27, 60], b: [27, -27, 60], side: bottom, tier: 1, text: "54"}
+    - {view: front, a: [35, -27, 60], b: [35, 27, 60], side: right, text: "54"}
+    - {view: top, a: [35, 0, 0], b: [35, 0, 8], side: right, tier: 1, text: "8"}
+    - {view: top, a: [35, 0, 52], b: [35, 0, 60], side: right, tier: 1, text: "8"}
+    - {view: top, a: [35, 0, 0], b: [35, 0, 60], side: right, tier: 2, text: "60"}
+    - {view: right, a: [0, 35, 60], b: [0, -35, 60], side: left, text: "Ø70"}
+  callouts:
+    - {view: front, at: [0, 0, 60], r: 15, angle: 200, leader: 90, text: "Ø30 通孔"}
+    - {view: front, at: [28, 0, 60], r: 4.5, angle: 30, leader: 50, text: "4×Ø9 通孔"}
+    - {view: front, at: [0, 0, 60], r: 28, angle: 120, leader: 60, text: "Ø56"}
+    - {view: front, at: [27, 27, 8], r: 3.5, angle: 45, leader: 40, text: "4×Ø7 通孔"}
+    - {view: front, at: [0, 0, 52], r: 20, angle: 240, leader: 110, text: "Ø40"}
+  circles:
+    - {view: front, at: [0, 0, 60], r: 28}
+  centers:
+    - {view: front, at: [0, 0, 60], r: 35}
+    - {view: front, at: [27, 27, 8], r: 3.5}
+    - {view: front, at: [-27, 27, 8], r: 3.5}
+    - {view: front, at: [27, -27, 8], r: 3.5}
+    - {view: front, at: [-27, -27, 8], r: 3.5}
+  axes:
+    - {view: top, a: [0, 0, -4], b: [0, 0, 64]}
+  notes:
+    - "下端方法兰 70×70×8，上端圆法兰 Ø70×8，与 Ø40 管同轴"
+    - "4×Ø9 孔均布于 Ø56 圆，与方法兰 4×Ø7 孔错开 45°"
+
+# frame：轴 0 沿管轴线（方法兰端低），轴 1 指向某个 Ø7 孔
+entities:
+  tube: {cylinder: {d: 40, side: outer}}
+  bore: {cylinder: {d: 30, side: inner}}
+  sq_holes: {cylinder: {d: 7, side: inner}, count: 4}
+  rd_holes: {cylinder: {d: 9, side: inner}, count: 4}
+  frame: {axis_frame: {axis: tube, ref: sq_holes, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: outer
+    source: 主视图 70×70；俯视图总长 60
+    hard: true
+    check:
+      - bbox_sorted: [60, 70, 70]
+      - exists: tube
+
+  - id: tube
+    source: 主视图 Ø40、Ø30 通孔
+    check:
+      - exists: bore
+      - through: {holes: bore}
+      - coaxial: [bore, tube]
+      - radial_material: {frame: frame, t: 30, deg: 0, expect: [[15, 20]]}
+      - line_material: {frame: frame, along: 0, polar: [17, 0], expect: [[0, 60]]}
+
+  - id: flanges
+    source: 主视图方法兰 70×70；右视图圆法兰 Ø70；俯视图两法兰厚 8
+    check:
+      - line_material: {frame: frame, along: 0, polar: [34.5, 22.5], expect: [[0, 8], [52, 60]]}
+      - line_material: {frame: frame, along: 0, polar: [35.5, 22.5], expect: [[0, 8]]}
+      - line_material: {frame: frame, along: 0, polar: [45, 0], expect: [[0, 8]]}
+
+  - id: square_holes
+    source: 主视图 4×Ø7 通孔，孔距 54×54
+    derivation: 孔心距轴线 27·√2 = 38.184
+    check:
+      - exists: sq_holes
+      - through: {holes: sq_holes}
+      - axis_distance: {from: tube, to: sq_holes, value: 38.184}
+      - equal_angular: {about: tube, items: sq_holes}
+
+  - id: round_holes
+    source: 主视图 4×Ø9 通孔均布于 Ø56；注释：与 Ø7 孔错开 45°
+    check:
+      - exists: rd_holes
+      - through: {holes: rd_holes}
+      - axis_distance: {from: tube, to: rd_holes, value: 28}
+      - equal_angular: {about: tube, items: rd_holes}
+      - line_material: {frame: frame, along: 0, polar: [28, 45], expect: [[0, 8]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 79600.88
+    check:
+      - volume: 79600.88
+
+ungraded: []
