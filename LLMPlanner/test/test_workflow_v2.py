@@ -13,13 +13,16 @@ from planner.workflow.profiles import normalize_loop
 from planner.workflow.sketch_check import to_geometry
 from planner.workflow.tools import TOOL_SPECS, WorkflowSession, tool_specs
 from planner.workflow.tools_v2 import (
+    HELIX_POINTS_PER_TURN,
     TOOL_SPECS_V2,
     VIEW_MODEL_SPEC,
     WorkflowSessionV2,
     coerce_args,
     create_session,
+    helix_geometry,
     hull_loop,
     polar_centers,
+    polyline_geometry,
     prepare_loops,
 )
 from test_eval_traces import ScriptedClient, _call
@@ -181,6 +184,97 @@ def test_sweep_profile_is_placed_at_path_start():
         "loops": [{"type": "circle", "center": [0, 0], "diameter": 8}],
     })
     assert slanted["error"]["code"] == "TOOL_ARGS" and "profile_plane" in slanted["error"]["hint"]
+
+
+def test_helix_geometry_starts_on_radial_axis_and_follows_handedness():
+    helix = helix_geometry({"axis": "Z", "center": [0, 0, 5], "diameter": 40, "pitch": 8, "turns": 2})
+    assert helix["start"] == pytest.approx([20, 0, 5])
+    assert helix["points"][-1] == pytest.approx([20, 0, 21], abs=1e-6)
+    quarter = helix["points"][HELIX_POINTS_PER_TURN // 4]
+    assert quarter == pytest.approx([0, 20, 7], abs=1e-6)
+    assert helix["length_mm"] == pytest.approx(2 * math.hypot(40 * math.pi, 8))
+    left = helix_geometry({"axis": "-Y", "center": [0, 0, 0], "radius": 10, "pitch": 4, "height": 8,
+                           "right_handed": False})
+    assert left["start"] == pytest.approx([10, 0, 0]) and left["axial"] == (0, -1, 0)
+    assert left["points"][-1][1] == pytest.approx(-8)
+    with pytest.raises(WorkflowError):
+        helix_geometry({"axis": "Z", "center": [0, 0, 0], "diameter": 10, "pitch": 0, "turns": 3})
+
+
+def test_polyline_geometry_merges_collinear_points_and_checks_corner_room():
+    line = polyline_geometry({"points": [[0, 0, 0], [50, 0, 0], [100, 0, 0], [100, 80, 0]], "corner_radius": 20})
+    assert line["points"] == [[0, 0, 0], [100, 0, 0], [100, 80, 0]]
+    assert line["length_mm"] == pytest.approx(180 - 40 + math.pi / 2 * 20)
+    with pytest.raises(WorkflowError) as info:
+        polyline_geometry({"points": [[0, 0, 0], [10, 0, 0], [10, 50, 0]], "corner_radius": 20})
+    assert "corner_radius" in info.value.context["hint"]
+    with pytest.raises(WorkflowError):
+        polyline_geometry([[0, 0, 0], [10, 0, 0], [0, 0, 0]])
+
+
+def test_sweep_along_helix_with_circular_profile_reports_nominal_volume():
+    session = FakeV2(volume=0.0, delta=4450.0)
+    result = session.call("sweep", {
+        "helix": json.dumps({"axis": "Z", "center": [0, 0, 0], "diameter": 40, "pitch": 8, "turns": 5}),
+        "profile_diameter": 3,
+    })
+    assert result["ok"] is True, result
+    path, feature = session.ran[0]
+    assert path["route"] == "/api/sketch3d/path" and path["params"]["spline"] is True
+    assert path["params"]["points"][0] == pytest.approx([0.02, 0, 0])
+    assert feature["params"]["circularDiameter"] == pytest.approx(0.003)
+    assert result["nominal_volume_mm3"] == pytest.approx(math.pi * 1.5 ** 2 * 5 * math.hypot(40 * math.pi, 8), rel=1e-4)
+    assert "warnings" not in result
+    tube = FakeV2(volume=0.0, delta=5000.0).call("sweep", {
+        "path_3d": {"points": [[0, 0, 0], [100, 0, 0], [100, 80, 0]], "corner_radius": 20},
+        "profile_diameter": 12, "inner_diameter": 8,
+    })
+    assert tube["ok"] is True and any("相差" in w for w in tube["warnings"])
+
+
+def test_sweep_helix_custom_profile_uses_radial_and_axial_coordinates():
+    session = FakeV2(volume=0.0, delta=3000.0)
+    result = session.call("sweep", {
+        "helix": {"axis": "Z", "center": [0, 0, 0], "radius": 25, "pitch": 10, "turns": 3},
+        "loops": [{"type": "rect", "center": [0, 0], "size": [4, 2]}],
+    })
+    assert result["ok"] is True, result
+    assert any("径向" in note for note in result["notes"])
+    polyline = next(op for op in session.ran[0] if op["operation"] == "sketch_polyline")
+    xs = sorted({round(p["x"], 6) for p in polyline["params"]["points"]})
+    ys = sorted({round(p["y"], 6) for p in polyline["params"]["points"]})
+    assert xs == [0.023, 0.027] and ys == [-0.001, 0.001]
+    slanted = FakeV2(volume=0.0, delta=10.0).call("sweep", {
+        "path_3d": {"points": [[0, 0, 0], [30, 30, 0]]},
+        "loops": [{"type": "circle", "center": [0, 0], "diameter": 4}],
+    })
+    assert slanted["error"]["code"] == "TOOL_ARGS" and "profile_diameter" in slanted["error"]["hint"]
+
+
+def test_loft_point_section_guides_and_tangency():
+    session = FakeV2(delta=16000.0)
+    result = session.call("loft", {"sections": [
+        {"plane": "front_plane", "loops": [{"type": "rect", "center": [0, 0], "size": [40, 40]}]},
+        {"plane": "front_plane", "point": [0, 0]},
+    ], "guides": [{"points": [[20, 0, 0], [0, 0, 0]]}]})
+    assert result["ok"] is True, result
+    ops = session.ran[0]
+    assert any(op["operation"] == "sketch_point" for op in ops)
+    assert ops[-1]["params"]["guideCount"] == 1 and ops[-2]["route"] == "/api/sketch3d/path"
+    middle = FakeV2(delta=1.0).call("loft", {"sections": [
+        {"plane": "front_plane", "loops": [{"type": "circle", "center": [0, 0], "diameter": 10}]},
+        {"plane": "front_plane", "point": [0, 0]},
+        {"plane": "front_plane", "loops": [{"type": "circle", "center": [0, 0], "diameter": 10}]},
+    ]})
+    assert middle["error"]["code"] == "TOOL_ARGS"
+    failing = FakeV2(run_ok=False)
+    failed = failing.call("loft", {"sections": [
+        {"plane": "front_plane", "loops": [{"type": "circle", "center": [0, 0], "diameter": 30}]},
+        {"plane": "front_plane", "loops": [{"type": "rect", "center": [0, 0], "size": [20, 20]}]},
+    ], "start_tangent": "normal"})
+    assert failed["error"]["code"] == "FEATURE_FAILED"
+    attempts = [ops[-1]["params"] for ops in failing.ran]
+    assert [(a["startTangent"], a["reverseStart"]) for a in attempts] == [(1, True), (1, False)]
 
 
 def test_failed_boss_hints_tangency_and_implicit_both_cut_is_flagged():

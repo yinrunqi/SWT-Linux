@@ -240,6 +240,12 @@ namespace Chapter1.ConnectToSw
                 case "/api/feature/loft":
                     RequirePost(method, resp, () => HandleLoft(req, resp));
                     break;
+                case "/api/sketch3d/path":
+                    RequirePost(method, resp, () => HandleSketch3DPath(req, resp));
+                    break;
+                case "/api/sketch/point":
+                    RequirePost(method, resp, () => HandleSketchPoint(req, resp));
+                    break;
                 case "/api/feature/shell":
                     RequirePost(method, resp, () => HandleShell(req, resp));
                     break;
@@ -1934,7 +1940,9 @@ namespace Chapter1.ConnectToSw
             try
             {
                 var body = ReadJsonBody(req);
-                var result = _commands.InsertSweep(GetBoolOrDefault(body, "cut", false));
+                var result = _commands.InsertSweep(
+                    GetBoolOrDefault(body, "cut", false), GetDoubleOrDefault(body, "circularDiameter", 0),
+                    GetDoubleOrDefault(body, "innerDiameter", 0));
                 SendJson(resp, 200, new { success = true, message = $"已扫描 {result["featureName"]}", result });
             }
             catch (Exception ex)
@@ -1950,12 +1958,61 @@ namespace Chapter1.ConnectToSw
                 var body = ReadJsonBody(req);
                 var result = _commands.InsertLoft(
                     body.ContainsKey("sectionCount") ? Convert.ToInt32(body["sectionCount"]) : 2,
-                    GetBoolOrDefault(body, "cut", false));
+                    GetBoolOrDefault(body, "cut", false),
+                    GetInt(body, "guideCount", 0),
+                    GetInt(body, "startTangent", 0),
+                    GetInt(body, "endTangent", 0),
+                    GetDoubleOrDefault(body, "tangentLength", 1),
+                    GetBoolOrDefault(body, "reverseStart", false),
+                    GetBoolOrDefault(body, "reverseEnd", false));
                 SendJson(resp, 200, new { success = true, message = $"已放样 {result["featureName"]}", result });
             }
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"放样失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSketch3DPath(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var points = new List<double[]>();
+                if (body.ContainsKey("points") && body["points"] is System.Collections.IEnumerable rows)
+                {
+                    foreach (var row in rows)
+                    {
+                        var values = new List<double>();
+                        foreach (var value in (System.Collections.IEnumerable)row)
+                            values.Add(Convert.ToDouble(value));
+                        if (values.Count != 3)
+                            throw new ArgumentException("points 的每一项须为 [x, y, z]");
+                        points.Add(values.ToArray());
+                    }
+                }
+                var result = _commands.Sketch3DPath(
+                    points, GetBoolOrDefault(body, "spline", false), GetDoubleOrDefault(body, "cornerRadius", 0));
+                SendJson(resp, 200, new { success = true, message = $"已绘制 3D 路径 {result["sketchName"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"绘制 3D 路径失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleSketchPoint(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.SketchPoint(
+                    GetDouble(body, "x"), GetDouble(body, "y"), GetDoubleOrDefault(body, "z", 0));
+                SendJson(resp, 200, new { success = true, message = "已绘制草图点", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"绘制草图点失败: {ex.Message}" });
             }
         }
 

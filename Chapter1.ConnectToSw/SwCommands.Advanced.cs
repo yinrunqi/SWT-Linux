@@ -96,10 +96,12 @@ namespace Chapter1.ConnectToSw
             return FeatureResult(feat);
         }
 
-        public Dictionary<string, object> InsertSweep(bool isCut)
+        public Dictionary<string, object> InsertSweep(bool isCut, double circularDiameter = 0, double innerDiameter = 0)
         {
             EnsureActiveDoc();
             ExitSketchIfActive();
+            if (circularDiameter > 0)
+                return InsertCircularSweep(isCut, circularDiameter, innerDiameter);
             var sketches = RecentSketchNames(2);
             if (sketches.Count < 2)
                 throw new InvalidOperationException("扫描需要两张草图：先画路径，再画截面");
@@ -132,20 +134,88 @@ namespace Chapter1.ConnectToSw
             return FeatureResult(feat);
         }
 
-        public Dictionary<string, object> InsertLoft(int sectionCount, bool isCut)
+        /// <summary>
+        /// 圆形截面扫描：最近一张草图（2D 或 3D）作路径，截面由 SolidWorks 的「圆形轮廓」选项生成，
+        /// 始终垂直于路径起点，不需要截面草图。innerDiameter &gt; 0 时再沿同一路径扫描切除内孔（空心管）。
+        /// </summary>
+        private Dictionary<string, object> InsertCircularSweep(bool isCut, double diameter, double innerDiameter)
+        {
+            var sketches = RecentSketchNames(1);
+            if (sketches.Count < 1)
+                throw new InvalidOperationException("圆形截面扫描需要一张路径草图");
+            string pathName = sketches[0];
+            var pathFeature = ((IPartDoc)ActiveDoc).FeatureByName(pathName) as IFeature;
+            if (pathFeature == null)
+                throw new InvalidOperationException($"找不到路径草图 {pathName}");
+            if (innerDiameter > 0 && (isCut || innerDiameter >= diameter))
+                throw new ArgumentException("inner diameter 只用于凸台扫描，且须小于外径");
+            IFeature feat = CircularSweepFeature(isCut, diameter, pathFeature, pathName);
+            if (feat == null)
+                throw new InvalidOperationException("圆形截面扫描失败：路径可能自交，或转弯半径小于截面半径");
+            IFeature bore = null;
+            if (innerDiameter > 0)
+            {
+                bore = CircularSweepFeature(true, innerDiameter, pathFeature, pathName);
+                if (bore == null)
+                    throw new InvalidOperationException("空心管内孔扫描切除失败");
+            }
+            RecordFeatureSketchLink(feat.Name, feat.GetTypeName2(), isCut ? "sweep_cut" : "sweep", diameter);
+            ((ModelDoc2)ActiveDoc).ViewZoomtofit2();
+            Console.WriteLine(
+                $"[SwCommands] 圆形截面扫描 {feat.Name}: 直径 {diameter}m, 内径 {innerDiameter}m, 路径 {pathName}, cut={isCut}");
+            var result = FeatureResult(feat);
+            if (bore != null)
+                result["boreFeatureName"] = bore.Name;
+            return result;
+        }
+
+        private IFeature CircularSweepFeature(bool isCut, double diameter, IFeature pathFeature, string pathName)
+        {
+            int id = isCut ? (int)swFeatureNameID_e.swFmSweepCut : (int)swFeatureNameID_e.swFmSweep;
+            var data = ActiveDoc.FeatureManager.CreateDefinition(id) as ISweepFeatureData;
+            if (data == null)
+                throw new InvalidOperationException("无法创建扫描定义");
+            data.CircularProfile = true;
+            data.CircularProfileDiameter = diameter;
+            data.Path = pathFeature;
+            ActiveDoc.ClearSelection2(true);
+            IFeature feat = ActiveDoc.FeatureManager.CreateFeature(data) as IFeature;
+            if (feat == null)
+            {
+                ActiveDoc.ClearSelection2(true);
+                SelectSketchByName(pathName, false, 4);
+                data = ActiveDoc.FeatureManager.CreateDefinition(id) as ISweepFeatureData;
+                data.CircularProfile = true;
+                data.CircularProfileDiameter = diameter;
+                feat = ActiveDoc.FeatureManager.CreateFeature(data) as IFeature;
+            }
+            ActiveDoc.ClearSelection2(true);
+            return feat;
+        }
+
+        /// <summary>
+        /// 放样。最近 sectionCount + guideCount 张草图中，前 sectionCount 张为截面（按顺序），后 guideCount 张为引导线。
+        /// startTangent / endTangent：0 无约束，1 垂直于截面（swTangencyNormalToProfile），tangentLength 为相切长度系数。
+        /// </summary>
+        public Dictionary<string, object> InsertLoft(
+            int sectionCount, bool isCut, int guideCount = 0,
+            int startTangent = 0, int endTangent = 0, double tangentLength = 1,
+            bool reverseStart = false, bool reverseEnd = false)
         {
             EnsureActiveDoc();
             ExitSketchIfActive();
             if (sectionCount < 2)
                 throw new ArgumentOutOfRangeException(nameof(sectionCount), "放样至少需要 2 个截面");
-            var sketches = RecentSketchNames(sectionCount);
-            if (sketches.Count < sectionCount)
-                throw new InvalidOperationException($"放样需要 {sectionCount} 张截面草图，当前只有 {sketches.Count} 张");
+            int total = sectionCount + Math.Max(0, guideCount);
+            var sketches = RecentSketchNames(total);
+            if (sketches.Count < total)
+                throw new InvalidOperationException($"放样需要 {total} 张草图（截面+引导线），当前只有 {sketches.Count} 张");
             ActiveDoc.ClearSelection2(true);
             for (int i = 0; i < sketches.Count; i++)
             {
-                if (!SelectSketchByName(sketches[i], i > 0, 1))
-                    throw new InvalidOperationException($"无法选中截面 {sketches[i]}");
+                bool guide = i >= sectionCount;
+                if (!SelectSketchByName(sketches[i], i > 0, guide ? 2 : 1))
+                    throw new InvalidOperationException($"无法选中{(guide ? "引导线" : "截面")} {sketches[i]}");
             }
             IFeature feat = isCut
                 ? ActiveDoc.FeatureManager.InsertCutBlend(
@@ -155,10 +225,41 @@ namespace Chapter1.ConnectToSw
                     true, true, true, 0) as IFeature;
             ActiveDoc.ClearSelection2(true);
             if (feat == null)
-                throw new InvalidOperationException("放样失败：每个截面应是闭合轮廓，且草图平面沿 loft 方向排列");
+                throw new InvalidOperationException(guideCount > 0
+                    ? "放样失败：引导线须与每个截面的轮廓相交（端点落在截面轮廓上），截面应闭合且沿放样方向排列"
+                    : "放样失败：每个截面应是闭合轮廓，且草图平面沿 loft 方向排列");
+            if (startTangent != 0 || endTangent != 0)
+            {
+                var data = feat.GetDefinition() as ILoftFeatureData;
+                if (data == null || !data.AccessSelections(ActiveDoc, null))
+                    throw new InvalidOperationException("无法读取放样定义以设置相切");
+                data.StartTangencyType = (short)startTangent;
+                data.EndTangencyType = (short)endTangent;
+                if (startTangent != 0)
+                {
+                    data.StartTangentLength = tangentLength;
+                    data.ReverseStartTangentDirection = reverseStart;
+                }
+                if (endTangent != 0)
+                {
+                    data.EndTangentLength = tangentLength;
+                    data.ReverseEndTangentDirection = reverseEnd;
+                }
+                if (!feat.ModifyDefinition(data, ActiveDoc, null))
+                {
+                    data.ReleaseSelectionAccess();
+                    throw new InvalidOperationException("设置放样首尾相切失败");
+                }
+                bool suppressed;
+                int error = feat.GetErrorCode2(out suppressed);
+                if (error != 0)
+                    throw new InvalidOperationException($"放样首尾相切后重建出错（错误码 {error}），可试反向或减小 tangent_length");
+            }
             RecordFeatureSketchLink(feat.Name, feat.GetTypeName2(), isCut ? "loft_cut" : "loft", 0);
             ((ModelDoc2)ActiveDoc).ViewZoomtofit2();
-            Console.WriteLine($"[SwCommands] 放样 {feat.Name}: {string.Join(" → ", sketches)}, cut={isCut}");
+            Console.WriteLine(
+                $"[SwCommands] 放样 {feat.Name}: {string.Join(" → ", sketches)}, 引导线 {guideCount}, " +
+                $"相切 {startTangent}/{endTangent}, cut={isCut}");
             return FeatureResult(feat);
         }
 

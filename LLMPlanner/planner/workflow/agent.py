@@ -75,6 +75,9 @@ SYSTEM_PROMPT_V2 = """你是一名资深机械设计工程师，正在 SolidWork
 - 侧凸台、支管接到已有实体时用 extrude(..., up_to=面或 body)，不要估一个 depth。
 - 沉头孔用 counterbore / countersink，螺纹底孔用 tapped_hole；筋用 rib；弯管用 sweep；变截面用 loft；空心壳体用 shell；斜度用 draft；钣金用 sheet_metal。
 - sweep 一般省略 profile_plane：路径第一段沿坐标轴时，截面自动放在路径起点并垂直于路径，loops 写相对路径起点的坐标（截面中心通常是 [0,0]）。
+  圆截面（管、丝、弹簧）直接用 profile_diameter（空心管加 inner_diameter），不需要截面平面；
+  空间弯管用 path_3d（折线 + corner_radius），弹簧/螺旋槽用 helix。
+- loft 首尾截面可以收成一点（{plane, point}）；需要控制中间形状时加 guides，要和相邻段平滑相接时用 start_tangent/end_tangent=normal。
 - 改已有特征的尺寸用 edit_feature。delete_feature 会连带删除依赖它的后续特征（结果的 also_removed），删除前想清楚。
 
 ## 每步核对

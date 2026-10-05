@@ -5,7 +5,8 @@ L1 的工具名、参数和行为保持不变；这里只在子类里覆盖：
     特征的世界坐标范围 / 去除比例 / 新增圆柱面反馈、单向贯穿与多实体检查、
     分组压缩且可过滤的 get_model_state、delete_feature 连带删除报告、
     hull 轮廓、极坐标布孔、半圆弧方向检查、圆心微差自动校正、360° 扇环转圆环、
-    多条射线倒圆角与射线歧义提示、阵列体积核对。
+    多条射线倒圆角与射线歧义提示、阵列体积核对、
+    sweep 的空间折线/螺旋线路径与圆形截面、loft 的点截面/引导线/首尾相切。
 """
 
 from __future__ import annotations
@@ -14,11 +15,13 @@ import copy
 import json
 import math
 import re
+from dataclasses import dataclass
 from typing import Any
 
 from .errors import WorkflowError
 from .frames import UV_AXES, SketchFrame, face_frame
 from .params import FUNCTIONS as PARAM_FUNCTIONS
+from .profiles import draw_open_path, draw_operations
 from .refs import resolve_ref
 from .tools import (
     AXES,
@@ -391,15 +394,55 @@ def _build_specs_v2() -> list[dict]:
         ),
         "sweep": dict(
             description=(
-                "沿开放路径扫描闭合截面。省略 profile_plane（推荐）时：路径起点的切向沿坐标轴，就自动在路径起点处建垂直于切向的截面平面，"
-                "loops 的坐标以路径起点为原点 (0,0)、按该平面的 (u,v) 轴给出（法向沿 X → u=Z,v=Y；沿 Y → u=X,v=Z；沿 Z → u=X,v=Y）。"
-                "给出 profile_plane 时按原写法：截面必须画在路径起点处、平面大致垂直于路径切向，坐标为模型坐标。"
+                "沿开放路径扫描截面（cut=true 为扫描切除）。路径三选一："
+                "(1) 平面路径 path_plane + path_start + path_segments；"
+                "(2) 空间折线 path_3d={points:[[x,y,z],...], corner_radius?}（mm，模型坐标，corner_radius 给每个转角加圆角，弯管常用）；"
+                "(3) 螺旋线 helix={axis:\"Z\"|\"-Y\"…, center:[x,y,z]（螺旋起始端的轴心）, diameter|radius, pitch, turns|height, "
+                "right_handed?=true}，起点在 center 沿 +X（axis 为 X 时沿 +Z）偏一个半径处（弹簧、螺旋槽、螺纹）。"
+                "截面二选一：圆形截面 profile_diameter（+ 可选 inner_diameter 生成空心管），任意路径方向都可用，最省事；"
+                "或自定义闭合 loops：平面路径/折线路径省略 profile_plane 时，截面自动放在路径起点、垂直于起点切向"
+                "（要求第一段沿坐标轴），loops 以路径起点为原点 (0,0)、按该平面的 (u,v) 轴给出"
+                "（法向沿 X → u=Z,v=Y；沿 Y → u=X,v=Z；沿 Z → u=X,v=Y）；螺旋线的 loops 用 (径向向外, 轴向前进) 坐标、以螺旋起点为原点。"
+                "给出 profile_plane 时按原写法：截面画在路径起点处、平面大致垂直于路径切向，坐标为模型坐标。"
+                "圆形截面会返回 path_length_mm 与 nominal_volume_mm3（截面积×路径长）供核对。"
             ),
-            properties={"profile_plane": {
-                "type": "string",
-                "description": "截面平面；省略或 \"auto\" 时自动放在路径起点并垂直于起点切向，loops 用相对路径起点的坐标。",
-            }},
-            required=["path_plane", "path_start", "path_segments", "loops"],
+            properties={
+                "profile_plane": {
+                    "type": "string",
+                    "description": "截面平面；省略或 \"auto\" 时自动放在路径起点并垂直于起点切向，loops 用相对路径起点的坐标。",
+                },
+                "path_3d": {
+                    "type": "object",
+                    "description": "空间折线路径 {points:[[x,y,z],...], corner_radius?}，mm",
+                },
+                "helix": {
+                    "type": "object",
+                    "description": "螺旋线路径 {axis, center:[x,y,z], diameter|radius, pitch, turns|height, right_handed?}",
+                },
+                "profile_diameter": {"type": "number", "description": "圆形截面直径 mm（与 loops 二选一）"},
+                "inner_diameter": {"type": "number", "description": "圆形截面的内径 mm，生成空心管（仅凸台）"},
+            },
+            required=[],
+        ),
+        "loft": dict(
+            description=(
+                "在两个或多个截面之间放样（cut=true 为放样切除）。sections 按顺序排列，每个 {plane, loops}；"
+                "第一个或最后一个截面可以写成 {plane, point:[u,v]}，收成一个点（尖顶、锥头）。"
+                "guides 为可选引导线数组，每条为平面开放路径 {plane, start, segments}（写法同 sweep 的平面路径）"
+                "或空间折线/样条 {points:[[x,y,z],...], spline?, corner_radius?}；引导线必须与每个截面的轮廓相交（端点落在截面轮廓上）。"
+                "start_tangent / end_tangent = none（默认）| normal：首/尾截面处的侧面垂直于截面（平滑过渡到相邻的拉伸段），"
+                "tangent_length 为相切影响系数（默认 1）。"
+            ),
+            properties={
+                "sections": {
+                    "type": "array", "items": {"type": "object"},
+                    "description": "截面数组，每个 {plane, loops} 或首/尾的 {plane, point:[u,v]}",
+                },
+                "guides": {"type": "array", "items": {"type": "object"}, "description": "引导线数组（可选）"},
+                "start_tangent": {"type": "string", "enum": ["none", "normal"]},
+                "end_tangent": {"type": "string", "enum": ["none", "normal"]},
+                "tangent_length": {"type": "number"},
+            },
         ),
         "ref_plane": dict(
             description=(
@@ -543,6 +586,190 @@ def path_start_tangent(start: tuple[float, float], step: dict) -> tuple[float, f
             ru, rv = ax - ux, ay - uy
             return (-rv, ru) if ccw else (rv, -ru)
     return target[0] - start[0], target[1] - start[1]
+
+
+# ------------------------------------------------------------ 3D 路径
+
+HELIX_POINTS_PER_TURN = 36
+_AXIS_VECTORS = {"X": (1.0, 0.0, 0.0), "Y": (0.0, 1.0, 0.0), "Z": (0.0, 0.0, 1.0)}
+
+
+def _axis_spec(text: Any, what: str = "axis") -> tuple[str, int]:
+    """"Z" / "+Z" / "-Y" → (轴名, 符号)。"""
+    value = str(text or "").strip().upper()
+    sign = -1 if value.startswith("-") else 1
+    name = value.lstrip("+-")
+    if name not in _AXIS_VECTORS:
+        raise WorkflowError("TOOL_ARGS", f"{what} 应为 X/Y/Z（可带 +/-），收到 {text!r}")
+    return name, sign
+
+
+def _cross(a: Any, b: Any) -> tuple[float, float, float]:
+    return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
+
+
+def _point3(value: Any, what: str) -> list[float]:
+    if not isinstance(value, (list, tuple)) or len(value) != 3:
+        raise WorkflowError("TOOL_ARGS", f"{what} 必须是 [x, y, z]（mm）")
+    return [float(item) for item in value]
+
+
+def helix_geometry(spec: dict) -> dict:
+    """螺旋线 → 采样点（mm）与起点处的局部方向。
+
+    起点 = center + r·e_u（e_u 为轴向平面的第一个草图轴：Z/Y 轴 → +X，X 轴 → +Z）；
+    右旋（默认）：沿 axis 前进时绕 axis 逆时针旋转。
+    """
+    axis, sign = _axis_spec(spec.get("axis", "Z"), "helix.axis")
+    center = _point3(spec.get("center"), "helix.center")
+    radius = _circle_radius(spec, "helix")
+    pitch = float(spec.get("pitch") or 0)
+    if pitch <= 0:
+        raise WorkflowError("TOOL_ARGS", "helix.pitch（螺距 mm）必须为正")
+    if spec.get("turns") is not None:
+        turns = float(spec["turns"])
+    elif spec.get("height") is not None:
+        turns = float(spec["height"]) / pitch
+    else:
+        raise WorkflowError("TOOL_ARGS", "helix 需要 turns（圈数）或 height（总高 mm）")
+    if turns <= 0 or turns > 200:
+        raise WorkflowError("TOOL_ARGS", f"helix 圈数 {turns:g} 不合理")
+    right = spec.get("right_handed", True)
+    right = str(right).strip().lower() != "false" if isinstance(right, str) else bool(right)
+    e_u = _AXIS_VECTORS[UV_AXES[axis][0]]
+    d = tuple(sign * value for value in _AXIS_VECTORS[axis])
+    e_w = _cross(d, e_u)
+    if not right:
+        e_w = tuple(-value for value in e_w)
+    count = max(8, math.ceil(turns * HELIX_POINTS_PER_TURN))
+    points = []
+    for i in range(count + 1):
+        theta = 2 * math.pi * turns * i / count
+        rise = pitch * turns * i / count
+        points.append([
+            round(center[k] + radius * (math.cos(theta) * e_u[k] + math.sin(theta) * e_w[k]) + rise * d[k], 6)
+            for k in range(3)
+        ])
+    return {
+        "points": points,
+        "start": points[0],
+        "radial": e_u,
+        "axial": d,
+        "normal": e_w,
+        "length_mm": turns * math.hypot(2 * math.pi * radius, pitch),
+        "describe": (
+            f"{'右' if right else '左'}旋螺旋线：轴 {'+' if sign > 0 else '-'}{axis}，起点 {points[0]}，"
+            f"半径 {radius:g}，螺距 {pitch:g}，{turns:g} 圈"
+        ),
+    }
+
+
+def polyline_geometry(spec: Any) -> dict:
+    """3D 折线（可带转角圆角）→ 去掉重合/共线的中间点，校验圆角放得下，并给出路径长度。"""
+    if isinstance(spec, list):
+        spec = {"points": spec}
+    if not isinstance(spec, dict):
+        raise WorkflowError("TOOL_ARGS", "path_3d 应为 {points:[[x,y,z],...], corner_radius?}")
+    raw = [_point3(p, "path_3d.points[i]") for p in spec.get("points") or []]
+    points: list[list[float]] = []
+    for point in raw:
+        if points and math.dist(point, points[-1]) < 1e-6:
+            continue
+        if len(points) >= 2:
+            a, b = points[-2], points[-1]
+            u = [b[k] - a[k] for k in range(3)]
+            w = [point[k] - b[k] for k in range(3)]
+            if math.sqrt(sum(c * c for c in _cross(u, w))) <= 1e-9 * math.dist(a, b) * math.dist(b, point) \
+                    and sum(u[k] * w[k] for k in range(3)) > 0:
+                points[-1] = point
+                continue
+        points.append(point)
+    if len(points) < 2:
+        raise WorkflowError("TOOL_ARGS", "path_3d 至少需要 2 个不重合的点")
+    radius = float(spec.get("corner_radius") or 0)
+    lengths = [math.dist(points[i], points[i + 1]) for i in range(len(points) - 1)]
+    total = sum(lengths)
+    cuts = [0.0] * len(lengths)
+    for i in range(1, len(points) - 1):
+        a, b, c = points[i - 1], points[i], points[i + 1]
+        u = [(b[k] - a[k]) / lengths[i - 1] for k in range(3)]
+        w = [(c[k] - b[k]) / lengths[i] for k in range(3)]
+        turn = math.acos(max(-1.0, min(1.0, sum(u[k] * w[k] for k in range(3)))))
+        if turn > math.pi - 1e-6:
+            raise WorkflowError("TOOL_ARGS", f"path_3d 在第 {i} 个点处原路折返")
+        if radius > 0:
+            tangent = radius * math.tan(turn / 2)
+            cuts[i - 1] += tangent
+            cuts[i] += tangent
+            total += radius * turn - 2 * tangent
+    for i, (length, cut) in enumerate(zip(lengths, cuts)):
+        if cut > length + 1e-6:
+            raise WorkflowError(
+                "TOOL_ARGS",
+                f"path_3d 第 {i} 段长 {length:g}mm，放不下两端的转角圆角（需 {cut:g}mm）",
+                hint="减小 corner_radius 或加长该段。",
+            )
+    return {
+        "points": points,
+        "start": points[0],
+        "tangent": [points[1][k] - points[0][k] for k in range(3)],
+        "corner_radius": radius,
+        "length_mm": total,
+        "describe": f"3D 折线 {len(points)} 点" + (f"，转角圆角 R{radius:g}" if radius > 0 else ""),
+    }
+
+
+def path3d_operation(points: list[list[float]], *, spline: bool = False, corner_radius: float = 0) -> dict:
+    return {
+        "operation": "sketch3d_path", "route": "/api/sketch3d/path",
+        "params": {
+            "points": [[value / 1000.0 for value in point] for point in points],
+            "spline": spline, "cornerRadius": corner_radius / 1000.0,
+        },
+    }
+
+
+@dataclass(frozen=True)
+class LocalFrame(SketchFrame):
+    """轴对齐平面上的局部坐标：(a, b) → 平面 (u, v) = origin + a·a_dir + b·b_dir。"""
+
+    plain: SketchFrame | None = None
+    origin_uv: tuple[float, float] = (0.0, 0.0)
+    a_dir: tuple[float, float] = (1.0, 0.0)
+    b_dir: tuple[float, float] = (0.0, 1.0)
+    local_label: str = ""
+
+    @classmethod
+    def on(cls, plain: SketchFrame, origin_uv: tuple[float, float], a_dir: tuple[float, float],
+           b_dir: tuple[float, float], local_label: str) -> "LocalFrame":
+        return cls(
+            label=plain.label, axis=plain.axis, normal_sign=plain.normal_sign, offset_mm=plain.offset_mm,
+            plane_index=plain.plane_index, face_index=plain.face_index, face_box_mm=None,
+            ref_plane_name=plain.ref_plane_name, plain=plain, origin_uv=origin_uv,
+            a_dir=a_dir, b_dir=b_dir, local_label=local_label,
+        )
+
+    def _uv(self, a: float, b: float) -> tuple[float, float]:
+        return (self.origin_uv[0] + a * self.a_dir[0] + b * self.b_dir[0],
+                self.origin_uv[1] + a * self.a_dir[1] + b * self.b_dir[1])
+
+    def to_model_mm(self, a: float, b: float) -> tuple[float, float, float]:
+        return self.plain.to_model_mm(*self._uv(a, b))
+
+    def point_params(self, a: float, b: float, *, keys=("x", "y", "z")) -> dict:
+        return self.plain.point_params(*self._uv(a, b), keys=keys)
+
+    def boundary_uv(self) -> dict | None:
+        return None
+
+    def describe(self) -> str:
+        return f"{self.plain.describe()}；截面局部坐标 {self.local_label}"
+
+
+def _axis_frame_dirs(plane_axis: str, a_vec: Any, b_vec: Any) -> tuple[tuple[float, float], tuple[float, float]]:
+    u_axis, v_axis = UV_AXES[plane_axis]
+    ui, vi = AXES.index(u_axis), AXES.index(v_axis)
+    return (a_vec[ui], a_vec[vi]), (b_vec[ui], b_vec[vi])
 
 
 _ADDING_TOOLS = {"extrude", "sweep", "revolve", "loft", "rib"}
@@ -893,9 +1120,237 @@ class WorkflowSessionV2(WorkflowSession):
         return self._feature_feedback(args, result, self.last_transaction[0], removing=True)
 
     def sweep(self, args: dict) -> dict:
-        if str(args.get("profile_plane") or "auto").strip().lower() == "auto":
-            args = self._auto_sweep_profile(args)
-        return super().sweep(args)
+        three_d = args.get("helix") is not None or args.get("path_3d") is not None
+        if not three_d and args.get("profile_diameter") is None:
+            if str(args.get("profile_plane") or "auto").strip().lower() == "auto":
+                args = self._auto_sweep_profile(args)
+            return super().sweep(args)
+        before = self.snapshot()
+        is_cut = bool(args.get("cut", False))
+        if is_cut and self._volume(before) <= 0:
+            raise WorkflowError("NO_BODY", "零件中还没有实体，无法扫描切除")
+        path_ops, path = self._sweep_path(args, before)
+        context: dict[str, Any] = {"path": path["describe"]}
+        if path.get("length_mm"):
+            context["path_length_mm"] = _round(path["length_mm"], 2)
+        warnings: list[str] = []
+        diameter = self._num(args, "profile_diameter")
+        if diameter is not None:
+            inner = self._num(args, "inner_diameter") or 0.0
+            if diameter <= 0 or inner < 0 or inner >= diameter:
+                raise WorkflowError("TOOL_ARGS", "profile_diameter 须为正，inner_diameter 须小于它")
+            if inner and is_cut:
+                raise WorkflowError("TOOL_ARGS", "扫描切除不支持 inner_diameter")
+            operations = [*path_ops, {
+                "operation": "feature_sweep", "route": "/api/feature/sweep",
+                "params": {"cut": is_cut, "circularDiameter": diameter / 1000, "innerDiameter": inner / 1000},
+            }]
+            context["profile"] = f"圆形截面 Ø{diameter:g}" + (f"，内径 Ø{inner:g}" if inner else "")
+            if path.get("length_mm"):
+                area = math.pi / 4 * (diameter ** 2 - inner ** 2)
+                context["nominal_volume_mm3"] = _round(area * path["length_mm"], 2)
+        else:
+            frame = self._sweep_profile_frame(args, path, before)
+            loops, check, warnings = self._profile(args, frame, removing=is_cut)
+            operations = [
+                *path_ops, self._open_sketch(frame), *draw_operations(frame, loops),
+                {"operation": "feature_sweep", "route": "/api/feature/sweep", "params": {"cut": is_cut}},
+            ]
+            context["profile"] = frame.describe()
+            context["region_area_mm2"] = check["region_area_mm2"]
+        result = self._transaction(
+            operations, expect="decrease" if is_cut else "increase", before=before, context=context,
+        )
+        nominal = context.get("nominal_volume_mm3")
+        if nominal and not is_cut and self._volume(before) <= 0:
+            delta = float(result.get("volume_delta_mm3") or 0)
+            if abs(delta - nominal) > 0.05 * nominal:
+                warnings.append(
+                    f"扫描体积 {delta:g} mm³ 与 截面积×路径长 = {nominal:g} mm³ 相差较多，路径可能自交或截面在转弯处重叠"
+                )
+        return {**result, "warnings": warnings} if warnings else result
+
+    def _sweep_path(self, args: dict, snapshot: dict) -> tuple[list[dict], dict]:
+        """扫描路径的绘制操作和几何信息（起点、起点切向、长度，单位 mm）。"""
+        if args.get("helix") is not None:
+            spec = self._resolve_numbers(coerce_args(args["helix"]) if isinstance(args["helix"], dict) else args["helix"])
+            if not isinstance(spec, dict):
+                raise WorkflowError("TOOL_ARGS", "helix 应为 {axis, center, diameter|radius, pitch, turns|height}")
+            helix = helix_geometry(spec)
+            return [path3d_operation(helix["points"], spline=True)], {**helix, "kind": "helix"}
+        if args.get("path_3d") is not None:
+            spec = args["path_3d"]
+            spec = coerce_args(spec) if isinstance(spec, dict) else spec
+            line = polyline_geometry(self._resolve_numbers(spec))
+            op = path3d_operation(line["points"], corner_radius=line["corner_radius"])
+            return [op], {**line, "kind": "polyline"}
+        path_frame = self._frame(args.get("path_plane"), snapshot, arg="path_plane")
+        start = self._uv_pair(args.get("path_start"), "path_start")
+        steps = self._resolve_numbers(args.get("path_segments"))
+        if not isinstance(steps, list) or not steps:
+            raise WorkflowError("TOOL_ARGS", "path_segments 不能为空")
+        operations = [
+            self._open_sketch(path_frame),
+            *draw_open_path(path_frame, start, steps),
+            {"operation": "close_sketch", "route": "/api/close-sketch-named", "params": {}},
+        ]
+        return operations, {"kind": "planar", "describe": path_frame.describe()}
+
+    def _sweep_profile_frame(self, args: dict, path: dict, snapshot: dict) -> SketchFrame:
+        explicit = str(args.get("profile_plane") or "auto").strip()
+        if explicit.lower() != "auto":
+            return self._frame(explicit, snapshot, arg="profile_plane")
+        if path["kind"] == "planar":
+            raise WorkflowError(
+                "TOOL_ARGS", "平面路径 + 自定义截面请省略 profile_diameter，按原写法给 loops",
+            )
+        start = path["start"]
+        if path["kind"] == "helix":
+            normal = max(range(3), key=lambda i: abs(path["normal"][i]))
+            plane_axis = AXES[normal]
+            a_dir, b_dir = _axis_frame_dirs(plane_axis, path["radial"], path["axial"])
+            label = "a=径向（向外）, b=轴向（螺旋前进方向），原点 = 螺旋起点"
+        else:
+            tangent = path["tangent"]
+            norm = math.sqrt(sum(value * value for value in tangent))
+            normal = max(range(3), key=lambda i: abs(tangent[i]))
+            if abs(tangent[normal]) / norm < 0.999:
+                raise WorkflowError(
+                    "TOOL_ARGS", "path_3d 第一段不沿坐标轴，无法自动放置自定义截面",
+                    hint="圆形截面改用 profile_diameter（任意方向都可以）；自定义截面请让第一段沿坐标轴。",
+                )
+            plane_axis = AXES[normal]
+            a_dir, b_dir = (1.0, 0.0), (0.0, 1.0)
+            u_axis, v_axis = UV_AXES[plane_axis]
+            label = f"a={u_axis}, b={v_axis}，原点 = 路径起点"
+        at = f"{start[normal]:.6f}".rstrip("0").rstrip(".")
+        plain = self._frame(self._axis_plane(f"{plane_axis}={at}"), self.snapshot())
+        u_axis, v_axis = UV_AXES[plane_axis]
+        origin = (start[AXES.index(u_axis)], start[AXES.index(v_axis)])
+        self._notes.append(f"截面平面自动取 {plane_axis}={at}；loops 坐标：{label}")
+        return LocalFrame.on(plain, origin, a_dir, b_dir, label)
+
+    def loft(self, args: dict) -> dict:
+        guides = args.get("guides") or []
+        if not isinstance(guides, list):
+            raise WorkflowError("TOOL_ARGS", "guides 应为数组")
+        tangents = {"none": 0, "normal": 1}
+        start_tangent = str(args.get("start_tangent") or "none").strip().lower()
+        end_tangent = str(args.get("end_tangent") or "none").strip().lower()
+        if start_tangent not in tangents or end_tangent not in tangents:
+            raise WorkflowError("TOOL_ARGS", "start_tangent / end_tangent 只能是 none 或 normal")
+        sections = args.get("sections")
+        has_point = isinstance(sections, list) and any(
+            isinstance(section, dict) and section.get("point") is not None for section in sections
+        )
+        if not guides and not has_point and start_tangent == end_tangent == "none":
+            return super().loft(args)
+        before = self.snapshot()
+        is_cut = bool(args.get("cut", False))
+        if is_cut and self._volume(before) <= 0:
+            raise WorkflowError("NO_BODY", "零件中还没有实体，无法放样切除")
+        if not isinstance(sections, list) or len(sections) < 2:
+            raise WorkflowError("TOOL_ARGS", "sections 至少两段，每段 {plane, loops} 或 {plane, point}")
+        close = {"operation": "close_sketch", "route": "/api/close-sketch-named", "params": {}}
+        operations: list[dict] = []
+        warnings: list[str] = []
+        for index, section in enumerate(sections):
+            if not isinstance(section, dict):
+                raise WorkflowError("TOOL_ARGS", f"sections[{index}] 必须是对象")
+            frame = self._frame(section.get("plane"), before)
+            if section.get("point") is not None:
+                if index not in (0, len(sections) - 1):
+                    raise WorkflowError("TOOL_ARGS", "点截面只能是第一个或最后一个截面")
+                u, v = self._uv_pair(section["point"], f"sections[{index}].point")
+                operations += [self._open_sketch(frame), {
+                    "operation": "sketch_point", "route": "/api/sketch/point", "params": frame.point_params(u, v),
+                }, close]
+                continue
+            loops, _check, extra = self._profile(section, frame, removing=is_cut)
+            warnings.extend(extra)
+            operations += [self._open_sketch(frame), *draw_operations(frame, loops), close]
+        for index, guide in enumerate(guides):
+            guide = coerce_args(guide) if isinstance(guide, dict) else guide
+            if not isinstance(guide, dict):
+                raise WorkflowError("TOOL_ARGS", f"guides[{index}] 必须是对象")
+            if guide.get("points") is not None:
+                points = self._resolve_numbers(guide["points"])
+                if guide.get("spline"):
+                    points = [_point3(p, f"guides[{index}].points[i]") for p in points or []]
+                    if len(points) < 2:
+                        raise WorkflowError("TOOL_ARGS", f"guides[{index}] 样条至少需要 2 个点")
+                    operations.append(path3d_operation(points, spline=True))
+                else:
+                    line = polyline_geometry(
+                        {"points": points, "corner_radius": self._resolve_numbers(guide.get("corner_radius"))})
+                    operations.append(path3d_operation(line["points"], corner_radius=line["corner_radius"]))
+                continue
+            plane = guide.get("plane")
+            frame = self._frame(self._axis_plane(plane) if isinstance(plane, str) else plane, before,
+                                arg=f"guides[{index}].plane")
+            steps = self._resolve_numbers(guide.get("segments"))
+            if not isinstance(steps, list) or not steps:
+                raise WorkflowError("TOOL_ARGS", f"guides[{index}] 需要 segments（或 3D points）")
+            start = self._uv_pair(guide.get("start"), f"guides[{index}].start")
+            operations += [self._open_sketch(frame), *draw_open_path(frame, start, steps), close]
+        params = {
+            "sectionCount": len(sections), "cut": is_cut, "guideCount": len(guides),
+            "startTangent": tangents[start_tangent], "endTangent": tangents[end_tangent],
+            "tangentLength": float(self._num(args, "tangent_length") or 1.0),
+        }
+        context = {"sections": len(sections), "guides": len(guides), "tangency": f"{start_tangent}/{end_tangent}"}
+        span = self._loft_span([self._frame(section.get("plane"), before) for section in sections])
+        # 相切方向的正负随截面朝向而变：逐个尝试，取不越过首尾截面的那个
+        flips = [(True, True), (False, False), (True, False), (False, True)]
+        if start_tangent == "none":
+            flips = [(False, end) for end in (True, False)]
+        elif end_tangent == "none":
+            flips = [(start, False) for start in (True, False)]
+        failure: WorkflowError | None = None
+        for reverse_start, reverse_end in flips:
+            attempt = [*operations, {"operation": "feature_loft", "route": "/api/feature/loft", "params": {
+                **params, "reverseStart": reverse_start, "reverseEnd": reverse_end}}]
+            try:
+                result = self._transaction(
+                    attempt, expect="decrease" if is_cut else "increase", before=before, context=context,
+                )
+            except WorkflowError as exc:
+                failure = exc
+                if params["startTangent"] == params["endTangent"] == 0:
+                    raise
+                continue
+            overshoot = self._loft_overshoot(span, before, result) if not is_cut else None
+            if overshoot is None:
+                return {**result, "warnings": warnings} if warnings else result
+            self._rollback(result.get("created") or [])
+            failure = WorkflowError("FEATURE_FAILED", overshoot, **context)
+        raise failure  # type: ignore[misc]
+
+    @staticmethod
+    def _loft_span(frames: list[SketchFrame]) -> tuple[int, float, float] | None:
+        axes = {frame.axis for frame in frames}
+        if len(axes) != 1:
+            return None
+        offsets = [frame.offset_mm for frame in frames]
+        return AXES.index(frames[0].axis), min(offsets), max(offsets)
+
+    def _loft_overshoot(self, span: tuple[int, float, float] | None, before: dict, result: dict) -> str | None:
+        """首尾相切方向反了时，实体会凸出到首/尾截面之外。"""
+        if span is None:
+            return None
+        axis, low, high = span
+        box = self._bbox(self.last_transaction[1])
+        if box is None:
+            return None
+        old = self._bbox(before) if self._volume(before) > 0 else None
+        if old is not None:
+            low, high = min(low, old[AXES[axis]][0]), max(high, old[AXES[axis]][1])
+        tolerance = 0.1 + 0.005 * (high - low)
+        lo, hi = box[AXES[axis]]
+        if lo < low - tolerance or hi > high + tolerance:
+            return (f"放样首尾相切后实体沿 {AXES[axis]} 越出截面范围 [{low:g}, {high:g}]（实际 [{lo:g}, {hi:g}]），"
+                    "相切方向不对")
+        return None
 
     def _auto_sweep_profile(self, args: dict) -> dict:
         """截面平面放在路径起点、垂直于起点切向；loops 从相对路径起点的坐标平移到该平面的 (u,v)。"""
