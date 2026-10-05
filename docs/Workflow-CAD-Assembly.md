@@ -86,6 +86,7 @@ C# 端的 Animation 马达只支持旋转，所以直线输入由 `check_pose` �
 - `mesh_gears` 原来固定给从动轮转半个齿距，只在中心连线沿 X、主动轮未转时成立；发动机正时齿轮（连线斜 16°）因此有齿面干涉。现在按中心连线方向和主动轮当前转角计算从动轮相位（零件局部 0° 是齿）。
 - `IMateEntity2.ReferenceType` 才是几何类型（0 点、1 线、2 圆、3 平面、4 圆柱、5 球、7 圆锥）；`ReferenceType2` 返回选择类型。`EntityParams` 是装配坐标下的点(3)、方向(3)、半径1、半径2（米）。
 - Animation 能正确解齿轮系和曲柄滑块闭环（见 5.4），但旋转马达不按 rpm 转：10 rpm 实测 47–95 rpm。传动比、行程都按驱动件实际转角算；13 帧时相邻帧转角超过 180°，展开会混叠，所以运动学改用 121 帧密采样，干涉仍只在 13 帧上做。
+- Motion Study 会保存创建时的 0 秒组件位姿；复用模板或上一轮留下的 Study，在配合改变后会弹出“更新初始动画状态”并阻塞无人值守评测。如果驱动用过的 Study 一直保持激活，之后插入零件、改配合都会被记成动画关键帧，关闭文档时同样会弹窗；这时点“是”曾导致 SolidWorks 崩溃。SolidWorks 不允许删除最后一个 Study（`DeleteMotionStudy` 返回 false），所以 `motion-delete` 先新建一个空 Study 占位，再删旧的，返回 `deleted` / `failed` / `remaining`。`motion-drive` 先重建并执行这一步，再从当前位姿建 Study；agent 自检和最终 motion rubric 都在采样后的 `finally` 调 `motion-delete`。`motion-status` 列出现有 Study 的名称、是否激活和特征数，用于排查。
 - 偶尔在配合求解或删除 Motion Study 后，SolidWorks 单核满载几分钟，服务无响应（同一装配体一次 65 s、一次 7 min，不是确定性的）。批量重评分脚本遇到这种情况会自动重启 SolidWorks 和服务，并重试一次。
 
 `spur_gear` 只在装配零件生成会话里通过 `WorkflowSession(extra_tools=["spur_gear"])` 打开，50 题和困难子集的 24 工具结果可以复现。

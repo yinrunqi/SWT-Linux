@@ -473,20 +473,31 @@ def sample_motion(base_url: str, spec: dict, driver_sw: str, driver_ref: str) ->
     frames = max(3, int(spec.get("frames") or 13))
     dense = max(frames, int(spec.get("dense_frames") or 121))
     duration = abs(sweep) / (rpm * 6)
-    post("/api/asmwf/motion-drive", {
-        "component": driver_sw, "ref": driver_ref, "rpm": rpm, "durationSeconds": duration,
-    })
-    # Animation 的马达并不按 rpm 转（实测快 5~10 倍），帧稀了角度会混叠，比值就算错。
-    # 运动学用密采样，逐帧干涉检测较慢，只在稀疏帧上做。
-    def sample(times):
-        return post("/api/asmwf/motion-sample", {"times": times, "interference": False}).get("frames") or []
+    primary_error = None
+    try:
+        post("/api/asmwf/motion-drive", {
+            "component": driver_sw, "ref": driver_ref, "rpm": rpm, "durationSeconds": duration,
+        })
+        # Animation 的马达并不按 rpm 转（实测快 5~10 倍），帧稀了角度会混叠，比值就算错。
+        # 运动学用密采样，逐帧干涉检测较慢，只在稀疏帧上做。
+        def sample(times):
+            return post("/api/asmwf/motion-sample", {"times": times, "interference": False}).get("frames") or []
 
-    kinematic = sample_chunked(sample, [duration * i / (dense - 1) for i in range(dense)])
-    kinematic, sampling = refine_aliased(sample, driver_sw, duration, kinematic)
-    sparse = post("/api/asmwf/motion-sample", {
-        "times": [duration * i / (frames - 1) for i in range(frames)], "interference": True,
-    })
-    return {"frames": kinematic, "interference_frames": sparse.get("frames") or [], "sampling": sampling}
+        kinematic = sample_chunked(sample, [duration * i / (dense - 1) for i in range(dense)])
+        kinematic, sampling = refine_aliased(sample, driver_sw, duration, kinematic)
+        sparse = post("/api/asmwf/motion-sample", {
+            "times": [duration * i / (frames - 1) for i in range(frames)], "interference": True,
+        })
+        return {"frames": kinematic, "interference_frames": sparse.get("frames") or [], "sampling": sampling}
+    except BaseException as exc:
+        primary_error = exc
+        raise
+    finally:
+        try:
+            post("/api/asmwf/motion-delete")
+        except Exception:
+            if primary_error is None:
+                raise
 
 
 def clearance_mm(step_a: Path, step_b: Path, matrix_a, matrix_b) -> float | None:

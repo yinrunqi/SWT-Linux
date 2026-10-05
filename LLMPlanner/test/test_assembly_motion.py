@@ -14,8 +14,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from geomcheck.assembly_motion import (  # noqa: E402
-    analyze_frames, analyze_poses, local_to_world, refine_aliased, run_poses, sample_chunked, score_pose_points,
-    world_to_local,
+    analyze_frames, analyze_poses, local_to_world, refine_aliased, run_poses, sample_chunked, sample_motion,
+    score_pose_points, world_to_local,
 )
 from planner.gears import generate_internal_cavity, generate_involute_outline  # noqa: E402
 
@@ -43,6 +43,34 @@ def _frames(n, driver_deg, **others):
 
 
 ALIASES = {"frame": "frame-1", "driver": "driver-1", "out": "out-1", "hook": "hook-1", "slider": "slider-1"}
+
+
+def test_sample_motion_deletes_study_after_sampling_failure(monkeypatch):
+    calls = []
+
+    class Response:
+        def __init__(self, data):
+            self.data = data
+
+        def json(self):
+            return self.data
+
+    class Session:
+        def post(self, url, json, timeout):
+            path = url.removeprefix("http://fake")
+            calls.append(path)
+            if path == "/api/asmwf/motion-sample":
+                return Response({"success": False, "message": "sample failed"})
+            return Response({"success": True, "result": {}})
+
+    monkeypatch.setattr("requests.Session", Session)
+    with pytest.raises(RuntimeError, match="sample failed"):
+        sample_motion("http://fake", {"driver": "driver"}, "driver-1", "bore:auto")
+    assert calls == [
+        "/api/asmwf/motion-drive",
+        "/api/asmwf/motion-sample",
+        "/api/asmwf/motion-delete",
+    ]
 
 
 def test_ratios_list_and_direction():

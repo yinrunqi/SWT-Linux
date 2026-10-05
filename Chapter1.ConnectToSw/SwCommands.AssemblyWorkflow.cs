@@ -78,6 +78,8 @@ namespace Chapter1.ConnectToSw
                         Flag(body, "resetToZero", true));
                 case "motion-delete":
                     return DeleteMotionStudies();
+                case "motion-status":
+                    return DescribeMotionStudies();
                 default:
                     throw new ArgumentException($"未知的装配 workflow 操作: {op}");
             }
@@ -969,6 +971,13 @@ namespace Chapter1.ConnectToSw
         {
             if (rpm <= 0 || durationSeconds <= 0)
                 throw new ArgumentException("rpm 与 durationSeconds 必须为正");
+            EnsureActiveAssembly();
+            // 模板自带或上一次检查留下的 Study 会保存旧的 0 秒关键帧；装配修改后复用它会弹出
+            // “更新初始动画状态”，并使无人值守评测停住。先稳定当前模型，再从当前位姿新建 Study。
+            var model = (IModelDoc2)_activeAssembly;
+            model.EditRebuild3();
+            DeleteMotionStudies();
+            model.EditRebuild3();
             var component = FindAssemblyComponent(componentName);
             IFace2 face;
             if (!string.IsNullOrWhiteSpace(reference) && !reference.Trim().StartsWith("bore"))
@@ -1099,24 +1108,57 @@ namespace Chapter1.ConnectToSw
             };
         }
 
+        /// <summary>列出当前装配体的 Motion Study：名称、是否活动、运动特征数。</summary>
+        public Dictionary<string, object> DescribeMotionStudies()
+        {
+            EnsureActiveAssembly();
+            var manager = ((IModelDoc2)_activeAssembly).Extension.GetMotionStudyManager() as IMotionStudyManager;
+            var studies = new List<Dictionary<string, object>>();
+            if (manager != null && manager.GetMotionStudyCount() > 0)
+            {
+                foreach (var name in (manager.GetMotionStudyNames() as IEnumerable)?.Cast<object>() ?? Enumerable.Empty<object>())
+                {
+                    var study = manager.GetMotionStudy(name.ToString()) as IMotionStudy;
+                    if (study == null) continue;
+                    studies.Add(new Dictionary<string, object>
+                    {
+                        ["name"] = study.Name,
+                        ["active"] = study.IsActive,
+                        ["features"] = study.GetMotionFeaturesCount(),
+                    });
+                }
+            }
+            return new Dictionary<string, object> { ["count"] = studies.Count, ["studies"] = studies.ToArray() };
+        }
+
         /// <summary>删除全部 Motion Study（回到纯模型状态，便于继续编辑配合）。</summary>
         public Dictionary<string, object> DeleteMotionStudies()
         {
             var manager = ((IModelDoc2)_activeAssembly).Extension.GetMotionStudyManager() as IMotionStudyManager;
             var deleted = new List<string>();
+            var failed = new List<string>();
             if (manager != null && manager.GetMotionStudyCount() > 0)
             {
                 var names = (manager.GetMotionStudyNames() as IEnumerable)?.Cast<object>().Select(n => n.ToString()).ToList()
                     ?? new List<string>();
+                // SolidWorks 不允许删除最后一个算例；先建一个空算例占位，旧算例（含电机和旧关键帧）才能删掉。
+                manager.CreateMotionStudy();
                 foreach (var name in names)
                 {
-                    try { if (manager.DeleteMotionStudy(name)) deleted.Add(name); } catch { }
+                    bool ok = false;
+                    try { ok = manager.DeleteMotionStudy(name); } catch { }
+                    (ok ? deleted : failed).Add(name);
                 }
             }
             _activeMotionStudy = null;
             _activeMotionMotor = null;
             ((IModelDoc2)_activeAssembly).EditRebuild3();
-            return new Dictionary<string, object> { ["deleted"] = deleted.ToArray() };
+            return new Dictionary<string, object>
+            {
+                ["deleted"] = deleted.ToArray(),
+                ["failed"] = failed.ToArray(),
+                ["remaining"] = manager?.GetMotionStudyCount() ?? 0,
+            };
         }
     }
 }

@@ -1295,6 +1295,20 @@ class AssemblySession:
         }
 
     def check_motion(self, args: dict) -> dict:
+        primary_error = None
+        try:
+            return self._check_motion(args)
+        except BaseException as exc:
+            primary_error = exc
+            raise
+        finally:
+            try:
+                self.asmwf("motion-delete")
+            except Exception:
+                if primary_error is None:
+                    raise
+
+    def _check_motion(self, args: dict) -> dict:
         driver_alias = str(args["driver"])
         driver = self.resolve_name(driver_alias)
         if args.get("driver_ref"):

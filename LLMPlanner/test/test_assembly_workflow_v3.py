@@ -105,6 +105,29 @@ def test_v3_toolset_adds_check_pose():
     assert "at_z" in joint["function"]["parameters"]["properties"]
 
 
+def test_check_motion_deletes_study_after_sampling_failure():
+    class FailingMotionSession(AssemblySession):
+        def __init__(self):
+            super().__init__(workflow="v3", allowed_tools=tool_names("v3"))
+            self.aliases = {"driver": "driver-1"}
+            self.operations = []
+
+        def asmwf(self, op: str, body: dict | None = None) -> dict:
+            self.operations.append(op)
+            if op == "motion-drive":
+                return {}
+            if op == "motion-sample":
+                raise RuntimeError("sample failed")
+            if op == "motion-delete":
+                return {"deleted": ["Motion Study 1"]}
+            raise AssertionError(op)
+
+    session = FailingMotionSession()
+    with pytest.raises(RuntimeError, match="sample failed"):
+        session.check_motion({"driver": "driver"})
+    assert session.operations == ["motion-drive", "motion-sample", "motion-delete"]
+
+
 def test_joint_skips_axial_mate_already_fixed_by_loop():
     s = fourbar()
     out = s.call("joint", {"type": "revolute", "a": "crank:cyl(near=[0,0])", "b": "frame:cyl(near=[0,0])", "at_z": 8})
