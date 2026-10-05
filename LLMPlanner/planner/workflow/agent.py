@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from .tools import IMAGE_KEY, TOOL_SPECS, WorkflowSession, dumps_result, tool_specs
+from .tools_v2 import WORKFLOW_VERSIONS, dumps_result_v2, tool_specs_v2
 
 SYSTEM_PROMPT = """你是一名资深机械设计工程师，正在 SolidWorks 中用工具逐步建出用户描述的零件。
 
@@ -45,6 +46,57 @@ SYSTEM_PROMPT = """你是一名资深机械设计工程师，正在 SolidWorks �
 4. 全部完成后调用 get_model_state，逐项核对总体尺寸、孔数、特征是否满足需求；不满足就继续修改。
 5. 核对无误后调用 finish，并在 summary 中说明零件的组成与关键尺寸。
 """
+
+SYSTEM_PROMPT_V2 = """你是一名资深机械设计工程师，正在 SolidWorks 中用工具逐步建出用户描述的零件。
+
+## 坐标与单位
+- 所有长度单位 mm，角度单位度。SolidWorks 基准面：front_plane = XY（法向 +Z），top_plane = XZ（法向 +Y），right_plane = YZ（法向 +X）。
+- 需求给了坐标系或坐标（如 "Z 轴向上"、"x ∈ [−50, 50]"、"底面在 z = 0"）时，严格按需求的坐标建模，不要换轴、不要平移。
+  需求没有说明时：+Y 向上，底面放在 Y=0，X、Z 方向以原点为中心，回转体轴线沿 Y。
+- 每个草图平面都有固定的 (u,v) 坐标，数值就是模型坐标：法向沿 Z → u=X, v=Y；法向沿 Y → u=X, v=Z；法向沿 X → u=Z, v=Y。
+- 平面最稳定的写法是 "Z=10"、"Y=-12.5"、"X=0"：垂直于该轴、位于该坐标处的平面，法向为 +轴，自动创建或复用基准面。
+  实体面用 face(+Z, outermost) 这类方向写法；top/bottom/front/back/left/right 固定指 ±Y/±Z/±X，Z 向上的零件不要用 top/bottom。
+  face#index 每个特征之后都可能重新编号，只能用最新一次 get_model_state 里的。
+
+## 草图与特征规则
+- 一次 extrude/cut 画一个区域：外环加上它内部的内环（孔）。部分重叠的轮廓会被拒绝，需要拆成先后两个特征（实体会自动合并）或合并成一个 polygon/path。
+- 零件必须是单一实体：每个新凸台都要和已有实体有面接触或伸入其中（建议伸入 ≥0.5mm）；只在一条线或一个点上相切（圆柱贴平面、两圆柱相切、棱对棱）会生成独立实体并被拒绝。
+- 拉伸方向：基准面和 "Z=…" 平面默认沿 +法向，实体面默认沿外法向；direction=both 时 depth 是总厚度（两侧各一半）。
+- cut 默认朝实体内部切。单向 through_all 只切穿草图平面一侧；草图平面（含实体面）背后还有凸台、轮毂等材料时，
+  要整根贯穿就在零件端面上画，或用 direction=both。
+- L 形、U 形、T 形、台阶等截面不变的形状，用一个 polygon/path 画出整个截面再拉伸一次，比多块拼接可靠。
+- 外形上的圆角（板的竖直棱、耳片端部、槽口）直接在轮廓里表达：rect/polygon 的 corner_radius、slot、hull、annular_sector 或 path 的圆弧段；
+  fillet/chamfer 只用于轮廓无法表达的棱（如顶面一圈的边），并放在最后。
+- path 的半圆弧用 through 给出弧上一点；只给 center 的 180° 圆弧必须写 ccw。两圆外公切线外形（连杆、耳片）用 hull。
+  两圆相交的 "8" 字形（齿轮腔等）不是 hull 也不是长圆形：两个圆分别 cut 一次，或用 path 画两段大圆弧。
+- 圆周均布的孔用 hole 的 polar（center、radius 或 pcd、count、start_deg）；角度在草图 (u,v) 内从 +u 转向 +v。
+  圆周阵列其它特征用 circular_pattern，并总是给 center；线性重复用 linear_pattern。
+- revolve 的轮廓是截面的一半，必须整体位于轴线一侧，可以贴着轴线。
+- 侧凸台、支管接到已有实体时用 extrude(..., up_to=面或 body)，不要估一个 depth。
+- 沉头孔用 counterbore / countersink，螺纹底孔用 tapped_hole；筋用 rib；弯管用 sweep；变截面用 loft；空心壳体用 shell；斜度用 draft；钣金用 sheet_metal。
+- sweep 一般省略 profile_plane：路径第一段沿坐标轴时，截面自动放在路径起点并垂直于路径，loops 写相对路径起点的坐标（截面中心通常是 [0,0]）。
+- 改已有特征的尺寸用 edit_feature。delete_feature 会连带删除依赖它的后续特征（结果的 also_removed），删除前想清楚。
+
+## 每步核对
+- 每个特征的结果都有 volume_delta_mm3、bbox_mm、extent_mm（本特征在模型坐标中的范围）、removal_ratio/fill_ratio（实际体积变化 ÷ 轮廓面积×深度）
+  和 new_cylinders（新出现的孔/凸台圆柱面及其轴线位置）。逐项和预期比较；出现 warnings 时先处理再继续。
+- 倒圆/倒角结果的 estimated_edge_length_mm 是按 90° 棱估算的被处理总棱长，和预期差很多说明边选错了。
+- 阵列结果的 expected_delta_mm3 是种子×份数，和实际相差大说明有实例没生效。
+
+## 工作方式
+1. 先读懂需求，列出总体尺寸、各特征的坐标与数量；可以用 set_parameters 定义驱动参数，之后用 "=表达式" 引用。
+   "相距 / 距轴线 / 偏心 / 中心距 X mm" 是中心到中心的距离，直接用 X，不要除以 2；只有直径换半径才除以 2。
+   有方位要求的特征（"沿某条槽的方向"、"与销孔错开 30°"），先写出每个参照特征的实际方位角，再算这个特征的方位。
+2. 先建基体，再逐个添加特征。互不依赖的特征可以在一次回复里并行调用多个工具，节省调用次数。
+3. 工具失败时会自动回滚，模型保持调用前的状态。阅读错误码和提示，修改参数或换一种做法；同一个失败的调用不会被执行第三次。
+4. 每个工具结果里有 llm_calls_left（剩余的模型调用次数），据此安排节奏，留出核对和 finish 的次数。
+5. 全部完成后调用 get_model_state，逐项核对：总体尺寸、孔/凸台的数量与直径（cylinder_groups）、只有一个实体；不满足就继续修改。
+6. 核对无误后调用 finish，并在 summary 中说明零件的组成与关键尺寸。
+"""
+STATE_PLACEHOLDER = "（此前的 get_model_state 结果已省略，以最新一次为准）"
+BUDGET_WARNING_FRACTION = 0.25
+MAX_IDENTICAL_FAILURES = 2
+BLOCKED_CODES = {"DUPLICATE_CALL", "REPEATED_FAILURE"}
 
 
 DRAWING_NOTE = (
@@ -183,7 +235,12 @@ class WorkflowAgent:
         reasoning_effort: str | None = None,
         stream: bool = False,
         checkpoint_path: str | Path | None = None,
+        version: str | None = None,
     ):
+        """version：v1 = L1，v2 = L1_v2；缺省跟随 session.version。"""
+        self.version = version or getattr(session, "version", "v1")
+        if self.version not in WORKFLOW_VERSIONS:
+            raise ValueError(f"未知的 workflow 版本 {self.version}")
         self.client = client
         self.stream = stream
         self.checkpoint_path = Path(checkpoint_path) if checkpoint_path else None
@@ -194,7 +251,10 @@ class WorkflowAgent:
         self.temperature = temperature
         self.reasoning_effort = reasoning_effort
         self.max_stalls = max_stalls
-        self.tools = tool_specs(extra_tools)
+        self.v2 = self.version == "v2"
+        self.tools = tool_specs_v2(extra_tools) if self.v2 else tool_specs(extra_tools)
+        self.system_prompt = SYSTEM_PROMPT_V2 if self.v2 else SYSTEM_PROMPT
+        self._dumps = dumps_result_v2 if self.v2 else dumps_result
 
     def run(
         self, goal: str, image_b64: str | None = None, image_mime: str = "image/png", *, resume: bool = False,
@@ -207,7 +267,7 @@ class WorkflowAgent:
         """
         started = time.perf_counter()
         messages: list[dict] = [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": self.system_prompt},
             _first_user_message(goal, image_b64, image_mime),
         ]
         rendered_at: int | None = None
@@ -317,6 +377,7 @@ class WorkflowAgent:
 
             finished = False
             images: list[str] = []
+            seen_in_reply: set[str] = set()
             for call in calls:
                 name = call["function"]["name"]
                 raw_args = call["function"]["arguments"]
@@ -331,7 +392,10 @@ class WorkflowAgent:
                     # 网关要把历史里的 arguments 解析成对象，非法 JSON 留在历史里会让之后每次请求都 400
                     call["function"]["arguments"] = "{}"
                 else:
-                    if name == "finish":
+                    blocked = self._blocked(name, args, seen_in_reply, failed_signatures) if self.v2 else None
+                    if blocked:
+                        result = {"ok": False, "error": blocked}
+                    elif name == "finish":
                         result = self._finish(args)
                         finished = result["ok"]
                         if finished:
@@ -348,19 +412,25 @@ class WorkflowAgent:
                     break
                 if IMAGE_KEY in result:
                     images.append(result.pop(IMAGE_KEY))
-                if not result.get("ok"):
+                was_blocked = self.v2 and (result.get("error") or {}).get("code") in BLOCKED_CODES
+                if not result.get("ok") and not was_blocked:
                     signature = f"{name}:{json.dumps(args, sort_keys=True, ensure_ascii=False)}"
                     failed_signatures[signature] = failed_signatures.get(signature, 0) + 1
                     if failed_signatures[signature] > 1:
                         result["repeat_warning"] = "这个调用与之前失败的调用完全相同，请换一种做法。"
-                tool_log.append({
+                entry = {
                     "tool": name,
                     "args": args,
                     "ok": bool(result.get("ok")),
                     "error_code": (result.get("error") or {}).get("code"),
                     "message": (result.get("error") or {}).get("message", ""),
-                })
-                messages.append({"role": "tool", "tool_call_id": call["id"], "content": dumps_result(result)})
+                }
+                if was_blocked:
+                    entry["blocked"] = True
+                tool_log.append(entry)
+                if self.v2:
+                    self._annotate_v2(name, result, messages, usage["calls"])
+                messages.append({"role": "tool", "tool_call_id": call["id"], "content": self._dumps(result)})
             if status == "sw_lost":
                 break
             if images and not finished:
@@ -423,7 +493,7 @@ class WorkflowAgent:
     def _replay(self, tool_log: list[dict]) -> str | None:
         """按原顺序重放会改动零件的工具（失败的也重放，保证特征编号一致）；结果与记录不符时返回说明。"""
         for index, item in enumerate(tool_log, 1):
-            if item["tool"] in NO_REPLAY_TOOLS or "_raw" in item["args"]:
+            if item["tool"] in NO_REPLAY_TOOLS or "_raw" in item["args"] or item.get("blocked"):
                 continue
             result = self.session.call(item["tool"], item["args"])
             result.pop(IMAGE_KEY, None)
@@ -437,4 +507,36 @@ class WorkflowAgent:
         state = self.session.state_summary()
         if not state.get("volume_mm3"):
             return {"ok": False, "error": {"code": "NO_BODY", "message": "零件中还没有实体，不能结束"}}
+        if self.v2 and int(state.get("bodies") or 1) > 1:
+            return {"ok": False, "error": {
+                "code": "MULTI_BODY",
+                "message": f"零件现在有 {state['bodies']} 个实体，需求要求单一实体",
+                "hint": "用 get_model_state 查看各实体的范围，把没连上的部分伸入主体或删掉重做。",
+                "bodies": state.get("body_list"),
+            }}
         return {"ok": True, "final_state": {"bbox_mm": state["bbox_mm"], "volume_mm3": state["volume_mm3"]}}
+
+    @staticmethod
+    def _blocked(name: str, args: dict, seen: set[str], failed: dict[str, int]) -> dict | None:
+        """v2：同一回复里的重复调用只执行一次；已经原样失败两次的调用不再执行。"""
+        signature = f"{name}:{json.dumps(args, sort_keys=True, ensure_ascii=False)}"
+        if signature in seen:
+            return {"code": "DUPLICATE_CALL", "message": "与本次回复中前面的调用完全相同，已跳过，结果见前一个调用"}
+        seen.add(signature)
+        if failed.get(signature, 0) >= MAX_IDENTICAL_FAILURES:
+            return {"code": "REPEATED_FAILURE",
+                    "message": f"这个调用已经以完全相同的参数失败了 {failed[signature]} 次，不再执行；请换一种做法"}
+        return None
+
+    def _annotate_v2(self, name: str, result: dict, messages: list[dict], calls_used: int) -> None:
+        left = max(self.max_llm_calls - calls_used, 0)
+        result["llm_calls_left"] = left
+        if left <= self.max_llm_calls * BUDGET_WARNING_FRACTION:
+            result["budget_note"] = (
+                f"只剩 {left} 次模型调用：优先完成缺失的主要特征，合并互不依赖的调用，留 1~2 次核对并 finish。"
+            )
+        if name == "get_model_state" and result.get("ok"):
+            for message in messages:
+                content = message.get("content")
+                if message.get("role") == "tool" and isinstance(content, str) and content.startswith('{"ok": true, "state": '):
+                    message["content"] = STATE_PLACEHOLDER

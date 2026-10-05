@@ -38,7 +38,8 @@ rubrics:
     source: 齿顶半径 60mm；盘厚 15mm 加轮毂高 10mm
     hard: true
     check:
-      - bbox_sorted: [25, 120, 120]
+      # 用 frame 而不是 bbox_sorted：主方向按面积取，中心六方孔缺失时会转到齿背方向，量出 119.85
+      - frame_box: {frame: frame, size: [25, 120, 120]}
       - extent_along: {axis: hub, of: all, value: 25}
 
   - id: disk_hub

@@ -1,0 +1,96 @@
+case_id: gear_screw_lift
+title: 齿轮丝杠升降台
+# 一拖二齿轮 + 导程 6 丝杠，右丝杠兼导向；检查两丝杠转速与平台每转 3 mm。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: gl_frame
+  extra_tools: []
+  prompt: |
+    创建底板：在 front_plane 上画矩形，X 从 -60 到 60 mm，Y 从 -40 到 40 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(-36,0) 直径 10 mm，(36,0) 直径 10 mm，(0,24) 直径 10 mm，(0,-24) 直径 10 mm。不要抽壳。
+- id: gl_motor_shaft
+  extra_tools: []
+  prompt: |
+    创建电机轴：直径 10 mm、长 30 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: gl_handwheel
+  extra_tools: []
+  prompt: |
+    创建手轮：外径 50 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。另开贯穿孔：(16,0) 直径 6 mm。
+- id: gl_pinion
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 12，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: gl_screw
+  extra_tools: []
+  prompt: |
+    创建丝杠：直径 10 mm、长 110 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: gl_gear
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 24，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: gl_platform
+  extra_tools: []
+  prompt: |
+    创建升降平台：在 front_plane 上画矩形，X 从 -50 到 50 mm，Y 从 -14 到 14 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(-36,0) 直径 10 mm，(36,0) 直径 10 mm。不要抽壳。
+- id: gl_post
+  extra_tools: []
+  prompt: |
+    创建立柱：直径 10 mm、长 120 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: gl_top
+  extra_tools: []
+  prompt: |
+    创建顶板：在 front_plane 上画矩形，X 从 -50 到 50 mm，Y 从 -30 到 30 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(-36,0) 直径 12 mm，(36,0) 直径 12 mm，(0,24) 直径 10 mm，(0,-24) 直径 10 mm。不要抽壳。
+gold_roles:
+  frame: gl_frame
+  motor_shaft: gl_motor_shaft
+  handwheel: gl_handwheel
+  pinion: gl_pinion
+  screw_l: gl_screw
+  gear_l: gl_gear
+  screw_r: gl_screw
+  gear_r: gl_gear
+  platform: gl_platform
+  post_a: gl_post
+  post_b: gl_post
+  top: gl_top
+assembly:
+  prompt: |
+    装配齿轮丝杠升降台：电机小齿轮同时带动左右两根丝杠，左丝杠经螺旋副推动平台升降，右丝杠兼作导向。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]。电机轴孔 (0,0)、丝杠孔 (-36,0)、(36,0)、立柱孔 (0,24)、(0,-24)，直径都是 10。
+    - motor_shaft 穿过 (0,0) 孔绕 Z 转动（z∈[-14,16]）；12 齿 pinion（z∈[8,16]）与 handwheel 的中心孔（z∈[-14,-8]）固定在其上。
+    - screw_l、screw_r 分别穿过 (-36,0)、(36,0) 孔绕 Z 转动（z∈[0,110]）；24 齿 gear_l、gear_r 固定在对应丝杠上（z∈[8,16]），
+      都与 pinion 外啮合（模数 2，中心距 36）。
+    - post_a、post_b 固定在两个立柱孔里（z∈[0,120]）；top 的 (0,24) 孔固定在 post_a 上（z∈[112,120]），post_b 从 top 的 (0,-24) 孔穿过。
+    - platform 的 (-36,0) 孔与 screw_l 组成螺旋副（导程 6 mm）；(36,0) 孔套在 screw_r 上，只能沿 Z 滑动（同时可绕 screw_r 相对转动）。
+      初始 platform 在 z∈[50,58]。
+    - 电机转 1 圈，丝杠转半圈，平台移动 3 mm。各齿轮互不穿模，啮合齿相位要对上。
+    对 motor_shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: motor_shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  - top
+  expect_moving:
+  - pinion
+  - screw_l
+  - screw_r
+  - platform
+  ratios:
+  - role: screw_l
+    ratio: 2
+    same_direction: false
+  - role: screw_r
+    ratio: 2
+    same_direction: false
+  leads:
+  - role: platform
+    axis: z
+    mm_per_rev: 3.0
+  max_interference: 0

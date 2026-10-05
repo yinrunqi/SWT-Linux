@@ -163,7 +163,7 @@ def part_rubric(name: str, p: dict) -> str:
                   f"extent_along: {{axis: rim, of: all, value: {g(p['t'])}}}"]
         for i, (d, hs) in enumerate(sorted(_groups(p["holes"], lambda h: h[2]).items())):
             assert d != p["bore"], "圆盘偏心孔与中心孔同径时 rubric 无法区分"
-            radii = {round(math.hypot(x, y), 3) for x, y, _ in hs}
+            radii = {round(math.hypot(x, y), 2) for x, y, _ in hs}
             assert len(radii) == 1
             ents[f"h{i}"] = f"{{cylinder: {{d: {g(d)}, side: inner}}, count: {len(hs)}}}"
             checks += [f"exists: h{i}", f"through: {{holes: h{i}}}",

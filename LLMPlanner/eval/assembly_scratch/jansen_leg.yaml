@@ -1,0 +1,161 @@
+case_id: jansen_leg
+title: Jansen 步行腿
+# Strandbeest 八杆腿（两个三角刚体 + 6 根杆），12/36 齿轮驱动；检查脚尖步态包络与上三角摆角。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: jl_frame
+  extra_tools: []
+  prompt: |
+    创建机架板：在 front_plane 上画矩形，X 从 -240 到 80 mm，Y 从 -210 到 100 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(48,0) 直径 10 mm，(-76,-15.6) 直径 6 mm。不要抽壳。
+- id: jl_shaft
+  extra_tools: []
+  prompt: |
+    创建轴：直径 10 mm、长 22 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: jl_gear
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 36，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: jl_pinion
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 12，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: jl_handwheel
+  extra_tools: []
+  prompt: |
+    创建手轮：外径 40 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。另开贯穿孔：(12,0) 直径 6 mm。
+- id: jl_crank
+  extra_tools: []
+  prompt: |
+    创建曲柄：在 front_plane 上画两端圆头的长条，宽 20 mm，两端半圆的圆心分别在原点和 (30,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=30 处直径 6 mm。
+- id: jl_j
+  extra_tools: []
+  prompt: |
+    创建上连杆 j：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (100,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=100 处直径 6 mm。
+- id: jl_k
+  extra_tools: []
+  prompt: |
+    创建下连杆 k：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (123.8,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=123.8 处直径 6 mm。
+- id: jl_b
+  extra_tools: []
+  prompt: |
+    创建上三角边 b：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (83,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=83 处直径 6 mm。
+- id: jl_d
+  extra_tools: []
+  prompt: |
+    创建上三角边 d：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (80.2,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=80.2 处直径 6 mm。
+- id: jl_c
+  extra_tools: []
+  prompt: |
+    创建下摇杆 c：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (78.6,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=78.6 处直径 6 mm。
+- id: jl_f
+  extra_tools: []
+  prompt: |
+    创建连杆 f：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (78.8,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=78.8 处直径 6 mm。
+- id: jl_g
+  extra_tools: []
+  prompt: |
+    创建腿三角边 g：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (73.4,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=73.4 处直径 6 mm。
+- id: jl_i
+  extra_tools: []
+  prompt: |
+    创建腿 i：在 front_plane 上画两端圆头的长条，宽 14 mm，两端半圆的圆心分别在原点和 (98,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=98 处直径 6 mm。
+- id: jl_pin12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: jl_pin18
+  extra_tools: []
+  prompt: |
+    创建曲柄销：直径 6 mm、长 18 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: jl_pin24
+  extra_tools: []
+  prompt: |
+    创建长铰销：直径 6 mm、长 24 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: jl_pin32
+  extra_tools: []
+  prompt: |
+    创建机架销：直径 6 mm、长 32 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+gold_roles:
+  frame: jl_frame
+  shaft: jl_shaft
+  crank_gear: jl_gear
+  motor_shaft: jl_shaft
+  pinion: jl_pinion
+  handwheel: jl_handwheel
+  crank: jl_crank
+  crank_pin: jl_pin18
+  a_pin: jl_pin32
+  bar_b: jl_b
+  bar_d: jl_d
+  b_pin: jl_pin12
+  bar_j: jl_j
+  bar_c: jl_c
+  c_pin: jl_pin24
+  bar_k: jl_k
+  bar_i: jl_i
+  bar_g: jl_g
+  d_pin: jl_pin12
+  bar_f: jl_f
+  e_pin: jl_pin12
+  foot: jl_pin12
+assembly:
+  prompt: |
+    装配 Theo Jansen 步行腿（Strandbeest 腿，经典 "holy numbers" 放大 2 倍）：曲柄一圈，脚尖走出扁平的 D 形步态。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]。曲柄轴孔 (0,0)、电机轴孔 (48,0) 直径 10；机架铰孔 A=(-76.0,-15.6) 直径 6。
+    - shaft 穿过 (0,0) 孔绕 Z 转动（z∈[-8,14]）；36 齿 crank_gear 固定在其上（z∈[-8,0]）；crank 的 10 mm 孔固定在其上（z∈[8,14]）。
+      crank_pin 固定在 crank 的 6 mm 孔里（z∈[8,26]）。
+    - motor_shaft 穿过电机轴孔绕 Z 转动（z∈[-14,8]）；12 齿 pinion（z∈[-8,0]）与 handwheel 的中心孔（z∈[-14,-8]）固定在其上，与 crank_gear 外啮合。
+    - 各杆都是两孔长条（孔径 6，原点孔在一端），长度：j=100.0、k=123.8、b=83.0、d=80.2、c=78.6、f=78.8、g=73.4、i=98.0。
+    - a_pin 固定在 A 孔里（z∈[0,32]）。bar_b（z∈[8,14]）与 bar_d（z∈[14,20]）的原点孔都套在 a_pin 上，两杆固定成上三角（b、d 之间张角保持，
+      b 端点 B 与 d 端点 D 相距 111.6）；bar_c 的原点孔也套在 a_pin 上转动（z∈[26,32]）。
+    - b_pin 固定在 bar_b 的另一孔 B（z∈[8,20]）；bar_j 的原点孔套在 crank_pin 上（z∈[14,20]），另一孔套在 b_pin 上。
+    - c_pin 固定在 bar_c 的另一孔 C（z∈[8,32]）；bar_k 的原点孔套在 crank_pin 上（z∈[20,26]），另一孔套在 c_pin 上。
+    - bar_i（z∈[8,14]）与 bar_g（z∈[14,20]）的原点孔都套在 c_pin 上，两杆固定成腿三角（g 端点 E 与 i 端点 F 相距 131.4）。
+    - d_pin 固定在 bar_d 的另一孔 D（z∈[8,20]），e_pin 固定在 bar_g 的另一孔 E（z∈[8,20]）；bar_f（z∈[8,14]）两孔分别套在 d_pin、e_pin 上。
+    - foot 固定在 bar_i 的另一孔 F（z∈[8,20]）作为脚尖。
+    - 装配分支：B 在 A 上方，C 在 A 下方，D 在 A 左侧，E 在 C 左侧，F（脚尖）在最下方。
+      曲柄一整圈：脚尖 X 向行程约 135.8 mm、Y 向约 44.9 mm，上三角摆角约 56.5°。各齿轮互不穿模，啮合齿相位要对上。
+    对 shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - crank
+  - bar_j
+  - bar_k
+  - bar_b
+  - bar_c
+  - bar_f
+  - bar_i
+  - foot
+  ratios:
+  - role: motor_shaft
+    ratio: 0.3333333333333333
+    same_direction: false
+  swings:
+  - role: bar_b
+    deg: 56.5
+  strokes:
+  - role: foot
+    axis: x
+    mm: 135.82
+  - role: foot
+    axis: y
+    mm: 44.91
+  max_interference: 0

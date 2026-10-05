@@ -1,0 +1,16 @@
+case: pr_e_pin
+prompt: "创建肘轴：直径 8 mm、长 18 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。"
+tolerance: {length_mm: 0.2, angle_deg: 1.0, volume_rel: 0.04}
+entities:
+  shank: {cylinder: {d: 8, side: outer}, count: 1}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: size
+    hard: true
+    check:
+      - exists: shank
+      - extent_along: {axis: shank, of: all, value: 18}
+      - bbox_sorted: [8, 8, 18]

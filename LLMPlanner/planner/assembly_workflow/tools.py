@@ -26,6 +26,8 @@ _REF = {
 }
 _NUM = {"type": "number"}
 _ALIGN = {"type": "string", "enum": ["closest", "aligned", "anti"]}
+_FLIP = {"type": "boolean",
+         "description": "distance 专用：距离不分正负，flip=true 把 a 换到 b 的另一侧。返回的 side_mm 是 a 在 b 法向上的带符号距离"}
 
 TOOL_SPECS: list[dict] = [
     _tool(
@@ -67,6 +69,7 @@ TOOL_SPECS: list[dict] = [
             "ratio_numerator": _NUM,
             "ratio_denominator": _NUM,
             "reverse": {"type": "boolean"},
+            "flip": _FLIP,
         },
         ["type", "a", "b"],
     ),
@@ -219,6 +222,7 @@ def _v2_spec(spec: dict) -> dict:
                 "ratio_numerator": _NUM,
                 "ratio_denominator": _NUM,
                 "reverse": {"type": "boolean"},
+                "flip": _FLIP,
                 "lock_rotation": {"type": "boolean"},
                 "pitch_diameter": _NUM,
                 "travel_per_rev": _NUM,

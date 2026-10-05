@@ -1,0 +1,245 @@
+case_id: mechanical_iris_5blade
+title: 五叶机械光圈（多位姿）
+# 驱动环 + 5 组四杆叶片（分 3 层交叠），28 个组件、活动度 1；三个驱动环转角检查五个叶尖。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: ir_base
+  extra_tools: []
+  prompt: |
+    创建底座：在 front_plane 上画矩形，X 从 -80 到 80 mm，Y 从 -80 到 80 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(60,0) 直径 6 mm，(18.54,57.06) 直径 6 mm，(-48.54,35.27) 直径 6 mm，(-48.54,-35.27) 直径 6 mm，(18.54,-57.06) 直径 6 mm。不要抽壳。
+- id: ir_center
+  extra_tools: []
+  prompt: |
+    创建中心轴：直径 10 mm、长 14 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: ir_actuator
+  extra_tools: []
+  prompt: |
+    创建驱动环：外径 110 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。另开贯穿孔：(45,0) 直径 6 mm，(13.91,42.8) 直径 6 mm，(-36.41,26.45) 直径 6 mm，(-36.41,-26.45) 直径 6 mm，(13.91,-42.8) 直径 6 mm。
+- id: ir_blade
+  extra_tools: []
+  prompt: |
+    创建叶片：在 front_plane 上画两端圆头的长条，宽 14 mm，两端半圆的圆心分别在原点和 (50,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=25 处直径 6 mm。
+- id: ir_conn
+  extra_tools: []
+  prompt: |
+    创建连杆：在 front_plane 上画两端圆头的长条，宽 10 mm，两端半圆的圆心分别在原点和 (25,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=25 处直径 6 mm。
+- id: ir_apin
+  extra_tools: []
+  prompt: |
+    创建驱动销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: ir_bpin26
+  extra_tools: []
+  prompt: |
+    创建叶片轴：直径 6 mm、长 26 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: ir_qpin12
+  extra_tools: []
+  prompt: |
+    创建叶片销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: ir_bpin32
+  extra_tools: []
+  prompt: |
+    创建叶片轴：直径 6 mm、长 32 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: ir_qpin18
+  extra_tools: []
+  prompt: |
+    创建叶片销：直径 6 mm、长 18 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: ir_bpin38
+  extra_tools: []
+  prompt: |
+    创建叶片轴：直径 6 mm、长 38 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: ir_qpin24
+  extra_tools: []
+  prompt: |
+    创建叶片销：直径 6 mm、长 24 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+gold_roles:
+  base: ir_base
+  center_pin: ir_center
+  actuator: ir_actuator
+  blade_1: ir_blade
+  conn_1: ir_conn
+  bpin_1: ir_bpin26
+  apin_1: ir_apin
+  qpin_1: ir_qpin12
+  blade_2: ir_blade
+  conn_2: ir_conn
+  bpin_2: ir_bpin32
+  apin_2: ir_apin
+  qpin_2: ir_qpin18
+  blade_3: ir_blade
+  conn_3: ir_conn
+  bpin_3: ir_bpin26
+  apin_3: ir_apin
+  qpin_3: ir_qpin12
+  blade_4: ir_blade
+  conn_4: ir_conn
+  bpin_4: ir_bpin32
+  apin_4: ir_apin
+  qpin_4: ir_qpin18
+  blade_5: ir_blade
+  conn_5: ir_conn
+  bpin_5: ir_bpin38
+  apin_5: ir_apin
+  qpin_5: ir_qpin24
+assembly:
+  prompt: |
+    装配五叶机械光圈：转动驱动环，五组"驱动销—连杆—叶片"四杆同时动作，叶片尖端向中心收拢或张开。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - base 固定，z∈[0,8]：中心孔 (0,0) 直径 10；五个叶片轴孔在半径 60 的圆上，第 k 个在 72·(k−1)° 方向（k=1 在 +X），直径 6。
+    - center_pin 固定在中心孔里（z∈[0,14]）；actuator（驱动环）的中心孔套在 center_pin 上转动（z∈[8,14]）；
+      actuator 上五个 6 mm 孔在半径 45 的圆上，第 k 个在局部 72·(k−1)° 方向。
+    - 第 k 组（k=1..5）：bpin_k 固定在第 k 个叶片轴孔里，blade_k 的原点孔套在 bpin_k 上转动；apin_k 固定在 actuator 第 k 个孔里（z∈[8,20]），
+      conn_k 的原点孔套在 apin_k 上转动（z∈[14,20]）；qpin_k 固定在 blade_k 的 X=25 孔里，conn_k 的另一孔套在 qpin_k 上。
+    - 叶片分层：blade_1 z∈[20,26]；blade_2 z∈[26,32]；blade_3 z∈[20,26]；blade_4 z∈[26,32]；blade_5 z∈[32,38]；bpin_k 从 z=0 伸到所在叶片层顶面，qpin_k 从 z=14 伸到所在叶片层顶面。
+    - 叶片从轴孔出发朝圆心一侧（顺时针方向）伸出，各叶片尖端在三个位姿下离中心约 41、22、11 mm。
+    - 驱动环转角这 1 个自由度保持自由（整机活动度 1），不要固定。各件互不穿模，装好后保存。
+motion:
+  mode: poses
+  frame: base
+  expect_fixed:
+  - base
+  tolerance_mm: 1.5
+  max_interference: 0
+  poses:
+  - name: open
+    set:
+    - type: angle
+      a: actuator:plane(top)
+      b: base:plane(top)
+      angle_deg: 10.0
+      points:
+      - role: blade_1
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: 23.43
+          y: -34.1
+      - role: blade_2
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: 39.68
+          y: 11.75
+      - role: blade_3
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: 1.09
+          y: 41.35
+      - role: blade_4
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: -39.01
+          y: 13.81
+      - role: blade_5
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: -25.18
+          y: -32.81
+  - name: half
+    set:
+    - type: angle
+      a: actuator:plane(top)
+      b: base:plane(top)
+      angle_deg: 20.0
+      points:
+      - role: blade_1
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: 13.33
+          y: -17.94
+      - role: blade_2
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: 21.18
+          y: 7.13
+      - role: blade_3
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: -0.24
+          y: 22.33
+      - role: blade_4
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: -21.33
+          y: 6.68
+      - role: blade_5
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: -12.93
+          y: -18.21
+  - name: closed
+    set:
+    - type: angle
+      a: actuator:plane(top)
+      b: base:plane(top)
+      angle_deg: 30.0
+      points:
+      - role: blade_1
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: 10.19
+          y: -4.4
+      - role: blade_2
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: 7.33
+          y: 8.33
+      - role: blade_3
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: -5.67
+          y: 9.54
+      - role: blade_4
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: -10.83
+          y: -2.43
+      - role: blade_5
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: -1.02
+          y: -11.05

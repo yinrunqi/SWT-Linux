@@ -1,0 +1,37 @@
+# 装配级 rubric：角色名与 peaucellier_linkage.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: peaucellier_linkage
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame, o_pin]
+  crank: [crank, q_pin]
+  ob: [ob, b_pin]
+  od: [od, d_pin]
+  qb: [qb]
+  qd: [qd]
+  bp: [bp]
+  dp: [dp]
+flex:
+  c_pin: [frame, crank]
+  p_pin: [dp, bp]
+joints:
+- bodies: [crank, frame]
+  type: revolute
+- bodies: [ob, frame]
+  type: revolute
+- bodies: [od, frame]
+  type: revolute
+- bodies: [qb, crank]
+  type: revolute
+- bodies: [qb, ob]
+  type: &id001 [revolute, cylindrical]
+- bodies: [qd, crank]
+  type: revolute
+- bodies: [qd, od]
+  type: *id001
+- bodies: [bp, ob]
+  type: revolute
+- bodies: [dp, od]
+  type: revolute
+- bodies: [bp, dp]
+  type: *id001

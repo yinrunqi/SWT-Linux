@@ -126,6 +126,26 @@ def test_joint_skips_axial_mate_already_fixed_by_loop():
     assert dof["free"]["coupler"] == {"dof": 1, "rotations": 0, "translations": 1}
 
 
+def test_mate_distance_flip_and_side():
+    s = fourbar()
+    out = s.call("mate", {"type": "distance", "a": "crank:plane(front)", "b": "frame:plane(front)",
+                          "distance": 8, "flip": True})
+    assert out["ok"], out
+    assert s.mates_sent()[-1]["flip"] is True and s.mates_sent()[-1]["distance"] == pytest.approx(0.008)
+    assert out["side_mm"] == pytest.approx(8.0)
+
+    from planner.workflow.errors import WorkflowError
+
+    def over_defined(op, body=None):
+        if op == "mate":
+            raise WorkflowError("FEATURE_FAILED", "distance 配合失败: errStatus=5（装配过定义（与已有配合冲突））")
+        return GeomSession.asmwf(s, op, body)
+
+    s.asmwf = over_defined
+    out = s.call("mate", {"type": "distance", "a": "rocker:plane(front)", "b": "frame:plane(front)", "distance": 8})
+    assert not out["ok"] and "加上 flip=true" in out["error"]["message"]
+
+
 def test_face_cache_and_ref_error_candidates():
     s = fourbar()
     s.call("joint", {"type": "revolute", "a": "crank:cyl(near=[0,0])", "b": "frame:cyl(near=[0,0])"})

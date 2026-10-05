@@ -226,6 +226,14 @@ namespace Chapter1.ConnectToSw
                 throw new InvalidOperationException(
                     $"未能通过射线选中实体面。射线起点({rx},{ry},{rz})，方向({dx},{dy},{dz})及其反方向均未命中。");
 
+            return StartSketchOnFace(bestFace, bestHitPt);
+        }
+
+        /// <summary>
+        /// 选中给定实体面并在其上新建草图；返回值与 SelectFaceByRayAndStartSketch 相同。
+        /// </summary>
+        private Dictionary<string, object> StartSketchOnFace(IFace2 bestFace, double[] bestHitPt)
+        {
             // 输出选中面的详细信息
             var hitSurface = bestFace.IGetSurface();
             string faceType = hitSurface.IsPlane() ? "平面" : "曲面";
@@ -318,8 +326,10 @@ namespace Chapter1.ConnectToSw
         /// deterministic enumeration index. The face itself supplies a point
         /// on material and its normal, so the caller does not guess a ray.
         /// </summary>
+        /// exact=true（L1_v2）时直接选中该面，不再沿面法向发射线：
+        /// 射线起点偏离面 5mm，薄壁、凹槽或相邻凸台会让射线先命中别的面。
         public Dictionary<string, object> SelectObservedFaceAndStartSketch(
-            int faceIndex)
+            int faceIndex, bool exact = false)
         {
             EnsureActiveDoc();
             var partDoc = ActiveDoc as IPartDoc;
@@ -374,6 +384,12 @@ namespace Chapter1.ConnectToSw
             if (materialPoint == null || materialPoint.Length < 3)
                 throw new InvalidOperationException(
                     $"无法定位观察面索引 {faceIndex} 上的实体点");
+
+            if (exact)
+            {
+                Console.WriteLine($"[SwCommands] 直接选中 observation.faces[{faceIndex}]");
+                return StartSketchOnFace(target, materialPoint);
+            }
 
             var plane = (double[])surface.PlaneParams;
             const double offset = 0.005;

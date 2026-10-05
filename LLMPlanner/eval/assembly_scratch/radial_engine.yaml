@@ -1,0 +1,119 @@
+case_id: radial_engine_4cyl
+title: 星形四缸发动机
+# 主连杆 + 法兰上三根副连杆，十字四缸；副连杆缸行程与主缸略有差别。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: re_frame
+  extra_tools: []
+  prompt: |
+    创建机匣板：在 front_plane 上画矩形，X 从 -110 到 110 mm，Y 从 -110 到 110 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm。不要抽壳。
+- id: re_shaft
+  extra_tools: []
+  prompt: |
+    创建曲轴：直径 10 mm、长 28 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: re_prop
+  extra_tools: []
+  prompt: |
+    创建螺旋桨：在 front_plane 上画矩形，X 从 -90 到 90 mm，Y 从 -8 到 8 mm，向 +Z 拉伸 6 mm。
+    开贯穿孔：(0,0) 直径 10 mm。不要抽壳。
+- id: re_crank
+  extra_tools: []
+  prompt: |
+    创建曲柄：在 front_plane 上画两端圆头的长条，宽 20 mm，两端半圆的圆心分别在原点和 (15,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=15 处直径 8 mm。
+- id: re_crank_pin
+  extra_tools: []
+  prompt: |
+    创建曲柄销：直径 8 mm、长 18 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: re_flange
+  extra_tools: []
+  prompt: |
+    创建主连杆法兰：外径 60 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 8 mm。另开贯穿孔：(0,-26) 直径 6 mm，(0,26) 直径 6 mm，(-26,0) 直径 6 mm。
+- id: re_master
+  extra_tools: []
+  prompt: |
+    创建主连杆：在 front_plane 上画两端圆头的长条，宽 16 mm，两端半圆的圆心分别在原点和 (70,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 8 mm，X=70 处直径 6 mm。
+- id: re_rod
+  extra_tools: []
+  prompt: |
+    创建副连杆：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (44,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=44 处直径 6 mm。
+- id: re_pin12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: re_piston
+  extra_tools: []
+  prompt: |
+    创建活塞：在 front_plane 上画矩形，X 从 -12 到 12 mm，Y 从 -12 到 12 mm，向 +Z 拉伸 6 mm。
+    开贯穿孔：(0,0) 直径 6 mm。不要抽壳。
+gold_roles:
+  frame: re_frame
+  shaft: re_shaft
+  prop: re_prop
+  crank: re_crank
+  crank_pin: re_crank_pin
+  flange: re_flange
+  master: re_master
+  wrist_n: re_pin12
+  piston_n: re_piston
+  knuckle_e: re_pin12
+  rod_e: re_rod
+  wrist_e: re_pin12
+  piston_e: re_piston
+  knuckle_w: re_pin12
+  rod_w: re_rod
+  wrist_w: re_pin12
+  piston_w: re_piston
+  knuckle_s: re_pin12
+  rod_s: re_rod
+  wrist_s: re_pin12
+  piston_s: re_piston
+assembly:
+  prompt: |
+    装配星形四缸发动机：一根主连杆 + 三根副连杆，四缸沿 ±X、±Y 呈十字分布，共用一个曲柄销。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]，曲轴孔 (0,0) 直径 10。shaft 穿过该孔绕 Z 转动（z∈[-14,14]）；
+      板后 prop 的中心孔固定在 shaft 上（z∈[-14,-8]）；板前 crank 的 10 mm 孔固定在 shaft 上（z∈[8,14]）。
+    - crank_pin 固定在 crank 的 8 mm 孔里（z∈[8,26]）。flange 的 8 mm 中心孔套在 crank_pin 上转动（z∈[14,20]）；
+      master 的 8 mm 孔也套在 crank_pin 上（z∈[20,26]），并与 flange 固定在一起：master 杆身沿 flange 局部 +X 方向。
+    - 上缸：wrist_n 固定在 master 的 6 mm 孔里（z∈[20,32]），piston_n 的孔套在 wrist_n 上转动（z∈[26,32]），
+      只能沿 frame 的 Y 方向移动，孔心始终在 x=0 的直线上、曲轴 +Y 侧。
+    - flange 上三个 6 mm 孔（局部 (0,-26)、(0,26)、(-26,0)）各固定一根铰销 knuckle_e、knuckle_w、knuckle_s（z∈[14,26]）。
+      副连杆 rod_e、rod_w、rod_s 的原点孔分别套在这三根销上转动（z∈[20,26]）；wrist_e/w/s 固定在各副连杆的另一个孔里（z∈[20,32]）；
+      piston_e/w/s 的孔套在对应 wrist 销上转动（z∈[26,32]）。
+    - piston_e 孔心始终在 y=0 直线上、+X 侧；piston_w 在 y=0 直线上、−X 侧；piston_s 在 x=0 直线上、−Y 侧（都只能沿各自导路移动）。
+    - 曲柄 15、主连杆 70、副连杆 44、法兰铰孔半径 26。四缸行程分别约 上 30.0、右 30.2、左 30.2、下 30.0 mm。
+    对 shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - crank
+  - master
+  - rod_e
+  - rod_w
+  - rod_s
+  - piston_n
+  - piston_e
+  - piston_w
+  - piston_s
+  strokes:
+  - role: piston_n
+    axis: y
+    mm: 30.0
+  - role: piston_e
+    axis: x
+    mm: 30.25
+  - role: piston_w
+    axis: x
+    mm: 30.25
+  - role: piston_s
+    axis: y
+    mm: 30.0
+  max_interference: 0

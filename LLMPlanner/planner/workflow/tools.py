@@ -416,6 +416,9 @@ def _round(value: float | None, digits: int = 3) -> float | None:
 class WorkflowSession:
     """持有一个零件的建模会话：HTTP、参数表、命名引用和调用日志。"""
 
+    # L1 = v1，行为保持不变以复现已有结果；L1_v2 见 tools_v2.WorkflowSessionV2
+    version = "v1"
+
     def __init__(
         self,
         base_url: str = "http://localhost:5100",
@@ -433,6 +436,7 @@ class WorkflowSession:
         self.ref_planes: dict[str, SketchFrame] = {}
         self.has_part = False
         self.log: list[dict] = []
+        self.last_transaction: tuple[dict, dict] | None = None
         self._handlers: dict[str, Callable[[dict], dict]] = {
             "get_model_state": self.get_model_state,
             "set_parameters": self.set_parameters,
@@ -781,6 +785,7 @@ class WorkflowSession:
         except Exception as exc:
             ok, results = False, [{"operation": "executor", "success": False, "message": f"{type(exc).__name__}: {exc}"}]
         after = self.snapshot()
+        self.last_transaction = (before, after)
         new_features = [
             feature.get("name") for feature in after.get("features", [])
             if feature.get("name") not in before_names

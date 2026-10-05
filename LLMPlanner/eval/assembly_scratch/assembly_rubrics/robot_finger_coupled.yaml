@@ -1,0 +1,34 @@
+# 装配级 rubric：角色名与 robot_finger.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: robot_finger_coupled
+ground: palm
+mobility: 1
+bodies:
+  palm: [palm]
+  p1: [p1]
+  p2: [p2]
+  p3: [p3]
+  link1: [link1]
+  link2: [link2]
+flex:
+  m_pin: [palm, p1]
+  g0_pin: [palm, link1]
+  j1_pin: [p1, p2]
+  g1_pin: [p1, link2]
+  h1_pin: [p2, link1]
+  j2_pin: [p2, p3]
+  h2_pin: [p3, link2]
+joints:
+- bodies: [p1, palm]
+  type: revolute
+- bodies: [p2, p1]
+  type: revolute
+- bodies: [link1, palm]
+  type: revolute
+- bodies: [link1, p2]
+  type: &id001 [revolute, cylindrical]
+- bodies: [p3, p2]
+  type: revolute
+- bodies: [link2, p1]
+  type: revolute
+- bodies: [link2, p3]
+  type: *id001

@@ -226,6 +226,8 @@ namespace Chapter1.ConnectToSw
             if (!string.IsNullOrEmpty(directory))
                 Directory.CreateDirectory(directory);
 
+            // 有选中实体时 SaveAs 只导出被选中的实体，多实体零件会丢掉其余实体
+            ActiveDoc.ClearSelection2(true);
             int errors = 0, warnings = 0;
             bool saved = ActiveDoc.Extension.SaveAs(
                 stepPath,

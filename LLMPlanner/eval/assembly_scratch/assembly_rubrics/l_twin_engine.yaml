@@ -1,0 +1,40 @@
+# 装配级 rubric：角色名与 l_twin_engine.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: l_twin_engine
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame]
+  crank: [shaft, flywheel, crank_gear, crank, crank_pin]
+  cam: [cam_shaft, cam_gear, cam]
+  rod_h: [rod_h]
+  rod_v: [rod_v]
+  piston_h: [piston_h]
+  piston_v: [piston_v]
+flex:
+  wrist_h: [rod_h, piston_h]
+  wrist_v: [rod_v, piston_v]
+joints:
+- bodies: [crank, frame]
+  type: revolute
+- bodies: [cam, frame]
+  type: revolute
+- bodies: [rod_h, crank]
+  type: revolute
+- bodies: [rod_v, crank]
+  type: revolute
+- bodies: [piston_h, rod_h]
+  type: revolute
+- bodies: [piston_v, rod_v]
+  type: revolute
+- bodies: [piston_h, frame]
+  type: &id001 [slider, planar]
+- bodies: [piston_v, frame]
+  type: *id001
+couplings:
+- type: gear
+  a: crank_gear
+  b: cam_gear
+  teeth: [16, 32]
+  module_mm: 2
+  external: true
+center_distance_tol_mm: 0.2

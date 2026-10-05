@@ -31,6 +31,8 @@ def unwrap(degrees: list[float]) -> list[float]:
 MAX_STEP_DEG = 120.0
 MAX_DENSE_FRAMES = 481
 SAMPLE_CHUNK = 121
+# 十几个零件的装配，121 帧一次 motion-sample 在 SolidWorks 里就要 3 分钟以上
+HTTP_TIMEOUT_S = 900
 
 
 def _max_step(degrees: list[float]) -> float:
@@ -461,7 +463,7 @@ def sample_motion(base_url: str, spec: dict, driver_sw: str, driver_ref: str) ->
     http = requests.Session()
 
     def post(path, body=None):
-        data = http.post(f"{base_url.rstrip('/')}{path}", json=body or {}, timeout=180).json()
+        data = http.post(f"{base_url.rstrip('/')}{path}", json=body or {}, timeout=HTTP_TIMEOUT_S).json()
         if not data.get("success"):
             raise RuntimeError(data.get("message"))
         return data.get("result", data)

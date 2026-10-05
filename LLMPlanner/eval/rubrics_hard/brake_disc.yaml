@@ -32,7 +32,9 @@ entities:
   lugs:     {cylinder: {d: 14, side: inner}, count: 5}
   # 每个散热孔在上下两片环中各有一段孔壁
   holes:    {cylinder: {d: 8, side: inner}, count: 40}
-  frame:    {axis_frame: {axis: bore, low: larger_area, ref: lugs}}
+  # 需求只规定一个螺栓孔与某片筋同方位、散热孔隔一个筋间隙，没有规定散热孔在该筋的哪一侧，
+  # 所以 4.5° + 18°k 与其镜像 −4.5° + 18°k 都满足需求
+  frame:    {axis_frame: {axis: bore, low: larger_area, ref: lugs, either_hand: true}}
 
 rubrics:
   - id: solid

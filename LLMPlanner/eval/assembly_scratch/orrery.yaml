@@ -1,0 +1,137 @@
+case_id: orrery_earth_moon
+title: 太阳系仪（地球—月球）
+# 固定太阳轮—惰轮—地球轮（行星臂上）+ 电机齿轮，3 对啮合；检查臂、惰轮、地球三项转速与转向。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: or_frame
+  extra_tools: []
+  prompt: |
+    创建底座：在 front_plane 上画矩形，X 从 -100 到 100 mm，Y 从 -100 到 100 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(-48,0) 直径 10 mm。不要抽壳。
+- id: or_arm_shaft
+  extra_tools: []
+  prompt: |
+    创建主轴：直径 10 mm、长 30 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: or_arm_gear
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 36，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: or_motor_shaft
+  extra_tools: []
+  prompt: |
+    创建电机轴：直径 10 mm、长 22 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: or_pinion
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 12，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: or_handwheel
+  extra_tools: []
+  prompt: |
+    创建手轮：外径 40 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。另开贯穿孔：(12,0) 直径 6 mm。
+- id: or_sun
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 24，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: or_arm
+  extra_tools: []
+  prompt: |
+    创建行星臂：在 front_plane 上画两端圆头的长条，宽 18 mm，两端半圆的圆心分别在原点和 (64,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=36 处直径 8 mm，X=64 处直径 8 mm。
+- id: or_idler_axle
+  extra_tools: []
+  prompt: |
+    创建惰轮轴：直径 8 mm、长 14 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: or_idler
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 12，压力角 30°，齿宽 8 mm，轴孔直径 8 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: or_earth_axle
+  extra_tools: []
+  prompt: |
+    创建地球轴：直径 8 mm、长 26 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: or_earth_gear
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 16，压力角 30°，齿宽 8 mm，轴孔直径 8 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: or_earth
+  extra_tools: []
+  prompt: |
+    创建地球：外径 30 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 8 mm。另开贯穿孔：(9,0) 直径 4 mm，(-9,0) 直径 4 mm。
+- id: or_moon_arm
+  extra_tools: []
+  prompt: |
+    创建月球臂：在 front_plane 上画两端圆头的长条，宽 10 mm，两端半圆的圆心分别在原点和 (30,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 8 mm，X=30 处直径 6 mm。
+- id: or_moon_pin
+  extra_tools: []
+  prompt: |
+    创建月球销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: or_moon
+  extra_tools: []
+  prompt: |
+    创建月球：外径 14 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 6 mm。
+gold_roles:
+  frame: or_frame
+  arm_shaft: or_arm_shaft
+  arm_gear: or_arm_gear
+  motor_shaft: or_motor_shaft
+  pinion: or_pinion
+  handwheel: or_handwheel
+  sun: or_sun
+  arm: or_arm
+  idler_axle: or_idler_axle
+  idler: or_idler
+  earth_axle: or_earth_axle
+  earth_gear: or_earth_gear
+  earth: or_earth
+  moon_arm: or_moon_arm
+  moon_pin: or_moon_pin
+  moon: or_moon
+assembly:
+  prompt: |
+    装配太阳系仪（地球—月球）：太阳齿轮固定，电机经齿轮带行星臂公转；臂上惰轮把太阳齿轮的相对转动传给地球齿轮，
+    地球带着月球臂一起转。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]。中心孔 (0,0)、电机轴孔 (-48,0)，直径 10。24 齿 sun 固定在 frame 上、与中心孔同轴（z∈[8,16]）。
+    - arm_shaft 穿过中心孔（也穿过 sun 的孔）绕 Z 转动（z∈[-8,22]）；36 齿 arm_gear 固定在其上（z∈[-8,0]），arm（三孔：0、36、64）的原点孔固定在其上（z∈[16,22]）。
+    - motor_shaft 穿过电机轴孔绕 Z 转动（z∈[-14,8]）；12 齿 pinion（z∈[-8,0]）与 handwheel 的中心孔（z∈[-14,-8]）固定在其上，与 arm_gear 外啮合。
+    - idler_axle 固定在 arm 的 X=36 孔里（z∈[8,22]）；12 齿 idler 套在 idler_axle 上转动（z∈[8,16]），与 sun 外啮合。
+    - earth_axle 插在 arm 的 X=64 孔里绕 Z 转动（z∈[8,34]）；16 齿 earth_gear（z∈[8,16]）固定在其上，与 idler 外啮合；
+      earth 的 8 mm 孔（z∈[22,28]）与 moon_arm 的 8 mm 孔（z∈[28,34]）也固定在 earth_axle 上。
+    - moon_pin 固定在 moon_arm 的 6 mm 孔里（z∈[28,40]）；moon 的孔固定在 moon_pin 上（z∈[34,40]）。全部齿轮模数 2。
+    - 电机转 3 圈行星臂反向转 1 圈；地球绝对转速是行星臂的 1/2、反向（与电机同向）。各齿轮互不穿模，啮合齿相位要对上。
+    对 motor_shaft 做 check_motion（电机转 3 圈，行星臂正好转一周），确认无穿模后再保存。
+motion:
+  driver: motor_shaft
+  sweep_deg: 1080
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  - sun
+  expect_moving:
+  - arm
+  - idler
+  - earth
+  - moon_arm
+  - moon
+  ratios:
+  - role: arm
+    ratio: 3
+    same_direction: false
+  - role: idler
+    ratio: 1
+    same_direction: false
+  - role: earth
+    ratio: 6
+    same_direction: true
+  strokes:
+  - role: earth
+    axis: y
+    mm: 128.0
+  dense_frames: 361
+  max_interference: 0

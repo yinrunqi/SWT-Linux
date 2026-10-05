@@ -1,0 +1,44 @@
+# 装配级 rubric：角色名与 gear_sync_gripper.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: gear_sync_gripper
+ground: base
+mobility: 1
+bodies:
+  base: [base]
+  jaw_l: [shaft_l, gear_l, drive_l]
+  idler_l: [idler_l]
+  finger_l: [finger_l]
+  jaw_r: [shaft_r, gear_r, drive_r]
+  idler_r: [idler_r]
+  finger_r: [finger_r]
+flex:
+  ipin_l: [base, idler_l]
+  fpin_dl: [jaw_l, finger_l]
+  fpin_il: [idler_l, finger_l]
+  ipin_r: [base, idler_r]
+  fpin_dr: [jaw_r, finger_r]
+  fpin_ir: [idler_r, finger_r]
+joints:
+- bodies: [jaw_l, base]
+  type: revolute
+- bodies: [idler_l, base]
+  type: revolute
+- bodies: [finger_l, jaw_l]
+  type: revolute
+- bodies: [finger_l, idler_l]
+  type: &id001 [revolute, cylindrical]
+- bodies: [jaw_r, base]
+  type: revolute
+- bodies: [idler_r, base]
+  type: revolute
+- bodies: [finger_r, jaw_r]
+  type: revolute
+- bodies: [finger_r, idler_r]
+  type: *id001
+couplings:
+- type: gear
+  a: gear_l
+  b: gear_r
+  teeth: [15, 15]
+  module_mm: 2
+  external: true
+center_distance_tol_mm: 0.2

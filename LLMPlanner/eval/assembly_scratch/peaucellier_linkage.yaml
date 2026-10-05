@@ -1,0 +1,168 @@
+case_id: peaucellier_linkage
+title: Peaucellier 精确直线机构（多位姿）
+# 反演器 OB=OD=100、菱形边 50、曲柄 40，笔尖在 x=93.75 直线上；三个曲柄角检查笔尖与 B、D。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: pl_frame
+  extra_tools: []
+  prompt: |
+    创建底板：在 front_plane 上画矩形，X 从 -30 到 130 mm，Y 从 -80 到 130 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 8 mm，(40,0) 直径 8 mm。不要抽壳。
+- id: pl_crank
+  extra_tools: []
+  prompt: |
+    创建曲柄：在 front_plane 上画两端圆头的长条，宽 14 mm，两端半圆的圆心分别在原点和 (40,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 8 mm，X=40 处直径 6 mm。
+- id: pl_long
+  extra_tools: []
+  prompt: |
+    创建长杆：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (100,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 8 mm，X=100 处直径 6 mm。
+- id: pl_side
+  extra_tools: []
+  prompt: |
+    创建菱形边：在 front_plane 上画两端圆头的长条，宽 10 mm，两端半圆的圆心分别在原点和 (50,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=50 处直径 6 mm。
+- id: pl_o_pin
+  extra_tools: []
+  prompt: |
+    创建机架销：直径 8 mm、长 20 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: pl_c_pin
+  extra_tools: []
+  prompt: |
+    创建曲柄轴：直径 8 mm、长 14 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: pl_pin18
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 18 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: pl_pen
+  extra_tools: []
+  prompt: |
+    创建笔：直径 6 mm、长 24 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+gold_roles:
+  frame: pl_frame
+  o_pin: pl_o_pin
+  c_pin: pl_c_pin
+  crank: pl_crank
+  q_pin: pl_pin18
+  ob: pl_long
+  od: pl_long
+  b_pin: pl_pin18
+  d_pin: pl_pin18
+  qb: pl_side
+  qd: pl_side
+  bp: pl_side
+  dp: pl_side
+  p_pin: pl_pen
+assembly:
+  prompt: |
+    装配 Peaucellier–Lipkin 精确直线机构：反演器把曲柄端点的圆弧变成笔尖的直线，笔尖始终在 x=93.75 的竖线上。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]。机架铰孔 O=(0,0)、曲柄轴孔 C=(40,0)，直径 8。
+    - o_pin 固定在 O 孔里（z∈[0,20]）；c_pin 固定在 C 孔里（z∈[0,14]）。
+    - crank（长 40）的 8 mm 孔套在 c_pin 上转动（z∈[8,14]）；q_pin 固定在 crank 的 6 mm 孔里（z∈[8,26]），记该点为 Q。
+    - ob、od（长 100）的 8 mm 原点孔都套在 o_pin 上转动：ob 在 z∈[8,14]，od 在 z∈[14,20]；b_pin、d_pin 分别固定在 ob、od 的 6 mm 孔里（z∈[8,26]），
+      记为 B、D。B 在 OQ 连线左侧（逆时针一侧），D 在右侧。
+    - 菱形四边（长 50）：qb（z∈[14,20]）连 Q—B，qd（z∈[20,26]）连 Q—D，原点孔都在 Q；bp（z∈[20,26]）原点孔在 B，dp（z∈[8,14]）原点孔在 D。
+    - p_pin（笔）固定在 dp 的另一孔里（z∈[8,32]），bp 的另一孔也套在 p_pin 上，记为 P。
+    - 曲柄转角这 1 个自由度保持自由（整机活动度 1），不要固定。各件互不穿模，装好后保存。
+motion:
+  mode: poses
+  frame: frame
+  expect_fixed:
+  - frame
+  tolerance_mm: 1.5
+  max_interference: 0
+  poses:
+  - name: low
+    set:
+    - type: angle
+      a: crank:plane(top)
+      b: frame:plane(top)
+      angle_deg: 30.0
+      points:
+      - role: dp
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: 93.75
+          y: 25.12
+      - role: ob
+        local:
+        - 100.0
+        - 0.0
+        - 0
+        expect:
+          x: 71.51
+          y: 69.9
+      - role: od
+        local:
+        - 100.0
+        - 0.0
+        - 0
+        expect:
+          x: 96.88
+          y: -24.78
+  - name: mid
+    set:
+    - type: angle
+      a: crank:plane(top)
+      b: frame:plane(top)
+      angle_deg: 60.0
+      points:
+      - role: dp
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: 93.75
+          y: 54.13
+      - role: ob
+        local:
+        - 100.0
+        - 0.0
+        - 0
+        expect:
+          x: 53.85
+          y: 84.26
+      - role: od
+        local:
+        - 100.0
+        - 0.0
+        - 0
+        expect:
+          x: 99.9
+          y: 4.51
+  - name: high
+    set:
+    - type: angle
+      a: crank:plane(top)
+      b: frame:plane(top)
+      angle_deg: 90.0
+      points:
+      - role: dp
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: 93.75
+          y: 93.75
+      - role: ob
+        local:
+        - 100.0
+        - 0.0
+        - 0
+        expect:
+          x: 43.9
+          y: 89.85
+      - role: od
+        local:
+        - 100.0
+        - 0.0
+        - 0
+        expect:
+          x: 89.85
+          y: 43.9

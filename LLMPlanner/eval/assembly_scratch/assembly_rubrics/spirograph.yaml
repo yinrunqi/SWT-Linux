@@ -1,0 +1,39 @@
+# 装配级 rubric：角色名与 spirograph.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: spirograph
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame, ring]
+  carrier: [carrier_shaft, carrier_gear, arm]
+  motor: [motor_shaft, pinion, handwheel]
+  planet_a: [planet_a, axle_a, pen_arm_a, pen_a]
+  planet_b: [planet_b, axle_b, pen_arm_b, pen_b]
+joints:
+- bodies: [motor, frame]
+  type: revolute
+- bodies: [carrier, frame]
+  type: revolute
+- bodies: [planet_a, carrier]
+  type: revolute
+- bodies: [planet_b, carrier]
+  type: revolute
+couplings:
+- type: gear
+  a: carrier_gear
+  b: pinion
+  teeth: [45, 15]
+  module_mm: 2
+  external: true
+- type: gear
+  a: planet_a
+  b: ring
+  teeth: [20, 60]
+  module_mm: 1.5
+  external: false
+- type: gear
+  a: planet_b
+  b: ring
+  teeth: [20, 60]
+  module_mm: 1.5
+  external: false
+center_distance_tol_mm: 0.2

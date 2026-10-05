@@ -28,6 +28,7 @@ ERROR_CODES = {
     "NO_BODY": "零件中还没有实体",
     "FEATURE_FAILED": "SolidWorks 未能创建特征",
     "FEATURE_NO_EFFECT": "特征已创建但没有改变实体（方向或位置可能不对）",
+    "FEATURE_DISCONNECTED": "特征执行后零件不再是单一实体（L1_v2）",
     "SW_UNAVAILABLE": "无法连接 SolidWorks 服务",
     "RENDER_FAILED": "无法生成当前模型的三视图",
 }

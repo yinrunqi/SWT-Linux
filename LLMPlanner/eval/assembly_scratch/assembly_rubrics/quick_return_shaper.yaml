@@ -1,0 +1,42 @@
+# 装配级 rubric：角色名与 quick_return_shaper.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: quick_return_shaper
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame]
+  crank: [crank_shaft, crank_gear, crank]
+  motor: [motor_shaft, pinion, handwheel]
+  lever: [lever]
+  block: [block]
+  rod: [rod]
+  ram: [ram]
+flex:
+  crank_pin: [crank, block]
+  pivot: [frame, lever]
+  tip_pin: [lever, rod]
+  ram_pin: [rod, ram]
+joints:
+- bodies: [crank, frame]
+  type: revolute
+- bodies: [motor, frame]
+  type: revolute
+- bodies: [lever, frame]
+  type: revolute
+- bodies: [block, crank]
+  type: revolute
+- bodies: [block, lever]
+  type: &id001 [slider, planar]
+- bodies: [rod, lever]
+  type: revolute
+- bodies: [ram, rod]
+  type: revolute
+- bodies: [ram, frame]
+  type: *id001
+couplings:
+- type: gear
+  a: crank_gear
+  b: pinion
+  teeth: [36, 12]
+  module_mm: 2
+  external: true
+center_distance_tol_mm: 0.2

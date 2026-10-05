@@ -66,6 +66,8 @@ Web 后端所在的 `venv` 没有 OpenCASCADE，所以投影通过子进程调�
 
 L0 流程录下的是每次调用模型的原始请求和响应。请求超时或后端出错时，trace 里记 `error`。
 
+trace 要等整次运行结束才写。L1 运行过程中另有 `<case>_r<k>.checkpoint.json`：每次拿到 LLM 回复、每轮工具执行完，都把完整对话（图片换成占位）、原始回复和工具记录写进去，中途崩溃也能查看已有的输出，并用 `--resume` 续跑（见 3.2）。
+
 ---
 
 ## 2. 环境
@@ -118,10 +120,14 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 | `--ids` | 全部 50 题 | 只跑指定的 case |
 | `--repeats` | 2 | 每题独立运行次数 |
 | `--lang` | `zh` | `en` 时使用 YAML 里的 `prompt_en` |
-| `--resume` | 关 | 跳过已有 STEP 的运行，用于中断后续跑 |
+| `--resume` | 关 | 保留 `runs.json` 里已完成的运行；出错或中断的运行（`llm_error`、`sw_lost`、`resume_failed`）和还没跑的运行有 checkpoint 时从 checkpoint 续跑 |
+| `--sw-restarts` | 0 | SolidWorks 看门狗：每次运行前检查服务和 SolidWorks 内存，必要时重启；运行中丢失 SolidWorks 时重启并从 checkpoint 续跑，最多这么多次 |
+| `--sw-max-private-gb` | 12 | 看门狗的 SolidWorks 私有内存上限 |
 | `--mode`、`--vision-model` | `multi_turn`、`GLM-4.6V` | 只对 L0 生效 |
 
 每次运行前后都会关闭所有 SolidWorks 文档，结束后把 STEP 和 SLDPRT 存到 `eval/artifacts/<name>/<case>_r<k>.*`。失败的运行也会尽量保存当时的零件，同样参与打分。
+
+续跑与 text-to-CAD 的 L1 评测相同：先在新零件上按原顺序重放已执行的工具恢复模型，再接着原对话继续，已经拿到的回复不会重新请求，图纸会重新放回首条消息；重放结果与记录不一致时记 `resume_failed`。不加 `--resume` 时旧 checkpoint 会被删掉，从头开始。
 
 `runs.json` 里 L1 每次运行记录：`status`（`finished` / `max_llm_calls` / `stalled` / `llm_error`）、`llm_calls`、`tool_calls`、`failed_modeling_calls`、`render_views_calls`、`token_usage`、`duration_seconds`、`plan_model`、`action_level`，以及 trace 文件路径 `trace`。
 

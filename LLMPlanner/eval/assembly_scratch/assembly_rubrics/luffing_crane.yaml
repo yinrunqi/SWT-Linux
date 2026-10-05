@@ -1,0 +1,33 @@
+# 装配级 rubric：角色名与 luffing_crane.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: luffing_crane
+ground: base
+mobility: 1
+bodies:
+  base: [base]
+  boom: [boom]
+  rocker: [rocker]
+  head: [head, t_pin, hook]
+  barrel: [barrel]
+  ram: [ram]
+flex:
+  a_pin: [base, boom]
+  d_pin: [base, rocker]
+  f_pin: [base, barrel]
+  b_pin: [boom, head]
+  c_pin: [rocker, head]
+  g_pin: [boom, ram]
+joints:
+- bodies: [boom, base]
+  type: revolute
+- bodies: [rocker, base]
+  type: revolute
+- bodies: [head, rocker]
+  type: revolute
+- bodies: [head, boom]
+  type: [revolute, cylindrical]
+- bodies: [barrel, base]
+  type: revolute
+- bodies: [ram, boom]
+  type: revolute
+- bodies: [ram, barrel]
+  type: [slider, planar]

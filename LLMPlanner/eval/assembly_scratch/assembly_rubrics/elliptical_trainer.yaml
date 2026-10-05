@@ -1,0 +1,31 @@
+# 装配级 rubric：角色名与 elliptical_trainer.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: elliptical_trainer
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame, pivot]
+  crank: [shaft, flywheel, crank_f, crank_b]
+  pedal_f: [pedal_f, fpin_f, foot_f]
+  rocker_f: [rocker_f]
+  pedal_b: [pedal_b, fpin_b, foot_b]
+  rocker_b: [rocker_b]
+flex:
+  cpin_f: [crank, pedal_f]
+  dpin_f: [pedal_f, rocker_f]
+  cpin_b: [crank, pedal_b]
+  dpin_b: [pedal_b, rocker_b]
+joints:
+- bodies: [crank, frame]
+  type: revolute
+- bodies: [pedal_f, crank]
+  type: revolute
+- bodies: [rocker_f, frame]
+  type: revolute
+- bodies: [pedal_f, rocker_f]
+  type: &id001 [revolute, cylindrical]
+- bodies: [pedal_b, crank]
+  type: revolute
+- bodies: [rocker_b, frame]
+  type: revolute
+- bodies: [pedal_b, rocker_b]
+  type: *id001

@@ -2,13 +2,13 @@
   {
     "step": "eval\\artifacts\\text_workflow_l1_sonnet5_medium_hard19_result\\brake_disc_r1.step",
     "case": "brake_disc",
-    "score": 80.0,
-    "passed": 8,
+    "score": 100.0,
+    "passed": 10,
     "total": 10,
     "implied_passed": 0,
     "implied_total": 0,
     "hard_ok": true,
-    "accepted": false,
+    "accepted": true,
     "rubrics": [
       {
         "id": "solid",
@@ -53,7 +53,7 @@
       },
       {
         "id": "rings",
-        "ok": false,
+        "ok": true,
         "hard": false,
         "basis": "explicit",
         "weight": 1.0,
@@ -74,28 +74,20 @@
           },
           {
             "check": "radial_material",
-            "ok": false,
+            "ok": true,
             "measured": [
               [
                 90.0,
-                116.0
-              ],
-              [
-                124.0,
                 150.0
               ]
             ]
           },
           {
             "check": "radial_material",
-            "ok": false,
+            "ok": true,
             "measured": [
               [
                 85.0,
-                116.0
-              ],
-              [
-                124.0,
                 150.0
               ]
             ]
@@ -512,7 +504,7 @@
       },
       {
         "id": "cross_holes",
-        "ok": false,
+        "ok": true,
         "hard": false,
         "basis": "explicit",
         "weight": 1.0,
@@ -1021,7 +1013,12 @@
           },
           {
             "check": "line_material",
-            "ok": false,
+            "ok": true,
+            "measured": []
+          },
+          {
+            "check": "line_material",
+            "ok": true,
             "measured": [
               [
                 0.0,
@@ -1032,11 +1029,6 @@
                 32.0
               ]
             ]
-          },
-          {
-            "check": "line_material",
-            "ok": false,
-            "measured": []
           }
         ]
       },
@@ -1055,7 +1047,8 @@
           }
         ]
       }
-    ]
+    ],
+    "hand": "mirrored"
   },
   {
     "step": "eval\\artifacts\\text_workflow_l1_sonnet5_medium_hard19_result\\bt40_holder_r1.step",
@@ -6513,12 +6506,12 @@
   {
     "step": "eval\\artifacts\\text_workflow_l1_sonnet5_medium_hard19_result\\ratchet_wheel_r1.step",
     "case": "ratchet_wheel",
-    "score": 62.5,
-    "passed": 5,
+    "score": 75.0,
+    "passed": 6,
     "total": 8,
     "implied_passed": 0,
     "implied_total": 0,
-    "hard_ok": false,
+    "hard_ok": true,
     "accepted": false,
     "rubrics": [
       {
@@ -6539,18 +6532,18 @@
       },
       {
         "id": "outer",
-        "ok": false,
+        "ok": true,
         "hard": true,
         "basis": "explicit",
         "weight": 1.0,
         "checks": [
           {
-            "check": "bbox_sorted",
-            "ok": false,
-            "measured": [
+            "check": "frame_box",
+            "ok": true,
+            "size": [
               25.0,
-              119.85,
-              119.85
+              120.0,
+              120.0
             ]
           },
           {

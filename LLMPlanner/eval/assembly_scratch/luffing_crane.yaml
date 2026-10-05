@@ -1,0 +1,187 @@
+case_id: luffing_crane
+title: 水平变幅起重机（多位姿）
+# 四杆臂架（主臂—拉杆—象鼻梁）+ 变幅油缸闭环，活动度 1；三个俯仰角检查吊点、臂头与油缸铰点。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: lu_base
+  extra_tools: []
+  prompt: |
+    创建塔身板：在 front_plane 上画矩形，X 从 -60 到 240 mm，Y 从 -50 到 200 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(-25,75) 直径 8 mm，(90,-30) 直径 8 mm。不要抽壳。
+- id: lu_boom
+  extra_tools: []
+  prompt: |
+    创建主臂：在 front_plane 上画两端圆头的长条，宽 16 mm，两端半圆的圆心分别在原点和 (170,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=60 处直径 6 mm，X=170 处直径 8 mm。
+- id: lu_rocker
+  extra_tools: []
+  prompt: |
+    创建拉杆：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (130,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 8 mm，X=130 处直径 8 mm。
+- id: lu_head
+  extra_tools: []
+  prompt: |
+    创建象鼻梁：在 front_plane 上画两端圆头的长条，宽 14 mm，两端半圆的圆心分别在原点和 (120,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 8 mm，X=40 处直径 8 mm，X=120 处直径 6 mm。
+- id: lu_barrel
+  extra_tools: []
+  prompt: |
+    创建油缸筒：在 front_plane 上画两端圆头的长条，宽 16 mm，两端半圆的圆心分别在原点和 (70,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 8 mm。
+- id: lu_ram
+  extra_tools: []
+  prompt: |
+    创建活塞杆：在 front_plane 上画两端圆头的长条，宽 10 mm，两端半圆的圆心分别在原点和 (70,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm。
+- id: lu_a_pin
+  extra_tools: []
+  prompt: |
+    创建主臂根销：直径 10 mm、长 20 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: lu_pin20
+  extra_tools: []
+  prompt: |
+    创建拉杆根销：直径 8 mm、长 20 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: lu_pin14
+  extra_tools: []
+  prompt: |
+    创建缸底销：直径 8 mm、长 14 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: lu_pin8_12
+  extra_tools: []
+  prompt: |
+    创建臂头销：直径 8 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: lu_pin6_12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: lu_hook
+  extra_tools: []
+  prompt: |
+    创建吊钩：外径 24 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 6 mm。
+gold_roles:
+  base: lu_base
+  a_pin: lu_a_pin
+  boom: lu_boom
+  b_pin: lu_pin8_12
+  g_pin: lu_pin6_12
+  d_pin: lu_pin20
+  rocker: lu_rocker
+  c_pin: lu_pin8_12
+  head: lu_head
+  t_pin: lu_pin6_12
+  hook: lu_hook
+  f_pin: lu_pin14
+  barrel: lu_barrel
+  ram: lu_ram
+assembly:
+  prompt: |
+    装配水平变幅起重机的臂架：主臂、拉杆与象鼻梁组成四杆机构，变幅油缸推动主臂俯仰时，吊点的升降远小于主臂头的升降（近似水平变幅）。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - base 固定，z∈[0,8]：主臂根孔 A=(0,0) 直径 10，拉杆根孔 D=(-25,75) 与缸底孔 F=(90,-30) 直径 8。
+    - a_pin 固定在 A 孔（z∈[0,20]）；boom（主臂，孔 0、60、170）的原点孔套在 a_pin 上转动（z∈[14,20]）；
+      b_pin 固定在 boom 的 X=170 孔（z∈[8,20]），g_pin 固定在 boom 的 X=60 孔（z∈[14,26]）。
+    - d_pin 固定在 D 孔（z∈[0,20]）；rocker（拉杆，长 130）的原点孔套在 d_pin 上转动（z∈[14,20]）；c_pin 固定在 rocker 的另一孔（z∈[8,20]）。
+    - head（象鼻梁，孔 0、40、120）的原点孔套在 c_pin 上（z∈[8,14]），X=40 孔套在 b_pin 上，吊点端（X=120）朝外；
+      拉杆铰点 C 在主臂头 B 的后上方。t_pin 固定在 head 的 X=120 孔（z∈[8,20]），hook 固定在 t_pin 上（z∈[14,20]）。
+    - f_pin 固定在 F 孔（z∈[0,14]）；barrel（油缸筒）的孔套在 f_pin 上转动（z∈[8,14]），筒身朝 g_pin 伸出；
+      ram（活塞杆）的孔套在 g_pin 上转动（z∈[20,26]），杆身朝 f_pin 伸进缸筒，ram 与 barrel 轴线始终共线、只能相对伸缩。
+    - 主臂俯仰这 1 个自由度保持自由（整机活动度 1），不要固定角度。各件互不穿模，装好后保存。
+motion:
+  mode: poses
+  frame: base
+  expect_fixed:
+  - base
+  tolerance_mm: 1.5
+  max_interference: 0
+  poses:
+  - name: near
+    set:
+    - type: angle
+      a: boom:plane(top)
+      b: base:plane(top)
+      angle_deg: 65.0
+      points:
+      - role: head
+        local:
+        - 120.0
+        - 0.0
+        - 0
+        expect:
+          x: 124.47
+          y: 93.81
+      - role: boom
+        local:
+        - 170.0
+        - 0.0
+        - 0
+        expect:
+          x: 71.85
+          y: 154.07
+      - role: ram
+        local:
+        - 0.0
+        - 0.0
+        - 0
+        expect:
+          x: 25.36
+          y: 54.38
+  - name: mid
+    set:
+    - type: angle
+      a: boom:plane(top)
+      b: base:plane(top)
+      angle_deg: 50.0
+      points:
+      - role: head
+        local:
+        - 120.0
+        - 0.0
+        - 0
+        expect:
+          x: 172.49
+          y: 81.19
+      - role: boom
+        local:
+        - 170.0
+        - 0.0
+        - 0
+        expect:
+          x: 109.27
+          y: 130.23
+      - role: ram
+        local:
+        - 0.0
+        - 0.0
+        - 0
+        expect:
+          x: 38.57
+          y: 45.96
+  - name: far
+    set:
+    - type: angle
+      a: boom:plane(top)
+      b: base:plane(top)
+      angle_deg: 35.0
+      points:
+      - role: head
+        local:
+        - 120.0
+        - 0.0
+        - 0
+        expect:
+          x: 216.37
+          y: 76.21
+      - role: boom
+        local:
+        - 170.0
+        - 0.0
+        - 0
+        expect:
+          x: 139.26
+          y: 97.51
+      - role: ram
+        local:
+        - 0.0
+        - 0.0
+        - 0
+        expect:
+          x: 49.15
+          y: 34.41

@@ -1,0 +1,18 @@
+case: qr_block
+prompt: "创建滑块：在 front_plane 上画矩形，X 从 -14 到 14 mm，Y 从 -8 到 8 mm，向 +Z 拉伸 6 mm。开贯穿孔：(0,0) 直径 8 mm。不要抽壳。"
+tolerance: {length_mm: 0.25, angle_deg: 1.0, volume_rel: 0.04}
+entities:
+  wf: {world_frame: {}}
+  h0: {cylinder: {d: 8, side: inner}, count: 1}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: shape
+    hard: true
+    check:
+      - bbox_sorted: [6, 16, 28]
+      - exists: h0
+      - through: {holes: h0}
+      - axis_positions: {frame: wf, items: h0, axes: [0, 1], expect: [[14, 8]]}

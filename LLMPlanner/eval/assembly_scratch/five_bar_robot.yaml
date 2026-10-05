@@ -1,0 +1,177 @@
+case_id: five_bar_robot
+title: 五杆并联机器人（多位姿）
+# 两主动臂 + 两从动臂闭链，活动度 2；三组双角度位姿检查两肘点与末端。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: fr_base
+  extra_tools: []
+  prompt: |
+    创建底座：在 front_plane 上画矩形，X 从 -60 到 120 mm，Y 从 -40 到 40 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(60,0) 直径 10 mm。不要抽壳。
+- id: fr_shaft
+  extra_tools: []
+  prompt: |
+    创建电机轴：直径 10 mm、长 14 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: fr_prox
+  extra_tools: []
+  prompt: |
+    创建主动臂：在 front_plane 上画两端圆头的长条，宽 18 mm，两端半圆的圆心分别在原点和 (70,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=70 处直径 6 mm。
+- id: fr_dist
+  extra_tools: []
+  prompt: |
+    创建从动臂：在 front_plane 上画两端圆头的长条，宽 14 mm，两端半圆的圆心分别在原点和 (100,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=100 处直径 6 mm。
+- id: fr_pin12
+  extra_tools: []
+  prompt: |
+    创建肘销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: fr_pin18
+  extra_tools: []
+  prompt: |
+    创建长肘销：直径 6 mm、长 18 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: fr_tool_pin
+  extra_tools: []
+  prompt: |
+    创建末端销：直径 6 mm、长 18 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: fr_tool
+  extra_tools: []
+  prompt: |
+    创建末端执行器：外径 30 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 6 mm。另开贯穿孔：(9,0) 直径 4 mm，(-9,0) 直径 4 mm。
+gold_roles:
+  base: fr_base
+  a1_pin: fr_shaft
+  a2_pin: fr_shaft
+  p1: fr_prox
+  p2: fr_prox
+  e1_pin: fr_pin12
+  e2_pin: fr_pin18
+  d1: fr_dist
+  d2: fr_dist
+  p_pin: fr_tool_pin
+  tool: fr_tool
+assembly:
+  prompt: |
+    装配五杆并联机器人：两只主动臂分别绕底座上两根轴转动，两只从动臂在末端铰接，末端执行器在平面内两自由度定位。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - base 固定，z∈[0,8]，两个轴孔 (0,0)、(60,0)，直径 10。a1_pin、a2_pin 分别固定在这两个孔里（z∈[0,14]）。
+    - p1、p2（主动臂，长 70）的 10 mm 孔分别套在 a1_pin、a2_pin 上转动（z∈[8,14]）。
+    - e1_pin 固定在 p1 的 6 mm 孔里（z∈[8,20]）；e2_pin 固定在 p2 的 6 mm 孔里（z∈[8,26]）。
+    - d1（从动臂，长 100）的原点孔套在 e1_pin 上转动（z∈[14,20]）；d2 的原点孔套在 e2_pin 上转动（z∈[20,26]）。
+    - p_pin 固定在 d2 的另一孔里（z∈[14,32]），d1 的另一孔也套在 p_pin 上；tool 的中心孔固定在 p_pin 上（z∈[26,32]）。末端在两肘点连线的上方。
+    - 两只主动臂的转角保持自由（整机活动度 2），不要固定。各件互不穿模，装好后保存。
+motion:
+  mode: poses
+  frame: base
+  expect_fixed:
+  - base
+  tolerance_mm: 1.5
+  max_interference: 0
+  poses:
+  - name: left
+    set:
+    - type: angle
+      a: p1:plane(top)
+      b: base:plane(top)
+      angle_deg: 125.0
+      points:
+      - role: p1
+        local:
+        - 70.0
+        - 0.0
+        - 0
+        expect:
+          x: -40.15
+          y: 57.34
+    - type: angle
+      a: p2:plane(top)
+      b: base:plane(top)
+      angle_deg: 80.0
+      points:
+      - role: p2
+        local:
+        - 70.0
+        - 0.0
+        - 0
+        expect:
+          x: 72.16
+          y: 68.94
+      - role: d2
+        local:
+        - 100.0
+        - 0.0
+        - 0
+        expect:
+          x: 7.52
+          y: 145.24
+  - name: reach
+    set:
+    - type: angle
+      a: p1:plane(top)
+      b: base:plane(top)
+      angle_deg: 100.0
+      points:
+      - role: p1
+        local:
+        - 70.0
+        - 0.0
+        - 0
+        expect:
+          x: -12.16
+          y: 68.94
+    - type: angle
+      a: p2:plane(top)
+      b: base:plane(top)
+      angle_deg: 45.0
+      points:
+      - role: p2
+        local:
+        - 70.0
+        - 0.0
+        - 0
+        expect:
+          x: 109.5
+          y: 49.5
+      - role: d2
+        local:
+        - 100.0
+        - 0.0
+        - 0
+        expect:
+          x: 61.1
+          y: 137.01
+  - name: right
+    set:
+    - type: angle
+      a: p1:plane(top)
+      b: base:plane(top)
+      angle_deg: 140.0
+      points:
+      - role: p1
+        local:
+        - 70.0
+        - 0.0
+        - 0
+        expect:
+          x: -53.62
+          y: 45.0
+    - type: angle
+      a: p2:plane(top)
+      b: base:plane(top)
+      angle_deg: 100.0
+      points:
+      - role: p2
+        local:
+        - 70.0
+        - 0.0
+        - 0
+        expect:
+          x: 47.84
+          y: 68.94
+      - role: d2
+        local:
+        - 100.0
+        - 0.0
+        - 0
+        expect:
+          x: -22.49
+          y: 140.02

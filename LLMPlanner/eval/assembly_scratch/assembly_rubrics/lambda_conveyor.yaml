@@ -1,0 +1,42 @@
+# 装配级 rubric：角色名与 lambda_conveyor.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: lambda_conveyor
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame, d_pin]
+  crank: [shaft, crank_gear, crank_f, crank_b]
+  motor: [motor_shaft, pinion, handwheel]
+  coupler_f: [coupler_f, foot_f]
+  rocker_f: [rocker_f]
+  coupler_b: [coupler_b, foot_b]
+  rocker_b: [rocker_b]
+flex:
+  cpin_f: [crank, coupler_f]
+  mpin_f: [rocker_f, coupler_f]
+  cpin_b: [crank, coupler_b]
+  mpin_b: [rocker_b, coupler_b]
+joints:
+- bodies: [crank, frame]
+  type: revolute
+- bodies: [motor, frame]
+  type: revolute
+- bodies: [coupler_f, crank]
+  type: revolute
+- bodies: [rocker_f, frame]
+  type: revolute
+- bodies: [coupler_f, rocker_f]
+  type: &id001 [revolute, cylindrical]
+- bodies: [coupler_b, crank]
+  type: revolute
+- bodies: [rocker_b, frame]
+  type: revolute
+- bodies: [coupler_b, rocker_b]
+  type: *id001
+couplings:
+- type: gear
+  a: crank_gear
+  b: pinion
+  teeth: [30, 15]
+  module_mm: 2
+  external: true
+center_distance_tol_mm: 0.2

@@ -1,0 +1,42 @@
+# 装配级 rubric：角色名与 oscillating_fan.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: oscillating_fan
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame]
+  motor: [motor_shaft, motor_pinion]
+  mid: [mid_shaft, mid_gear, mid_pinion]
+  crank: [crank_shaft, crank_gear, crank]
+  coupler: [coupler]
+  rocker: [rocker, head]
+flex:
+  crank_pin: [crank, coupler]
+  pivot: [frame, rocker]
+  rocker_pin: [rocker, coupler]
+joints:
+- bodies: [motor, frame]
+  type: revolute
+- bodies: [mid, frame]
+  type: revolute
+- bodies: [crank, frame]
+  type: revolute
+- bodies: [coupler, crank]
+  type: revolute
+- bodies: [rocker, frame]
+  type: revolute
+- bodies: [coupler, rocker]
+  type: [revolute, cylindrical]
+couplings:
+- type: gear
+  a: crank_gear
+  b: mid_pinion
+  teeth: [36, 12]
+  module_mm: 2
+  external: true
+- type: gear
+  a: mid_gear
+  b: motor_pinion
+  teeth: [36, 12]
+  module_mm: 2
+  external: true
+center_distance_tol_mm: 0.2

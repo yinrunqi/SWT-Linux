@@ -1,0 +1,19 @@
+case: lt_flywheel
+prompt: "创建飞轮：外径 60 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。"
+tolerance: {length_mm: 0.25, angle_deg: 1.0, volume_rel: 0.05}
+entities:
+  rim: {cylinder: {d: 60, side: outer}, count: 1}
+  bore: {cylinder: {d: 10, side: inner}, count: 1}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: shape
+    hard: true
+    check:
+      - exists: rim
+      - exists: bore
+      - coaxial: [rim, bore]
+      - through: {holes: bore}
+      - extent_along: {axis: rim, of: all, value: 6}

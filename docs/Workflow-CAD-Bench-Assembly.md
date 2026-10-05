@@ -19,7 +19,7 @@
 转换时的取舍：
 
 - 放映机旧示例的四槽槽轮（间歇运动）无法用配合表达，换成"惰轮带快门同步 + 小齿轮带输片减速"的齿轮系。
-- 电钻每级只留一个行星轮。多个行星轮只分担载荷、不改变运动链；而且 SolidWorks 求解冗余的齿轮闭环时，单步就要几分钟，超过智能体每次工具调用 180 s 的超时。
+- 电钻每级只留一个行星轮。多个行星轮只分担载荷、不改变运动链；而且 SolidWorks 求解冗余的齿轮闭环时，单步就要几分钟，超过当时智能体每次工具调用 180 s 的超时（现为 900 s）。
 - 台灯是 3 自由度，没有单一驱动件，雨伞的驱动是下巢的直线滑动。两者都用多位姿模式检查（4.4 节）。
 
 零件工具集按版本标注（`planner/workflow/tools.py` 的 `EXTRA_TOOLSET_VERSION`，结果 JSON 里记为 `extra_toolset`）：
@@ -66,6 +66,93 @@
 - 销都只连两个体，`flex` 允许它固定在任一侧。
 - 多位姿测例的点位都取在杆件 X 轴（孔心连线）上，与零件正装、翻面无关；四杆类的装配模式（例如肘节夹钳的铰点 J 在 A、K 连线上方）在提示里写明，因为从一个模式到另一个模式要穿过奇异位形，角度配合改不过来。
 
+### 第二批测例（23 个）
+
+由 `eval/assembly_scratch/bench_cases2.py` 定义，基本体、零件规格格式、零件 rubric 与第一批相同，但每个测例改成声明式写法：
+
+- `layout(s)`：给定马达转角或位姿名，返回每个角色的平面位姿 (x, y, 转角)，z 取自 `z` 表；
+- `steps`：装配步骤，`ground` / `fix` / `rev` / `cyl`（闭环最后一个铰，只要同心）/ `slide` / `coinc` / `mesh` / `screw`。
+
+参考装配体（`build_reference2`）、离线自检和解析锚点都从这两样派生。组件数 11–28，比第一批（6–15）复杂，多数带 2–3 对齿轮或多重闭环。
+
+| case_id | `--cases` 名 | 机构 | 组件数 | 目标活动度 | 运动检查 |
+|---|---|---|---|---|---|
+| `l_twin_engine` | `l_twin_engine` | L 型双缸发动机，两连杆共用曲柄销，16/32 正时齿轮带凸轮轴 | 15 | 1 | 马达：凸轮轴 1/2、两缸行程 30 |
+| `radial_engine_4cyl` | `radial_engine` | 星形四缸，主连杆 + 三根副连杆铰在主连杆法兰上，带螺旋桨 | 21 | 1 | 马达：四缸行程 30 / 30.25 / 30.25 / 30 |
+| `quick_return_shaper` | `quick_return_shaper` | 牛头刨急回：曲柄滑块导杆 + 连杆推刨头，摇把经 1:3 增速 | 15 | 1 | 马达：导杆摆角 49.25°、刨头行程 116.67 |
+| `knuckle_press` | `knuckle_press` | 肘杆压力机，14/42 齿减速 | 15 | 1 | 马达：肘杆摆角 36.16°、滑块行程 12.49 |
+| `oldham_coupling` | `oldham_coupling` | 十字滑块联轴器，两轴偏距 12 | 12 | 1 | 马达：输出 1:1 同向、十字块 X / Y 行程各 12 |
+| `elliptical_trainer` | `elliptical_trainer` | 椭圆机，左右踏板反相 | 18 | 1 | 马达：摆杆摆角 29.06°、踏板行程、反相 |
+| `jansen_leg` | `jansen_leg` | Jansen 八杆步行腿（Strandbeest 比例） | 22 | 1 | 马达：足端行程 135.8 × 44.9、摆角 |
+| `lambda_conveyor` | `lambda_conveyor` | Chebyshev λ 机构步进输送，30/15 齿在板后 | 19 | 1 | 马达：齿比、足端行程（65% 行程近似直线） |
+| `geared_five_bar` | `geared_five_bar` | 齿轮耦合五杆绘图机 | 13 | 1 | 马达：齿比、笔尖行程 |
+| `planetary_mixer` | `planetary_mixer` | 行星搅拌机，固定太阳轮 + 双行星 + 齿轮驱动行星架 | 14 | 1 | 马达（3 圈）：行星架 1/3 反向、行星轮 2/3 反向、行星轮行程 96 |
+| `spirograph` | `spirograph` | 万花尺：固定 60 齿内齿圈 + 两只 20 齿行星带笔 | 16 | 1 | 马达：行星架 1/3 反向、行星轮 2/3 同向 |
+| `wankel_rotary` | `wankel_rotary` | Wankel 转子：偏心 12，转子 1/3 同向 | 11 | 1 | 马达：转子比、偏心行程 |
+| `orrery_earth_moon` | `orrery` | 太阳系仪：固定太阳轮—惰轮—地球轮，三对啮合 | 16 | 1 | 马达（3 圈）：臂 1/3 反向、惰轮 1:1 反向、地球 1/6 同向、地球行程 128 |
+| `oscillating_fan` | `oscillating_fan` | 摇头风扇：两级 12/36 减速 + 曲柄摇杆摇头 | 15 | 1 | 马达：中间轴 1/3、摇头摆角 60.14° |
+| `gear_screw_lift` | `gear_screw_lift` | 齿轮带丝杠的升降台，导程 6 | 12 | 1 | 马达：齿比、每圈升 3 mm |
+| `scissor_lift_3stage` | `scissor_lift` | 三级剪叉 + 底部滑块 + 顶部滑块平台 | 21 | 1 | 多位姿：3 个滑块偏距，平台与各级铰点 |
+| `mechanical_iris_5blade` | `mechanical_iris` | 五叶机械光圈：驱动环 + 5 组四杆叶片，分 3 层交叠 | 28 | 1 | 多位姿：3 个驱动环转角，五个叶尖 |
+| `peaucellier_linkage` | `peaucellier_linkage` | Peaucellier 精确直线机构 | 14 | 1 | 多位姿：3 个曲柄角，输出点在 x=93.75 的直线上 |
+| `five_bar_robot` | `five_bar_robot` | 五杆并联机器人 | 11 | 2 | 多位姿：3 组双角度，两肘点与末端 |
+| `palletizing_robot` | `palletizing_robot` | 码垛机器人：驱动平行四边形 + 两级调平平行四边形 | 18 | 2 | 多位姿：3 组双角度，肘点、腕点与腕部法兰姿态 |
+| `gear_sync_gripper` | `gear_sync_gripper` | 15/15 齿轮同步的平行四边形夹爪 | 17 | 1 | 多位姿：张开 / 中间 / 夹紧（两侧各设角度），指尖开口 79.4 / 47.9 / 8.1 |
+| `robot_finger_coupled` | `robot_finger` | 三节手指，两组反平行四边形耦合 | 13 | 1 | 多位姿：3 个近节角，中节末端与指尖 |
+| `luffing_crane` | `luffing_crane` | 四杆臂架 + 变幅油缸的起重机 | 14 | 1 | 多位姿：3 个俯仰角，吊点、臂头、油缸铰点 |
+
+在第一批约束之外，另有几条：
+
+- 测例来源是教科书上的经典机构，尺寸自行设计，不取自 CAD-1K。
+- 马达模式的检查项必须在 13 帧采样（驱动件每帧 30°）下可测：被检比值的输出件每帧转角不超过 180°，所以增速机构把驱动放在慢轴上，再检查马达轴的 `ratio: 1/3`。
+- 马达起始角不取对称位置（用 45° / 30° 等）。评测器拿首帧、中间帧和末帧判断零件是否卡住，起始角对称时这几帧会恰好重合，正确的装配也会被误判成卡住（第 9 节）。
+- 零件 id 的前缀不能与第一批重复，否则 `write` 会覆盖第一批的零件 rubric。
+- 多位姿的 `offset` 项带符号：a 的基准面原点在 b 的基准面法向一侧为正，与参考装配体的距离配合一致。
+
+#### 不用 SolidWorks 的自检
+
+`python -m eval.assembly_scratch.bench2_check [name ...]` 对每个测例跑四项检查，全部通过才算可用：
+
+1. 关节与层位：每个 `rev` / `fix` / `cyl` 的两个孔在所有采样帧上同心，销覆盖所连零件的 z 范围；`mesh` 的中心距等于 m(z1±z2)/2，两轮按齿数比滚动。
+2. 穿模：按零件轮廓（板、长条、圆盘、齿顶圆）在每一帧做同层二维相交，销半径缩 3%，啮合与丝杠副跳过。
+3. 合成配合打 rubric：按 `steps` 生成配合列表，交给 `geomcheck.assembly_rubric.evaluate`，必须 100 分（活动度、关节类型、刚体组、锚点都对）。
+4. 合成帧打运动分：按 `layout` 生成 13 帧变换（多位姿是各位姿的变换），交给 `geomcheck.assembly_motion`，必须 100 分；多位姿还逐项核对角度、点位和带符号偏距。
+
+阴性对照：故意改错一个铰点位置、一个层位或一个齿数，相应检查会失败。零件 rubric 的阳性 / 阴性对照见 `geomcheck/tests/test_bench_parts.py`：按规格用 OCC 生成两批全部 403 个零件，rubric 都判合格；另外改一个孔位、销长或齿数的 6 个变体都在对应条目上失败。第二批的 257 个零件另外走过一遍 OCC 导出 STEP → `_grade_step` 读回打分的流程，全部合格。
+
+关节锚点：第一批的锚点由参考装配体导出（`joint_anchors.json`）。第二批的参考装配体还没搭，`write` 先从 `layout` 解析出锚点写到 `joint_anchors_analytic.json`，`load_assembly_rubric` 在前者没有该 case 时用它。
+
+#### SolidWorks 可达性验证（oracle 轨迹）
+
+阳性对照只说明评测器认得正确的装配体；要说明智能体有可能拿满分，还得证明只用 v3 公开工具就能装出来。`eval/assembly_scratch/oracle_replay.py` 按 `steps` 为每个测例写出一条智能体可以照抄的工具调用序列，不调用模型：
+
+- `insert_component` 放在 `layout(s0)` 的位姿；`ground_component`；
+- `fix` / `rev` → `joint fixed` / `revolute`，`face_a` / `face_b` 取两件的 `plane(front)`，`offset` 为层位差；`cyl` → `joint cylindrical`；
+- `slide` / `coinc` 偏距为 0 时 → `mate coincident`；偏距非零而两件各有一个正好贴合的外表面时 → 两面 `coincident`（`align: anti`），否则 → `mate distance`；
+- `mesh` → `mesh_gears`（齿圈加 `internal`），`screw` → `screw_pair`；
+- 收尾 `check_dof` → `check_motion` 或 `check_pose`（参数取自运动规格）→ `save_assembly` → `finish`。
+
+会话按智能体的方式创建（`workflow=v3`、只开放 v3 工具），保存后再用评测器的 `score_assembly_rubric` 和 `_motion` 打分。`oracle_supervise.py` 逐例起子进程、断线自动重启 SolidWorks 并续跑，结果在 `eval/artifacts/bench2_oracle/<name>/`（`trajectory.json`、`result.json`、`progress.json`）。
+
+结果：23 个测例都有一条公开工具轨迹拿到装配 rubric 100、运动分 100，`finish` 通过。工具调用数 27–65（光圈最多，65 次），单例重放 4–35 分钟。
+
+验证中发现并修正的问题：
+
+| 测例 | 现象 | 原因 | 修正 |
+|---|---|---|---|
+| `quick_return_shaper` | 刨头导向的 `mate distance 95` 报过定义，活动度 3 | 距离配合不分正负，SolidWorks 把刨头放到了 −95 一侧；当时公开 `mate` 不能翻转 | 床身板上沿改到 y=87，刨头下沿面与它贴合；`mate` 开放 `flip`（见下） |
+| `oldham_coupling` | 每帧都有约 6560 mm³ 干涉 | 同上，十字块的距离配合落在错误一侧 | 十字块底面与输入半联轴器端面贴合 |
+| `planetary_mixer`、`orrery` | 运动分 91.67，行程实测 96 / 128，期望 48 / 64 | Animation 马达实际比 rpm 快约 9.5 倍，“一圈”实际转了好几圈；行程却按驱动一圈算，而行星架三圈才转一周 | 扫 1080°（3 圈）、密采样 361 帧，期望行程按整周 |
+| `gear_sync_gripper` | 左指到位、右指停在张开位 | 临时角度配合后的静态重建不传递齿轮配合，带锁转的同轴也会被放松，且不报错 | 两侧主动摆杆各设一个角度；齿轮同步由装配 rubric 的齿轮耦合和活动度 1 考核 |
+| `lambda_conveyor`、`spirograph` | 轨迹全部通过，评分时运动分为 0 | 评测器运动采样的 HTTP 超时写死 180 s，重型装配一次 121 帧采样要更久 | `geomcheck.assembly_motion.HTTP_TIMEOUT_S = 900` |
+
+同时调整了智能体侧：
+
+- `AssemblySession` 默认 HTTP 超时由 180 s 改为 900 s（与参考装配构建相同）。实测这些装配体在 SolidWorks 里单条配合 150–170 s、列组件最长 364 s、保存最长 354 s，180 s 会把正常操作判成 `SW_UNAVAILABLE`。
+- `mate` 增加 `flip`（只对 distance 有意义，把 a 换到 b 的另一侧），distance 配合返回 `side_mm`（a 在 b 法向上的带符号距离）；distance 报过定义时提示加 / 去 `flip`。SolidWorks 实测：同一条 95 mm 距离配合，不带 `flip` 落在 −95，带 `flip` 落在 +95。
+
+剩余的 SolidWorks 步骤：`build_reference_assemblies.py` 搭参考装配体、`derive_joint_anchors.py` 导出锚点替换解析锚点、渲染展示图。oracle 轨迹保存的 `assembly.SLDASM` 已可代替参考装配体做阳性对照。
+
 ## 1. 评测流程
 
 一次评测对应一个 (测例, 条件, 工作流版本, 重复序号)，由 `eval/eval_assembly_scratch.py` 驱动：
@@ -80,7 +167,14 @@
    - 运动检查（第 4 节），由评测器加马达、采样。
 4. 汇总。结果写到 `eval/assembly_scratch_result.json`，装配体和零件存在 `eval/artifacts/assembly_scratch/<workflow>/<case>/<condition>_r<repeat>/`。智能体结束后评测器先把当前装配体存成检查点再评分，所以即使智能体没调用 `save_assembly`，评分用的也是它最后的状态；同目录的 `rubric_inputs.json` 存下 rubric 的原始输入（组件、配合、别名），以后改 rubric 可以离线重评。
 
-基础设施故障自动识别（`infra_flags`）：装配阶段的工具报错或运动评测错误里出现 SolidWorks 不可用、RPC 服务器不可用、活动文档丢失、请求超时等标记时，该行记 `infra_contaminated`。评测器会重启 SolidWorks 和服务，只重跑装配阶段（零件不重建），最多 `--infra-retries` 次（默认 1）；重试后仍被污染的行保留在 `all_rows` 里，但不进 `summary`，`n_infra_contaminated` 单独报告。
+基础设施故障自动识别（`infra_flags`）：装配阶段的工具报错或运动评测错误里出现 SolidWorks 不可用、RPC 服务器不可用、活动文档丢失、请求超时等标记时，该行记 `infra_contaminated`。评测器会重启 SolidWorks 和服务，只重做装配阶段（零件不重建），最多 `--infra-retries` 次（默认 1）；重试后仍被污染的行保留在 `all_rows` 里，但不进 `summary`，`n_infra_contaminated` 单独报告。
+
+LLM 输出落盘与续跑（与 text-to-CAD 的 L1 评测相同）：
+- 装配智能体每拿到一次 LLM 回复、每执行完一轮工具，都把完整对话、原始回复、工具记录和中间状态写到产物目录的 `agent.checkpoint.json`；零件生成阶段同样写 `parts/<id>.checkpoint.json`，零件结束后另存 `parts/<id>.result.json`。
+- 装配智能体遇到 `SW_UNAVAILABLE`、`NO_PART` 或"没有活动的装配体文档"时，撤回这一轮，状态记为 `sw_lost`，把这轮回复留作待执行。
+- 上面的基础设施重试会从 checkpoint 接着跑：先在新建的空装配体上按原顺序重放已执行的工具（`get_assembly_state`、`check_interference`、`finish` 这些只读调用不重放；`check_motion` / `check_pose` / `check_dof` 会更新 `finish` 的门槛，要重放），再接着原对话继续，已经拿到的回复不会重新请求。智能体上次已正常结束、只是运动评测超时的，重放后直接沿用原结果，只重做评分。
+- 重放结果与记录不一致时记 `resume_failed`，下一次重试改为从头开始。
+- `--resume` 保留已完成的行；带 `infra_error`，或者装配 / 零件状态为 `llm_error`、`sw_lost`、`resume_failed` 的行会续跑。已完成的零件直接沿用 `parts/<id>.result.json`，中断的零件和装配从各自的 checkpoint 接着跑。不加 `--resume` 时旧 checkpoint 会被删掉，从头开始。
 
 角色映射：规格里的 `gold_roles` 把装配角色（如 `lay_shaft`）映射到零件 id（如 `shaft`）。同一个零件可以出现在多个角色上，例如三根轴、三根销。智能体插入组件时给的名字记在 `aliases`（角色 → SolidWorks 组件名），评分全部按角色进行。
 
@@ -411,7 +505,7 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 - 发动机两次都只插入 7 个零件，凸轮轴、凸轮、凸轮齿轮、飞轮和曲轴齿轮都没装上。凸轮轴缺失时运动检查直接报 `'camshaft'`，记 0 分。
 - 停滞的原因：每次 LLM 调用的 `finish_reason` 现在记在结果的 `llm_calls_detail` 里，被判停滞的调用全部是 `finish_reason=length`，输出正好 8000 token，可见文字和工具调用都是 0。也就是说，模型把 `max_tokens=8000` 全部花在了隐藏的思考上，答案还没写出来就被截断，智能体把它当成"没有调用工具"。重跑结果在 `eval/assembly_gen_sonnet5_v2_engine_trace.json`：r1 是 11 次调用、最后 3 次截断；r2 是 35 次调用、其中 11 次截断，装配 rubric 分别为 18.1 和 46.67，与第一次一致。
 - 发动机 r2 的另一个问题出在模型自身：它反复按 `cyl(d=24)` 去找机体上的缸孔，但机体是一块平板，没有这个孔，活塞的滑动副应该用平面来约束。
-- 现在每行结果里有装配阶段的工具调用记录 `tool_calls`、智能体的文字回复 `agent_texts` 和每次调用的 `llm_calls_detail`；完整对话保存在产物目录的 `agent_messages.json`，每次调用的原始响应保存在同目录的 `agent_llm_responses.json`，包括 `reasoning_content`、`finish_reason` 和逐次 usage。`gen` / `e2e` 条件下零件生成阶段的完整记录保存在 `parts/<id>.agent.json`，内容有对话、原始响应、工具调用和最终状态，结果里的 `parts[].trace` 指向这个文件。
+- 现在每行结果里有装配阶段的工具调用记录 `tool_calls`、智能体的文字回复 `agent_texts` 和每次调用的 `llm_calls_detail`；完整对话保存在产物目录的 `agent_messages.json`，每次调用的原始响应保存在同目录的 `agent_llm_responses.json`，包括 `reasoning_content`、`finish_reason` 和逐次 usage。`gen` / `e2e` 条件下零件生成阶段的完整记录保存在 `parts/<id>.agent.json`，内容有对话、原始响应、工具调用和最终状态，结果里的 `parts[].trace` 指向这个文件。（2026-10-05 起，装配和零件阶段在运行过程中还会持续写 checkpoint，见第 1 节"LLM 输出落盘与续跑"。）
 - 为排除截断，又把装配阶段的 `max_tokens` 放大到 32000（`--asm-max-tokens 32000`）重跑发动机，产物在 `eval/artifacts/assembly_gen_sonnet5_tok32k/`。r1 第 31 次工具调用（`joint`）时 SolidWorks 卡死，HTTP 等满 180 s 超时，之后活动装配文档丢失，剩下约 25 次调用全部报"没有活动的装配体文档"，保存时脚本崩溃，r2 没有跑。这是基础设施故障，不是模型结果；harness 已改为记 `infra_error` 后继续，需要在 SolidWorks 空闲时重跑。
 - 同期用 TT Switch 跑 gemini-3.5-flash / gemini-3.1-pro 时，多轮工具调用的请求会间歇性返回 `400 model_param_invalid`，有时几分钟内全部被拒。这是网关上游的问题，所以没有 Gemini 的结果。
 
@@ -608,6 +702,14 @@ venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --cases bench --co
 venv\Scripts\python.exe -X utf8 -m eval.assembly_scratch.bench_cases write
 venv\Scripts\python.exe -X utf8 -m eval.assembly_scratch.bench_cases report
 
+# 第二批 23 个：--cases bench2；write 另外写解析锚点；bench2_check 是不用 SolidWorks 的四项自检
+venv\Scripts\python.exe -X utf8 -m eval.assembly_scratch.bench_cases2 write
+venv\Scripts\python.exe -X utf8 -m eval.assembly_scratch.bench_cases2 report
+venv-occ\Scripts\python.exe -X utf8 -m eval.assembly_scratch.bench2_check
+# 第二批的可达性验证：只用 v3 公开工具重放 oracle 轨迹并按评测器打分；supervise 断线自动重启、按 progress.json 续跑
+venv\Scripts\python.exe -X utf8 eval\assembly_scratch\oracle_supervise.py [name ...]
+venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --cases bench2 --condition gen --workflow v2 --repeats 1 --model claude-sonnet-5
+
 # 只重评部分测例的阳性对照（参数是 case_id）
 venv\Scripts\python.exe -X utf8 eval\assembly_scratch\rescore_assemblies.py --reference --cases folding_umbrella --out eval\assembly_reference_rescore.json
 
@@ -631,6 +733,8 @@ venv-occ/bin/python -X utf8 eval/assembly_scratch/regrade_offline.py eval/assemb
 
 # 离线单测（不占 SolidWorks）
 venv\Scripts\python.exe -m pytest test\test_assembly_rubric.py test\test_assembly_motion.py test\test_assembly_workflow_v2.py test\test_assembly_workflow_v3.py -q
+# 两批扩展测例的零件 rubric 阳性 / 阴性对照（OCC，约 3 分钟）
+venv-occ\Scripts\python.exe -X utf8 -m pytest geomcheck\tests\test_bench_parts.py -q
 ```
 
 ## 8. 新增测例
@@ -650,7 +754,7 @@ venv\Scripts\python.exe -m pytest test\test_assembly_rubric.py test\test_assembl
 5. 参考装配体：在 `build_reference_assemblies.py` 里用宏工具搭一份，要求装配 rubric 和运动分都是 100、静态和逐帧都零干涉、零件在几何上真的装在一起（检查位姿，不能只看运动学）。同一零件用在多个角色上时，组件名不是 `<角色>-1`，`_finish` 会把角色 → 组件名另存为 `reference_<name>.aliases.json`，`rescore_assemblies.py --reference` 优先读它。
 6. 登记：只需在 `eval_assembly_scratch.py` 的 `CASE_FILES`（规格文件名 → case_id）里加一行，`rescore_assemblies.py` 直接复用。
 
-由基本体拼成的平面机构，更省事的做法是在 `bench_cases.py` 里加一个 `@case` 函数：给出零件、角色、提示词、运动规格、rubric 和参考装配的搭法（`Ref` 记录每个角色的绝对 z，关节偏距自动算），然后运行 `write`。上面 1–6 步都由它完成：`build_standard_parts.py`、`build_reference_assemblies.py`、`CASE_FILES` 会自动登记 `bench_cases.CASES` 里的全部测例。
+由基本体拼成的平面机构，更省事的做法是在 `bench_cases.py` 里加一个 `@case` 函数：给出零件、角色、提示词、运动规格、rubric 和参考装配的搭法（`Ref` 记录每个角色的绝对 z，关节偏距自动算），然后运行 `write`。上面 1–6 步都由它完成：`build_standard_parts.py`、`build_reference_assemblies.py`、`CASE_FILES` 会自动登记 `bench_cases.CASES` 里的全部测例。闭环多、组件多的机构用 `bench_cases2.py` 的声明式写法（`layout` + `steps`），可以先用 `bench2_check` 离线验证，再上 SolidWorks。
 
 约束：
 
@@ -665,7 +769,10 @@ venv\Scripts\python.exe -m pytest test\test_assembly_rubric.py test\test_assembl
 - 马达模式依赖 Animation，Motion Analysis 插件本机未加载。目前只支持旋转马达驱动，驱动件的转角按绕 Z 轴的转角读取，所以马达模式测例的转动轴都要沿装配 Z 轴。直线输入或多自由度的机构改用多位姿模式。
 - 中心距和齿相位按齿轮零件的原点和局部 Z 轴计算，要求齿轮零件原点在轴线上。
 - SolidWorks 偶尔会满载数分钟、不响应。正式评测里出现这种情况会记成采样错误，需要人工识别为基础设施故障后补跑。
-- 齿轮多的装配体建起来很慢。搭参考装配体时，电钻用了约 14 分钟，缝纫机约 19 分钟，大部分时间是请求在等 SolidWorks 主线程，单次最长停了约 6 分钟；而同一个装配体重新打开后评分只要 1 分钟左右。智能体每次工具调用的超时是 180 s，这两个测例的 gen/e2e 结果里要留意 `infra_error` 和超时。
+- 齿轮多的装配体建起来很慢。搭参考装配体时，电钻用了约 14 分钟，缝纫机约 19 分钟，大部分时间是请求在等 SolidWorks 主线程，单次最长停了约 6 分钟；而同一个装配体重新打开后评分只要 1 分钟左右。智能体每次工具调用的 HTTP 超时已由 180 s 放大到 900 s；2026-10-05 之前的 gen/e2e 结果按 180 s 跑，要留意其中的 `infra_error` 和超时。
+- 多位姿模式靠临时角度配合加静态重建来摆位姿。静态重建不传递齿轮配合，带锁转的同轴也可能被放松而不报错，所以位姿规格里每条被齿轮隔开的支链都要单独设角度（`gear_sync_gripper`）。
+- Animation 马达的实际转速约为名义 rpm 的 9.5 倍，`sweep_deg: 360` 实际转了约 9.5 圈。周期长于驱动一圈的构件，行程期望要按它的整周期写，并把 `sweep_deg` 设到覆盖一个整周期，离线合成检查才与 SolidWorks 一致。
 - 渐开线齿形用折线近似：每个齿约 22 段，48 齿的内齿圈约有 1060 个面，取面列表一次要 1–4 s。
 - 内啮合的齿相位：`mesh_gears` 只转动外齿轮那一侧。如果它与刚性固连在别的行星架上的太阳轮相啮合，事后转动不会带动太阳轮，需要在插入时就把太阳轮转到正确相位（参考装配体里第二级太阳轮转了 12°）。
 - 多位姿模式只检查 `poses` 里列出的离散位姿，不检查位姿之间的连续运动。
+- 马达模式判断“卡住”时只比首帧、中间帧和末帧。如果机构在这几帧上恰好回到同一位形（比如对称的双缸、起始角 0° 的往复件），正确的装配也会被判成卡住。第二批测例都避开了这类起始角，评测器本身没改。

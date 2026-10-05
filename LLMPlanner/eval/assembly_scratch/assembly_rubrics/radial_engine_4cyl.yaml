@@ -1,0 +1,51 @@
+# 装配级 rubric：角色名与 radial_engine.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: radial_engine_4cyl
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame]
+  crank: [shaft, prop, crank]
+  master: [flange, master]
+  piston_n: [piston_n]
+  rod_e: [rod_e]
+  piston_e: [piston_e]
+  rod_w: [rod_w]
+  piston_w: [piston_w]
+  rod_s: [rod_s]
+  piston_s: [piston_s]
+flex:
+  crank_pin: [crank, master]
+  wrist_n: [master, piston_n]
+  knuckle_e: [master, rod_e]
+  wrist_e: [rod_e, piston_e]
+  knuckle_w: [master, rod_w]
+  wrist_w: [rod_w, piston_w]
+  knuckle_s: [master, rod_s]
+  wrist_s: [rod_s, piston_s]
+joints:
+- bodies: [crank, frame]
+  type: revolute
+- bodies: [master, crank]
+  type: revolute
+- bodies: [piston_n, master]
+  type: revolute
+- bodies: [piston_n, frame]
+  type: &id001 [slider, planar]
+- bodies: [rod_e, master]
+  type: revolute
+- bodies: [piston_e, rod_e]
+  type: revolute
+- bodies: [piston_e, frame]
+  type: *id001
+- bodies: [rod_w, master]
+  type: revolute
+- bodies: [piston_w, rod_w]
+  type: revolute
+- bodies: [piston_w, frame]
+  type: *id001
+- bodies: [rod_s, master]
+  type: revolute
+- bodies: [piston_s, rod_s]
+  type: revolute
+- bodies: [piston_s, frame]
+  type: *id001

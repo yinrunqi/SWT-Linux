@@ -33,6 +33,8 @@ except ImportError:
 MODEL = "Qwen3.5-397B-A17B"
 # Web 后端按 provider 选择 .env 中的 Key / Base URL：ttswitch 用 OPENAI_*，其余用 <PROVIDER>_*。
 PROVIDERS = ("aiping", "ttswitch", "juheai")
+# L1：工程师级工具 + 闭环 Agent；L1_v2 是在 L1 失败轨迹上改进后的版本，两者并存
+WORKFLOW_LEVELS = ("L1", "L1_v2")
 PROVIDER_LABELS = {"aiping": "AI Ping", "ttswitch": "TT Switch", "juheai": "juheai"}
 
 
@@ -2385,7 +2387,7 @@ def run_one(
         "capture_trace": True,
         "dry_run": False,
     }
-    if action_level == "L1":
+    if action_level in WORKFLOW_LEVELS:
         request_payload["max_turns"] = max_llm_calls
         if checkpoint is not None:
             request_payload["checkpoint_path"] = str(checkpoint)
@@ -2464,7 +2466,7 @@ def run_one(
             ),
             "tool_calls": (payload.get("summary") or {}).get("tool_calls"),
             "resumed": (payload.get("workflow") or {}).get("resumed"),
-            "max_llm_calls": max_llm_calls if action_level == "L1" else None,
+            "max_llm_calls": max_llm_calls if action_level in WORKFLOW_LEVELS else None,
             "duration_seconds": round(time.perf_counter() - started, 2),
             # 续跑时 duration_seconds 只是本段；agent 的计时包含所有中断前的段
             "workflow_duration_seconds": (payload.get("workflow") or {}).get("duration_seconds"),
@@ -2561,7 +2563,7 @@ def _write_report(
         "provider": PROVIDER_LABELS.get(provider, provider),
         "model": model,
         "reasoning_effort": reasoning_effort,
-        "mode": "workflow" if action_level == "L1" else "single_turn",
+        "mode": "workflow" if action_level in WORKFLOW_LEVELS else "single_turn",
         "action_level": action_level,
         "prompt_lang": lang,
         "score_version": 2,
@@ -2726,9 +2728,10 @@ def main() -> int:
     )
     parser.add_argument(
         "--action-level",
-        choices=("L0", "L1"),
+        choices=("L0", *WORKFLOW_LEVELS),
         default="L0",
-        help="L0: single-turn atomic plan; L1: engineer-level tools with a closed-loop agent",
+        help="L0: single-turn atomic plan; L1: engineer-level tools with a closed-loop agent; "
+        "L1_v2: L1 with the improvements from its failure analysis (L1 itself is unchanged)",
     )
     parser.add_argument(
         "--max-llm-calls",
@@ -2771,7 +2774,7 @@ def main() -> int:
     )
     parser.add_argument("--sw-max-private-gb", type=float, default=12.0)
     args = parser.parse_args()
-    if args.reasoning_effort and args.action_level != "L1":
+    if args.reasoning_effort and args.action_level not in WORKFLOW_LEVELS:
         parser.error("--reasoning-effort requires --action-level L1")
     if args.rescore:
         report = rescore_report(args.rescore, args.output or args.rescore, args.strict_orientation)
@@ -2801,7 +2804,7 @@ def main() -> int:
             .replace(".", "_")
             .replace("-", "_")
         )
-        prefix = "text_workflow_l1" if args.action_level == "L1" else "text_singleturn"
+        prefix = {"L1": "text_workflow_l1", "L1_v2": "text_workflow_l1v2"}.get(args.action_level, "text_singleturn")
         lang_suffix = "" if args.lang == "zh" else f"_{args.lang}"
         output = ROOT / "eval" / f"{prefix}_{safe_model}_{args.split}{lang_suffix}_result.json"
     balance_before = _query_balance(ROOT / ".env")
@@ -2838,7 +2841,7 @@ def main() -> int:
                 lang=args.lang,
                 provider=args.provider,
                 reasoning_effort=args.reasoning_effort,
-                checkpoint=checkpoint if args.action_level == "L1" else None,
+                checkpoint=checkpoint if args.action_level in WORKFLOW_LEVELS else None,
                 resume=resuming,
             )
             lost = result.get("workflow_status") == "sw_lost" or (
@@ -2848,7 +2851,7 @@ def main() -> int:
                 break
             print(f"  [watchdog] SolidWorks lost during the run ({result.get('workflow_status') or result.get('error')}); "
                   "restarting and continuing from the checkpoint", flush=True)
-            resuming = args.action_level == "L1" and checkpoint.is_file()
+            resuming = args.action_level in WORKFLOW_LEVELS and checkpoint.is_file()
         result["repeat"] = repeat
         results.append(result)
         usage = result.get("token_usage") or {}

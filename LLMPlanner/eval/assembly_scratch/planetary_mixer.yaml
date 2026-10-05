@@ -1,0 +1,113 @@
+case_id: planetary_mixer
+title: 行星搅拌机
+# 固定太阳轮 + 双行星 + 齿轮驱动行星架（3 对啮合）；检查行星架 1/3 反向、行星轮 2/3 反向。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: pm_frame
+  extra_tools: []
+  prompt: |
+    创建底座板：在 front_plane 上画矩形，X 从 -110 到 90 mm，Y 从 -80 到 80 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(-64,0) 直径 10 mm。不要抽壳。
+- id: pm_post
+  extra_tools: []
+  prompt: |
+    创建中心柱：直径 10 mm、长 30 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: pm_sun
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 24，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: pm_carrier_gear
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 48，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: pm_arm
+  extra_tools: []
+  prompt: |
+    创建行星架：在 front_plane 上画两端圆头的长条，宽 20 mm，两端半圆的圆心分别在原点和 (96,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 8 mm，X=48 处直径 10 mm，X=96 处直径 8 mm。
+- id: pm_planet
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 24，压力角 30°，齿宽 8 mm，轴孔直径 8 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: pm_axle
+  extra_tools: []
+  prompt: |
+    创建行星轴：直径 8 mm、长 20 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: pm_beater
+  extra_tools: []
+  prompt: |
+    创建搅拌头：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (40,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 8 mm，X=40 处直径 6 mm。
+- id: pm_motor_shaft
+  extra_tools: []
+  prompt: |
+    创建电机轴：直径 10 mm、长 30 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: pm_pinion
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 16，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: pm_handwheel
+  extra_tools: []
+  prompt: |
+    创建手轮：外径 50 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。另开贯穿孔：(16,0) 直径 6 mm。
+gold_roles:
+  frame: pm_frame
+  post: pm_post
+  sun: pm_sun
+  carrier_gear: pm_carrier_gear
+  arm: pm_arm
+  motor_shaft: pm_motor_shaft
+  pinion: pm_pinion
+  handwheel: pm_handwheel
+  planet_a: pm_planet
+  axle_a: pm_axle
+  beater_a: pm_beater
+  planet_b: pm_planet
+  axle_b: pm_axle
+  beater_b: pm_beater
+assembly:
+  prompt: |
+    装配行星搅拌机：太阳轮固定，电机经小齿轮带行星架公转，两只行星轮绕太阳轮滚动、带着搅拌头一边公转一边自转。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]。中心孔 (0,0)、电机轴孔 (-64,0)，直径 10。
+    - post 固定在中心孔里（z∈[0,30]）；24 齿 sun 固定在 post 上（z∈[16,24]）。
+    - 48 齿 carrier_gear 套在 post 上转动（z∈[8,16]）；arm（三孔：0、48、96）的 X=48 孔套在 post 上（z∈[24,30]），并与 carrier_gear 固定。
+    - motor_shaft 穿过电机轴孔绕 Z 转动（z∈[-14,16]）；16 齿 pinion（z∈[8,16]）与 handwheel 的中心孔（z∈[-14,-8]）固定在其上，
+      pinion 与 carrier_gear 外啮合（模数 2，中心距 64）。
+    - 两套行星：axle_a、axle_b 分别插在 arm 的 X=0、X=96 孔里绕 Z 转动（z∈[16,36]）；24 齿 planet_a/planet_b 固定在对应轴上（z∈[16,24]），
+      都与 sun 外啮合（中心距 48）；beater_a/beater_b 的 8 mm 孔固定在对应轴上（z∈[30,36]）。
+    - 电机转 3 圈行星架反向转 1 圈；行星轮绝对转速是行星架的 2 倍、同向。各齿轮互不穿模，啮合齿相位要对上。
+    对 motor_shaft 做 check_motion（电机转 3 圈，行星架正好转一周），确认无穿模后再保存。
+motion:
+  driver: motor_shaft
+  sweep_deg: 1080
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  - sun
+  expect_moving:
+  - carrier_gear
+  - arm
+  - planet_a
+  - planet_b
+  - beater_a
+  ratios:
+  - role: arm
+    ratio: 3
+    same_direction: false
+  - role: planet_a
+    ratio: 1.5
+    same_direction: false
+  - role: beater_b
+    ratio: 1.5
+    same_direction: false
+  strokes:
+  - role: planet_a
+    axis: y
+    mm: 96.0
+  dense_frames: 361
+  max_interference: 0
