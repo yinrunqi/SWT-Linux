@@ -309,6 +309,7 @@ def assemble(
     max_tokens: int = 8000,
     reasoning_effort: str | None = None,
     resume: bool = False,
+    view_tool: bool = True,
 ) -> dict:
     from planner.assembly_workflow.agent import AssemblyAgent
     from planner.assembly_workflow.session import AssemblySession
@@ -319,7 +320,7 @@ def assemble(
     if not resume:
         checkpoint.unlink(missing_ok=True)
     _close(sw)
-    session = AssemblySession(base_url=sw, workflow=workflow, allowed_tools=tool_names(workflow))
+    session = AssemblySession(base_url=sw, workflow=workflow, allowed_tools=tool_names(workflow, view_tool=view_tool))
     session.start_assembly(str(dest))
     listing = "\n".join(f"- {role}: {path}" for role, path in parts.items())
     goal = _recipes(workflow) + "\n\n" + case["assembly"]["prompt"] + "\n\n零件文件：\n" + listing
@@ -327,7 +328,8 @@ def assemble(
     LLM_CALL_LOG.clear()
     outcome = AssemblyAgent(
         _openai(), model, session, max_llm_calls=max_llm_calls, max_tokens=max_tokens,
-        tools=tool_specs(workflow), reasoning_effort=reasoning_effort, checkpoint_path=checkpoint,
+        tools=tool_specs(workflow, view_tool=view_tool), reasoning_effort=reasoning_effort,
+        checkpoint_path=checkpoint, view_tool=view_tool,
     ).run(goal, resume=resume)
     messages = outcome.get("messages") or []
     _write_json(dest.with_name("agent_messages.json"), messages)
@@ -475,6 +477,7 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
                 case, parts, out / f"{case_id}.SLDASM",
                 sw=args.sw, model=args.model, max_llm_calls=budget, workflow=workflow,
                 max_tokens=args.asm_max_tokens, reasoning_effort=args.reasoning_effort, resume=resume,
+                view_tool=not getattr(args, "no_view_tool", False),
             )
         except Exception as exc:  # SolidWorks 已经死掉时连新建装配体都会失败
             assembly = {"status": "infra_exception", "infra_error": f"{type(exc).__name__}: {exc}",
@@ -599,6 +602,8 @@ def main() -> None:
     parser.add_argument("--infra-retries", type=int, default=1,
                         help="装配阶段出现 SolidWorks 崩溃 / 超时痕迹时，重启 SolidWorks 后重跑的次数")
     parser.add_argument("--asm-max-tokens", type=int, default=8000)
+    parser.add_argument("--no-view-tool", action="store_true",
+                        help="v3：不提供 view_assembly 截图工具（骨干模型不支持图片输入时必须加）")
     parser.add_argument(
         "--reasoning-effort",
         choices=("none", "minimal", "low", "medium", "high", "xhigh"),
@@ -632,10 +637,13 @@ def main() -> None:
     workflows = ["v1", "v2"] if args.workflow == "both" else [args.workflow]
     from planner.workflow.agent import default_reasoning_effort
     args.reasoning_effort = default_reasoning_effort(args.model, args.reasoning_effort)
+    # 只有 v3 装配工具集带截图工具；之前的结果没有这个字段，都是不带截图的
+    args.view_tool = "v3" in workflows and not args.no_view_tool
     rows = []
     if args.resume and Path(args.output).is_file():
         previous = json.loads(Path(args.output).read_text(encoding="utf-8"))
-        for key in ("model", "reasoning_effort", "asm_max_tokens"):
+        previous.setdefault("view_tool", False)
+        for key in ("model", "reasoning_effort", "asm_max_tokens", "view_tool"):
             if previous.get(key) != getattr(args, key):
                 parser.error(f"--resume：已有结果的 {key}={previous.get(key)!r} 与本次 {getattr(args, key)!r} 不一致")
         for row in previous.get("results") or []:
@@ -673,6 +681,7 @@ def main() -> None:
             "reasoning_effort": args.reasoning_effort,
             "prompt_lang": "zh",
             "asm_max_tokens": args.asm_max_tokens,
+            "view_tool": args.view_tool,
             "max_asm_calls": args.max_asm_calls,
             "asm_calls_per_role": args.asm_calls_per_role,
             "extra_toolset": EXTRA_TOOLSET_VERSION,

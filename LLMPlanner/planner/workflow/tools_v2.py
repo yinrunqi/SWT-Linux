@@ -23,11 +23,13 @@ from .refs import resolve_ref
 from .tools import (
     AXES,
     EXTRA_TOOL_SPECS,
+    IMAGE_KEY,
     TOOL_SPECS,
     VOLUME_EPS_MM3,
     WorkflowSession,
     _axis_sign,
     _round,
+    _tool,
 )
 
 _AXIS_PLANE = re.compile(r"^\s*([XYZxyz])\s*=\s*([+-]?\d+(?:\.\d+)?)\s*(?:mm)?\s*$")
@@ -437,12 +439,26 @@ def _build_specs_v2() -> list[dict]:
 TOOL_SPECS_V2: list[dict] = _build_specs_v2()
 
 
-def tool_specs_v2(extra_tools: list[str] | None = None) -> list[dict]:
+VIEW_MODEL_SPEC = _tool(
+    "view_model",
+    "在 SolidWorks 里截取当前零件的着色图（带边线，隐藏基准面和草图），图片附在下一条消息里，"
+    "用来直观检查形状、特征位置和朝向是否符合需求。views 为视向列表，最多 4 个，缺省为 "
+    "[\"isometric\", \"front\", \"top\", \"right\"]；可选 isometric / trimetric / dimetric / front / back / "
+    "left / right / top / bottom。前视沿 -Z 看（右 = +X、上 = +Y），俯视从 +Y 往下看（右 = +X、下 = +Z），"
+    "右视从 +X 看（右 = -Z、上 = +Y）。图片很占上下文，历史里只保留最新一张；尺寸仍以 get_model_state 的数值为准。",
+    {"views": {"type": "array", "items": {"type": "string"}, "description": "视向列表，最多 4 个"}},
+    [],
+)
+
+
+def tool_specs_v2(extra_tools: list[str] | None = None, *, view_tool: bool = True) -> list[dict]:
     specs = list(TOOL_SPECS_V2)
     for name in extra_tools or []:
         if name not in EXTRA_TOOL_SPECS:
             raise ValueError(f"未知的附加工具 {name}")
         specs.append(_patch_spec(EXTRA_TOOL_SPECS[name]))
+    if view_tool:
+        specs.append(VIEW_MODEL_SPEC)
     return specs
 
 
@@ -620,6 +636,22 @@ class WorkflowSessionV2(WorkflowSession):
         super().__init__(*args, **kwargs)
         self._notes: list[str] = []
         self._axes: dict[tuple, str] = {}
+        self._handlers["view_model"] = self.view_model
+
+    def view_model(self, args: dict) -> dict:
+        from planner.sw_views import capture_grid
+
+        state = self.state_summary()
+        if not state.get("volume_mm3"):
+            raise WorkflowError("NO_BODY", "零件中还没有实体，截图看不到东西")
+        image, meta = capture_grid(self._request, "part", args.get("views"))
+        return {
+            "bbox_mm": state["bbox_mm"],
+            "volume_mm3": state["volume_mm3"],
+            **meta,
+            "note": "截图附在下一条消息里",
+            IMAGE_KEY: image,
+        }
 
     def snapshot(self) -> dict:
         data = self._request("GET", f"/api/model-observation?maxFaces={OBSERVATION_MAX_FACES}")

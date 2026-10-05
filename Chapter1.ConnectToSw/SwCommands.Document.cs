@@ -57,28 +57,21 @@ namespace Chapter1.ConnectToSw
         /// </summary>
         public Dictionary<string, object> FitView(string target, string view)
         {
-            IModelDoc2 doc;
-            switch ((target ?? "auto").ToLowerInvariant())
+            IModelDoc2 doc = ViewTargetDoc(target, false);
+            string viewName = string.IsNullOrWhiteSpace(view) ? "isometric" : view;
+            if (!string.Equals(viewName, "none", StringComparison.OrdinalIgnoreCase))
             {
-                case "part":
-                    doc = ActiveDoc;
-                    break;
-                case "assembly":
-                    doc = _activeAssembly == null ? null : (IModelDoc2)_activeAssembly;
-                    if (doc != null)
-                    {
-                        int errors = 0;
-                        _swApp.ActivateDoc3(doc.GetTitle(), false, (int)swRebuildOnActivation_e.swDontRebuildActiveDoc, ref errors);
-                    }
-                    break;
-                default:
-                    doc = _swApp.IActiveDoc2;
-                    break;
+                if (!StandardViews.TryGetValue(viewName, out var standard))
+                    throw new ArgumentException($"未知视向 {viewName}");
+                doc.ShowNamedView2("", (int)standard);
             }
-            if (doc == null)
-                throw new InvalidOperationException($"没有可调整视图的文档（target={target}）");
+            doc.ViewZoomtofit2();
+            doc.GraphicsRedraw2();
+            return new Dictionary<string, object> { ["title"] = doc.GetTitle(), ["view"] = viewName };
+        }
 
-            var views = new Dictionary<string, swStandardViews_e>(StringComparer.OrdinalIgnoreCase)
+        private static readonly Dictionary<string, swStandardViews_e> StandardViews =
+            new Dictionary<string, swStandardViews_e>(StringComparer.OrdinalIgnoreCase)
             {
                 ["front"] = swStandardViews_e.swFrontView,
                 ["back"] = swStandardViews_e.swBackView,
@@ -90,16 +83,132 @@ namespace Chapter1.ConnectToSw
                 ["trimetric"] = swStandardViews_e.swTrimetricView,
                 ["dimetric"] = swStandardViews_e.swDimetricView,
             };
-            string viewName = string.IsNullOrWhiteSpace(view) ? "isometric" : view;
-            if (!string.Equals(viewName, "none", StringComparison.OrdinalIgnoreCase))
+
+        /// <summary>target：auto=当前活动窗口，part=零件建模文档，assembly=装配建模文档。activate 时把它的窗口切到前台。</summary>
+        private IModelDoc2 ViewTargetDoc(string target, bool activate)
+        {
+            IModelDoc2 doc;
+            switch ((target ?? "auto").ToLowerInvariant())
             {
-                if (!views.TryGetValue(viewName, out var standard))
-                    throw new ArgumentException($"未知视向 {viewName}");
-                doc.ShowNamedView2("", (int)standard);
+                case "part":
+                    doc = ActiveDoc;
+                    break;
+                case "assembly":
+                    doc = _activeAssembly == null ? null : (IModelDoc2)_activeAssembly;
+                    activate = true;
+                    break;
+                default:
+                    doc = _swApp.IActiveDoc2;
+                    break;
             }
-            doc.ViewZoomtofit2();
-            doc.GraphicsRedraw2();
-            return new Dictionary<string, object> { ["title"] = doc.GetTitle(), ["view"] = viewName };
+            if (doc == null)
+                throw new InvalidOperationException($"没有可调整视图的文档（target={target}）");
+            if (activate)
+            {
+                int errors = 0;
+                _swApp.ActivateDoc3(doc.GetTitle(), false, (int)swRebuildOnActivation_e.swDontRebuildActiveDoc, ref errors);
+            }
+            return doc;
+        }
+
+        /// <summary>
+        /// 按给定视向逐个截取图形区，存成 BMP（outDir/<序号>_<视向>.bmp），供智能体"看"当前模型。
+        /// 截图期间切成带边线着色、隐藏基准面 / 原点 / 草图等所有参考类型，highlight 里的装配组件被选中高亮；
+        /// 截完恢复原来的显示模式、隐藏设置和视角，清除选择。
+        /// </summary>
+        public Dictionary<string, object> CaptureViews(
+            string target, IList<string> views, int width, int height, string outDir, IList<string> highlight)
+        {
+            if (views == null || views.Count == 0)
+                views = new List<string> { "isometric" };
+            foreach (var name in views)
+                if (!StandardViews.ContainsKey(name))
+                    throw new ArgumentException($"未知视向 {name}");
+            IModelDoc2 doc = ViewTargetDoc(target, true);
+            var view = doc.ActiveView as IModelView;
+            if (view == null)
+                throw new InvalidOperationException("文档没有可见的图形窗口");
+            Directory.CreateDirectory(outDir);
+
+            int hideAll = (int)swUserPreferenceToggle_e.swViewDisplayHideAllTypes;
+            int shadows = (int)swUserPreferenceToggle_e.swDisplayShadowsInShadedMode;
+            int noOption = (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified;
+            bool hiddenBefore = doc.Extension.GetUserPreferenceToggle(hideAll, noOption);
+            bool shadowsBefore = doc.Extension.GetUserPreferenceToggle(shadows, noOption);
+            int displayBefore = view.DisplayMode;
+            var orientationBefore = view.Orientation3;
+            double scaleBefore = view.Scale2;
+            var translationBefore = view.Translation3;
+            var scene = (doc.ConfigurationManager?.ActiveConfiguration as IConfiguration)?.GetScene() as ISwScene;
+            bool floorShadowsBefore = scene?.FloorShadows ?? false;
+            bool floorReflectionsBefore = scene?.FloorReflections ?? false;
+
+            var files = new List<Dictionary<string, object>>();
+            var missing = new List<string>();
+            try
+            {
+                doc.Extension.SetUserPreferenceToggle(hideAll, noOption, true);
+                // 地面阴影在俯视等方向上像零件的延伸，会误导模型
+                doc.Extension.SetUserPreferenceToggle(shadows, noOption, false);
+                if (scene != null)
+                {
+                    scene.FloorShadows = false;
+                    scene.FloorReflections = false;
+                }
+                view.DisplayMode = (int)swViewDisplayMode_e.swViewDisplayMode_ShadedWithEdges;
+                doc.ClearSelection2(true);
+                if (highlight != null && highlight.Count > 0)
+                {
+                    if (doc.GetType() != (int)swDocumentTypes_e.swDocASSEMBLY)
+                        throw new InvalidOperationException("highlight 只能用于装配体");
+                    foreach (var name in highlight)
+                    {
+                        IComponent2 component;
+                        try { component = FindAssemblyComponent(name); }
+                        catch (InvalidOperationException) { missing.Add(name); continue; }
+                        component.Select4(true, null, false);
+                    }
+                }
+                for (int i = 0; i < views.Count; i++)
+                {
+                    doc.ShowNamedView2("", (int)StandardViews[views[i]]);
+                    doc.ViewZoomtofit2();
+                    doc.GraphicsRedraw2();
+                    string path = Path.Combine(outDir, $"{i:D2}_{views[i].ToLowerInvariant()}.bmp");
+                    if (!doc.SaveBMP(path, width, height) || !File.Exists(path))
+                        throw new InvalidOperationException($"SaveBMP 失败（视向 {views[i]}）");
+                    files.Add(new Dictionary<string, object> { ["view"] = views[i].ToLowerInvariant(), ["path"] = path });
+                }
+            }
+            finally
+            {
+                doc.ClearSelection2(true);
+                view.DisplayMode = displayBefore;
+                doc.Extension.SetUserPreferenceToggle(hideAll, noOption, hiddenBefore);
+                doc.Extension.SetUserPreferenceToggle(shadows, noOption, shadowsBefore);
+                if (scene != null)
+                {
+                    scene.FloorShadows = floorShadowsBefore;
+                    scene.FloorReflections = floorReflectionsBefore;
+                }
+                try
+                {
+                    view.Orientation3 = orientationBefore;
+                    view.Translation3 = translationBefore;
+                    view.Scale2 = scaleBefore;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[CaptureViews] 恢复视角失败: {ex.Message}");
+                }
+                doc.GraphicsRedraw2();
+            }
+            return new Dictionary<string, object>
+            {
+                ["title"] = doc.GetTitle(),
+                ["images"] = files,
+                ["missing_highlight"] = missing,
+            };
         }
 
         /// <summary>

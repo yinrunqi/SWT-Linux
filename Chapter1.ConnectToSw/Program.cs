@@ -186,6 +186,9 @@ namespace Chapter1.ConnectToSw
                 case "/api/view/fit":
                     RequirePost(method, resp, () => HandleFitView(req, resp));
                     break;
+                case "/api/view/capture":
+                    RequirePost(method, resp, () => HandleCaptureViews(req, resp));
+                    break;
                 case "/api/close-inactive-documents":
                     RequirePost(method, resp, () => HandleCloseInactiveDocuments(resp));
                     break;
@@ -559,6 +562,38 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"调整视图失败: {ex.Message}" });
+            }
+        }
+
+        private static List<string> GetStringListOrDefault(Dictionary<string, object> body, string key)
+        {
+            if (!body.ContainsKey(key) || body[key] == null)
+                return new List<string>();
+            if (body[key] is string single)
+                return new List<string> { single };
+            var list = new List<string>();
+            foreach (var item in (System.Collections.IEnumerable)body[key])
+                if (item != null) list.Add(item.ToString());
+            return list;
+        }
+
+        private static void HandleCaptureViews(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.CaptureViews(
+                    GetStringOrDefault(body, "target", "auto"),
+                    GetStringListOrDefault(body, "views"),
+                    GetInt(body, "width", 640),
+                    GetInt(body, "height", 480),
+                    GetString(body, "outDir"),
+                    GetStringListOrDefault(body, "highlight"));
+                SendJson(resp, 200, new { success = true, message = "截图完成", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"截图失败: {ex.Message}" });
             }
         }
 

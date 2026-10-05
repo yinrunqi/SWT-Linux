@@ -99,7 +99,8 @@ def fourbar() -> GeomSession:
 
 def test_v3_toolset_adds_check_pose():
     names = {s["function"]["name"] for s in tool_specs("v3")}
-    assert names - tool_names("v2") == {"check_pose"}
+    assert names - tool_names("v2") == {"check_pose", "view_assembly"}
+    assert tool_names("v3", view_tool=False) - tool_names("v2") == {"check_pose"}
     joint = next(s for s in tool_specs("v3") if s["function"]["name"] == "joint")
     assert "at_z" in joint["function"]["parameters"]["properties"]
 

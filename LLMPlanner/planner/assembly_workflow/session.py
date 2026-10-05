@@ -117,6 +117,7 @@ class AssemblySession:
             "check_motion": self.check_motion,
             "check_pose": self.check_pose,
             "save_assembly": self.save_assembly,
+            "view_assembly": self.view_assembly,
             "finish": self.finish,
         }
 
@@ -355,6 +356,32 @@ class AssemblySession:
                 self.mate_names.remove(name)
 
     # ------------------------------------------------------------ 观察
+
+    def view_assembly(self, args: dict) -> dict:
+        from planner.sw_views import capture_grid
+        from planner.workflow.tools import IMAGE_KEY
+
+        if not self.aliases and not (self.asmwf("components").get("components") or []):
+            raise WorkflowError("TOOL_ARGS", "装配体里还没有组件，截图看不到东西")
+        highlight = args.get("highlight") or []
+        if isinstance(highlight, str):
+            highlight = [highlight]
+        names, unknown = [], []
+        for item in highlight:
+            try:
+                names.append(self.resolve_name(str(item)))
+            except WorkflowError:
+                unknown.append(str(item))
+        image, meta = capture_grid(self._request, "assembly", args.get("views"), highlight=names)
+        result = {**meta, "note": "截图附在下一条消息里"}
+        if names:
+            result["highlighted"] = names
+        missing = unknown + list(meta.get("missing_highlight") or [])
+        result.pop("missing_highlight", None)
+        if missing:
+            result["highlight_not_found"] = missing
+        result[IMAGE_KEY] = image
+        return result
 
     def get_assembly_state(self, args: dict) -> dict:
         if self.v3:

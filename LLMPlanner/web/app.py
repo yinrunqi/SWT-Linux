@@ -1746,7 +1746,7 @@ def set_projector_animation_pose():
         return jsonify({"success": False, "error": str(exc)}), 500
 
 
-WORKFLOW_QUERY_TOOLS = {"get_model_state", "set_parameters", "render_views", "finish"}
+WORKFLOW_QUERY_TOOLS = {"get_model_state", "set_parameters", "render_views", "view_model", "finish"}
 
 
 def _image_mime(image_b64: str, declared: str = "") -> str:
@@ -1781,11 +1781,13 @@ def _run_workflow_l1(
     checkpoint_path: str = "",
     resume: bool = False,
     version: str = "v1",
+    view_tool: bool = True,
 ) -> dict:
     """L1：工程师级工具 + 闭环 Agent。results 只列建模工具调用，供打分统计失败次数。
 
     带图纸时（看图建模）图纸直接交给规划模型，所以 model 必须支持图片输入；
     views_tool 打开时 Agent 额外获得 render_views，可以把当前零件投影成三视图与图纸对照。
+    view_tool：L1_v2 默认提供 view_model（SolidWorks 截图），纯文本模型要关掉。
     """
     import uuid
 
@@ -1810,6 +1812,7 @@ def _run_workflow_l1(
     agent = WorkflowAgent(
         client, model, session, max_llm_calls=max_llm_calls, extra_tools=extra_tools,
         reasoning_effort=reasoning_effort, stream=True, checkpoint_path=checkpoint_path or None, version=version,
+        view_tool=view_tool,
     )
     outcome = agent.run(instruction, image_b64=image_b64 or None, image_mime=image_mime, resume=resume)
     modeling_calls = [item for item in outcome["tool_calls"] if item["tool"] not in WORKFLOW_QUERY_TOOLS]
@@ -1870,6 +1873,7 @@ def run():
       "capture_trace": false,      (可选；返回原始 LLM 请求/响应)
       "image": "<base64>",         (可选；L1 时直接交给 plan_model，须为多模态模型)
       "views_tool": true,          (可选；L1 带图时是否提供 render_views)
+      "view_tool": true,           (可选；L1_v2 是否提供 view_model 截图工具，纯文本模型设 false)
       "dry_run": false
     }
     """
@@ -1964,6 +1968,7 @@ def run():
                     checkpoint_path=checkpoint_path,
                     resume=bool(data.get("resume", False)),
                     version=WORKFLOW_VERSIONS[action_level],
+                    view_tool=bool(data.get("view_tool", True)),
                 ))
         except Exception as exc:
             traceback.print_exc()

@@ -176,6 +176,12 @@ LLM 输出落盘与续跑（与 text-to-CAD 的 L1 评测相同）：
 - 重放结果与记录不一致时记 `resume_failed`，下一次重试改为从头开始。
 - `--resume` 保留已完成的行；带 `infra_error`，或者装配 / 零件状态为 `llm_error`、`sw_lost`、`resume_failed` 的行会续跑。已完成的零件直接沿用 `parts/<id>.result.json`，中断的零件和装配从各自的 checkpoint 接着跑。不加 `--resume` 时旧 checkpoint 会被删掉，从头开始。
 
+截图工具 `view_assembly`（只在 v3）：v3 默认多一个工具，用 SolidWorks 原生渲染截取当前装配体。`views` 最多 4 个视向（默认等轴测、前视、俯视、右视），`highlight` 可以给若干装配角色或组件名，截图时这些组件处于选中高亮状态，找不到的名字列在 `highlight_not_found` 里。截图时着色带边线、隐藏基准面、关闭阴影，截完恢复原来的选择、显示设置和视角。拼图和每格的视向、坐标轴标注与零件的 `view_model` 相同（见 [Workflow-CAD-Bench.md](Workflow-CAD-Bench.md) 第 6 节）。图片作为下一条 user 消息发给模型，对话里只保留最新一张；`agent.checkpoint.json` 和结果 JSON 不存图片，续跑时截图属于只读调用，不重放。
+
+- 骨干模型不支持图片输入时加 `--no-view-tool`。结果 JSON 记录 `view_tool`，`--resume` 时要求与原结果一致（旧结果视为未开启）。
+- 加入这个工具之后的 v3 结果不能直接和之前的 v3 结果对比；v1 / v2 的工具集不变。
+- 截图依赖 C# 服务的 `/api/view/capture`，更新代码后要重新编译并重启服务。
+
 角色映射：规格里的 `gold_roles` 把装配角色（如 `lay_shaft`）映射到零件 id（如 `shaft`）。同一个零件可以出现在多个角色上，例如三根轴、三根销。智能体插入组件时给的名字记在 `aliases`（角色 → SolidWorks 组件名），评分全部按角色进行。
 
 ## 2. 零件接口 rubric（gen / e2e 条件）

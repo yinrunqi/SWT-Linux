@@ -268,6 +268,12 @@ L1 运行过程中，每次拿到 LLM 回复、每轮工具执行完，都会把
 
 如果重放结果与记录不一致，这次运行会标记为 `resume_failed`，不会在错误的模型上继续建模。
 
+**L1_v2 的截图工具 `view_model`**：`--action-level L1_v2` 在 L1 工具之外默认再提供 `view_model`。它用 SolidWorks 原生渲染截取当前零件，参数 `views` 最多选 4 个视向（默认 `isometric`、`front`、`top`、`right`，另可选 `back`、`bottom`、`left`、`trimetric`、`dimetric`）。截图时着色带边线、隐藏基准面和草图、关闭阴影，每个视向先缩放到全屏，截完恢复原来的显示设置和视角。各视向拼成两列的一张 PNG，每格下方标注视向和坐标轴方向（例如"前视：沿 -Z 看，右 = +X，上 = +Y"）。工具结果的文字部分是包围盒、体积和所截视向，图片作为下一条 user 消息发给模型，对话里只保留最新一张，旧图换成占位文字；checkpoint 和结果 JSON 不存图片，`--resume` 时也不重放截图。
+
+- 骨干模型不支持图片输入时必须加 `--no-view-tool`，否则第一次截图就会报 `llm_error`。Web 接口对应 `/api/run` 的 `"view_tool": false`。
+- 结果 JSON 记录 `view_tool`。加入这个工具之后的 L1_v2 结果不能直接和之前的 L1_v2 结果对比；要对比请用 `--no-view-tool` 重跑。
+- 截图依赖 C# 服务新增的 `/api/view/capture`，更新代码后需要重新编译并重启服务。`eval/smoke_view_tools.py` 不调用 LLM，在 SolidWorks 里建一个零件和一个装配体，分别截图存到 `eval/artifacts/smoke_view_tools/` 供人工检查。
+
 参考结果（Workflow-CAD L1 共 24 个工具，骨干模型 Qwen3.5-397B-A17B，温度 0，每题 2 次，共 100 次运行）：
 
 | 零件类型 | 任务数 | 均分 | pass@1 | pass@2 | 平均 token | 平均 LLM 调用 |

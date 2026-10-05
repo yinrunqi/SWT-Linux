@@ -32,6 +32,7 @@ if str(ROOT) not in sys.path:
 
 TEXT_QUERY_TOOLS = {"get_model_state", "set_parameters", "finish"}
 ASSEMBLY_QUERY_TOOLS = {"get_assembly_state", "check_dof", "finish"}
+SCREENSHOT_TOOLS = {"view_model", "view_assembly", "render_views"}
 
 
 def _shorten(text: str, limit: int) -> str:
@@ -119,6 +120,9 @@ def replay(steps: list[dict], session, *, sw: str, target: str, query_tools: set
         if name == "finish":
             print(f"  finish: {_shorten((call_args or {}).get('summary', ''), args.text_chars)}", flush=True)
             continue
+        if name in SCREENSHOT_TOOLS:
+            print("  截图 / 投影只给模型看，不改模型，跳过", flush=True)
+            continue
         if call_args is None:
             print("  参数不是合法 JSON，评测时同样未执行，跳过", flush=True)
             continue
@@ -159,6 +163,8 @@ def run_text(args: argparse.Namespace) -> int:
     steps = build_steps(workflow.get("llm_responses"), workflow.get("tool_calls") or [])
     print(f"重放 {args.case}（{report.get('model')}，{len(steps)} 步，评测得分 v2={row.get('score')}）", flush=True)
     _close_all(args.sw)
+    if report.get("action_level") == "L1_v2":
+        from planner.workflow.tools_v2 import WorkflowSessionV2 as WorkflowSession
     session = WorkflowSession(base_url=args.sw)
     session.start_part()
     _fit(args.sw, "part", args.view)

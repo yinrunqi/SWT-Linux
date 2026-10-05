@@ -426,11 +426,27 @@ TOOL_SPECS_V3: list[dict] = [_v3_spec(spec) for spec in TOOL_SPECS_V2] + [
 ]
 
 
-def tool_specs(workflow: str) -> list[dict]:
+VIEW_ASSEMBLY_SPEC = _tool(
+    "view_assembly",
+    "在 SolidWorks 里截取当前装配体的着色图（带边线，隐藏基准面和草图），图片附在下一条消息里，"
+    "用来直观检查零件是否装到位、朝向对不对、有没有明显的穿模或悬空。views 为视向列表，最多 4 个，缺省为 "
+    "[\"isometric\", \"front\", \"top\", \"right\"]；可选 isometric / trimetric / dimetric / front / back / "
+    "left / right / top / bottom。前视沿 -Z 看（右 = +X、上 = +Y），俯视从 +Y 往下看（右 = +X、下 = +Z），"
+    "右视从 +X 看（右 = -Z、上 = +Y）。highlight 给角色名或组件名，这些组件在图中以选中色高亮。"
+    "图片很占上下文，历史里只保留最新一张；配合是否成立仍以工具返回的数值为准。",
+    {
+        "views": {"type": "array", "items": {"type": "string"}, "description": "视向列表，最多 4 个"},
+        "highlight": {"type": "array", "items": {"type": "string"}, "description": "要高亮的角色名或组件名"},
+    },
+    [],
+)
+
+
+def tool_specs(workflow: str, *, view_tool: bool = True) -> list[dict]:
     if workflow == "v3":
-        return TOOL_SPECS_V3
+        return TOOL_SPECS_V3 + [VIEW_ASSEMBLY_SPEC] if view_tool else TOOL_SPECS_V3
     return TOOL_SPECS_V2 if workflow == "v2" else TOOL_SPECS
 
 
-def tool_names(workflow: str) -> set[str]:
-    return {spec["function"]["name"] for spec in tool_specs(workflow)}
+def tool_names(workflow: str, *, view_tool: bool = True) -> set[str]:
+    return {spec["function"]["name"] for spec in tool_specs(workflow, view_tool=view_tool)}

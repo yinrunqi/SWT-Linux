@@ -2370,6 +2370,7 @@ def run_one(
     reasoning_effort: str | None = None,
     checkpoint: Path | None = None,
     resume: bool = False,
+    view_tool: bool = True,
 ) -> dict:
     started = time.perf_counter()
     cleanup_before = _close_documents(sw_url)
@@ -2392,6 +2393,8 @@ def run_one(
         if checkpoint is not None:
             request_payload["checkpoint_path"] = str(checkpoint)
             request_payload["resume"] = resume
+    if action_level == "L1_v2":
+        request_payload["view_tool"] = view_tool
     if reasoning_effort:
         request_payload["reasoning_effort"] = reasoning_effort
     trace = {
@@ -2548,6 +2551,7 @@ def _write_report(
     lang: str = "zh",
     provider: str = "aiping",
     reasoning_effort: str | None = None,
+    view_tool: bool | None = None,
 ) -> dict:
     spent_yuan = None
     if balance_before and balance_after:
@@ -2565,6 +2569,7 @@ def _write_report(
         "reasoning_effort": reasoning_effort,
         "mode": "workflow" if action_level in WORKFLOW_LEVELS else "single_turn",
         "action_level": action_level,
+        "view_tool": view_tool,
         "prompt_lang": lang,
         "score_version": 2,
         "strict_orientation": strict_orientation,
@@ -2666,6 +2671,7 @@ def rescore_report(source: Path, output: Path, strict_orientation: bool = False)
             old.get("provider", "aiping"),
         ),
         reasoning_effort=old.get("reasoning_effort"),
+        view_tool=old.get("view_tool"),
     )
     return report
 
@@ -2773,12 +2779,18 @@ def main() -> int:
         "its checkpoint up to this many times. 0 = off",
     )
     parser.add_argument("--sw-max-private-gb", type=float, default=12.0)
+    parser.add_argument(
+        "--no-view-tool",
+        action="store_true",
+        help="L1_v2: do not offer the view_model SolidWorks screenshot tool (required for text-only models)",
+    )
     args = parser.parse_args()
     if args.reasoning_effort and args.action_level not in WORKFLOW_LEVELS:
         parser.error("--reasoning-effort requires --action-level L1")
     if args.action_level in WORKFLOW_LEVELS:
         from planner.workflow.agent import default_reasoning_effort
         args.reasoning_effort = default_reasoning_effort(args.model, args.reasoning_effort)
+    view_tool = (not args.no_view_tool) if args.action_level == "L1_v2" else None
     if args.rescore:
         report = rescore_report(args.rescore, args.output or args.rescore, args.strict_orientation)
         print(
@@ -2846,6 +2858,7 @@ def main() -> int:
                 reasoning_effort=args.reasoning_effort,
                 checkpoint=checkpoint if args.action_level in WORKFLOW_LEVELS else None,
                 resume=resuming,
+                view_tool=bool(view_tool),
             )
             lost = result.get("workflow_status") == "sw_lost" or (
                 result.get("status") == "error" and sw_watchdog.check(sw_url, 0) is not None
@@ -2893,6 +2906,7 @@ def main() -> int:
             lang=args.lang,
             provider=args.provider,
             reasoning_effort=args.reasoning_effort,
+            view_tool=view_tool,
         )
         if (
             args.pause_every > 0
@@ -2921,6 +2935,7 @@ def main() -> int:
         lang=args.lang,
         provider=args.provider,
         reasoning_effort=args.reasoning_effort,
+        view_tool=view_tool,
     )
     print(
         f"summary score={report['average_score']} "

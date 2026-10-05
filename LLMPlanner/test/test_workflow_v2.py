@@ -14,6 +14,7 @@ from planner.workflow.sketch_check import to_geometry
 from planner.workflow.tools import TOOL_SPECS, WorkflowSession, tool_specs
 from planner.workflow.tools_v2 import (
     TOOL_SPECS_V2,
+    VIEW_MODEL_SPEC,
     WorkflowSessionV2,
     coerce_args,
     create_session,
@@ -84,7 +85,10 @@ def test_v2_specs_keep_tool_names_and_add_new_options():
     assert "Z=40" in by_name["cut"]["parameters"]["properties"]["plane"]["description"]
     assert "names" in by_name["delete_feature"]["parameters"]["properties"]
     agent = WorkflowAgent(ScriptedClient([]), "m", create_session("v2", base_url="http://fake"))
-    assert agent.version == "v2" and agent.system_prompt == SYSTEM_PROMPT_V2 and agent.tools == TOOL_SPECS_V2
+    assert agent.version == "v2" and agent.system_prompt == SYSTEM_PROMPT_V2
+    assert agent.tools == TOOL_SPECS_V2 + [VIEW_MODEL_SPEC]
+    agent = WorkflowAgent(ScriptedClient([]), "m", create_session("v2", base_url="http://fake"), view_tool=False)
+    assert agent.tools == TOOL_SPECS_V2
     assert isinstance(create_session("v1", base_url="http://fake"), WorkflowSession)
     assert not isinstance(create_session("v1", base_url="http://fake"), WorkflowSessionV2)
 

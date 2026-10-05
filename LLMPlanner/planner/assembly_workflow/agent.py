@@ -9,8 +9,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from planner.workflow.agent import default_reasoning_effort, raw_response
-from planner.workflow.tools import dumps_result
+from planner.workflow.agent import _image_part, _without_images, default_reasoning_effort, raw_response
+from planner.workflow.tools import IMAGE_KEY, dumps_result
 
 from .session import AssemblySession
 from .tools import TOOL_SPECS
@@ -55,7 +55,9 @@ SYSTEM_PROMPT_V3 = """你是一名资深装配工程师，正在 SolidWorks 里�
 STATE_PLACEHOLDER = '{"ok": true, "note": "较早的状态快照已省略，以后面最新一次为准"}'
 
 # 续跑重放时跳过的只读工具；check_motion / check_pose / check_dof 会更新 finish 的门槛状态，要重放
-NO_REPLAY_TOOLS = {"get_assembly_state", "check_interference", "finish"}
+NO_REPLAY_TOOLS = {"get_assembly_state", "check_interference", "view_assembly", "finish"}
+IMAGE_PLACEHOLDER = "（此前的截图已省略，只保留最新一张）"
+IMAGE_CAPTION = "view_assembly：SolidWorks 中当前装配体的截图如下，每格上方标有视向与坐标方向。"
 RESUMABLE_STATUSES = {"running", "llm_error", "sw_lost"}
 ENVIRONMENT_ERRORS = {"NO_PART", "SW_UNAVAILABLE"}
 
@@ -105,11 +107,15 @@ class AssemblyAgent:
         tools: list[dict] | None = None,
         reasoning_effort: str | None = None,
         checkpoint_path: str | Path | None = None,
+        view_tool: bool = True,
     ):
+        """view_tool=False 时去掉 view_assembly 截图工具（骨干模型不支持图片输入时用）。"""
         self.client = client
         self.model = model
         self.session = session
-        self.tools = tools or TOOL_SPECS
+        self.view_tool = view_tool
+        self.tools = [spec for spec in tools or TOOL_SPECS
+                      if view_tool or spec["function"]["name"] != "view_assembly"]
         self.max_llm_calls = max_llm_calls
         self.max_tokens = max_tokens
         self.temperature = temperature
@@ -135,6 +141,7 @@ class AssemblyAgent:
         status, summary, stalls, error = "max_llm_calls", "", 0, None
         max_tokens, truncations = self.max_tokens, 0
         state_messages: list[int] = []
+        image_at: int | None = None
         pending: dict | None = None
         prior_seconds, resumed = 0.0, None
         # 未指定时不发送该字段，保持与历史结果相同的请求体。
@@ -148,6 +155,8 @@ class AssemblyAgent:
             failed_signatures, stalls = saved["failed_signatures"], saved["stalls"]
             truncations, max_tokens = saved["truncations"], saved["max_tokens"]
             state_messages, pending = saved.get("state_messages", []), saved.get("pending")
+            if saved.get("image_at") is not None:
+                messages[saved["image_at"]]["content"] = IMAGE_PLACEHOLDER
             prior_seconds = float(saved.get("duration_seconds") or 0)
             mismatch = self._replay(tool_log)
             resumed = {"from_llm_calls": usage["calls"], "replayed_tools": len(tool_log), "mismatch": mismatch}
@@ -160,7 +169,8 @@ class AssemblyAgent:
         def checkpoint(current_status: str = "running") -> None:
             self._save_checkpoint({
                 "goal": goal, "model": self.model, "status": current_status, "summary": summary, "error": error,
-                "messages": messages, "usage": usage, "tool_log": tool_log, "llm_responses": llm_responses,
+                "messages": _without_images(messages), "image_at": image_at, "usage": usage, "tool_log": tool_log,
+                "llm_responses": llm_responses,
                 "finish_reasons": finish_reasons, "failed_signatures": failed_signatures, "stalls": stalls,
                 "truncations": truncations, "max_tokens": max_tokens, "state_messages": state_messages,
                 "pending": pending, "resumed": resumed, "reasoning_effort": self.reasoning_effort,
@@ -229,6 +239,7 @@ class AssemblyAgent:
             stalls = 0
 
             finished = False
+            image: str | None = None
             for call in calls:
                 name = call["function"]["name"]
                 raw_args = call["function"]["arguments"]
@@ -243,10 +254,15 @@ class AssemblyAgent:
                     # 网关要把历史里的 arguments 解析成对象，非法 JSON 留在历史里会让之后每次请求都 400
                     call["function"]["arguments"] = "{}"
                 else:
-                    result = self.session.call(name, args)
+                    if name == "view_assembly" and not self.view_tool:
+                        result = {"ok": False, "error": {"code": "TOOL_ARGS", "message": f"未知工具 {name}"}}
+                    else:
+                        result = self.session.call(name, args)
                     if name == "finish" and result.get("ok"):
                         finished = True
                         summary = str(args.get("summary", ""))
+                if IMAGE_KEY in result:
+                    image = result.pop(IMAGE_KEY)
                 if _environment_lost(result):
                     # 装配文档或 SolidWorks 服务丢了，不是模型的错：撤回这一轮，留给 resume 重放后重做
                     messages[round_start[0]:] = []
@@ -279,6 +295,13 @@ class AssemblyAgent:
             if finished:
                 status = "finished"
                 break
+            if image is not None:
+                # 截图很占 token，历史里只保留最新一张
+                if image_at is not None:
+                    messages[image_at]["content"] = IMAGE_PLACEHOLDER
+                image_at = len(messages)
+                messages.append({"role": "user", "content": [
+                    {"type": "text", "text": IMAGE_CAPTION}, _image_part(image, "image/png")]})
             checkpoint()
 
         if status != "resume_failed":
@@ -290,13 +313,14 @@ class AssemblyAgent:
             "truncations": truncations,
             "llm_calls": usage["calls"],
             "reasoning_effort": self.reasoning_effort,
+            "view_tool": self.view_tool,
             "finish_reasons": finish_reasons,
             "tool_calls": tool_log,
             "token_usage": usage,
             "last_motion": self.session.last_motion,
             "aliases": dict(self.session.aliases),
             "saved": self.session.saved,
-            "messages": messages,
+            "messages": _without_images(messages),
             "llm_responses": llm_responses,
             "resumed": resumed,
             "duration_seconds": round(prior_seconds + time.perf_counter() - started, 2),

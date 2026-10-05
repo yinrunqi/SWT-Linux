@@ -105,8 +105,13 @@ DRAWING_NOTE = (
     "实线是可见边，虚线是隐藏边，点画线是中心线。全部尺寸从图纸读取。"
 )
 RENDERED_PLACEHOLDER = "（此前 render_views 的三视图已省略，只保留最新一张）"
+IMAGE_PLACEHOLDER_V2 = "（此前的图片已省略，只保留最新一张）"
+IMAGE_CAPTIONS = {
+    "render_views": "render_views：当前零件的三视图如下，请与输入图纸逐个视图对照。",
+    "view_model": "view_model：SolidWorks 中当前零件的截图如下，每格上方标有视向与坐标方向。",
+}
 # 续跑时不需要重放的工具：只读查询，不改变零件
-NO_REPLAY_TOOLS = {"get_model_state", "render_views", "finish"}
+NO_REPLAY_TOOLS = {"get_model_state", "render_views", "view_model", "finish"}
 RESUMABLE_STATUSES = {"running", "llm_error", "sw_lost"}
 ENVIRONMENT_ERRORS = {"NO_PART", "SW_UNAVAILABLE"}
 
@@ -246,8 +251,10 @@ class WorkflowAgent:
         stream: bool = False,
         checkpoint_path: str | Path | None = None,
         version: str | None = None,
+        view_tool: bool = True,
     ):
-        """version：v1 = L1，v2 = L1_v2；缺省跟随 session.version。"""
+        """version：v1 = L1，v2 = L1_v2；缺省跟随 session.version。
+        view_tool：L1_v2 是否提供 view_model 截图工具（骨干模型不支持图片输入时关掉）。"""
         self.version = version or getattr(session, "version", "v1")
         if self.version not in WORKFLOW_VERSIONS:
             raise ValueError(f"未知的 workflow 版本 {self.version}")
@@ -262,7 +269,9 @@ class WorkflowAgent:
         self.reasoning_effort = default_reasoning_effort(model, reasoning_effort)
         self.max_stalls = max_stalls
         self.v2 = self.version == "v2"
-        self.tools = tool_specs_v2(extra_tools) if self.v2 else tool_specs(extra_tools)
+        self.view_tool = self.v2 and view_tool
+        self.tools = tool_specs_v2(extra_tools, view_tool=view_tool) if self.v2 else tool_specs(extra_tools)
+        self.image_placeholder = IMAGE_PLACEHOLDER_V2 if self.v2 else RENDERED_PLACEHOLDER
         self.system_prompt = SYSTEM_PROMPT_V2 if self.v2 else SYSTEM_PROMPT
         self._dumps = dumps_result_v2 if self.v2 else dumps_result
 
@@ -300,7 +309,7 @@ class WorkflowAgent:
             messages[1] = _first_user_message(goal, image_b64, image_mime)
             rendered_at = saved.get("rendered_at")
             if rendered_at is not None:
-                messages[rendered_at]["content"] = RENDERED_PLACEHOLDER
+                messages[rendered_at]["content"] = self.image_placeholder
                 rendered_at = None
             usage, tool_log, llm_responses = saved["usage"], saved["tool_log"], saved["llm_responses"]
             finish_reasons, failed_signatures = saved.get("finish_reasons", []), saved["failed_signatures"]
@@ -386,7 +395,7 @@ class WorkflowAgent:
             stalls = 0
 
             finished = False
-            images: list[str] = []
+            images: list[tuple[str, str]] = []
             seen_in_reply: set[str] = set()
             for call in calls:
                 name = call["function"]["name"]
@@ -405,6 +414,8 @@ class WorkflowAgent:
                     blocked = self._blocked(name, args, seen_in_reply, failed_signatures) if self.v2 else None
                     if blocked:
                         result = {"ok": False, "error": blocked}
+                    elif name == "view_model" and not self.view_tool:
+                        result = {"ok": False, "error": {"code": "TOOL_ARGS", "message": f"未知工具 {name}"}}
                     elif name == "finish":
                         result = self._finish(args)
                         finished = result["ok"]
@@ -421,7 +432,7 @@ class WorkflowAgent:
                     status, error, pending = "sw_lost", f"{name}: {result['error'].get('message')}", reply
                     break
                 if IMAGE_KEY in result:
-                    images.append(result.pop(IMAGE_KEY))
+                    images.append((name, result.pop(IMAGE_KEY)))
                 was_blocked = self.v2 and (result.get("error") or {}).get("code") in BLOCKED_CODES
                 if not result.get("ok") and not was_blocked:
                     signature = f"{name}:{json.dumps(args, sort_keys=True, ensure_ascii=False)}"
@@ -444,15 +455,16 @@ class WorkflowAgent:
             if status == "sw_lost":
                 break
             if images and not finished:
-                # 投影图很占 token，历史里只保留最新一张
+                # 图片很占 token，历史里只保留最新一张
                 if rendered_at is not None:
-                    messages[rendered_at]["content"] = RENDERED_PLACEHOLDER
+                    messages[rendered_at]["content"] = self.image_placeholder
                 rendered_at = len(messages)
+                tool, image = images[-1]
                 messages.append({
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": "render_views：当前零件的三视图如下，请与输入图纸逐个视图对照。"},
-                        _image_part(images[-1], "image/png"),
+                        {"type": "text", "text": IMAGE_CAPTIONS.get(tool, f"{tool}：图片如下。")},
+                        _image_part(image, "image/png"),
                     ],
                 })
             if finished:
@@ -473,6 +485,7 @@ class WorkflowAgent:
             "error": error,
             "llm_calls": usage["calls"],
             "reasoning_effort": self.reasoning_effort,
+            "view_tool": self.view_tool,
             "finish_reasons": finish_reasons,
             "tool_calls": tool_log,
             "token_usage": usage,

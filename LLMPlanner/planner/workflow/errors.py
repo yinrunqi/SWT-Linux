@@ -31,6 +31,7 @@ ERROR_CODES = {
     "FEATURE_DISCONNECTED": "特征执行后零件不再是单一实体（L1_v2）",
     "SW_UNAVAILABLE": "无法连接 SolidWorks 服务",
     "RENDER_FAILED": "无法生成当前模型的三视图",
+    "CAPTURE_FAILED": "无法在 SolidWorks 中截取当前模型的图像",
 }
 
 
