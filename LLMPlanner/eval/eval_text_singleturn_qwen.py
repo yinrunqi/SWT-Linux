@@ -2776,6 +2776,9 @@ def main() -> int:
     args = parser.parse_args()
     if args.reasoning_effort and args.action_level not in WORKFLOW_LEVELS:
         parser.error("--reasoning-effort requires --action-level L1")
+    if args.action_level in WORKFLOW_LEVELS:
+        from planner.workflow.agent import default_reasoning_effort
+        args.reasoning_effort = default_reasoning_effort(args.model, args.reasoning_effort)
     if args.rescore:
         report = rescore_report(args.rescore, args.output or args.rescore, args.strict_orientation)
         print(

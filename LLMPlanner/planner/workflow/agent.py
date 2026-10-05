@@ -115,6 +115,16 @@ def _image_part(image_b64: str, mime: str) -> dict:
     return {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{image_b64}"}}
 
 
+# 未显式指定 reasoning_effort 时按模型取默认值；键是去掉 "basic/" 之类前缀后的完整模型名
+DEFAULT_REASONING_EFFORTS = {"claude-sonnet-5": "medium"}
+
+
+def default_reasoning_effort(model: str, reasoning_effort: str | None = None) -> str | None:
+    if reasoning_effort:
+        return reasoning_effort
+    return DEFAULT_REASONING_EFFORTS.get(str(model or "").rsplit("/", 1)[-1].strip().lower())
+
+
 def raw_response(response: Any) -> dict:
     """完整的 provider 响应（含 reasoning_content、finish_reason、逐次 usage），只用于记录。"""
     dump = getattr(response, "model_dump", None)
@@ -249,7 +259,7 @@ class WorkflowAgent:
         self.max_llm_calls = max_llm_calls
         self.max_tokens = max_tokens
         self.temperature = temperature
-        self.reasoning_effort = reasoning_effort
+        self.reasoning_effort = default_reasoning_effort(model, reasoning_effort)
         self.max_stalls = max_stalls
         self.v2 = self.version == "v2"
         self.tools = tool_specs_v2(extra_tools) if self.v2 else tool_specs(extra_tools)

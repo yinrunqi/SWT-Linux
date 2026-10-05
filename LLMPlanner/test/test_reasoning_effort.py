@@ -81,6 +81,20 @@ def test_assembly_agent_reasoning_effort_and_raw_responses():
         assert len(outcome["llm_responses"]) == len(completions.requests) == 2
 
 
+def test_claude_sonnet_5_defaults_to_medium_on_every_agent():
+    for model in ("claude-sonnet-5", "basic/claude-sonnet-5", "Basic/Claude-Sonnet-5"):
+        completions = RecordingCompletions()
+        client = SimpleNamespace(chat=SimpleNamespace(completions=completions))
+        part = WorkflowAgent(client, model, StubSession(), max_llm_calls=1).run("goal")
+        asm = AssemblyAgent(client, model, StubAssemblySession(), max_llm_calls=1, tools=[]).run("goal")
+        assert part["reasoning_effort"] == asm["reasoning_effort"] == "medium"
+        assert [item["reasoning_effort"] for item in completions.requests] == ["medium", "medium"]
+    explicit = WorkflowAgent(None, "claude-sonnet-5", StubSession(), reasoning_effort="high")
+    assert explicit.reasoning_effort == "high"
+    for model in ("claude-sonnet-5-5", "Qwen3.5-397B-A17B", "gpt-6-astra"):
+        assert WorkflowAgent(None, model, StubSession()).reasoning_effort is None
+
+
 def _post(json_body, monkeypatch):
     captured = {}
 

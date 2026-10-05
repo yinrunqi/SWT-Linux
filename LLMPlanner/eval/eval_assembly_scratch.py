@@ -630,6 +630,8 @@ def main() -> None:
         except ImportError as exc:
             parser.error(f"e2e 条件要在建模时给零件打分才能决定是否装配，但 OCC 不可用（{exc}）；改用 --condition gen")
     workflows = ["v1", "v2"] if args.workflow == "both" else [args.workflow]
+    from planner.workflow.agent import default_reasoning_effort
+    args.reasoning_effort = default_reasoning_effort(args.model, args.reasoning_effort)
     rows = []
     if args.resume and Path(args.output).is_file():
         previous = json.loads(Path(args.output).read_text(encoding="utf-8"))

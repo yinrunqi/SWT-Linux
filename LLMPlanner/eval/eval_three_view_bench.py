@@ -145,6 +145,7 @@ def run_one(task: dict, k: int, args, resume: bool = False) -> dict:
             summary, workflow = body.get("summary") or {}, body.get("workflow") or {}
             row["workflow_error"] = workflow.get("error")
             row["resumed"] = workflow.get("resumed")
+            row["reasoning_effort"] = workflow.get("reasoning_effort")
             row["llm_calls"] = summary.get("llm_calls")
             row["tool_calls"] = summary.get("tool_calls")
             row["failed_modeling_calls"] = sum(1 for item in body.get("results") or [] if not item.get("success"))

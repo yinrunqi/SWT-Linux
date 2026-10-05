@@ -9,7 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from planner.workflow.agent import raw_response
+from planner.workflow.agent import default_reasoning_effort, raw_response
 from planner.workflow.tools import dumps_result
 
 from .session import AssemblySession
@@ -114,7 +114,7 @@ class AssemblyAgent:
         self.max_tokens = max_tokens
         self.temperature = temperature
         self.max_stalls = max_stalls
-        self.reasoning_effort = reasoning_effort
+        self.reasoning_effort = default_reasoning_effort(model, reasoning_effort)
         self.checkpoint_path = Path(checkpoint_path) if checkpoint_path else None
 
     def run(self, goal: str, *, resume: bool = False) -> dict:
