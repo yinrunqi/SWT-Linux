@@ -141,6 +141,11 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view --artifacts eval\art
 1. **`countersink` 做不出锥形沉头。** 它和 `counterbore` 用的是同一个实现（先切圆柱沉头、再打通孔），工具说明却写“沉头锥孔”。`d19_hinge_leaf` 的图纸要求 Ø9×90° 锥形沉头，按说明调用 `countersink` 只能拿到 66.67 分：没有 45° 锥面，`holes` 和 `volume` 两项失败。oracle 改为在 X = 40 的基准面上画锥面截面，用 `revolve(cut=true)` 旋转切出，再 `linear_pattern` 复制到另外两个孔。建议在 C# 端实现真正的锥形沉头，或者改正工具说明；否则模型照说明调用这个工具，这道题必然失败。
 2. **`fillet` 一次只能选一条边，并且默认沿相切边传播。** `b05_keycap_full` 要给顶面四条棱倒 R1.5 圆角。逐条倒圆时，前两条正常；第 3、4 条会顺着前两条圆角端部的圆弧（与它们相切）传播到四条斜棱上，结果多出 4 条斜棱圆角和 4 个球面角，体积是 1598.72（参考 1612.22）。rubric 仍然满分，因为体积差 0.84%，在 1% 容差内；但图像分只有 90.55。现有工具既不能一次选多条边，也不能关闭相切传播，所以这道题的体积离容差边界很近，严格一些的检查会把它判错。
 
+这两个问题在 L1_v2 中已修复（`planner/workflow/tools_v2.py`，`--action-level L1_v2`）。L1 的行为保持不变，上面的 oracle 轨迹与结论仍然对应 L1：
+
+- `countersink` 改为真正的锥形沉头。先用带拔模角的盲切在表面切出口部直径 `head_diameter`、锥角 `angle_deg`（默认 90°）的锥台，深度由两个直径和锥角算出；再打 `through_diameter` 的孔。只给 `head_depth` 时，由它反推锥角。结果里返回 `cone_removed_mm3` 和锥台理论体积 `cone_expected_mm3`，可以核对。真机上在顶面、底面各验证过一次，锥面去除量与锥台公式一致（Ø9→Ø4.5、90°：每孔 83.50 mm³）。
+- `fillet` / `chamfer` 的射线数组改为一次选中全部棱，在同一个特征里倒完；`fillet` 另加 `propagate=false`，用来关闭相切传播。用 b05 的步骤真机重放：一次给四条射线，最终体积 1612.23；逐条倒圆但设 `propagate=false`，也是 1612.23。L1 逐条倒圆仍是 1598.72。参考体积为 1612.22。
+
 ---
 
 ## 5. 命令
