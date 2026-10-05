@@ -98,7 +98,7 @@ class AssemblyAgent:
         model: str,
         session: AssemblySession,
         *,
-        max_llm_calls: int = 50,
+        max_llm_calls: int = 100,
         max_tokens: int = 8000,
         temperature: float = 0.0,
         max_stalls: int = 2,

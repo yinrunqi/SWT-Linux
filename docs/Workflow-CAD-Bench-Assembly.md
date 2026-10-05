@@ -161,7 +161,7 @@
    - `gold`：直接用 `eval/assembly_scratch/gold_parts/<--cases 名>/` 里的标准零件（`build_standard_parts.py` 生成）。
    - `gen`：智能体按 `parts[].prompt` 逐个从零建零件，用零件接口 rubric 判合格。每个零件只开放它 `extra_tools` 里列出的额外工具。
    - `e2e`：同 `gen`，但只要有零件不合格就不进入装配，整条记 0 分。
-2. 装配。装配智能体拿到 `assembly.prompt`、配方和零件路径列表，在 50 次 LLM 调用预算内装配并保存。插入坐标不算最终位姿，必须靠配合定位。
+2. 装配。装配智能体拿到 `assembly.prompt`、配方和零件路径列表，在 100 次 LLM 调用预算内装配并保存。插入坐标不算最终位姿，必须靠配合定位。
 3. 评分。智能体结束后，评测器自己打开装配体评分，不采用智能体自报的结果：
    - 装配 rubric（第 3 节），只读配合与位姿；
    - 运动检查（第 4 节），由评测器加马达、采样。
@@ -434,7 +434,7 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 
 `summarize` 只用未被污染的行，按工作流版本和测例分别取平均，并给出标准差、`finish_rate`（智能体正常 finish 的比例）、`saved_by_agent_rate`、`budget_exhausted_rate`、`llm_calls_mean`、`structure_ok_rate`。
 
-调用预算：默认每个测例 50 次 LLM 调用（`--max-asm-calls`）。`--asm-calls-per-role N` 大于 0 时改为 max(`--max-asm-calls`, N × 角色数)，零件多的测例预算更多；报告里记录这两个参数。
+调用预算：默认每个测例 100 次 LLM 调用（`--max-asm-calls`；2026-10-05 之前为 50 次，下文已有结果都是 50 次预算下跑的）。`--asm-calls-per-role N` 大于 0 时改为 max(`--max-asm-calls`, N × 角色数)，零件多的测例预算更多；报告里记录这两个参数。
 
 ## 6. 阳性对照与重评分
 

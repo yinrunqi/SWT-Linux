@@ -593,7 +593,7 @@ def main() -> None:
     parser.add_argument("--model", default=MODEL)
     parser.add_argument("--sw", default="http://localhost:5100")
     parser.add_argument("--max-part-calls", type=int, default=40)
-    parser.add_argument("--max-asm-calls", type=int, default=50)
+    parser.add_argument("--max-asm-calls", type=int, default=100)
     parser.add_argument("--asm-calls-per-role", type=float, default=0,
                         help=">0 时装配预算 = max(--max-asm-calls, 系数 × 角色数)，在跑之前冻结")
     parser.add_argument("--infra-retries", type=int, default=1,
