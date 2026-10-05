@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================
-REM å‘½ä»¤è¡Œæ„å»º Chapter1.ConnectToSwï¼ˆæ— éœ€æ‰“å¼€ Visual Studioï¼‰
+REM ÃüÁîĞĞ¹¹½¨ Chapter1.ConnectToSw£¨ÎŞĞè´ò¿ª Visual Studio£©
 REM ============================================================
 setlocal
 
@@ -8,25 +8,25 @@ set "MSBUILD=C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Curre
 set "PROJ=%~dp0Chapter1.ConnectToSw\Chapter1.ConnectToSw.csproj"
 
 if not exist "%MSBUILD%" (
-    echo [é”™è¯¯] æœªæ‰¾åˆ° MSBuild: %MSBUILD%
-    echo è¯·ç”¨ where /r "C:\Program Files\Microsoft Visual Studio" MSBuild.exe æŸ¥æ‰¾å®é™…è·¯å¾„åä¿®æ”¹æœ¬è„šæœ¬ã€‚
+    echo [´íÎó] Î´ÕÒµ½ MSBuild: %MSBUILD%
+    echo ÇëÓÃ where /r "C:\Program Files\Microsoft Visual Studio" MSBuild.exe ²éÕÒÊµ¼ÊÂ·¾¶ºóĞŞ¸Ä±¾½Å±¾¡£
     exit /b 1
 )
 
-REM è‹¥æœåŠ¡æ­£åœ¨è¿è¡Œï¼Œexe ä¼šè¢«é”å®šå¯¼è‡´æ„å»ºå¤±è´¥ï¼Œå…ˆæç¤º
+REM Èô·şÎñÕıÔÚÔËĞĞ£¬exe »á±»Ëø¶¨µ¼ÖÂ¹¹½¨Ê§°Ü£¬ÏÈÌáÊ¾
 tasklist /fi "imagename eq Chapter1.ConnectToSw.exe" 2>nul | find /i "Chapter1.ConnectToSw.exe" >nul
 if %errorlevel%==0 (
-    echo [è­¦å‘Š] Chapter1.ConnectToSw.exe æ­£åœ¨è¿è¡Œï¼Œæ„å»ºå¯èƒ½å›  exe è¢«é”å®šè€Œå¤±è´¥ã€‚
-    echo        è¯·å…ˆå…³é—­æ­£åœ¨è¿è¡Œçš„æœåŠ¡çª—å£åé‡è¯•ã€‚
+    echo [¾¯¸æ] Chapter1.ConnectToSw.exe ÕıÔÚÔËĞĞ£¬¹¹½¨¿ÉÄÜÒò exe ±»Ëø¶¨¶øÊ§°Ü¡£
+    echo        ÇëÏÈ¹Ø±ÕÕıÔÚÔËĞĞµÄ·şÎñ´°¿ÚºóÖØÊÔ¡£
 )
 
-echo [æ„å»º] æ­£åœ¨ç¼–è¯‘ Chapter1.ConnectToSw ...
+echo [¹¹½¨] ÕıÔÚ±àÒë Chapter1.ConnectToSw ...
 "%MSBUILD%" "%PROJ%" /p:Configuration=Debug /v:minimal /nologo /t:Rebuild
 if %errorlevel% neq 0 (
-    echo [å¤±è´¥] æ„å»ºå¤±è´¥ï¼Œé€€å‡ºç  %errorlevel%
+    echo [Ê§°Ü] ¹¹½¨Ê§°Ü£¬ÍË³öÂë %errorlevel%
     exit /b %errorlevel%
 )
 
 echo.
-echo [æˆåŠŸ] è¾“å‡º: %~dp0Chapter1.ConnectToSw\bin\Debug\Chapter1.ConnectToSw.exe
+echo [³É¹¦] Êä³ö: %~dp0Chapter1.ConnectToSw\bin\Debug\Chapter1.ConnectToSw.exe
 endlocal

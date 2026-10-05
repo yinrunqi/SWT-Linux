@@ -1,26 +1,26 @@
 @echo off
 REM ============================================================
-REM å‘½ä»¤è¡Œå¯åŠ¨ SolidWorks HTTP API æœåŠ¡ï¼ˆæ— éœ€æ‰“å¼€ Visual Studioï¼‰
-REM æ³¨æ„ï¼šè¿è¡Œå‰è¯·å…ˆå¯åŠ¨ SolidWorksï¼Œå¦åˆ™ç¨‹åºä¼šæç¤ºé€€å‡ºã€‚
-REM æœåŠ¡ä¼šå¸¸é©»ç›‘å¬ http://localhost:5100/ ï¼ŒæŒ‰ Ctrl+C åœæ­¢ã€‚
+REM ÃüÁîĞĞÆô¶¯ SolidWorks HTTP API ·şÎñ£¨ÎŞĞè´ò¿ª Visual Studio£©
+REM ×¢Òâ£ºÔËĞĞÇ°ÇëÏÈÆô¶¯ SolidWorks£¬·ñÔò³ÌĞò»áÌáÊ¾ÍË³ö¡£
+REM ·şÎñ»á³£×¤¼àÌı http://localhost:5100/ £¬°´ Ctrl+C Í£Ö¹¡£
 REM ============================================================
 setlocal
 
 set "EXE=%~dp0Chapter1.ConnectToSw\bin\Debug\Chapter1.ConnectToSw.exe"
 
 if not exist "%EXE%" (
-    echo [é”™è¯¯] æœªæ‰¾åˆ°å¯æ‰§è¡Œæ–‡ä»¶: %EXE%
-    echo        è¯·å…ˆè¿è¡Œ build_service.bat è¿›è¡Œæ„å»ºã€‚
+    echo [´íÎó] Î´ÕÒµ½¿ÉÖ´ĞĞÎÄ¼ş: %EXE%
+    echo        ÇëÏÈÔËĞĞ build_service.bat ½øĞĞ¹¹½¨¡£
     exit /b 1
 )
 
-REM æ£€æŸ¥ SolidWorks æ˜¯å¦å·²å¯åŠ¨
+REM ¼ì²é SolidWorks ÊÇ·ñÒÑÆô¶¯
 tasklist /fi "imagename eq SLDWORKS.exe" 2>nul | find /i "SLDWORKS.exe" >nul
 if %errorlevel% neq 0 (
-    echo [è­¦å‘Š] æœªæ£€æµ‹åˆ° SolidWorks è¿›ç¨‹ï¼Œè¯·å…ˆå¯åŠ¨ SolidWorksã€‚
+    echo [¾¯¸æ] Î´¼ì²âµ½ SolidWorks ½ø³Ì£¬ÇëÏÈÆô¶¯ SolidWorks¡£
 )
 
-echo [å¯åŠ¨] %EXE%
-echo [æç¤º] æŒ‰ Ctrl+C åœæ­¢æœåŠ¡ã€‚
+echo [Æô¶¯] %EXE%
+echo [ÌáÊ¾] °´ Ctrl+C Í£Ö¹·şÎñ¡£
 "%EXE%"
 endlocal
