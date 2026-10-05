@@ -211,6 +211,10 @@ namespace Chapter1.ConnectToSw
                     RequirePost(method, resp, () => HandleCreateOffsetPlane(req, resp));
                     break;
 
+                case "/api/ref-axis/planes":
+                    RequirePost(method, resp, () => HandleCreateAxisFromPlanes(req, resp));
+                    break;
+
                 case "/api/select-ref-plane-and-sketch":
                     RequirePost(method, resp, () => HandleSelectRefPlaneAndSketch(req, resp));
                     break;
@@ -323,7 +327,7 @@ namespace Chapter1.ConnectToSw
                     break;
 
                 case "/api/model-observation":
-                    HandleModelObservation(resp);
+                    HandleModelObservation(req, resp);
                     break;
 
                 case "/api/sketch-stats":
@@ -1003,7 +1007,9 @@ namespace Chapter1.ConnectToSw
                 double? axisOriginY = body.ContainsKey("axisOriginY") ? (double?)Convert.ToDouble(body["axisOriginY"]) : null;
                 double? axisOriginZ = body.ContainsKey("axisOriginZ") ? (double?)Convert.ToDouble(body["axisOriginZ"]) : null;
 
-                var result = _commands.CircularPattern(count, axis, angleDeg, reverseDir, axisOriginX, axisOriginY, axisOriginZ);
+                string axisFeature = body.ContainsKey("axisFeature") ? body["axisFeature"]?.ToString() : null;
+                var result = _commands.CircularPattern(
+                    count, axis, angleDeg, reverseDir, axisOriginX, axisOriginY, axisOriginZ, axisFeature);
                 var response = new Dictionary<string, object> { { "success", true } };
                 foreach (var kv in result) response[kv.Key] = kv.Value;
                 SendJson(resp, 200, response);
@@ -1227,11 +1233,15 @@ namespace Chapter1.ConnectToSw
             }
         }
 
-        private static void HandleModelObservation(HttpListenerResponse resp)
+        private static void HandleModelObservation(HttpListenerRequest req, HttpListenerResponse resp)
         {
             try
             {
-                var snapshot = _commands.GetModelObservation();
+                int maxFaces = 200;
+                int requested;
+                if (int.TryParse(req.QueryString["maxFaces"], out requested) && requested > 0)
+                    maxFaces = Math.Min(requested, 5000);
+                var snapshot = _commands.GetModelObservation(maxFaces);
                 snapshot["success"] = true;
                 SendJson(resp, 200, snapshot);
             }
@@ -1342,8 +1352,9 @@ namespace Chapter1.ConnectToSw
                     throw new KeyNotFoundException(
                         "缺少必要参数: faceIndex");
                 int faceIndex = Convert.ToInt32(body["faceIndex"]);
+                bool exact = body.ContainsKey("exact") && Convert.ToBoolean(body["exact"]);
                 var result = _commands.SelectObservedFaceAndStartSketch(
-                    faceIndex);
+                    faceIndex, exact);
                 var respData = new Dictionary<string, object>
                 {
                     { "success", true },
@@ -1775,6 +1786,20 @@ namespace Chapter1.ConnectToSw
             catch (Exception ex)
             {
                 SendJson(resp, 500, new { success = false, message = $"创建基准面失败: {ex.Message}" });
+            }
+        }
+
+        private static void HandleCreateAxisFromPlanes(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.CreateAxisFromPlanes(GetString(body, "first"), GetString(body, "second"));
+                SendJson(resp, 200, new { success = true, message = $"已创建参考轴 {result["featureName"]}", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"创建参考轴失败: {ex.Message}" });
             }
         }
 

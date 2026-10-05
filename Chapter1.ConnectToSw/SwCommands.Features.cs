@@ -1014,7 +1014,8 @@ namespace Chapter1.ConnectToSw
         /// </summary>
         public Dictionary<string, object> CircularPattern(int count, string axis = "y",
             double angleDeg = 360, bool reverseDir = false,
-            double? axisOriginX = null, double? axisOriginY = null, double? axisOriginZ = null)
+            double? axisOriginX = null, double? axisOriginY = null, double? axisOriginZ = null,
+            string axisFeature = null)
         {
             EnsureActiveDoc();
 
@@ -1078,6 +1079,19 @@ namespace Chapter1.ConnectToSw
             //   那一个会被选中——阵列结果绕错圆心，10 个副本飞出实体外，SolidWorks 静默丢弃，
             //   只剩种子。修复：以 axisOrigin 为目标点，选**其轴线离这一点最近**的圆柱面。
             //   若未给 axisOrigin，退化为老行为（第一个匹配方向的圆柱面）。
+            //
+            // axisFeature（L1_v2）：直接用调用方建好的参考轴（两基准面的交线，正好穿过给定中心），
+            //   不再找最近的圆柱面——中心处没有圆柱面时，最近的圆柱面会是别处的孔。
+            IFeature axisFeat = null;
+            if (!string.IsNullOrEmpty(axisFeature))
+            {
+                axisFeat = ((IPartDoc)ActiveDoc).FeatureByName(axisFeature) as IFeature;
+                if (axisFeat == null)
+                    throw new InvalidOperationException($"找不到参考轴 {axisFeature}");
+                Console.WriteLine($"[SwCommands] 使用指定参考轴: {axisFeat.Name}");
+            }
+            if (axisFeat == null)
+            {
             IFace2 chosenCylFace = null;
             double cylAxisX = 0, cylAxisY = 0, cylAxisZ = 0;
             bool hasOrigin = axisOriginX.HasValue && axisOriginY.HasValue && axisOriginZ.HasValue;
@@ -1202,7 +1216,6 @@ namespace Chapter1.ConnectToSw
                 throw new InvalidOperationException("InsertAxis2 返回 false, 未能创建参考轴");
 
             // 拿到刚创建的参考轴 = 特征树最后一个特征
-            IFeature axisFeat = null;
             {
                 IFeature f = (IFeature)mdoc.FirstFeature();
                 while (f != null)
@@ -1214,6 +1227,7 @@ namespace Chapter1.ConnectToSw
             if (axisFeat == null)
                 throw new InvalidOperationException("参考轴创建后未能在特征树中找到");
             Console.WriteLine($"[SwCommands] 已创建参考轴: {axisFeat.Name} (基于圆柱面)");
+            }
 
             // ---- 3. 有序选择: Mark=1 选轴, Mark=4 选源特征 ----
             //         SolidWorks API Remark: "You must select the features or components before selecting the axis"

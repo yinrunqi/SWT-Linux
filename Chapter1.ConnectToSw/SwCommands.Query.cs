@@ -415,18 +415,50 @@ namespace Chapter1.ConnectToSw
             return result;
         }
 
-        public Dictionary<string, object> GetModelObservation()
+        /// <summary>
+        /// 每个实体的包围盒（米）与体积（mm³）。多于一个实体通常说明特征没有连上主体。
+        /// </summary>
+        public List<Dictionary<string, object>> GetBodySummaries()
+        {
+            var result = new List<Dictionary<string, object>>();
+            var partDoc = ActiveDoc as IPartDoc;
+            var bodies = partDoc?.GetBodies2((int)swBodyType_e.swSolidBody, true) as object[];
+            foreach (var bObj in bodies ?? new object[0])
+            {
+                var body = bObj as IBody2;
+                if (body == null) continue;
+                var bx = body.GetBodyBox() as double[];
+                var mp = body.GetMassProperties(0) as double[];
+                var item = new Dictionary<string, object>
+                {
+                    { "volumeMm3", mp != null && mp.Length > 3 ? mp[3] * 1e9 : 0.0 },
+                };
+                if (bx != null && bx.Length >= 6)
+                {
+                    item["box"] = new Dictionary<string, double> {
+                        { "minX", bx[0] }, { "minY", bx[1] }, { "minZ", bx[2] },
+                        { "maxX", bx[3] }, { "maxY", bx[4] }, { "maxZ", bx[5] },
+                    };
+                }
+                result.Add(item);
+            }
+            return result;
+        }
+
+        public Dictionary<string, object> GetModelObservation(int maxFaces = 200)
         {
             EnsureActiveDoc();
             var features = GetFeatureTree();
             Dictionary<string, double> bbox = null;
             double? volumeMm3 = null;
             var faces = new List<Dictionary<string, object>>();
+            var bodies = new List<Dictionary<string, object>>();
             try
             {
                 bbox = GetBodyBoundingBox();
                 volumeMm3 = GetBodyVolume() * 1e9;
-                faces = GetBodyFaces();
+                faces = GetBodyFaces(maxFaces);
+                bodies = GetBodySummaries();
             }
             catch (InvalidOperationException ex)
             {
@@ -439,6 +471,9 @@ namespace Chapter1.ConnectToSw
                 { "boundingBox", bbox },
                 { "volumeMm3", volumeMm3 },
                 { "faces", faces },
+                { "faceLimit", maxFaces },
+                { "bodyCount", bodies.Count },
+                { "bodies", bodies },
                 { "sketches", GetSketchSummaries() },
                 { "featureSketchLinks", _featureSketchLinks.ToList() },
             };

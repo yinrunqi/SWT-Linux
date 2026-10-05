@@ -226,6 +226,33 @@ namespace Chapter1.ConnectToSw
         }
 
         /// <summary>
+        /// 两个基准面（plane:i / refplane:名称）的交线作为参考轴，返回轴的特征名。
+        /// </summary>
+        public Dictionary<string, object> CreateAxisFromPlanes(string first, string second)
+        {
+            EnsureActiveDoc();
+            ExitSketchIfActive();
+            ActiveDoc.ClearSelection2(true);
+            if (!SelectReference(first, false, 0) || !SelectReference(second, true, 0))
+                throw new InvalidOperationException($"无法选中 {first} 和 {second}");
+            bool created = ((ModelDoc2)ActiveDoc).InsertAxis2(true);
+            ActiveDoc.ClearSelection2(true);
+            if (!created)
+                throw new InvalidOperationException("InsertAxis2 返回 false：两个平面可能平行");
+            IFeature axisFeat = null;
+            var f = ActiveDoc.FirstFeature() as IFeature;
+            while (f != null)
+            {
+                if (f.GetTypeName2() == "RefAxis") axisFeat = f;
+                f = f.GetNextFeature() as IFeature;
+            }
+            if (axisFeat == null)
+                throw new InvalidOperationException("参考轴创建后未能在特征树中找到");
+            Console.WriteLine($"[SwCommands] 由 {first} 与 {second} 创建参考轴 {axisFeat.Name}");
+            return new Dictionary<string, object> { { "featureName", axisFeat.Name } };
+        }
+
+        /// <summary>
         /// 在指定名称的基准面上开草图。坐标按模型坐标传入，由 ModelToSketchTransform 换算。
         /// </summary>
         public Dictionary<string, object> SelectRefPlaneAndStartSketch(string planeName)
