@@ -325,7 +325,7 @@ def _build_specs_v2() -> list[dict]:
         "type": ["string", "object", "array"],
         "description": (
             "\"all\"（全部边）、长方体语义边名（top_front 等）、射线 {origin:[x,y,z], direction:[dx,dy,dz]}（mm，射线命中的面上"
-            "离交点最近的边），或射线数组（每条射线一条边，同一事务内依次倒圆，任一失败整体回滚）。"
+            "离交点最近的边），或射线数组（每条射线一条边，全部放进同一个圆角/倒角特征，任一射线未命中则整体失败）。"
             "射线要从实体外垂直射向与目标棱相邻的一个面，命中点离目标棱约 1mm、离其它棱更远；不要沿着棱的方向射，也不要射在面的角上。"
             "结果中 estimated_edge_length_mm 按 90° 棱从体积变化反推被倒圆的总棱长，与预期差很多说明选错了边。"
         ),
@@ -375,14 +375,34 @@ def _build_specs_v2() -> list[dict]:
         ),
         "counterbore": dict(properties={"polar": _POLAR_SCHEMA},
                             required=["plane", "through_diameter", "head_diameter", "head_depth"]),
-        "countersink": dict(properties={"polar": _POLAR_SCHEMA},
-                            required=["plane", "through_diameter", "head_diameter", "head_depth"]),
+        "countersink": dict(
+            description=(
+                "锥形沉头孔（埋头孔，切除）：在 plane（零件表面）上切出口部直径 head_diameter、锥角 angle_deg（默认 90°）的锥面，"
+                "锥面深度自动为 (head_diameter − through_diameter)/2 ÷ tan(angle/2)，再打 through_diameter 的孔"
+                "（给 depth 或 through_all=true）。只给 head_depth 不给 angle_deg 时由它推出锥角。圆柱形沉头请用 counterbore。"
+            ),
+            properties={
+                "polar": _POLAR_SCHEMA,
+                "angle_deg": {"type": "number", "description": "锥角（全角）度，默认 90"},
+            },
+            required=["plane", "through_diameter", "head_diameter"],
+        ),
         "tapped_hole": dict(properties={"polar": _POLAR_SCHEMA}, required=["plane", "diameter"]),
         "fillet": dict(
-            description="对边倒圆角。一般放在最后；外形轮廓上的圆角（板的竖直棱等）优先在轮廓里用 corner_radius 表达。",
+            description=(
+                "对边倒圆角。一般放在最后；外形轮廓上的圆角（板的竖直棱等）优先在轮廓里用 corner_radius 表达。"
+                "同一半径的多条棱写成一个射线数组一次倒完（同一个特征，角部过渡正确）；分多次逐条倒圆时，"
+                "后倒的棱会顺着已有圆角端部的相切边传播到别的棱上。SolidWorks 默认沿相切边传播，"
+                "propagate=false 时只倒选中的棱。"
+            ),
+            properties={"edges": edges_v2, "propagate": {
+                "type": "boolean", "description": "是否沿相切边自动延伸，默认 true",
+            }},
+        ),
+        "chamfer": dict(
+            description="对边倒角（等距）。edges 写法同 fillet；多条棱写成射线数组时在同一个特征里一次倒完。",
             properties={"edges": edges_v2},
         ),
-        "chamfer": dict(description="对边倒角（等距）。edges 写法同 fillet。", properties={"edges": edges_v2}),
         "circular_pattern": dict(
             description=(
                 "把最近一个特征绕平行于 axis 的轴圆周阵列 count 份（含原特征）。center 为轴线经过的点 [x,y,z] mm，请总是给出；"
@@ -1394,14 +1414,20 @@ class WorkflowSessionV2(WorkflowSession):
         selections = edges if isinstance(edges, list) else [edges]
         if not selections:
             raise WorkflowError("TOOL_ARGS", "edges 数组不能为空")
-        operations = []
-        for item in selections:
-            if kind == "fillet":
-                operations.append({"operation": "feature_fillet",
-                                   "params": {"radius": size / 1000, **self._edge_params(item)}})
-            else:
-                operations.append({"operation": "feature_chamfer", "params": {
-                    "type": "equal_distance", "distance1": size / 1000, **self._edge_params(item)}})
+        propagate = args.get("propagate", True)
+        propagate = str(propagate).strip().lower() != "false" if isinstance(propagate, str) else bool(propagate)
+        base = ({"radius": size / 1000, **({} if propagate else {"propagate": False})} if kind == "fillet"
+                else {"type": "equal_distance", "distance1": size / 1000})
+        route = "/api/feature/fillet" if kind == "fillet" else "/api/feature/chamfer"
+        params = [self._edge_params(item) for item in selections]
+        if len(params) > 1 and all(p["edgeSelection"] == "ray" for p in params):
+            # 多条棱放进同一个特征：逐条倒圆时，后倒的棱会顺着先倒圆角的端部相切传播到别的棱上
+            rays = [[p[k] for k in ("rx", "ry", "rz", "dx", "dy", "dz")] for p in params]
+            operations = [{"operation": f"feature_{kind}", "route": route,
+                           "params": {**base, "edgeSelection": "rays", "rays": rays}}]
+        else:
+            operations = [{"operation": f"feature_{kind}", **({"route": route} if not propagate else {}),
+                           "params": {**base, **p}} for p in params]
         ray_warnings = [
             text for index, item in enumerate(selections)
             if isinstance(item, dict) and (text := ray_ambiguity(before, item, index if len(selections) > 1 else None))
@@ -1423,6 +1449,73 @@ class WorkflowSessionV2(WorkflowSession):
                 hint="倒某个面上的边：每条边给一条射线 {origin, direction}，命中该面、离目标棱约 1mm；多条边写成射线数组。",
             )
         return super()._edge_params(edges)
+
+    def countersink(self, args: dict) -> dict:
+        """锥形沉头：带拔模角的盲切切出 head_diameter → through_diameter 的锥台，再打通孔。"""
+        centers = self._resolve_numbers(args.get("centers"))
+        if not isinstance(centers, list) or not centers:
+            raise WorkflowError("TOOL_ARGS", "centers 必须是非空的 [[u,v], ...]（或给 polar）")
+        through_d = self._num(args, "through_diameter", required=True)
+        head_d = self._num(args, "head_diameter", required=True)
+        if head_d <= through_d:
+            raise WorkflowError("TOOL_ARGS", "head_diameter 必须大于 through_diameter")
+        angle = self._num(args, "angle_deg")
+        head_depth = self._num(args, "head_depth")
+        if angle is None and head_depth:
+            angle = 2 * math.degrees(math.atan((head_d - through_d) / 2 / head_depth))
+            self._notes.append(f"由 head_depth={head_depth:g} 推出锥角 {angle:.2f}°（未给 angle_deg）")
+        angle = 90.0 if angle is None else angle
+        if not 20 <= angle < 179:
+            raise WorkflowError("TOOL_ARGS", f"angle_deg={angle:g} 不合理（常用 90° 或 82°/100°/120°）")
+        cone_depth = (head_d - through_d) / 2 / math.tan(math.radians(angle / 2))
+        before = self.snapshot()
+        if self._volume(before) <= 0:
+            raise WorkflowError("NO_BODY", "零件中还没有实体，无法打孔")
+        frame = self._frame(args.get("plane"), before)
+        if str(args.get("direction") or "").strip().lower() == "both":
+            raise WorkflowError("TOOL_ARGS", "countersink 不支持 direction=both")
+        loops, check, _warnings = self._profile(
+            {"loops": [{"type": "circle", "center": c, "diameter": head_d} for c in centers]}, frame, removing=True)
+        feature, actual = self._cut_feature(
+            frame, {"direction": args.get("direction"), "depth": cone_depth, "through_all": False}, before)
+        if feature.get("operation") != "feature_cut_extrusion" or feature["params"].get("endCondition") != "blind":
+            raise WorkflowError("TOOL_ARGS", "锥形沉头只能在实体表面向内切；请在零件表面上给 plane")
+        feature = {**feature, "route": "/api/feature/cut-extrusion",
+                   "params": {**feature["params"], "draftAngleDeg": angle / 2}}
+        expected = len(centers) * math.pi * cone_depth / 12 * (head_d ** 2 + head_d * through_d + through_d ** 2)
+        cone = self._transaction(
+            [self._open_sketch(frame), *draw_operations(frame, loops), feature], expect="decrease", before=before,
+            context={"plane": frame.describe(), "direction": actual},
+        )
+        removed = -float(cone.get("volume_delta_mm3") or 0)
+        warnings = []
+        if removed > expected * 1.15:
+            warnings.append(f"锥面去除 {removed:g} mm³，大于 {len(centers)} 个锥台的理论值 {expected:.2f} mm³，锥面可能朝外扩")
+        shared = {key: args[key] for key in ("direction", "through_all", "depth") if key in args}
+        try:
+            through = self.cut({**shared, "plane": args.get("plane"),
+                                "loops": [{"type": "circle", "center": c, "diameter": through_d} for c in centers]})
+        except WorkflowError as exc:
+            self._rollback(cone.get("created") or [])
+            exc.context["hint"] = (
+                f"锥形沉头已成功并已回滚，失败的是直径 {through_d:g} 的通孔部分。给 depth 或 through_all=true；"
+                "如果这个位置已经有同径的孔，只需单独做锥面。"
+            )
+            raise
+        after = self.snapshot()
+        result = {
+            "kind": "countersink",
+            "created": (cone.get("created") or []) + (through.get("created") or []),
+            "volume_mm3": _round(self._volume(after), 2),
+            "volume_delta_mm3": _round(self._volume(after) - self._volume(before), 2),
+            "bbox_mm": self._bbox(after),
+            "plane": frame.describe(),
+            "angle_deg": _round(angle, 2),
+            "cone_depth_mm": _round(cone_depth, 3),
+            "cone_removed_mm3": _round(removed, 2),
+            "cone_expected_mm3": _round(expected, 2),
+        }
+        return {**result, "warnings": warnings} if warnings else result
 
     def fillet(self, args: dict) -> dict:
         return self._edge_feature(args, kind="fillet")

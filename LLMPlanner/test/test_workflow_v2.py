@@ -445,9 +445,40 @@ def test_fillet_reports_estimated_edge_length_and_accepts_ray_list():
     rays = [{"origin": [0, 20, 30], "direction": [0, -1, 0]}, {"origin": [0, 20, -30], "direction": [0, -1, 0]}]
     result = session.call("fillet", {"radius": radius, "edges": rays})
     assert result["ok"] is True, result
-    assert [op["operation"] for op in session.ran[0]] == ["feature_fillet", "feature_fillet"]
+    (op,) = session.ran[0]
+    assert op["route"] == "/api/feature/fillet" and op["params"]["edgeSelection"] == "rays"
+    assert op["params"]["rays"] == [[0, 0.02, 0.03, 0, -1, 0], [0, 0.02, -0.03, 0, -1, 0]]
+    assert "propagate" not in op["params"]
     assert result["estimated_edge_length_mm"] == pytest.approx(80, abs=0.1)
     assert "warnings" not in result
+    single = FakeV2(delta=-5)
+    single.call("fillet", {"radius": 1, "edges": "top_front", "propagate": "false"})
+    (op,) = single.ran[0]
+    assert op["route"] == "/api/feature/fillet" and op["params"]["propagate"] is False
+    mixed = FakeV2(delta=-5)
+    mixed.call("chamfer", {"distance": 1, "edges": ["top_front", rays[0]]})
+    assert [o["params"]["edgeSelection"] for o in mixed.ran[0]] == ["top_front", "ray"]
+
+
+def test_countersink_cuts_a_cone_whose_depth_follows_the_angle():
+    session = FakeV2(delta=-80)
+    result = session.call("countersink", {
+        "plane": "top", "centers": [[0, 0], [20, 0]], "through_diameter": 4.5, "head_diameter": 9,
+        "through_all": True,
+    })
+    assert result["ok"] is True, result
+    cone = session.ran[0][-1]
+    assert cone["route"] == "/api/feature/cut-extrusion"
+    assert cone["params"]["draftAngleDeg"] == pytest.approx(45)
+    assert cone["params"]["depth"] == pytest.approx(0.00225)
+    assert result["cone_expected_mm3"] == pytest.approx(2 * math.pi * 2.25 / 12 * (81 + 40.5 + 20.25), rel=1e-4)
+    assert session.ran[1][-1]["params"]["endCondition"] == "through_all"
+    derived = FakeV2(delta=-80).call("countersink", {
+        "plane": "top", "centers": [[0, 0]], "through_diameter": 4, "head_diameter": 8, "head_depth": 2 / math.sqrt(3),
+        "through_all": True,
+    })
+    assert derived["angle_deg"] == pytest.approx(120, abs=0.01)
+    assert "counterbore" in {s["function"]["name"]: s["function"] for s in TOOL_SPECS_V2}["countersink"]["description"]
 
 
 def test_ambiguous_edge_rays_are_flagged():

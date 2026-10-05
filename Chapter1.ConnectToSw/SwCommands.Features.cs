@@ -248,9 +248,14 @@ namespace Chapter1.ConnectToSw
         /// endCondition: "blind"(盲孔), "through_all"(贯穿), "mid_plane"(中间面), "up_to_next"(到下一面)
         /// flipDirection: 是否反转切除方向
         /// </summary>
-        public string CutExtrusion(double depth, string endCondition = "blind", bool flipDirection = false)
+        public string CutExtrusion(double depth, string endCondition = "blind", bool flipDirection = false,
+            double draftAngleDeg = 0, bool draftOutward = false)
         {
             EnsureActiveDoc();
+            if (draftAngleDeg < 0 || draftAngleDeg >= 90)
+                throw new ArgumentOutOfRangeException(nameof(draftAngleDeg), "拔模角必须在 [0, 90) 度范围内");
+            bool draft = draftAngleDeg > 0;
+            double draftRad = draftAngleDeg * Math.PI / 180.0;
 
             var mdoc = (ModelDoc2)ActiveDoc;
 
@@ -358,11 +363,11 @@ namespace Chapter1.ConnectToSw
                 0,                  // 5.  T2 - 终止条件2（单端切除时不使用）
                 depth,              // 6.  D1 - 深度1 (double)
                 depth,              // 7.  D2 - 深度2 (double)
-                false,              // 8.  Dchk1 - 拔模开关1
+                draft,              // 8.  Dchk1 - 拔模开关1
                 false,              // 9.  Dchk2 - 拔模开关2
-                false,              // 10. Ddir1 - 拔模方向1
+                draftOutward,       // 10. Ddir1 - 拔模方向1
                 false,              // 11. Ddir2 - 拔模方向2
-                0.0,                // 12. Dang1 - 拔模角度1 (double)
+                draftRad,           // 12. Dang1 - 拔模角度1 (double)
                 0.0,                // 13. Dang2 - 拔模角度2 (double)
                 false,              // 14. OffsetReverse1
                 false,              // 15. OffsetReverse2
@@ -416,8 +421,8 @@ namespace Chapter1.ConnectToSw
                 feat = ActiveDoc.FeatureManager.FeatureCut4(
                     true, false, flipDirection,
                     t1, 0, depth, depth,
-                    false, false, false, false,
-                    0.0, 0.0, false, false, false, false,
+                    draft, false, draftOutward, false,
+                    draftRad, 0.0, false, false, false, false,
                     false, true, true, false, false, false,
                     (int)swStartConditions_e.swStartSketchPlane, 0.0, false, false
                 );
@@ -621,7 +626,8 @@ namespace Chapter1.ConnectToSw
         /// </summary>
         public Dictionary<string, object> Fillet(double radius, string edgeSelection,
             double rx = 0, double ry = 0, double rz = 0,
-            double dx = 0, double dy = 0, double dz = 0)
+            double dx = 0, double dy = 0, double dz = 0,
+            List<double[]> rays = null, bool propagate = true)
         {
             EnsureActiveDoc();
 
@@ -707,6 +713,10 @@ namespace Chapter1.ConnectToSw
                 edgeCount = 1;
                 Console.WriteLine($"[SwCommands] 圆角: 通过射线选中 1 条边");
             }
+            else if (edgeSelection.ToLower() == "rays")
+            {
+                edgeCount = SelectEdgesByRays(ext, rays, "圆角");
+            }
             else
             {
                 // 尝试作为语义化边位置名解析（如 "top_front", "bottom_left" 等）
@@ -727,8 +737,9 @@ namespace Chapter1.ConnectToSw
             double[] pointDist2Array = new double[0];
             double[] pointRhoArray = new double[0];
 
+            int options = propagate ? 195 : 195 & ~(int)swFeatureFilletOptions_e.swFeatureFilletPropagate;
             var feat = (Feature)ActiveDoc.FeatureManager.FeatureFillet3(
-                195,                // Options (标准简单圆角选项组合)
+                options,            // Options (标准简单圆角选项组合；propagate=false 时去掉沿相切边传播)
                 radius,             // R1 - 圆角半径
                 0,                  // R2 - 非对称时的第二半径（对称时为 0）
                 0,                  // Rho - 圆锥形状值
@@ -809,6 +820,31 @@ namespace Chapter1.ConnectToSw
         }
 
         /// <summary>
+        /// 多条射线依次追加选边（每条 [rx,ry,rz,dx,dy,dz]，米），供一个圆角/倒角特征同时处理多条边。
+        /// 任一射线未命中即报错，并指出是第几条。
+        /// </summary>
+        private int SelectEdgesByRays(ModelDocExtension ext, List<double[]> rays, string label)
+        {
+            if (rays == null || rays.Count == 0)
+                throw new ArgumentException("edgeSelection=rays 需要非空的 rays");
+            var selectionManager = (ISelectionMgr)ActiveDoc.SelectionManager;
+            for (int i = 0; i < rays.Count; i++)
+            {
+                var r = rays[i];
+                if (r == null || r.Length != 6)
+                    throw new ArgumentException($"rays[{i}] 须为 [rx,ry,rz,dx,dy,dz]");
+                bool selected = ext.SelectByRay(r[0], r[1], r[2], r[3], r[4], r[5], 0.002,
+                    (int)swSelectType_e.swSelEDGES, i > 0, 0, 0);
+                if (!selected)
+                    throw new InvalidOperationException(
+                        $"第 {i + 1} 条射线未命中任何边：起点({r[0]},{r[1]},{r[2]}) 方向({r[3]},{r[4]},{r[5]})");
+            }
+            int count = selectionManager.GetSelectedObjectCount2(-1);
+            Console.WriteLine($"[SwCommands] {label}: {rays.Count} 条射线选中 {count} 条边");
+            return count;
+        }
+
+        /// <summary>
         /// 创建倒角特征。
         /// 通过射线选中实体的边，再应用倒角。
         /// 
@@ -825,7 +861,8 @@ namespace Chapter1.ConnectToSw
             string edgeSelection,
             double distance2 = 0, double angle = 45,
             double rx = 0, double ry = 0, double rz = 0,
-            double dx = 0, double dy = 0, double dz = 0)
+            double dx = 0, double dy = 0, double dz = 0,
+            List<double[]> rays = null)
         {
             EnsureActiveDoc();
 
@@ -896,6 +933,10 @@ namespace Chapter1.ConnectToSw
                 }
                 edgeCount = 1;
                 Console.WriteLine($"[SwCommands] 倒角: 通过射线选中 1 条边");
+            }
+            else if (edgeSelection.ToLower() == "rays")
+            {
+                edgeCount = SelectEdgesByRays(ext, rays, "倒角");
             }
             else
             {

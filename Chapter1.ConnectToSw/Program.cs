@@ -1191,7 +1191,8 @@ namespace Chapter1.ConnectToSw
                     flipDirection = Convert.ToBoolean(body["flipDirection"]);
 
                 string featureName = _commands.CutExtrusion(
-                    depth, endCondition, flipDirection);
+                    depth, endCondition, flipDirection,
+                    GetDoubleOrDefault(body, "draftAngleDeg", 0), GetBoolOrDefault(body, "draftOutward", false));
                 SendJson(resp, 200, new {
                     success = true,
                     message = $"切除拉伸完成，深度: {depth} 米, 终止条件: {endCondition}",
@@ -1517,7 +1518,8 @@ namespace Chapter1.ConnectToSw
                 double dy = GetDoubleOrDefault(body, "dy", 0);
                 double dz = GetDoubleOrDefault(body, "dz", 0);
 
-                var result = _commands.Fillet(radius, edgeSelection, rx, ry, rz, dx, dy, dz);
+                var result = _commands.Fillet(radius, edgeSelection, rx, ry, rz, dx, dy, dz,
+                    GetNumberRows(body, "rays", 6), GetBoolOrDefault(body, "propagate", true));
                 SendJson(resp, 200, new
                 {
                     success = true,
@@ -1567,7 +1569,7 @@ namespace Chapter1.ConnectToSw
                 double dz = GetDoubleOrDefault(body, "dz", 0);
 
                 var result = _commands.Chamfer(chamferType, distance1, edgeSelection,
-                    distance2, angle, rx, ry, rz, dx, dy, dz);
+                    distance2, angle, rx, ry, rz, dx, dy, dz, GetNumberRows(body, "rays", 6));
                 SendJson(resp, 200, new
                 {
                     success = true,
@@ -1978,19 +1980,7 @@ namespace Chapter1.ConnectToSw
             try
             {
                 var body = ReadJsonBody(req);
-                var points = new List<double[]>();
-                if (body.ContainsKey("points") && body["points"] is System.Collections.IEnumerable rows)
-                {
-                    foreach (var row in rows)
-                    {
-                        var values = new List<double>();
-                        foreach (var value in (System.Collections.IEnumerable)row)
-                            values.Add(Convert.ToDouble(value));
-                        if (values.Count != 3)
-                            throw new ArgumentException("points 的每一项须为 [x, y, z]");
-                        points.Add(values.ToArray());
-                    }
-                }
+                var points = GetNumberRows(body, "points", 3) ?? new List<double[]>();
                 var result = _commands.Sketch3DPath(
                     points, GetBoolOrDefault(body, "spline", false), GetDoubleOrDefault(body, "cornerRadius", 0));
                 SendJson(resp, 200, new { success = true, message = $"已绘制 3D 路径 {result["sketchName"]}", result });
@@ -3298,6 +3288,28 @@ namespace Chapter1.ConnectToSw
                 throw new KeyNotFoundException($"缺少必要参数: {key}");
 
             return Convert.ToDouble(body[key]);
+        }
+
+        /// <summary>
+        /// 读取二维数值数组（如 [[x,y,z], ...]），每行必须恰好 width 个数；键不存在时返回 null。
+        /// </summary>
+        private static List<double[]> GetNumberRows(Dictionary<string, object> body, string key, int width)
+        {
+            if (!body.ContainsKey(key) || body[key] == null)
+                return null;
+            if (!(body[key] is System.Collections.IEnumerable rows))
+                throw new ArgumentException($"{key} 须为数组");
+            var result = new List<double[]>();
+            foreach (var row in rows)
+            {
+                var values = new List<double>();
+                foreach (var value in (System.Collections.IEnumerable)row)
+                    values.Add(Convert.ToDouble(value));
+                if (values.Count != width)
+                    throw new ArgumentException($"{key} 的每一项须为 {width} 个数");
+                result.Add(values.ToArray());
+            }
+            return result;
         }
 
         /// <summary>
