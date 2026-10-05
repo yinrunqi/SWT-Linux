@@ -1,0 +1,1471 @@
+{
+  "run_at": "2026-10-02T16:00:55+08:00",
+  "provider": "TT Switch",
+  "model": "gpt-6-astra",
+  "mode": "workflow",
+  "action_level": "L1",
+  "prompt_lang": "zh",
+  "score_version": 2,
+  "strict_orientation": false,
+  "repeats": 1,
+  "cache_enabled": false,
+  "historical_skipped": [],
+  "case_ids": [
+    "stool"
+  ],
+  "average_score": 100.0,
+  "average_score_v1": 100.0,
+  "average_score_ci95": null,
+  "pass_at_1": 1.0,
+  "passed": 1,
+  "passed_v1": 1,
+  "total": 1,
+  "total_duration_seconds": 69.47,
+  "per_case": [
+    {
+      "case_id": "stool",
+      "runs": 1,
+      "mean_score": 100.0,
+      "min_score": 100.0,
+      "max_score": 100.0,
+      "passed_runs": 1,
+      "pass_at_1": 1.0,
+      "pass_at_k": 1.0,
+      "mean_tokens": 72076
+    }
+  ],
+  "token_totals": {
+    "prompt_tokens": 71424,
+    "completion_tokens": 652,
+    "total_tokens": 72076,
+    "calls": 9
+  },
+  "balance_before": null,
+  "balance_after": null,
+  "spent_yuan": null,
+  "results": [
+    {
+      "case_id": "stool",
+      "name": "四脚板凳",
+      "score": 100.0,
+      "acceptance_ok": true,
+      "validity_points": 15.0,
+      "robustness_points": 10.0,
+      "failed_step_count": 0,
+      "dimension_points": 30.0,
+      "volume_points": 20.0,
+      "detail_points": 25.0,
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_ok": true,
+      "actual_details": {
+        "extrusions": 2,
+        "cuts": 0,
+        "revolves": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "holes": 0,
+        "shells": 0,
+        "patterns": 0,
+        "mirrors": 2,
+        "sweeps": 0,
+        "lofts": 0,
+        "ribs": 0,
+        "drafts": 0,
+        "threads": 0,
+        "sheet_metal": 0,
+        "solid_features": 2,
+        "circles": 1,
+        "polygons": 0,
+        "centerlines": 0,
+        "slots": 0,
+        "cut_circles": 0,
+        "sketch_lines": 4,
+        "sketch_arcs": 0,
+        "sketch_splines": 0
+      },
+      "detail_checks": {
+        "extrusions": true
+      },
+      "strict_orientation": false,
+      "status": "completed",
+      "plan_steps": 5,
+      "successful_steps": 5,
+      "failed_steps": [],
+      "bbox_mm": {
+        "minX": -100.0,
+        "minY": 0.0,
+        "minZ": -100.0,
+        "maxX": 100.0,
+        "maxY": 170.0,
+        "maxZ": 100.0,
+        "sizeX": 200.0,
+        "sizeY": 170.0,
+        "sizeZ": 200.0
+      },
+      "volume_mm3": 988495.559,
+      "v1": {
+        "score": 100.0,
+        "acceptance_ok": true,
+        "execution_points": 25.0,
+        "dimension_points": 30.0,
+        "volume_points": 20.0,
+        "detail_points": 25.0,
+        "actual_details": {
+          "extrusions": 2,
+          "cuts": 0,
+          "fillets": 0,
+          "chamfers": 0,
+          "revolves": 0,
+          "polygons": 0,
+          "centerlines": 0,
+          "circles": 1,
+          "slots": 0,
+          "cut_circles": 0,
+          "faces": 14
+        }
+      },
+      "token_usage": {
+        "calls": 9,
+        "completion_tokens": 652,
+        "prompt_tokens": 71424,
+        "total_tokens": 72076
+      },
+      "workflow_status": "finished",
+      "workflow_error": null,
+      "llm_calls": 9,
+      "truncated_llm_calls": 0,
+      "tool_calls": 9,
+      "duration_seconds": 69.47,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null,
+      "artifacts": {
+        "step": "eval\\artifacts\\smoke_astra\\stool_r1.step",
+        "sldprt": "eval\\artifacts\\smoke_astra\\stool_r1.SLDPRT"
+      },
+      "trace": {
+        "request": {
+          "url": "http://localhost:5000/api/run",
+          "json": {
+            "instruction": "创建四脚板凳：凳面 200×200×20mm；四条圆柱腿直径 20mm、长 150mm，腿中心距相邻边 30mm。",
+            "provider": "ttswitch",
+            "vision_model": "gpt-6-astra",
+            "plan_model": "gpt-6-astra",
+            "mode": "single_turn",
+            "action_level": "L1",
+            "use_cache": false,
+            "capture_trace": true,
+            "dry_run": false,
+            "max_turns": 40
+          }
+        },
+        "response_status": 200,
+        "response": {
+          "action_level": "L1",
+          "mode": "workflow",
+          "plan": {
+            "notes": "四脚板凳已完成并核对：凳面200×200×20 mm，位于Y=150～170 mm；四条圆柱腿均为Ø20×150 mm，沿Y轴竖直，腿底在Y=0。四腿中心的(X,Z)坐标为(±70,±70) mm，距各自相邻两边均30 mm，中心间距140 mm；通过两次镜像实现四角对称。整体长×宽×高为200×200×170 mm。",
+            "steps": [
+              {
+                "operation": "ref_plane",
+                "params": {
+                  "offset": "=leg_length",
+                  "reference": "top_plane"
+                }
+              },
+              {
+                "operation": "extrude",
+                "params": {
+                  "depth": "=seat_thickness",
+                  "direction": "+Y",
+                  "loops": [
+                    {
+                      "center": [
+                        0,
+                        0
+                      ],
+                      "size": [
+                        "=seat_size",
+                        "=seat_size"
+                      ],
+                      "type": "rect"
+                    }
+                  ],
+                  "plane": "基准面1"
+                }
+              },
+              {
+                "operation": "extrude",
+                "params": {
+                  "depth": "=leg_length",
+                  "direction": "-Y",
+                  "loops": [
+                    {
+                      "center": [
+                        -70,
+                        -70
+                      ],
+                      "diameter": "=leg_diameter",
+                      "type": "circle"
+                    }
+                  ],
+                  "plane": "bottom"
+                }
+              },
+              {
+                "operation": "mirror",
+                "params": {
+                  "features": [
+                    "凸台-拉伸2"
+                  ],
+                  "plane": "right_plane"
+                }
+              },
+              {
+                "operation": "mirror",
+                "params": {
+                  "features": [
+                    "凸台-拉伸2",
+                    "镜向1"
+                  ],
+                  "plane": "front_plane"
+                }
+              }
+            ],
+            "user_intent": "创建四脚板凳：凳面 200×200×20mm；四条圆柱腿直径 20mm、长 150mm，腿中心距相邻边 30mm。"
+          },
+          "raw_llm_trace": [
+            {
+              "content": "你是一名资深机械设计工程师，正在 SolidWorks 中用工具逐步建出用户描述的零件。\n\n## 坐标与单位\n- 所有长度单位 mm，角度单位度。模型坐标：+Y 向上（顶），+Z 向前，+X 向右。\n- 除非需求另有说明，零件底面放在 Y=0、高度沿 +Y，并在 X、Z 方向上以原点为中心；回转体的轴线沿 Y。\n- 每个草图平面都有固定的 (u,v) 坐标，数值就是模型坐标：法向沿 Z → u=X, v=Y；法向沿 Y → u=X, v=Z；法向沿 X → u=Z, v=Y。\n  例如在顶面（法向 +Y）上 [10, -5] 表示 X=10, Z=-5。\n\n## 草图与特征规则\n- 一次 extrude/cut 调用画一个区域：外环加上它内部的内环（孔）。部分重叠的轮廓会被拒绝，需要拆成先后两个特征（实体会自动合并）或合并成一个 polygon。\n- 在已有实体上加特征时，用语义面引用（top/bottom/left/right/front/back、face(+X, innermost) 等）或 get_model_state 返回的 face#index，不要猜测。\n- cut 默认朝实体内部切；hole 可以一次打多个同径孔；重复特征优先用 circular_pattern / linear_pattern。\n- revolve 的轮廓是截面的一半，必须整体位于轴线一侧，可以贴着轴线。\n- 带圆角的外形（耳片、圆角板、腰形孔、扇形窗口、带圆弧的截面）直接在轮廓里表达：rect/polygon 的 corner_radius、slot、annular_sector 或 path 的圆弧段，而不是先画尖角再补 fillet。\n- 需要在没有现成平面的位置画草图时（悬空的凸台、离开实体表面一段距离的特征），先用 ref_plane 从已有平面偏移出基准面，再把它的名称作为 plane。\n- 对称的特征建好一侧后用 mirror 镜像；整个零件左右对称时也可以先建一半再 mirror(body=true)。\n- 侧凸台、支管接到已有实体时用 extrude(..., up_to=面或 body)，不要估一个 depth。\n- 沉头孔用 counterbore / countersink，螺纹底孔用 tapped_hole；不要拆成两次普通 cut。\n- 筋用 rib（开放线段，连接已有两个面）；弯管、沿路径的实体用 sweep；变截面用 loft。\n- 空心壳体用 shell 抽掉开口面；侧面斜度用 draft，不要靠猜拉伸深度冒充。\n- 钣金平板用 sheet_metal（必须是零件的第一特征）。改已有特征的尺寸用 edit_feature，不要删除重做。\n- fillet/chamfer 一般放在最后，edges 不确定时先用 get_model_state 查看几何。\n\n## 工作方式\n1. 先读懂需求，列出总体尺寸和关键特征；可以用 set_parameters 定义驱动参数，之后用 \"=表达式\" 引用。\n2. 先建基体，再逐个添加特征。每次调用后检查返回的 volume_delta_mm3 与 bbox_mm 是否符合预期。\n3. 工具失败时会自动回滚，模型保持调用前的状态。阅读错误码和提示，修改参数或换一种做法再试；不要重复完全相同的失败调用。做错的特征可以用 delete_feature 删除。\n4. 全部完成后调用 get_model_state，逐项核对总体尺寸、孔数、特征是否满足需求；不满足就继续修改。\n5. 核对无误后调用 finish，并在 summary 中说明零件的组成与关键尺寸。\n",
+              "role": "system"
+            },
+            {
+              "content": "建模需求：\n创建四脚板凳：凳面 200×200×20mm；四条圆柱腿直径 20mm、长 150mm，腿中心距相邻边 30mm。\n\n当前是一个空零件，请开始建模。",
+              "role": "user"
+            },
+            {
+              "content": "将创建总高 170 mm 的四脚板凳：凳面 200×200×20 mm，四条 Ø20×150 mm 圆柱腿，腿中心位于凳面中心的 X、Z 方向 ±70 mm 处，腿底落在 Y=0。\n",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{}",
+                    "name": "get_model_state"
+                  },
+                  "id": "call_YgnPj023Hbf9R4DkwuqPk7ff",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"state\": {\"features\": [], \"bbox_mm\": null, \"volume_mm3\": 0.0, \"planar_faces\": [], \"cylindrical_faces\": [], \"reference_planes\": [], \"parameters\": {}}}",
+              "role": "tool",
+              "tool_call_id": "call_YgnPj023Hbf9R4DkwuqPk7ff"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"values\":{\"seat_size\":200,\"seat_thickness\":20,\"leg_diameter\":20,\"leg_length\":150,\"edge_offset\":30,\"leg_spacing\":\"=seat_size-2*edge_offset\"}}",
+                    "name": "set_parameters"
+                  },
+                  "id": "call_ulHOHpmuG0sprkIpAUArGe6Q",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"parameters\": {\"seat_size\": 200.0, \"seat_thickness\": 20.0, \"leg_diameter\": 20.0, \"leg_length\": 150.0, \"edge_offset\": 30.0, \"leg_spacing\": 140.0}}",
+              "role": "tool",
+              "tool_call_id": "call_ulHOHpmuG0sprkIpAUArGe6Q"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"reference\":\"top_plane\",\"offset\":\"=leg_length\"}",
+                    "name": "ref_plane"
+                  },
+                  "id": "call_ljZYe0v8DO9HTW8CmDOvMTpX",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"name\": \"基准面1\", \"plane\": \"基准面1: 平面 Y=150mm，法向 +Y；u=X, v=Z（模型坐标，mm）\", \"from\": \"top_plane\"}",
+              "role": "tool",
+              "tool_call_id": "call_ljZYe0v8DO9HTW8CmDOvMTpX"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"基准面1\",\"loops\":[{\"type\":\"rect\",\"center\":[0,0],\"size\":[\"=seat_size\",\"=seat_size\"]}],\"depth\":\"=seat_thickness\",\"direction\":\"+Y\"}",
+                    "name": "extrude"
+                  },
+                  "id": "call_sMmXnkDlD3ntUW3dcuXYkCnm",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图1\", \"凸台-拉伸1\"], \"volume_mm3\": 800000.0, \"volume_delta_mm3\": 800000.0, \"bbox_mm\": {\"X\": [-100.0, 100.0], \"Y\": [150.0, 170.0], \"Z\": [-100.0, 100.0], \"size\": [200.0, 20.0, 200.0]}, \"plane\": \"基准面1: 平面 Y=150mm，法向 +Y；u=X, v=Z（模型坐标，mm）\", \"direction\": \"+Y\", \"region_area_mm2\": 40000.0, \"profile_uv_bbox\": {\"u\": [-100.0, 100.0], \"v\": [-100.0, 100.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_sMmXnkDlD3ntUW3dcuXYkCnm"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"bottom\",\"loops\":[{\"type\":\"circle\",\"center\":[-70,-70],\"diameter\":\"=leg_diameter\"}],\"depth\":\"=leg_length\",\"direction\":\"-Y\"}",
+                    "name": "extrude"
+                  },
+                  "id": "call_RjrfbolLy3QBr9uHe5z2cCZ9",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图2\", \"凸台-拉伸2\"], \"volume_mm3\": 847123.89, \"volume_delta_mm3\": 47123.89, \"bbox_mm\": {\"X\": [-100.0, 100.0], \"Y\": [0.0, 170.0], \"Z\": [-100.0, 100.0], \"size\": [200.0, 170.0, 200.0]}, \"plane\": \"bottom(face#5): 平面 Y=150mm，法向 -Y；u=X, v=Z（模型坐标，mm）\", \"direction\": \"-Y\", \"region_area_mm2\": 313.654849, \"profile_uv_bbox\": {\"u\": [-80.0, -60.0], \"v\": [-80.0, -60.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_RjrfbolLy3QBr9uHe5z2cCZ9"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"right_plane\",\"features\":[\"凸台-拉伸2\"]}",
+                    "name": "mirror"
+                  },
+                  "id": "call_Tufnslv9Ywanza2O5VsHEW8U",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"镜向1\"], \"volume_mm3\": 894247.78, \"volume_delta_mm3\": 47123.89, \"bbox_mm\": {\"X\": [-100.0, 100.0], \"Y\": [0.0, 170.0], \"Z\": [-100.0, 100.0], \"size\": [200.0, 170.0, 200.0]}, \"plane\": \"right_plane: 平面 X=0mm，法向 +X；u=Z, v=Y（模型坐标，mm）\", \"mirrored\": [\"凸台-拉伸2\"]}",
+              "role": "tool",
+              "tool_call_id": "call_Tufnslv9Ywanza2O5VsHEW8U"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"front_plane\",\"features\":[\"凸台-拉伸2\",\"镜向1\"]}",
+                    "name": "mirror"
+                  },
+                  "id": "call_PHPkErAj8yyOcEYI20raxfOf",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"镜向2\"], \"volume_mm3\": 988495.56, \"volume_delta_mm3\": 94247.78, \"bbox_mm\": {\"X\": [-100.0, 100.0], \"Y\": [0.0, 170.0], \"Z\": [-100.0, 100.0], \"size\": [200.0, 170.0, 200.0]}, \"plane\": \"front_plane: 平面 Z=0mm，法向 +Z；u=X, v=Y（模型坐标，mm）\", \"mirrored\": [\"凸台-拉伸2\", \"镜向1\"]}",
+              "role": "tool",
+              "tool_call_id": "call_PHPkErAj8yyOcEYI20raxfOf"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{}",
+                    "name": "get_model_state"
+                  },
+                  "id": "call_fcA6huj5YPRsdna5QRHOXgVx",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"state\": {\"features\": [{\"name\": \"基准面1\", \"type\": \"RefPlane\"}, {\"name\": \"草图1\", \"type\": \"ProfileFeature\"}, {\"name\": \"凸台-拉伸1\", \"type\": \"Extrusion\"}, {\"name\": \"草图2\", \"type\": \"ProfileFeature\"}, {\"name\": \"凸台-拉伸2\", \"type\": \"ICE\"}, {\"name\": \"镜向1\", \"type\": \"MirrorPattern\"}, {\"name\": \"镜向2\", \"type\": \"MirrorPattern\"}], \"bbox_mm\": {\"X\": [-100.0, 100.0], \"Y\": [0.0, 170.0], \"Z\": [-100.0, 100.0], \"size\": [200.0, 170.0, 200.0]}, \"volume_mm3\": 988495.56, \"planar_faces\": [{\"ref\": \"face#4\", \"normal\": \"+Y\", \"at\": \"Y=170.000\", \"area_mm2\": 40000.0, \"u_range\": [-100.0, 100.0], \"v_range\": [-100.0, 100.0], \"uv\": \"u=X,v=Z\", \"alias\": \"top\"}, {\"ref\": \"face#5\", \"normal\": \"-Y\", \"at\": \"Y=150.000\", \"area_mm2\": 38743.36, \"u_range\": [-100.0, 100.0], \"v_range\": [-100.0, 100.0], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#0\", \"normal\": \"-X\", \"at\": \"X=-100.000\", \"area_mm2\": 4000.0, \"u_range\": [-100.0, 100.0], \"v_range\": [150.0, 170.0], \"uv\": \"u=Z,v=Y\", \"alias\": \"left\"}, {\"ref\": \"face#1\", \"normal\": \"+Z\", \"at\": \"Z=100.000\", \"area_mm2\": 4000.0, \"u_range\": [-100.0, 100.0], \"v_range\": [150.0, 170.0], \"uv\": \"u=X,v=Y\", \"alias\": \"front\"}, {\"ref\": \"face#2\", \"normal\": \"+X\", \"at\": \"X=100.000\", \"area_mm2\": 4000.0, \"u_range\": [-100.0, 100.0], \"v_range\": [150.0, 170.0], \"uv\": \"u=Z,v=Y\", \"alias\": \"right\"}, {\"ref\": \"face#3\", \"normal\": \"-Z\", \"at\": \"Z=-100.000\", \"area_mm2\": 4000.0, \"u_range\": [-100.0, 100.0], \"v_range\": [150.0, 170.0], \"uv\": \"u=X,v=Y\", \"alias\": \"back\"}, {\"ref\": \"face#7\", \"normal\": \"-Y\", \"at\": \"Y=0.000\", \"area_mm2\": 314.16, \"u_range\": [-80.0, -60.0], \"v_range\": [-80.0, -60.0], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#9\", \"normal\": \"-Y\", \"at\": \"Y=0.000\", \"area_mm2\": 314.16, \"u_range\": [60.0, 80.0], \"v_range\": [-80.0, -60.0], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#11\", \"normal\": \"-Y\", \"at\": \"Y=0.000\", \"area_mm2\": 314.16, \"u_range\": [-80.0, -60.0], \"v_range\": [60.0, 80.0], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#13\", \"normal\": \"-Y\", \"at\": \"Y=0.000\", \"area_mm2\": 314.16, \"u_range\": [60.0, 80.0], \"v_range\": [60.0, 80.0], \"uv\": \"u=X,v=Z\"}], \"cylindrical_faces\": [{\"ref\": \"face#6\", \"diameter_mm\": 20.0, \"axis\": \"Y\", \"axis_point_mm\": [-70.0, 0.0, -70.0], \"span_mm\": [0.0, 150.0]}, {\"ref\": \"face#8\", \"diameter_mm\": 20.0, \"axis\": \"Y\", \"axis_point_mm\": [70.0, 0.0, -70.0], \"span_mm\": [0.0, 150.0]}, {\"ref\": \"face#10\", \"diameter_mm\": 20.0, \"axis\": \"Y\", \"axis_point_mm\": [-70.0, 0.0, 70.0], \"span_mm\": [0.0, 150.0]}, {\"ref\": \"face#12\", \"diameter_mm\": 20.0, \"axis\": \"Y\", \"axis_point_mm\": [70.0, 0.0, 70.0], \"span_mm\": [0.0, 150.0]}], \"reference_planes\": [{\"name\": \"基准面1\", \"normal\": \"+Y\", \"at\": \"Y=150.000\", \"uv\": \"u=X,v=Z\"}], \"parameters\": {\"seat_size\": 200.0, \"seat_thickness\": 20.0, \"leg_diameter\": 20.0, \"leg_length\": 150.0, \"edge_offset\": 30.0, \"leg_spacing\": 140.0}}}",
+              "role": "tool",
+              "tool_call_id": "call_fcA6huj5YPRsdna5QRHOXgVx"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"summary\":\"四脚板凳已完成并核对：凳面200×200×20 mm，位于Y=150～170 mm；四条圆柱腿均为Ø20×150 mm，沿Y轴竖直，腿底在Y=0。四腿中心的(X,Z)坐标为(±70,±70) mm，距各自相邻两边均30 mm，中心间距140 mm；通过两次镜像实现四角对称。整体长×宽×高为200×200×170 mm。\"}",
+                    "name": "finish"
+                  },
+                  "id": "call_X3eh4FIJQrSGg649UsWqd9rM",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"final_state\": {\"bbox_mm\": {\"X\": [-100.0, 100.0], \"Y\": [0.0, 170.0], \"Z\": [-100.0, 100.0], \"size\": [200.0, 170.0, 200.0]}, \"volume_mm3\": 988495.56}}",
+              "role": "tool",
+              "tool_call_id": "call_X3eh4FIJQrSGg649UsWqd9rM"
+            }
+          ],
+          "results": [
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "ref_plane",
+              "step": 1,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "extrude",
+              "step": 2,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "extrude",
+              "step": 3,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "mirror",
+              "step": 4,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "mirror",
+              "step": 5,
+              "success": true
+            }
+          ],
+          "success": true,
+          "summary": {
+            "all_ok": true,
+            "llm_calls": 9,
+            "status": "finished",
+            "succeeded": 5,
+            "token_usage": {
+              "calls": 9,
+              "completion_tokens": 652,
+              "prompt_tokens": 71424,
+              "total_tokens": 72076
+            },
+            "tool_calls": 9,
+            "total": 5
+          },
+          "token_usage": {
+            "calls": 9,
+            "completion_tokens": 652,
+            "prompt_tokens": 71424,
+            "total_tokens": 72076
+          },
+          "workflow": {
+            "duration_seconds": 62.85,
+            "error": null,
+            "final_state": {
+              "bbox_mm": {
+                "X": [
+                  -100.0,
+                  100.0
+                ],
+                "Y": [
+                  0.0,
+                  170.0
+                ],
+                "Z": [
+                  -100.0,
+                  100.0
+                ],
+                "size": [
+                  200.0,
+                  170.0,
+                  200.0
+                ]
+              },
+              "cylindrical_faces": [
+                {
+                  "axis": "Y",
+                  "axis_point_mm": [
+                    -70.0,
+                    0.0,
+                    -70.0
+                  ],
+                  "diameter_mm": 20.0,
+                  "ref": "face#6",
+                  "span_mm": [
+                    0.0,
+                    150.0
+                  ]
+                },
+                {
+                  "axis": "Y",
+                  "axis_point_mm": [
+                    70.0,
+                    0.0,
+                    -70.0
+                  ],
+                  "diameter_mm": 20.0,
+                  "ref": "face#8",
+                  "span_mm": [
+                    0.0,
+                    150.0
+                  ]
+                },
+                {
+                  "axis": "Y",
+                  "axis_point_mm": [
+                    -70.0,
+                    0.0,
+                    70.0
+                  ],
+                  "diameter_mm": 20.0,
+                  "ref": "face#10",
+                  "span_mm": [
+                    0.0,
+                    150.0
+                  ]
+                },
+                {
+                  "axis": "Y",
+                  "axis_point_mm": [
+                    70.0,
+                    0.0,
+                    70.0
+                  ],
+                  "diameter_mm": 20.0,
+                  "ref": "face#12",
+                  "span_mm": [
+                    0.0,
+                    150.0
+                  ]
+                }
+              ],
+              "features": [
+                {
+                  "name": "基准面1",
+                  "type": "RefPlane"
+                },
+                {
+                  "name": "草图1",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "凸台-拉伸1",
+                  "type": "Extrusion"
+                },
+                {
+                  "name": "草图2",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "凸台-拉伸2",
+                  "type": "ICE"
+                },
+                {
+                  "name": "镜向1",
+                  "type": "MirrorPattern"
+                },
+                {
+                  "name": "镜向2",
+                  "type": "MirrorPattern"
+                }
+              ],
+              "parameters": {
+                "edge_offset": 30.0,
+                "leg_diameter": 20.0,
+                "leg_length": 150.0,
+                "leg_spacing": 140.0,
+                "seat_size": 200.0,
+                "seat_thickness": 20.0
+              },
+              "planar_faces": [
+                {
+                  "alias": "top",
+                  "area_mm2": 40000.0,
+                  "at": "Y=170.000",
+                  "normal": "+Y",
+                  "ref": "face#4",
+                  "u_range": [
+                    -100.0,
+                    100.0
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    -100.0,
+                    100.0
+                  ]
+                },
+                {
+                  "area_mm2": 38743.36,
+                  "at": "Y=150.000",
+                  "normal": "-Y",
+                  "ref": "face#5",
+                  "u_range": [
+                    -100.0,
+                    100.0
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    -100.0,
+                    100.0
+                  ]
+                },
+                {
+                  "alias": "left",
+                  "area_mm2": 4000.0,
+                  "at": "X=-100.000",
+                  "normal": "-X",
+                  "ref": "face#0",
+                  "u_range": [
+                    -100.0,
+                    100.0
+                  ],
+                  "uv": "u=Z,v=Y",
+                  "v_range": [
+                    150.0,
+                    170.0
+                  ]
+                },
+                {
+                  "alias": "front",
+                  "area_mm2": 4000.0,
+                  "at": "Z=100.000",
+                  "normal": "+Z",
+                  "ref": "face#1",
+                  "u_range": [
+                    -100.0,
+                    100.0
+                  ],
+                  "uv": "u=X,v=Y",
+                  "v_range": [
+                    150.0,
+                    170.0
+                  ]
+                },
+                {
+                  "alias": "right",
+                  "area_mm2": 4000.0,
+                  "at": "X=100.000",
+                  "normal": "+X",
+                  "ref": "face#2",
+                  "u_range": [
+                    -100.0,
+                    100.0
+                  ],
+                  "uv": "u=Z,v=Y",
+                  "v_range": [
+                    150.0,
+                    170.0
+                  ]
+                },
+                {
+                  "alias": "back",
+                  "area_mm2": 4000.0,
+                  "at": "Z=-100.000",
+                  "normal": "-Z",
+                  "ref": "face#3",
+                  "u_range": [
+                    -100.0,
+                    100.0
+                  ],
+                  "uv": "u=X,v=Y",
+                  "v_range": [
+                    150.0,
+                    170.0
+                  ]
+                },
+                {
+                  "area_mm2": 314.16,
+                  "at": "Y=0.000",
+                  "normal": "-Y",
+                  "ref": "face#7",
+                  "u_range": [
+                    -80.0,
+                    -60.0
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    -80.0,
+                    -60.0
+                  ]
+                },
+                {
+                  "area_mm2": 314.16,
+                  "at": "Y=0.000",
+                  "normal": "-Y",
+                  "ref": "face#9",
+                  "u_range": [
+                    60.0,
+                    80.0
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    -80.0,
+                    -60.0
+                  ]
+                },
+                {
+                  "area_mm2": 314.16,
+                  "at": "Y=0.000",
+                  "normal": "-Y",
+                  "ref": "face#11",
+                  "u_range": [
+                    -80.0,
+                    -60.0
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    60.0,
+                    80.0
+                  ]
+                },
+                {
+                  "area_mm2": 314.16,
+                  "at": "Y=0.000",
+                  "normal": "-Y",
+                  "ref": "face#13",
+                  "u_range": [
+                    60.0,
+                    80.0
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    60.0,
+                    80.0
+                  ]
+                }
+              ],
+              "reference_planes": [
+                {
+                  "at": "Y=150.000",
+                  "name": "基准面1",
+                  "normal": "+Y",
+                  "uv": "u=X,v=Z"
+                }
+              ],
+              "volume_mm3": 988495.56
+            },
+            "finish_reasons": [
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls"
+            ],
+            "llm_calls": 9,
+            "status": "finished",
+            "summary": "四脚板凳已完成并核对：凳面200×200×20 mm，位于Y=150～170 mm；四条圆柱腿均为Ø20×150 mm，沿Y轴竖直，腿底在Y=0。四腿中心的(X,Z)坐标为(±70,±70) mm，距各自相邻两边均30 mm，中心间距140 mm；通过两次镜像实现四角对称。整体长×宽×高为200×200×170 mm。",
+            "token_usage": {
+              "calls": 9,
+              "completion_tokens": 652,
+              "prompt_tokens": 71424,
+              "total_tokens": 72076
+            },
+            "tool_calls": [
+              {
+                "args": {},
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "get_model_state"
+              },
+              {
+                "args": {
+                  "values": {
+                    "edge_offset": 30,
+                    "leg_diameter": 20,
+                    "leg_length": 150,
+                    "leg_spacing": "=seat_size-2*edge_offset",
+                    "seat_size": 200,
+                    "seat_thickness": 20
+                  }
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "set_parameters"
+              },
+              {
+                "args": {
+                  "offset": "=leg_length",
+                  "reference": "top_plane"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "ref_plane"
+              },
+              {
+                "args": {
+                  "depth": "=seat_thickness",
+                  "direction": "+Y",
+                  "loops": [
+                    {
+                      "center": [
+                        0,
+                        0
+                      ],
+                      "size": [
+                        "=seat_size",
+                        "=seat_size"
+                      ],
+                      "type": "rect"
+                    }
+                  ],
+                  "plane": "基准面1"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "extrude"
+              },
+              {
+                "args": {
+                  "depth": "=leg_length",
+                  "direction": "-Y",
+                  "loops": [
+                    {
+                      "center": [
+                        -70,
+                        -70
+                      ],
+                      "diameter": "=leg_diameter",
+                      "type": "circle"
+                    }
+                  ],
+                  "plane": "bottom"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "extrude"
+              },
+              {
+                "args": {
+                  "features": [
+                    "凸台-拉伸2"
+                  ],
+                  "plane": "right_plane"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "mirror"
+              },
+              {
+                "args": {
+                  "features": [
+                    "凸台-拉伸2",
+                    "镜向1"
+                  ],
+                  "plane": "front_plane"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "mirror"
+              },
+              {
+                "args": {},
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "get_model_state"
+              },
+              {
+                "args": {
+                  "summary": "四脚板凳已完成并核对：凳面200×200×20 mm，位于Y=150～170 mm；四条圆柱腿均为Ø20×150 mm，沿Y轴竖直，腿底在Y=0。四腿中心的(X,Z)坐标为(±70,±70) mm，距各自相邻两边均30 mm，中心间距140 mm；通过两次镜像实现四角对称。整体长×宽×高为200×200×170 mm。"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "finish"
+              }
+            ]
+          }
+        },
+        "final_observation": {
+          "features": [
+            {
+              "index": 0,
+              "name": "收藏",
+              "type": "FavoriteFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 1,
+              "name": "历史记录",
+              "type": "HistoryFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 2,
+              "name": "选择集",
+              "type": "SelectionSetFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 3,
+              "name": "传感器",
+              "type": "SensorFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 4,
+              "name": "设计活页夹",
+              "type": "DocsFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 5,
+              "name": "注解",
+              "type": "DetailCabinet",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 6,
+              "name": "标注",
+              "type": "InkMarkupFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 7,
+              "name": "光源与相机",
+              "type": "EnvFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 8,
+              "name": "实体",
+              "type": "SolidBodyFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 9,
+              "name": "曲面实体",
+              "type": "SurfaceBodyFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 10,
+              "name": "备注",
+              "type": "CommentsFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 11,
+              "name": "方程式",
+              "type": "EqnFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 12,
+              "name": "材质 <未指定>",
+              "type": "MaterialFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 13,
+              "name": "前视基准面",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 14,
+              "name": "上视基准面",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 15,
+              "name": "右视基准面",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 16,
+              "name": "原点",
+              "type": "OriginProfileFeature",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 17,
+              "name": "Tables",
+              "type": "ConfigTableFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 18,
+              "name": "基准面1",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面1@零件4.Part",
+                  "value": 0.15
+                }
+              ]
+            },
+            {
+              "index": 19,
+              "name": "草图1",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面1@零件4.Part",
+                  "value": 0.15
+                }
+              ]
+            },
+            {
+              "index": 20,
+              "name": "凸台-拉伸1",
+              "type": "Extrusion",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面1@零件4.Part",
+                  "value": 0.15
+                },
+                {
+                  "name": "D1",
+                  "fullName": "D1@凸台-拉伸1@零件4.Part",
+                  "value": 0.02
+                }
+              ]
+            },
+            {
+              "index": 21,
+              "name": "草图2",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 22,
+              "name": "凸台-拉伸2",
+              "type": "ICE",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@凸台-拉伸2@零件4.Part",
+                  "value": 0.15
+                }
+              ]
+            },
+            {
+              "index": 23,
+              "name": "镜向1",
+              "type": "MirrorPattern",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 24,
+              "name": "镜向2",
+              "type": "MirrorPattern",
+              "suppressed": false,
+              "dimensions": []
+            }
+          ],
+          "faces": [
+            {
+              "index": 0,
+              "faceKey": "-X",
+              "surfaceType": "plane",
+              "center": {
+                "x": -0.1,
+                "y": 0.15999999999999998,
+                "z": 0
+              },
+              "normal": {
+                "x": -1,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.003999999999999998,
+              "geometricSignature": "plane:-0.100000:0.160000:0.000000:0.004000000"
+            },
+            {
+              "index": 1,
+              "faceKey": "+Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.15999999999999998,
+                "z": 0.1
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 1
+              },
+              "area": 0.003999999999999998,
+              "geometricSignature": "plane:0.000000:0.160000:0.100000:0.004000000"
+            },
+            {
+              "index": 2,
+              "faceKey": "+X",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0.1,
+                "y": 0.15999999999999998,
+                "z": 0
+              },
+              "normal": {
+                "x": 1,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.003999999999999998,
+              "geometricSignature": "plane:0.100000:0.160000:0.000000:0.004000000"
+            },
+            {
+              "index": 3,
+              "faceKey": "-Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.15999999999999998,
+                "z": -0.1
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": -1
+              },
+              "area": 0.003999999999999998,
+              "geometricSignature": "plane:0.000000:0.160000:-0.100000:0.004000000"
+            },
+            {
+              "index": 4,
+              "faceKey": "+Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.16999999999999998,
+                "z": 0
+              },
+              "normal": {
+                "x": 0,
+                "y": 1,
+                "z": 0
+              },
+              "area": 0.04000000000000001,
+              "geometricSignature": "plane:0.000000:0.170000:0.000000:0.040000000"
+            },
+            {
+              "index": 5,
+              "faceKey": "+Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.15,
+                "z": 0
+              },
+              "normal": {
+                "x": 0,
+                "y": -1,
+                "z": 0
+              },
+              "area": 0.03874336293856409,
+              "geometricSignature": "plane:0.000000:0.150000:0.000000:0.038743363"
+            },
+            {
+              "index": 6,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": -0.07,
+                "y": 0.075,
+                "z": -0.07
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.00942477796076938,
+              "geometricSignature": "cylinder:-0.070000:0.075000:-0.070000:0.009424778"
+            },
+            {
+              "index": 7,
+              "faceKey": "-Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": -0.07,
+                "y": 0,
+                "z": -0.07
+              },
+              "normal": {
+                "x": 0,
+                "y": -1,
+                "z": 0
+              },
+              "area": 0.00031415926535897936,
+              "geometricSignature": "plane:-0.070000:0.000000:-0.070000:0.000314159"
+            },
+            {
+              "index": 8,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0.07,
+                "y": 0.075,
+                "z": -0.07
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.00942477796076938,
+              "geometricSignature": "cylinder:0.070000:0.075000:-0.070000:0.009424778"
+            },
+            {
+              "index": 9,
+              "faceKey": "-Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0.07,
+                "y": 0,
+                "z": -0.07
+              },
+              "normal": {
+                "x": 0,
+                "y": -1,
+                "z": 0
+              },
+              "area": 0.00031415926535897936,
+              "geometricSignature": "plane:0.070000:0.000000:-0.070000:0.000314159"
+            },
+            {
+              "index": 10,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": -0.07,
+                "y": 0.075,
+                "z": 0.07
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.00942477796076938,
+              "geometricSignature": "cylinder:-0.070000:0.075000:0.070000:0.009424778"
+            },
+            {
+              "index": 11,
+              "faceKey": "-Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": -0.07,
+                "y": 0,
+                "z": 0.07
+              },
+              "normal": {
+                "x": 0,
+                "y": -1,
+                "z": 0
+              },
+              "area": 0.00031415926535897936,
+              "geometricSignature": "plane:-0.070000:0.000000:0.070000:0.000314159"
+            },
+            {
+              "index": 12,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0.07,
+                "y": 0.075,
+                "z": 0.07
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.00942477796076938,
+              "geometricSignature": "cylinder:0.070000:0.075000:0.070000:0.009424778"
+            },
+            {
+              "index": 13,
+              "faceKey": "-Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0.07,
+                "y": 0,
+                "z": 0.07
+              },
+              "normal": {
+                "x": 0,
+                "y": -1,
+                "z": 0
+              },
+              "area": 0.00031415926535897936,
+              "geometricSignature": "plane:0.070000:0.000000:0.070000:0.000314159"
+            }
+          ],
+          "sketches": [
+            {
+              "name": "草图1",
+              "faceKey": "REFPLANE:基准面1",
+              "circleCount": 0,
+              "circles": []
+            },
+            {
+              "name": "草图2",
+              "faceKey": "-Y",
+              "circleCount": 1,
+              "circles": [
+                {
+                  "cx": -0.07,
+                  "cy": 0.15,
+                  "cz": -0.07,
+                  "radius": 0.01
+                }
+              ]
+            }
+          ],
+          "feature_sketch_links": [
+            {
+              "featureName": "凸台-拉伸1",
+              "featureType": "Extrusion",
+              "sketchName": "草图1",
+              "faceKey": "REFPLANE:基准面1",
+              "operationKind": "extrusion",
+              "depth": 0.02
+            },
+            {
+              "featureName": "凸台-拉伸2",
+              "featureType": "ICE",
+              "sketchName": "草图2",
+              "faceKey": "-Y",
+              "operationKind": "extrusion",
+              "depth": 0.15
+            }
+          ],
+          "bounding_box_mm": {
+            "minX": -100.0,
+            "minY": 0.0,
+            "minZ": -100.0,
+            "maxX": 100.0,
+            "maxY": 170.0,
+            "maxZ": 100.0,
+            "sizeX": 200.0,
+            "sizeY": 170.0,
+            "sizeZ": 200.0
+          },
+          "volume_mm3": 988495.559215,
+          "document_type": "part",
+          "assembly_path": "",
+          "components": [],
+          "mates": [],
+          "interference_summary": null,
+          "last_execution": [],
+          "errors": {},
+          "state_fingerprint": "133c644d22777581ee5f170bc9f945517e2e18ee900981980a4db8ed397b4b77"
+        },
+        "sketch_stats": [
+          {
+            "featureIndex": 19,
+            "name": "草图1",
+            "type": "ProfileFeature",
+            "lines": 4,
+            "arcs": 0,
+            "circles": 0,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": [
+              {
+                "name": "凸台-拉伸1",
+                "type": "Extrusion"
+              }
+            ]
+          },
+          {
+            "featureIndex": 21,
+            "name": "草图2",
+            "type": "ProfileFeature",
+            "lines": 0,
+            "arcs": 0,
+            "circles": 1,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": [
+              {
+                "name": "凸台-拉伸2",
+                "type": "ICE"
+              }
+            ]
+          }
+        ]
+      },
+      "repeat": 0
+    }
+  ]
+}

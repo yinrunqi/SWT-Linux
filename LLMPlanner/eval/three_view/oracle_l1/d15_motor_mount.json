@@ -1,0 +1,236 @@
+{
+ "case": "d15_motor_mount",
+ "tool_calls": 9,
+ "modeling_calls": 9,
+ "ref_planes": 2,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 10,
+ "volume_mm3": 82918.67,
+ "bbox_mm": [
+  80.0,
+  86.0,
+  50.0
+ ],
+ "seconds": 34.3,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "top_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       25
+      ],
+      "size": [
+       80,
+       50
+      ]
+     }
+    ],
+    "direction": "+Y",
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 32000.0
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       43
+      ],
+      "size": [
+       80,
+       86
+      ]
+     }
+    ],
+    "direction": "+Z",
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 81920.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": -40
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        8,
+        8
+       ],
+       [
+        40,
+        8
+       ],
+       [
+        8,
+        40
+       ]
+      ]
+     }
+    ],
+    "direction": "+X",
+    "depth": 6
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 84992.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": 34
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面2",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        8,
+        8
+       ],
+       [
+        40,
+        8
+       ],
+       [
+        8,
+        40
+       ]
+      ]
+     }
+    ],
+    "direction": "+X",
+    "depth": 6
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 88064.0
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      0,
+      52
+     ]
+    ],
+    "diameter": 22,
+    "direction": "+Z",
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 85022.94
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      15.5,
+      67.5
+     ],
+     [
+      15.5,
+      36.5
+     ],
+     [
+      -15.5,
+      67.5
+     ],
+     [
+      -15.5,
+      36.5
+     ]
+    ],
+    "diameter": 3.5,
+    "direction": "+Z",
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 84715.06
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "top_plane",
+    "loops": [
+     {
+      "type": "slot",
+      "start": [
+       25,
+       25
+      ],
+      "end": [
+       25,
+       39
+      ],
+      "width": 6
+     },
+     {
+      "type": "slot",
+      "start": [
+       -25,
+       25
+      ],
+      "end": [
+       -25,
+       39
+      ],
+      "width": 6
+     }
+    ],
+    "direction": "+Y",
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 82918.67
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d15_motor_mount oracle"
+   }
+  }
+ ]
+}

@@ -1,0 +1,141 @@
+{
+ "case": "d34_fixture_plate",
+ "tool_calls": 5,
+ "modeling_calls": 5,
+ "ref_planes": 1,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 6,
+ "volume_mm3": 131839.38,
+ "bbox_mm": [
+  120.0,
+  80.0,
+  15.0
+ ],
+ "seconds": 22.9,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       120,
+       80
+      ]
+     }
+    ],
+    "depth": 15
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 144000.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 15
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       40,
+       30
+      ],
+      "corner_radius": 5
+     }
+    ],
+    "direction": "-Z",
+    "depth": 6
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 136928.76
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      -40,
+      25
+     ],
+     [
+      -40,
+      -25
+     ],
+     [
+      0,
+      25
+     ],
+     [
+      0,
+      -25
+     ],
+     [
+      40,
+      25
+     ],
+     [
+      40,
+      -25
+     ]
+    ],
+    "diameter": 8,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 132404.87
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面1",
+    "centers": [
+     [
+      52,
+      0
+     ],
+     [
+      -52,
+      0
+     ]
+    ],
+    "diameter": 6,
+    "direction": "-Z",
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 131839.38
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d34_fixture_plate oracle"
+   }
+  }
+ ]
+}

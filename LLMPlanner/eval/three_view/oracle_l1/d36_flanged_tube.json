@@ -1,0 +1,184 @@
+{
+ "case": "d36_flanged_tube",
+ "tool_calls": 8,
+ "modeling_calls": 8,
+ "ref_planes": 2,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 9,
+ "volume_mm3": 79600.88,
+ "bbox_mm": [
+  70.0,
+  70.0,
+  60.0
+ ],
+ "seconds": 26.4,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       70,
+       70
+      ]
+     }
+    ],
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 39200.0
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 40
+     }
+    ],
+    "depth": 60
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 104545.13
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 52
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 70
+     }
+    ],
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 125279.64
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 30,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 82868.14
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      27,
+      27
+     ],
+     [
+      27,
+      -27
+     ],
+     [
+      -27,
+      27
+     ],
+     [
+      -27,
+      -27
+     ]
+    ],
+    "diameter": 7,
+    "direction": "+Z",
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 81636.63
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 60
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面2",
+    "centers": [
+     [
+      28.0,
+      0.0
+     ],
+     [
+      0.0,
+      28.0
+     ],
+     [
+      -28.0,
+      0.0
+     ],
+     [
+      -0.0,
+      -28.0
+     ]
+    ],
+    "diameter": 9,
+    "direction": "-Z",
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 79600.88
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d36_flanged_tube oracle"
+   }
+  }
+ ]
+}

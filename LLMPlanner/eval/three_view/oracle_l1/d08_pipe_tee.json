@@ -1,0 +1,243 @@
+{
+ "case": "d08_pipe_tee",
+ "tool_calls": 12,
+ "modeling_calls": 12,
+ "ref_planes": 4,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 13,
+ "volume_mm3": 90135.3,
+ "bbox_mm": [
+  100.0,
+  90.0,
+  60.0
+ ],
+ "seconds": 39.9,
+ "trajectory": [
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": -50
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 40
+     }
+    ],
+    "direction": "+X",
+    "depth": 100
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 125663.71
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 60
+     }
+    ],
+    "direction": "+X",
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 138230.08
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": 42
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面2",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 60
+     }
+    ],
+    "direction": "+X",
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 150796.45
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "top_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 30
+     }
+    ],
+    "direction": "+Y",
+    "depth": 60
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 180151.59
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面1",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 30,
+    "through_all": true,
+    "direction": "+X"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 109465.75
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 60
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面3",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 22,
+    "direction": "-Y",
+    "depth": 60
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 91944.85
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面1",
+    "centers": [
+     [
+      16.970562748477143,
+      16.970562748477143
+     ],
+     [
+      16.970562748477143,
+      -16.97056274847714
+     ],
+     [
+      -16.97056274847714,
+      -16.970562748477143
+     ],
+     [
+      -16.970562748477143,
+      16.970562748477136
+     ]
+    ],
+    "diameter": 6,
+    "direction": "+X",
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 91040.07
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": 50
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面4",
+    "centers": [
+     [
+      16.970562748477143,
+      16.970562748477143
+     ],
+     [
+      16.970562748477143,
+      -16.97056274847714
+     ],
+     [
+      -16.97056274847714,
+      -16.970562748477143
+     ],
+     [
+      -16.970562748477143,
+      16.970562748477136
+     ]
+    ],
+    "diameter": 6,
+    "direction": "-X",
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 90135.3
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d08_pipe_tee oracle"
+   }
+  }
+ ]
+}

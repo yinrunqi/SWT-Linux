@@ -1,0 +1,136 @@
+{
+ "case": "d11_dovetail_slide",
+ "tool_calls": 5,
+ "modeling_calls": 5,
+ "ref_planes": 1,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 6,
+ "volume_mm3": 158399.4,
+ "bbox_mm": [
+  80.0,
+  40.0,
+  60.0
+ ],
+ "seconds": 17.0,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       20
+      ],
+      "size": [
+       80,
+       40
+      ]
+     }
+    ],
+    "depth": 60
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 192000.0
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        -12,
+        0
+       ],
+       [
+        12,
+        0
+       ],
+       [
+        20.66025403784439,
+        15
+       ],
+       [
+        -20.66025403784439,
+        15
+       ]
+      ]
+     }
+    ],
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 162605.77
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 40
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面1",
+    "centers": [
+     [
+      20,
+      30
+     ],
+     [
+      -20,
+      30
+     ]
+    ],
+    "diameter": 8,
+    "direction": "-Y",
+    "depth": 12
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 161399.4
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       30
+      ],
+      "size": [
+       10,
+       62
+      ]
+     }
+    ],
+    "direction": "-Y",
+    "depth": 5
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 158399.4
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d11_dovetail_slide oracle"
+   }
+  }
+ ]
+}

@@ -1,0 +1,171 @@
+{
+ "case": "c2_gearbox",
+ "tool_calls": 8,
+ "modeling_calls": 8,
+ "ref_planes": 3,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 9,
+ "volume_mm3": 853020.78,
+ "bbox_mm": [
+  200.0,
+  100.0,
+  120.0
+ ],
+ "seconds": 28.2,
+ "trajectory": [
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": -60
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       10
+      ],
+      "size": [
+       200,
+       20
+      ]
+     }
+    ],
+    "depth": 120
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 480000.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": -50
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面2",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       60
+      ],
+      "size": [
+       160,
+       80
+      ]
+     }
+    ],
+    "depth": 100
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 1760000.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 100
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面3",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       144,
+       84
+      ]
+     }
+    ],
+    "direction": "-Y",
+    "depth": 74
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 864896.0
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      0,
+      60
+     ]
+    ],
+    "diameter": 25,
+    "through_all": true,
+    "direction": "both"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 857042.02
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "top_plane",
+    "centers": [
+     [
+      85,
+      45
+     ],
+     [
+      85,
+      -45
+     ],
+     [
+      -85,
+      45
+     ],
+     [
+      -85,
+      -45
+     ]
+    ],
+    "diameter": 8,
+    "direction": "+Y",
+    "depth": 20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 853020.78
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "c2_gearbox oracle"
+   }
+  }
+ ]
+}

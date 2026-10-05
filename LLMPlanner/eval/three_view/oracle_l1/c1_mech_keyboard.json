@@ -1,0 +1,784 @@
+{
+ "case": "c1_mech_keyboard",
+ "tool_calls": 3,
+ "modeling_calls": 3,
+ "ref_planes": 1,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 4,
+ "volume_mm3": 469933.33,
+ "bbox_mm": [
+  285.0,
+  95.0,
+  20.0
+ ],
+ "seconds": 59.3,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       285,
+       95
+      ]
+     }
+    ],
+    "depth": 15
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 406125.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 15
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       -108,
+       -36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -108,
+       -18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -108,
+       0
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -108,
+       18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -108,
+       36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -90,
+       -36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -90,
+       -18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -90,
+       0
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -90,
+       18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -90,
+       36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -72,
+       -36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -72,
+       -18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -72,
+       0
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -72,
+       18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -72,
+       36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -54,
+       -36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -54,
+       -18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -54,
+       0
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -54,
+       18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -54,
+       36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -36,
+       -36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -36,
+       -18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -36,
+       0
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -36,
+       18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -36,
+       36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -18,
+       -36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -18,
+       -18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -18,
+       0
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -18,
+       18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -18,
+       36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       0,
+       -36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       0,
+       -18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       0,
+       18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       0,
+       36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       18,
+       -36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       18,
+       -18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       18,
+       0
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       18,
+       18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       18,
+       36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       36,
+       -36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       36,
+       -18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       36,
+       0
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       36,
+       18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       36,
+       36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       54,
+       -36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       54,
+       -18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       54,
+       0
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       54,
+       18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       54,
+       36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       72,
+       -36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       72,
+       -18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       72,
+       0
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       72,
+       18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       72,
+       36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       90,
+       -36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       90,
+       -18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       90,
+       0
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       90,
+       18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       90,
+       36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       108,
+       -36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       108,
+       -18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       108,
+       0
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       108,
+       18
+      ],
+      "size": [
+       15,
+       15
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       108,
+       36
+      ],
+      "size": [
+       15,
+       15
+      ]
+     }
+    ],
+    "depth": 5,
+    "draft_deg": 11.309932474020215
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 469933.33
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "c1_mech_keyboard oracle"
+   }
+  }
+ ]
+}

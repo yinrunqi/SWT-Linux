@@ -1,0 +1,150 @@
+{
+ "case": "d23_cross_plate",
+ "tool_calls": 3,
+ "modeling_calls": 3,
+ "ref_planes": 0,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 4,
+ "volume_mm3": 54135.4,
+ "bbox_mm": [
+  120.0,
+  120.0,
+  10.0
+ ],
+ "seconds": 16.8,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        60,
+        -15
+       ],
+       [
+        60,
+        15
+       ],
+       [
+        15,
+        15
+       ],
+       [
+        15,
+        60
+       ],
+       [
+        -15,
+        60
+       ],
+       [
+        -15,
+        15
+       ],
+       [
+        -60,
+        15
+       ],
+       [
+        -60,
+        -15
+       ],
+       [
+        -15,
+        -15
+       ],
+       [
+        -15,
+        -60
+       ],
+       [
+        15,
+        -60
+       ],
+       [
+        15,
+        -15
+       ]
+      ],
+      "corner_radii": [
+       0,
+       0,
+       5,
+       0,
+       0,
+       5,
+       0,
+       0,
+       5,
+       0,
+       0,
+       5
+      ]
+     }
+    ],
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 63214.6
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 30,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 56146.02
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      45.0,
+      0.0
+     ],
+     [
+      0.0,
+      45.0
+     ],
+     [
+      -45.0,
+      0.0
+     ],
+     [
+      -0.0,
+      -45.0
+     ]
+    ],
+    "diameter": 8,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 54135.4
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d23_cross_plate oracle"
+   }
+  }
+ ]
+}

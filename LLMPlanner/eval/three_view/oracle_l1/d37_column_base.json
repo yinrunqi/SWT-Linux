@@ -1,0 +1,177 @@
+{
+ "case": "d37_column_base",
+ "tool_calls": 6,
+ "modeling_calls": 6,
+ "ref_planes": 2,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 7,
+ "volume_mm3": 97154.81,
+ "bbox_mm": [
+  80.0,
+  80.0,
+  72.0
+ ],
+ "seconds": 17.0,
+ "trajectory": [
+  {
+   "tool": "revolve",
+   "args": {
+    "plane": "right_plane",
+    "loops": [
+     {
+      "type": "path",
+      "start": [
+       0,
+       0
+      ],
+      "segments": [
+       {
+        "to": [
+         0,
+         40
+        ]
+       },
+       {
+        "to": [
+         12,
+         40
+        ]
+       },
+       {
+        "to": [
+         12,
+         20
+        ]
+       },
+       {
+        "to": [
+         17,
+         15
+        ],
+        "through": [
+         13.464466094067262,
+         16.464466094067262
+        ]
+       },
+       {
+        "to": [
+         72,
+         15
+        ]
+       },
+       {
+        "to": [
+         72,
+         0
+        ]
+       }
+      ]
+     }
+    ],
+    "axis_start": [
+     -10,
+     0
+    ],
+    "axis_end": [
+     90,
+     0
+    ]
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 103273.37
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 72
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面1",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 10,
+    "direction": "-Z",
+    "depth": 20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 101702.58
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": -16
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面2",
+    "centers": [
+     [
+      40,
+      0
+     ]
+    ],
+    "diameter": 8,
+    "direction": "+X",
+    "depth": 32
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 100208.44
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      21.213203,
+      21.213203
+     ],
+     [
+      -21.213203,
+      21.213203
+     ],
+     [
+      -21.213203,
+      -21.213203
+     ],
+     [
+      21.213203,
+      -21.213203
+     ]
+    ],
+    "diameter": 9,
+    "direction": "+Z",
+    "depth": 12
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 97154.81
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d37_column_base oracle"
+   }
+  }
+ ]
+}

@@ -1,0 +1,225 @@
+{
+ "case": "d03_rib_bracket",
+ "tool_calls": 10,
+ "modeling_calls": 10,
+ "ref_planes": 4,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 11,
+ "volume_mm3": 100458.41,
+ "bbox_mm": [
+  80.0,
+  70.0,
+  60.0
+ ],
+ "seconds": 35.6,
+ "trajectory": [
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": -30
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       5
+      ],
+      "size": [
+       80,
+       10
+      ]
+     }
+    ],
+    "depth": 60
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 48000.0
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        -40,
+        0
+       ],
+       [
+        40,
+        0
+       ],
+       [
+        40,
+        70
+       ],
+       [
+        -40,
+        70
+       ]
+      ],
+      "corner_radii": [
+       0,
+       0,
+       10,
+       10
+      ]
+     }
+    ],
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 95570.8
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": -40
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面2",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        -20,
+        10
+       ],
+       [
+        20,
+        10
+       ],
+       [
+        -20,
+        50
+       ]
+      ]
+     }
+    ],
+    "direction": "+X",
+    "depth": 6
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 100370.8
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": 34
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面3",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        -20,
+        10
+       ],
+       [
+        20,
+        10
+       ],
+       [
+        -20,
+        50
+       ]
+      ]
+     }
+    ],
+    "direction": "+X",
+    "depth": 6
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 105170.8
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": -31
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面4",
+    "centers": [
+     [
+      0,
+      45
+     ]
+    ],
+    "diameter": 20,
+    "direction": "+Z",
+    "depth": 12
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 102029.2
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "top_plane",
+    "centers": [
+     [
+      28,
+      12
+     ],
+     [
+      -28,
+      12
+     ]
+    ],
+    "diameter": 10,
+    "direction": "+Y",
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 100458.41
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d03_rib_bracket oracle"
+   }
+  }
+ ]
+}

@@ -1,0 +1,181 @@
+{
+ "case": "d13_v_pulley",
+ "tool_calls": 3,
+ "modeling_calls": 3,
+ "ref_planes": 0,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 4,
+ "volume_mm3": 111865.04,
+ "bbox_mm": [
+  100.0,
+  100.0,
+  40.0
+ ],
+ "seconds": 14.6,
+ "trajectory": [
+  {
+   "tool": "revolve",
+   "args": {
+    "plane": "right_plane",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        0,
+        10
+       ],
+       [
+        0,
+        20
+       ],
+       [
+        15,
+        20
+       ],
+       [
+        15,
+        40
+       ],
+       [
+        5,
+        40
+       ],
+       [
+        5,
+        50
+       ],
+       [
+        7,
+        50
+       ],
+       [
+        9.754620906317323,
+        42
+       ],
+       [
+        16.24537909368268,
+        42
+       ],
+       [
+        19,
+        50
+       ],
+       [
+        21,
+        50
+       ],
+       [
+        23.75462090631732,
+        42
+       ],
+       [
+        30.24537909368268,
+        42
+       ],
+       [
+        33,
+        50
+       ],
+       [
+        35,
+        50
+       ],
+       [
+        35,
+        40
+       ],
+       [
+        25,
+        40
+       ],
+       [
+        25,
+        20
+       ],
+       [
+        40,
+        20
+       ],
+       [
+        40,
+        10
+       ]
+      ]
+     }
+    ],
+    "axis_start": [
+     -10,
+     0
+    ],
+    "axis_end": [
+     50,
+     0
+    ]
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 117097.44
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      30.0,
+      0.0
+     ],
+     [
+      0.0,
+      30.0
+     ],
+     [
+      -30.0,
+      0.0
+     ],
+     [
+      -0.0,
+      -30.0
+     ]
+    ],
+    "diameter": 12,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 112573.54
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       6.4,
+       0
+      ],
+      "size": [
+       12.8,
+       6
+      ]
+     }
+    ],
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 111865.04
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d13_v_pulley oracle"
+   }
+  }
+ ]
+}

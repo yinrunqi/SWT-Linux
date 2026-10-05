@@ -111,6 +111,36 @@ D 组 37 道题全部是自行设计的常见机械零件，参考实体、图�
 venv-occ\Scripts\python.exe -m pytest geomcheck/tests/test_refs_three_view.py -q -p no:cacheprovider
 ```
 
+### 4.1 L1 workflow 的可解性：oracle 调用轨迹
+
+上面验证的是“存在一个满分的几何形状”。这里再验证另一件事：用 L1 的 24 个工具（与 text-to-CAD 共用、也就是 LLM 实际拿到的那套工具）能把它建出来。`eval/three_view_l1_reference.py` 逐题按图纸尺寸依次调用工具（不调用 LLM），几何与 `geomcheck/tests/refs_three_view.py` 的参考实体一致、摆放也相同。每题的调用轨迹（工具名、参数、执行后体积）存在 `eval/three_view/oracle_l1/<case>.json`，汇总在同目录的 `summary.json`。
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\three_view_l1_reference.py [case ...]     # 需要 SolidWorks 与 C# 服务
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view --artifacts eval\artifacts\three_view_l1_reference
+```
+
+结果（2026-10-05，SolidWorks 2025）：
+
+- 50 题 rubric 全部 100 分，全部合格；所有工具调用一次成功，没有失败后回滚的调用。
+- 图像分 49 题为 100，`b05_keycap_full` 为 90.55（原因见下文第 2 点）。
+
+轨迹长度。按每轮 LLM 调用发一个工具调用、最后再调一次 `finish` 计算，这是不做任何状态查询和返工时的下限：
+
+| 最少 | 中位数 | 平均 | p90 | 最多 |
+|---|---|---|---|---|
+| 2 | 6 | 6.9 | 11 | 17 |
+
+- 按组平均：B 组 3.6 次，C 组 8.0 次，D 组 7.5 次。
+- 最长的几题：`d19_hinge_leaf` 17 次，`d06_u_clevis` 15 次，`c4_desktop_pen_holder` 14 次，`d08_pipe_tee` 13 次。
+- 50 条轨迹共 344 次工具调用：`extrude` 90 次，`ref_plane` 82 次，`hole` 70 次，`cut` 38 次，另有少量 `revolve`、`fillet`、`counterbore`、`linear_pattern`。`ref_plane` 占 24%，因为每个偏离基准面的草图都要先单独建一个平行基准面。
+- 实际运行的智能体还要调用 `get_model_state`、`render_views` 核对，并修正读图错误，调用数会明显高于这个下限。最长的 oracle 是 17 次，沿用 text-to-CAD 的 40 次预算约有 2.3 倍余量。
+
+构造过程中发现的两个工具问题：
+
+1. **`countersink` 做不出锥形沉头。** 它和 `counterbore` 用的是同一个实现（先切圆柱沉头、再打通孔），工具说明却写“沉头锥孔”。`d19_hinge_leaf` 的图纸要求 Ø9×90° 锥形沉头，按说明调用 `countersink` 只能拿到 66.67 分：没有 45° 锥面，`holes` 和 `volume` 两项失败。oracle 改为在 X = 40 的基准面上画锥面截面，用 `revolve(cut=true)` 旋转切出，再 `linear_pattern` 复制到另外两个孔。建议在 C# 端实现真正的锥形沉头，或者改正工具说明；否则模型照说明调用这个工具，这道题必然失败。
+2. **`fillet` 一次只能选一条边，并且默认沿相切边传播。** `b05_keycap_full` 要给顶面四条棱倒 R1.5 圆角。逐条倒圆时，前两条正常；第 3、4 条会顺着前两条圆角端部的圆弧（与它们相切）传播到四条斜棱上，结果多出 4 条斜棱圆角和 4 个球面角，体积是 1598.72（参考 1612.22）。rubric 仍然满分，因为体积差 0.84%，在 1% 容差内；但图像分只有 90.55。现有工具既不能一次选多条边，也不能关闭相切传播，所以这道题的体积离容差边界很近，严格一些的检查会把它判错。
+
 ---
 
 ## 5. 命令

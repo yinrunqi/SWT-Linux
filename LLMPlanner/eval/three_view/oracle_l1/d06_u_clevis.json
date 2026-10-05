@@ -1,0 +1,239 @@
+{
+ "case": "d06_u_clevis",
+ "tool_calls": 14,
+ "modeling_calls": 14,
+ "ref_planes": 7,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 15,
+ "volume_mm3": 50795.57,
+ "bbox_mm": [
+  40.0,
+  73.0,
+  30.0
+ ],
+ "seconds": 44.3,
+ "trajectory": [
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": -15
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       19
+      ],
+      "size": [
+       40,
+       38
+      ]
+     }
+    ],
+    "depth": 30
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 45600.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": -20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面2",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       38
+      ],
+      "diameter": 30
+     }
+    ],
+    "direction": "+X",
+    "depth": 12
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 49841.15
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面3",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       38
+      ],
+      "diameter": 30
+     }
+    ],
+    "direction": "+X",
+    "depth": 12
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 54082.3
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": -20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面4",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 24
+     }
+    ],
+    "direction": "+Y",
+    "depth": 20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 63130.09
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 54
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面5",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       16,
+       32
+      ]
+     }
+    ],
+    "direction": "-Y",
+    "depth": 34
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 54490.09
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": -21
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面6",
+    "centers": [
+     [
+      0,
+      38
+     ]
+    ],
+    "diameter": 10,
+    "direction": "+X",
+    "depth": 42
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 52605.13
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": -21
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面7",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 12,
+    "direction": "+Y",
+    "depth": 17
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 50795.57
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d06_u_clevis oracle"
+   }
+  }
+ ]
+}

@@ -1,0 +1,137 @@
+{
+ "case": "d07_eccentric_cam",
+ "tool_calls": 6,
+ "modeling_calls": 6,
+ "ref_planes": 1,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 7,
+ "volume_mm3": 73857.27,
+ "bbox_mm": [
+  80.0,
+  80.0,
+  25.0
+ ],
+ "seconds": 18.0,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 80
+     }
+    ],
+    "depth": 15
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 75398.22
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 15
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       10,
+       0
+      ],
+      "diameter": 36
+     }
+    ],
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 85576.98
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      10,
+      0
+     ]
+    ],
+    "diameter": 20,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 77723.0
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       10,
+       6.5
+      ],
+      "size": [
+       6,
+       13
+      ]
+     }
+    ],
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 77250.19
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      -18,
+      14
+     ],
+     [
+      -18,
+      -14
+     ]
+    ],
+    "diameter": 12,
+    "direction": "+Z",
+    "depth": 15
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 73857.27
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d07_eccentric_cam oracle"
+   }
+  }
+ ]
+}

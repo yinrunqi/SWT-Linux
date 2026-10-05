@@ -1,0 +1,180 @@
+{
+ "case": "d22_flanged_bushing",
+ "tool_calls": 9,
+ "modeling_calls": 9,
+ "ref_planes": 3,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 10,
+ "volume_mm3": 39491.81,
+ "bbox_mm": [
+  60.0,
+  60.0,
+  38.0
+ ],
+ "seconds": 27.5,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 60
+     }
+    ],
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 22619.47
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 40
+     }
+    ],
+    "depth": 30
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 60318.58
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 25,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 41665.37
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 38
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面2",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 30
+     }
+    ],
+    "direction": "-Z",
+    "depth": 5
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 40585.45
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": -21
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面3",
+    "centers": [
+     [
+      25,
+      0
+     ]
+    ],
+    "diameter": 4,
+    "direction": "+X",
+    "depth": 42
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 40396.59
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      17.67767,
+      17.67767
+     ],
+     [
+      -17.67767,
+      17.67767
+     ],
+     [
+      -17.67767,
+      -17.67767
+     ],
+     [
+      17.67767,
+      -17.67767
+     ]
+    ],
+    "diameter": 6,
+    "direction": "+Z",
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 39491.81
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d22_flanged_bushing oracle"
+   }
+  }
+ ]
+}

@@ -1,0 +1,310 @@
+{
+ "case": "d19_hinge_leaf",
+ "tool_calls": 16,
+ "modeling_calls": 16,
+ "ref_planes": 6,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 17,
+ "volume_mm3": 9441.56,
+ "bbox_mm": [
+  64.0,
+  8.0,
+  50.0
+ ],
+ "seconds": 61.6,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       30,
+       1.5
+      ],
+      "size": [
+       60,
+       3
+      ]
+     }
+    ],
+    "depth": 50
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 9000.0
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       4
+      ],
+      "diameter": 8
+     }
+    ],
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 9416.57
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       4
+      ],
+      "diameter": 8
+     }
+    ],
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 9833.14
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 40
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面2",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       4
+      ],
+      "diameter": 8
+     }
+    ],
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 10249.71
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面3",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       4
+      ],
+      "size": [
+       10,
+       10
+      ]
+     }
+    ],
+    "direction": "+Z",
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 10099.71
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 30
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面4",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       4
+      ],
+      "size": [
+       10,
+       10
+      ]
+     }
+    ],
+    "direction": "+Z",
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 9949.71
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      0,
+      4
+     ]
+    ],
+    "diameter": 3,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 9737.65
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 3
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面5",
+    "centers": [
+     [
+      40,
+      10
+     ],
+     [
+      40,
+      25
+     ],
+     [
+      40,
+      40
+     ]
+    ],
+    "diameter": 5,
+    "direction": "-Y",
+    "depth": 3
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 9560.94
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": 40
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "revolve",
+   "args": {
+    "plane": "基准面6",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        10,
+        1
+       ],
+       [
+        12.5,
+        1
+       ],
+       [
+        15,
+        3.5
+       ],
+       [
+        10,
+        3.5
+       ]
+      ]
+     }
+    ],
+    "axis_start": [
+     10,
+     -1
+    ],
+    "axis_end": [
+     10,
+     5
+    ],
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 9521.15
+  },
+  {
+   "tool": "linear_pattern",
+   "args": {
+    "count1": 3,
+    "spacing1": 15,
+    "direction1": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 9441.56
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d19_hinge_leaf oracle"
+   }
+  }
+ ]
+}

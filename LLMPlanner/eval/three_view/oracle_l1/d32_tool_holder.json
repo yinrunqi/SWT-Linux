@@ -1,0 +1,144 @@
+{
+ "case": "d32_tool_holder",
+ "tool_calls": 5,
+ "modeling_calls": 5,
+ "ref_planes": 2,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 6,
+ "volume_mm3": 121946.9,
+ "bbox_mm": [
+  130.0,
+  30.0,
+  40.0
+ ],
+ "seconds": 17.2,
+ "trajectory": [
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": -20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        -65,
+        0
+       ],
+       [
+        65,
+        0
+       ],
+       [
+        65,
+        10
+       ],
+       [
+        50,
+        10
+       ],
+       [
+        50,
+        30
+       ],
+       [
+        -50,
+        30
+       ],
+       [
+        -50,
+        10
+       ],
+       [
+        -65,
+        10
+       ]
+      ]
+     }
+    ],
+    "depth": 40
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 132000.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 30
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面2",
+    "centers": [
+     [
+      -33,
+      0
+     ],
+     [
+      -11,
+      0
+     ],
+     [
+      11,
+      0
+     ],
+     [
+      33,
+      0
+     ]
+    ],
+    "diameter": 12,
+    "direction": "-Y",
+    "depth": 20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 122952.21
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "top_plane",
+    "centers": [
+     [
+      57.5,
+      0
+     ],
+     [
+      -57.5,
+      0
+     ]
+    ],
+    "diameter": 8,
+    "direction": "+Y",
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 121946.9
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d32_tool_holder oracle"
+   }
+  }
+ ]
+}

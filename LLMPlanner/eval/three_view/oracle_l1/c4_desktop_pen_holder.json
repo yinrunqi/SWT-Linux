@@ -1,0 +1,324 @@
+{
+ "case": "c4_desktop_pen_holder",
+ "tool_calls": 13,
+ "modeling_calls": 13,
+ "ref_planes": 4,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 14,
+ "volume_mm3": 449550.27,
+ "bbox_mm": [
+  140.0,
+  110.0,
+  90.0
+ ],
+ "seconds": 69.8,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "top_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       45
+      ],
+      "size": [
+       140,
+       90
+      ],
+      "corner_radius": 3
+     }
+    ],
+    "direction": "+Y",
+    "depth": 44
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 554060.07
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 44
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        -18,
+        0
+       ],
+       [
+        70,
+        0
+       ],
+       [
+        70,
+        90
+       ],
+       [
+        -18,
+        90
+       ]
+      ],
+      "corner_radii": [
+       0,
+       3,
+       3,
+       0
+      ]
+     }
+    ],
+    "direction": "+Y",
+    "depth": 34
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 823208.73
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 78
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面2",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        28,
+        0
+       ],
+       [
+        70,
+        0
+       ],
+       [
+        70,
+        90
+       ],
+       [
+        28,
+        90
+       ]
+      ],
+      "corner_radii": [
+       0,
+       3,
+       3,
+       0
+      ]
+     }
+    ],
+    "direction": "+Y",
+    "depth": 32
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 944045.12
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       -44,
+       45
+      ],
+      "size": [
+       38,
+       72
+      ]
+     }
+    ],
+    "direction": "-Y",
+    "depth": 36
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 845549.12
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面2",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       5,
+       45
+      ],
+      "size": [
+       34,
+       72
+      ]
+     }
+    ],
+    "direction": "-Y",
+    "depth": 70
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 674189.12
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 110
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面3",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       49,
+       45
+      ],
+      "size": [
+       30,
+       72
+      ]
+     }
+    ],
+    "direction": "-Y",
+    "depth": 102
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 453869.12
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "top_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       -44,
+       45
+      ],
+      "size": [
+       26,
+       14
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       49,
+       45
+      ],
+      "size": [
+       26,
+       14
+      ]
+     }
+    ],
+    "direction": "+Y",
+    "depth": 1.5
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 452777.12
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 90
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面4",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       -44,
+       32
+      ],
+      "size": [
+       14,
+       10
+      ]
+     }
+    ],
+    "direction": "-Z",
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 451517.12
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面4",
+    "loops": [
+     {
+      "type": "slot",
+      "start": [
+       42,
+       88
+      ],
+      "end": [
+       56,
+       88
+      ],
+      "width": 10
+     }
+    ],
+    "direction": "-Z",
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 449550.27
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "c4_desktop_pen_holder oracle"
+   }
+  }
+ ]
+}

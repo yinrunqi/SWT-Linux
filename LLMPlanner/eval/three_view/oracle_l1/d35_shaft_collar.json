@@ -1,0 +1,113 @@
+{
+ "case": "d35_shaft_collar",
+ "tool_calls": 5,
+ "modeling_calls": 5,
+ "ref_planes": 1,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 6,
+ "volume_mm3": 12528.73,
+ "bbox_mm": [
+  39.975,
+  40.0,
+  14.0
+ ],
+ "seconds": 14.1,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 40
+     }
+    ],
+    "depth": 14
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 17592.92
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 20,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 13194.69
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       10.5,
+       0
+      ],
+      "size": [
+       21,
+       2
+      ]
+     }
+    ],
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 12914.46
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": -21
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面1",
+    "centers": [
+     [
+      15,
+      7
+     ]
+    ],
+    "diameter": 4.5,
+    "direction": "+Y",
+    "depth": 42
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 12528.73
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d35_shaft_collar oracle"
+   }
+  }
+ ]
+}

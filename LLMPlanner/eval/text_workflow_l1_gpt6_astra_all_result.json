@@ -1,0 +1,5355 @@
+{
+  "run_at": "2026-10-02T16:17:56+08:00",
+  "provider": "TT Switch",
+  "model": "gpt-6-astra",
+  "mode": "workflow",
+  "action_level": "L1",
+  "prompt_lang": "zh",
+  "score_version": 2,
+  "strict_orientation": false,
+  "repeats": 2,
+  "cache_enabled": false,
+  "historical_skipped": [],
+  "case_ids": [
+    "phone_stand",
+    "stool",
+    "rounded_stool",
+    "storage_box",
+    "standard_die",
+    "hex_nut",
+    "mug",
+    "wrench",
+    "vase",
+    "key",
+    "gear_disc",
+    "flange",
+    "pulley",
+    "stepped_shaft",
+    "socket_bolt",
+    "l_bracket",
+    "spacer_ring",
+    "mounting_plate",
+    "stepped_block",
+    "knob",
+    "hex_standoff",
+    "u_channel",
+    "flanged_bushing",
+    "wedge_block",
+    "spoked_wheel",
+    "end_cap",
+    "link_bar",
+    "fork_end",
+    "three_lug_housing",
+    "pillow_block",
+    "twin_arm_rocker",
+    "clevis_bracket",
+    "diamond_flange",
+    "support_seat",
+    "crank",
+    "gusset_bracket",
+    "flanged_elbow",
+    "open_box",
+    "counterbore_plate",
+    "side_pad",
+    "sheet_angle",
+    "square_to_round",
+    "corner_rib_stand",
+    "bent_tube",
+    "lidless_housing",
+    "csk_cover",
+    "through_boss",
+    "sheet_channel",
+    "rect_to_circle",
+    "soap_dish"
+  ],
+  "average_score": 89.0,
+  "average_score_v1": 91.5,
+  "average_score_ci95": null,
+  "pass_at_1": 0.0,
+  "pass_at_2": 0.0,
+  "passed": 0,
+  "passed_v1": 0,
+  "total": 1,
+  "total_duration_seconds": 610.67,
+  "per_case": [
+    {
+      "case_id": "phone_stand",
+      "runs": 1,
+      "mean_score": 89.0,
+      "min_score": 89.0,
+      "max_score": 89.0,
+      "passed_runs": 0,
+      "pass_at_1": 0.0,
+      "pass_at_k": 0.0,
+      "mean_tokens": 700681
+    }
+  ],
+  "token_totals": {
+    "prompt_tokens": 690055,
+    "completion_tokens": 10626,
+    "total_tokens": 700681,
+    "calls": 40
+  },
+  "balance_before": null,
+  "balance_after": null,
+  "spent_yuan": null,
+  "results": [
+    {
+      "case_id": "phone_stand",
+      "name": "一体式手机支架",
+      "score": 89.0,
+      "acceptance_ok": false,
+      "validity_points": 15.0,
+      "robustness_points": 0.0,
+      "failed_step_count": 4,
+      "dimension_points": 29.0,
+      "volume_points": 20.0,
+      "detail_points": 25.0,
+      "dimension_errors_mm": [
+        0.0,
+        6.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        false,
+        true
+      ],
+      "volume_ok": true,
+      "actual_details": {
+        "extrusions": 4,
+        "cuts": 4,
+        "revolves": 0,
+        "fillets": 4,
+        "chamfers": 0,
+        "holes": 0,
+        "shells": 0,
+        "patterns": 3,
+        "mirrors": 2,
+        "sweeps": 0,
+        "lofts": 0,
+        "ribs": 0,
+        "drafts": 0,
+        "threads": 0,
+        "sheet_metal": 0,
+        "solid_features": 4,
+        "circles": 0,
+        "polygons": 0,
+        "centerlines": 1,
+        "slots": 0,
+        "cut_circles": 0,
+        "sketch_lines": 30,
+        "sketch_arcs": 9,
+        "sketch_splines": 0
+      },
+      "detail_checks": {
+        "extrusions": true,
+        "cuts": true,
+        "fillets": true
+      },
+      "strict_orientation": false,
+      "status": "failed",
+      "plan_steps": 32,
+      "successful_steps": 28,
+      "failed_steps": [
+        {
+          "step": 6,
+          "operation": "rib",
+          "message": "[FEATURE_FAILED] feature_extrusion: 拉伸失败，请确保草图中有封闭的轮廓"
+        },
+        {
+          "step": 24,
+          "operation": "edit_feature",
+          "message": "[FEATURE_FAILED] 在特征 \"阵列(线性)2\" 中未找到名为 \"spacing1\" 的尺寸"
+        },
+        {
+          "step": 28,
+          "operation": "mirror",
+          "message": "[FEATURE_FAILED] feature_mirror: 镜像失败: SolidWorks 未能创建镜像特征"
+        },
+        {
+          "step": 32,
+          "operation": "delete_feature",
+          "message": "[FEATURE_FAILED] 删除特征失败: 删除特征 草图4 失败"
+        }
+      ],
+      "bbox_mm": {
+        "minX": -39.0,
+        "minY": 0.0,
+        "minZ": -55.0,
+        "maxX": 39.0,
+        "maxY": 118.0,
+        "maxZ": 55.0,
+        "sizeX": 78.0,
+        "sizeY": 118.0,
+        "sizeZ": 110.0
+      },
+      "volume_mm3": 137101.984,
+      "v1": {
+        "score": 91.5,
+        "acceptance_ok": false,
+        "execution_points": 17.5,
+        "dimension_points": 29.0,
+        "volume_points": 20.0,
+        "detail_points": 25.0,
+        "actual_details": {
+          "extrusions": 4,
+          "cuts": 3,
+          "fillets": 4,
+          "chamfers": 0,
+          "revolves": 0,
+          "polygons": 0,
+          "centerlines": 0,
+          "circles": 0,
+          "slots": 0,
+          "cut_circles": 0,
+          "faces": 63
+        }
+      },
+      "token_usage": {
+        "calls": 40,
+        "completion_tokens": 10626,
+        "prompt_tokens": 690055,
+        "total_tokens": 700681
+      },
+      "workflow_status": "finished",
+      "workflow_error": null,
+      "llm_calls": 40,
+      "truncated_llm_calls": 0,
+      "tool_calls": 40,
+      "duration_seconds": 610.67,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null,
+      "artifacts": {
+        "step": "eval\\artifacts\\text_workflow_l1_gpt6_astra_all_result\\phone_stand_r1.step",
+        "sldprt": "eval\\artifacts\\text_workflow_l1_gpt6_astra_all_result\\phone_stand_r1.SLDPRT"
+      },
+      "trace": {
+        "request": {
+          "url": "http://localhost:5000/api/run",
+          "json": {
+            "instruction": "创建一个一体式桌面手机支架，所有结构必须合并为单一实体。底座长110mm、宽78mm、厚8mm；78mm宽的倾斜背板厚6mm，与水平面成74°，从底座上表面升起，成品总高度118mm。底座前端设置贯穿全宽的挡唇，前后厚10mm，高出底座上表面12mm，使成品前端总高度20mm。背板左右两侧各有一个三角加强筋。背板下部中央开一个宽16mm、向下开口高度28mm的充电线U形通槽；背板中上部开3个36×8mm的水平贯穿散热槽，槽中心竖向间距18mm。底面加工两个24×10mm、深1.5mm的防滑垫浅凹槽。最后尽可能对适合的外轮廓做R4mm圆角，同时保持底面平整、支架左右对称。",
+            "provider": "ttswitch",
+            "vision_model": "gpt-6-astra",
+            "plan_model": "gpt-6-astra",
+            "mode": "single_turn",
+            "action_level": "L1",
+            "use_cache": false,
+            "capture_trace": true,
+            "dry_run": false,
+            "max_turns": 40
+          }
+        },
+        "response_status": 200,
+        "response": {
+          "action_level": "L1",
+          "mode": "workflow",
+          "plan": {
+            "notes": "已完成一体式桌面手机支架，全部实体特征与底座合并，左右关于X=0对称。最终外包络：前后110mm、左右78mm、总高118mm；底座厚8mm，底面Y=0保持平整（仅两处防滑垫凹槽）。背板宽78mm、法向厚6mm、与水平面成74°；前端全宽挡唇前后厚10mm、高出底座12mm，前端总高20mm。左右各设一片4mm厚三角加强筋。背板中央下部有宽16mm、从底座上表面向上28mm的下开口U形充电通槽；中上部有3个板面实际尺寸36×8mm的水平圆端贯穿散热槽，中心竖向间距18mm。底面两个24×10mm、深1.5mm浅凹槽，中心位于X=0、Z=±36mm。底座平面外角、适用的底座上外缘、挡唇上缘及背板顶部左右两角采用R4圆角；薄壁和空间不足处未强行圆角。最终体积约137101.98mm³，已核对总体尺寸、对称特征及凹槽深度。",
+            "steps": [
+              {
+                "operation": "extrude",
+                "params": {
+                  "depth": "=base_thickness",
+                  "direction": "+Y",
+                  "loops": [
+                    {
+                      "center": [
+                        0,
+                        0
+                      ],
+                      "corner_radius": 4,
+                      "size": [
+                        78,
+                        110
+                      ],
+                      "type": "rect"
+                    }
+                  ],
+                  "plane": "top_plane"
+                }
+              },
+              {
+                "operation": "extrude",
+                "params": {
+                  "depth": "=lip_rise",
+                  "direction": "+Y",
+                  "loops": [
+                    {
+                      "center": [
+                        0,
+                        50
+                      ],
+                      "corner_radius": 4,
+                      "size": [
+                        78,
+                        10
+                      ],
+                      "type": "rect"
+                    }
+                  ],
+                  "plane": "top"
+                }
+              },
+              {
+                "operation": "ref_plane",
+                "params": {
+                  "offset": -39,
+                  "reference": "right"
+                }
+              },
+              {
+                "operation": "extrude",
+                "params": {
+                  "depth": "=base_width",
+                  "direction": "both",
+                  "loops": [
+                    {
+                      "points": [
+                        [
+                          22,
+                          8
+                        ],
+                        [
+                          -9.5419924335,
+                          118
+                        ],
+                        [
+                          -15.7837890487,
+                          118
+                        ],
+                        [
+                          15.7582033848,
+                          8
+                        ]
+                      ],
+                      "type": "polygon"
+                    }
+                  ],
+                  "plane": "基准面1"
+                }
+              },
+              {
+                "operation": "ref_plane",
+                "params": {
+                  "offset": 35,
+                  "reference": "基准面1"
+                }
+              },
+              {
+                "operation": "rib",
+                "params": {
+                  "both_sides": true,
+                  "end": [
+                    -3.1669920753,
+                    74
+                  ],
+                  "plane": "基准面2",
+                  "start": [
+                    -43,
+                    8
+                  ],
+                  "thickness": "=rib_thickness"
+                }
+              },
+              {
+                "operation": "rib",
+                "params": {
+                  "both_sides": true,
+                  "end": [
+                    -2.9,
+                    74
+                  ],
+                  "plane": "基准面2",
+                  "start": [
+                    -43,
+                    7.8
+                  ],
+                  "thickness": "=rib_thickness"
+                }
+              },
+              {
+                "operation": "delete_feature",
+                "params": {
+                  "name": "凸台-拉伸5"
+                }
+              },
+              {
+                "operation": "extrude",
+                "params": {
+                  "depth": "=rib_thickness",
+                  "direction": "both",
+                  "loops": [
+                    {
+                      "points": [
+                        [
+                          -43,
+                          7.8
+                        ],
+                        [
+                          16.06,
+                          7.8
+                        ],
+                        [
+                          -2.8669920753,
+                          74
+                        ]
+                      ],
+                      "type": "polygon"
+                    }
+                  ],
+                  "plane": "基准面2"
+                }
+              },
+              {
+                "operation": "mirror",
+                "params": {
+                  "features": [
+                    "凸台-拉伸6"
+                  ],
+                  "plane": "基准面1"
+                }
+              },
+              {
+                "operation": "ref_plane",
+                "params": {
+                  "offset": -25,
+                  "reference": "front"
+                }
+              },
+              {
+                "operation": "cut",
+                "params": {
+                  "direction": "-Z",
+                  "loops": [
+                    {
+                      "segments": [
+                        {
+                          "to": [
+                            8,
+                            8
+                          ]
+                        },
+                        {
+                          "to": [
+                            8,
+                            28
+                          ]
+                        },
+                        {
+                          "through": [
+                            0,
+                            36
+                          ],
+                          "to": [
+                            -8,
+                            28
+                          ]
+                        },
+                        {
+                          "to": [
+                            -8,
+                            8
+                          ]
+                        }
+                      ],
+                      "start": [
+                        -8,
+                        8
+                      ],
+                      "type": "path"
+                    }
+                  ],
+                  "plane": "基准面3",
+                  "through_all": true
+                }
+              },
+              {
+                "operation": "cut",
+                "params": {
+                  "direction": "-Z",
+                  "loops": [
+                    {
+                      "end": [
+                        14,
+                        64
+                      ],
+                      "start": [
+                        -14,
+                        64
+                      ],
+                      "type": "slot",
+                      "width": 8
+                    }
+                  ],
+                  "plane": "基准面3",
+                  "through_all": true
+                }
+              },
+              {
+                "operation": "linear_pattern",
+                "params": {
+                  "count1": 3,
+                  "direction1": "+Y",
+                  "spacing1": "=vent_pitch"
+                }
+              },
+              {
+                "operation": "delete_feature",
+                "params": {
+                  "name": "切除-拉伸2"
+                }
+              },
+              {
+                "operation": "cut",
+                "params": {
+                  "depth": 28,
+                  "direction": "both",
+                  "loops": [
+                    {
+                      "points": [
+                        [
+                          -16.9867345777,
+                          53.2640193208
+                        ],
+                        [
+                          31.0763502192,
+                          67.0458871117
+                        ],
+                        [
+                          28.8712513727,
+                          74.7359806792
+                        ],
+                        [
+                          -19.1918334242,
+                          60.9541128883
+                        ]
+                      ],
+                      "type": "polygon"
+                    }
+                  ],
+                  "plane": "基准面1"
+                }
+              },
+              {
+                "operation": "linear_pattern",
+                "params": {
+                  "count1": 3,
+                  "direction1": "+Y",
+                  "spacing1": "=vent_pattern_Y"
+                }
+              },
+              {
+                "operation": "ref_plane",
+                "params": {
+                  "offset": 14,
+                  "reference": "基准面1"
+                }
+              },
+              {
+                "operation": "revolve",
+                "params": {
+                  "angle_deg": 360,
+                  "axis_end": [
+                    29.973800796,
+                    70.8909338954
+                  ],
+                  "axis_start": [
+                    -18.089284001,
+                    57.1090661046
+                  ],
+                  "cut": true,
+                  "loops": [
+                    {
+                      "points": [
+                        [
+                          -18.089284001,
+                          57.1090661046
+                        ],
+                        [
+                          29.973800796,
+                          70.8909338954
+                        ],
+                        [
+                          28.8712513727,
+                          74.7359806792
+                        ],
+                        [
+                          -19.1918334242,
+                          60.9541128883
+                        ]
+                      ],
+                      "type": "polygon"
+                    }
+                  ],
+                  "plane": "基准面4"
+                }
+              },
+              {
+                "operation": "linear_pattern",
+                "params": {
+                  "count1": 3,
+                  "direction1": "+Y",
+                  "spacing1": "=vent_pattern_Y"
+                }
+              },
+              {
+                "operation": "mirror",
+                "params": {
+                  "features": [
+                    "切除-旋转1",
+                    "阵列(线性)3"
+                  ],
+                  "plane": "基准面1"
+                }
+              },
+              {
+                "operation": "cut",
+                "params": {
+                  "depth": "=pad_depth",
+                  "loops": [
+                    {
+                      "center": [
+                        0,
+                        -36
+                      ],
+                      "size": [
+                        24,
+                        10
+                      ],
+                      "type": "rect"
+                    }
+                  ],
+                  "plane": "bottom"
+                }
+              },
+              {
+                "operation": "linear_pattern",
+                "params": {
+                  "count1": 2,
+                  "direction1": "+Z",
+                  "spacing1": 72
+                }
+              },
+              {
+                "operation": "edit_feature",
+                "params": {
+                  "dimension": "spacing1",
+                  "name": "阵列(线性)2",
+                  "value": "=vent_pattern_Y"
+                }
+              },
+              {
+                "operation": "edit_feature",
+                "params": {
+                  "name": "阵列(线性)2",
+                  "value": "=vent_pattern_Y"
+                }
+              },
+              {
+                "operation": "edit_feature",
+                "params": {
+                  "name": "阵列(线性)3",
+                  "value": "=vent_pattern_Y"
+                }
+              },
+              {
+                "operation": "fillet",
+                "params": {
+                  "edges": {
+                    "direction": [
+                      -1,
+                      0,
+                      0
+                    ],
+                    "origin": [
+                      60,
+                      117.95,
+                      -12.66
+                    ]
+                  },
+                  "radius": "=outer_R"
+                }
+              },
+              {
+                "operation": "mirror",
+                "params": {
+                  "features": [
+                    "圆角1"
+                  ],
+                  "plane": "基准面1"
+                }
+              },
+              {
+                "operation": "fillet",
+                "params": {
+                  "edges": {
+                    "direction": [
+                      1,
+                      0,
+                      0
+                    ],
+                    "origin": [
+                      -60,
+                      117.95,
+                      -12.66
+                    ]
+                  },
+                  "radius": "=outer_R"
+                }
+              },
+              {
+                "operation": "fillet",
+                "params": {
+                  "edges": {
+                    "direction": [
+                      0,
+                      -1,
+                      0
+                    ],
+                    "origin": [
+                      0,
+                      35,
+                      54.9
+                    ]
+                  },
+                  "radius": "=outer_R"
+                }
+              },
+              {
+                "operation": "fillet",
+                "params": {
+                  "edges": {
+                    "direction": [
+                      0,
+                      0,
+                      1
+                    ],
+                    "origin": [
+                      0,
+                      7.9,
+                      -70
+                    ]
+                  },
+                  "radius": "=outer_R"
+                }
+              },
+              {
+                "operation": "delete_feature",
+                "params": {
+                  "name": "草图4"
+                }
+              }
+            ],
+            "user_intent": "创建一个一体式桌面手机支架，所有结构必须合并为单一实体。底座长110mm、宽78mm、厚8mm；78mm宽的倾斜背板厚6mm，与水平面成74°，从底座上表面升起，成品总高度118mm。底座前端设置贯穿全宽的挡唇，前后厚10mm，高出底座上表面12mm，使成品前端总高度20mm。背板左右两侧各有一个三角加强筋。背板下部中央开一个宽16mm、向下开口高度28mm的充电线U形通槽；背板中上部开3个36×8mm的水平贯穿散热槽，槽中心竖向间距18mm。底面加工两个24×10mm、深1.5mm的防滑垫浅凹槽。最后尽可能对适合的外轮廓做R4mm圆角，同时保持底面平整、支架左右对称。"
+          },
+          "raw_llm_trace": [
+            {
+              "content": "你是一名资深机械设计工程师，正在 SolidWorks 中用工具逐步建出用户描述的零件。\n\n## 坐标与单位\n- 所有长度单位 mm，角度单位度。模型坐标：+Y 向上（顶），+Z 向前，+X 向右。\n- 除非需求另有说明，零件底面放在 Y=0、高度沿 +Y，并在 X、Z 方向上以原点为中心；回转体的轴线沿 Y。\n- 每个草图平面都有固定的 (u,v) 坐标，数值就是模型坐标：法向沿 Z → u=X, v=Y；法向沿 Y → u=X, v=Z；法向沿 X → u=Z, v=Y。\n  例如在顶面（法向 +Y）上 [10, -5] 表示 X=10, Z=-5。\n\n## 草图与特征规则\n- 一次 extrude/cut 调用画一个区域：外环加上它内部的内环（孔）。部分重叠的轮廓会被拒绝，需要拆成先后两个特征（实体会自动合并）或合并成一个 polygon。\n- 在已有实体上加特征时，用语义面引用（top/bottom/left/right/front/back、face(+X, innermost) 等）或 get_model_state 返回的 face#index，不要猜测。\n- cut 默认朝实体内部切；hole 可以一次打多个同径孔；重复特征优先用 circular_pattern / linear_pattern。\n- revolve 的轮廓是截面的一半，必须整体位于轴线一侧，可以贴着轴线。\n- 带圆角的外形（耳片、圆角板、腰形孔、扇形窗口、带圆弧的截面）直接在轮廓里表达：rect/polygon 的 corner_radius、slot、annular_sector 或 path 的圆弧段，而不是先画尖角再补 fillet。\n- 需要在没有现成平面的位置画草图时（悬空的凸台、离开实体表面一段距离的特征），先用 ref_plane 从已有平面偏移出基准面，再把它的名称作为 plane。\n- 对称的特征建好一侧后用 mirror 镜像；整个零件左右对称时也可以先建一半再 mirror(body=true)。\n- 侧凸台、支管接到已有实体时用 extrude(..., up_to=面或 body)，不要估一个 depth。\n- 沉头孔用 counterbore / countersink，螺纹底孔用 tapped_hole；不要拆成两次普通 cut。\n- 筋用 rib（开放线段，连接已有两个面）；弯管、沿路径的实体用 sweep；变截面用 loft。\n- 空心壳体用 shell 抽掉开口面；侧面斜度用 draft，不要靠猜拉伸深度冒充。\n- 钣金平板用 sheet_metal（必须是零件的第一特征）。改已有特征的尺寸用 edit_feature，不要删除重做。\n- fillet/chamfer 一般放在最后，edges 不确定时先用 get_model_state 查看几何。\n\n## 工作方式\n1. 先读懂需求，列出总体尺寸和关键特征；可以用 set_parameters 定义驱动参数，之后用 \"=表达式\" 引用。\n2. 先建基体，再逐个添加特征。每次调用后检查返回的 volume_delta_mm3 与 bbox_mm 是否符合预期。\n3. 工具失败时会自动回滚，模型保持调用前的状态。阅读错误码和提示，修改参数或换一种做法再试；不要重复完全相同的失败调用。做错的特征可以用 delete_feature 删除。\n4. 全部完成后调用 get_model_state，逐项核对总体尺寸、孔数、特征是否满足需求；不满足就继续修改。\n5. 核对无误后调用 finish，并在 summary 中说明零件的组成与关键尺寸。\n",
+              "role": "system"
+            },
+            {
+              "content": "建模需求：\n创建一个一体式桌面手机支架，所有结构必须合并为单一实体。底座长110mm、宽78mm、厚8mm；78mm宽的倾斜背板厚6mm，与水平面成74°，从底座上表面升起，成品总高度118mm。底座前端设置贯穿全宽的挡唇，前后厚10mm，高出底座上表面12mm，使成品前端总高度20mm。背板左右两侧各有一个三角加强筋。背板下部中央开一个宽16mm、向下开口高度28mm的充电线U形通槽；背板中上部开3个36×8mm的水平贯穿散热槽，槽中心竖向间距18mm。底面加工两个24×10mm、深1.5mm的防滑垫浅凹槽。最后尽可能对适合的外轮廓做R4mm圆角，同时保持底面平整、支架左右对称。\n\n当前是一个空零件，请开始建模。",
+              "role": "user"
+            },
+            {
+              "content": "我将按左右宽78mm、前后长110mm布置底座，背板向后倾斜。先建立底座、挡唇和背板，再镜像两侧加强筋，开充电槽、散热槽及底面防滑垫凹槽；最后在不影响底面平整和结构连接的位置做R4圆角，并核对单一实体及总高度118mm。",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{}",
+                    "name": "get_model_state"
+                  },
+                  "id": "call_Kpxh3qirwjhedE4bybfsV98v",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"state\": {\"features\": [], \"bbox_mm\": null, \"volume_mm3\": 0.0, \"planar_faces\": [], \"cylindrical_faces\": [], \"reference_planes\": [], \"parameters\": {}}}",
+              "role": "tool",
+              "tool_call_id": "call_Kpxh3qirwjhedE4bybfsV98v"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"values\":{\"base_length\":110,\"base_width\":78,\"base_thickness\":8,\"back_thickness\":6,\"back_angle\":74,\"total_height\":118,\"lip_depth\":10,\"lip_rise\":12,\"rib_thickness\":4,\"charge_width\":16,\"charge_height\":28,\"vent_length\":36,\"vent_width\":8,\"vent_pitch\":18,\"pad_length\":24,\"pad_width\":10,\"pad_depth\":1.5,\"outer_R\":4}}",
+                    "name": "set_parameters"
+                  },
+                  "id": "call_QFuxYo3W10jqpSqwCG063zwD",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"parameters\": {\"base_length\": 110.0, \"base_width\": 78.0, \"base_thickness\": 8.0, \"back_thickness\": 6.0, \"back_angle\": 74.0, \"total_height\": 118.0, \"lip_depth\": 10.0, \"lip_rise\": 12.0, \"rib_thickness\": 4.0, \"charge_width\": 16.0, \"charge_height\": 28.0, \"vent_length\": 36.0, \"vent_width\": 8.0, \"vent_pitch\": 18.0, \"pad_length\": 24.0, \"pad_width\": 10.0, \"pad_depth\": 1.5, \"outer_R\": 4.0}}",
+              "role": "tool",
+              "tool_call_id": "call_QFuxYo3W10jqpSqwCG063zwD"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"top_plane\",\"loops\":[{\"type\":\"rect\",\"center\":[0,0],\"size\":[78,110],\"corner_radius\":4}],\"depth\":\"=base_thickness\",\"direction\":\"+Y\"}",
+                    "name": "extrude"
+                  },
+                  "id": "call_lIINe9ctrUmSTlaaQBZJFspw",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图1\", \"凸台-拉伸1\"], \"volume_mm3\": 68530.12, \"volume_delta_mm3\": 68530.12, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 8.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 8.0, 110.0]}, \"plane\": \"top_plane: 平面 Y=0mm，法向 +Y；u=X, v=Z（模型坐标，mm）\", \"direction\": \"+Y\", \"region_area_mm2\": 8566.201708, \"profile_uv_bbox\": {\"u\": [-39.0, 39.0], \"v\": [-55.0, 55.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_lIINe9ctrUmSTlaaQBZJFspw"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"top\",\"loops\":[{\"type\":\"rect\",\"center\":[0,50],\"size\":[78,10],\"corner_radius\":4}],\"depth\":\"=lip_rise\",\"direction\":\"+Y\"}",
+                    "name": "extrude"
+                  },
+                  "id": "call_hB62HieSVfexcemAFgMcdUDW",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图2\", \"凸台-拉伸2\"], \"volume_mm3\": 77725.31, \"volume_delta_mm3\": 9195.19, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 20.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 20.0, 110.0]}, \"plane\": \"top(face#8): 平面 Y=8mm，法向 +Y；u=X, v=Z（模型坐标，mm）\", \"direction\": \"+Y\", \"region_area_mm2\": 766.201708, \"profile_uv_bbox\": {\"u\": [-39.0, 39.0], \"v\": [45.0, 55.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_hB62HieSVfexcemAFgMcdUDW"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"reference\":\"right\",\"offset\":-39}",
+                    "name": "ref_plane"
+                  },
+                  "id": "call_0U8EhF4QIXmZ422uI8QjhZ4o",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"name\": \"基准面1\", \"plane\": \"基准面1: 平面 X=0mm，法向 +X；u=Z, v=Y（模型坐标，mm）\", \"from\": \"right(face#5)\"}",
+              "role": "tool",
+              "tool_call_id": "call_0U8EhF4QIXmZ422uI8QjhZ4o"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"基准面1\",\"loops\":[{\"type\":\"polygon\",\"points\":[[22,8],[-9.5419924335,118],[-15.7837890487,118],[15.7582033848,8]]}],\"depth\":\"=base_width\",\"direction\":\"both\"}",
+                    "name": "extrude"
+                  },
+                  "id": "call_JxPxvwcdWmeg64wn8yMSSK3t",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图3\", \"凸台-拉伸3\"], \"volume_mm3\": 131279.92, \"volume_delta_mm3\": 53554.61, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}, \"plane\": \"基准面1: 平面 X=0mm，法向 +X；u=Z, v=Y（模型坐标，mm）\", \"direction\": \"both\", \"region_area_mm2\": 686.597628, \"profile_uv_bbox\": {\"u\": [-15.784, 22.0], \"v\": [8.0, 118.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_JxPxvwcdWmeg64wn8yMSSK3t"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{}",
+                    "name": "get_model_state"
+                  },
+                  "id": "call_zn50ABpghcAhmMW4Xq1QiFnF",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"state\": {\"features\": [{\"name\": \"草图1\", \"type\": \"ProfileFeature\"}, {\"name\": \"凸台-拉伸1\", \"type\": \"Extrusion\"}, {\"name\": \"草图2\", \"type\": \"ProfileFeature\"}, {\"name\": \"凸台-拉伸2\", \"type\": \"ICE\"}, {\"name\": \"基准面1\", \"type\": \"RefPlane\"}, {\"name\": \"草图3\", \"type\": \"ProfileFeature\"}, {\"name\": \"凸台-拉伸3\", \"type\": \"ICE\"}], \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}, \"volume_mm3\": 131279.92, \"planar_faces\": [{\"ref\": \"face#10\", \"normal\": \"-Y\", \"at\": \"Y=0.000\", \"area_mm2\": 8566.27, \"u_range\": [-39.0, 39.0], \"v_range\": [-55.0, 55.0], \"uv\": \"u=X,v=Z\", \"alias\": \"bottom\"}, {\"ref\": \"face#0\", \"normal\": \"+Y\", \"at\": \"Y=8.000\", \"area_mm2\": 5512.27, \"u_range\": [-39.0, 39.0], \"v_range\": [-55.0, 15.758], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#9\", \"normal\": \"+Y\", \"at\": \"Y=8.000\", \"area_mm2\": 1800.87, \"u_range\": [-39.0, 39.0], \"v_range\": [22.0, 49.0], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#2\", \"normal\": \"-X\", \"at\": \"X=-39.000\", \"area_mm2\": 1526.6, \"u_range\": [-51.0, 51.0], \"v_range\": [0.0, 118.0], \"uv\": \"u=Z,v=Y\", \"alias\": \"left\"}, {\"ref\": \"face#6\", \"normal\": \"+X\", \"at\": \"X=39.000\", \"area_mm2\": 1526.6, \"u_range\": [-51.0, 51.0], \"v_range\": [0.0, 118.0], \"uv\": \"u=Z,v=Y\", \"alias\": \"right\"}, {\"ref\": \"face#4\", \"normal\": \"+Z\", \"at\": \"Z=55.000\", \"area_mm2\": 1400.0, \"u_range\": [-35.0, 35.0], \"v_range\": [0.0, 20.0], \"uv\": \"u=X,v=Y\", \"alias\": \"front\"}, {\"ref\": \"face#13\", \"normal\": \"-Z\", \"at\": \"Z=45.000\", \"area_mm2\": 840.0, \"u_range\": [-35.0, 35.0], \"v_range\": [8.0, 20.0], \"uv\": \"u=X,v=Y\"}, {\"ref\": \"face#14\", \"normal\": \"+Y\", \"at\": \"Y=20.000\", \"area_mm2\": 766.27, \"u_range\": [-39.0, 39.0], \"v_range\": [45.0, 55.0], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#8\", \"normal\": \"-Z\", \"at\": \"Z=-55.000\", \"area_mm2\": 560.0, \"u_range\": [-35.0, 35.0], \"v_range\": [0.0, 8.0], \"uv\": \"u=X,v=Y\", \"alias\": \"back\"}, {\"ref\": \"face#16\", \"normal\": \"+Y\", \"at\": \"Y=118.000\", \"area_mm2\": 486.86, \"u_range\": [-39.0, 39.0], \"v_range\": [-15.784, -9.542], \"uv\": \"u=X,v=Z\", \"alias\": \"top\"}], \"cylindrical_faces\": [{\"ref\": \"face#1\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [-35.0, 8.0, -51.0], \"span_mm\": [0.0, 8.0]}, {\"ref\": \"face#3\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [-35.0, 8.0, 51.0], \"span_mm\": [0.0, 20.0]}, {\"ref\": \"face#5\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [35.0, 8.0, 51.0], \"span_mm\": [0.0, 20.0]}, {\"ref\": \"face#7\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [35.0, 8.0, -51.0], \"span_mm\": [0.0, 8.0]}, {\"ref\": \"face#11\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [-35.0, 20.0, 49.0], \"span_mm\": [8.0, 20.0]}, {\"ref\": \"face#12\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [35.0, 20.0, 49.0], \"span_mm\": [8.0, 20.0]}], \"reference_planes\": [{\"name\": \"基准面1\", \"normal\": \"+X\", \"at\": \"X=0.000\", \"uv\": \"u=Z,v=Y\"}], \"parameters\": {\"base_length\": 110.0, \"base_width\": 78.0, \"base_thickness\": 8.0, \"back_thickness\": 6.0, \"back_angle\": 74.0, \"total_height\": 118.0, \"lip_depth\": 10.0, \"lip_rise\": 12.0, \"rib_thickness\": 4.0, \"charge_width\": 16.0, \"charge_height\": 28.0, \"vent_length\": 36.0, \"vent_width\": 8.0, \"vent_pitch\": 18.0, \"pad_length\": 24.0, \"pad_width\": 10.0, \"pad_depth\": 1.5, \"outer_R\": 4.0}}}",
+              "role": "tool",
+              "tool_call_id": "call_zn50ABpghcAhmMW4Xq1QiFnF"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"reference\":\"基准面1\",\"offset\":35}",
+                    "name": "ref_plane"
+                  },
+                  "id": "call_jlRtNq5OTjPSU3Vpjmy1GNzP",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"name\": \"基准面2\", \"plane\": \"基准面2: 平面 X=35mm，法向 +X；u=Z, v=Y（模型坐标，mm）\", \"from\": \"基准面1\"}",
+              "role": "tool",
+              "tool_call_id": "call_jlRtNq5OTjPSU3Vpjmy1GNzP"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"基准面2\",\"start\":[-43,8],\"end\":[-3.1669920753,74],\"thickness\":\"=rib_thickness\",\"both_sides\":true}",
+                    "name": "rib"
+                  },
+                  "id": "call_UWZKchwuzTn0u790mG69ICrB",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": false, \"error\": {\"code\": \"FEATURE_FAILED\", \"message\": \"[FEATURE_FAILED] feature_extrusion: 拉伸失败，请确保草图中有封闭的轮廓\", \"plane\": \"基准面2: 平面 X=35mm，法向 +X；u=Z, v=Y（模型坐标，mm）\", \"direction\": \"both\", \"region_area_mm2\": 1314.489262, \"profile_uv_bbox\": {\"u\": [-43.0, -3.167], \"v\": [8.0, 74.0]}, \"rolled_back\": [\"草图5\"]}}",
+              "role": "tool",
+              "tool_call_id": "call_UWZKchwuzTn0u790mG69ICrB"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"基准面2\",\"start\":[-43,7.8],\"end\":[-2.9,74],\"thickness\":\"=rib_thickness\",\"both_sides\":true}",
+                    "name": "rib"
+                  },
+                  "id": "call_9467nSCfPDZ1PH2bXIm0UeE8",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图7\", \"凸台-拉伸5\"], \"volume_mm3\": 136556.8, \"volume_delta_mm3\": 5276.87, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}, \"plane\": \"基准面2: 平面 X=35mm，法向 +X；u=Z, v=Y（模型坐标，mm）\", \"direction\": \"both\", \"region_area_mm2\": 1327.31, \"profile_uv_bbox\": {\"u\": [-43.0, -2.9], \"v\": [7.8, 74.0]}, \"warnings\": [\"InsertRib 失败，已用直角三角凸台代替（[FEATURE_FAILED] feature_rib: 创建筋失败: 创建筋失败：开放线段须同时碰到两个已有实体面）。若三角方向不对，请改用 extrude 自己画筋的截面。\"]}",
+              "role": "tool",
+              "tool_call_id": "call_9467nSCfPDZ1PH2bXIm0UeE8"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"name\":\"凸台-拉伸5\"}",
+                    "name": "delete_feature"
+                  },
+                  "id": "call_kT58jbV39pW9cYPpBDdsRTgu",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"deleted\": \"凸台-拉伸5\", \"volume_mm3\": 131279.92, \"volume_delta_mm3\": -5276.87, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_kT58jbV39pW9cYPpBDdsRTgu"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"基准面2\",\"loops\":[{\"type\":\"polygon\",\"points\":[[-43,7.8],[16.06,7.8],[-2.8669920753,74]]}],\"direction\":\"both\",\"depth\":\"=rib_thickness\"}",
+                    "name": "extrude"
+                  },
+                  "id": "call_r4FtTorKsJGM1B31eyyTQlgg",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图8\", \"凸台-拉伸6\"], \"volume_mm3\": 138980.6, \"volume_delta_mm3\": 7700.68, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}, \"plane\": \"基准面2: 平面 X=35mm，法向 +X；u=Z, v=Y（模型坐标，mm）\", \"direction\": \"both\", \"region_area_mm2\": 1954.886, \"profile_uv_bbox\": {\"u\": [-43.0, 16.06], \"v\": [7.8, 74.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_r4FtTorKsJGM1B31eyyTQlgg"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"基准面1\",\"features\":[\"凸台-拉伸6\"]}",
+                    "name": "mirror"
+                  },
+                  "id": "call_zNytcS6XleiPrYw5YfQPKB3u",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"镜向1\"], \"volume_mm3\": 146681.28, \"volume_delta_mm3\": 7700.68, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}, \"plane\": \"基准面1: 平面 X=0mm，法向 +X；u=Z, v=Y（模型坐标，mm）\", \"mirrored\": [\"凸台-拉伸6\"]}",
+              "role": "tool",
+              "tool_call_id": "call_zNytcS6XleiPrYw5YfQPKB3u"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"reference\":\"front\",\"offset\":-25}",
+                    "name": "ref_plane"
+                  },
+                  "id": "call_BlpLUy71EnK5jw1EVCI6MOOe",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"name\": \"基准面3\", \"plane\": \"基准面3: 平面 Z=30mm，法向 +Z；u=X, v=Y（模型坐标，mm）\", \"from\": \"front(face#5)\"}",
+              "role": "tool",
+              "tool_call_id": "call_BlpLUy71EnK5jw1EVCI6MOOe"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"基准面3\",\"loops\":[{\"type\":\"path\",\"start\":[-8,8],\"segments\":[{\"to\":[8,8]},{\"to\":[8,28]},{\"to\":[-8,28],\"through\":[0,36]},{\"to\":[-8,8]}]}],\"direction\":\"-Z\",\"through_all\":true}",
+                    "name": "cut"
+                  },
+                  "id": "call_6CDZcdykSZJTksxlOvsAemsx",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图9\", \"切除-拉伸1\"], \"volume_mm3\": 144056.47, \"volume_delta_mm3\": -2624.82, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}, \"plane\": \"基准面3: 平面 Z=30mm，法向 +Z；u=X, v=Y（模型坐标，mm）\", \"direction\": \"-Z\", \"region_area_mm2\": 420.403416, \"profile_uv_bbox\": {\"u\": [-8.0, 8.0], \"v\": [8.0, 36.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_6CDZcdykSZJTksxlOvsAemsx"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"基准面3\",\"loops\":[{\"type\":\"slot\",\"start\":[-14,64],\"end\":[14,64],\"width\":8}],\"through_all\":true,\"direction\":\"-Z\"}",
+                    "name": "cut"
+                  },
+                  "id": "call_IGyAVRsPvTUfiLC8mV4DKVtq",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图10\", \"切除-拉伸2\"], \"volume_mm3\": 142344.72, \"volume_delta_mm3\": -1711.75, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}, \"plane\": \"基准面3: 平面 Z=30mm，法向 +Z；u=X, v=Y（模型坐标，mm）\", \"direction\": \"-Z\", \"region_area_mm2\": 274.201708, \"profile_uv_bbox\": {\"u\": [-18.0, 18.0], \"v\": [60.0, 68.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_IGyAVRsPvTUfiLC8mV4DKVtq"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"direction1\":\"+Y\",\"spacing1\":\"=vent_pitch\",\"count1\":3}",
+                    "name": "linear_pattern"
+                  },
+                  "id": "call_4Rb7TPkCVW8UdmQYIr4P5Rn1",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"阵列(线性)1\"], \"volume_mm3\": 138921.29, \"volume_delta_mm3\": -3423.43, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_4Rb7TPkCVW8UdmQYIr4P5Rn1"
+            },
+            {
+              "content": "主体、左右对称加强筋和背板开槽已完成，当前外包络为左右78mm、前后110mm、总高118mm。散热槽按正视投影36×8mm制作，中心高度为64、82、100mm；充电槽从底座上表面向上开28mm。接下来加工底面两个浅凹槽，并处理可容纳R4的外缘。",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"name\":\"切除-拉伸2\"}",
+                    "name": "delete_feature"
+                  },
+                  "id": "call_J1Q9dIfpnhk8XAvOcXT4A3sM",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"deleted\": \"切除-拉伸2\", \"volume_mm3\": 144056.47, \"volume_delta_mm3\": 5135.18, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_J1Q9dIfpnhk8XAvOcXT4A3sM"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"values\":{\"vent_pattern_Y\":\"=vent_pitch/(0.961261695938319*0.961261695938319)\"}}",
+                    "name": "set_parameters"
+                  },
+                  "id": "call_BB3yE1GZCdtezyO34VKQ2LB9",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"parameters\": {\"base_length\": 110.0, \"base_width\": 78.0, \"base_thickness\": 8.0, \"back_thickness\": 6.0, \"back_angle\": 74.0, \"total_height\": 118.0, \"lip_depth\": 10.0, \"lip_rise\": 12.0, \"rib_thickness\": 4.0, \"charge_width\": 16.0, \"charge_height\": 28.0, \"vent_length\": 36.0, \"vent_width\": 8.0, \"vent_pitch\": 18.0, \"pad_length\": 24.0, \"pad_width\": 10.0, \"pad_depth\": 1.5, \"outer_R\": 4.0, \"vent_pattern_Y\": 19.480012}}",
+              "role": "tool",
+              "tool_call_id": "call_BB3yE1GZCdtezyO34VKQ2LB9"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"基准面1\",\"loops\":[{\"type\":\"polygon\",\"points\":[[-16.9867345777,53.2640193208],[31.0763502192,67.0458871117],[28.8712513727,74.7359806792],[-19.1918334242,60.9541128883]]}],\"direction\":\"both\",\"depth\":28}",
+                    "name": "cut"
+                  },
+                  "id": "call_Z4Z7a23nEl3DxiWEMeYrzseh",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图11\", \"切除-拉伸3\"], \"volume_mm3\": 142712.47, \"volume_delta_mm3\": -1344.0, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}, \"plane\": \"基准面1: 平面 X=0mm，法向 +X；u=Z, v=Y（模型坐标，mm）\", \"direction\": \"both\", \"region_area_mm2\": 400.0, \"profile_uv_bbox\": {\"u\": [-19.192, 31.076], \"v\": [53.264, 74.736]}}",
+              "role": "tool",
+              "tool_call_id": "call_Z4Z7a23nEl3DxiWEMeYrzseh"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"direction1\":\"+Y\",\"spacing1\":\"=vent_pattern_Y\",\"count1\":3}",
+                    "name": "linear_pattern"
+                  },
+                  "id": "call_afQbvCHg5UQ7vZY53vaq0jlh",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"阵列(线性)2\"], \"volume_mm3\": 140024.47, \"volume_delta_mm3\": -2688.0, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_afQbvCHg5UQ7vZY53vaq0jlh"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"reference\":\"基准面1\",\"offset\":14}",
+                    "name": "ref_plane"
+                  },
+                  "id": "call_PBwSApotGkmhyVsBXVgCltin",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"name\": \"基准面4\", \"plane\": \"基准面4: 平面 X=14mm，法向 +X；u=Z, v=Y（模型坐标，mm）\", \"from\": \"基准面1\"}",
+              "role": "tool",
+              "tool_call_id": "call_PBwSApotGkmhyVsBXVgCltin"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"基准面4\",\"loops\":[{\"type\":\"polygon\",\"points\":[[-18.089284001,57.1090661046],[29.973800796,70.8909338954],[28.8712513727,74.7359806792],[-19.1918334242,60.9541128883]]}],\"axis_start\":[-18.089284001,57.1090661046],\"axis_end\":[29.973800796,70.8909338954],\"angle_deg\":360,\"cut\":true}",
+                    "name": "revolve"
+                  },
+                  "id": "call_0tmyww32uIldVf2esQ6mNq5Q",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图12\", \"切除-旋转1\"], \"volume_mm3\": 139873.67, \"volume_delta_mm3\": -150.8, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}, \"plane\": \"基准面4: 平面 X=14mm，法向 +X；u=Z, v=Y（模型坐标，mm）\", \"region_area_mm2\": 200.0, \"profile_uv_bbox\": {\"u\": [-19.192, 29.974], \"v\": [57.109, 74.736]}}",
+              "role": "tool",
+              "tool_call_id": "call_0tmyww32uIldVf2esQ6mNq5Q"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"direction1\":\"+Y\",\"spacing1\":\"=vent_pattern_Y\",\"count1\":3}",
+                    "name": "linear_pattern"
+                  },
+                  "id": "call_np2iC1Ob1bv8HDlfcvx65Uxa",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"阵列(线性)3\"], \"volume_mm3\": 139572.08, \"volume_delta_mm3\": -301.59, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_np2iC1Ob1bv8HDlfcvx65Uxa"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"基准面1\",\"features\":[\"切除-旋转1\",\"阵列(线性)3\"]}",
+                    "name": "mirror"
+                  },
+                  "id": "call_zuB8NSMsacme6hQqidSYL7AG",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"镜向2\"], \"volume_mm3\": 139119.69, \"volume_delta_mm3\": -452.39, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}, \"plane\": \"基准面1: 平面 X=0mm，法向 +X；u=Z, v=Y（模型坐标，mm）\", \"mirrored\": [\"切除-旋转1\", \"阵列(线性)3\"]}",
+              "role": "tool",
+              "tool_call_id": "call_zuB8NSMsacme6hQqidSYL7AG"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"bottom\",\"loops\":[{\"type\":\"rect\",\"center\":[0,-36],\"size\":[24,10]}],\"depth\":\"=pad_depth\"}",
+                    "name": "cut"
+                  },
+                  "id": "call_XRx7ux2ZjqXm5eoMjtBmJd3e",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图13\", \"切除-拉伸4\"], \"volume_mm3\": 138759.69, \"volume_delta_mm3\": -360.0, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}, \"plane\": \"bottom(face#10): 平面 Y=0mm，法向 -Y；u=X, v=Z（模型坐标，mm）\", \"direction\": \"+Y\", \"region_area_mm2\": 240.0, \"profile_uv_bbox\": {\"u\": [-12.0, 12.0], \"v\": [-41.0, -31.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_XRx7ux2ZjqXm5eoMjtBmJd3e"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"direction1\":\"+Z\",\"spacing1\":72,\"count1\":2}",
+                    "name": "linear_pattern"
+                  },
+                  "id": "call_1qxRp0Vfqmg2BGWlv0iAs1p1",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"阵列(线性)4\"], \"volume_mm3\": 138399.69, \"volume_delta_mm3\": -360.0, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_1qxRp0Vfqmg2BGWlv0iAs1p1"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{}",
+                    "name": "get_model_state"
+                  },
+                  "id": "call_qlRqIHBbQHHcCHRATlVkgNN6",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"state\": {\"features\": [{\"name\": \"草图1\", \"type\": \"ProfileFeature\"}, {\"name\": \"凸台-拉伸1\", \"type\": \"Extrusion\"}, {\"name\": \"草图2\", \"type\": \"ProfileFeature\"}, {\"name\": \"凸台-拉伸2\", \"type\": \"ICE\"}, {\"name\": \"基准面1\", \"type\": \"RefPlane\"}, {\"name\": \"草图3\", \"type\": \"ProfileFeature\"}, {\"name\": \"凸台-拉伸3\", \"type\": \"ICE\"}, {\"name\": \"基准面2\", \"type\": \"RefPlane\"}, {\"name\": \"草图4\", \"type\": \"ProfileFeature\"}, {\"name\": \"草图6\", \"type\": \"ProfileFeature\"}, {\"name\": \"草图8\", \"type\": \"ProfileFeature\"}, {\"name\": \"凸台-拉伸6\", \"type\": \"ICE\"}, {\"name\": \"镜向1\", \"type\": \"MirrorPattern\"}, {\"name\": \"基准面3\", \"type\": \"RefPlane\"}, {\"name\": \"草图9\", \"type\": \"ProfileFeature\"}, {\"name\": \"切除-拉伸1\", \"type\": \"ICE\"}, {\"name\": \"草图11\", \"type\": \"ProfileFeature\"}, {\"name\": \"切除-拉伸3\", \"type\": \"ICE\"}, {\"name\": \"阵列(线性)2\", \"type\": \"LPattern\"}, {\"name\": \"基准面4\", \"type\": \"RefPlane\"}, {\"name\": \"草图12\", \"type\": \"ProfileFeature\"}, {\"name\": \"切除-旋转1\", \"type\": \"RevCut\"}, {\"name\": \"阵列(线性)3\", \"type\": \"LPattern\"}, {\"name\": \"镜向2\", \"type\": \"MirrorPattern\"}, {\"name\": \"草图13\", \"type\": \"ProfileFeature\"}, {\"name\": \"切除-拉伸4\", \"type\": \"ICE\"}, {\"name\": \"阵列(线性)4\", \"type\": \"LPattern\"}], \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}, \"volume_mm3\": 138399.69, \"planar_faces\": [{\"ref\": \"face#10\", \"normal\": \"-Y\", \"at\": \"Y=0.000\", \"area_mm2\": 8086.27, \"u_range\": [-39.0, 39.0], \"v_range\": [-55.0, 55.0], \"uv\": \"u=X,v=Z\", \"alias\": \"bottom\"}, {\"ref\": \"face#9\", \"normal\": \"+Y\", \"at\": \"Y=8.000\", \"area_mm2\": 6943.91, \"u_range\": [-39.0, 39.0], \"v_range\": [-55.0, 49.0], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#18\", \"normal\": \"+X\", \"at\": \"X=37.000\", \"area_mm2\": 1925.17, \"u_range\": [-42.879, 15.758], \"v_range\": [8.0, 73.664], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#19\", \"normal\": \"-X\", \"at\": \"X=33.000\", \"area_mm2\": 1925.17, \"u_range\": [-42.879, 15.758], \"v_range\": [8.0, 73.664], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#21\", \"normal\": \"-X\", \"at\": \"X=-37.000\", \"area_mm2\": 1925.17, \"u_range\": [-42.879, 15.758], \"v_range\": [8.0, 73.664], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#22\", \"normal\": \"+X\", \"at\": \"X=-33.000\", \"area_mm2\": 1925.17, \"u_range\": [-42.879, 15.758], \"v_range\": [8.0, 73.664], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#2\", \"normal\": \"-X\", \"at\": \"X=-39.000\", \"area_mm2\": 1526.6, \"u_range\": [-51.0, 51.0], \"v_range\": [0.0, 118.0], \"uv\": \"u=Z,v=Y\", \"alias\": \"left\"}, {\"ref\": \"face#6\", \"normal\": \"+X\", \"at\": \"X=39.000\", \"area_mm2\": 1526.6, \"u_range\": [-51.0, 51.0], \"v_range\": [0.0, 118.0], \"uv\": \"u=Z,v=Y\", \"alias\": \"right\"}, {\"ref\": \"face#4\", \"normal\": \"+Z\", \"at\": \"Z=55.000\", \"area_mm2\": 1400.0, \"u_range\": [-35.0, 35.0], \"v_range\": [0.0, 20.0], \"uv\": \"u=X,v=Y\", \"alias\": \"front\"}, {\"ref\": \"face#13\", \"normal\": \"-Z\", \"at\": \"Z=45.000\", \"area_mm2\": 840.0, \"u_range\": [-35.0, 35.0], \"v_range\": [8.0, 20.0], \"uv\": \"u=X,v=Y\"}, {\"ref\": \"face#14\", \"normal\": \"+Y\", \"at\": \"Y=20.000\", \"area_mm2\": 766.27, \"u_range\": [-39.0, 39.0], \"v_range\": [45.0, 55.0], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#8\", \"normal\": \"-Z\", \"at\": \"Z=-55.000\", \"area_mm2\": 560.0, \"u_range\": [-35.0, 35.0], \"v_range\": [0.0, 8.0], \"uv\": \"u=X,v=Y\", \"alias\": \"back\"}, {\"ref\": \"face#15\", \"normal\": \"+Y\", \"at\": \"Y=118.000\", \"area_mm2\": 486.86, \"u_range\": [-39.0, 39.0], \"v_range\": [-15.784, -9.542], \"uv\": \"u=X,v=Z\", \"alias\": \"top\"}, {\"ref\": \"face#42\", \"normal\": \"-Y\", \"at\": \"Y=1.500\", \"area_mm2\": 240.0, \"u_range\": [-12.0, 12.0], \"v_range\": [-41.0, -31.0], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#47\", \"normal\": \"-Y\", \"at\": \"Y=1.500\", \"area_mm2\": 240.0, \"u_range\": [-12.0, 12.0], \"v_range\": [31.0, 41.0], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#23\", \"normal\": \"+X\", \"at\": \"X=-8.000\", \"area_mm2\": 124.84, \"u_range\": [10.023, 22.0], \"v_range\": [8.0, 28.0], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#25\", \"normal\": \"-X\", \"at\": \"X=8.000\", \"area_mm2\": 124.84, \"u_range\": [10.023, 22.0], \"v_range\": [8.0, 28.0], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#39\", \"normal\": \"-Z\", \"at\": \"Z=-31.000\", \"area_mm2\": 36.0, \"u_range\": [-12.0, 12.0], \"v_range\": [0.0, 1.5], \"uv\": \"u=X,v=Y\"}, {\"ref\": \"face#41\", \"normal\": \"+Z\", \"at\": \"Z=-41.000\", \"area_mm2\": 36.0, \"u_range\": [-12.0, 12.0], \"v_range\": [0.0, 1.5], \"uv\": \"u=X,v=Y\"}, {\"ref\": \"face#44\", \"normal\": \"-Z\", \"at\": \"Z=41.000\", \"area_mm2\": 36.0, \"u_range\": [-12.0, 12.0], \"v_range\": [0.0, 1.5], \"uv\": \"u=X,v=Y\"}, {\"ref\": \"face#46\", \"normal\": \"+Z\", \"at\": \"Z=31.000\", \"area_mm2\": 36.0, \"u_range\": [-12.0, 12.0], \"v_range\": [0.0, 1.5], \"uv\": \"u=X,v=Y\"}, {\"ref\": \"face#38\", \"normal\": \"+X\", \"at\": \"X=-12.000\", \"area_mm2\": 15.0, \"u_range\": [-41.0, -31.0], \"v_range\": [0.0, 1.5], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#40\", \"normal\": \"-X\", \"at\": \"X=12.000\", \"area_mm2\": 15.0, \"u_range\": [-41.0, -31.0], \"v_range\": [0.0, 1.5], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#43\", \"normal\": \"+X\", \"at\": \"X=-12.000\", \"area_mm2\": 15.0, \"u_range\": [31.0, 41.0], \"v_range\": [0.0, 1.5], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#45\", \"normal\": \"-X\", \"at\": \"X=12.000\", \"area_mm2\": 15.0, \"u_range\": [31.0, 41.0], \"v_range\": [0.0, 1.5], \"uv\": \"u=Z,v=Y\"}], \"cylindrical_faces\": [{\"ref\": \"face#1\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [-35.0, 8.0, -51.0], \"span_mm\": [0.0, 8.0]}, {\"ref\": \"face#3\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [-35.0, 8.0, 51.0], \"span_mm\": [0.0, 20.0]}, {\"ref\": \"face#5\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [35.0, 8.0, 51.0], \"span_mm\": [0.0, 20.0]}, {\"ref\": \"face#7\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [35.0, 8.0, -51.0], \"span_mm\": [0.0, 8.0]}, {\"ref\": \"face#11\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [-35.0, 20.0, 49.0], \"span_mm\": [8.0, 20.0]}, {\"ref\": \"face#12\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [35.0, 20.0, 49.0], \"span_mm\": [8.0, 20.0]}, {\"ref\": \"face#24\", \"diameter_mm\": 16.0, \"axis\": \"Z\", \"axis_point_mm\": [0.0, 28.0, -55.0], \"span_mm\": [7.729, 16.265]}, {\"ref\": \"face#32\", \"diameter_mm\": 8.0, \"axis\": \"Z\", \"axis_point_mm\": [14.0, 57.109, -18.089], \"span_mm\": [-0.928, 7.045]}, {\"ref\": \"face#33\", \"diameter_mm\": 8.0, \"axis\": \"Z\", \"axis_point_mm\": [14.0, 75.834, -23.459], \"span_mm\": [-6.297, 1.675]}, {\"ref\": \"face#34\", \"di…(截断)",
+              "role": "tool",
+              "tool_call_id": "call_qlRqIHBbQHHcCHRATlVkgNN6"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"values\":{\"vent_pattern_Y\":\"=vent_pitch/0.961261695938319\"}}",
+                    "name": "set_parameters"
+                  },
+                  "id": "call_wr1b8bjImhdalIqSD6LAWMm1",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"parameters\": {\"base_length\": 110.0, \"base_width\": 78.0, \"base_thickness\": 8.0, \"back_thickness\": 6.0, \"back_angle\": 74.0, \"total_height\": 118.0, \"lip_depth\": 10.0, \"lip_rise\": 12.0, \"rib_thickness\": 4.0, \"charge_width\": 16.0, \"charge_height\": 28.0, \"vent_length\": 36.0, \"vent_width\": 8.0, \"vent_pitch\": 18.0, \"pad_length\": 24.0, \"pad_width\": 10.0, \"pad_depth\": 1.5, \"outer_R\": 4.0, \"vent_pattern_Y\": 18.72539}}",
+              "role": "tool",
+              "tool_call_id": "call_wr1b8bjImhdalIqSD6LAWMm1"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"name\":\"阵列(线性)2\",\"dimension\":\"spacing1\",\"value\":\"=vent_pattern_Y\"}",
+                    "name": "edit_feature"
+                  },
+                  "id": "call_MC8SKry6S9VvGfhoRySsyDh9",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": false, \"error\": {\"code\": \"FEATURE_FAILED\", \"message\": \"[FEATURE_FAILED] 在特征 \\\"阵列(线性)2\\\" 中未找到名为 \\\"spacing1\\\" 的尺寸\"}}",
+              "role": "tool",
+              "tool_call_id": "call_MC8SKry6S9VvGfhoRySsyDh9"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"name\":\"阵列(线性)2\",\"value\":\"=vent_pattern_Y\"}",
+                    "name": "edit_feature"
+                  },
+                  "id": "call_5Rm0OnxN5selpDWw4E7VVXsc",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"edited\": \"阵列(线性)2\", \"old_value_mm\": 19.48, \"new_value_mm\": 18.725, \"volume_mm3\": 138345.79, \"volume_delta_mm3\": -53.9, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_5Rm0OnxN5selpDWw4E7VVXsc"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"name\":\"阵列(线性)3\",\"value\":\"=vent_pattern_Y\"}",
+                    "name": "edit_feature"
+                  },
+                  "id": "call_dd3B5j1yv7KrFUbayIJEtzq2",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"edited\": \"阵列(线性)3\", \"old_value_mm\": 19.48, \"new_value_mm\": 18.725, \"volume_mm3\": 138399.69, \"volume_delta_mm3\": 53.9, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_dd3B5j1yv7KrFUbayIJEtzq2"
+            },
+            {
+              "content": "散热槽已改为沿背板法向贯穿，确保板面上的实际尺寸为36×8mm，中心竖向间距仍为18mm。两个24×10mm、深1.5mm的底面凹槽也已完成。圆角将优先处理底座平面外角、挡唇上缘和背板顶部两角；较薄或空间不足的边缘保留，避免破坏结构。",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"edges\":{\"origin\":[60,117.95,-12.66],\"direction\":[-1,0,0]},\"radius\":\"=outer_R\"}",
+                    "name": "fillet"
+                  },
+                  "id": "call_5oDcEVYUK7PJ4D9QK1donDS4",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"圆角1\"], \"volume_mm3\": 138378.2, \"volume_delta_mm3\": -21.49, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_5oDcEVYUK7PJ4D9QK1donDS4"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\":\"基准面1\",\"features\":[\"圆角1\"]}",
+                    "name": "mirror"
+                  },
+                  "id": "call_AMt0fgoi0PpSdHdLnGkfVrTT",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": false, \"error\": {\"code\": \"FEATURE_FAILED\", \"message\": \"[FEATURE_FAILED] feature_mirror: 镜像失败: SolidWorks 未能创建镜像特征\", \"plane\": \"基准面1: 平面 X=0mm，法向 +X；u=Z, v=Y（模型坐标，mm）\", \"mirrored\": [\"圆角1\"], \"rolled_back\": []}}",
+              "role": "tool",
+              "tool_call_id": "call_AMt0fgoi0PpSdHdLnGkfVrTT"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"edges\":{\"origin\":[-60,117.95,-12.66],\"direction\":[1,0,0]},\"radius\":\"=outer_R\"}",
+                    "name": "fillet"
+                  },
+                  "id": "call_tEr3mJe3YUd8FONbtbfe5077",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"圆角2\"], \"volume_mm3\": 138356.71, \"volume_delta_mm3\": -21.49, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_tEr3mJe3YUd8FONbtbfe5077"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"edges\":{\"origin\":[0,35,54.9],\"direction\":[0,-1,0]},\"radius\":\"=outer_R\"}",
+                    "name": "fillet"
+                  },
+                  "id": "call_YvewXQEGp7EGccHlVcfozNIO",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"圆角3\"], \"volume_mm3\": 137795.25, \"volume_delta_mm3\": -561.46, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_YvewXQEGp7EGccHlVcfozNIO"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"edges\":{\"origin\":[0,7.9,-70],\"direction\":[0,0,1]},\"radius\":\"=outer_R\"}",
+                    "name": "fillet"
+                  },
+                  "id": "call_uyUtAipqZkiypsb5KJAiLB3W",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"圆角4\"], \"volume_mm3\": 137101.98, \"volume_delta_mm3\": -693.26, \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}}",
+              "role": "tool",
+              "tool_call_id": "call_uyUtAipqZkiypsb5KJAiLB3W"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"name\":\"草图4\"}",
+                    "name": "delete_feature"
+                  },
+                  "id": "call_GQ88IewHYruDKDqJWszl9Uqb",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": false, \"error\": {\"code\": \"FEATURE_FAILED\", \"message\": \"[FEATURE_FAILED] 删除特征失败: 删除特征 草图4 失败\"}}",
+              "role": "tool",
+              "tool_call_id": "call_GQ88IewHYruDKDqJWszl9Uqb"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{}",
+                    "name": "get_model_state"
+                  },
+                  "id": "call_L4htgN3P57e22w8gbuiVgRcS",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"state\": {\"features\": [{\"name\": \"草图1\", \"type\": \"ProfileFeature\"}, {\"name\": \"凸台-拉伸1\", \"type\": \"Extrusion\"}, {\"name\": \"草图2\", \"type\": \"ProfileFeature\"}, {\"name\": \"凸台-拉伸2\", \"type\": \"ICE\"}, {\"name\": \"基准面1\", \"type\": \"RefPlane\"}, {\"name\": \"草图3\", \"type\": \"ProfileFeature\"}, {\"name\": \"凸台-拉伸3\", \"type\": \"ICE\"}, {\"name\": \"基准面2\", \"type\": \"RefPlane\"}, {\"name\": \"草图4\", \"type\": \"ProfileFeature\"}, {\"name\": \"草图6\", \"type\": \"ProfileFeature\"}, {\"name\": \"草图8\", \"type\": \"ProfileFeature\"}, {\"name\": \"凸台-拉伸6\", \"type\": \"ICE\"}, {\"name\": \"镜向1\", \"type\": \"MirrorPattern\"}, {\"name\": \"基准面3\", \"type\": \"RefPlane\"}, {\"name\": \"草图9\", \"type\": \"ProfileFeature\"}, {\"name\": \"切除-拉伸1\", \"type\": \"ICE\"}, {\"name\": \"草图11\", \"type\": \"ProfileFeature\"}, {\"name\": \"切除-拉伸3\", \"type\": \"ICE\"}, {\"name\": \"阵列(线性)2\", \"type\": \"LPattern\"}, {\"name\": \"基准面4\", \"type\": \"RefPlane\"}, {\"name\": \"草图12\", \"type\": \"ProfileFeature\"}, {\"name\": \"切除-旋转1\", \"type\": \"RevCut\"}, {\"name\": \"阵列(线性)3\", \"type\": \"LPattern\"}, {\"name\": \"镜向2\", \"type\": \"MirrorPattern\"}, {\"name\": \"草图13\", \"type\": \"ProfileFeature\"}, {\"name\": \"切除-拉伸4\", \"type\": \"ICE\"}, {\"name\": \"阵列(线性)4\", \"type\": \"LPattern\"}, {\"name\": \"圆角1\", \"type\": \"Fillet\"}, {\"name\": \"圆角2\", \"type\": \"Fillet\"}, {\"name\": \"圆角3\", \"type\": \"Fillet\"}, {\"name\": \"圆角4\", \"type\": \"Fillet\"}], \"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}, \"volume_mm3\": 137101.98, \"planar_faces\": [{\"ref\": \"face#10\", \"normal\": \"-Y\", \"at\": \"Y=0.000\", \"area_mm2\": 8086.27, \"u_range\": [-39.0, 39.0], \"v_range\": [-55.0, 55.0], \"uv\": \"u=X,v=Z\", \"alias\": \"bottom\"}, {\"ref\": \"face#9\", \"normal\": \"+Y\", \"at\": \"Y=8.000\", \"area_mm2\": 6339.26, \"u_range\": [-39.0, 39.0], \"v_range\": [-51.0, 49.0], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#18\", \"normal\": \"+X\", \"at\": \"X=37.000\", \"area_mm2\": 1956.72, \"u_range\": [-43.204, 15.912], \"v_range\": [7.464, 73.664], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#21\", \"normal\": \"-X\", \"at\": \"X=-37.000\", \"area_mm2\": 1956.72, \"u_range\": [-43.204, 15.912], \"v_range\": [7.464, 73.664], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#19\", \"normal\": \"-X\", \"at\": \"X=33.000\", \"area_mm2\": 1925.17, \"u_range\": [-42.879, 15.758], \"v_range\": [8.0, 73.664], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#22\", \"normal\": \"+X\", \"at\": \"X=-33.000\", \"area_mm2\": 1925.17, \"u_range\": [-42.879, 15.758], \"v_range\": [8.0, 73.664], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#2\", \"normal\": \"-X\", \"at\": \"X=-39.000\", \"area_mm2\": 1224.3, \"u_range\": [-51.0, 51.0], \"v_range\": [0.0, 114.0], \"uv\": \"u=Z,v=Y\", \"alias\": \"left\"}, {\"ref\": \"face#6\", \"normal\": \"+X\", \"at\": \"X=39.000\", \"area_mm2\": 1224.3, \"u_range\": [-51.0, 51.0], \"v_range\": [0.0, 114.0], \"uv\": \"u=Z,v=Y\", \"alias\": \"right\"}, {\"ref\": \"face#4\", \"normal\": \"+Z\", \"at\": \"Z=55.000\", \"area_mm2\": 1120.0, \"u_range\": [-35.0, 35.0], \"v_range\": [0.0, 16.0], \"uv\": \"u=X,v=Y\", \"alias\": \"front\"}, {\"ref\": \"face#13\", \"normal\": \"-Z\", \"at\": \"Z=45.000\", \"area_mm2\": 560.0, \"u_range\": [-35.0, 35.0], \"v_range\": [8.0, 16.0], \"uv\": \"u=X,v=Y\"}, {\"ref\": \"face#15\", \"normal\": \"+Y\", \"at\": \"Y=118.000\", \"area_mm2\": 436.93, \"u_range\": [-35.0, 35.0], \"v_range\": [-15.784, -9.542], \"uv\": \"u=X,v=Z\", \"alias\": \"top\"}, {\"ref\": \"face#8\", \"normal\": \"-Z\", \"at\": \"Z=-55.000\", \"area_mm2\": 280.0, \"u_range\": [-35.0, 35.0], \"v_range\": [0.0, 4.0], \"uv\": \"u=X,v=Y\", \"alias\": \"back\"}, {\"ref\": \"face#42\", \"normal\": \"-Y\", \"at\": \"Y=1.500\", \"area_mm2\": 240.0, \"u_range\": [-12.0, 12.0], \"v_range\": [-41.0, -31.0], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#47\", \"normal\": \"-Y\", \"at\": \"Y=1.500\", \"area_mm2\": 240.0, \"u_range\": [-12.0, 12.0], \"v_range\": [31.0, 41.0], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#14\", \"normal\": \"+Y\", \"at\": \"Y=20.000\", \"area_mm2\": 140.0, \"u_range\": [-35.0, 35.0], \"v_range\": [49.0, 51.0], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#23\", \"normal\": \"+X\", \"at\": \"X=-8.000\", \"area_mm2\": 124.84, \"u_range\": [10.023, 22.0], \"v_range\": [8.0, 28.0], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#25\", \"normal\": \"-X\", \"at\": \"X=8.000\", \"area_mm2\": 124.84, \"u_range\": [10.023, 22.0], \"v_range\": [8.0, 28.0], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#39\", \"normal\": \"-Z\", \"at\": \"Z=-31.000\", \"area_mm2\": 36.0, \"u_range\": [-12.0, 12.0], \"v_range\": [0.0, 1.5], \"uv\": \"u=X,v=Y\"}, {\"ref\": \"face#41\", \"normal\": \"+Z\", \"at\": \"Z=-41.000\", \"area_mm2\": 36.0, \"u_range\": [-12.0, 12.0], \"v_range\": [0.0, 1.5], \"uv\": \"u=X,v=Y\"}, {\"ref\": \"face#44\", \"normal\": \"-Z\", \"at\": \"Z=41.000\", \"area_mm2\": 36.0, \"u_range\": [-12.0, 12.0], \"v_range\": [0.0, 1.5], \"uv\": \"u=X,v=Y\"}, {\"ref\": \"face#46\", \"normal\": \"+Z\", \"at\": \"Z=31.000\", \"area_mm2\": 36.0, \"u_range\": [-12.0, 12.0], \"v_range\": [0.0, 1.5], \"uv\": \"u=X,v=Y\"}, {\"ref\": \"face#38\", \"normal\": \"+X\", \"at\": \"X=-12.000\", \"area_mm2\": 15.0, \"u_range\": [-41.0, -31.0], \"v_range\": [0.0, 1.5], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#40\", \"normal\": \"-X\", \"at\": \"X=12.000\", \"area_mm2\": 15.0, \"u_range\": [-41.0, -31.0], \"v_range\": [0.0, 1.5], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#43\", \"normal\": \"+X\", \"at\": \"X=-12.000\", \"area_mm2\": 15.0, \"u_range\": [31.0, 41.0], \"v_range\": [0.0, 1.5], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#45\", \"normal\": \"-X\", \"at\": \"X=12.000\", \"area_mm2\": 15.0, \"u_range\": [31.0, 41.0], \"v_range\": [0.0, 1.5], \"uv\": \"u=Z,v=Y\"}], \"cylindrical_faces\": [{\"ref\": \"face#1\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [-35.0, 8.0, -51.0], \"span_mm\": [0.0, 4.0]}, {\"ref\": \"face#3\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [-35.0, 8.0, 51.0], \"span_mm\": [0.0, 16.0]}, {\"ref\": \"face#5\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [35.0, 8.0, 51.0], \"span_mm\": [0.0, 16.0]}, {\"ref\": \"face#7\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [35.0, 8.0, -51.0], \"span_mm\": [0.0, 4.0]}, {\"ref\": \"face#11\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [-35.0, 20.0, 49.0], \"span_mm\": [8.0, 16.0]}, {\"ref\": \"face#12\", \"diameter_mm\": 8.0, \"axis\": \"Y\", \"axis_point_mm\": [35.0, 20.0, 49.0], \"span_mm\": [8.0, 16.0]}, {\"ref\": \"face#24\", \"diameter_mm\": 16.0, \"axis\": \"Z\", \"axis_point_mm\": [0.0, 28.0, -55.0], \"span_mm\": [7.729, 16.265]}, {\"ref\": \"face#32\", \"diameter_mm\": 8.0, \"axis\": \"Z\", \"axis_point_mm\": [14.0, 57.109, -18.089], \"span_mm\": [-0.928, 7.045]}, {\"…(截断)",
+              "role": "tool",
+              "tool_call_id": "call_L4htgN3P57e22w8gbuiVgRcS"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"summary\":\"已完成一体式桌面手机支架，全部实体特征与底座合并，左右关于X=0对称。最终外包络：前后110mm、左右78mm、总高118mm；底座厚8mm，底面Y=0保持平整（仅两处防滑垫凹槽）。背板宽78mm、法向厚6mm、与水平面成74°；前端全宽挡唇前后厚10mm、高出底座12mm，前端总高20mm。左右各设一片4mm厚三角加强筋。背板中央下部有宽16mm、从底座上表面向上28mm的下开口U形充电通槽；中上部有3个板面实际尺寸36×8mm的水平圆端贯穿散热槽，中心竖向间距18mm。底面两个24×10mm、深1.5mm浅凹槽，中心位于X=0、Z=±36mm。底座平面外角、适用的底座上外缘、挡唇上缘及背板顶部左右两角采用R4圆角；薄壁和空间不足处未强行圆角。最终体积约137101.98mm³，已核对总体尺寸、对称特征及凹槽深度。\"}",
+                    "name": "finish"
+                  },
+                  "id": "call_0q0UhpsQa8CQLNA3bChrA8lm",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"final_state\": {\"bbox_mm\": {\"X\": [-39.0, 39.0], \"Y\": [0.0, 118.0], \"Z\": [-55.0, 55.0], \"size\": [78.0, 118.0, 110.0]}, \"volume_mm3\": 137101.98}}",
+              "role": "tool",
+              "tool_call_id": "call_0q0UhpsQa8CQLNA3bChrA8lm"
+            }
+          ],
+          "results": [
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "extrude",
+              "step": 1,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "extrude",
+              "step": 2,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "ref_plane",
+              "step": 3,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "extrude",
+              "step": 4,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "ref_plane",
+              "step": 5,
+              "success": true
+            },
+            {
+              "error_code": "FEATURE_FAILED",
+              "message": "[FEATURE_FAILED] feature_extrusion: 拉伸失败，请确保草图中有封闭的轮廓",
+              "operation": "rib",
+              "step": 6,
+              "success": false
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "rib",
+              "step": 7,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "delete_feature",
+              "step": 8,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "extrude",
+              "step": 9,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "mirror",
+              "step": 10,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "ref_plane",
+              "step": 11,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "cut",
+              "step": 12,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "cut",
+              "step": 13,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "linear_pattern",
+              "step": 14,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "delete_feature",
+              "step": 15,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "cut",
+              "step": 16,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "linear_pattern",
+              "step": 17,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "ref_plane",
+              "step": 18,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "revolve",
+              "step": 19,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "linear_pattern",
+              "step": 20,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "mirror",
+              "step": 21,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "cut",
+              "step": 22,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "linear_pattern",
+              "step": 23,
+              "success": true
+            },
+            {
+              "error_code": "FEATURE_FAILED",
+              "message": "[FEATURE_FAILED] 在特征 \"阵列(线性)2\" 中未找到名为 \"spacing1\" 的尺寸",
+              "operation": "edit_feature",
+              "step": 24,
+              "success": false
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "edit_feature",
+              "step": 25,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "edit_feature",
+              "step": 26,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "fillet",
+              "step": 27,
+              "success": true
+            },
+            {
+              "error_code": "FEATURE_FAILED",
+              "message": "[FEATURE_FAILED] feature_mirror: 镜像失败: SolidWorks 未能创建镜像特征",
+              "operation": "mirror",
+              "step": 28,
+              "success": false
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "fillet",
+              "step": 29,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "fillet",
+              "step": 30,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "fillet",
+              "step": 31,
+              "success": true
+            },
+            {
+              "error_code": "FEATURE_FAILED",
+              "message": "[FEATURE_FAILED] 删除特征失败: 删除特征 草图4 失败",
+              "operation": "delete_feature",
+              "step": 32,
+              "success": false
+            }
+          ],
+          "success": true,
+          "summary": {
+            "all_ok": true,
+            "llm_calls": 40,
+            "status": "finished",
+            "succeeded": 28,
+            "token_usage": {
+              "calls": 40,
+              "completion_tokens": 10626,
+              "prompt_tokens": 690055,
+              "total_tokens": 700681
+            },
+            "tool_calls": 40,
+            "total": 32
+          },
+          "token_usage": {
+            "calls": 40,
+            "completion_tokens": 10626,
+            "prompt_tokens": 690055,
+            "total_tokens": 700681
+          },
+          "workflow": {
+            "duration_seconds": 602.45,
+            "error": null,
+            "final_state": {
+              "bbox_mm": {
+                "X": [
+                  -39.0,
+                  39.0
+                ],
+                "Y": [
+                  0.0,
+                  118.0
+                ],
+                "Z": [
+                  -55.0,
+                  55.0
+                ],
+                "size": [
+                  78.0,
+                  118.0,
+                  110.0
+                ]
+              },
+              "cylindrical_faces": [
+                {
+                  "axis": "Y",
+                  "axis_point_mm": [
+                    -35.0,
+                    8.0,
+                    -51.0
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#1",
+                  "span_mm": [
+                    0.0,
+                    4.0
+                  ]
+                },
+                {
+                  "axis": "Y",
+                  "axis_point_mm": [
+                    -35.0,
+                    8.0,
+                    51.0
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#3",
+                  "span_mm": [
+                    0.0,
+                    16.0
+                  ]
+                },
+                {
+                  "axis": "Y",
+                  "axis_point_mm": [
+                    35.0,
+                    8.0,
+                    51.0
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#5",
+                  "span_mm": [
+                    0.0,
+                    16.0
+                  ]
+                },
+                {
+                  "axis": "Y",
+                  "axis_point_mm": [
+                    35.0,
+                    8.0,
+                    -51.0
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#7",
+                  "span_mm": [
+                    0.0,
+                    4.0
+                  ]
+                },
+                {
+                  "axis": "Y",
+                  "axis_point_mm": [
+                    -35.0,
+                    20.0,
+                    49.0
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#11",
+                  "span_mm": [
+                    8.0,
+                    16.0
+                  ]
+                },
+                {
+                  "axis": "Y",
+                  "axis_point_mm": [
+                    35.0,
+                    20.0,
+                    49.0
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#12",
+                  "span_mm": [
+                    8.0,
+                    16.0
+                  ]
+                },
+                {
+                  "axis": "Z",
+                  "axis_point_mm": [
+                    0.0,
+                    28.0,
+                    -55.0
+                  ],
+                  "diameter_mm": 16.0,
+                  "ref": "face#24",
+                  "span_mm": [
+                    7.729,
+                    16.265
+                  ]
+                },
+                {
+                  "axis": "Z",
+                  "axis_point_mm": [
+                    14.0,
+                    57.109,
+                    -18.089
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#32",
+                  "span_mm": [
+                    -0.928,
+                    7.045
+                  ]
+                },
+                {
+                  "axis": "Z",
+                  "axis_point_mm": [
+                    14.0,
+                    75.109,
+                    -23.251
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#33",
+                  "span_mm": [
+                    -6.089,
+                    1.883
+                  ]
+                },
+                {
+                  "axis": "Z",
+                  "axis_point_mm": [
+                    14.0,
+                    93.109,
+                    -28.412
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#34",
+                  "span_mm": [
+                    -11.251,
+                    -3.278
+                  ]
+                },
+                {
+                  "axis": "Z",
+                  "axis_point_mm": [
+                    -14.0,
+                    57.109,
+                    -18.089
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#35",
+                  "span_mm": [
+                    -0.928,
+                    7.045
+                  ]
+                },
+                {
+                  "axis": "Z",
+                  "axis_point_mm": [
+                    -14.0,
+                    75.109,
+                    -23.251
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#36",
+                  "span_mm": [
+                    -6.089,
+                    1.883
+                  ]
+                },
+                {
+                  "axis": "Z",
+                  "axis_point_mm": [
+                    -14.0,
+                    93.109,
+                    -28.412
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#37",
+                  "span_mm": [
+                    -11.251,
+                    -3.278
+                  ]
+                },
+                {
+                  "axis": "Z",
+                  "axis_point_mm": [
+                    35.0,
+                    114.0,
+                    -51.0
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#48",
+                  "span_mm": [
+                    -15.784,
+                    -8.395
+                  ]
+                },
+                {
+                  "axis": "Z",
+                  "axis_point_mm": [
+                    -35.0,
+                    114.0,
+                    -9.542
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#49",
+                  "span_mm": [
+                    -15.784,
+                    -8.395
+                  ]
+                },
+                {
+                  "axis": "X",
+                  "axis_point_mm": [
+                    -35.0,
+                    16.0,
+                    49.0
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#51",
+                  "span_mm": [
+                    -35.0,
+                    35.0
+                  ]
+                },
+                {
+                  "axis": "Z",
+                  "axis_point_mm": [
+                    35.0,
+                    16.0,
+                    49.0
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#52",
+                  "span_mm": [
+                    49.0,
+                    51.0
+                  ]
+                },
+                {
+                  "axis": "Z",
+                  "axis_point_mm": [
+                    -35.0,
+                    16.0,
+                    49.0
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#55",
+                  "span_mm": [
+                    49.0,
+                    51.0
+                  ]
+                },
+                {
+                  "axis": "X",
+                  "axis_point_mm": [
+                    -35.0,
+                    16.0,
+                    51.0
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#56",
+                  "span_mm": [
+                    -35.0,
+                    35.0
+                  ]
+                },
+                {
+                  "axis": "Z",
+                  "axis_point_mm": [
+                    -35.0,
+                    4.0,
+                    -51.0
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#58",
+                  "span_mm": [
+                    -51.0,
+                    16.905
+                  ]
+                },
+                {
+                  "axis": "X",
+                  "axis_point_mm": [
+                    -35.0,
+                    4.0,
+                    -51.0
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#60",
+                  "span_mm": [
+                    -35.0,
+                    35.0
+                  ]
+                },
+                {
+                  "axis": "Z",
+                  "axis_point_mm": [
+                    35.0,
+                    4.0,
+                    -51.0
+                  ],
+                  "diameter_mm": 8.0,
+                  "ref": "face#62",
+                  "span_mm": [
+                    -51.0,
+                    16.905
+                  ]
+                }
+              ],
+              "features": [
+                {
+                  "name": "草图1",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "凸台-拉伸1",
+                  "type": "Extrusion"
+                },
+                {
+                  "name": "草图2",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "凸台-拉伸2",
+                  "type": "ICE"
+                },
+                {
+                  "name": "基准面1",
+                  "type": "RefPlane"
+                },
+                {
+                  "name": "草图3",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "凸台-拉伸3",
+                  "type": "ICE"
+                },
+                {
+                  "name": "基准面2",
+                  "type": "RefPlane"
+                },
+                {
+                  "name": "草图4",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "草图6",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "草图8",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "凸台-拉伸6",
+                  "type": "ICE"
+                },
+                {
+                  "name": "镜向1",
+                  "type": "MirrorPattern"
+                },
+                {
+                  "name": "基准面3",
+                  "type": "RefPlane"
+                },
+                {
+                  "name": "草图9",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "切除-拉伸1",
+                  "type": "ICE"
+                },
+                {
+                  "name": "草图11",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "切除-拉伸3",
+                  "type": "ICE"
+                },
+                {
+                  "name": "阵列(线性)2",
+                  "type": "LPattern"
+                },
+                {
+                  "name": "基准面4",
+                  "type": "RefPlane"
+                },
+                {
+                  "name": "草图12",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "切除-旋转1",
+                  "type": "RevCut"
+                },
+                {
+                  "name": "阵列(线性)3",
+                  "type": "LPattern"
+                },
+                {
+                  "name": "镜向2",
+                  "type": "MirrorPattern"
+                },
+                {
+                  "name": "草图13",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "切除-拉伸4",
+                  "type": "ICE"
+                },
+                {
+                  "name": "阵列(线性)4",
+                  "type": "LPattern"
+                },
+                {
+                  "name": "圆角1",
+                  "type": "Fillet"
+                },
+                {
+                  "name": "圆角2",
+                  "type": "Fillet"
+                },
+                {
+                  "name": "圆角3",
+                  "type": "Fillet"
+                },
+                {
+                  "name": "圆角4",
+                  "type": "Fillet"
+                }
+              ],
+              "parameters": {
+                "back_angle": 74.0,
+                "back_thickness": 6.0,
+                "base_length": 110.0,
+                "base_thickness": 8.0,
+                "base_width": 78.0,
+                "charge_height": 28.0,
+                "charge_width": 16.0,
+                "lip_depth": 10.0,
+                "lip_rise": 12.0,
+                "outer_R": 4.0,
+                "pad_depth": 1.5,
+                "pad_length": 24.0,
+                "pad_width": 10.0,
+                "rib_thickness": 4.0,
+                "total_height": 118.0,
+                "vent_length": 36.0,
+                "vent_pattern_Y": 18.72539,
+                "vent_pitch": 18.0,
+                "vent_width": 8.0
+              },
+              "planar_faces": [
+                {
+                  "alias": "bottom",
+                  "area_mm2": 8086.27,
+                  "at": "Y=0.000",
+                  "normal": "-Y",
+                  "ref": "face#10",
+                  "u_range": [
+                    -39.0,
+                    39.0
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    -55.0,
+                    55.0
+                  ]
+                },
+                {
+                  "area_mm2": 6339.26,
+                  "at": "Y=8.000",
+                  "normal": "+Y",
+                  "ref": "face#9",
+                  "u_range": [
+                    -39.0,
+                    39.0
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    -51.0,
+                    49.0
+                  ]
+                },
+                {
+                  "area_mm2": 1956.72,
+                  "at": "X=37.000",
+                  "normal": "+X",
+                  "ref": "face#18",
+                  "u_range": [
+                    -43.204,
+                    15.912
+                  ],
+                  "uv": "u=Z,v=Y",
+                  "v_range": [
+                    7.464,
+                    73.664
+                  ]
+                },
+                {
+                  "area_mm2": 1956.72,
+                  "at": "X=-37.000",
+                  "normal": "-X",
+                  "ref": "face#21",
+                  "u_range": [
+                    -43.204,
+                    15.912
+                  ],
+                  "uv": "u=Z,v=Y",
+                  "v_range": [
+                    7.464,
+                    73.664
+                  ]
+                },
+                {
+                  "area_mm2": 1925.17,
+                  "at": "X=33.000",
+                  "normal": "-X",
+                  "ref": "face#19",
+                  "u_range": [
+                    -42.879,
+                    15.758
+                  ],
+                  "uv": "u=Z,v=Y",
+                  "v_range": [
+                    8.0,
+                    73.664
+                  ]
+                },
+                {
+                  "area_mm2": 1925.17,
+                  "at": "X=-33.000",
+                  "normal": "+X",
+                  "ref": "face#22",
+                  "u_range": [
+                    -42.879,
+                    15.758
+                  ],
+                  "uv": "u=Z,v=Y",
+                  "v_range": [
+                    8.0,
+                    73.664
+                  ]
+                },
+                {
+                  "alias": "left",
+                  "area_mm2": 1224.3,
+                  "at": "X=-39.000",
+                  "normal": "-X",
+                  "ref": "face#2",
+                  "u_range": [
+                    -51.0,
+                    51.0
+                  ],
+                  "uv": "u=Z,v=Y",
+                  "v_range": [
+                    0.0,
+                    114.0
+                  ]
+                },
+                {
+                  "alias": "right",
+                  "area_mm2": 1224.3,
+                  "at": "X=39.000",
+                  "normal": "+X",
+                  "ref": "face#6",
+                  "u_range": [
+                    -51.0,
+                    51.0
+                  ],
+                  "uv": "u=Z,v=Y",
+                  "v_range": [
+                    0.0,
+                    114.0
+                  ]
+                },
+                {
+                  "alias": "front",
+                  "area_mm2": 1120.0,
+                  "at": "Z=55.000",
+                  "normal": "+Z",
+                  "ref": "face#4",
+                  "u_range": [
+                    -35.0,
+                    35.0
+                  ],
+                  "uv": "u=X,v=Y",
+                  "v_range": [
+                    0.0,
+                    16.0
+                  ]
+                },
+                {
+                  "area_mm2": 560.0,
+                  "at": "Z=45.000",
+                  "normal": "-Z",
+                  "ref": "face#13",
+                  "u_range": [
+                    -35.0,
+                    35.0
+                  ],
+                  "uv": "u=X,v=Y",
+                  "v_range": [
+                    8.0,
+                    16.0
+                  ]
+                },
+                {
+                  "alias": "top",
+                  "area_mm2": 436.93,
+                  "at": "Y=118.000",
+                  "normal": "+Y",
+                  "ref": "face#15",
+                  "u_range": [
+                    -35.0,
+                    35.0
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    -15.784,
+                    -9.542
+                  ]
+                },
+                {
+                  "alias": "back",
+                  "area_mm2": 280.0,
+                  "at": "Z=-55.000",
+                  "normal": "-Z",
+                  "ref": "face#8",
+                  "u_range": [
+                    -35.0,
+                    35.0
+                  ],
+                  "uv": "u=X,v=Y",
+                  "v_range": [
+                    0.0,
+                    4.0
+                  ]
+                },
+                {
+                  "area_mm2": 240.0,
+                  "at": "Y=1.500",
+                  "normal": "-Y",
+                  "ref": "face#42",
+                  "u_range": [
+                    -12.0,
+                    12.0
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    -41.0,
+                    -31.0
+                  ]
+                },
+                {
+                  "area_mm2": 240.0,
+                  "at": "Y=1.500",
+                  "normal": "-Y",
+                  "ref": "face#47",
+                  "u_range": [
+                    -12.0,
+                    12.0
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    31.0,
+                    41.0
+                  ]
+                },
+                {
+                  "area_mm2": 140.0,
+                  "at": "Y=20.000",
+                  "normal": "+Y",
+                  "ref": "face#14",
+                  "u_range": [
+                    -35.0,
+                    35.0
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    49.0,
+                    51.0
+                  ]
+                },
+                {
+                  "area_mm2": 124.84,
+                  "at": "X=-8.000",
+                  "normal": "+X",
+                  "ref": "face#23",
+                  "u_range": [
+                    10.023,
+                    22.0
+                  ],
+                  "uv": "u=Z,v=Y",
+                  "v_range": [
+                    8.0,
+                    28.0
+                  ]
+                },
+                {
+                  "area_mm2": 124.84,
+                  "at": "X=8.000",
+                  "normal": "-X",
+                  "ref": "face#25",
+                  "u_range": [
+                    10.023,
+                    22.0
+                  ],
+                  "uv": "u=Z,v=Y",
+                  "v_range": [
+                    8.0,
+                    28.0
+                  ]
+                },
+                {
+                  "area_mm2": 36.0,
+                  "at": "Z=-31.000",
+                  "normal": "-Z",
+                  "ref": "face#39",
+                  "u_range": [
+                    -12.0,
+                    12.0
+                  ],
+                  "uv": "u=X,v=Y",
+                  "v_range": [
+                    0.0,
+                    1.5
+                  ]
+                },
+                {
+                  "area_mm2": 36.0,
+                  "at": "Z=-41.000",
+                  "normal": "+Z",
+                  "ref": "face#41",
+                  "u_range": [
+                    -12.0,
+                    12.0
+                  ],
+                  "uv": "u=X,v=Y",
+                  "v_range": [
+                    0.0,
+                    1.5
+                  ]
+                },
+                {
+                  "area_mm2": 36.0,
+                  "at": "Z=41.000",
+                  "normal": "-Z",
+                  "ref": "face#44",
+                  "u_range": [
+                    -12.0,
+                    12.0
+                  ],
+                  "uv": "u=X,v=Y",
+                  "v_range": [
+                    0.0,
+                    1.5
+                  ]
+                },
+                {
+                  "area_mm2": 36.0,
+                  "at": "Z=31.000",
+                  "normal": "+Z",
+                  "ref": "face#46",
+                  "u_range": [
+                    -12.0,
+                    12.0
+                  ],
+                  "uv": "u=X,v=Y",
+                  "v_range": [
+                    0.0,
+                    1.5
+                  ]
+                },
+                {
+                  "area_mm2": 15.0,
+                  "at": "X=-12.000",
+                  "normal": "+X",
+                  "ref": "face#38",
+                  "u_range": [
+                    -41.0,
+                    -31.0
+                  ],
+                  "uv": "u=Z,v=Y",
+                  "v_range": [
+                    0.0,
+                    1.5
+                  ]
+                },
+                {
+                  "area_mm2": 15.0,
+                  "at": "X=12.000",
+                  "normal": "-X",
+                  "ref": "face#40",
+                  "u_range": [
+                    -41.0,
+                    -31.0
+                  ],
+                  "uv": "u=Z,v=Y",
+                  "v_range": [
+                    0.0,
+                    1.5
+                  ]
+                },
+                {
+                  "area_mm2": 15.0,
+                  "at": "X=-12.000",
+                  "normal": "+X",
+                  "ref": "face#43",
+                  "u_range": [
+                    31.0,
+                    41.0
+                  ],
+                  "uv": "u=Z,v=Y",
+                  "v_range": [
+                    0.0,
+                    1.5
+                  ]
+                },
+                {
+                  "area_mm2": 15.0,
+                  "at": "X=12.000",
+                  "normal": "-X",
+                  "ref": "face#45",
+                  "u_range": [
+                    31.0,
+                    41.0
+                  ],
+                  "uv": "u=Z,v=Y",
+                  "v_range": [
+                    0.0,
+                    1.5
+                  ]
+                }
+              ],
+              "reference_planes": [
+                {
+                  "at": "X=0.000",
+                  "name": "基准面1",
+                  "normal": "+X",
+                  "uv": "u=Z,v=Y"
+                },
+                {
+                  "at": "X=35.000",
+                  "name": "基准面2",
+                  "normal": "+X",
+                  "uv": "u=Z,v=Y"
+                },
+                {
+                  "at": "Z=30.000",
+                  "name": "基准面3",
+                  "normal": "+Z",
+                  "uv": "u=X,v=Y"
+                },
+                {
+                  "at": "X=14.000",
+                  "name": "基准面4",
+                  "normal": "+X",
+                  "uv": "u=Z,v=Y"
+                }
+              ],
+              "volume_mm3": 137101.98
+            },
+            "finish_reasons": [
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "tool_calls"
+            ],
+            "llm_calls": 40,
+            "status": "finished",
+            "summary": "已完成一体式桌面手机支架，全部实体特征与底座合并，左右关于X=0对称。最终外包络：前后110mm、左右78mm、总高118mm；底座厚8mm，底面Y=0保持平整（仅两处防滑垫凹槽）。背板宽78mm、法向厚6mm、与水平面成74°；前端全宽挡唇前后厚10mm、高出底座12mm，前端总高20mm。左右各设一片4mm厚三角加强筋。背板中央下部有宽16mm、从底座上表面向上28mm的下开口U形充电通槽；中上部有3个板面实际尺寸36×8mm的水平圆端贯穿散热槽，中心竖向间距18mm。底面两个24×10mm、深1.5mm浅凹槽，中心位于X=0、Z=±36mm。底座平面外角、适用的底座上外缘、挡唇上缘及背板顶部左右两角采用R4圆角；薄壁和空间不足处未强行圆角。最终体积约137101.98mm³，已核对总体尺寸、对称特征及凹槽深度。",
+            "token_usage": {
+              "calls": 40,
+              "completion_tokens": 10626,
+              "prompt_tokens": 690055,
+              "total_tokens": 700681
+            },
+            "tool_calls": [
+              {
+                "args": {},
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "get_model_state"
+              },
+              {
+                "args": {
+                  "values": {
+                    "back_angle": 74,
+                    "back_thickness": 6,
+                    "base_length": 110,
+                    "base_thickness": 8,
+                    "base_width": 78,
+                    "charge_height": 28,
+                    "charge_width": 16,
+                    "lip_depth": 10,
+                    "lip_rise": 12,
+                    "outer_R": 4,
+                    "pad_depth": 1.5,
+                    "pad_length": 24,
+                    "pad_width": 10,
+                    "rib_thickness": 4,
+                    "total_height": 118,
+                    "vent_length": 36,
+                    "vent_pitch": 18,
+                    "vent_width": 8
+                  }
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "set_parameters"
+              },
+              {
+                "args": {
+                  "depth": "=base_thickness",
+                  "direction": "+Y",
+                  "loops": [
+                    {
+                      "center": [
+                        0,
+                        0
+                      ],
+                      "corner_radius": 4,
+                      "size": [
+                        78,
+                        110
+                      ],
+                      "type": "rect"
+                    }
+                  ],
+                  "plane": "top_plane"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "extrude"
+              },
+              {
+                "args": {
+                  "depth": "=lip_rise",
+                  "direction": "+Y",
+                  "loops": [
+                    {
+                      "center": [
+                        0,
+                        50
+                      ],
+                      "corner_radius": 4,
+                      "size": [
+                        78,
+                        10
+                      ],
+                      "type": "rect"
+                    }
+                  ],
+                  "plane": "top"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "extrude"
+              },
+              {
+                "args": {
+                  "offset": -39,
+                  "reference": "right"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "ref_plane"
+              },
+              {
+                "args": {
+                  "depth": "=base_width",
+                  "direction": "both",
+                  "loops": [
+                    {
+                      "points": [
+                        [
+                          22,
+                          8
+                        ],
+                        [
+                          -9.5419924335,
+                          118
+                        ],
+                        [
+                          -15.7837890487,
+                          118
+                        ],
+                        [
+                          15.7582033848,
+                          8
+                        ]
+                      ],
+                      "type": "polygon"
+                    }
+                  ],
+                  "plane": "基准面1"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "extrude"
+              },
+              {
+                "args": {},
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "get_model_state"
+              },
+              {
+                "args": {
+                  "offset": 35,
+                  "reference": "基准面1"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "ref_plane"
+              },
+              {
+                "args": {
+                  "both_sides": true,
+                  "end": [
+                    -3.1669920753,
+                    74
+                  ],
+                  "plane": "基准面2",
+                  "start": [
+                    -43,
+                    8
+                  ],
+                  "thickness": "=rib_thickness"
+                },
+                "error_code": "FEATURE_FAILED",
+                "message": "[FEATURE_FAILED] feature_extrusion: 拉伸失败，请确保草图中有封闭的轮廓",
+                "ok": false,
+                "tool": "rib"
+              },
+              {
+                "args": {
+                  "both_sides": true,
+                  "end": [
+                    -2.9,
+                    74
+                  ],
+                  "plane": "基准面2",
+                  "start": [
+                    -43,
+                    7.8
+                  ],
+                  "thickness": "=rib_thickness"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "rib"
+              },
+              {
+                "args": {
+                  "name": "凸台-拉伸5"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "delete_feature"
+              },
+              {
+                "args": {
+                  "depth": "=rib_thickness",
+                  "direction": "both",
+                  "loops": [
+                    {
+                      "points": [
+                        [
+                          -43,
+                          7.8
+                        ],
+                        [
+                          16.06,
+                          7.8
+                        ],
+                        [
+                          -2.8669920753,
+                          74
+                        ]
+                      ],
+                      "type": "polygon"
+                    }
+                  ],
+                  "plane": "基准面2"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "extrude"
+              },
+              {
+                "args": {
+                  "features": [
+                    "凸台-拉伸6"
+                  ],
+                  "plane": "基准面1"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "mirror"
+              },
+              {
+                "args": {
+                  "offset": -25,
+                  "reference": "front"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "ref_plane"
+              },
+              {
+                "args": {
+                  "direction": "-Z",
+                  "loops": [
+                    {
+                      "segments": [
+                        {
+                          "to": [
+                            8,
+                            8
+                          ]
+                        },
+                        {
+                          "to": [
+                            8,
+                            28
+                          ]
+                        },
+                        {
+                          "through": [
+                            0,
+                            36
+                          ],
+                          "to": [
+                            -8,
+                            28
+                          ]
+                        },
+                        {
+                          "to": [
+                            -8,
+                            8
+                          ]
+                        }
+                      ],
+                      "start": [
+                        -8,
+                        8
+                      ],
+                      "type": "path"
+                    }
+                  ],
+                  "plane": "基准面3",
+                  "through_all": true
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "cut"
+              },
+              {
+                "args": {
+                  "direction": "-Z",
+                  "loops": [
+                    {
+                      "end": [
+                        14,
+                        64
+                      ],
+                      "start": [
+                        -14,
+                        64
+                      ],
+                      "type": "slot",
+                      "width": 8
+                    }
+                  ],
+                  "plane": "基准面3",
+                  "through_all": true
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "cut"
+              },
+              {
+                "args": {
+                  "count1": 3,
+                  "direction1": "+Y",
+                  "spacing1": "=vent_pitch"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "linear_pattern"
+              },
+              {
+                "args": {
+                  "name": "切除-拉伸2"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "delete_feature"
+              },
+              {
+                "args": {
+                  "values": {
+                    "vent_pattern_Y": "=vent_pitch/(0.961261695938319*0.961261695938319)"
+                  }
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "set_parameters"
+              },
+              {
+                "args": {
+                  "depth": 28,
+                  "direction": "both",
+                  "loops": [
+                    {
+                      "points": [
+                        [
+                          -16.9867345777,
+                          53.2640193208
+                        ],
+                        [
+                          31.0763502192,
+                          67.0458871117
+                        ],
+                        [
+                          28.8712513727,
+                          74.7359806792
+                        ],
+                        [
+                          -19.1918334242,
+                          60.9541128883
+                        ]
+                      ],
+                      "type": "polygon"
+                    }
+                  ],
+                  "plane": "基准面1"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "cut"
+              },
+              {
+                "args": {
+                  "count1": 3,
+                  "direction1": "+Y",
+                  "spacing1": "=vent_pattern_Y"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "linear_pattern"
+              },
+              {
+                "args": {
+                  "offset": 14,
+                  "reference": "基准面1"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "ref_plane"
+              },
+              {
+                "args": {
+                  "angle_deg": 360,
+                  "axis_end": [
+                    29.973800796,
+                    70.8909338954
+                  ],
+                  "axis_start": [
+                    -18.089284001,
+                    57.1090661046
+                  ],
+                  "cut": true,
+                  "loops": [
+                    {
+                      "points": [
+                        [
+                          -18.089284001,
+                          57.1090661046
+                        ],
+                        [
+                          29.973800796,
+                          70.8909338954
+                        ],
+                        [
+                          28.8712513727,
+                          74.7359806792
+                        ],
+                        [
+                          -19.1918334242,
+                          60.9541128883
+                        ]
+                      ],
+                      "type": "polygon"
+                    }
+                  ],
+                  "plane": "基准面4"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "revolve"
+              },
+              {
+                "args": {
+                  "count1": 3,
+                  "direction1": "+Y",
+                  "spacing1": "=vent_pattern_Y"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "linear_pattern"
+              },
+              {
+                "args": {
+                  "features": [
+                    "切除-旋转1",
+                    "阵列(线性)3"
+                  ],
+                  "plane": "基准面1"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "mirror"
+              },
+              {
+                "args": {
+                  "depth": "=pad_depth",
+                  "loops": [
+                    {
+                      "center": [
+                        0,
+                        -36
+                      ],
+                      "size": [
+                        24,
+                        10
+                      ],
+                      "type": "rect"
+                    }
+                  ],
+                  "plane": "bottom"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "cut"
+              },
+              {
+                "args": {
+                  "count1": 2,
+                  "direction1": "+Z",
+                  "spacing1": 72
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "linear_pattern"
+              },
+              {
+                "args": {},
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "get_model_state"
+              },
+              {
+                "args": {
+                  "values": {
+                    "vent_pattern_Y": "=vent_pitch/0.961261695938319"
+                  }
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "set_parameters"
+              },
+              {
+                "args": {
+                  "dimension": "spacing1",
+                  "name": "阵列(线性)2",
+                  "value": "=vent_pattern_Y"
+                },
+                "error_code": "FEATURE_FAILED",
+                "message": "[FEATURE_FAILED] 在特征 \"阵列(线性)2\" 中未找到名为 \"spacing1\" 的尺寸",
+                "ok": false,
+                "tool": "edit_feature"
+              },
+              {
+                "args": {
+                  "name": "阵列(线性)2",
+                  "value": "=vent_pattern_Y"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "edit_feature"
+              },
+              {
+                "args": {
+                  "name": "阵列(线性)3",
+                  "value": "=vent_pattern_Y"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "edit_feature"
+              },
+              {
+                "args": {
+                  "edges": {
+                    "direction": [
+                      -1,
+                      0,
+                      0
+                    ],
+                    "origin": [
+                      60,
+                      117.95,
+                      -12.66
+                    ]
+                  },
+                  "radius": "=outer_R"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "fillet"
+              },
+              {
+                "args": {
+                  "features": [
+                    "圆角1"
+                  ],
+                  "plane": "基准面1"
+                },
+                "error_code": "FEATURE_FAILED",
+                "message": "[FEATURE_FAILED] feature_mirror: 镜像失败: SolidWorks 未能创建镜像特征",
+                "ok": false,
+                "tool": "mirror"
+              },
+              {
+                "args": {
+                  "edges": {
+                    "direction": [
+                      1,
+                      0,
+                      0
+                    ],
+                    "origin": [
+                      -60,
+                      117.95,
+                      -12.66
+                    ]
+                  },
+                  "radius": "=outer_R"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "fillet"
+              },
+              {
+                "args": {
+                  "edges": {
+                    "direction": [
+                      0,
+                      -1,
+                      0
+                    ],
+                    "origin": [
+                      0,
+                      35,
+                      54.9
+                    ]
+                  },
+                  "radius": "=outer_R"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "fillet"
+              },
+              {
+                "args": {
+                  "edges": {
+                    "direction": [
+                      0,
+                      0,
+                      1
+                    ],
+                    "origin": [
+                      0,
+                      7.9,
+                      -70
+                    ]
+                  },
+                  "radius": "=outer_R"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "fillet"
+              },
+              {
+                "args": {
+                  "name": "草图4"
+                },
+                "error_code": "FEATURE_FAILED",
+                "message": "[FEATURE_FAILED] 删除特征失败: 删除特征 草图4 失败",
+                "ok": false,
+                "tool": "delete_feature"
+              },
+              {
+                "args": {},
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "get_model_state"
+              },
+              {
+                "args": {
+                  "summary": "已完成一体式桌面手机支架，全部实体特征与底座合并，左右关于X=0对称。最终外包络：前后110mm、左右78mm、总高118mm；底座厚8mm，底面Y=0保持平整（仅两处防滑垫凹槽）。背板宽78mm、法向厚6mm、与水平面成74°；前端全宽挡唇前后厚10mm、高出底座12mm，前端总高20mm。左右各设一片4mm厚三角加强筋。背板中央下部有宽16mm、从底座上表面向上28mm的下开口U形充电通槽；中上部有3个板面实际尺寸36×8mm的水平圆端贯穿散热槽，中心竖向间距18mm。底面两个24×10mm、深1.5mm浅凹槽，中心位于X=0、Z=±36mm。底座平面外角、适用的底座上外缘、挡唇上缘及背板顶部左右两角采用R4圆角；薄壁和空间不足处未强行圆角。最终体积约137101.98mm³，已核对总体尺寸、对称特征及凹槽深度。"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "finish"
+              }
+            ]
+          }
+        },
+        "final_observation": {
+          "features": [
+            {
+              "index": 0,
+              "name": "收藏",
+              "type": "FavoriteFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 1,
+              "name": "历史记录",
+              "type": "HistoryFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 2,
+              "name": "选择集",
+              "type": "SelectionSetFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 3,
+              "name": "传感器",
+              "type": "SensorFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 4,
+              "name": "设计活页夹",
+              "type": "DocsFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 5,
+              "name": "注解",
+              "type": "DetailCabinet",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 6,
+              "name": "标注",
+              "type": "InkMarkupFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 7,
+              "name": "光源与相机",
+              "type": "EnvFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 8,
+              "name": "实体",
+              "type": "SolidBodyFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 9,
+              "name": "曲面实体",
+              "type": "SurfaceBodyFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 10,
+              "name": "备注",
+              "type": "CommentsFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 11,
+              "name": "方程式",
+              "type": "EqnFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 12,
+              "name": "材质 <未指定>",
+              "type": "MaterialFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 13,
+              "name": "前视基准面",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 14,
+              "name": "上视基准面",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 15,
+              "name": "右视基准面",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 16,
+              "name": "原点",
+              "type": "OriginProfileFeature",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 17,
+              "name": "Tables",
+              "type": "ConfigTableFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 18,
+              "name": "草图1",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 19,
+              "name": "凸台-拉伸1",
+              "type": "Extrusion",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@凸台-拉伸1@零件5.Part",
+                  "value": 0.008
+                }
+              ]
+            },
+            {
+              "index": 20,
+              "name": "草图2",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 21,
+              "name": "凸台-拉伸2",
+              "type": "ICE",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@凸台-拉伸2@零件5.Part",
+                  "value": 0.012
+                }
+              ]
+            },
+            {
+              "index": 22,
+              "name": "基准面1",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面1@零件5.Part",
+                  "value": 0.039
+                }
+              ]
+            },
+            {
+              "index": 23,
+              "name": "草图3",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面1@零件5.Part",
+                  "value": 0.039
+                }
+              ]
+            },
+            {
+              "index": 24,
+              "name": "凸台-拉伸3",
+              "type": "ICE",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面1@零件5.Part",
+                  "value": 0.039
+                },
+                {
+                  "name": "D1",
+                  "fullName": "D1@凸台-拉伸3@零件5.Part",
+                  "value": 0.078
+                }
+              ]
+            },
+            {
+              "index": 25,
+              "name": "基准面2",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面2@零件5.Part",
+                  "value": 0.035
+                }
+              ]
+            },
+            {
+              "index": 26,
+              "name": "草图4",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面2@零件5.Part",
+                  "value": 0.035
+                }
+              ]
+            },
+            {
+              "index": 27,
+              "name": "草图6",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面2@零件5.Part",
+                  "value": 0.035
+                }
+              ]
+            },
+            {
+              "index": 28,
+              "name": "草图8",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面2@零件5.Part",
+                  "value": 0.035
+                }
+              ]
+            },
+            {
+              "index": 29,
+              "name": "凸台-拉伸6",
+              "type": "ICE",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面2@零件5.Part",
+                  "value": 0.035
+                },
+                {
+                  "name": "D1",
+                  "fullName": "D1@凸台-拉伸6@零件5.Part",
+                  "value": 0.004
+                }
+              ]
+            },
+            {
+              "index": 30,
+              "name": "镜向1",
+              "type": "MirrorPattern",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 31,
+              "name": "基准面3",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面3@零件5.Part",
+                  "value": 0.025
+                }
+              ]
+            },
+            {
+              "index": 32,
+              "name": "草图9",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面3@零件5.Part",
+                  "value": 0.025
+                }
+              ]
+            },
+            {
+              "index": 33,
+              "name": "切除-拉伸1",
+              "type": "ICE",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面3@零件5.Part",
+                  "value": 0.025
+                }
+              ]
+            },
+            {
+              "index": 34,
+              "name": "草图11",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面1@零件5.Part",
+                  "value": 0.039
+                }
+              ]
+            },
+            {
+              "index": 35,
+              "name": "切除-拉伸3",
+              "type": "ICE",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面1@零件5.Part",
+                  "value": 0.039
+                },
+                {
+                  "name": "D1",
+                  "fullName": "D1@切除-拉伸3@零件5.Part",
+                  "value": 0.028
+                }
+              ]
+            },
+            {
+              "index": 36,
+              "name": "阵列(线性)2",
+              "type": "LPattern",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D3",
+                  "fullName": "D3@阵列(线性)2@零件5.Part",
+                  "value": 0.018725389845508835
+                },
+                {
+                  "name": "D1",
+                  "fullName": "D1@阵列(线性)2@零件5.Part",
+                  "value": 3
+                }
+              ]
+            },
+            {
+              "index": 37,
+              "name": "基准面4",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面4@零件5.Part",
+                  "value": 0.014
+                }
+              ]
+            },
+            {
+              "index": 38,
+              "name": "草图12",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面4@零件5.Part",
+                  "value": 0.014
+                }
+              ]
+            },
+            {
+              "index": 39,
+              "name": "切除-旋转1",
+              "type": "RevCut",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面4@零件5.Part",
+                  "value": 0.014
+                },
+                {
+                  "name": "D1",
+                  "fullName": "D1@切除-旋转1@零件5.Part",
+                  "value": 6.283185307179586
+                }
+              ]
+            },
+            {
+              "index": 40,
+              "name": "阵列(线性)3",
+              "type": "LPattern",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D3",
+                  "fullName": "D3@阵列(线性)3@零件5.Part",
+                  "value": 0.018725389845508835
+                },
+                {
+                  "name": "D1",
+                  "fullName": "D1@阵列(线性)3@零件5.Part",
+                  "value": 3
+                }
+              ]
+            },
+            {
+              "index": 41,
+              "name": "镜向2",
+              "type": "MirrorPattern",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 42,
+              "name": "草图13",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 43,
+              "name": "切除-拉伸4",
+              "type": "ICE",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@切除-拉伸4@零件5.Part",
+                  "value": 0.0015
+                }
+              ]
+            },
+            {
+              "index": 44,
+              "name": "阵列(线性)4",
+              "type": "LPattern",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D3",
+                  "fullName": "D3@阵列(线性)4@零件5.Part",
+                  "value": 0.072
+                },
+                {
+                  "name": "D1",
+                  "fullName": "D1@阵列(线性)4@零件5.Part",
+                  "value": 2
+                }
+              ]
+            },
+            {
+              "index": 45,
+              "name": "圆角1",
+              "type": "Fillet",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@圆角1@零件5.Part",
+                  "value": 0.004
+                }
+              ]
+            },
+            {
+              "index": 46,
+              "name": "圆角2",
+              "type": "Fillet",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@圆角2@零件5.Part",
+                  "value": 0.004
+                }
+              ]
+            },
+            {
+              "index": 47,
+              "name": "圆角3",
+              "type": "Fillet",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@圆角3@零件5.Part",
+                  "value": 0.004
+                }
+              ]
+            },
+            {
+              "index": 48,
+              "name": "圆角4",
+              "type": "Fillet",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@圆角4@零件5.Part",
+                  "value": 0.004
+                }
+              ]
+            }
+          ],
+          "faces": [
+            {
+              "index": 0,
+              "faceKey": "+Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.06099999999999999,
+                "z": 0.0005606979395681808
+              },
+              "normal": {
+                "x": 0,
+                "y": -0.2756373558172506,
+                "z": -0.9612616959382468
+              },
+              "area": 0.007118322549685896,
+              "geometricSignature": "plane:0.000000:0.061000:0.000561:0.007118323"
+            },
+            {
+              "index": 1,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": -0.037000000000000005,
+                "y": 0.002,
+                "z": -0.053
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 2.5132741228718343e-05,
+              "geometricSignature": "cylinder:-0.037000:0.002000:-0.053000:0.000025133"
+            },
+            {
+              "index": 2,
+              "faceKey": "-X",
+              "surfaceType": "plane",
+              "center": {
+                "x": -0.039,
+                "y": 0.056999999999999995,
+                "z": 0
+              },
+              "normal": {
+                "x": -1,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.0012243036645859275,
+              "geometricSignature": "plane:-0.039000:0.057000:0.000000:0.001224304"
+            },
+            {
+              "index": 3,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": -0.037000000000000005,
+                "y": 0.008,
+                "z": 0.053
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.00010053096491487337,
+              "geometricSignature": "cylinder:-0.037000:0.008000:0.053000:0.000100531"
+            },
+            {
+              "index": 4,
+              "faceKey": "+Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.008,
+                "z": 0.055
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 1
+              },
+              "area": 0.0011200000000000001,
+              "geometricSignature": "plane:0.000000:0.008000:0.055000:0.001120000"
+            },
+            {
+              "index": 5,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0.037000000000000005,
+                "y": 0.008,
+                "z": 0.053
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.00010053096491487337,
+              "geometricSignature": "cylinder:0.037000:0.008000:0.053000:0.000100531"
+            },
+            {
+              "index": 6,
+              "faceKey": "+X",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0.039,
+                "y": 0.056999999999999995,
+                "z": 0
+              },
+              "normal": {
+                "x": 1,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.001224303664585927,
+              "geometricSignature": "plane:0.039000:0.057000:0.000000:0.001224304"
+            },
+            {
+              "index": 7,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0.037000000000000005,
+                "y": 0.002,
+                "z": -0.053
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 2.5132741228718343e-05,
+              "geometricSignature": "cylinder:0.037000:0.002000:-0.053000:0.000025133"
+            },
+            {
+              "index": 8,
+              "faceKey": "-Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.002,
+                "z": -0.055
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": -1
+              },
+              "area": 0.00028000000000000003,
+              "geometricSignature": "plane:0.000000:0.002000:-0.055000:0.000280000"
+            },
+            {
+              "index": 9,
+              "faceKey": "-Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.007999999999999997,
+                "z": -0.0010000000000000009
+              },
+              "normal": {
+                "x": 0,
+                "y": 1,
+                "z": 0
+              },
+              "area": 0.006339262419043603,
+              "geometricSignature": "plane:0.000000:0.008000:-0.001000:0.006339262"
+            },
+            {
+              "index": 10,
+              "faceKey": "-Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "normal": {
+                "x": 0,
+                "y": -1,
+                "z": 0
+              },
+              "area": 0.008086265482457436,
+              "geometricSignature": "plane:0.000000:0.000000:0.000000:0.008086265"
+            },
+            {
+              "index": 11,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": -0.037000000000000005,
+                "y": 0.012,
+                "z": 0.047
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 5.026548245743667e-05,
+              "geometricSignature": "cylinder:-0.037000:0.012000:0.047000:0.000050265"
+            },
+            {
+              "index": 12,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0.037000000000000005,
+                "y": 0.012,
+                "z": 0.047
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 5.026548245743667e-05,
+              "geometricSignature": "cylinder:0.037000:0.012000:0.047000:0.000050265"
+            },
+            {
+              "index": 13,
+              "faceKey": "+Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.012,
+                "z": 0.045
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": -1
+              },
+              "area": 0.0005600000000000001,
+              "geometricSignature": "plane:0.000000:0.012000:0.045000:0.000560000"
+            },
+            {
+              "index": 14,
+              "faceKey": "-Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 6.938893903907228e-18,
+                "y": 0.02,
+                "z": 0.05
+              },
+              "normal": {
+                "x": 0,
+                "y": 1,
+                "z": 0
+              },
+              "area": 0.00014000000000000012,
+              "geometricSignature": "plane:0.000000:0.020000:0.050000:0.000140000"
+            },
+            {
+              "index": 15,
+              "faceKey": "+Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": -3.469446951953614e-18,
+                "y": 0.118,
+                "z": -0.0126628907411
+              },
+              "normal": {
+                "x": 0,
+                "y": 1,
+                "z": 0
+              },
+              "area": 0.00043692576306399985,
+              "geometricSignature": "plane:0.000000:0.118000:-0.012663:0.000436926"
+            },
+            {
+              "index": 16,
+              "faceKey": "+Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.063,
+                "z": 0.006229003783249999
+              },
+              "normal": {
+                "x": 0,
+                "y": 0.2756373558172506,
+                "z": 0.9612616959382468
+              },
+              "area": 0.007658382743795339,
+              "geometricSignature": "plane:0.000000:0.063000:0.006229:0.007658383"
+            },
+            {
+              "index": 17,
+              "faceKey": "-Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0.034999999999999996,
+                "y": 0.0405640747067553,
+                "z": -0.02313714698109255
+              },
+              "normal": {
+                "x": 0,
+                "y": 0.5184131501292414,
+                "z": -0.8551302858471783
+              },
+              "area": 0.00030755933443712193,
+              "geometricSignature": "plane:0.035000:0.040564:-0.023137:0.000307559"
+            },
+            {
+              "index": 18,
+              "faceKey": "+X",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0.037,
+                "y": 0.040564074706755264,
+                "z": -0.013645882428321146
+              },
+              "normal": {
+                "x": 1,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.0019567216050841063,
+              "geometricSignature": "plane:0.037000:0.040564:-0.013646:0.001956722"
+            },
+            {
+              "index": 19,
+              "faceKey": "+X",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0.033,
+                "y": 0.040832023899186394,
+                "z": -0.01356027442855967
+              },
+              "normal": {
+                "x": -1,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.001925169928511982,
+              "geometricSignature": "plane:0.033000:0.040832:-0.013560:0.001925170"
+            },
+            {
+              "index": 20,
+              "faceKey": "-Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": -0.035,
+                "y": 0.0405640747067553,
+                "z": -0.02313714698109255
+              },
+              "normal": {
+                "x": 0,
+                "y": 0.5184131501292414,
+                "z": -0.8551302858471783
+              },
+              "area": 0.000307559334859916,
+              "geometricSignature": "plane:-0.035000:0.040564:-0.023137:0.000307559"
+            },
+            {
+              "index": 21,
+              "faceKey": "-X",
+              "surfaceType": "plane",
+              "center": {
+                "x": -0.03699999999999999,
+                "y": 0.040564074706755264,
+                "z": -0.013645882428321146
+              },
+              "normal": {
+                "x": -1,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.0019567216050841063,
+              "geometricSignature": "plane:-0.037000:0.040564:-0.013646:0.001956722"
+            },
+            {
+              "index": 22,
+              "faceKey": "-X",
+              "surfaceType": "plane",
+              "center": {
+                "x": -0.033,
+                "y": 0.040832023899186394,
+                "z": -0.01356027442855967
+              },
+              "normal": {
+                "x": 1,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.0019251699285119815,
+              "geometricSignature": "plane:-0.033000:0.040832:-0.013560:0.001925170"
+            },
+            {
+              "index": 23,
+              "faceKey": "-X",
+              "surfaceType": "plane",
+              "center": {
+                "x": -0.008,
+                "y": 0.018000000000000002,
+                "z": 0.016011647834809087
+              },
+              "normal": {
+                "x": 1,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.00012483593230399977,
+              "geometricSignature": "plane:-0.008000:0.018000:0.016012:0.000124836"
+            },
+            {
+              "index": 24,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0,
+                "y": 0.032,
+                "z": 0.011997212434181816
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.0001568622238434545,
+              "geometricSignature": "cylinder:0.000000:0.032000:0.011997:0.000156862"
+            },
+            {
+              "index": 25,
+              "faceKey": "+X",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0.008,
+                "y": 0.018000000000000002,
+                "z": 0.016011647834809087
+              },
+              "normal": {
+                "x": -1,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.00012483593230399993,
+              "geometricSignature": "plane:0.008000:0.018000:0.016012:0.000124836"
+            },
+            {
+              "index": 26,
+              "faceKey": "+Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.05932804114879441,
+                "z": 0.004161022732930454
+              },
+              "normal": {
+                "x": 0,
+                "y": 0.9612616959380296,
+                "z": -0.27563735581800836
+              },
+              "area": 0.00016800000000152947,
+              "geometricSignature": "plane:0.000000:0.059328:0.004161:0.000168000"
+            },
+            {
+              "index": 27,
+              "faceKey": "+Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.06701813471628479,
+                "z": 0.0019559238863969216
+              },
+              "normal": {
+                "x": 0,
+                "y": -0.9612616959380296,
+                "z": 0.27563735581800836
+              },
+              "area": 0.000168000000000805,
+              "geometricSignature": "plane:0.000000:0.067018:0.001956:0.000168000"
+            },
+            {
+              "index": 28,
+              "faceKey": "+Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.07732804114879305,
+                "z": -0.0010003942107327918
+              },
+              "normal": {
+                "x": 0,
+                "y": 0.9612616959380296,
+                "z": -0.27563735581800836
+              },
+              "area": 0.0001680000000015301,
+              "geometricSignature": "plane:0.000000:0.077328:-0.001000:0.000168000"
+            },
+            {
+              "index": 29,
+              "faceKey": "+Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.08501813471628344,
+                "z": -0.0032054930572663317
+              },
+              "normal": {
+                "x": 0,
+                "y": -0.9612616959380296,
+                "z": 0.27563735581800836
+              },
+              "area": 0.0001680000000008053,
+              "geometricSignature": "plane:0.000000:0.085018:-0.003205:0.000168000"
+            },
+            {
+              "index": 30,
+              "faceKey": "+Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.0953280411487917,
+                "z": -0.006161811154396045
+              },
+              "normal": {
+                "x": 0,
+                "y": 0.9612616959380296,
+                "z": -0.27563735581800836
+              },
+              "area": 0.00016800000000153,
+              "geometricSignature": "plane:0.000000:0.095328:-0.006162:0.000168000"
+            },
+            {
+              "index": 31,
+              "faceKey": "+Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.10301813471628209,
+                "z": -0.008366910000929578
+              },
+              "normal": {
+                "x": 0,
+                "y": -0.9612616959380296,
+                "z": 0.27563735581800836
+              },
+              "area": 0.00016800000000080523,
+              "geometricSignature": "plane:0.000000:0.103018:-0.008367:0.000168000"
+            },
+            {
+              "index": 32,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0.015999999999995948,
+                "y": 0.0631730879325396,
+                "z": 0.0030584733096616426
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 7.539822368653282e-05,
+              "geometricSignature": "cylinder:0.016000:0.063173:0.003058:0.000075398"
+            },
+            {
+              "index": 33,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0.015999999999995948,
+                "y": 0.08117308793253825,
+                "z": -0.0021029436340016024
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 7.539822368653296e-05,
+              "geometricSignature": "cylinder:0.016000:0.081173:-0.002103:0.000075398"
+            },
+            {
+              "index": 34,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0.015999999999995948,
+                "y": 0.0991730879325369,
+                "z": -0.007264360577664858
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 7.539822368653296e-05,
+              "geometricSignature": "cylinder:0.016000:0.099173:-0.007264:0.000075398"
+            },
+            {
+              "index": 35,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": -0.015999999999995948,
+                "y": 0.0631730879325396,
+                "z": 0.0030584733096616426
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 7.53982236868444e-05,
+              "geometricSignature": "cylinder:-0.016000:0.063173:0.003058:0.000075398"
+            },
+            {
+              "index": 36,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": -0.015999999999995948,
+                "y": 0.08117308793253825,
+                "z": -0.0021029436340016024
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 7.539822368684487e-05,
+              "geometricSignature": "cylinder:-0.016000:0.081173:-0.002103:0.000075398"
+            },
+            {
+              "index": 37,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": -0.015999999999995948,
+                "y": 0.0991730879325369,
+                "z": -0.007264360577664858
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 7.539822368684482e-05,
+              "geometricSignature": "cylinder:-0.016000:0.099173:-0.007264:0.000075398"
+            },
+            {
+              "index": 38,
+              "faceKey": "-X",
+              "surfaceType": "plane",
+              "center": {
+                "x": -0.012,
+                "y": 0.00075,
+                "z": -0.036000000000000004
+              },
+              "normal": {
+                "x": 1,
+                "y": 0,
+                "z": 0
+              },
+              "area": 1.5000000000000004e-05,
+              "geometricSignature": "plane:-0.012000:0.000750:-0.036000:0.000015000"
+            },
+            {
+              "index": 39,
+              "faceKey": "-Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.00075,
+                "z": -0.031
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": -1
+              },
+              "area": 3.6e-05,
+              "geometricSignature": "plane:0.000000:0.000750:-0.031000:0.000036000"
+            },
+            {
+              "index": 40,
+              "faceKey": "+X",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0.012,
+                "y": 0.00075,
+                "z": -0.036000000000000004
+              },
+              "normal": {
+                "x": -1,
+                "y": 0,
+                "z": 0
+              },
+              "area": 1.5000000000000004e-05,
+              "geometricSignature": "plane:0.012000:0.000750:-0.036000:0.000015000"
+            },
+            {
+              "index": 41,
+              "faceKey": "-Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.00075,
+                "z": -0.041
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 1
+              },
+              "area": 3.6e-05,
+              "geometricSignature": "plane:0.000000:0.000750:-0.041000:0.000036000"
+            },
+            {
+              "index": 42,
+              "faceKey": "-Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.0015,
+                "z": -0.036000000000000004
+              },
+              "normal": {
+                "x": 0,
+                "y": -1,
+                "z": 0
+              },
+              "area": 0.00024000000000000006,
+              "geometricSignature": "plane:0.000000:0.001500:-0.036000:0.000240000"
+            },
+            {
+              "index": 43,
+              "faceKey": "-X",
+              "surfaceType": "plane",
+              "center": {
+                "x": -0.012,
+                "y": 0.00075,
+                "z": 0.03599999999999999
+              },
+              "normal": {
+                "x": 1,
+                "y": 0,
+                "z": 0
+              },
+              "area": 1.5000000000000004e-05,
+              "geometricSignature": "plane:-0.012000:0.000750:0.036000:0.000015000"
+            },
+            {
+              "index": 44,
+              "faceKey": "+Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.00075,
+                "z": 0.040999999999999995
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": -1
+              },
+              "area": 3.6e-05,
+              "geometricSignature": "plane:0.000000:0.000750:0.041000:0.000036000"
+            },
+            {
+              "index": 45,
+              "faceKey": "+X",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0.012,
+                "y": 0.00075,
+                "z": 0.03599999999999999
+              },
+              "normal": {
+                "x": -1,
+                "y": 0,
+                "z": 0
+              },
+              "area": 1.5000000000000004e-05,
+              "geometricSignature": "plane:0.012000:0.000750:0.036000:0.000015000"
+            },
+            {
+              "index": 46,
+              "faceKey": "+Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.00075,
+                "z": 0.030999999999999993
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 1
+              },
+              "area": 3.6e-05,
+              "geometricSignature": "plane:0.000000:0.000750:0.031000:0.000036000"
+            },
+            {
+              "index": 47,
+              "faceKey": "-Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.0015,
+                "z": 0.03599999999999999
+              },
+              "normal": {
+                "x": 0,
+                "y": -1,
+                "z": 0
+              },
+              "area": 0.00024000000000000006,
+              "geometricSignature": "plane:0.000000:0.001500:0.036000:0.000240000"
+            },
+            {
+              "index": 48,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0.037000000000000005,
+                "y": 0.11599999999999999,
+                "z": -0.012089399969581818
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 3.9217681349011134e-05,
+              "geometricSignature": "cylinder:0.037000:0.116000:-0.012089:0.000039218"
+            },
+            {
+              "index": 49,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": -0.03700000000000001,
+                "y": 0.11599999999999999,
+                "z": -0.012089399969581817
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 3.921771609782144e-05,
+              "geometricSignature": "cylinder:-0.037000:0.116000:-0.012089:0.000039218"
+            },
+            {
+              "index": 50,
+              "faceKey": "",
+              "surfaceType": "other",
+              "center": {
+                "x": 0.037000000000000005,
+                "y": 0.018000000000000002,
+                "z": 0.047
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 2.5132741228718316e-05,
+              "geometricSignature": "other:0.037000:0.018000:0.047000:0.000025133"
+            },
+            {
+              "index": 51,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 3.469446951953614e-18,
+                "y": 0.018000000000000002,
+                "z": 0.047
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.0004398229715025712,
+              "geometricSignature": "cylinder:0.000000:0.018000:0.047000:0.000439823"
+            },
+            {
+              "index": 52,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0.037000000000000005,
+                "y": 0.018000000000000002,
+                "z": 0.05
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 1.2566370614359185e-05,
+              "geometricSignature": "cylinder:0.037000:0.018000:0.050000:0.000012566"
+            },
+            {
+              "index": 53,
+              "faceKey": "",
+              "surfaceType": "other",
+              "center": {
+                "x": -0.037,
+                "y": 0.018000000000000002,
+                "z": 0.047
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 2.5132741228718313e-05,
+              "geometricSignature": "other:-0.037000:0.018000:0.047000:0.000025133"
+            },
+            {
+              "index": 54,
+              "faceKey": "",
+              "surfaceType": "other",
+              "center": {
+                "x": 0.037000000000000005,
+                "y": 0.018000000000000002,
+                "z": 0.053000000000000005
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 2.513274122871842e-05,
+              "geometricSignature": "other:0.037000:0.018000:0.053000:0.000025133"
+            },
+            {
+              "index": 55,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": -0.037000000000000005,
+                "y": 0.018000000000000002,
+                "z": 0.05
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 1.2566370614359155e-05,
+              "geometricSignature": "cylinder:-0.037000:0.018000:0.050000:0.000012566"
+            },
+            {
+              "index": 56,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0,
+                "y": 0.018000000000000002,
+                "z": 0.053000000000000005
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.00043982297150257113,
+              "geometricSignature": "cylinder:0.000000:0.018000:0.053000:0.000439823"
+            },
+            {
+              "index": 57,
+              "faceKey": "",
+              "surfaceType": "other",
+              "center": {
+                "x": -0.037000000000000005,
+                "y": 0.018000000000000002,
+                "z": 0.053000000000000005
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 2.5132741228718367e-05,
+              "geometricSignature": "other:-0.037000:0.018000:0.053000:0.000025133"
+            },
+            {
+              "index": 58,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": -0.037000000000000005,
+                "y": 0.006,
+                "z": -0.01704740753608182
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.00029892426209587126,
+              "geometricSignature": "cylinder:-0.037000:0.006000:-0.017047:0.000298924"
+            },
+            {
+              "index": 59,
+              "faceKey": "",
+              "surfaceType": "other",
+              "center": {
+                "x": -0.037000000000000005,
+                "y": 0.006,
+                "z": -0.053000000000000005
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 2.5132741228718316e-05,
+              "geometricSignature": "other:-0.037000:0.006000:-0.053000:0.000025133"
+            },
+            {
+              "index": 60,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0,
+                "y": 0.006,
+                "z": -0.053000000000000005
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.0004398229715025711,
+              "geometricSignature": "cylinder:0.000000:0.006000:-0.053000:0.000439823"
+            },
+            {
+              "index": 61,
+              "faceKey": "",
+              "surfaceType": "other",
+              "center": {
+                "x": 0.037000000000000005,
+                "y": 0.006,
+                "z": -0.053000000000000005
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 2.5132741228718425e-05,
+              "geometricSignature": "other:0.037000:0.006000:-0.053000:0.000025133"
+            },
+            {
+              "index": 62,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0.037000000000000005,
+                "y": 0.005999999999999995,
+                "z": -0.01704740753608182
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.0002989269804785388,
+              "geometricSignature": "cylinder:0.037000:0.006000:-0.017047:0.000298927"
+            }
+          ],
+          "sketches": [
+            {
+              "name": "草图1",
+              "faceKey": "PLANE:1",
+              "circleCount": 0,
+              "circles": []
+            },
+            {
+              "name": "草图2",
+              "faceKey": "+Y",
+              "circleCount": 0,
+              "circles": []
+            },
+            {
+              "name": "草图3",
+              "faceKey": "REFPLANE:基准面1",
+              "circleCount": 0,
+              "circles": []
+            },
+            {
+              "name": "草图4",
+              "faceKey": "REFPLANE:基准面2",
+              "circleCount": 0,
+              "circles": []
+            },
+            {
+              "name": "草图5",
+              "faceKey": "REFPLANE:基准面2",
+              "circleCount": 0,
+              "circles": []
+            },
+            {
+              "name": "草图6",
+              "faceKey": "REFPLANE:基准面2",
+              "circleCount": 0,
+              "circles": []
+            },
+            {
+              "name": "草图7",
+              "faceKey": "REFPLANE:基准面2",
+              "circleCount": 0,
+              "circles": []
+            },
+            {
+              "name": "草图8",
+              "faceKey": "REFPLANE:基准面2",
+              "circleCount": 0,
+              "circles": []
+            },
+            {
+              "name": "草图9",
+              "faceKey": "REFPLANE:基准面3",
+              "circleCount": 0,
+              "circles": []
+            },
+            {
+              "name": "草图10",
+              "faceKey": "REFPLANE:基准面3",
+              "circleCount": 0,
+              "circles": []
+            },
+            {
+              "name": "草图11",
+              "faceKey": "REFPLANE:基准面1",
+              "circleCount": 0,
+              "circles": []
+            },
+            {
+              "name": "草图12",
+              "faceKey": "REFPLANE:基准面4",
+              "circleCount": 0,
+              "circles": []
+            },
+            {
+              "name": "草图13",
+              "faceKey": "-Y",
+              "circleCount": 0,
+              "circles": []
+            }
+          ],
+          "feature_sketch_links": [
+            {
+              "featureName": "凸台-拉伸1",
+              "featureType": "Extrusion",
+              "sketchName": "草图1",
+              "faceKey": "PLANE:1",
+              "operationKind": "extrusion",
+              "depth": 0.008
+            },
+            {
+              "featureName": "凸台-拉伸2",
+              "featureType": "ICE",
+              "sketchName": "草图2",
+              "faceKey": "+Y",
+              "operationKind": "extrusion",
+              "depth": 0.012
+            },
+            {
+              "featureName": "凸台-拉伸3",
+              "featureType": "ICE",
+              "sketchName": "草图3",
+              "faceKey": "REFPLANE:基准面1",
+              "operationKind": "extrusion",
+              "depth": 0.078
+            },
+            {
+              "featureName": "凸台-拉伸6",
+              "featureType": "ICE",
+              "sketchName": "草图8",
+              "faceKey": "REFPLANE:基准面2",
+              "operationKind": "extrusion",
+              "depth": 0.004
+            },
+            {
+              "featureName": "切除-拉伸1",
+              "featureType": "ICE",
+              "sketchName": "草图9",
+              "faceKey": "REFPLANE:基准面3",
+              "operationKind": "cut",
+              "depth": 1e-06
+            },
+            {
+              "featureName": "切除-拉伸3",
+              "featureType": "ICE",
+              "sketchName": "草图11",
+              "faceKey": "REFPLANE:基准面1",
+              "operationKind": "cut",
+              "depth": 0.028
+            },
+            {
+              "featureName": "切除-拉伸4",
+              "featureType": "ICE",
+              "sketchName": "草图13",
+              "faceKey": "-Y",
+              "operationKind": "cut",
+              "depth": 0.0015
+            }
+          ],
+          "bounding_box_mm": {
+            "minX": -39.0,
+            "minY": 0.0,
+            "minZ": -55.0,
+            "maxX": 39.0,
+            "maxY": 118.0,
+            "maxZ": 55.0,
+            "sizeX": 78.0,
+            "sizeY": 118.0,
+            "sizeZ": 110.0
+          },
+          "volume_mm3": 137101.983591,
+          "document_type": "part",
+          "assembly_path": "",
+          "components": [],
+          "mates": [],
+          "interference_summary": null,
+          "last_execution": [],
+          "errors": {},
+          "state_fingerprint": "64e55b8c44bfc3d686b43b93f436f42f86f0013a2263cb93add8ceb91f0461ad"
+        },
+        "sketch_stats": [
+          {
+            "featureIndex": 18,
+            "name": "草图1",
+            "type": "ProfileFeature",
+            "lines": 4,
+            "arcs": 4,
+            "circles": 0,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": [
+              {
+                "name": "凸台-拉伸1",
+                "type": "Extrusion"
+              }
+            ]
+          },
+          {
+            "featureIndex": 20,
+            "name": "草图2",
+            "type": "ProfileFeature",
+            "lines": 4,
+            "arcs": 4,
+            "circles": 0,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": [
+              {
+                "name": "凸台-拉伸2",
+                "type": "ICE"
+              }
+            ]
+          },
+          {
+            "featureIndex": 23,
+            "name": "草图3",
+            "type": "ProfileFeature",
+            "lines": 4,
+            "arcs": 0,
+            "circles": 0,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": [
+              {
+                "name": "凸台-拉伸3",
+                "type": "ICE"
+              }
+            ]
+          },
+          {
+            "featureIndex": 26,
+            "name": "草图4",
+            "type": "ProfileFeature",
+            "lines": 1,
+            "arcs": 0,
+            "circles": 0,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": []
+          },
+          {
+            "featureIndex": 27,
+            "name": "草图6",
+            "type": "ProfileFeature",
+            "lines": 1,
+            "arcs": 0,
+            "circles": 0,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": []
+          },
+          {
+            "featureIndex": 28,
+            "name": "草图8",
+            "type": "ProfileFeature",
+            "lines": 3,
+            "arcs": 0,
+            "circles": 0,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": [
+              {
+                "name": "凸台-拉伸6",
+                "type": "ICE"
+              }
+            ]
+          },
+          {
+            "featureIndex": 32,
+            "name": "草图9",
+            "type": "ProfileFeature",
+            "lines": 3,
+            "arcs": 1,
+            "circles": 0,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": [
+              {
+                "name": "切除-拉伸1",
+                "type": "ICE"
+              }
+            ]
+          },
+          {
+            "featureIndex": 34,
+            "name": "草图11",
+            "type": "ProfileFeature",
+            "lines": 4,
+            "arcs": 0,
+            "circles": 0,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": [
+              {
+                "name": "切除-拉伸3",
+                "type": "ICE"
+              }
+            ]
+          },
+          {
+            "featureIndex": 38,
+            "name": "草图12",
+            "type": "ProfileFeature",
+            "lines": 4,
+            "arcs": 0,
+            "circles": 0,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 1,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": [
+              {
+                "name": "切除-旋转1",
+                "type": "RevCut"
+              }
+            ]
+          },
+          {
+            "featureIndex": 42,
+            "name": "草图13",
+            "type": "ProfileFeature",
+            "lines": 4,
+            "arcs": 0,
+            "circles": 0,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": [
+              {
+                "name": "切除-拉伸4",
+                "type": "ICE"
+              }
+            ]
+          }
+        ]
+      },
+      "repeat": 0
+    }
+  ]
+}

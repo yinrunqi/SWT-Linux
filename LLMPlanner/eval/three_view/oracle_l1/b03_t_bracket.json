@@ -1,0 +1,72 @@
+{
+ "case": "b03_t_bracket",
+ "tool_calls": 1,
+ "modeling_calls": 1,
+ "ref_planes": 0,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 2,
+ "volume_mm3": 22500.0,
+ "bbox_mm": [
+  60.0,
+  45.0,
+  15.0
+ ],
+ "seconds": 5.6,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        20,
+        0
+       ],
+       [
+        40,
+        0
+       ],
+       [
+        40,
+        30
+       ],
+       [
+        60,
+        30
+       ],
+       [
+        60,
+        45
+       ],
+       [
+        0,
+        45
+       ],
+       [
+        0,
+        30
+       ],
+       [
+        20,
+        30
+       ]
+      ]
+     }
+    ],
+    "depth": 15
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 22500.0
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "b03_t_bracket oracle"
+   }
+  }
+ ]
+}

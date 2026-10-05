@@ -1,0 +1,158 @@
+{
+ "case": "d28_round_cup",
+ "tool_calls": 8,
+ "modeling_calls": 8,
+ "ref_planes": 3,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 9,
+ "volume_mm3": 60964.36,
+ "bbox_mm": [
+  96.0,
+  96.0,
+  30.0
+ ],
+ "seconds": 21.5,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 80
+     }
+    ],
+    "depth": 30
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 150796.45
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 26
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 96
+     }
+    ],
+    "depth": 4
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 159643.17
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 30
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面2",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 72
+     }
+    ],
+    "direction": "-Z",
+    "depth": 24
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 61927.07
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": 30
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面3",
+    "centers": [
+     [
+      18,
+      0
+     ]
+    ],
+    "diameter": 12,
+    "direction": "+X",
+    "depth": 20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 61473.3
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      25.0,
+      0.0
+     ],
+     [
+      -12.5,
+      21.650635
+     ],
+     [
+      -12.5,
+      -21.650635
+     ]
+    ],
+    "diameter": 6,
+    "direction": "+Z",
+    "depth": 6
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 60964.36
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d28_round_cup oracle"
+   }
+  }
+ ]
+}
