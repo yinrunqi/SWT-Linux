@@ -280,6 +280,49 @@ L1 运行过程中，每次拿到 LLM 回复、每轮工具执行完，都会把
 
 核心形体率为 0.85。每次运行平均 91 s、0.18 元，折合每个合格零件 0.25 元。这些结果对应的打分文件是 `eval/rubric_*_tools24.json`。
 
+### 6.1 GPT-6-Astra（英文题面，2026-10-02）
+
+这一轮早于提交 7d73ae1 的两处 L1 工具修复（见 7.2 节），按那里的说明不要与 7.2 节的结果直接比较。
+
+设置：
+
+- Workflow-CAD L1，24 个工具，每次运行最多 40 次 LLM 调用；
+- 模型 `gpt-6-astra`，`--reasoning-effort medium`，温度 0，经 TT Switch 网关轨道 B（`/native`），每次运行带独立的 `X-Session-Id` 以复用 prompt 缓存；
+- 英文题面（`--lang en`），每题 1 次，50 道核心题和最初 8 道困难题各跑一轮。
+
+命令：
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --provider ttswitch --model gpt-6-astra `
+    --action-level L1 --reasoning-effort medium --lang en --split all --repeats 1 `
+    --output eval\text_workflow_l1_gpt6_astra_medium_all_en_result.json
+```
+
+最初 8 道困难题把 `--split all` 换成 `--split hard --ids quad_frame connecting_rod finned_housing sprocket handwheel camshaft planet_carrier impeller`（`hard` 现在共 30 题，见第 7 节）。结果文件是 `eval/text_workflow_l1_gpt6_astra_medium_{all,hard}_en_result.json`，rubric 打分是 `eval/rubric_gpt6_astra_medium_{all,hard}_en.json`。
+
+| 零件类型 | 任务数 | 均分 | pass@1 | 平均 token | 平均 LLM 调用 | 平均耗时 |
+|---|---|---|---|---|---|---|
+| 日常物品 | 9 | 100 | 1.0 | 129.8k | 12.9 | 126 s |
+| 常见机加工件 | 19 | 100 | 1.0 | 55.9k | 6.8 | 54 s |
+| 多特征零件 | 8 | 100 | 1.0 | 76.3k | 9.0 | 77 s |
+| 特定操作零件 | 14 | 97.1 | 0.93 | 52.5k | 6.4 | 52 s |
+| **全部 50 题** | **50** | **99.2**（95% CI [97.6, 100]） | **0.98** | 71.5k | 8.1 | 70 s |
+| 困难子集（最初 8 题） | 8 | 100 | 1.0 | 166.4k | 16.2 | 153 s |
+
+两轮的核心形体率都是 1.0。对照第 6、7 节的 Qwen3.5-397B-A17B：50 题均分 84.9、pass@1 0.74，困难子集均分 62.2、pass@1 0.125。两者不完全可比：Qwen 用中文题面、每题 2 次、推理强度为服务端默认。
+
+- 58 次运行都由智能体自己 `finish`，最多用了 36 次调用，没有碰到 40 次的预算。
+- 537 次 LLM 调用里没有截断（`finish_reason=length` 0 次）。单次输出最多 930 token；推理 token 中位数 0、最大 813；prompt 缓存命中率 50 题 86%、困难题 91%。
+- 唯一不合格的是 `rect_to_circle`（60 分）。英文题面是 “transition tube”，模型放样后用 `shell` 抽成 2 mm 壁厚、两端开口，并在总结里写明“未指定的壁厚暂取 2 mm”；rubric 按实心放样体检查两个端面，底面、顶面两项失败。rubric 的 `ungraded` 已注明“过渡管：未给壁厚，按实心放样体理解”，所以这是题面歧义。同类的 `square_to_round`（“transition fitting”）做成了实心，通过。按“看过结果后不改 rubric”的约束没有调整。
+
+建模时脚本打印的 `score` 是旧版近似分 `score_case_v2`（包围盒、体积区间、特征计数，期望值写在 `eval_text_singleturn_qwen.py` 的 `TextCase` 里），不是 rubric 分。这一轮它给出 50 题 97.61、困难题 93.75。除 `rect_to_circle` 两种分都判失败外，另有 15 题 rubric 满分而旧分扣分，原因都在旧分：
+
+- 旧期望值写错：`quad_frame` 机臂沿对角线，包围盒应为 2 × (110·cos45° + 16) = 187.56，旧值按 252；`camshaft` 桃尖最大半径 20、四个凸轮相差 90°，包围盒应为 40×40，旧值 33.9；`lidless_housing` 精确体积是 100×60×50 − 90×50×45 = 97500，旧区间 100000–104000；`vase` 是空心件，旧体积区间 300k–500k 偏大；`wrench`、`phone_stand` 的两种合理读法 rubric 都接受，旧值只认一种。
+- 只按特征类型计数：L1 的 `hole`、`shell`、`circular_pattern` 和轮廓内圆角不计入 cuts / circles / fillets，`flange`、`mug`、`storage_box`、`socket_bolt`、`soap_dish` 因此被判特征不足。
+- 失败工具调用扣分：每次 2.5 分，即使已回滚并修正（`standard_die`、`flanged_elbow`、`connecting_rod`、`planet_carrier` 等）。
+
+58 个 STEP 与运行记录一一对应，OCC 读出的体积与 SolidWorks 实测体积最大相对偏差 0.004%，困难题体积与参考实体一致（例如 `quad_frame` 36432.05 对参考 36432.1）。
+
 ---
 
 ## 7. 困难子集：30 个复杂综合件（showcase）
@@ -328,7 +371,7 @@ L1 运行过程中，每次拿到 LLM 回复、每轮工具执行完，都会把
 | 二级门格海绵 `menger_sponge` | 7 | 两级分形挖孔（共 27 个方孔）必须全部贯穿且位置准确 |
 | 万向节叉 `u_joint_yoke` | 9 | 双叉臂与同轴十字轴承孔、半圆叉头、孔内键槽与径向紧定螺钉孔、叉臂外侧的轴承盖螺孔 |
 
-22 题共 217 个显式条目，配了 50 个针对性错误变体（相位转错、方向反了、少一级特征、孔不通等），每个都恰好在预期条目上失败。连同前 8 题，困难子集共 30 题、304 个条目、73 个错误变体。下面 Qwen 的参考结果只覆盖前 8 题；22 道新题上 claude-sonnet-5 的结果见 7.2 节。
+22 题共 217 个显式条目，配了 50 个针对性错误变体（相位转错、方向反了、少一级特征、孔不通等），每个都恰好在预期条目上失败。连同前 8 题，困难子集共 30 题、304 个条目、73 个错误变体。下面 Qwen 的参考结果只覆盖前 8 题；22 道新题上 claude-sonnet-5 的结果见 7.2 节，GPT-6-Astra 的结果见 7.3 节。
 
 除了 OCC 参考实体，22 道新题还在 SolidWorks 里用 L1 的 24 个工具逐题建了一遍参考解（`LLMPlanner/eval/hard_l1_reference.py`，只调用模型能拿到的同一套工具），22 题全部 100 分，说明每道题在这套工具下都是可解的。其中最绕的是火箭尾段：`ref_plane` 只能建平行偏移面，45° 方位的尾翼要先阵列 8 片、再切掉 4 片。
 
@@ -354,7 +397,7 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 - 连杆的油孔或减重槽把实体拆成多块；
 - 机架只做了 1 个内角圆角。
 
-打分文件是 `eval/rubric_hard_tools24.json`，汇总在 `eval/rubric_hard_tools24_summary.json`。
+打分文件是 `eval/rubric_hard_tools24.json`，汇总在 `eval/rubric_hard_tools24_summary.json`。GPT-6-Astra 在这 8 题上的结果（英文题面，8/8 合格）见 6.1 节。
 
 需要说明两处在看过首批结果后对 rubric 的修正，两处都只放宽了与题意无关的判定：
 - 凸轮轴：模型按切点坐标画弧时，同一段基圆被拆成了圆心相差几微米的两张面，被数成了 5 个基圆。现在不再要求基圆和桃尖圆的数量恰好为 4，四个凸轮是否齐全改由逐个凸轮的探测保证。
@@ -435,6 +478,64 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric --rubric-dir eval\rubric
 在用 SolidWorks 参考解验证可解性时发现了两处 rubric 问题，已在跑上面 19 题之前修正。两处都只放宽了与题意无关的判定，并在 OCC 参考实体和 SolidWorks 参考解上重新验证过：
 - 材料区间探测忽略零长度区间。探测线恰好擦过一条棱时会得到零长度区间，它不代表材料。
 - 齿轮泵体：油口凸台从侧面起建，还是略嵌入块体（参考实体从 y=±44 起），题面没有规定，两种都接受。
+
+### 7.3 GPT-6-Astra 在加难 22 题上的结果
+
+**评测方式**：与 7.2 节相同（L1、24 个工具、`reasoning_effort = medium`、每题最多 40 次 LLM 调用、每题 1 次、只看 rubric），代码版本为 7d73ae1 之后。区别是骨干模型换成 `gpt-6-astra`（经 TT Switch 网关轨道 B），并且用**英文题面**（`--lang en`），而 7.2 节是中文题面。
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --action-level L1 --split hard `
+    --provider ttswitch --model gpt-6-astra --reasoning-effort medium --max-llm-calls 40 --repeats 1 --lang en `
+    --sw-restarts 2 --sw-max-private-gb 12 `
+    --ids crankshaft brake_disc wheel_rim geneva_wheel spiral_staircase engine_piston pipe_manifold `
+          gearbox_housing heat_sink honeycomb_panel gear_pump_body cold_plate truss_beam turbine_disk `
+          bt40_holder hydraulic_manifold rocket_fin_can ratchet_wheel injector_plate robot_arm_link `
+          menger_sponge u_joint_yoke `
+    --output eval\text_workflow_l1_gpt6_astra_medium_hard22_en_result.json
+```
+
+建模机器上 OCC 被 Windows 智能应用控制拦截，结果 JSON 里每题的 `rubric` 字段是报错；rubric 分是把 STEP 拷到另一台机器上用 `geomcheck.rubric --rubric-dir eval/rubrics_hard` 打的。结果文件 `eval/text_workflow_l1_gpt6_astra_medium_hard22_en_result.json`，打分文件 `eval/rubric_gpt6_astra_medium_hard22_en.json`。
+
+**结果**（22 题）
+
+| 均分 | pass@1 | 核心形体率 | 平均 token | 平均 LLM 调用 | 平均工具调用 | 平均耗时 |
+|---|---|---|---|---|---|---|
+| 95.9（95% CI [88.6, 100]） | 0.909（20/22） | 1.0（22/22） | 184k | 17.8（1 题用满 40 次） | 17.8 | 195 s |
+
+| 任务 | rubric 分 | 合格 | LLM 调用 | 7.2 节 Sonnet | 未通过的条目 |
+|---|---|---|---|---|---|
+| `bt40_holder` | 100 | ✓ | 13 | 70 | — |
+| `cold_plate` | 100 | ✓ | 17 | 90 | — |
+| `crankshaft` | 100 | ✓ | 26 | 64.3 | — |
+| `engine_piston` | 100 | ✓ | 20 | 81.8 | — |
+| `gear_pump_body` | 100 | ✓ | 19 | 30 | — |
+| `gearbox_housing` | 100 | ✓ | 25 | 58.3 | — |
+| `geneva_wheel` | 100 | ✓ | 14 | 44.4 | — |
+| `heat_sink` | 100 | ✓ | 11 | 100 | — |
+| `honeycomb_panel` | 100 | ✓ | 13 | 50 | — |
+| `hydraulic_manifold` | 100 | ✓ | 13 | （未计入） | — |
+| `injector_plate` | 100 | ✓ | 21 | 100 | — |
+| `menger_sponge` | 100 | ✓ | 13 | （未计入） | — |
+| `pipe_manifold` | 100 | ✓ | 30 | 27.3 | — |
+| `ratchet_wheel` | 100 | ✓ | 8 | 62.5 | — |
+| `robot_arm_link` | 100 | ✓ | 20 | 100 | — |
+| `rocket_fin_can` | 100 | ✓ | 17 | （未计入） | — |
+| `truss_beam` | 100 | ✓ | 16 | 100 | — |
+| `turbine_disk` | 100 | ✓ | 11 | 90 | — |
+| `u_joint_yoke` | 100 | ✓ | 15 | 100 | — |
+| `wheel_rim` | 100 | ✓ | 16 | 100 | — |
+| `brake_disc` | 80 | | 14 | 80 | rings, cross_holes |
+| `spiral_staircase` | 30 | | 40 | 100 | base, column, steps_low, steps_high, step_shape, posts, base_holes |
+
+在 7.2 节的同一组 19 题上，GPT-6-Astra 均分 95.3、17/19 合格，claude-sonnet-5 是 76.2、7/19；两者题面语言不同，只能粗略对照。
+
+- 21 题由智能体自己 `finish`。没有截断（`finish_reason=length` 0 次），没有 LLM 接口错误，也没有触发看门狗重启或续跑。
+- 392 次 LLM 调用，每次只发一个工具调用。推理 token 中位数 0、最大 1552；prompt 缓存命中率 91.9%。22 题共 405 万 token，总耗时约 1.2 小时。
+
+两道不合格的题：
+
+- `spiral_staircase`：模型把 12 级台阶和 12 根栏杆柱逐级建出（每级一个 `ref_plane`、一次扇形 `extrude`、一次栏杆 `extrude`，共 36 次调用），用满 40 次预算，底座上的进线孔和 4 个地脚螺栓孔都没开。已经做对的台阶、栏杆也一并判失败，原因是 rubric 用进线孔 `cable` 给零件坐标系定方位，孔缺失后依赖这个坐标系的 7 个条目都报“未找到实体 cable”。
+- `brake_disc`：把模型的零件绕“轴线 + 螺栓孔”所在平面镜像后重新打分，10 项全部通过。题面的约束对这个平面对称：40 片筋每 9° 一片，5 个螺栓孔间隔 72° 且一孔正对一片筋，散热孔隔一个筋间隙排布。题面没有规定散热孔相对螺栓孔偏 +4.5° 还是 −4.5°，所以两种手性都符合题意，但 rubric 只接受一种。7.2 节 claude-sonnet-5 在这题上失败的条目相同、实测值完全一致，也是选了另一种手性。按“看过结果后不改 rubric”的约束这里没有调整；如果把镜像写法补进 `brake_disc.yaml`，两个模型这题都是 100，GPT-6-Astra 为 21/22、均分 96.8。
 
 ---
 

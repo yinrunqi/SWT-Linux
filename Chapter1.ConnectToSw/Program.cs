@@ -183,6 +183,9 @@ namespace Chapter1.ConnectToSw
                 case "/api/close-all-documents":
                     RequirePost(method, resp, () => HandleCloseAllDocuments(resp));
                     break;
+                case "/api/view/fit":
+                    RequirePost(method, resp, () => HandleFitView(req, resp));
+                    break;
                 case "/api/close-inactive-documents":
                     RequirePost(method, resp, () => HandleCloseInactiveDocuments(resp));
                     break;
@@ -540,6 +543,22 @@ namespace Chapter1.ConnectToSw
                     success = false,
                     message = $"关闭文档失败: {ex.Message}"
                 });
+            }
+        }
+
+        private static void HandleFitView(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var body = ReadJsonBody(req);
+                var result = _commands.FitView(
+                    GetStringOrDefault(body, "target", "auto"),
+                    GetStringOrDefault(body, "view", "isometric"));
+                SendJson(resp, 200, new { success = true, message = "视图已调整", result });
+            }
+            catch (Exception ex)
+            {
+                SendJson(resp, 500, new { success = false, message = $"调整视图失败: {ex.Message}" });
             }
         }
 
