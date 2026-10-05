@@ -1,0 +1,225 @@
+{
+ "case": "d29_hanger_bracket",
+ "tool_calls": 10,
+ "modeling_calls": 10,
+ "ref_planes": 5,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 11,
+ "volume_mm3": 63163.76,
+ "bbox_mm": [
+  80.0,
+  70.0,
+  40.0
+ ],
+ "seconds": 33.7,
+ "trajectory": [
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 60
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       80,
+       40
+      ]
+     }
+    ],
+    "direction": "+Y",
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 32000.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": -30
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面2",
+    "loops": [
+     {
+      "type": "path",
+      "start": [
+       -20,
+       60
+      ],
+      "segments": [
+       {
+        "to": [
+         -20,
+         20
+        ]
+       },
+       {
+        "to": [
+         20,
+         20
+        ],
+        "through": [
+         0,
+         0
+        ]
+       },
+       {
+        "to": [
+         20,
+         60
+        ]
+       }
+      ]
+     }
+    ],
+    "direction": "+X",
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 49826.55
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": 22
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面3",
+    "loops": [
+     {
+      "type": "path",
+      "start": [
+       -20,
+       60
+      ],
+      "segments": [
+       {
+        "to": [
+         -20,
+         20
+        ]
+       },
+       {
+        "to": [
+         20,
+         20
+        ],
+        "through": [
+         0,
+         0
+        ]
+       },
+       {
+        "to": [
+         20,
+         60
+        ]
+       }
+      ]
+     }
+    ],
+    "direction": "+X",
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 67653.1
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": -41
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面4",
+    "centers": [
+     [
+      0,
+      20
+     ]
+    ],
+    "diameter": 16,
+    "through_all": true,
+    "direction": "+X"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 64436.11
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 70
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面5",
+    "centers": [
+     [
+      0,
+      12
+     ],
+     [
+      0,
+      -12
+     ]
+    ],
+    "diameter": 9,
+    "direction": "-Y",
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 63163.76
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d29_hanger_bracket oracle"
+   }
+  }
+ ]
+}

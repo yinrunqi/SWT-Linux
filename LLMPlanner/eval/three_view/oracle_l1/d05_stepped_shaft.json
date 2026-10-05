@@ -1,0 +1,142 @@
+{
+ "case": "d05_stepped_shaft",
+ "tool_calls": 5,
+ "modeling_calls": 5,
+ "ref_planes": 2,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 6,
+ "volume_mm3": 61437.76,
+ "bbox_mm": [
+  120.0,
+  30.0,
+  30.0
+ ],
+ "seconds": 16.7,
+ "trajectory": [
+  {
+   "tool": "revolve",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        10
+       ],
+       [
+        30,
+        10
+       ],
+       [
+        30,
+        15
+       ],
+       [
+        80,
+        15
+       ],
+       [
+        80,
+        12
+       ],
+       [
+        120,
+        12
+       ],
+       [
+        120,
+        0
+       ]
+      ]
+     }
+    ],
+    "axis_start": [
+     -10,
+     0
+    ],
+    "axis_end": [
+     130,
+     0
+    ]
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 62863.27
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 11
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "slot",
+      "start": [
+       44,
+       0
+      ],
+      "end": [
+       66,
+       0
+      ],
+      "width": 8
+     }
+    ],
+    "direction": "+Y",
+    "depth": 5
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 61996.72
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": -11
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面2",
+    "centers": [
+     [
+      15,
+      0
+     ]
+    ],
+    "diameter": 6,
+    "direction": "+Y",
+    "depth": 22
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 61437.76
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d05_stepped_shaft oracle"
+   }
+  }
+ ]
+}

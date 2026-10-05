@@ -1,0 +1,68 @@
+{
+ "case": "b02_plate_with_holes",
+ "tool_calls": 2,
+ "modeling_calls": 2,
+ "ref_planes": 0,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 3,
+ "volume_mm3": 30429.2,
+ "bbox_mm": [
+  80.0,
+  40.0,
+  10.0
+ ],
+ "seconds": 8.1,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       40,
+       20
+      ],
+      "size": [
+       80,
+       40
+      ]
+     }
+    ],
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 32000.0
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      20,
+      20
+     ],
+     [
+      60,
+      20
+     ]
+    ],
+    "diameter": 10,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 30429.2
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "b02_plate_with_holes oracle"
+   }
+  }
+ ]
+}

@@ -1,0 +1,156 @@
+{
+ "case": "d33_shell_housing",
+ "tool_calls": 6,
+ "modeling_calls": 6,
+ "ref_planes": 2,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 7,
+ "volume_mm3": 71311.86,
+ "bbox_mm": [
+  110.0,
+  40.0,
+  50.0
+ ],
+ "seconds": 21.6,
+ "trajectory": [
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": -25
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        -55,
+        0
+       ],
+       [
+        55,
+        0
+       ],
+       [
+        55,
+        6
+       ],
+       [
+        40,
+        6
+       ],
+       [
+        40,
+        40
+       ],
+       [
+        -40,
+        40
+       ],
+       [
+        -40,
+        6
+       ],
+       [
+        -55,
+        6
+       ]
+      ]
+     }
+    ],
+    "depth": 50
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 169000.0
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "top_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       70,
+       40
+      ]
+     }
+    ],
+    "direction": "+Y",
+    "depth": 34
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 73800.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 40
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面2",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 20,
+    "direction": "-Y",
+    "depth": 6
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 71915.04
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "top_plane",
+    "centers": [
+     [
+      47.5,
+      0
+     ],
+     [
+      -47.5,
+      0
+     ]
+    ],
+    "diameter": 8,
+    "direction": "+Y",
+    "depth": 6
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 71311.86
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d33_shell_housing oracle"
+   }
+  }
+ ]
+}

@@ -1,0 +1,74 @@
+{
+ "case": "b22_round_bowl",
+ "tool_calls": 3,
+ "modeling_calls": 3,
+ "ref_planes": 1,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 4,
+ "volume_mm3": 77584.77,
+ "bbox_mm": [
+  80.0,
+  80.0,
+  40.0
+ ],
+ "seconds": 7.0,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 80
+     }
+    ],
+    "depth": 40
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 201061.93
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 40
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 68
+     }
+    ],
+    "direction": "-Z",
+    "depth": 34
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 77584.77
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "b22_round_bowl oracle"
+   }
+  }
+ ]
+}

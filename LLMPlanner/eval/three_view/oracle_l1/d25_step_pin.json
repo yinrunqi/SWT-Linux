@@ -1,0 +1,109 @@
+{
+ "case": "d25_step_pin",
+ "tool_calls": 2,
+ "modeling_calls": 2,
+ "ref_planes": 0,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 3,
+ "volume_mm3": 14349.55,
+ "bbox_mm": [
+  24.0,
+  24.0,
+  66.0
+ ],
+ "seconds": 8.9,
+ "trajectory": [
+  {
+   "tool": "revolve",
+   "args": {
+    "plane": "right_plane",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        12
+       ],
+       [
+        6,
+        12
+       ],
+       [
+        6,
+        8
+       ],
+       [
+        53,
+        8
+       ],
+       [
+        53,
+        6.5
+       ],
+       [
+        56,
+        6.5
+       ],
+       [
+        56,
+        8
+       ],
+       [
+        65,
+        8
+       ],
+       [
+        66,
+        7
+       ],
+       [
+        66,
+        0
+       ]
+      ]
+     }
+    ],
+    "axis_start": [
+     -10,
+     0
+    ],
+    "axis_end": [
+     80,
+     0
+    ]
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 14548.98
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "right_plane",
+    "centers": [
+     [
+      61,
+      0
+     ]
+    ],
+    "diameter": 4,
+    "through_all": true,
+    "direction": "both"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 14349.55
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d25_step_pin oracle"
+   }
+  }
+ ]
+}

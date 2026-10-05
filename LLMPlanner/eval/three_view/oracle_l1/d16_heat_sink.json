@@ -1,0 +1,175 @@
+{
+ "case": "d16_heat_sink",
+ "tool_calls": 4,
+ "modeling_calls": 4,
+ "ref_planes": 1,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 5,
+ "volume_mm3": 37418.3,
+ "bbox_mm": [
+  70.0,
+  30.0,
+  50.0
+ ],
+ "seconds": 22.9,
+ "trajectory": [
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": -25
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       3
+      ],
+      "size": [
+       70,
+       6
+      ]
+     }
+    ],
+    "depth": 50
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 21000.0
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       -24,
+       18
+      ],
+      "size": [
+       2,
+       24
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -16,
+       18
+      ],
+      "size": [
+       2,
+       24
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       -8,
+       18
+      ],
+      "size": [
+       2,
+       24
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       0,
+       18
+      ],
+      "size": [
+       2,
+       24
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       8,
+       18
+      ],
+      "size": [
+       2,
+       24
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       16,
+       18
+      ],
+      "size": [
+       2,
+       24
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       24,
+       18
+      ],
+      "size": [
+       2,
+       24
+      ]
+     }
+    ],
+    "depth": 50
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 37800.0
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "top_plane",
+    "centers": [
+     [
+      31.5,
+      15
+     ],
+     [
+      31.5,
+      -15
+     ],
+     [
+      -31.5,
+      15
+     ],
+     [
+      -31.5,
+      -15
+     ]
+    ],
+    "diameter": 4.5,
+    "direction": "+Y",
+    "depth": 6
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 37418.3
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d16_heat_sink oracle"
+   }
+  }
+ ]
+}

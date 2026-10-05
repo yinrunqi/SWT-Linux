@@ -1,0 +1,191 @@
+{
+ "case": "d17_pipe_clamp",
+ "tool_calls": 5,
+ "modeling_calls": 5,
+ "ref_planes": 2,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 6,
+ "volume_mm3": 54108.71,
+ "bbox_mm": [
+  100.0,
+  55.0,
+  20.0
+ ],
+ "seconds": 22.5,
+ "trajectory": [
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": -10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "path",
+      "start": [
+       -50,
+       1
+      ],
+      "segments": [
+       {
+        "to": [
+         -50,
+         7
+        ]
+       },
+       {
+        "to": [
+         -29.171904291629644,
+         7
+        ]
+       },
+       {
+        "to": [
+         29.171904291629644,
+         7
+        ],
+        "through": [
+         0,
+         30
+        ]
+       },
+       {
+        "to": [
+         50,
+         7
+        ]
+       },
+       {
+        "to": [
+         50,
+         1
+        ]
+       },
+       {
+        "to": [
+         19.974984355438178,
+         1
+        ]
+       },
+       {
+        "to": [
+         -19.974984355438178,
+         1
+        ],
+        "through": [
+         0,
+         20
+        ]
+       }
+      ]
+     }
+    ],
+    "depth": 20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 20184.49
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "path",
+      "start": [
+       -50,
+       -25
+      ],
+      "segments": [
+       {
+        "to": [
+         50,
+         -25
+        ]
+       },
+       {
+        "to": [
+         50,
+         -1
+        ]
+       },
+       {
+        "to": [
+         19.974984355438178,
+         -1
+        ]
+       },
+       {
+        "to": [
+         -19.974984355438178,
+         -1
+        ],
+        "through": [
+         0,
+         -20
+        ]
+       },
+       {
+        "to": [
+         -50,
+         -1
+        ]
+       }
+      ]
+     }
+    ],
+    "depth": 20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 56417.78
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": -26
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面2",
+    "centers": [
+     [
+      40,
+      0
+     ],
+     [
+      -40,
+      0
+     ]
+    ],
+    "diameter": 7,
+    "direction": "+Y",
+    "depth": 34
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 54108.71
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d17_pipe_clamp oracle"
+   }
+  }
+ ]
+}

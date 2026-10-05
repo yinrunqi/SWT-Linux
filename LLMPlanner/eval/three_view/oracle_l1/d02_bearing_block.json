@@ -1,0 +1,201 @@
+{
+ "case": "d02_bearing_block",
+ "tool_calls": 9,
+ "modeling_calls": 9,
+ "ref_planes": 3,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 10,
+ "volume_mm3": 175943.32,
+ "bbox_mm": [
+  120.0,
+  80.0,
+  50.0
+ ],
+ "seconds": 30.8,
+ "trajectory": [
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": -25
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       7
+      ],
+      "size": [
+       120,
+       14
+      ]
+     }
+    ],
+    "depth": 50
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 84000.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": -20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面2",
+    "loops": [
+     {
+      "type": "path",
+      "start": [
+       -30,
+       14
+      ],
+      "segments": [
+       {
+        "to": [
+         30,
+         14
+        ]
+       },
+       {
+        "to": [
+         30,
+         50
+        ]
+       },
+       {
+        "to": [
+         -30,
+         50
+        ],
+        "through": [
+         0,
+         80
+        ]
+       }
+      ]
+     }
+    ],
+    "depth": 40
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 226948.67
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      0,
+      50
+     ]
+    ],
+    "diameter": 35,
+    "through_all": true,
+    "direction": "both"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 188464.16
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "top_plane",
+    "centers": [
+     [
+      45,
+      0
+     ],
+     [
+      -45,
+      0
+     ]
+    ],
+    "diameter": 12,
+    "direction": "+Y",
+    "depth": 14
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 185297.43
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 81
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面3",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 6,
+    "direction": "-Y",
+    "depth": 21
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 184943.32
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "top_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       60,
+       52
+      ]
+     }
+    ],
+    "direction": "+Y",
+    "depth": 3
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 175943.32
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d02_bearing_block oracle"
+   }
+  }
+ ]
+}

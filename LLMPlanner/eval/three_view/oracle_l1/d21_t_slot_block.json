@@ -1,0 +1,128 @@
+{
+ "case": "d21_t_slot_block",
+ "tool_calls": 4,
+ "modeling_calls": 4,
+ "ref_planes": 1,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 5,
+ "volume_mm3": 139310.62,
+ "bbox_mm": [
+  80.0,
+  40.0,
+  50.0
+ ],
+ "seconds": 13.7,
+ "trajectory": [
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": -25
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       20
+      ],
+      "size": [
+       80,
+       40
+      ]
+     }
+    ],
+    "depth": 50
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 160000.0
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        -6,
+        41
+       ],
+       [
+        6,
+        41
+       ],
+       [
+        6,
+        30
+       ],
+       [
+        12,
+        30
+       ],
+       [
+        12,
+        22
+       ],
+       [
+        -12,
+        22
+       ],
+       [
+        -12,
+        30
+       ],
+       [
+        -6,
+        30
+       ]
+      ]
+     }
+    ],
+    "through_all": true,
+    "direction": "both"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 144400.0
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "top_plane",
+    "centers": [
+     [
+      30,
+      0
+     ],
+     [
+      -30,
+      0
+     ]
+    ],
+    "diameter": 9,
+    "through_all": true,
+    "direction": "+Y"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 139310.62
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d21_t_slot_block oracle"
+   }
+  }
+ ]
+}

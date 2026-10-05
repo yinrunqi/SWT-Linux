@@ -1,0 +1,515 @@
+{
+ "description": "L1 oracle trajectories for the 50 three-view cases (eval/three_view_l1_reference.py); llm_calls_one_tool_per_turn = tool calls + finish",
+ "tools": "L1 (planner/workflow/tools.WorkflowSession, same 24 tools as text-to-CAD)",
+ "accepted": 50,
+ "cases": 50,
+ "llm_calls": {
+  "min": 2,
+  "median": 6,
+  "mean": 6.86,
+  "p90": 11,
+  "max": 17
+ },
+ "per_case": [
+  {
+   "case": "b01_l_bracket",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 1,
+   "ref_planes": 0,
+   "llm_calls_one_tool_per_turn": 2,
+   "volume_mm3": 36000.0
+  },
+  {
+   "case": "b02_plate_with_holes",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 2,
+   "ref_planes": 0,
+   "llm_calls_one_tool_per_turn": 3,
+   "volume_mm3": 30429.2
+  },
+  {
+   "case": "b03_t_bracket",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 1,
+   "ref_planes": 0,
+   "llm_calls_one_tool_per_turn": 2,
+   "volume_mm3": 22500.0
+  },
+  {
+   "case": "b04_keycap",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 1,
+   "ref_planes": 0,
+   "llm_calls_one_tool_per_turn": 2,
+   "volume_mm3": 2058.67
+  },
+  {
+   "case": "b05_keycap_full",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 90.55,
+   "tool_calls": 6,
+   "ref_planes": 0,
+   "llm_calls_one_tool_per_turn": 7,
+   "volume_mm3": 1598.72
+  },
+  {
+   "case": "b06_lock_striker",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 2,
+   "ref_planes": 0,
+   "llm_calls_one_tool_per_turn": 3,
+   "volume_mm3": 6523.39
+  },
+  {
+   "case": "b07_switch_panel",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 4,
+   "ref_planes": 1,
+   "llm_calls_one_tool_per_turn": 5,
+   "volume_mm3": 66100.0
+  },
+  {
+   "case": "b11_gear_disc",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 3,
+   "ref_planes": 0,
+   "llm_calls_one_tool_per_turn": 4,
+   "volume_mm3": 24999.22
+  },
+  {
+   "case": "b22_round_bowl",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 3,
+   "ref_planes": 1,
+   "llm_calls_one_tool_per_turn": 4,
+   "volume_mm3": 77584.77
+  },
+  {
+   "case": "c1_mech_keyboard",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 3,
+   "ref_planes": 1,
+   "llm_calls_one_tool_per_turn": 4,
+   "volume_mm3": 469933.33
+  },
+  {
+   "case": "c2_gearbox",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 8,
+   "ref_planes": 3,
+   "llm_calls_one_tool_per_turn": 9,
+   "volume_mm3": 853020.78
+  },
+  {
+   "case": "c3_gear_pair",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 4,
+   "ref_planes": 0,
+   "llm_calls_one_tool_per_turn": 5,
+   "volume_mm3": 103326.02
+  },
+  {
+   "case": "c4_desktop_pen_holder",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 13,
+   "ref_planes": 4,
+   "llm_calls_one_tool_per_turn": 14,
+   "volume_mm3": 449550.27
+  },
+  {
+   "case": "d01_v_block",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 1,
+   "ref_planes": 0,
+   "llm_calls_one_tool_per_turn": 2,
+   "volume_mm3": 135200.0
+  },
+  {
+   "case": "d02_bearing_block",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 9,
+   "ref_planes": 3,
+   "llm_calls_one_tool_per_turn": 10,
+   "volume_mm3": 175943.32
+  },
+  {
+   "case": "d03_rib_bracket",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 10,
+   "ref_planes": 4,
+   "llm_calls_one_tool_per_turn": 11,
+   "volume_mm3": 100458.41
+  },
+  {
+   "case": "d04_flange_cover",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 6,
+   "ref_planes": 1,
+   "llm_calls_one_tool_per_turn": 7,
+   "volume_mm3": 96893.0
+  },
+  {
+   "case": "d05_stepped_shaft",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 5,
+   "ref_planes": 2,
+   "llm_calls_one_tool_per_turn": 6,
+   "volume_mm3": 61437.76
+  },
+  {
+   "case": "d06_u_clevis",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 14,
+   "ref_planes": 7,
+   "llm_calls_one_tool_per_turn": 15,
+   "volume_mm3": 50795.57
+  },
+  {
+   "case": "d07_eccentric_cam",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 6,
+   "ref_planes": 1,
+   "llm_calls_one_tool_per_turn": 7,
+   "volume_mm3": 73857.27
+  },
+  {
+   "case": "d08_pipe_tee",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 12,
+   "ref_planes": 4,
+   "llm_calls_one_tool_per_turn": 13,
+   "volume_mm3": 90135.3
+  },
+  {
+   "case": "d09_angle_bracket",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 4,
+   "ref_planes": 1,
+   "llm_calls_one_tool_per_turn": 5,
+   "volume_mm3": 70522.38
+  },
+  {
+   "case": "d10_clamp_plate",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 5,
+   "ref_planes": 1,
+   "llm_calls_one_tool_per_turn": 6,
+   "volume_mm3": 82563.85
+  },
+  {
+   "case": "d11_dovetail_slide",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 5,
+   "ref_planes": 1,
+   "llm_calls_one_tool_per_turn": 6,
+   "volume_mm3": 158399.4
+  },
+  {
+   "case": "d12_cut_block",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 6,
+   "ref_planes": 2,
+   "llm_calls_one_tool_per_turn": 7,
+   "volume_mm3": 71036.5
+  },
+  {
+   "case": "d13_v_pulley",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 3,
+   "ref_planes": 0,
+   "llm_calls_one_tool_per_turn": 4,
+   "volume_mm3": 111865.04
+  },
+  {
+   "case": "d14_link_rod",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 9,
+   "ref_planes": 2,
+   "llm_calls_one_tool_per_turn": 10,
+   "volume_mm3": 84389.62
+  },
+  {
+   "case": "d15_motor_mount",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 9,
+   "ref_planes": 2,
+   "llm_calls_one_tool_per_turn": 10,
+   "volume_mm3": 82918.67
+  },
+  {
+   "case": "d16_heat_sink",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 4,
+   "ref_planes": 1,
+   "llm_calls_one_tool_per_turn": 5,
+   "volume_mm3": 37418.3
+  },
+  {
+   "case": "d17_pipe_clamp",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 5,
+   "ref_planes": 2,
+   "llm_calls_one_tool_per_turn": 6,
+   "volume_mm3": 54108.71
+  },
+  {
+   "case": "d18_gear_rack",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 99.61,
+   "tool_calls": 3,
+   "ref_planes": 0,
+   "llm_calls_one_tool_per_turn": 4,
+   "volume_mm3": 38239.53
+  },
+  {
+   "case": "d19_hinge_leaf",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 16,
+   "ref_planes": 6,
+   "llm_calls_one_tool_per_turn": 17,
+   "volume_mm3": 9441.56
+  },
+  {
+   "case": "d20_ribbed_base",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 10,
+   "ref_planes": 2,
+   "llm_calls_one_tool_per_turn": 11,
+   "volume_mm3": 151247.32
+  },
+  {
+   "case": "d21_t_slot_block",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 4,
+   "ref_planes": 1,
+   "llm_calls_one_tool_per_turn": 5,
+   "volume_mm3": 139310.62
+  },
+  {
+   "case": "d22_flanged_bushing",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 9,
+   "ref_planes": 3,
+   "llm_calls_one_tool_per_turn": 10,
+   "volume_mm3": 39491.81
+  },
+  {
+   "case": "d23_cross_plate",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 3,
+   "ref_planes": 0,
+   "llm_calls_one_tool_per_turn": 4,
+   "volume_mm3": 54135.4
+  },
+  {
+   "case": "d24_u_channel",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 4,
+   "ref_planes": 1,
+   "llm_calls_one_tool_per_turn": 5,
+   "volume_mm3": 105352.57
+  },
+  {
+   "case": "d25_step_pin",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 2,
+   "ref_planes": 0,
+   "llm_calls_one_tool_per_turn": 3,
+   "volume_mm3": 14349.55
+  },
+  {
+   "case": "d26_square_flange",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 5,
+   "ref_planes": 1,
+   "llm_calls_one_tool_per_turn": 6,
+   "volume_mm3": 76304.87
+  },
+  {
+   "case": "d27_guide_rail",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 3,
+   "ref_planes": 1,
+   "llm_calls_one_tool_per_turn": 4,
+   "volume_mm3": 101339.32
+  },
+  {
+   "case": "d28_round_cup",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 8,
+   "ref_planes": 3,
+   "llm_calls_one_tool_per_turn": 9,
+   "volume_mm3": 60964.36
+  },
+  {
+   "case": "d29_hanger_bracket",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 10,
+   "ref_planes": 5,
+   "llm_calls_one_tool_per_turn": 11,
+   "volume_mm3": 63163.76
+  },
+  {
+   "case": "d30_valve_body",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 10,
+   "ref_planes": 5,
+   "llm_calls_one_tool_per_turn": 11,
+   "volume_mm3": 154087.84
+  },
+  {
+   "case": "d31_lever_arm",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 7,
+   "ref_planes": 0,
+   "llm_calls_one_tool_per_turn": 8,
+   "volume_mm3": 27735.32
+  },
+  {
+   "case": "d32_tool_holder",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 5,
+   "ref_planes": 2,
+   "llm_calls_one_tool_per_turn": 6,
+   "volume_mm3": 121946.9
+  },
+  {
+   "case": "d33_shell_housing",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 6,
+   "ref_planes": 2,
+   "llm_calls_one_tool_per_turn": 7,
+   "volume_mm3": 71311.86
+  },
+  {
+   "case": "d34_fixture_plate",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 5,
+   "ref_planes": 1,
+   "llm_calls_one_tool_per_turn": 6,
+   "volume_mm3": 131839.38
+  },
+  {
+   "case": "d35_shaft_collar",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 5,
+   "ref_planes": 1,
+   "llm_calls_one_tool_per_turn": 6,
+   "volume_mm3": 12528.73
+  },
+  {
+   "case": "d36_flanged_tube",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 8,
+   "ref_planes": 2,
+   "llm_calls_one_tool_per_turn": 9,
+   "volume_mm3": 79600.88
+  },
+  {
+   "case": "d37_column_base",
+   "rubric_score": 100.0,
+   "accepted": true,
+   "image_score": 100.0,
+   "tool_calls": 6,
+   "ref_planes": 2,
+   "llm_calls_one_tool_per_turn": 7,
+   "volume_mm3": 97154.81
+  }
+ ]
+}

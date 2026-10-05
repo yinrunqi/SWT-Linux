@@ -1,0 +1,155 @@
+{
+ "case": "b05_keycap_full",
+ "tool_calls": 6,
+ "modeling_calls": 6,
+ "ref_planes": 0,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 7,
+ "volume_mm3": 1598.72,
+ "bbox_mm": [
+  18.0,
+  18.0,
+  8.0
+ ],
+ "seconds": 18.3,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       18,
+       18
+      ]
+     }
+    ],
+    "depth": 8,
+    "draft_deg": 14.036243467926479
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 2058.67
+  },
+  {
+   "tool": "fillet",
+   "args": {
+    "radius": 1.5,
+    "edges": {
+     "origin": [
+      0,
+      20,
+      8
+     ],
+     "direction": [
+      0,
+      -1,
+      0
+     ]
+    }
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 2054.91
+  },
+  {
+   "tool": "fillet",
+   "args": {
+    "radius": 1.5,
+    "edges": {
+     "origin": [
+      0,
+      -20,
+      8
+     ],
+     "direction": [
+      0,
+      1,
+      0
+     ]
+    }
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 2051.16
+  },
+  {
+   "tool": "fillet",
+   "args": {
+    "radius": 1.5,
+    "edges": {
+     "origin": [
+      20,
+      0,
+      8
+     ],
+     "direction": [
+      -1,
+      0,
+      0
+     ]
+    }
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 2040.94
+  },
+  {
+   "tool": "fillet",
+   "args": {
+    "radius": 1.5,
+    "edges": {
+     "origin": [
+      -20,
+      0,
+      8
+     ],
+     "direction": [
+      1,
+      0,
+      0
+     ]
+    }
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 2030.72
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       12,
+       12
+      ]
+     }
+    ],
+    "direction": "+Z",
+    "depth": 3
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 1598.72
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "b05_keycap_full oracle"
+   }
+  }
+ ]
+}

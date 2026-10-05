@@ -1,0 +1,156 @@
+{
+ "case": "d12_cut_block",
+ "tool_calls": 6,
+ "modeling_calls": 6,
+ "ref_planes": 2,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 7,
+ "volume_mm3": 71036.5,
+ "bbox_mm": [
+  70.0,
+  50.0,
+  40.0
+ ],
+ "seconds": 19.0,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        0,
+        0
+       ],
+       [
+        70,
+        0
+       ],
+       [
+        70,
+        20
+       ],
+       [
+        25,
+        20
+       ],
+       [
+        25,
+        50
+       ],
+       [
+        0,
+        50
+       ]
+      ]
+     }
+    ],
+    "depth": 40
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 86000.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": -1
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        41,
+        29
+       ],
+       [
+        19,
+        51
+       ],
+       [
+        41,
+        51
+       ]
+      ]
+     }
+    ],
+    "direction": "+X",
+    "depth": 27
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 81000.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 21
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面2",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       58,
+       20
+      ],
+      "size": [
+       26,
+       16
+      ]
+     }
+    ],
+    "direction": "-Y",
+    "depth": 22
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 73000.0
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面1",
+    "centers": [
+     [
+      12,
+      35
+     ]
+    ],
+    "diameter": 10,
+    "direction": "+X",
+    "depth": 27
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 71036.5
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d12_cut_block oracle"
+   }
+  }
+ ]
+}

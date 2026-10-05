@@ -1,0 +1,222 @@
+{
+ "case": "d14_link_rod",
+ "tool_calls": 9,
+ "modeling_calls": 9,
+ "ref_planes": 2,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 10,
+ "volume_mm3": 84389.62,
+ "bbox_mm": [
+  166.0,
+  60.0,
+  20.0
+ ],
+ "seconds": 31.8,
+ "trajectory": [
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 2
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "path",
+      "start": [
+       2.4,
+       23.879698
+      ],
+      "segments": [
+       {
+        "to": [
+         121.2,
+         11.939849
+        ]
+       },
+       {
+        "to": [
+         121.2,
+         -11.939849
+        ],
+        "through": [
+         132.0,
+         0.0
+        ]
+       },
+       {
+        "to": [
+         2.4,
+         -23.879698
+        ]
+       },
+       {
+        "to": [
+         2.4,
+         23.879698
+        ],
+        "through": [
+         -24.0,
+         0.0
+        ]
+       }
+      ]
+     }
+    ],
+    "depth": 16
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 87561.46
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 60
+     }
+    ],
+    "depth": 20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 109887.89
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       120,
+       0
+      ],
+      "diameter": 32
+     }
+    ],
+    "depth": 16
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 113451.64
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 36,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 93094.12
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      120,
+      0
+     ]
+    ],
+    "diameter": 16,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 89877.13
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 18
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面2",
+    "loops": [
+     {
+      "type": "slot",
+      "start": [
+       49,
+       0
+      ],
+      "end": [
+       87,
+       0
+      ],
+      "width": 14
+     }
+    ],
+    "direction": "-Z",
+    "depth": 4
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 87133.37
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "slot",
+      "start": [
+       49,
+       0
+      ],
+      "end": [
+       87,
+       0
+      ],
+      "width": 14
+     }
+    ],
+    "direction": "+Z",
+    "depth": 4
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 84389.62
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d14_link_rod oracle"
+   }
+  }
+ ]
+}

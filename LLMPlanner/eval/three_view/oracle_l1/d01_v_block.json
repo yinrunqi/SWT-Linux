@@ -1,0 +1,128 @@
+{
+ "case": "d01_v_block",
+ "tool_calls": 1,
+ "modeling_calls": 1,
+ "ref_planes": 0,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 2,
+ "volume_mm3": 135200.0,
+ "bbox_mm": [
+  80.0,
+  50.0,
+  40.0
+ ],
+ "seconds": 7.7,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        -40,
+        0
+       ],
+       [
+        -10,
+        0
+       ],
+       [
+        -10,
+        6
+       ],
+       [
+        10,
+        6
+       ],
+       [
+        10,
+        0
+       ],
+       [
+        40,
+        0
+       ],
+       [
+        40,
+        30
+       ],
+       [
+        35,
+        30
+       ],
+       [
+        35,
+        38
+       ],
+       [
+        40,
+        38
+       ],
+       [
+        40,
+        50
+       ],
+       [
+        20,
+        50
+       ],
+       [
+        2,
+        32
+       ],
+       [
+        2,
+        26
+       ],
+       [
+        -2,
+        26
+       ],
+       [
+        -2,
+        32
+       ],
+       [
+        -20,
+        50
+       ],
+       [
+        -40,
+        50
+       ],
+       [
+        -40,
+        38
+       ],
+       [
+        -35,
+        38
+       ],
+       [
+        -35,
+        30
+       ],
+       [
+        -40,
+        30
+       ]
+      ]
+     }
+    ],
+    "depth": 40
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 135200.0
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d01_v_block oracle"
+   }
+  }
+ ]
+}

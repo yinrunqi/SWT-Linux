@@ -1,0 +1,111 @@
+{
+ "case": "d27_guide_rail",
+ "tool_calls": 3,
+ "modeling_calls": 3,
+ "ref_planes": 1,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 4,
+ "volume_mm3": 101339.32,
+ "bbox_mm": [
+  150.0,
+  25.0,
+  40.0
+ ],
+ "seconds": 17.3,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "right_plane",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        -20,
+        0
+       ],
+       [
+        20,
+        0
+       ],
+       [
+        20,
+        10
+       ],
+       [
+        10,
+        10
+       ],
+       [
+        10,
+        25
+       ],
+       [
+        -10,
+        25
+       ],
+       [
+        -10,
+        10
+       ],
+       [
+        -20,
+        10
+       ]
+      ]
+     }
+    ],
+    "direction": "+X",
+    "depth": 150
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 105000.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 25
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "counterbore",
+   "args": {
+    "plane": "基准面1",
+    "centers": [
+     [
+      15,
+      0
+     ],
+     [
+      75,
+      0
+     ],
+     [
+      135,
+      0
+     ]
+    ],
+    "through_diameter": 6.6,
+    "head_diameter": 11,
+    "head_depth": 6,
+    "direction": "-Y",
+    "depth": 25
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 101339.32
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d27_guide_rail oracle"
+   }
+  }
+ ]
+}

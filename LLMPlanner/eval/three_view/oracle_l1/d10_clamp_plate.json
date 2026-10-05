@@ -1,0 +1,136 @@
+{
+ "case": "d10_clamp_plate",
+ "tool_calls": 5,
+ "modeling_calls": 5,
+ "ref_planes": 1,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 6,
+ "volume_mm3": 82563.85,
+ "bbox_mm": [
+  100.0,
+  70.0,
+  15.0
+ ],
+ "seconds": 26.0,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       100,
+       70
+      ]
+     }
+    ],
+    "depth": 15
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 105000.0
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       40,
+       20
+      ]
+     }
+    ],
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 93000.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 15
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       32.5
+      ],
+      "size": [
+       102,
+       7
+      ]
+     }
+    ],
+    "direction": "-Z",
+    "depth": 5
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 90000.0
+  },
+  {
+   "tool": "counterbore",
+   "args": {
+    "plane": "基准面1",
+    "centers": [
+     [
+      38,
+      20
+     ],
+     [
+      38,
+      -20
+     ],
+     [
+      -38,
+      20
+     ],
+     [
+      -38,
+      -20
+     ]
+    ],
+    "through_diameter": 9,
+    "head_diameter": 15,
+    "head_depth": 8,
+    "direction": "-Z",
+    "depth": 15
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 82563.85
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d10_clamp_plate oracle"
+   }
+  }
+ ]
+}

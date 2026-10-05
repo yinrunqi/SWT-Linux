@@ -1,0 +1,125 @@
+{
+ "case": "d26_square_flange",
+ "tool_calls": 5,
+ "modeling_calls": 5,
+ "ref_planes": 1,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 6,
+ "volume_mm3": 76304.87,
+ "bbox_mm": [
+  80.0,
+  80.0,
+  30.0
+ ],
+ "seconds": 18.7,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       80,
+       80
+      ],
+      "corner_radius": 10
+     }
+    ],
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 63141.59
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 40
+     }
+    ],
+    "depth": 20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 88274.33
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 20,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 78849.56
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      30,
+      30
+     ],
+     [
+      30,
+      -30
+     ],
+     [
+      -30,
+      30
+     ],
+     [
+      -30,
+      -30
+     ]
+    ],
+    "diameter": 9,
+    "direction": "+Z",
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 76304.87
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d26_square_flange oracle"
+   }
+  }
+ ]
+}

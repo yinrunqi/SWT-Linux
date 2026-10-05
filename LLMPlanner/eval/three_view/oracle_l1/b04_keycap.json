@@ -1,0 +1,47 @@
+{
+ "case": "b04_keycap",
+ "tool_calls": 1,
+ "modeling_calls": 1,
+ "ref_planes": 0,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 2,
+ "volume_mm3": 2058.67,
+ "bbox_mm": [
+  18.0,
+  18.0,
+  8.0
+ ],
+ "seconds": 5.1,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       18,
+       18
+      ]
+     }
+    ],
+    "depth": 8,
+    "draft_deg": 14.036243467926479
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 2058.67
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "b04_keycap oracle"
+   }
+  }
+ ]
+}

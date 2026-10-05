@@ -1,0 +1,253 @@
+{
+ "case": "d20_ribbed_base",
+ "tool_calls": 10,
+ "modeling_calls": 10,
+ "ref_planes": 2,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 11,
+ "volume_mm3": 151247.32,
+ "bbox_mm": [
+  140.0,
+  35.0,
+  90.0
+ ],
+ "seconds": 48.6,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "top_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       140,
+       90
+      ]
+     }
+    ],
+    "direction": "+Y",
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 126000.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       55,
+       32
+      ],
+      "diameter": 20
+     },
+     {
+      "type": "circle",
+      "center": [
+       55,
+       -32
+      ],
+      "diameter": 20
+     },
+     {
+      "type": "circle",
+      "center": [
+       -55,
+       32
+      ],
+      "diameter": 20
+     },
+     {
+      "type": "circle",
+      "center": [
+       -55,
+       -32
+      ],
+      "diameter": 20
+     }
+    ],
+    "direction": "+Y",
+    "depth": 20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 151132.74
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       90,
+       6
+      ]
+     }
+    ],
+    "direction": "+Y",
+    "depth": 15
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 159232.74
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       6,
+       64
+      ]
+     }
+    ],
+    "direction": "+Y",
+    "depth": 15
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 164452.74
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 30
+     }
+    ],
+    "direction": "+Y",
+    "depth": 25
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 177300.42
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "top_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       80,
+       50
+      ]
+     }
+    ],
+    "direction": "+Y",
+    "depth": 4
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 161300.42
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 35
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面2",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 16,
+    "direction": "-Y",
+    "depth": 20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 157279.18
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "top_plane",
+    "centers": [
+     [
+      55,
+      32
+     ],
+     [
+      55,
+      -32
+     ],
+     [
+      -55,
+      32
+     ],
+     [
+      -55,
+      -32
+     ]
+    ],
+    "diameter": 8,
+    "direction": "+Y",
+    "depth": 30
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 151247.32
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d20_ribbed_base oracle"
+   }
+  }
+ ]
+}

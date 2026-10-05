@@ -1,0 +1,88 @@
+{
+ "case": "b06_lock_striker",
+ "tool_calls": 2,
+ "modeling_calls": 2,
+ "ref_planes": 0,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 3,
+ "volume_mm3": 6523.39,
+ "bbox_mm": [
+  30.0,
+  80.0,
+  3.0
+ ],
+ "seconds": 11.1,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       30,
+       80
+      ],
+      "corner_radius": 3
+     }
+    ],
+    "depth": 3
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 7176.82
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "slot",
+      "start": [
+       -5,
+       0
+      ],
+      "end": [
+       5,
+       0
+      ],
+      "width": 10
+     },
+     {
+      "type": "circle",
+      "center": [
+       0,
+       32
+      ],
+      "diameter": 5
+     },
+     {
+      "type": "circle",
+      "center": [
+       0,
+       -32
+      ],
+      "diameter": 5
+     }
+    ],
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 6523.39
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "b06_lock_striker oracle"
+   }
+  }
+ ]
+}

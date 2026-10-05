@@ -1,0 +1,183 @@
+{
+ "case": "d30_valve_body",
+ "tool_calls": 10,
+ "modeling_calls": 10,
+ "ref_planes": 5,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 11,
+ "volume_mm3": 154087.84,
+ "bbox_mm": [
+  70.0,
+  60.0,
+  50.0
+ ],
+ "seconds": 28.8,
+ "trajectory": [
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": -25
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       25
+      ],
+      "size": [
+       70,
+       50
+      ]
+     }
+    ],
+    "depth": 50
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 175000.0
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 50
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面2",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 30
+     }
+    ],
+    "direction": "+Y",
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 182068.58
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "right_plane",
+    "offset": -36
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面3",
+    "centers": [
+     [
+      0,
+      25
+     ]
+    ],
+    "diameter": 20,
+    "through_all": true,
+    "direction": "+X"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 160077.43
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "top_plane",
+    "offset": 60
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面4",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 16,
+    "direction": "-Y",
+    "depth": 36
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 154873.23
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 25
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "基准面5",
+    "centers": [
+     [
+      18,
+      43
+     ],
+     [
+      18,
+      7
+     ],
+     [
+      -18,
+      43
+     ],
+     [
+      -18,
+      7
+     ]
+    ],
+    "diameter": 5,
+    "direction": "-Z",
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 154087.84
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d30_valve_body oracle"
+   }
+  }
+ ]
+}

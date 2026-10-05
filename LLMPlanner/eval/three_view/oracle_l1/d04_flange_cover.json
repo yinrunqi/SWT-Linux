@@ -1,0 +1,150 @@
+{
+ "case": "d04_flange_cover",
+ "tool_calls": 6,
+ "modeling_calls": 6,
+ "ref_planes": 1,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 7,
+ "volume_mm3": 96893.0,
+ "bbox_mm": [
+  100.0,
+  100.0,
+  32.0
+ ],
+ "seconds": 18.0,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 100
+     }
+    ],
+    "depth": 12
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 94247.78
+  },
+  {
+   "tool": "ref_plane",
+   "args": {
+    "reference": "front_plane",
+    "offset": 12
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": null
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "基准面1",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 50
+     }
+    ],
+    "depth": 20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 133517.69
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 30,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 110898.22
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 70
+     }
+    ],
+    "direction": "+Z",
+    "depth": 3
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 101473.44
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      40.0,
+      0.0
+     ],
+     [
+      20.0,
+      34.641016
+     ],
+     [
+      -20.0,
+      34.641016
+     ],
+     [
+      -40.0,
+      0.0
+     ],
+     [
+      -20.0,
+      -34.641016
+     ],
+     [
+      20.0,
+      -34.641016
+     ]
+    ],
+    "diameter": 9,
+    "direction": "+Z",
+    "depth": 12
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 96893.0
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d04_flange_cover oracle"
+   }
+  }
+ ]
+}

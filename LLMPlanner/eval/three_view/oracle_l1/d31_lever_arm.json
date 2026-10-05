@@ -1,0 +1,198 @@
+{
+ "case": "d31_lever_arm",
+ "tool_calls": 7,
+ "modeling_calls": 7,
+ "ref_planes": 0,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 8,
+ "volume_mm3": 27735.32,
+ "bbox_mm": [
+  105.0,
+  75.0,
+  20.0
+ ],
+ "seconds": 26.5,
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 30
+     }
+    ],
+    "depth": 20
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 14137.17
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        0,
+        -6
+       ],
+       [
+        80,
+        -6
+       ],
+       [
+        80,
+        6
+       ],
+       [
+        6,
+        6
+       ],
+       [
+        6,
+        50
+       ],
+       [
+        -6,
+        50
+       ],
+       [
+        -6,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ]
+     }
+    ],
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 26235.61
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       80,
+       0
+      ],
+      "diameter": 20
+     },
+     {
+      "type": "circle",
+      "center": [
+       0,
+       50
+      ],
+      "diameter": 20
+     }
+    ],
+    "depth": 14
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 32785.07
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 14,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 29706.31
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      80,
+      0
+     ]
+    ],
+    "diameter": 8,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 29002.59
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      0,
+      50
+     ]
+    ],
+    "diameter": 10,
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 27903.04
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       -4.5,
+       0
+      ],
+      "size": [
+       9,
+       4
+      ]
+     }
+    ],
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 27735.32
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "d31_lever_arm oracle"
+   }
+  }
+ ]
+}
