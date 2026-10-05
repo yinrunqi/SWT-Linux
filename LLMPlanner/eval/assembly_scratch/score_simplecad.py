@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import subprocess
@@ -138,10 +139,11 @@ def line_dist(p: np.ndarray, origin: np.ndarray, d: np.ndarray) -> float:
 # ---------------------------------------------------------------- 桥接
 
 class Bridge:
-    def __init__(self, run_dir: Path, case: dict, export: dict):
+    def __init__(self, run_dir: Path, case: dict, export: dict, export_sha256: str):
         self.run_dir = run_dir
         self.case = case
         self.export = export
+        self.export_sha256 = export_sha256
         self.sw_dir = run_dir / "sw"
         self.session = AssemblySession(base_url=SW, timeout=300)
         self.names: dict[str, str] = {}          # 角色 → SolidWorks 组件名
@@ -156,7 +158,7 @@ class Bridge:
         out = {}
         (self.sw_dir / "parts").mkdir(parents=True, exist_ok=True)
         for comp in self.export["components"]:
-            pid = comp["part_id"]
+            pid = comp.get("source_part_id") or comp["part_id"]
             if pid in out:
                 continue
             step = self.run_dir / "parts" / f"{pid}.step"
@@ -172,7 +174,7 @@ class Bridge:
         grounded = set(self.export.get("grounded") or [])
         comps = sorted(self.export["components"], key=lambda c: c["role"] not in grounded)
         for comp in comps:
-            role, pid = comp["role"], comp["part_id"]
+            role, pid = comp["role"], comp.get("source_part_id") or comp["part_id"]
             if pid not in sld:
                 self.log.append({"component": role, "error": f"零件 {pid} 没有 STEP"})
                 continue
@@ -461,13 +463,19 @@ class Bridge:
             "final_drift": final,
         }
         (self.sw_dir / "bridge.json").write_text(
-            json.dumps({"summary": summary, "log": self.log}, ensure_ascii=False, indent=1, default=str),
+            json.dumps({"export_sha256": self.export_sha256, "summary": summary, "log": self.log},
+                       ensure_ascii=False, indent=1, default=str),
             encoding="utf-8")
         (self.sw_dir / f"{self.case['case_id']}.aliases.json").write_text(json.dumps(self.names), encoding="utf-8")
         return summary
 
 
 # ---------------------------------------------------------------- 主流程
+
+def export_sha(run_dir: Path) -> str | None:
+    path = run_dir / "assembly_export.json"
+    return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
+
 
 def score_run(run: dict, art: Path, rebuild: bool) -> dict:
     cid, k = run["case_id"], run["repeat"]
@@ -484,16 +492,28 @@ def score_run(run: dict, art: Path, rebuild: bool) -> dict:
         "agent": {key: asm.get(key) for key in ("status", "error", "llm_calls", "tool_counts", "token_usage",
                                                 "elapsed_s", "delivered", "export_ok", "export_detail")},
     }
+    if asm.get("status") == "error":
+        return {**row, "assembly_score": None, "motion_score": None, "e2e": False,
+                "infra_error": f"装配智能体中断：{asm.get('error')}"}
     export_path = run_dir / "assembly_export.json"
-    if not export_path.is_file():
+    sha = export_sha(run_dir)
+    row["export_sha256"] = sha
+    if sha is None or not asm.get("export"):
         return {**row, "assembly_score": 0.0, "motion_score": 0.0, "e2e": False, "note": "没有可读的装配包"}
+    if asm.get("export_sha256") and asm["export_sha256"] != sha:
+        return {**row, "assembly_score": None, "motion_score": None, "e2e": False,
+                "infra_error": "assembly_export.json 与生成时记录的哈希不一致（可能是旧产物）"}
     export = json.loads(export_path.read_text(encoding="utf-8"))
+    if export.get("problems"):
+        return {**row, "assembly_score": 0.0, "motion_score": 0.0, "e2e": False,
+                "note": "装配包未通过完整性检查：" + "；".join(export["problems"])}
     bridge_file = run_dir / "sw" / "bridge.json"
     sldasm = run_dir / "sw" / f"{cid}.SLDASM"
-    if rebuild or not (sldasm.is_file() and bridge_file.is_file()):
+    cached = json.loads(bridge_file.read_text(encoding="utf-8")) if bridge_file.is_file() else {}
+    if rebuild or not sldasm.is_file() or cached.get("export_sha256") != sha:
         for attempt in range(2):
             try:
-                summary = Bridge(run_dir, case, export).build()
+                summary = Bridge(run_dir, case, export, sha).build()
                 break
             except requests.RequestException as exc:
                 if attempt:
@@ -501,7 +521,7 @@ def score_run(run: dict, art: Path, rebuild: bool) -> dict:
                             "infra_error": f"bridge: {exc}"}
                 restart_solidworks()
     else:
-        summary = json.loads(bridge_file.read_text(encoding="utf-8"))["summary"]
+        summary = cached["summary"]
     scored = rescorer.rescore_with_retry(sldasm.resolve(), case, summary["aliases"])
     motion = scored.get("motion") or {}
     row.update({
@@ -544,7 +564,12 @@ def main() -> None:
     wanted = {t.strip() for t in args.cases.split(",") if t.strip()}
     out = Path(args.out)
     rows = [] if args.rescore or not out.is_file() else json.loads(out.read_text(encoding="utf-8"))["rows"]
-    done = {(r["case_id"], r["repeat"]) for r in rows if not r.get("infra_error")}
+    current = {(r["case_id"], r["repeat"]): (r.get("assembly") or {}).get("status") != "error"
+               and export_sha(art / r["case_id"] / f"r{r['repeat']}") for r in data["runs"] if "case_id" in r}
+    # 测例重跑后装配包变了（或从有变无），旧分数作废
+    done = {(r["case_id"], r["repeat"]) for r in rows
+            if not r.get("infra_error") and "export_sha256" in r
+            and r["export_sha256"] == current.get((r["case_id"], r["repeat"]))}
     rows = [r for r in rows if (r["case_id"], r["repeat"]) in done]
 
     def write():

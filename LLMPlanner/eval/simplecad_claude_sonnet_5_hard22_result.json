@@ -1,0 +1,1033 @@
+{
+  "summary": {
+    "model": "claude-sonnet-5",
+    "runs": 44,
+    "submitted": 40,
+    "finished": 38,
+    "errors": 0,
+    "mean_llm_calls": 20.0,
+    "mean_elapsed_s": 625.5,
+    "mean_total_tokens": 1054276,
+    "token_totals": {
+      "prompt_tokens": 44204540,
+      "completion_tokens": 2183600,
+      "total_tokens": 46388140,
+      "cached_tokens": 40646388
+    },
+    "credit_total": 3884.67
+  },
+  "runs": [
+    {
+      "case": "brake_disc",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 31,
+      "tool_counts": {
+        "read_doc": 21,
+        "run_python": 25,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1337821,
+        "completion_tokens": 46598,
+        "total_tokens": 1384419,
+        "cached_tokens": 1249835,
+        "credit": 93.57
+      },
+      "elapsed_s": 867.1,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/brake_disc_r1.step"
+    },
+    {
+      "case": "brake_disc",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 16,
+      "tool_counts": {
+        "read_doc": 12,
+        "run_python": 11,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 377880,
+        "completion_tokens": 37621,
+        "total_tokens": 415501,
+        "cached_tokens": 300908,
+        "credit": 62.86
+      },
+      "elapsed_s": 573.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/brake_disc_r2.step"
+    },
+    {
+      "case": "bt40_holder",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "budget_exhausted",
+      "error": null,
+      "llm_calls": 40,
+      "tool_counts": {
+        "read_doc": 36,
+        "run_python": 29,
+        "finish": 0,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 2915228,
+        "completion_tokens": 178104,
+        "total_tokens": 3093332,
+        "cached_tokens": 2806297,
+        "credit": 261.42
+      },
+      "elapsed_s": 1922.8,
+      "step": null
+    },
+    {
+      "case": "bt40_holder",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 24,
+      "tool_counts": {
+        "read_doc": 15,
+        "run_python": 15,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1042600,
+        "completion_tokens": 30851,
+        "total_tokens": 1073451,
+        "cached_tokens": 963721,
+        "credit": 69.84
+      },
+      "elapsed_s": 366.0,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/bt40_holder_r2.step"
+    },
+    {
+      "case": "cold_plate",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "budget_exhausted",
+      "error": null,
+      "llm_calls": 40,
+      "tool_counts": {
+        "read_doc": 28,
+        "run_python": 35,
+        "finish": 0,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1822823,
+        "completion_tokens": 99305,
+        "total_tokens": 1922128,
+        "cached_tokens": 1645100,
+        "credit": 176.53
+      },
+      "elapsed_s": 1363.0,
+      "step": null
+    },
+    {
+      "case": "cold_plate",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 10,
+      "tool_counts": {
+        "read_doc": 32,
+        "run_python": 1,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 439149,
+        "completion_tokens": 65019,
+        "total_tokens": 504168,
+        "cached_tokens": 285465,
+        "credit": 109.13
+      },
+      "elapsed_s": 923.9,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/cold_plate_r2.step"
+    },
+    {
+      "case": "crankshaft",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 33,
+      "tool_counts": {
+        "read_doc": 26,
+        "run_python": 26,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1984925,
+        "completion_tokens": 97798,
+        "total_tokens": 2082723,
+        "cached_tokens": 1907619,
+        "credit": 155.24
+      },
+      "elapsed_s": 1312.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/crankshaft_r1.step"
+    },
+    {
+      "case": "crankshaft",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 28,
+      "tool_counts": {
+        "read_doc": 24,
+        "run_python": 20,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1242096,
+        "completion_tokens": 69220,
+        "total_tokens": 1311316,
+        "cached_tokens": 1141799,
+        "credit": 117.06
+      },
+      "elapsed_s": 1169.0,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/crankshaft_r2.step"
+    },
+    {
+      "case": "engine_piston",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 20,
+      "tool_counts": {
+        "read_doc": 31,
+        "run_python": 9,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1266662,
+        "completion_tokens": 109939,
+        "total_tokens": 1376601,
+        "cached_tokens": 1187768,
+        "credit": 153.4
+      },
+      "elapsed_s": 1437.8,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/engine_piston_r1.step"
+    },
+    {
+      "case": "engine_piston",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "budget_exhausted",
+      "error": null,
+      "llm_calls": 40,
+      "tool_counts": {
+        "read_doc": 38,
+        "run_python": 27,
+        "finish": 0,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 2930915,
+        "completion_tokens": 165013,
+        "total_tokens": 3095928,
+        "cached_tokens": 2699481,
+        "credit": 276.83
+      },
+      "elapsed_s": 1977.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/engine_piston_r2.step"
+    },
+    {
+      "case": "gear_pump_body",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 16,
+      "tool_counts": {
+        "read_doc": 15,
+        "run_python": 10,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 832742,
+        "completion_tokens": 28042,
+        "total_tokens": 860784,
+        "cached_tokens": 762534,
+        "credit": 60.82
+      },
+      "elapsed_s": 361.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/gear_pump_body_r1.step"
+    },
+    {
+      "case": "gear_pump_body",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 29,
+      "tool_counts": {
+        "read_doc": 30,
+        "run_python": 18,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1834745,
+        "completion_tokens": 65787,
+        "total_tokens": 1900532,
+        "cached_tokens": 1663486,
+        "credit": 141.84
+      },
+      "elapsed_s": 787.8,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/gear_pump_body_r2.step"
+    },
+    {
+      "case": "gearbox_housing",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 6,
+      "tool_counts": {
+        "read_doc": 8,
+        "run_python": 2,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 149667,
+        "completion_tokens": 12974,
+        "total_tokens": 162641,
+        "cached_tokens": 112812,
+        "credit": 24.42
+      },
+      "elapsed_s": 151.3,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/gearbox_housing_r1.step"
+    },
+    {
+      "case": "gearbox_housing",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 17,
+      "tool_counts": {
+        "read_doc": 16,
+        "run_python": 10,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 664660,
+        "completion_tokens": 63088,
+        "total_tokens": 727748,
+        "cached_tokens": 611637,
+        "credit": 88.54
+      },
+      "elapsed_s": 712.8,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/gearbox_housing_r2.step"
+    },
+    {
+      "case": "geneva_wheel",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 11,
+      "tool_counts": {
+        "read_doc": 16,
+        "run_python": 5,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 345837,
+        "completion_tokens": 30293,
+        "total_tokens": 376130,
+        "cached_tokens": 304279,
+        "credit": 46.74
+      },
+      "elapsed_s": 375.1,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/geneva_wheel_r1.step"
+    },
+    {
+      "case": "geneva_wheel",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 8,
+      "tool_counts": {
+        "read_doc": 10,
+        "run_python": 4,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 231859,
+        "completion_tokens": 20985,
+        "total_tokens": 252844,
+        "cached_tokens": 195296,
+        "credit": 34.01
+      },
+      "elapsed_s": 246.4,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/geneva_wheel_r2.step"
+    },
+    {
+      "case": "heat_sink",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 4,
+      "tool_counts": {
+        "read_doc": 4,
+        "run_python": 2,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 58031,
+        "completion_tokens": 3178,
+        "total_tokens": 61209,
+        "cached_tokens": 38254,
+        "credit": 8.87
+      },
+      "elapsed_s": 50.5,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/heat_sink_r1.step"
+    },
+    {
+      "case": "heat_sink",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 8,
+      "tool_counts": {
+        "read_doc": 7,
+        "run_python": 4,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 123367,
+        "completion_tokens": 4423,
+        "total_tokens": 127790,
+        "cached_tokens": 101642,
+        "credit": 11.88
+      },
+      "elapsed_s": 80.8,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/heat_sink_r2.step"
+    },
+    {
+      "case": "honeycomb_panel",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 29,
+      "tool_counts": {
+        "read_doc": 39,
+        "run_python": 15,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 2341403,
+        "completion_tokens": 109902,
+        "total_tokens": 2451305,
+        "cached_tokens": 2223839,
+        "credit": 183.76
+      },
+      "elapsed_s": 1299.9,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/honeycomb_panel_r1.step"
+    },
+    {
+      "case": "honeycomb_panel",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 24,
+      "tool_counts": {
+        "read_doc": 32,
+        "run_python": 14,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1668422,
+        "completion_tokens": 64508,
+        "total_tokens": 1732930,
+        "cached_tokens": 1587497,
+        "credit": 116.5
+      },
+      "elapsed_s": 770.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/honeycomb_panel_r2.step"
+    },
+    {
+      "case": "hydraulic_manifold",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 27,
+      "tool_counts": {
+        "read_doc": 7,
+        "run_python": 22,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 711720,
+        "completion_tokens": 25608,
+        "total_tokens": 737328,
+        "cached_tokens": 664606,
+        "credit": 50.61
+      },
+      "elapsed_s": 376.8,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/hydraulic_manifold_r1.step"
+    },
+    {
+      "case": "hydraulic_manifold",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "budget_exhausted",
+      "error": null,
+      "llm_calls": 40,
+      "tool_counts": {
+        "read_doc": 8,
+        "run_python": 36,
+        "finish": 0,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1138825,
+        "completion_tokens": 32108,
+        "total_tokens": 1170933,
+        "cached_tokens": 1096654,
+        "credit": 64.54
+      },
+      "elapsed_s": 454.4,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/hydraulic_manifold_r2.step"
+    },
+    {
+      "case": "injector_plate",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 12,
+      "tool_counts": {
+        "read_doc": 23,
+        "run_python": 4,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 491198,
+        "completion_tokens": 19119,
+        "total_tokens": 510317,
+        "cached_tokens": 433843,
+        "credit": 42.1
+      },
+      "elapsed_s": 308.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/injector_plate_r1.step"
+    },
+    {
+      "case": "injector_plate",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 18,
+      "tool_counts": {
+        "read_doc": 23,
+        "run_python": 9,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 735479,
+        "completion_tokens": 19584,
+        "total_tokens": 755063,
+        "cached_tokens": 682293,
+        "credit": 46.51
+      },
+      "elapsed_s": 330.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/injector_plate_r2.step"
+    },
+    {
+      "case": "menger_sponge",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 7,
+      "tool_counts": {
+        "read_doc": 3,
+        "run_python": 5,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 98252,
+        "completion_tokens": 8431,
+        "total_tokens": 106683,
+        "cached_tokens": 81964,
+        "credit": 14.11
+      },
+      "elapsed_s": 138.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/menger_sponge_r1.step"
+    },
+    {
+      "case": "menger_sponge",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 8,
+      "tool_counts": {
+        "read_doc": 7,
+        "run_python": 3,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 112616,
+        "completion_tokens": 8314,
+        "total_tokens": 120930,
+        "cached_tokens": 92482,
+        "credit": 15.18
+      },
+      "elapsed_s": 128.5,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/menger_sponge_r2.step"
+    },
+    {
+      "case": "pipe_manifold",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 11,
+      "tool_counts": {
+        "read_doc": 15,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 359655,
+        "completion_tokens": 42919,
+        "total_tokens": 402574,
+        "cached_tokens": 307469,
+        "credit": 62.1
+      },
+      "elapsed_s": 508.3,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/pipe_manifold_r1.step"
+    },
+    {
+      "case": "pipe_manifold",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 14,
+      "tool_counts": {
+        "read_doc": 17,
+        "run_python": 9,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 568160,
+        "completion_tokens": 26670,
+        "total_tokens": 594830,
+        "cached_tokens": 524955,
+        "credit": 47.96
+      },
+      "elapsed_s": 318.7,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/pipe_manifold_r2.step"
+    },
+    {
+      "case": "ratchet_wheel",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 8,
+      "tool_counts": {
+        "read_doc": 10,
+        "run_python": 5,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 141646,
+        "completion_tokens": 8604,
+        "total_tokens": 150250,
+        "cached_tokens": 119215,
+        "credit": 16.57
+      },
+      "elapsed_s": 106.3,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/ratchet_wheel_r1.step"
+    },
+    {
+      "case": "ratchet_wheel",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 5,
+      "tool_counts": {
+        "read_doc": 7,
+        "run_python": 2,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 74050,
+        "completion_tokens": 8596,
+        "total_tokens": 82646,
+        "cached_tokens": 53955,
+        "credit": 14.68
+      },
+      "elapsed_s": 111.2,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/ratchet_wheel_r2.step"
+    },
+    {
+      "case": "robot_arm_link",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 19,
+      "tool_counts": {
+        "read_doc": 24,
+        "run_python": 12,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 773971,
+        "completion_tokens": 68320,
+        "total_tokens": 842291,
+        "cached_tokens": 712848,
+        "credit": 97.82
+      },
+      "elapsed_s": 725.3,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/robot_arm_link_r1.step"
+    },
+    {
+      "case": "robot_arm_link",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 25,
+      "tool_counts": {
+        "read_doc": 23,
+        "run_python": 18,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1188777,
+        "completion_tokens": 72041,
+        "total_tokens": 1260818,
+        "cached_tokens": 1121091,
+        "credit": 111.35
+      },
+      "elapsed_s": 795.4,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/robot_arm_link_r2.step"
+    },
+    {
+      "case": "rocket_fin_can",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 7,
+      "tool_counts": {
+        "read_doc": 11,
+        "run_python": 4,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 208531,
+        "completion_tokens": 18628,
+        "total_tokens": 227159,
+        "cached_tokens": 171753,
+        "credit": 31.23
+      },
+      "elapsed_s": 205.5,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/rocket_fin_can_r1.step"
+    },
+    {
+      "case": "rocket_fin_can",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 15,
+      "tool_counts": {
+        "read_doc": 25,
+        "run_python": 6,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 662944,
+        "completion_tokens": 34769,
+        "total_tokens": 697713,
+        "cached_tokens": 595315,
+        "credit": 63.54
+      },
+      "elapsed_s": 405.5,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/rocket_fin_can_r2.step"
+    },
+    {
+      "case": "spiral_staircase",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 12,
+      "tool_counts": {
+        "read_doc": 16,
+        "run_python": 8,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 390558,
+        "completion_tokens": 13430,
+        "total_tokens": 403988,
+        "cached_tokens": 347522,
+        "credit": 31.12
+      },
+      "elapsed_s": 168.3,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/spiral_staircase_r1.step"
+    },
+    {
+      "case": "spiral_staircase",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 19,
+      "tool_counts": {
+        "read_doc": 25,
+        "run_python": 9,
+        "finish": 1,
+        "no_tool": 1
+      },
+      "token_usage": {
+        "prompt_tokens": 744572,
+        "completion_tokens": 27422,
+        "total_tokens": 771994,
+        "cached_tokens": 688113,
+        "credit": 55.28
+      },
+      "elapsed_s": 335.5,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/spiral_staircase_r2.step"
+    },
+    {
+      "case": "truss_beam",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 22,
+      "tool_counts": {
+        "read_doc": 34,
+        "run_python": 11,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1413734,
+        "completion_tokens": 41317,
+        "total_tokens": 1455051,
+        "cached_tokens": 1266834,
+        "credit": 103.37
+      },
+      "elapsed_s": 506.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/truss_beam_r1.step"
+    },
+    {
+      "case": "truss_beam",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 13,
+      "tool_counts": {
+        "read_doc": 34,
+        "run_python": 1,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 783654,
+        "completion_tokens": 33315,
+        "total_tokens": 816969,
+        "cached_tokens": 625349,
+        "credit": 85.35
+      },
+      "elapsed_s": 355.9,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/truss_beam_r2.step"
+    },
+    {
+      "case": "turbine_disk",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "budget_exhausted",
+      "error": null,
+      "llm_calls": 40,
+      "tool_counts": {
+        "read_doc": 20,
+        "run_python": 31,
+        "finish": 0,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 2525479,
+        "completion_tokens": 62689,
+        "total_tokens": 2588168,
+        "cached_tokens": 2341205,
+        "credit": 155.51
+      },
+      "elapsed_s": 829.7,
+      "step": null
+    },
+    {
+      "case": "turbine_disk",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 25,
+      "tool_counts": {
+        "read_doc": 28,
+        "run_python": 13,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 1390021,
+        "completion_tokens": 41456,
+        "total_tokens": 1431477,
+        "cached_tokens": 1270710,
+        "credit": 96.58
+      },
+      "elapsed_s": 573.0,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/turbine_disk_r2.step"
+    },
+    {
+      "case": "u_joint_yoke",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 6,
+      "tool_counts": {
+        "read_doc": 7,
+        "run_python": 3,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 174862,
+        "completion_tokens": 14126,
+        "total_tokens": 188988,
+        "cached_tokens": 136194,
+        "credit": 26.49
+      },
+      "elapsed_s": 155.4,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/u_joint_yoke_r1.step"
+    },
+    {
+      "case": "u_joint_yoke",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 16,
+      "tool_counts": {
+        "read_doc": 12,
+        "run_python": 9,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 543578,
+        "completion_tokens": 33053,
+        "total_tokens": 576631,
+        "cached_tokens": 490724,
+        "credit": 56.03
+      },
+      "elapsed_s": 372.6,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/u_joint_yoke_r2.step"
+    },
+    {
+      "case": "wheel_rim",
+      "repeat": 1,
+      "model": "claude-sonnet-5",
+      "status": "finished",
+      "error": null,
+      "llm_calls": 37,
+      "tool_counts": {
+        "read_doc": 48,
+        "run_python": 26,
+        "finish": 1,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 2553013,
+        "completion_tokens": 105818,
+        "total_tokens": 2658831,
+        "cached_tokens": 2421341,
+        "credit": 187.13
+      },
+      "elapsed_s": 1345.9,
+      "step": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/simplecad_claude_sonnet_5_hard22_result/wheel_rim_r1.step"
+    },
+    {
+      "case": "wheel_rim",
+      "repeat": 2,
+      "model": "claude-sonnet-5",
+      "status": "budget_exhausted",
+      "error": null,
+      "llm_calls": 40,
+      "tool_counts": {
+        "read_doc": 33,
+        "run_python": 33,
+        "finish": 0,
+        "no_tool": 0
+      },
+      "token_usage": {
+        "prompt_tokens": 2808413,
+        "completion_tokens": 114615,
+        "total_tokens": 2923028,
+        "cached_tokens": 2610684,
+        "credit": 216.25
+      },
+      "elapsed_s": 1217.6,
+      "step": null
+    }
+  ]
+}

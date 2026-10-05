@@ -1,0 +1,105 @@
+{
+  "all": {
+    "tasks": 22,
+    "runs": 44,
+    "score": 85.1,
+    "ci95": [
+      75.3,
+      94.0
+    ],
+    "accepted": 32,
+    "core_form": 0.864,
+    "pass@1": 0.727,
+    "pass@2": 0.864
+  },
+  "per_task": {
+    "crankshaft": [
+      100.0,
+      100.0
+    ],
+    "brake_disc": [
+      100.0,
+      100.0
+    ],
+    "wheel_rim": [
+      100.0,
+      0.0
+    ],
+    "geneva_wheel": [
+      100.0,
+      100.0
+    ],
+    "spiral_staircase": [
+      100.0,
+      100.0
+    ],
+    "engine_piston": [
+      100.0,
+      100.0
+    ],
+    "pipe_manifold": [
+      100.0,
+      100.0
+    ],
+    "gearbox_housing": [
+      83.33,
+      100.0
+    ],
+    "heat_sink": [
+      100.0,
+      100.0
+    ],
+    "honeycomb_panel": [
+      100.0,
+      100.0
+    ],
+    "gear_pump_body": [
+      90.0,
+      100.0
+    ],
+    "cold_plate": [
+      0.0,
+      30.0
+    ],
+    "truss_beam": [
+      100.0,
+      100.0
+    ],
+    "turbine_disk": [
+      0.0,
+      100.0
+    ],
+    "bt40_holder": [
+      0.0,
+      40.0
+    ],
+    "hydraulic_manifold": [
+      66.67,
+      88.89
+    ],
+    "rocket_fin_can": [
+      100.0,
+      100.0
+    ],
+    "ratchet_wheel": [
+      100.0,
+      100.0
+    ],
+    "injector_plate": [
+      100.0,
+      100.0
+    ],
+    "robot_arm_link": [
+      80.0,
+      100.0
+    ],
+    "menger_sponge": [
+      100.0,
+      100.0
+    ],
+    "u_joint_yoke": [
+      66.67,
+      100.0
+    ]
+  }
+}

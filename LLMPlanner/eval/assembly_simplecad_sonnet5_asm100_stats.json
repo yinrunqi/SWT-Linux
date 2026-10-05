@@ -1,0 +1,959 @@
+{
+ "total": {
+  "cases_done": 16,
+  "cases_pending": 0,
+  "asm_llm_calls": 797,
+  "asm_prompt_tokens": 108678055,
+  "asm_completion_tokens": 2043116,
+  "asm_credit": 6149.73,
+  "asm_elapsed_s": 40731.2,
+  "asm_s_per_call": 51.1,
+  "asm_completion_tok_per_s": 50.2
+ },
+ "rows": [
+  {
+   "case_id": "two_stage_gearbox",
+   "parts": {
+    "n": 6,
+    "accepted": 6,
+    "llm_calls": 42,
+    "prompt_tokens": 631839,
+    "completion_tokens": 9749,
+    "cached_tokens": 483773,
+    "credit": 56.38,
+    "elapsed_s_sum": 363.7
+   },
+   "assembly": {
+    "status": "finished",
+    "llm_calls": 22,
+    "tool_counts": {
+     "read_doc": 21,
+     "run_python": 14,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 1899814,
+    "completion_tokens": 64052,
+    "cached_tokens": 1699413,
+    "credit": 147.88,
+    "elapsed_s": 569.0,
+    "s_per_call": 25.9,
+    "completion_tok_per_s": 112.6,
+    "cache_hit_rate": 0.895,
+    "max_completion_tokens_per_call": 39245,
+    "calls_over_8k_completion": 1,
+    "finish_length": 0,
+    "delivered": true,
+    "export_ok": true
+   },
+   "assembly_asm50_exhausted": {
+    "status": "budget_exhausted",
+    "llm_calls": 50,
+    "tool_counts": {
+     "read_doc": 40,
+     "run_python": 44,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 3034373,
+    "completion_tokens": 114068,
+    "cached_tokens": 2866754,
+    "credit": 213.24,
+    "elapsed_s": 3212.9,
+    "s_per_call": 64.3,
+    "completion_tok_per_s": 35.5,
+    "cache_hit_rate": 0.945,
+    "max_completion_tokens_per_call": 16991,
+    "calls_over_8k_completion": 5,
+    "finish_length": 0
+   }
+  },
+  {
+   "case_id": "single_cylinder_engine",
+   "parts": {
+    "n": 10,
+    "accepted": 10,
+    "llm_calls": 49,
+    "prompt_tokens": 688720,
+    "completion_tokens": 18906,
+    "cached_tokens": 543283,
+    "credit": 66.1,
+    "elapsed_s_sum": 491.5
+   },
+   "assembly": {
+    "status": "finished",
+    "llm_calls": 30,
+    "tool_counts": {
+     "read_doc": 24,
+     "run_python": 22,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 3541306,
+    "completion_tokens": 49265,
+    "cached_tokens": 3252288,
+    "credit": 186.34,
+    "elapsed_s": 863.5,
+    "s_per_call": 28.8,
+    "completion_tok_per_s": 57.1,
+    "cache_hit_rate": 0.918,
+    "max_completion_tokens_per_call": 7735,
+    "calls_over_8k_completion": 0,
+    "finish_length": 0,
+    "delivered": true,
+    "export_ok": true
+   },
+   "assembly_asm50_exhausted": {
+    "status": "budget_exhausted",
+    "llm_calls": 50,
+    "tool_counts": {
+     "read_doc": 49,
+     "run_python": 41,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 3682886,
+    "completion_tokens": 92480,
+    "cached_tokens": 3582379,
+    "credit": 189.2,
+    "elapsed_s": 2123.0,
+    "s_per_call": 42.5,
+    "completion_tok_per_s": 43.6,
+    "cache_hit_rate": 0.973,
+    "max_completion_tokens_per_call": 14113,
+    "calls_over_8k_completion": 4,
+    "finish_length": 0
+   }
+  },
+  {
+   "case_id": "drill_planetary_gearbox",
+   "parts": {
+    "n": 8,
+    "accepted": 8,
+    "llm_calls": 60,
+    "prompt_tokens": 1170380,
+    "completion_tokens": 19443,
+    "cached_tokens": 1009825,
+    "credit": 79.74,
+    "elapsed_s_sum": 588.0
+   },
+   "assembly": {
+    "status": "finished",
+    "llm_calls": 88,
+    "tool_counts": {
+     "read_doc": 54,
+     "run_python": 85,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 10680783,
+    "completion_tokens": 207644,
+    "cached_tokens": 10250757,
+    "credit": 519.92,
+    "elapsed_s": 5520.4,
+    "s_per_call": 62.7,
+    "completion_tok_per_s": 37.6,
+    "cache_hit_rate": 0.96,
+    "max_completion_tokens_per_call": 21493,
+    "calls_over_8k_completion": 7,
+    "finish_length": 0,
+    "delivered": true,
+    "export_ok": true
+   },
+   "assembly_asm50_exhausted": {
+    "status": "budget_exhausted",
+    "llm_calls": 50,
+    "tool_counts": {
+     "read_doc": 62,
+     "run_python": 35,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 3396543,
+    "completion_tokens": 105880,
+    "cached_tokens": 3287089,
+    "credit": 198.9,
+    "elapsed_s": 1802.5,
+    "s_per_call": 36.0,
+    "completion_tok_per_s": 58.7,
+    "cache_hit_rate": 0.968,
+    "max_completion_tokens_per_call": 14337,
+    "calls_over_8k_completion": 5,
+    "finish_length": 0
+   }
+  },
+  {
+   "case_id": "film_projector_drive",
+   "parts": {
+    "n": 8,
+    "accepted": 8,
+    "llm_calls": 48,
+    "prompt_tokens": 685094,
+    "completion_tokens": 13147,
+    "cached_tokens": 513091,
+    "credit": 66.33,
+    "elapsed_s_sum": 380.0
+   },
+   "assembly": {
+    "status": "finished",
+    "llm_calls": 93,
+    "tool_counts": {
+     "read_doc": 67,
+     "run_python": 74,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 11107717,
+    "completion_tokens": 229680,
+    "cached_tokens": 10333749,
+    "credit": 629.6,
+    "elapsed_s": 5423.7,
+    "s_per_call": 58.3,
+    "completion_tok_per_s": 42.3,
+    "cache_hit_rate": 0.93,
+    "max_completion_tokens_per_call": 25092,
+    "calls_over_8k_completion": 10,
+    "finish_length": 0,
+    "delivered": true,
+    "export_ok": true
+   },
+   "assembly_asm50_exhausted": {
+    "status": "budget_exhausted",
+    "llm_calls": 50,
+    "tool_counts": {
+     "read_doc": 45,
+     "run_python": 44,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 3793339,
+    "completion_tokens": 145753,
+    "cached_tokens": 3702174,
+    "credit": 242.5,
+    "elapsed_s": 1919.0,
+    "s_per_call": 38.4,
+    "completion_tok_per_s": 76.0,
+    "cache_hit_rate": 0.976,
+    "max_completion_tokens_per_call": 14114,
+    "calls_over_8k_completion": 6,
+    "finish_length": 0
+   }
+  },
+  {
+   "case_id": "pumpjack_drive",
+   "parts": {
+    "n": 10,
+    "accepted": 10,
+    "llm_calls": 53,
+    "prompt_tokens": 777725,
+    "completion_tokens": 20619,
+    "cached_tokens": 589595,
+    "credit": 79.39,
+    "elapsed_s_sum": 379.0
+   },
+   "assembly": {
+    "status": "finished",
+    "llm_calls": 75,
+    "tool_counts": {
+     "read_doc": 22,
+     "run_python": 60,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 4
+    },
+    "prompt_tokens": 18840680,
+    "completion_tokens": 180447,
+    "cached_tokens": 16885975,
+    "credit": 1006.4,
+    "elapsed_s": 2612.7,
+    "s_per_call": 34.8,
+    "completion_tok_per_s": 69.1,
+    "cache_hit_rate": 0.896,
+    "max_completion_tokens_per_call": 12383,
+    "calls_over_8k_completion": 1,
+    "finish_length": 0,
+    "delivered": true,
+    "export_ok": true
+   },
+   "assembly_asm50_exhausted": {
+    "status": "budget_exhausted",
+    "llm_calls": 50,
+    "tool_counts": {
+     "read_doc": 36,
+     "run_python": 43,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 3371910,
+    "completion_tokens": 109873,
+    "cached_tokens": 3278493,
+    "credit": 198.7,
+    "elapsed_s": 1840.3,
+    "s_per_call": 36.8,
+    "completion_tok_per_s": 59.7,
+    "cache_hit_rate": 0.972,
+    "max_completion_tokens_per_call": 15498,
+    "calls_over_8k_completion": 3,
+    "finish_length": 0
+   }
+  },
+  {
+   "case_id": "clock_motion_works",
+   "parts": {
+    "n": 10,
+    "accepted": 10,
+    "llm_calls": 54,
+    "prompt_tokens": 747456,
+    "completion_tokens": 16224,
+    "cached_tokens": 617944,
+    "credit": 60.9,
+    "elapsed_s_sum": 358.9
+   },
+   "assembly": {
+    "status": "finished",
+    "llm_calls": 80,
+    "tool_counts": {
+     "read_doc": 54,
+     "run_python": 68,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 8785809,
+    "completion_tokens": 324409,
+    "cached_tokens": 8151123,
+    "credit": 645.93,
+    "elapsed_s": 5345.3,
+    "s_per_call": 66.8,
+    "completion_tok_per_s": 60.7,
+    "cache_hit_rate": 0.928,
+    "max_completion_tokens_per_call": 23365,
+    "calls_over_8k_completion": 16,
+    "finish_length": 0,
+    "delivered": true,
+    "export_ok": true
+   },
+   "assembly_asm50_exhausted": {
+    "status": "budget_exhausted",
+    "llm_calls": 50,
+    "tool_counts": {
+     "read_doc": 67,
+     "run_python": 36,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 3488467,
+    "completion_tokens": 156119,
+    "cached_tokens": 3388814,
+    "credit": 248.69,
+    "elapsed_s": 3544.4,
+    "s_per_call": 70.9,
+    "completion_tok_per_s": 44.0,
+    "cache_hit_rate": 0.971,
+    "max_completion_tokens_per_call": 15773,
+    "calls_over_8k_completion": 10,
+    "finish_length": 0
+   }
+  },
+  {
+   "case_id": "hand_winch",
+   "parts": {
+    "n": 8,
+    "accepted": 8,
+    "llm_calls": 39,
+    "prompt_tokens": 626763,
+    "completion_tokens": 10331,
+    "cached_tokens": 506182,
+    "credit": 50.58,
+    "elapsed_s_sum": 219.9
+   },
+   "assembly": {
+    "status": "finished",
+    "llm_calls": 80,
+    "tool_counts": {
+     "read_doc": 35,
+     "run_python": 75,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 10597767,
+    "completion_tokens": 203084,
+    "cached_tokens": 10043858,
+    "credit": 542.32,
+    "elapsed_s": 4138.5,
+    "s_per_call": 51.7,
+    "completion_tok_per_s": 49.1,
+    "cache_hit_rate": 0.948,
+    "max_completion_tokens_per_call": 15807,
+    "calls_over_8k_completion": 5,
+    "finish_length": 0,
+    "delivered": true,
+    "export_ok": true
+   },
+   "assembly_asm50_exhausted": {
+    "status": "budget_exhausted",
+    "llm_calls": 50,
+    "tool_counts": {
+     "read_doc": 44,
+     "run_python": 42,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 2695785,
+    "completion_tokens": 188193,
+    "cached_tokens": 2455938,
+    "credit": 297.16,
+    "elapsed_s": 4694.6,
+    "s_per_call": 93.9,
+    "completion_tok_per_s": 40.1,
+    "cache_hit_rate": 0.911,
+    "max_completion_tokens_per_call": 15973,
+    "calls_over_8k_completion": 12,
+    "finish_length": 0
+   }
+  },
+  {
+   "case_id": "turntable_ring_drive",
+   "parts": {
+    "n": 6,
+    "accepted": 6,
+    "llm_calls": 30,
+    "prompt_tokens": 389542,
+    "completion_tokens": 9021,
+    "cached_tokens": 289167,
+    "credit": 39.85,
+    "elapsed_s_sum": 201.7
+   },
+   "assembly": {
+    "status": "finished",
+    "llm_calls": 39,
+    "tool_counts": {
+     "read_doc": 25,
+     "run_python": 26,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 5015979,
+    "completion_tokens": 46443,
+    "cached_tokens": 4763038,
+    "credit": 204.53,
+    "elapsed_s": 924.6,
+    "s_per_call": 23.7,
+    "completion_tok_per_s": 50.2,
+    "cache_hit_rate": 0.95,
+    "max_completion_tokens_per_call": 4267,
+    "calls_over_8k_completion": 0,
+    "finish_length": 0,
+    "delivered": true,
+    "export_ok": true
+   },
+   "assembly_asm50_exhausted": {
+    "status": "budget_exhausted",
+    "llm_calls": 50,
+    "tool_counts": {
+     "read_doc": 48,
+     "run_python": 39,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 3335520,
+    "completion_tokens": 128294,
+    "cached_tokens": 3027750,
+    "credit": 265.77,
+    "elapsed_s": 4313.7,
+    "s_per_call": 86.3,
+    "completion_tok_per_s": 29.7,
+    "cache_hit_rate": 0.908,
+    "max_completion_tokens_per_call": 15556,
+    "calls_over_8k_completion": 7,
+    "finish_length": 0
+   }
+  },
+  {
+   "case_id": "star_gear_reducer",
+   "parts": {
+    "n": 8,
+    "accepted": 8,
+    "llm_calls": 47,
+    "prompt_tokens": 808340,
+    "completion_tokens": 15634,
+    "cached_tokens": 614257,
+    "credit": 76.4,
+    "elapsed_s_sum": 388.6
+   },
+   "assembly": {
+    "status": "finished",
+    "llm_calls": 27,
+    "tool_counts": {
+     "read_doc": 23,
+     "run_python": 18,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 3473345,
+    "completion_tokens": 48140,
+    "cached_tokens": 3237876,
+    "credit": 171.46,
+    "elapsed_s": 794.2,
+    "s_per_call": 29.4,
+    "completion_tok_per_s": 60.6,
+    "cache_hit_rate": 0.932,
+    "max_completion_tokens_per_call": 6206,
+    "calls_over_8k_completion": 0,
+    "finish_length": 0,
+    "delivered": true,
+    "export_ok": true
+   },
+   "assembly_asm50_exhausted": {
+    "status": "budget_exhausted",
+    "llm_calls": 50,
+    "tool_counts": {
+     "read_doc": 50,
+     "run_python": 46,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 2605248,
+    "completion_tokens": 88043,
+    "cached_tokens": 2526725,
+    "credit": 158.13,
+    "elapsed_s": 1390.6,
+    "s_per_call": 27.8,
+    "completion_tok_per_s": 63.3,
+    "cache_hit_rate": 0.97,
+    "max_completion_tokens_per_call": 13404,
+    "calls_over_8k_completion": 1,
+    "finish_length": 0
+   }
+  },
+  {
+   "case_id": "lead_screw_stage",
+   "parts": {
+    "n": 6,
+    "accepted": 6,
+    "llm_calls": 28,
+    "prompt_tokens": 353267,
+    "completion_tokens": 7883,
+    "cached_tokens": 288309,
+    "credit": 29.88,
+    "elapsed_s_sum": 380.0
+   },
+   "assembly": {
+    "status": "finished",
+    "llm_calls": 31,
+    "tool_counts": {
+     "read_doc": 35,
+     "run_python": 25,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 1857454,
+    "completion_tokens": 63277,
+    "cached_tokens": 1502697,
+    "credit": 181.88,
+    "elapsed_s": 883.9,
+    "s_per_call": 28.5,
+    "completion_tok_per_s": 71.6,
+    "cache_hit_rate": 0.809,
+    "max_completion_tokens_per_call": 18145,
+    "calls_over_8k_completion": 2,
+    "finish_length": 0,
+    "delivered": true,
+    "export_ok": true
+   },
+   "assembly_asm50_exhausted": {
+    "status": "budget_exhausted",
+    "llm_calls": 50,
+    "tool_counts": {
+     "read_doc": 32,
+     "run_python": 42,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 2142541,
+    "completion_tokens": 130546,
+    "cached_tokens": 2075569,
+    "credit": 188.76,
+    "elapsed_s": 2073.2,
+    "s_per_call": 41.5,
+    "completion_tok_per_s": 63.0,
+    "cache_hit_rate": 0.969,
+    "max_completion_tokens_per_call": 16171,
+    "calls_over_8k_completion": 6,
+    "finish_length": 0
+   }
+  },
+  {
+   "case_id": "gear_driven_slider_crank",
+   "parts": {
+    "n": 9,
+    "accepted": 9,
+    "llm_calls": 47,
+    "prompt_tokens": 649348,
+    "completion_tokens": 14633,
+    "cached_tokens": 498603,
+    "credit": 62.29,
+    "elapsed_s_sum": 296.7
+   },
+   "assembly": {
+    "status": "budget_exhausted",
+    "llm_calls": 100,
+    "tool_counts": {
+     "read_doc": 53,
+     "run_python": 87,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 1
+    },
+    "prompt_tokens": 19583864,
+    "completion_tokens": 311691,
+    "cached_tokens": 18122421,
+    "credit": 1039.09,
+    "elapsed_s": 6168.1,
+    "s_per_call": 61.7,
+    "completion_tok_per_s": 50.5,
+    "cache_hit_rate": 0.925,
+    "max_completion_tokens_per_call": 23011,
+    "calls_over_8k_completion": 8,
+    "finish_length": 0,
+    "delivered": true,
+    "export_ok": false
+   },
+   "assembly_asm50_exhausted": {
+    "status": "budget_exhausted",
+    "llm_calls": 50,
+    "tool_counts": {
+     "read_doc": 39,
+     "run_python": 41,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 1
+    },
+    "prompt_tokens": 2686089,
+    "completion_tokens": 98411,
+    "cached_tokens": 2473508,
+    "credit": 200.96,
+    "elapsed_s": 4112.3,
+    "s_per_call": 82.2,
+    "completion_tok_per_s": 23.9,
+    "cache_hit_rate": 0.921,
+    "max_completion_tokens_per_call": 13442,
+    "calls_over_8k_completion": 4,
+    "finish_length": 0
+   }
+  },
+  {
+   "case_id": "epicyclic_carrier_output",
+   "parts": {
+    "n": 8,
+    "accepted": 8,
+    "llm_calls": 46,
+    "prompt_tokens": 907453,
+    "completion_tokens": 14406,
+    "cached_tokens": 746951,
+    "credit": 69.41,
+    "elapsed_s_sum": 358.3
+   },
+   "assembly": {
+    "status": "finished",
+    "llm_calls": 55,
+    "tool_counts": {
+     "read_doc": 53,
+     "run_python": 39,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 5826354,
+    "completion_tokens": 181695,
+    "cached_tokens": 5223446,
+    "credit": 436.71,
+    "elapsed_s": 5467.6,
+    "s_per_call": 99.4,
+    "completion_tok_per_s": 33.2,
+    "cache_hit_rate": 0.897,
+    "max_completion_tokens_per_call": 14836,
+    "calls_over_8k_completion": 6,
+    "finish_length": 0,
+    "delivered": true,
+    "export_ok": true
+   },
+   "assembly_asm50_exhausted": {
+    "status": "budget_exhausted",
+    "llm_calls": 50,
+    "tool_counts": {
+     "read_doc": 30,
+     "run_python": 49,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 3508010,
+    "completion_tokens": 150453,
+    "cached_tokens": 3415063,
+    "credit": 241.89,
+    "elapsed_s": 5324.6,
+    "s_per_call": 106.5,
+    "completion_tok_per_s": 28.3,
+    "cache_hit_rate": 0.974,
+    "max_completion_tokens_per_call": 16119,
+    "calls_over_8k_completion": 8,
+    "finish_length": 0
+   }
+  },
+  {
+   "case_id": "scara_arm",
+   "parts": {
+    "n": 6,
+    "accepted": 6,
+    "llm_calls": 30,
+    "prompt_tokens": 470134,
+    "completion_tokens": 10884,
+    "cached_tokens": 370914,
+    "credit": 43.1,
+    "elapsed_s_sum": 191.7
+   },
+   "assembly": {
+    "status": "finished",
+    "llm_calls": 11,
+    "tool_counts": {
+     "read_doc": 14,
+     "run_python": 6,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 692356,
+    "completion_tokens": 16489,
+    "cached_tokens": 605745,
+    "credit": 50.19,
+    "elapsed_s": 254.8,
+    "s_per_call": 23.2,
+    "completion_tok_per_s": 64.7,
+    "cache_hit_rate": 0.875,
+    "max_completion_tokens_per_call": 3749,
+    "calls_over_8k_completion": 0,
+    "finish_length": 0,
+    "delivered": true,
+    "export_ok": true
+   },
+   "assembly_asm50_exhausted": {
+    "status": "budget_exhausted",
+    "llm_calls": 50,
+    "tool_counts": {
+     "read_doc": 32,
+     "run_python": 44,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 2479827,
+    "completion_tokens": 158638,
+    "cached_tokens": 2419636,
+    "credit": 222.02,
+    "elapsed_s": 7056.7,
+    "s_per_call": 141.1,
+    "completion_tok_per_s": 22.5,
+    "cache_hit_rate": 0.976,
+    "max_completion_tokens_per_call": 16118,
+    "calls_over_8k_completion": 8,
+    "finish_length": 0
+   }
+  },
+  {
+   "case_id": "pantograph",
+   "parts": {
+    "n": 5,
+    "accepted": 5,
+    "llm_calls": 23,
+    "prompt_tokens": 384565,
+    "completion_tokens": 9523,
+    "cached_tokens": 285222,
+    "credit": 40.02,
+    "elapsed_s_sum": 159.2
+   },
+   "assembly": {
+    "status": "finished",
+    "llm_calls": 13,
+    "tool_counts": {
+     "read_doc": 12,
+     "run_python": 8,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 714168,
+    "completion_tokens": 16297,
+    "cached_tokens": 610664,
+    "credit": 54.29,
+    "elapsed_s": 257.9,
+    "s_per_call": 19.8,
+    "completion_tok_per_s": 63.2,
+    "cache_hit_rate": 0.855,
+    "max_completion_tokens_per_call": 3717,
+    "calls_over_8k_completion": 0,
+    "finish_length": 0,
+    "delivered": true,
+    "export_ok": true
+   },
+   "assembly_asm50_exhausted": {
+    "status": "budget_exhausted",
+    "llm_calls": 50,
+    "tool_counts": {
+     "read_doc": 44,
+     "run_python": 46,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 3229032,
+    "completion_tokens": 167244,
+    "cached_tokens": 3078135,
+    "credit": 266.46,
+    "elapsed_s": 4860.2,
+    "s_per_call": 97.2,
+    "completion_tok_per_s": 34.4,
+    "cache_hit_rate": 0.953,
+    "max_completion_tokens_per_call": 18199,
+    "calls_over_8k_completion": 6,
+    "finish_length": 0
+   }
+  },
+  {
+   "case_id": "toggle_clamp",
+   "parts": {
+    "n": 7,
+    "accepted": 7,
+    "llm_calls": 31,
+    "prompt_tokens": 496243,
+    "completion_tokens": 13339,
+    "cached_tokens": 406997,
+    "credit": 43.75,
+    "elapsed_s_sum": 224.7
+   },
+   "assembly": {
+    "status": "finished",
+    "llm_calls": 30,
+    "tool_counts": {
+     "read_doc": 20,
+     "run_python": 23,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 3482750,
+    "completion_tokens": 48369,
+    "cached_tokens": 3235520,
+    "credit": 174.63,
+    "elapsed_s": 811.2,
+    "s_per_call": 27.0,
+    "completion_tok_per_s": 59.6,
+    "cache_hit_rate": 0.929,
+    "max_completion_tokens_per_call": 5447,
+    "calls_over_8k_completion": 0,
+    "finish_length": 0,
+    "delivered": true,
+    "export_ok": true
+   },
+   "assembly_asm50_exhausted": {
+    "status": "budget_exhausted",
+    "llm_calls": 50,
+    "tool_counts": {
+     "read_doc": 44,
+     "run_python": 40,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 1
+    },
+    "prompt_tokens": 2520687,
+    "completion_tokens": 202509,
+    "cached_tokens": 2400928,
+    "credit": 280.35,
+    "elapsed_s": 7382.6,
+    "s_per_call": 147.7,
+    "completion_tok_per_s": 27.4,
+    "cache_hit_rate": 0.952,
+    "max_completion_tokens_per_call": 22716,
+    "calls_over_8k_completion": 11,
+    "finish_length": 0
+   }
+  },
+  {
+   "case_id": "parallel_gripper",
+   "parts": {
+    "n": 5,
+    "accepted": 5,
+    "llm_calls": 23,
+    "prompt_tokens": 410602,
+    "completion_tokens": 8433,
+    "cached_tokens": 302636,
+    "credit": 41.43,
+    "elapsed_s_sum": 144.6
+   },
+   "assembly": {
+    "status": "finished",
+    "llm_calls": 23,
+    "tool_counts": {
+     "read_doc": 15,
+     "run_python": 15,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 2577909,
+    "completion_tokens": 52134,
+    "cached_tokens": 2338175,
+    "credit": 158.56,
+    "elapsed_s": 695.8,
+    "s_per_call": 30.3,
+    "completion_tok_per_s": 74.9,
+    "cache_hit_rate": 0.907,
+    "max_completion_tokens_per_call": 7004,
+    "calls_over_8k_completion": 0,
+    "finish_length": 0,
+    "delivered": true,
+    "export_ok": true
+   },
+   "assembly_asm50_exhausted": {
+    "status": "budget_exhausted",
+    "llm_calls": 50,
+    "tool_counts": {
+     "read_doc": 52,
+     "run_python": 42,
+     "finish": 0,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "prompt_tokens": 3587808,
+    "completion_tokens": 299659,
+    "cached_tokens": 3483630,
+    "credit": 395.29,
+    "elapsed_s": 6234.3,
+    "s_per_call": 124.7,
+    "completion_tok_per_s": 48.1,
+    "cache_hit_rate": 0.971,
+    "max_completion_tokens_per_call": 18405,
+    "calls_over_8k_completion": 17,
+    "finish_length": 0
+   }
+  }
+ ]
+}

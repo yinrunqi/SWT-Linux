@@ -243,20 +243,26 @@ def main(work, out):
     nested = [d for d, v in defs.items() if getattr(v, "definition_kind", "") == "assembly"]
     if nested:
         problems.append(f"不支持嵌套子装配：{nested}")
+    by_hash = {item["geometry_hash"]: pid for pid, item in manifest["parts"].items()}
     geometry = {}
     for did, d in defs.items():
         ref = (manifest["parts"].get(did) or {}).get("geometry_hash")
-        if ref is None:
-            problems.append(f"零件定义 {did} 不是评测提供的零件 id")
-        elif d.interface_hashes.geometry != ref:
+        if ref is not None:
+            source = did if d.interface_hashes.geometry == ref else None
+        else:
+            source = by_hash.get(d.interface_hashes.geometry)
+        if ref is not None and d.interface_hashes.geometry != ref:
             problems.append(f"零件 {did} 的几何与提供的零件不一致（不得修改零件几何）")
-        geometry[did] = {"matches_provided": ref is not None and d.interface_hashes.geometry == ref}
+        elif ref is None and source is None:
+            problems.append(f"零件定义 {did} 不是评测提供的零件 id，几何也与任何提供的零件不一致")
+        geometry[did] = {"matches_provided": source is not None, "source_part_id": source}
     snap = rd.solved_snapshot or {}
     solved = {p["instance_id"]: p["placement"] for p in snap.get("component_placements") or []}
     components = []
     for inst in rd.instances:
         placement = solved.get(inst.instance_id) or inst.placement
         components.append({"role": inst.instance_id, "part_id": inst.definition_id,
+                           "source_part_id": (geometry.get(inst.definition_id) or {}).get("source_part_id"),
                            "placement": frame(placement), "solved": inst.instance_id in solved})
     connectors = {}
     for c in pkg.occurrence_graph.manifest.get("connectors") or []:
@@ -284,7 +290,10 @@ def main(work, out):
     extra = sorted(have - roles)
     for c in components:
         want = manifest["roles"].get(c["role"])
-        if want is not None and want != c["part_id"]:
+        source = c["source_part_id"]
+        same = source is not None and manifest["parts"][source]["geometry_hash"] == manifest["parts"][want]["geometry_hash"] \
+            if want is not None else True
+        if not same:
             problems.append(f"角色 {c['role']} 应使用零件 {want}，实际是 {c['part_id']}")
     export = {
         "components": components,
@@ -360,7 +369,7 @@ def run_agent(client: OpenAI, args, *, system: str, user: str, work: Path, max_c
     try:
         while calls < max_calls:
             calls += 1
-            r = chat(client, args.model, messages, session, args.temperature)
+            r = chat(client, args.model, messages, session, args.temperature, args.reasoning_effort)
             raw_responses.append(r.model_dump() if hasattr(r, "model_dump") else json.loads(r.json()))
             _usage_add(usage, r.usage)
             msg = r.choices[0].message
@@ -393,7 +402,7 @@ def run_agent(client: OpenAI, args, *, system: str, user: str, work: Path, max_c
                 elif name == "run_python":
                     counts["run_python"] += 1
                     n_script += 1
-                    result = tool_run_python(str(a.get("code", "")), work, n_script, args.script_timeout)
+                    result = tool_run_python(str(a.get("code", "")), work, n_script, args.script_timeout, deliverable)
                 elif name == "finish":
                     counts["finish"] += 1
                     ok, result = finish_check()
@@ -410,7 +419,8 @@ def run_agent(client: OpenAI, args, *, system: str, user: str, work: Path, max_c
     except Exception as e:  # noqa: BLE001
         status, error = "error", f"{type(e).__name__}: {e}"
     record = {"status": status, "error": error, "llm_calls": calls, "tool_counts": counts,
-              "token_usage": usage, "elapsed_s": round(time.time() - t0, 1)}
+              "token_usage": usage, "elapsed_s": round(time.time() - t0, 1),
+              "max_calls": max_calls, "reasoning_effort": args.reasoning_effort}
     _write_json(work / "transcript.json", {**record, "messages": messages})
     _write_json(work / "llm_responses.json", raw_responses)
     return record
@@ -517,8 +527,10 @@ def run_case(client, args, name: str, repeat: int, out_root: Path) -> dict:
     if asm_path.exists() and not args.rerun:
         assembly = json.loads(asm_path.read_text(encoding="utf-8"))
     else:
-        work, missing = prepare_assembly(case, parts, out)
         export = out / "assembly_export.json"
+        export.unlink(missing_ok=True)
+        shutil.rmtree(out / "sw", ignore_errors=True)
+        work, missing = prepare_assembly(case, parts, out)
         record = run_agent(
             client, args, system=asm_system_prompt(), user=assembly_user_prompt(case, work, missing), work=work,
             max_calls=args.max_asm_calls, deliverable="assembly.scadpkg",
@@ -528,6 +540,7 @@ def run_case(client, args, name: str, repeat: int, out_root: Path) -> dict:
         assembly = {**record, "delivered": (work / "assembly.scadpkg").exists(), "export_ok": ok,
                     "export_detail": detail, "missing_part_roles": sorted(missing),
                     "export": "assembly_export.json" if export.exists() else None,
+                    "export_sha256": hashlib.sha256(export.read_bytes()).hexdigest() if export.exists() else None,
                     "trace": "assembly/transcript.json"}
         _write_json(asm_path, assembly)
         log(f"  asm  {case['case_id']:<28} {record['status']:<16} calls={record['llm_calls']:<3} export_ok={ok}")
@@ -538,6 +551,28 @@ def run_case(client, args, name: str, repeat: int, out_root: Path) -> dict:
     }
     _write_json(run_path, result)
     return result
+
+
+def reextract(out_root: Path, names: list[str]) -> None:
+    """提取规则改动后，从已保存的 assembly.scadpkg 重新生成 assembly_export.json 并更新记录，不调 LLM。"""
+    case_ids = {load_case(n)["case_id"] for n in names}
+    for asm_path in sorted(out_root.glob("*/r*/assembly.json")):
+        out = asm_path.parent
+        if out.parent.name not in case_ids or not (out / "assembly" / "assembly.scadpkg").is_file():
+            continue
+        export = out / "assembly_export.json"
+        ok, detail = extract(out / "assembly", export)
+        assembly = json.loads(asm_path.read_text(encoding="utf-8"))
+        assembly.update(export_ok=ok, export_detail=detail,
+                        export="assembly_export.json" if export.exists() else None,
+                        export_sha256=hashlib.sha256(export.read_bytes()).hexdigest() if export.exists() else None)
+        _write_json(asm_path, assembly)
+        run_path = out / "run.json"
+        if run_path.exists():
+            run = json.loads(run_path.read_text(encoding="utf-8"))
+            run["assembly"] = assembly
+            _write_json(run_path, run)
+        log(f"  reextract {out.parent.name:<28} export_ok={ok}")
 
 
 def main() -> None:
@@ -551,8 +586,11 @@ def main() -> None:
     ap.add_argument("--max-asm-calls", type=int, default=50)
     ap.add_argument("--script-timeout", type=float, default=300)
     ap.add_argument("--temperature", type=float, default=0.0, help="模型不支持时自动去掉")
+    ap.add_argument("--reasoning-effort", choices=["low", "medium", "high"], default=None,
+                    help="不传时用上游默认（实测与 high 相当）")
     ap.add_argument("--output", required=True, help="汇总 JSON；产物在 eval/artifacts/<输出文件名>/")
     ap.add_argument("--rerun", action="store_true", help="忽略已有记录重新跑")
+    ap.add_argument("--reextract", action="store_true", help="只从已保存的装配包重新提取，不调 LLM")
     args = ap.parse_args()
 
     all_names = case_names()
@@ -570,6 +608,9 @@ def main() -> None:
     output = Path(args.output)
     out_root = LLM_ROOT / "eval" / "artifacts" / output.stem
     out_root.mkdir(parents=True, exist_ok=True)
+    if args.reextract:
+        reextract(out_root, names)
+        return
     client = OpenAI(base_url=os.environ.get("OPENAI_BASE_URL", "http://127.0.0.1:15721/tencent/v1"),
                     api_key=os.environ["OPENAI_API_KEY"], timeout=900, max_retries=0)
     jobs = [(n, k) for n in names for k in range(1, args.repeats + 1)]
@@ -583,11 +624,18 @@ def main() -> None:
             log(f"  !! {job[0]} r{job[1]} 失败：{type(exc).__name__}: {exc}")
             return {"case_name": job[0], "repeat": job[1], "error": f"{type(exc).__name__}: {exc}"}
 
+    def write_summary():
+        # 只补跑部分测例时，汇总也要包含产物目录里其他已完成的测例
+        runs = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(out_root.glob("*/r*/run.json"))]
+        have = {(r["case_name"], r["repeat"]) for r in runs}
+        runs += [r for r in rows if "error" in r and (r["case_name"], r["repeat"]) not in have]
+        _write_json(output, {"model": args.model, "artifacts": str(out_root.relative_to(LLM_ROOT)), "runs": runs})
+
     with ThreadPoolExecutor(max_workers=args.case_workers) as pool:
         for row in pool.map(one, jobs):
             rows.append(row)
-            _write_json(output, {"model": args.model, "artifacts": str(out_root.relative_to(LLM_ROOT)), "runs": rows})
-    _write_json(output, {"model": args.model, "artifacts": str(out_root.relative_to(LLM_ROOT)), "runs": rows})
+            write_summary()
+    write_summary()
     log(f"完成 {len(rows)} 个测例运行")
 
 

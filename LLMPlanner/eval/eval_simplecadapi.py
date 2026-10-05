@@ -40,6 +40,10 @@ SKILL_ROOT = Path(simplecadapi.__file__).resolve().parent / "skill" / "resources
 DOC_LIMIT = 40000
 OUTPUT_LIMIT = 8000
 CALL_DEADLINE_S = 1200
+SANDBOX_RO = sorted({"/usr", "/bin", "/sbin", "/lib", "/lib32", "/lib64", "/libx32", "/etc",
+                     sys.prefix, sys.base_prefix})
+if shutil.which("bwrap") is None:
+    raise SystemExit("需要 bubblewrap（bwrap）隔离智能体脚本：sudo apt install bubblewrap")
 NOISE = re.compile(r"(\x1b\[[0-9;]*m)|^\s*(\*{2,}|Step File Name|\*\* WorkSession)", re.M)
 
 PREAMBLE = """你是一个 CAD 建模 agent，使用 SimpleCADAPI（Python 包 simplecadapi，已安装）为一道 text-to-CAD 评测题建模。
@@ -132,29 +136,48 @@ def _tail(text: str) -> str:
     return text if len(text) <= OUTPUT_LIMIT else "…（前略）\n" + text[-OUTPUT_LIMIT:]
 
 
-def tool_run_python(code: str, work: Path, n: int, timeout: float) -> str:
+def sandbox_argv(work: Path, argv: list[str]) -> list[str]:
+    """智能体脚本只能看到本题工作目录（可写）、Python 环境与系统库（只读），且断网。
+    否则它会全盘搜索，读到参考答案、rubric、评测代码和其他测例的产物。"""
+    work = work.resolve()
+    cmd = ["bwrap", "--die-with-parent", "--new-session", "--unshare-all",
+           "--proc", "/proc", "--dev", "/dev", "--tmpfs", "/tmp"]
+    for path in SANDBOX_RO:
+        if os.path.islink(path):
+            cmd += ["--symlink", os.readlink(path), path]
+        elif os.path.exists(path):
+            cmd += ["--ro-bind", path, path]
+    cmd += ["--bind", str(work), str(work), "--chdir", str(work), "--setenv", "HOME", "/tmp", "--"]
+    return cmd + argv
+
+
+def tool_run_python(code: str, work: Path, n: int, timeout: float, deliverable: str = "model.step") -> str:
     script = work / f"step_{n:02d}.py"
     script.write_text(code, encoding="utf-8")
-    env = dict(os.environ, SIMPLECAD_CACHE_MODE="off", SIMPLECAD_CACHE_DIR=str(work / ".simplecad_cache"),
-               PYTHONIOENCODING="utf-8", MPLBACKEND="Agg")
+    env = {"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8", "SIMPLECAD_CACHE_MODE": "off",
+           "SIMPLECAD_CACHE_DIR": str(work.resolve() / ".simplecad_cache"),
+           "PYTHONIOENCODING": "utf-8", "MPLBACKEND": "Agg"}
     try:
-        p = subprocess.run([sys.executable, "-X", "utf8", script.name], cwd=work, env=env,
+        p = subprocess.run(sandbox_argv(work, [sys.executable, "-X", "utf8", script.name]), cwd=work, env=env,
                            capture_output=True, text=True, timeout=timeout)
         out = f"exit_code={p.returncode}\n--- stdout ---\n{_tail(p.stdout)}\n--- stderr ---\n{_tail(p.stderr)}"
     except subprocess.TimeoutExpired:
         out = f"超时：脚本运行超过 {timeout:.0f}s 被终止"
-    step = work / "model.step"
+    step = work / deliverable
     if step.exists():
-        out += f"\n[model.step 存在，{step.stat().st_size} 字节，修改于 {time.strftime('%H:%M:%S', time.localtime(step.stat().st_mtime))}]"
+        out += f"\n[{deliverable} 存在，{step.stat().st_size} 字节，修改于 {time.strftime('%H:%M:%S', time.localtime(step.stat().st_mtime))}]"
     else:
-        out += "\n[model.step 尚不存在]"
+        out += f"\n[{deliverable} 尚不存在]"
     return out
 
 
-def chat(client: OpenAI, model: str, messages: list, session: str, temperature: float | None) -> object:
+def chat(client: OpenAI, model: str, messages: list, session: str, temperature: float | None,
+         reasoning_effort: str | None = None) -> object:
     kw = dict(model=model, messages=messages, tools=TOOLS, extra_headers={"X-Session-Id": session})
     if temperature is not None:
         kw["temperature"] = temperature
+    if reasoning_effort:
+        kw["reasoning_effort"] = reasoning_effort
     for attempt in range(6):
         # 网关会发保活字节，httpx 的读超时因此不会触发，只能在外面加硬截止时间
         pool = ThreadPoolExecutor(max_workers=1)
