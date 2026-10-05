@@ -239,27 +239,32 @@ def generate_part(
     max_llm_calls: int,
     reasoning_effort: str | None = None,
     resume: bool = False,
+    view_tool: bool = True,
 ) -> dict:
     from planner.workflow.agent import WorkflowAgent
-    from planner.workflow.tools import WorkflowSession
+    from planner.workflow.tools_v2 import WorkflowSessionV2
 
     dest.parent.mkdir(parents=True, exist_ok=True)
     result_path, checkpoint = dest.with_suffix(".result.json"), dest.with_suffix(".checkpoint.json")
+    part_workflow = {"version": "L1_v2", "view_tool": bool(view_tool)}
     if resume and result_path.is_file():
         previous = json.loads(result_path.read_text(encoding="utf-8"))
-        if previous.get("status") not in RERUN_STATUSES and Path(str(previous["artifacts"].get("sldprt", ""))).is_file():
+        if previous.get("part_workflow") != part_workflow:
+            # 旧结果来自 L1 或另一种截图设置，checkpoint 也对不上，必须从头生成
+            resume = False
+        elif previous.get("status") not in RERUN_STATUSES and Path(str(previous["artifacts"].get("sldprt", ""))).is_file():
             previous["reused"] = True
             return previous
     if not resume:
         checkpoint.unlink(missing_ok=True)
     _close(sw)
     extra = spec.get("extra_tools") or []
-    session = WorkflowSession(base_url=sw, extra_tools=extra)
+    session = WorkflowSessionV2(base_url=sw, extra_tools=extra)
     session.start_part()
     started = time.perf_counter()
     outcome = WorkflowAgent(
         _openai(), model, session, max_llm_calls=max_llm_calls, extra_tools=extra,
-        reasoning_effort=reasoning_effort, checkpoint_path=checkpoint,
+        reasoning_effort=reasoning_effort, checkpoint_path=checkpoint, view_tool=view_tool,
     ).run(spec["prompt"], resume=resume)
     trace = dest.with_suffix(".agent.json")
     _write_json(trace, outcome)
@@ -277,6 +282,7 @@ def generate_part(
     _close(sw)
     result = {
         "part_id": spec["id"],
+        "part_workflow": part_workflow,
         "status": outcome["status"],
         "accepted": bool(grade and grade.get("accepted")),
         "score": None if not grade else grade["score"],
@@ -440,6 +446,7 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
             result = generate_part(
                 spec, dest, sw=args.sw, model=args.model, max_llm_calls=args.max_part_calls,
                 reasoning_effort=args.reasoning_effort, resume=resume,
+                view_tool=getattr(args, "part_view_tool", True),
             )
             skipped = bool((result.get("grade") or {}).get("skipped"))
             print(
@@ -603,7 +610,8 @@ def main() -> None:
                         help="装配阶段出现 SolidWorks 崩溃 / 超时痕迹时，重启 SolidWorks 后重跑的次数")
     parser.add_argument("--asm-max-tokens", type=int, default=8000)
     parser.add_argument("--no-view-tool", action="store_true",
-                        help="v3：不提供 view_assembly 截图工具（骨干模型不支持图片输入时必须加）")
+                        help="不提供截图工具：v3 装配不带 view_assembly，gen/e2e 的零件阶段不带 view_model"
+                             "（骨干模型不支持图片输入时必须加）")
     parser.add_argument(
         "--reasoning-effort",
         choices=("none", "minimal", "low", "medium", "high", "xhigh"),
@@ -639,6 +647,8 @@ def main() -> None:
     args.reasoning_effort = default_reasoning_effort(args.model, args.reasoning_effort)
     # 只有 v3 装配工具集带截图工具；之前的结果没有这个字段，都是不带截图的
     args.view_tool = "v3" in workflows and not args.no_view_tool
+    args.part_view_tool = not args.no_view_tool
+    part_workflow = {"version": "L1_v2", "view_tool": args.part_view_tool}
     rows = []
     if args.resume and Path(args.output).is_file():
         previous = json.loads(Path(args.output).read_text(encoding="utf-8"))
@@ -648,7 +658,10 @@ def main() -> None:
                 parser.error(f"--resume：已有结果的 {key}={previous.get(key)!r} 与本次 {getattr(args, key)!r} 不一致")
         for row in previous.get("results") or []:
             asm = row.get("assembly") or {}
-            broken_parts = [p["part_id"] for p in row.get("parts") or [] if p.get("status") in RERUN_STATUSES]
+            broken_parts = [
+                p["part_id"] for p in row.get("parts") or []
+                if p.get("status") in RERUN_STATUSES or p.get("part_workflow") != part_workflow
+            ]
             if asm.get("infra_error") or asm.get("status") in RERUN_STATUSES or broken_parts:
                 print(f"[resume] 续跑 {row['case_id']} {row['condition']} r{row['repeat']} {row['workflow']}"
                       f"（{asm.get('infra_error') or asm.get('error') or '零件中断: ' + ','.join(broken_parts)}）",
@@ -682,6 +695,7 @@ def main() -> None:
             "prompt_lang": "zh",
             "asm_max_tokens": args.asm_max_tokens,
             "view_tool": args.view_tool,
+            "part_workflow": part_workflow,
             "max_asm_calls": args.max_asm_calls,
             "asm_calls_per_role": args.asm_calls_per_role,
             "extra_toolset": EXTRA_TOOLSET_VERSION,
