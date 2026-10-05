@@ -1,0 +1,21 @@
+case: pm_pinion
+prompt: "创建渐开线直齿轮，模数 2 mm，齿数 16，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。"
+tolerance: {length_mm: 0.25, angle_deg: 1.0, volume_rel: 0.08}
+entities:
+  bore: {cylinder: {d: 10, side: inner}, count: 1}
+  tframe: {axis_frame: {axis: bore}}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: bore
+    hard: true
+    check:
+      - exists: bore
+      - through: {holes: bore}
+  - id: teeth
+    hard: true
+    check:
+      - angular_openings: {frame: tframe, t_list: [4], scan_r: [14, 17.9, 0.25], count: 16, identical: true}
+      - extent_along: {axis: bore, of: all, value: 8}

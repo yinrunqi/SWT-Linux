@@ -1,0 +1,100 @@
+case_id: geared_five_bar
+title: 齿轮五杆绘图机
+# 两曲柄经 30/30 齿轮反向同步、相位差 90°，五杆闭链带笔；检查反向等速与笔尖包络。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: fb_frame
+  extra_tools: []
+  prompt: |
+    创建机架板：在 front_plane 上画矩形，X 从 -50 到 110 mm，Y 从 -50 到 130 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(60,0) 直径 10 mm。不要抽壳。
+- id: fb_shaft1
+  extra_tools: []
+  prompt: |
+    创建主动轴：直径 10 mm、长 28 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: fb_shaft2
+  extra_tools: []
+  prompt: |
+    创建从动轴：直径 10 mm、长 22 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: fb_flywheel
+  extra_tools: []
+  prompt: |
+    创建飞轮：外径 50 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。另开贯穿孔：(15,0) 直径 6 mm，(-15,0) 直径 6 mm。
+- id: fb_gear
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 30，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: fb_crank
+  extra_tools: []
+  prompt: |
+    创建曲柄：在 front_plane 上画两端圆头的长条，宽 16 mm，两端半圆的圆心分别在原点和 (20,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=20 处直径 6 mm。
+- id: fb_bar
+  extra_tools: []
+  prompt: |
+    创建连杆：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (70,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=70 处直径 6 mm。
+- id: fb_pin12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: fb_pin18
+  extra_tools: []
+  prompt: |
+    创建长铰销：直径 6 mm、长 18 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: fb_pen
+  extra_tools: []
+  prompt: |
+    创建笔：直径 6 mm、长 18 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+gold_roles:
+  frame: fb_frame
+  shaft1: fb_shaft1
+  flywheel: fb_flywheel
+  gear1: fb_gear
+  crank1: fb_crank
+  shaft2: fb_shaft2
+  gear2: fb_gear
+  crank2: fb_crank
+  pin_b1: fb_pin12
+  pin_b2: fb_pin18
+  bar1: fb_bar
+  bar2: fb_bar
+  pen: fb_pen
+assembly:
+  prompt: |
+    装配齿轮五杆绘图机：两根曲柄由一对等齿数齿轮反向同步，两根连杆在笔处铰接，笔尖画出闭合花瓣曲线。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]。两个轴孔 (0,0)、(60,0)，直径 10。
+    - shaft1 穿过 (0,0) 孔绕 Z 转动（z∈[-14,14]）；flywheel 的中心孔（z∈[-14,-8]）、30 齿 gear1（z∈[-8,0]）、crank1 的 10 mm 孔（z∈[8,14]）固定在其上。
+    - shaft2 穿过 (60,0) 孔绕 Z 转动（z∈[-8,14]）；30 齿 gear2（z∈[-8,0]）、crank2 的 10 mm 孔（z∈[8,14]）固定在其上。
+      gear1 与 gear2 外啮合（模数 2，中心距 60），两曲柄等速反向。crank1 指向 +Y 时，crank2 指向 +X（相位相差 90°）。
+    - pin_b1 固定在 crank1 的 6 mm 孔里（z∈[8,20]）；pin_b2 固定在 crank2 的 6 mm 孔里（z∈[8,26]）。
+    - bar1 的原点孔套在 pin_b1 上转动（z∈[14,20]）；bar2 的原点孔套在 pin_b2 上转动（z∈[20,26]）。
+    - pen 固定在 bar2 的另一孔里（z∈[14,32]），bar1 的另一孔也套在 pen 上。笔在两曲柄上方。
+    - 曲柄 20、连杆 70。shaft1 一整圈：笔尖 X 向行程约 70.3 mm、Y 向约 33.1 mm。各齿轮互不穿模，啮合齿相位要对上。
+    对 shaft1 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: shaft1
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - crank1
+  - crank2
+  - bar1
+  - bar2
+  - pen
+  ratios:
+  - role: crank2
+    ratio: 1
+    same_direction: false
+  strokes:
+  - role: pen
+    axis: x
+    mm: 70.27
+  - role: pen
+    axis: y
+    mm: 33.13
+  max_interference: 0

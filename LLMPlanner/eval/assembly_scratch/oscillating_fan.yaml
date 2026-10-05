@@ -1,0 +1,111 @@
+case_id: oscillating_fan
+title: 摇头风扇
+# 两级 12/36 减速（i=9）+ 曲柄摇杆摇头；检查扇头摆角与中间轴 3 倍转速。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: of_frame
+  extra_tools: []
+  prompt: |
+    创建底座板：在 front_plane 上画矩形，X 从 -90 到 150 mm，Y 从 -90 到 70 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(-48,0) 直径 10 mm，(-48,-48) 直径 10 mm，(80,0) 直径 10 mm。不要抽壳。
+- id: of_crank_shaft
+  extra_tools: []
+  prompt: |
+    创建曲柄轴：直径 10 mm、长 30 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: of_mid_shaft
+  extra_tools: []
+  prompt: |
+    创建中间轴：直径 10 mm、长 24 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: of_motor_shaft
+  extra_tools: []
+  prompt: |
+    创建电机轴：直径 10 mm、长 16 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: of_gear
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 36，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: of_pinion
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 12，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: of_crank
+  extra_tools: []
+  prompt: |
+    创建曲柄：在 front_plane 上画两端圆头的长条，宽 20 mm，两端半圆的圆心分别在原点和 (20,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=20 处直径 8 mm。
+- id: of_pin8
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 8 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: of_coupler
+  extra_tools: []
+  prompt: |
+    创建连杆：在 front_plane 上画两端圆头的长条，宽 12 mm，两端半圆的圆心分别在原点和 (70,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 8 mm，X=70 处直径 8 mm。
+- id: of_rocker
+  extra_tools: []
+  prompt: |
+    创建摇杆：在 front_plane 上画两端圆头的长条，宽 16 mm，两端半圆的圆心分别在原点和 (40,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=40 处直径 8 mm。
+- id: of_pivot
+  extra_tools: []
+  prompt: |
+    创建摇头轴：直径 10 mm、长 32 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: of_head
+  extra_tools: []
+  prompt: |
+    创建扇罩：外径 120 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。另开贯穿孔：(40,0) 直径 8 mm，(20,34.64) 直径 8 mm，(-20,34.64) 直径 8 mm，(-40,0) 直径 8 mm，(-20,-34.64) 直径 8 mm，(20,-34.64) 直径 8 mm。
+gold_roles:
+  frame: of_frame
+  crank_shaft: of_crank_shaft
+  crank_gear: of_gear
+  crank: of_crank
+  crank_pin: of_pin8
+  mid_shaft: of_mid_shaft
+  mid_gear: of_gear
+  mid_pinion: of_pinion
+  motor_shaft: of_motor_shaft
+  motor_pinion: of_pinion
+  coupler: of_coupler
+  pivot: of_pivot
+  rocker: of_rocker
+  head: of_head
+  rocker_pin: of_pin8
+assembly:
+  prompt: |
+    装配摇头风扇的摇头机构：电机经两级 12/36 齿轮减速（总减速比 9）带曲柄，曲柄—连杆—摇杆让扇头往复摆动。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]。曲柄轴孔 (0,0)、中间轴孔 (-48,0)、电机轴孔 (-48,-48)、摇头轴孔 (80,0)，直径都是 10。
+    - motor_shaft 穿过电机轴孔绕 Z 转动（z∈[-8,8]）；12 齿 motor_pinion 固定在其上（z∈[-8,0]）。
+    - mid_shaft 穿过中间轴孔绕 Z 转动（z∈[-16,8]）；36 齿 mid_gear（z∈[-8,0]）与 12 齿 mid_pinion（z∈[-16,-8]）固定在其上；
+      motor_pinion 与 mid_gear 外啮合（模数 2，中心距 48）。
+    - crank_shaft 穿过曲柄轴孔绕 Z 转动（z∈[-16,14]）；36 齿 crank_gear（z∈[-16,-8]）固定在其上，与 mid_pinion 外啮合（中心距 48）；
+      crank 的 10 mm 孔固定在其上（z∈[8,14]）。crank_pin 固定在 crank 的 8 mm 孔里（z∈[8,20]）。
+    - coupler 的原点孔套在 crank_pin 上转动（z∈[14,20]）。pivot 固定在摇头轴孔里（z∈[0,32]）；
+      rocker 的 10 mm 孔套在 pivot 上转动（z∈[20,26]）；head 的中心孔也套在 pivot 上（z∈[26,32]），并与 rocker 固定。
+    - rocker_pin 固定在 rocker 的 8 mm 孔里（z∈[14,26]），coupler 的另一孔套在 rocker_pin 上。rocker_pin 在摇头轴上方一侧（左转支）。
+    - 曲柄 20、连杆 70、摇杆 40、机架 80。曲柄一整圈扇头摆角约 60.1°。各齿轮互不穿模，啮合齿相位要对上。
+    对 crank_shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: crank_shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - crank
+  - coupler
+  - rocker
+  - head
+  - mid_shaft
+  - motor_shaft
+  ratios:
+  - role: mid_shaft
+    ratio: 0.3333333333333333
+    same_direction: false
+  swings:
+  - role: head
+    deg: 60.14
+  max_interference: 0

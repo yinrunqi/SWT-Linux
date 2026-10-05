@@ -1,0 +1,26 @@
+# 装配级 rubric：角色名与 five_bar_robot.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: five_bar_robot
+ground: base
+mobility: 2
+bodies:
+  base: [base]
+  p1: [p1]
+  p2: [p2]
+  d1: [d1]
+  d2: [d2, p_pin, tool]
+flex:
+  a1_pin: [base, p1]
+  a2_pin: [base, p2]
+  e1_pin: [p1, d1]
+  e2_pin: [p2, d2]
+joints:
+- bodies: [p1, base]
+  type: revolute
+- bodies: [p2, base]
+  type: revolute
+- bodies: [d1, p1]
+  type: revolute
+- bodies: [d2, p2]
+  type: revolute
+- bodies: [d1, d2]
+  type: [revolute, cylindrical]

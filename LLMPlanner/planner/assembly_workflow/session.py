@@ -69,7 +69,7 @@ class AssemblySession:
     def __init__(
         self,
         base_url: str = "http://localhost:5100",
-        timeout: float = 180,
+        timeout: float = 900,
         *,
         workflow: str = "v1",
         allowed_tools: set[str] | None = None,
@@ -526,6 +526,8 @@ class AssemblySession:
             extra["ratioDenominator"] = float(args.get("ratio_denominator") or 1)
         if args.get("reverse") is not None:
             extra["reverse"] = bool(args["reverse"])
+        if args.get("flip") is not None:
+            extra["flip"] = bool(args["flip"])
         a, b = str(args["a"]), str(args["b"])
         if self.v2plus:
             kind = kind.replace("-", "_")
@@ -533,7 +535,17 @@ class AssemblySession:
             if kind == "lock":
                 a = a if ":" in a else f"{a}:component"
                 b = b if ":" in b else f"{b}:component"
-        result = self._mate(kind, a, b, **extra)
+        try:
+            result = self._mate(kind, a, b, **extra)
+        except WorkflowError as exc:
+            if kind == "distance" and "errStatus=5" in str(exc):
+                raise WorkflowError(exc.code, f"{_plain(exc)}。距离配合不分正负，SolidWorks 可能把 a 放到了 b 的另一侧；"
+                                              f"{'去掉' if extra.get('flip') else '加上'} flip=true 换到另一侧再试。") from None
+            raise
+        if kind == "distance" and abs(extra.get("distance") or 0) > 1e-9:
+            side = self._mate_side(result["name"])
+            if side is not None:
+                result["side_mm"] = round(side * 1000, 3)
         if self.v2plus:
             self._record_joint(f"mate:{kind}", a, b, [result])
         return result

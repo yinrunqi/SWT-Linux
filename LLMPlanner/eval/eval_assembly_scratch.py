@@ -43,6 +43,9 @@ CORE_CASES = list(CASE_FILES)
 # 扩展的 20 个测例由 bench_cases.py 生成；--cases bench 表示全部扩展测例
 from eval.assembly_scratch.bench_cases import CASES as BENCH_CASES  # noqa: E402
 CASE_FILES.update({name: c.case_id for name, c in BENCH_CASES.items()})
+# 第二批 23 个测例由 bench_cases2.py 生成；--cases bench2 表示这一批
+from eval.assembly_scratch.bench_cases2 import CASES2  # noqa: E402
+CASE_FILES.update({name: c.case_id for name, c in CASES2.items()})
 CASE_ALIASES = {case_id: name for name, case_id in CASE_FILES.items()}
 
 
@@ -144,6 +147,8 @@ def _openai():
 ASSEMBLY_RUBRIC_DIR = CASES_DIR / "assembly_rubrics"
 # 由参考装配体导出的关节轴线锚点与导程（derive_joint_anchors.py），按 joints 下标合并进 rubric
 JOINT_ANCHORS = ASSEMBLY_RUBRIC_DIR / "joint_anchors.json"
+# 还没有参考装配体的测例用 layout 解析出的锚点（bench_cases2.py write）
+JOINT_ANCHORS_ANALYTIC = ASSEMBLY_RUBRIC_DIR / "joint_anchors_analytic.json"
 
 
 def load_assembly_rubric(case_id: str) -> dict | None:
@@ -151,10 +156,12 @@ def load_assembly_rubric(case_id: str) -> dict | None:
     if not path.is_file():
         return None
     rubric = yaml.safe_load(path.read_text(encoding="utf-8"))
-    if JOINT_ANCHORS.is_file():
-        extra = json.loads(JOINT_ANCHORS.read_text(encoding="utf-8")).get(case_id) or {}
-        for index, item in extra.items():
-            rubric["joints"][int(index)].update(item)
+    for source in (JOINT_ANCHORS, JOINT_ANCHORS_ANALYTIC):
+        extra = json.loads(source.read_text(encoding="utf-8")).get(case_id) if source.is_file() else None
+        if extra:
+            for index, item in extra.items():
+                rubric["joints"][int(index)].update(item)
+            break
     return rubric
 
 
@@ -577,7 +584,8 @@ def main() -> None:
     args = parser.parse_args()
     names = []
     tokens = [t.strip() for t in args.cases.split(",")]
-    tokens = [n for t in tokens for n in (list(BENCH_CASES) if t == "bench" else [t])]
+    groups = {"bench": list(BENCH_CASES), "bench2": list(CASES2)}
+    tokens = [n for t in tokens for n in groups.get(t, [t])]
     for token in tokens:
         name = CASE_ALIASES.get(token, token)
         if not (CASES_DIR / f"{name}.yaml").is_file():

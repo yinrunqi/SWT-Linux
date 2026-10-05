@@ -1,0 +1,32 @@
+# 装配级 rubric：角色名与 geared_five_bar.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: geared_five_bar
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame]
+  c1: [shaft1, flywheel, gear1, crank1]
+  c2: [shaft2, gear2, crank2]
+  bar1: [bar1]
+  bar2: [bar2, pen]
+flex:
+  pin_b1: [c1, bar1]
+  pin_b2: [c2, bar2]
+joints:
+- bodies: [c1, frame]
+  type: revolute
+- bodies: [c2, frame]
+  type: revolute
+- bodies: [bar1, c1]
+  type: revolute
+- bodies: [bar2, c2]
+  type: revolute
+- bodies: [bar1, bar2]
+  type: [revolute, cylindrical]
+couplings:
+- type: gear
+  a: gear1
+  b: gear2
+  teeth: [30, 30]
+  module_mm: 2
+  external: true
+center_distance_tol_mm: 0.2

@@ -1,0 +1,103 @@
+case_id: oldham_coupling
+title: 十字滑块联轴器
+# 两轴错开 12 mm，滑块在两垂直方向滑动；检查两轴等速同向、滑块 X/Y 行程。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: od_frame
+  extra_tools: []
+  prompt: |
+    创建底板：在 front_plane 上画矩形，X 从 -80 到 60 mm，Y 从 -80 到 50 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(0,-48) 直径 10 mm，(-50,0) 直径 10 mm。不要抽壳。
+- id: od_shaft
+  extra_tools: []
+  prompt: |
+    创建轴：直径 10 mm、长 22 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: od_gear
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 36，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: od_pinion
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 12，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: od_handwheel
+  extra_tools: []
+  prompt: |
+    创建手轮：外径 44 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。另开贯穿孔：(14,0) 直径 6 mm。
+- id: od_hub
+  extra_tools: []
+  prompt: |
+    创建半联轴器：外径 50 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。另开贯穿孔：(16,0) 直径 6 mm，(-16,0) 直径 6 mm。
+- id: od_middle
+  extra_tools: []
+  prompt: |
+    创建十字滑块：外径 40 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 12 mm。另开贯穿孔：(0,14) 直径 4 mm，(0,-14) 直径 4 mm，(14,0) 直径 4 mm，(-14,0) 直径 4 mm。
+- id: od_out_shaft
+  extra_tools: []
+  prompt: |
+    创建输出轴：直径 10 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: od_bracket
+  extra_tools: []
+  prompt: |
+    创建轴承架：在 front_plane 上画矩形，X 从 -60 到 24 mm，Y 从 -12 到 12 mm，向 +Z 拉伸 6 mm。
+    开贯穿孔：(-50,0) 直径 10 mm，(12,0) 直径 10 mm。不要抽壳。
+- id: od_standoff
+  extra_tools: []
+  prompt: |
+    创建支柱：直径 10 mm、长 32 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+gold_roles:
+  frame: od_frame
+  input_shaft: od_shaft
+  input_gear: od_gear
+  hub_in: od_hub
+  motor_shaft: od_shaft
+  pinion: od_pinion
+  handwheel: od_handwheel
+  standoff: od_standoff
+  bracket: od_bracket
+  out_shaft: od_out_shaft
+  hub_out: od_hub
+  middle: od_middle
+assembly:
+  prompt: |
+    装配十字滑块联轴器（Oldham）：输入、输出两轴平行但错开 12 mm，中间滑块在两个互相垂直的方向上滑动，两轴等速同向。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]。输入轴孔 (0,0)、电机轴孔 (0,-48)、支柱孔 (-50,0)，直径都是 10。
+    - input_shaft 穿过 (0,0) 孔绕 Z 转动（z∈[-8,14]）；36 齿 input_gear 固定在其上（z∈[-8,0]），hub_in 的中心孔固定在其上（z∈[8,14]）。
+    - motor_shaft 穿过 (0,-48) 孔绕 Z 转动（z∈[-14,8]）；12 齿 pinion（z∈[-8,0]）与 handwheel 的中心孔（z∈[-14,-8]）固定在其上，
+      pinion 与 input_gear 外啮合（模数 2，中心距 48）。
+    - standoff 固定在 (-50,0) 孔里（z∈[0,32]）；bracket 的 (-50,0) 孔固定在 standoff 上（z∈[26,32]），长边沿 frame 的 X 方向。
+    - out_shaft 穿过 bracket 的 (12,0) 孔绕 Z 转动（z∈[20,32]）；hub_out 的中心孔固定在 out_shaft 上（z∈[20,26]）。
+    - middle（z∈[14,20]）：贴着 hub_in 的上表面，只能相对 hub_in 沿 hub_in 局部 X 方向滑动（middle 中心始终在 hub_in 局部 X 轴上，
+      两者转角相同）；同时只能相对 hub_out 沿 hub_out 局部 Y 方向滑动（middle 中心始终在 hub_out 局部 Y 轴上）。
+    - 两轴转角始终相等；输入轴转一圈，middle 中心在 X、Y 方向各走 12 mm。各齿轮互不穿模，啮合齿相位要对上。
+    对 input_shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: input_shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  - bracket
+  expect_moving:
+  - hub_in
+  - middle
+  - hub_out
+  - motor_shaft
+  ratios:
+  - role: hub_out
+    ratio: 1
+    same_direction: true
+  - role: motor_shaft
+    ratio: 0.3333333333333333
+    same_direction: false
+  strokes:
+  - role: middle
+    axis: x
+    mm: 12
+  - role: middle
+    axis: y
+    mm: 12
+  max_interference: 0

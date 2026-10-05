@@ -1,0 +1,158 @@
+case_id: robot_finger_coupled
+title: 连杆驱动三节手指（多位姿）
+# 近节 + 两组反平行四边形耦合，活动度 1；三个近节角检查中节末端与指尖。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: rf_palm
+  extra_tools: []
+  prompt: |
+    创建掌板：在 front_plane 上画矩形，X 从 -40 到 40 mm，Y 从 -60 到 8 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 8 mm，(14,0) 直径 4 mm。不要抽壳。
+- id: rf_p1
+  extra_tools: []
+  prompt: |
+    创建近节指骨：在 front_plane 上画矩形，X 从 -8 到 58 mm，Y 从 -20 到 7 mm，向 +Z 拉伸 6 mm。
+    开贯穿孔：(0,0) 直径 8 mm，(50,0) 直径 8 mm，(50,-14) 直径 4 mm。不要抽壳。
+- id: rf_p2
+  extra_tools: []
+  prompt: |
+    创建中节指骨：在 front_plane 上画矩形，X 从 -12 到 48 mm，Y 从 -7 到 18 mm，向 +Z 拉伸 6 mm。
+    开贯穿孔：(0,0) 直径 8 mm，(40,0) 直径 8 mm，(-7.27,11.96) 直径 4 mm。不要抽壳。
+- id: rf_p3
+  extra_tools: []
+  prompt: |
+    创建远节指骨：在 front_plane 上画矩形，X 从 -13 到 34 mm，Y 从 -7 到 17 mm，向 +Z 拉伸 6 mm。
+    开贯穿孔：(0,0) 直径 8 mm，(-8.73,10.94) 直径 4 mm。不要抽壳。
+- id: rf_link1
+  extra_tools: []
+  prompt: |
+    创建耦合杆 1：在 front_plane 上画两端圆头的长条，宽 8 mm，两端半圆的圆心分别在原点和 (50,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 4 mm，X=50 处直径 4 mm。
+- id: rf_link2
+  extra_tools: []
+  prompt: |
+    创建耦合杆 2：在 front_plane 上画两端圆头的长条，宽 8 mm，两端半圆的圆心分别在原点和 (40,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 4 mm，X=40 处直径 4 mm。
+- id: rf_m_pin
+  extra_tools: []
+  prompt: |
+    创建掌指关节轴：直径 8 mm、长 20 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: rf_pin8
+  extra_tools: []
+  prompt: |
+    创建指关节轴：直径 8 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: rf_pin4_14
+  extra_tools: []
+  prompt: |
+    创建短耦合销：直径 4 mm、长 14 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: rf_pin4_12
+  extra_tools: []
+  prompt: |
+    创建耦合销：直径 4 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: rf_pin4_18
+  extra_tools: []
+  prompt: |
+    创建长耦合销：直径 4 mm、长 18 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+gold_roles:
+  palm: rf_palm
+  m_pin: rf_m_pin
+  g0_pin: rf_pin4_14
+  p1: rf_p1
+  j1_pin: rf_pin8
+  g1_pin: rf_pin4_12
+  p2: rf_p2
+  h1_pin: rf_pin4_18
+  link1: rf_link1
+  j2_pin: rf_pin8
+  p3: rf_p3
+  h2_pin: rf_pin4_12
+  link2: rf_link2
+assembly:
+  prompt: |
+    装配连杆驱动的三节机器人手指：只驱动近节指骨，中节、远节经两组交叉（反平行四边形）耦合杆联动，手指整体屈曲。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - palm 固定，z∈[0,8]：掌指关节孔 M=(0,0) 直径 8，耦合铰孔 G0=(14,0) 直径 4。m_pin 固定在 M 孔（z∈[0,20]），g0_pin 固定在 G0 孔（z∈[0,14]）。
+    - p1（近节，孔 (0,0)、(50,0) 直径 8，(50,-14) 直径 4）的原点孔套在 m_pin 上转动（z∈[14,20]）；
+      j1_pin 固定在 p1 的 (50,0) 孔（z∈[14,26]），g1_pin 固定在 p1 的 4 mm 孔（z∈[8,20]）。
+    - p2（中节，孔 (0,0)、(40,0) 直径 8，(-7.27,11.96) 直径 4）的原点孔套在 j1_pin 上转动（z∈[20,26]）；
+      h1_pin 固定在 p2 的 4 mm 孔（z∈[8,26]），j2_pin 固定在 p2 的 (40,0) 孔（z∈[14,26]）。
+    - p3（远节，孔 (0,0) 直径 8，(-8.73,10.94) 直径 4，指尖在局部 (30,0)）的原点孔套在 j2_pin 上转动（z∈[14,20]）；h2_pin 固定在 p3 的 4 mm 孔（z∈[8,20]）。
+    - link1（长 50）两孔分别套在 g0_pin、h1_pin 上（z∈[8,14]）；link2（长 40）两孔分别套在 g1_pin、h2_pin 上（z∈[8,14]）。
+      两根耦合杆都与相邻指骨交叉（反平行四边形），因此近节向 +X 侧屈曲时中节、远节也随之向同侧屈曲；伸直时手指沿 +Y。
+    - 近节转角这 1 个自由度保持自由（整机活动度 1），不要固定。各件互不穿模，装好后保存。
+motion:
+  mode: poses
+  frame: palm
+  expect_fixed:
+  - palm
+  tolerance_mm: 1.5
+  max_interference: 0
+  poses:
+  - name: open
+    set:
+    - type: angle
+      a: p1:plane(top)
+      b: palm:plane(top)
+      angle_deg: 85.0
+      points:
+      - role: p2
+        local:
+        - 40.0
+        - 0.0
+        - 0
+        expect:
+          x: 10.88
+          y: 89.27
+      - role: p3
+        local:
+        - 30.0
+        - 0.0
+        - 0
+        expect:
+          x: 17.58
+          y: 118.52
+  - name: half
+    set:
+    - type: angle
+      a: p1:plane(top)
+      b: palm:plane(top)
+      angle_deg: 65.0
+      points:
+      - role: p2
+        local:
+        - 40.0
+        - 0.0
+        - 0
+        expect:
+          x: 51.4
+          y: 71.46
+      - role: p3
+        local:
+        - 30.0
+        - 0.0
+        - 0
+        expect:
+          x: 79.78
+          y: 81.18
+  - name: grip
+    set:
+    - type: angle
+      a: p1:plane(top)
+      b: palm:plane(top)
+      angle_deg: 45.0
+      points:
+      - role: p2
+        local:
+        - 40.0
+        - 0.0
+        - 0
+        expect:
+          x: 75.28
+          y: 32.86
+      - role: p3
+        local:
+        - 30.0
+        - 0.0
+        - 0
+        expect:
+          x: 92.1
+          y: 8.02

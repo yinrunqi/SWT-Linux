@@ -1,0 +1,117 @@
+case_id: l_twin_engine
+title: L 型双缸发动机
+# 两连杆共用曲柄销，水平缸 + 竖直缸相差 90°，16/32 正时齿轮带凸轮轴。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: lt_frame
+  extra_tools: []
+  prompt: |
+    创建机体板：在 front_plane 上画矩形，X 从 -80 到 110 mm，Y 从 -40 到 110 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(-48,0) 直径 10 mm。不要抽壳。
+- id: lt_shaft
+  extra_tools: []
+  prompt: |
+    创建曲轴：直径 10 mm、长 28 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: lt_flywheel
+  extra_tools: []
+  prompt: |
+    创建飞轮：外径 60 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。
+- id: lt_crank_gear
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 16，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: lt_cam_gear
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 32，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: lt_cam_shaft
+  extra_tools: []
+  prompt: |
+    创建凸轮轴：直径 10 mm、长 22 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: lt_cam
+  extra_tools: []
+  prompt: |
+    创建凸轮：在 front_plane 上画两端圆头的长条，宽 24 mm，两端半圆的圆心分别在原点和 (8,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm。
+- id: lt_crank
+  extra_tools: []
+  prompt: |
+    创建曲柄：在 front_plane 上画两端圆头的长条，宽 20 mm，两端半圆的圆心分别在原点和 (15,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=15 处直径 8 mm。
+- id: lt_crank_pin
+  extra_tools: []
+  prompt: |
+    创建曲柄销：直径 8 mm、长 18 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: lt_rod
+  extra_tools: []
+  prompt: |
+    创建连杆：在 front_plane 上画两端圆头的长条，宽 14 mm，两端半圆的圆心分别在原点和 (60,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 8 mm，X=60 处直径 6 mm。
+- id: lt_pin12
+  extra_tools: []
+  prompt: |
+    创建活塞销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: lt_piston
+  extra_tools: []
+  prompt: |
+    创建活塞：在 front_plane 上画矩形，X 从 -10 到 10 mm，Y 从 -12 到 12 mm，向 +Z 拉伸 6 mm。
+    开贯穿孔：(0,0) 直径 6 mm。不要抽壳。
+gold_roles:
+  frame: lt_frame
+  shaft: lt_shaft
+  flywheel: lt_flywheel
+  crank_gear: lt_crank_gear
+  crank: lt_crank
+  crank_pin: lt_crank_pin
+  cam_shaft: lt_cam_shaft
+  cam_gear: lt_cam_gear
+  cam: lt_cam
+  rod_h: lt_rod
+  rod_v: lt_rod
+  wrist_h: lt_pin12
+  wrist_v: lt_pin12
+  piston_h: lt_piston
+  piston_v: lt_piston
+assembly:
+  prompt: |
+    装配 L 型（90°）双缸发动机：两缸共用一个曲柄销，一缸水平、一缸竖直；曲轴经 16/32 正时齿轮带凸轮轴。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]。曲轴孔 (0,0)、凸轮轴孔 (-48,0)，直径都是 10 mm。
+    - shaft 穿过 (0,0) 孔绕 Z 转动（z∈[-14,14]）。板后：flywheel（z∈[-14,-8]）与 16 齿 crank_gear（z∈[-8,0]）固定在 shaft 上；
+      板前：crank 的 10 mm 孔固定在 shaft 上（z∈[8,14]）。crank_pin 固定在 crank 的 8 mm 孔里（z∈[8,26]）。
+    - rod_h、rod_v 的 8 mm 孔都套在 crank_pin 上转动：rod_h 在 z∈[14,20]，rod_v 在 z∈[20,26]。
+    - 水平缸：wrist_h 固定在 rod_h 的 6 mm 孔里（z∈[14,26]），piston_h 的孔套在 wrist_h 上转动（z∈[20,26]）；
+      piston_h 只能沿 frame 的 X 方向移动，孔心始终在 y=0 的直线上、曲轴 +X 侧。
+    - 竖直缸：wrist_v 固定在 rod_v 的 6 mm 孔里（z∈[14,26]），piston_v 的孔套在 wrist_v 上转动（z∈[14,20]）；
+      piston_v 只能沿 frame 的 Y 方向移动，孔心始终在 x=0 的直线上、曲轴 +Y 侧。
+    - cam_shaft 穿过 (-48,0) 孔绕 Z 转动（z∈[-8,14]）；32 齿 cam_gear（z∈[-8,0]）与 cam（z∈[8,14]）固定在 cam_shaft 上。
+      crank_gear 与 cam_gear 外啮合（模数 2，中心距 48），凸轮轴转速是曲轴的一半、反向。
+    - 曲柄 15、连杆 60，每缸行程 30 mm，两缸相位差 90°。各齿轮互不穿模，啮合齿相位要对上。
+    对 shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - crank
+  - rod_h
+  - rod_v
+  - piston_h
+  - piston_v
+  - cam
+  ratios:
+  - role: cam
+    ratio: 2
+    same_direction: false
+  strokes:
+  - role: piston_h
+    axis: x
+    mm: 30
+  - role: piston_v
+    axis: y
+    mm: 30
+  max_interference: 0

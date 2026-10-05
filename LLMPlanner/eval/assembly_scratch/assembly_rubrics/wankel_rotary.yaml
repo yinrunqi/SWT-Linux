@@ -1,0 +1,23 @@
+# 装配级 rubric：角色名与 wankel_rotary.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: wankel_rotary
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame, stat]
+  crank: [shaft, flywheel, crank]
+  rotor: [rotor, ring, apex_1, apex_2, apex_3]
+flex:
+  ecc_pin: [crank, rotor]
+joints:
+- bodies: [crank, frame]
+  type: revolute
+- bodies: [rotor, crank]
+  type: revolute
+couplings:
+- type: gear
+  a: stat
+  b: ring
+  teeth: [24, 36]
+  module_mm: 2
+  external: false
+center_distance_tol_mm: 0.2

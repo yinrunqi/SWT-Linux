@@ -1,0 +1,16 @@
+case: jl_pin12
+prompt: "创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。"
+tolerance: {length_mm: 0.2, angle_deg: 1.0, volume_rel: 0.04}
+entities:
+  shank: {cylinder: {d: 6, side: outer}, count: 1}
+rubrics:
+  - id: solid
+    hard: true
+    check:
+      - single_valid_solid: {}
+  - id: size
+    hard: true
+    check:
+      - exists: shank
+      - extent_along: {axis: shank, of: all, value: 12}
+      - bbox_sorted: [6, 6, 12]

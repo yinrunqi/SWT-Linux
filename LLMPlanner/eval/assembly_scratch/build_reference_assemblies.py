@@ -333,8 +333,11 @@ BUILDS = {"gearbox": gearbox, "engine": engine, "desk_lamp": desk_lamp, "umbrell
 
 def _register_bench() -> None:
     from eval.assembly_scratch.bench_cases import CASES, build_reference
+    from eval.assembly_scratch.bench_cases2 import CASES2, build_reference2
     for name in CASES:
         BUILDS[name] = lambda name=name: build_reference(name)
+    for name in CASES2:
+        BUILDS[name] = lambda name=name: build_reference2(name)
 
 
 _register_bench()

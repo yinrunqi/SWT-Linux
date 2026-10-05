@@ -1,0 +1,67 @@
+# 装配级 rubric：角色名与 mechanical_iris.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: mechanical_iris_5blade
+ground: base
+mobility: 1
+bodies:
+  base: [base]
+  actuator: [actuator]
+  blade_1: [blade_1]
+  conn_1: [conn_1]
+  blade_2: [blade_2]
+  conn_2: [conn_2]
+  blade_3: [blade_3]
+  conn_3: [conn_3]
+  blade_4: [blade_4]
+  conn_4: [conn_4]
+  blade_5: [blade_5]
+  conn_5: [conn_5]
+flex:
+  center_pin: [base, actuator]
+  bpin_1: [base, blade_1]
+  apin_1: [actuator, conn_1]
+  qpin_1: [blade_1, conn_1]
+  bpin_2: [base, blade_2]
+  apin_2: [actuator, conn_2]
+  qpin_2: [blade_2, conn_2]
+  bpin_3: [base, blade_3]
+  apin_3: [actuator, conn_3]
+  qpin_3: [blade_3, conn_3]
+  bpin_4: [base, blade_4]
+  apin_4: [actuator, conn_4]
+  qpin_4: [blade_4, conn_4]
+  bpin_5: [base, blade_5]
+  apin_5: [actuator, conn_5]
+  qpin_5: [blade_5, conn_5]
+joints:
+- bodies: [actuator, base]
+  type: revolute
+- bodies: [blade_1, base]
+  type: revolute
+- bodies: [conn_1, actuator]
+  type: revolute
+- bodies: [conn_1, blade_1]
+  type: &id001 [revolute, cylindrical]
+- bodies: [blade_2, base]
+  type: revolute
+- bodies: [conn_2, actuator]
+  type: revolute
+- bodies: [conn_2, blade_2]
+  type: *id001
+- bodies: [blade_3, base]
+  type: revolute
+- bodies: [conn_3, actuator]
+  type: revolute
+- bodies: [conn_3, blade_3]
+  type: *id001
+- bodies: [blade_4, base]
+  type: revolute
+- bodies: [conn_4, actuator]
+  type: revolute
+- bodies: [conn_4, blade_4]
+  type: *id001
+- bodies: [blade_5, base]
+  type: revolute
+- bodies: [conn_5, actuator]
+  type: revolute
+- bodies: [conn_5, blade_5]
+  type: *id001

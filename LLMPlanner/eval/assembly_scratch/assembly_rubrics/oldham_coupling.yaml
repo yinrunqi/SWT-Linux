@@ -1,0 +1,29 @@
+# 装配级 rubric：角色名与 oldham_coupling.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: oldham_coupling
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame, standoff, bracket]
+  input: [input_shaft, input_gear, hub_in]
+  motor: [motor_shaft, pinion, handwheel]
+  output: [out_shaft, hub_out]
+  middle: [middle]
+joints:
+- bodies: [input, frame]
+  type: revolute
+- bodies: [motor, frame]
+  type: revolute
+- bodies: [output, frame]
+  type: revolute
+- bodies: [middle, input]
+  type: &id001 [slider, planar]
+- bodies: [middle, output]
+  type: *id001
+couplings:
+- type: gear
+  a: input_gear
+  b: pinion
+  teeth: [36, 12]
+  module_mm: 2
+  external: true
+center_distance_tol_mm: 0.2

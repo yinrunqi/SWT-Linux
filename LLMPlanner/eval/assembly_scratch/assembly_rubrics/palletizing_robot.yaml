@@ -1,0 +1,45 @@
+# 装配级 rubric：角色名与 palletizing_robot.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: palletizing_robot
+ground: frame
+mobility: 2
+bodies:
+  frame: [frame, s_pin]
+  lower: [lower, e_pin]
+  crank: [crank]
+  upper: [upper]
+  drive: [drive]
+  tri: [tri]
+  lev1: [lev1]
+  lev2: [lev2]
+  wrist: [wrist]
+flex:
+  f1_pin: [frame, lev1]
+  k_pin: [crank, drive]
+  r_pin: [upper, drive]
+  t1_pin: [tri, lev1]
+  t2_pin: [tri, lev2]
+  w_pin: [upper, wrist]
+  w2_pin: [lev2, wrist]
+joints:
+- bodies: [lower, frame]
+  type: revolute
+- bodies: [crank, frame]
+  type: revolute
+- bodies: [upper, lower]
+  type: revolute
+- bodies: [tri, lower]
+  type: revolute
+- bodies: [drive, crank]
+  type: revolute
+- bodies: [drive, upper]
+  type: &id001 [revolute, cylindrical]
+- bodies: [lev1, frame]
+  type: revolute
+- bodies: [lev1, tri]
+  type: *id001
+- bodies: [lev2, tri]
+  type: revolute
+- bodies: [wrist, upper]
+  type: revolute
+- bodies: [wrist, lev2]
+  type: *id001

@@ -1,0 +1,121 @@
+case_id: lambda_conveyor
+title: Chebyshev λ 步进输送机
+# 两组 λ 近似直线机构相差 180°，15/30 齿轮在板后；检查推爪包络与两组交替。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: lc_frame
+  extra_tools: []
+  prompt: |
+    创建机架板：在 front_plane 上画矩形，X 从 -110 到 60 mm，Y 从 -70 到 120 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(0,-45) 直径 10 mm，(-40,0) 直径 8 mm。不要抽壳。
+- id: lc_shaft
+  extra_tools: []
+  prompt: |
+    创建曲柄轴：直径 10 mm、长 34 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: lc_motor_shaft
+  extra_tools: []
+  prompt: |
+    创建电机轴：直径 10 mm、长 22 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: lc_gear
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 30，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: lc_pinion
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 15，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: lc_handwheel
+  extra_tools: []
+  prompt: |
+    创建手轮：外径 40 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。另开贯穿孔：(12,0) 直径 6 mm。
+- id: lc_d_pin
+  extra_tools: []
+  prompt: |
+    创建摇杆轴：直径 8 mm、长 34 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: lc_crank
+  extra_tools: []
+  prompt: |
+    创建曲柄：在 front_plane 上画两端圆头的长条，宽 20 mm，两端半圆的圆心分别在原点和 (20,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=20 处直径 8 mm。
+- id: lc_pin8
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 8 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: lc_coupler
+  extra_tools: []
+  prompt: |
+    创建λ 连杆：在 front_plane 上画两端圆头的长条，宽 14 mm，两端半圆的圆心分别在原点和 (100,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 8 mm，X=50 处直径 8 mm，X=100 处直径 8 mm。
+- id: lc_rocker
+  extra_tools: []
+  prompt: |
+    创建摇杆：在 front_plane 上画两端圆头的长条，宽 14 mm，两端半圆的圆心分别在原点和 (50,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 8 mm，X=50 处直径 8 mm。
+gold_roles:
+  frame: lc_frame
+  shaft: lc_shaft
+  crank_gear: lc_gear
+  motor_shaft: lc_motor_shaft
+  pinion: lc_pinion
+  handwheel: lc_handwheel
+  d_pin: lc_d_pin
+  crank_f: lc_crank
+  cpin_f: lc_pin8
+  coupler_f: lc_coupler
+  rocker_f: lc_rocker
+  mpin_f: lc_pin8
+  foot_f: lc_pin8
+  crank_b: lc_crank
+  cpin_b: lc_pin8
+  coupler_b: lc_coupler
+  rocker_b: lc_rocker
+  mpin_b: lc_pin8
+  foot_b: lc_pin8
+assembly:
+  prompt: |
+    装配 Chebyshev λ 步进输送机：两组 λ 型四杆（曲柄 20、机架 40、摇杆 50、λ 连杆 100，摇杆接连杆中点）共用曲柄轴、曲柄相差 180°，
+    推爪（连杆末端）大约 65% 的时间沿一条水平直线走，两组交替推送。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]。曲柄轴孔 (0,0)、电机轴孔 (0,-45) 直径 10；摇杆轴孔 (-40,0) 直径 8。
+    - shaft 穿过 (0,0) 孔绕 Z 转动（z∈[-20,14]）；30 齿 crank_gear 固定在其上（z∈[-8,0]）。
+      motor_shaft 穿过电机轴孔绕 Z 转动（z∈[-14,8]）；15 齿 pinion（z∈[-8,0]）与 handwheel 的中心孔（z∈[-14,-8]）固定在其上，
+      pinion 与 crank_gear 外啮合（模数 2，中心距 45）。
+    - d_pin 固定在摇杆轴孔里、两面伸出（z∈[-20,14]）。
+    - 前组（板前）：crank_f 的 10 mm 孔固定在 shaft 上（z∈[8,14]）；cpin_f 固定在 crank_f 的 8 mm 孔里（z∈[8,20]）；
+      coupler_f（三孔：0、50、100）的原点孔套在 cpin_f 上转动（z∈[14,20]）；rocker_f 的原点孔套在 d_pin 上转动（z∈[8,14]），
+      mpin_f 固定在 rocker_f 的另一孔里（z∈[8,20]），coupler_f 的中孔套在 mpin_f 上；foot_f 固定在 coupler_f 的末孔（z∈[14,26]）。
+    - 后组（板后，让出齿轮层）：crank_b z∈[-20,-14]，方向与 crank_f 相差 180°；cpin_b z∈[-26,-14]；coupler_b z∈[-26,-20]；
+      rocker_b z∈[-20,-14]；mpin_b z∈[-26,-14]；foot_b z∈[-32,-20]。
+    - 两组的连杆中点都在摇杆轴上方偏右（推爪在曲柄轴上方，y 约 80～98）。曲柄一整圈：推爪 X 向行程约 94.1 mm、Y 向约 18.0 mm。各齿轮互不穿模，啮合齿相位要对上。
+    对 shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  expect_moving:
+  - crank_f
+  - coupler_f
+  - coupler_b
+  - rocker_f
+  - rocker_b
+  - foot_f
+  - foot_b
+  ratios:
+  - role: motor_shaft
+    ratio: 0.5
+    same_direction: false
+  strokes:
+  - role: foot_f
+    axis: x
+    mm: 94.07
+  - role: foot_f
+    axis: y
+    mm: 17.98
+  - role: foot_b
+    axis: x
+    mm: 94.07
+  max_interference: 0

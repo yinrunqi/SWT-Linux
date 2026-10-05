@@ -1,0 +1,35 @@
+# 装配级 rubric：角色名与 gear_screw_lift.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: gear_screw_lift
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame, post_a, post_b, top]
+  motor: [motor_shaft, pinion, handwheel]
+  screw_l: [screw_l, gear_l]
+  screw_r: [screw_r, gear_r]
+  platform: [platform]
+joints:
+- bodies: [motor, frame]
+  type: revolute
+- bodies: [screw_l, frame]
+  type: revolute
+- bodies: [screw_r, frame]
+  type: revolute
+- bodies: [platform, screw_l]
+  type: screw
+- bodies: [platform, screw_r]
+  type: cylindrical
+couplings:
+- type: gear
+  a: pinion
+  b: gear_l
+  teeth: [12, 24]
+  module_mm: 2
+  external: true
+- type: gear
+  a: pinion
+  b: gear_r
+  teeth: [12, 24]
+  module_mm: 2
+  external: true
+center_distance_tol_mm: 0.2

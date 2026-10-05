@@ -1,0 +1,215 @@
+case_id: palletizing_robot
+title: 码垛机器人（多位姿）
+# 驱动平行四边形 + 两级调平平行四边形，18 个组件、活动度 2；三个位姿检查肘点、腕点与腕部法兰姿态。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: pr_frame
+  extra_tools: []
+  prompt: |
+    创建底座：在 front_plane 上画矩形，X 从 -60 到 80 mm，Y 从 -40 到 60 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm，(-30,0) 直径 6 mm。不要抽壳。
+- id: pr_lower
+  extra_tools: []
+  prompt: |
+    创建大臂：在 front_plane 上画两端圆头的长条，宽 18 mm，两端半圆的圆心分别在原点和 (120,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=120 处直径 8 mm。
+- id: pr_crank
+  extra_tools: []
+  prompt: |
+    创建驱动曲柄：在 front_plane 上画两端圆头的长条，宽 16 mm，两端半圆的圆心分别在原点和 (30,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=30 处直径 6 mm。
+- id: pr_upper
+  extra_tools: []
+  prompt: |
+    创建小臂：在 front_plane 上画两端圆头的长条，宽 16 mm，两端半圆的圆心分别在原点和 (170,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=30 处直径 8 mm，X=170 处直径 6 mm。
+- id: pr_bar120
+  extra_tools: []
+  prompt: |
+    创建拉杆 120：在 front_plane 上画两端圆头的长条，宽 10 mm，两端半圆的圆心分别在原点和 (120,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=120 处直径 6 mm。
+- id: pr_bar140
+  extra_tools: []
+  prompt: |
+    创建调平拉杆 140：在 front_plane 上画两端圆头的长条，宽 10 mm，两端半圆的圆心分别在原点和 (140,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=140 处直径 6 mm。
+- id: pr_tri
+  extra_tools: []
+  prompt: |
+    创建三角板：在 front_plane 上画矩形，X 从 -38 到 8 mm，Y 从 -38 到 8 mm，向 +Z 拉伸 6 mm。
+    开贯穿孔：(0,0) 直径 8 mm，(-30,0) 直径 6 mm，(0,-30) 直径 6 mm。不要抽壳。
+- id: pr_wrist
+  extra_tools: []
+  prompt: |
+    创建腕部法兰：在 front_plane 上画矩形，X 从 -8 到 30 mm，Y 从 -38 到 8 mm，向 +Z 拉伸 6 mm。
+    开贯穿孔：(0,0) 直径 6 mm，(0,-30) 直径 6 mm。不要抽壳。
+- id: pr_s_pin
+  extra_tools: []
+  prompt: |
+    创建肩轴：直径 10 mm、长 20 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: pr_pin14
+  extra_tools: []
+  prompt: |
+    创建底铰销：直径 6 mm、长 14 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: pr_e_pin
+  extra_tools: []
+  prompt: |
+    创建肘轴：直径 8 mm、长 18 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: pr_pin12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: pr_pin18
+  extra_tools: []
+  prompt: |
+    创建长铰销：直径 6 mm、长 18 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+gold_roles:
+  frame: pr_frame
+  s_pin: pr_s_pin
+  f1_pin: pr_pin14
+  lower: pr_lower
+  e_pin: pr_e_pin
+  crank: pr_crank
+  k_pin: pr_pin18
+  upper: pr_upper
+  r_pin: pr_pin12
+  drive: pr_bar120
+  tri: pr_tri
+  t1_pin: pr_pin12
+  t2_pin: pr_pin12
+  lev1: pr_bar120
+  w_pin: pr_pin18
+  wrist: pr_wrist
+  lev2: pr_bar140
+  w2_pin: pr_pin18
+assembly:
+  prompt: |
+    装配码垛机器人的臂部：大臂、小臂各由一路驱动（肩部两个同轴转动件），小臂经平行四边形拉杆驱动；
+    另有两组平行四边形调平拉杆，使腕部法兰始终保持水平。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]。肩轴孔 S=(0,0) 直径 10，调平铰孔 F=(-30,0) 直径 6。
+      s_pin 固定在 S 孔（z∈[0,20]），f1_pin 固定在 F 孔（z∈[0,14]）。
+    - lower（大臂，长 120）的 10 mm 孔套在 s_pin 上转动（z∈[8,14]）；e_pin 固定在 lower 的 8 mm 孔里（z∈[8,26]），记为肘点 E。
+    - crank（长 30）的 10 mm 孔也套在 s_pin 上转动（z∈[14,20]）；k_pin 固定在 crank 的 6 mm 孔里（z∈[14,32]）。
+    - upper（小臂，三孔：0、30、170）的 X=30 孔套在 e_pin 上转动（z∈[20,26]）；r_pin 固定在 upper 的原点孔（z∈[20,32]）。
+      drive（长 120）两孔分别套在 k_pin、r_pin 上（z∈[26,32]），crank 与 upper 的后伸段始终平行。
+    - tri（三角板，孔 (0,0) 8 mm、(-30,0) 与 (0,-30) 6 mm）的 8 mm 孔套在 e_pin 上转动（z∈[14,20]）；t1_pin、t2_pin 分别固定在其 (-30,0)、(0,-30) 孔
+      （t1_pin z∈[8,20]，t2_pin z∈[14,26]）。lev1（长 120）两孔分别套在 f1_pin、t1_pin 上（z∈[8,14]），使 tri 始终不转。
+    - w_pin 固定在 upper 的 X=170 孔（腕点 W，z∈[8,26]）；wrist（孔 (0,0)、(0,-30)）的原点孔套在 w_pin 上（z∈[8,14]）；
+      lev2（长 140）原点孔套在 t2_pin 上（z∈[20,26]），w2_pin 固定在 lev2 的另一孔（z∈[8,26]），wrist 的 (0,-30) 孔套在 w2_pin 上。wrist 始终不转。
+    - 大臂、小臂两个转角保持自由（整机活动度 2），不要固定。各件互不穿模，装好后保存。
+motion:
+  mode: poses
+  frame: frame
+  expect_fixed:
+  - frame
+  tolerance_mm: 1.5
+  max_interference: 0
+  poses:
+  - name: pick
+    set:
+    - type: angle
+      a: lower:plane(top)
+      b: frame:plane(top)
+      angle_deg: 100.0
+      points:
+      - role: lower
+        local:
+        - 120.0
+        - 0.0
+        - 0
+        expect:
+          x: -20.84
+          y: 118.18
+    - type: angle
+      a: crank:plane(top)
+      b: frame:plane(top)
+      angle_deg: 170.0
+      points:
+      - role: upper
+        local:
+        - 170.0
+        - 0.0
+        - 0
+        expect:
+          x: 117.04
+          y: 142.49
+      - role: lev2
+        local:
+        - 140.0
+        - 0.0
+        - 0
+        expect:
+          x: 117.04
+          y: 112.49
+  - name: lift
+    set:
+    - type: angle
+      a: lower:plane(top)
+      b: frame:plane(top)
+      angle_deg: 80.0
+      points:
+      - role: lower
+        local:
+        - 120.0
+        - 0.0
+        - 0
+        expect:
+          x: 20.84
+          y: 118.18
+    - type: angle
+      a: crank:plane(top)
+      b: frame:plane(top)
+      angle_deg: 170.0
+      points:
+      - role: upper
+        local:
+        - 170.0
+        - 0.0
+        - 0
+        expect:
+          x: 158.71
+          y: 93.87
+      - role: lev2
+        local:
+        - 140.0
+        - 0.0
+        - 0
+        expect:
+          x: 158.71
+          y: 63.87
+  - name: place
+    set:
+    - type: angle
+      a: lower:plane(top)
+      b: frame:plane(top)
+      angle_deg: 120.0
+      points:
+      - role: lower
+        local:
+        - 120.0
+        - 0.0
+        - 0
+        expect:
+          x: -60.0
+          y: 103.92
+    - type: angle
+      a: crank:plane(top)
+      b: frame:plane(top)
+      angle_deg: 155.0
+      points:
+      - role: upper
+        local:
+        - 170.0
+        - 0.0
+        - 0
+        expect:
+          x: 66.88
+          y: 163.09
+      - role: lev2
+        local:
+        - 140.0
+        - 0.0
+        - 0
+        expect:
+          x: 66.88
+          y: 133.09

@@ -1,0 +1,54 @@
+# 装配级 rubric：角色名与 scissor_lift.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: scissor_lift_3stage
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame]
+  slider: [slider]
+  platform: [platform]
+  tblock: [tblock]
+  a1: [a1]
+  b1: [b1]
+  a2: [a2]
+  b2: [b2]
+  a3: [a3]
+  b3: [b3]
+flex:
+  base_pin: [frame, a1]
+  slider_pin: [b1, slider]
+  top_pin: [b3, platform]
+  tb_pin: [a3, tblock]
+  c1: [a1, b1]
+  c2: [a2, b2]
+  c3: [a3, b3]
+  jl1: [b1, a2]
+  jr1: [a1, b2]
+  jl2: [b2, a3]
+  jr2: [a2, b3]
+joints:
+- bodies: [a1, frame]
+  type: revolute
+- bodies: [b1, a1]
+  type: revolute
+- bodies: [slider, b1]
+  type: revolute
+- bodies: [slider, frame]
+  type: &id002 [slider, planar]
+- bodies: [a2, b1]
+  type: revolute
+- bodies: [b2, a2]
+  type: revolute
+- bodies: [b2, a1]
+  type: &id001 [revolute, cylindrical]
+- bodies: [a3, b2]
+  type: revolute
+- bodies: [b3, a3]
+  type: revolute
+- bodies: [b3, a2]
+  type: *id001
+- bodies: [platform, b3]
+  type: revolute
+- bodies: [tblock, a3]
+  type: revolute
+- bodies: [tblock, platform]
+  type: *id002

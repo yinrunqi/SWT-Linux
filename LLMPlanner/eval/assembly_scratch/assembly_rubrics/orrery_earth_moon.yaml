@@ -1,0 +1,41 @@
+# 装配级 rubric：角色名与 orrery.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: orrery_earth_moon
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame, sun]
+  motor: [motor_shaft, pinion, handwheel]
+  arm: [arm_shaft, arm_gear, arm]
+  idler: [idler]
+  earth: [earth_axle, earth_gear, earth, moon_arm, moon_pin, moon]
+flex:
+  idler_axle: [arm, idler]
+joints:
+- bodies: [motor, frame]
+  type: revolute
+- bodies: [arm, frame]
+  type: revolute
+- bodies: [idler, arm]
+  type: revolute
+- bodies: [earth, arm]
+  type: revolute
+couplings:
+- type: gear
+  a: arm_gear
+  b: pinion
+  teeth: [36, 12]
+  module_mm: 2
+  external: true
+- type: gear
+  a: sun
+  b: idler
+  teeth: [24, 12]
+  module_mm: 2
+  external: true
+- type: gear
+  a: idler
+  b: earth_gear
+  teeth: [12, 16]
+  module_mm: 2
+  external: true
+center_distance_tol_mm: 0.2

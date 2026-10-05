@@ -1,0 +1,49 @@
+# 装配级 rubric：角色名与 jansen_leg.yaml 的 gold_roles 一致（由 bench_cases2.py 生成）。
+case_id: jansen_leg
+ground: frame
+mobility: 1
+bodies:
+  frame: [frame, a_pin]
+  crank: [shaft, crank_gear, crank, crank_pin]
+  motor: [motor_shaft, pinion, handwheel]
+  upper: [bar_b, bar_d]
+  j: [bar_j]
+  c: [bar_c, c_pin]
+  k: [bar_k]
+  leg: [bar_i, bar_g, foot]
+  f: [bar_f]
+flex:
+  b_pin: [upper, j]
+  d_pin: [upper, f]
+  e_pin: [leg, f]
+joints:
+- bodies: [crank, frame]
+  type: revolute
+- bodies: [motor, frame]
+  type: revolute
+- bodies: [upper, frame]
+  type: revolute
+- bodies: [c, frame]
+  type: revolute
+- bodies: [j, crank]
+  type: revolute
+- bodies: [j, upper]
+  type: &id001 [revolute, cylindrical]
+- bodies: [k, crank]
+  type: revolute
+- bodies: [k, c]
+  type: *id001
+- bodies: [leg, c]
+  type: revolute
+- bodies: [f, upper]
+  type: revolute
+- bodies: [f, leg]
+  type: *id001
+couplings:
+- type: gear
+  a: crank_gear
+  b: pinion
+  teeth: [36, 12]
+  module_mm: 2
+  external: true
+center_distance_tol_mm: 0.2

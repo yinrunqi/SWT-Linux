@@ -1,0 +1,93 @@
+case_id: wankel_rotary
+title: Wankel 转子发动机
+# 偏心 12，36/24 内啮合相位齿轮，转子 1/3 同向自转；检查转子转速、公转圆直径 24。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: wk_frame
+  extra_tools: []
+  prompt: |
+    创建缸体板：在 front_plane 上画矩形，X 从 -90 到 90 mm，Y 从 -90 到 90 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(0,0) 直径 10 mm。不要抽壳。
+- id: wk_shaft
+  extra_tools: []
+  prompt: |
+    创建偏心轴：直径 10 mm、长 36 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: wk_flywheel
+  extra_tools: []
+  prompt: |
+    创建飞轮：外径 80 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 10 mm。另开贯穿孔：(28,0) 直径 8 mm，(-28,0) 直径 8 mm，(0,28) 直径 8 mm，(0,-28) 直径 8 mm。
+- id: wk_stat
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 24，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: wk_crank
+  extra_tools: []
+  prompt: |
+    创建偏心臂：在 front_plane 上画两端圆头的长条，宽 24 mm，两端半圆的圆心分别在原点和 (12,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=12 处直径 8 mm。
+- id: wk_ecc_pin
+  extra_tools: []
+  prompt: |
+    创建偏心销：直径 8 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: wk_ring
+  extra_tools:
+  - internal_gear
+  prompt: |
+    创建渐开线内齿圈，模数 2 mm，齿数 36，压力角 30°，齿宽 8 mm，外径 100 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 internal_gear。
+- id: wk_rotor
+  extra_tools: []
+  prompt: |
+    创建转子盖板：外径 100 mm、厚 6 mm 的圆盘，轴线沿 Z，从 Z=0 向 +Z 拉伸，中心贯穿孔直径 8 mm。另开贯穿孔：(0,40) 直径 6 mm，(-34.64,-20) 直径 6 mm，(34.64,-20) 直径 6 mm。
+- id: wk_apex
+  extra_tools: []
+  prompt: |
+    创建顶封：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+gold_roles:
+  frame: wk_frame
+  shaft: wk_shaft
+  flywheel: wk_flywheel
+  stat: wk_stat
+  crank: wk_crank
+  ecc_pin: wk_ecc_pin
+  rotor: wk_rotor
+  ring: wk_ring
+  apex_1: wk_apex
+  apex_2: wk_apex
+  apex_3: wk_apex
+assembly:
+  prompt: |
+    装配 Wankel 转子发动机的运动学模型：偏心轴带转子公转，转子上的 36 齿内齿圈绕固定的 24 齿相位齿轮滚动，
+    转子自转速度是偏心轴的 1/3、同向，三个顶点画出外旋轮线缸型。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - frame 固定，z∈[0,8]，中心孔 (0,0) 直径 10。24 齿 stat 固定在 frame 上、与中心孔同轴（z∈[8,16]）。
+    - shaft 穿过中心孔（也穿过 stat 的孔）绕 Z 转动（z∈[-14,22]）；flywheel 的中心孔固定在其上（z∈[-14,-8]），
+      crank 的 10 mm 孔固定在其上（z∈[16,22]）。ecc_pin 固定在 crank 的 8 mm 孔里（偏心 12，z∈[16,28]）。
+    - rotor（转子盖板）的 8 mm 中心孔套在 ecc_pin 上转动（z∈[22,28]）；36 齿内齿圈 ring 与 rotor 同轴固定（z∈[8,16]）。
+      ring 与 stat 内啮合（模数 2，中心距 12）。
+    - rotor 上三个 6 mm 孔各固定一根顶封销 apex_1、apex_2、apex_3（z∈[22,34]），apex_1 对应局部 (0,40) 孔。
+    对 shaft 做 check_motion（一整圈），确认无穿模后再保存。
+motion:
+  driver: shaft
+  sweep_deg: 360
+  frames: 13
+  rpm: 10
+  expect_fixed:
+  - frame
+  - stat
+  expect_moving:
+  - crank
+  - rotor
+  - ring
+  - apex_1
+  ratios:
+  - role: rotor
+    ratio: 3
+    same_direction: true
+  strokes:
+  - role: rotor
+    axis: x
+    mm: 24
+  - role: rotor
+    axis: y
+    mm: 24
+  max_interference: 0

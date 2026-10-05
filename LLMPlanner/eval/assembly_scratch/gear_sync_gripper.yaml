@@ -1,0 +1,193 @@
+case_id: gear_sync_gripper
+title: 齿轮同步平行夹爪（多位姿）
+# 15/15 齿轮反向同步 + 两组平行四边形指板，17 个组件、活动度 1；三个开合角检查两指位置。
+# 由 bench_cases2.py 生成，改测例请改那里再运行 write。
+parts:
+- id: gg_base
+  extra_tools: []
+  prompt: |
+    创建夹爪底座：在 front_plane 上画矩形，X 从 -60 到 60 mm，Y 从 -30 到 25 mm，向 +Z 拉伸 8 mm。
+    开贯穿孔：(-15,0) 直径 10 mm，(15,0) 直径 10 mm，(-40.3,5.9) 直径 6 mm，(40.3,5.9) 直径 6 mm。不要抽壳。
+- id: gg_shaft
+  extra_tools: []
+  prompt: |
+    创建齿轮轴：直径 10 mm、长 22 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: gg_gear
+  extra_tools:
+  - spur_gear
+  prompt: |
+    创建渐开线直齿轮，模数 2 mm，齿数 15，压力角 30°，齿宽 8 mm，轴孔直径 10 mm，轴线沿 Z，从 Z=0 向 +Z 拉伸。优先 spur_gear。
+- id: gg_drive
+  extra_tools: []
+  prompt: |
+    创建主动摆杆：在 front_plane 上画两端圆头的长条，宽 14 mm，两端半圆的圆心分别在原点和 (50,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 10 mm，X=50 处直径 6 mm。
+- id: gg_idler
+  extra_tools: []
+  prompt: |
+    创建从动摆杆：在 front_plane 上画两端圆头的长条，宽 10 mm，两端半圆的圆心分别在原点和 (50,0)，向 +Z 拉伸 6 mm。
+    在 X 轴上开贯穿孔：X=0 处直径 6 mm，X=50 处直径 6 mm。
+- id: gg_pin22
+  extra_tools: []
+  prompt: |
+    创建底座销：直径 6 mm、长 22 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: gg_pin12
+  extra_tools: []
+  prompt: |
+    创建铰销：直径 6 mm、长 12 mm 的圆柱，轴线沿 Z，从 Z=0 向 +Z 拉伸。
+- id: gg_finger_l
+  extra_tools: []
+  prompt: |
+    创建左指：在 front_plane 上画矩形，X 从 -32 到 4 mm，Y 从 -70 到 12 mm，向 +Z 拉伸 6 mm。
+    开贯穿孔：(0,0) 直径 6 mm，(-25.3,5.9) 直径 6 mm。不要抽壳。
+- id: gg_finger_r
+  extra_tools: []
+  prompt: |
+    创建右指：在 front_plane 上画矩形，X 从 -4 到 32 mm，Y 从 -70 到 12 mm，向 +Z 拉伸 6 mm。
+    开贯穿孔：(0,0) 直径 6 mm，(25.3,5.9) 直径 6 mm。不要抽壳。
+gold_roles:
+  base: gg_base
+  shaft_l: gg_shaft
+  gear_l: gg_gear
+  drive_l: gg_drive
+  ipin_l: gg_pin22
+  idler_l: gg_idler
+  fpin_dl: gg_pin12
+  fpin_il: gg_pin12
+  finger_l: gg_finger_l
+  shaft_r: gg_shaft
+  gear_r: gg_gear
+  drive_r: gg_drive
+  ipin_r: gg_pin22
+  idler_r: gg_idler
+  fpin_dr: gg_pin12
+  fpin_ir: gg_pin12
+  finger_r: gg_finger_r
+assembly:
+  prompt: |
+    装配齿轮同步平行夹爪：左右两只主动摆杆各固定在一只 15 齿齿轮上，两齿轮直接啮合、反向同步；
+    每侧"主动摆杆—从动摆杆—指板"组成平行四边形，两指始终竖直、对称开合。不要把插入坐标当作最终位姿。所有转轴沿 Z；下面写的 z∈[a,b] 是零件装好后占的 Z 范围。
+    - base 固定，z∈[0,8]：齿轮轴孔 (-15,0)、(15,0) 直径 10；从动摆杆轴孔 (-40.3,5.9)、(40.3,5.9) 直径 6。
+    - shaft_l、shaft_r 分别穿过两个齿轮轴孔绕 Z 转动（z∈[0,22]）；gear_l、gear_r 固定在对应轴上（z∈[8,16]），两者外啮合（模数 2，中心距 30）；
+      drive_l、drive_r（长 50）的 10 mm 孔固定在对应轴上（z∈[16,22]）。
+    - ipin_l、ipin_r 固定在两个从动摆杆轴孔里（z∈[0,22]）；idler_l、idler_r（长 50）的原点孔分别套在上面转动（z∈[16,22]）。
+    - fpin_dl、fpin_dr 固定在两只主动摆杆的 6 mm 孔里，fpin_il、fpin_ir 固定在两只从动摆杆的另一孔里（都在 z∈[16,28]）。
+    - finger_l 的 (0,0) 孔套在 fpin_dl 上、(-25.3,5.9) 孔套在 fpin_il 上（z∈[22,28]）；finger_r 的 (0,0) 孔套在 fpin_dr 上、
+      (25.3,5.9) 孔套在 fpin_ir 上。两只摆杆都朝下（−Y 侧）偏外伸出，左右镜像对称，指尖朝下。
+    - 开合这 1 个自由度保持自由（整机活动度 1），不要固定。各件互不穿模，装好后保存。
+motion:
+  mode: poses
+  frame: base
+  expect_fixed:
+  - base
+  tolerance_mm: 1.5
+  max_interference: 0
+  poses:
+  - name: open
+    set:
+    - type: angle
+      a: drive_l:plane(top)
+      b: base:plane(top)
+      angle_deg: 125.0
+      points:
+      - role: finger_l
+        local:
+        - 0.0
+        - 0.0
+        - 0
+        expect:
+          x: -43.68
+          y: -40.96
+    - type: angle
+      a: drive_r:plane(top)
+      b: base:plane(top)
+      angle_deg: 55.0
+      points:
+      - role: finger_r
+        local:
+        - 0.0
+        - 0.0
+        - 0
+        expect:
+          x: 43.68
+          y: -40.96
+      - role: idler_r
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: 68.98
+          y: -35.06
+  - name: mid
+    set:
+    - type: angle
+      a: drive_l:plane(top)
+      b: base:plane(top)
+      angle_deg: 105.0
+      points:
+      - role: finger_l
+        local:
+        - 0.0
+        - 0.0
+        - 0
+        expect:
+          x: -27.94
+          y: -48.3
+    - type: angle
+      a: drive_r:plane(top)
+      b: base:plane(top)
+      angle_deg: 75.0
+      points:
+      - role: finger_r
+        local:
+        - 0.0
+        - 0.0
+        - 0
+        expect:
+          x: 27.94
+          y: -48.3
+      - role: idler_r
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: 53.24
+          y: -42.4
+  - name: close
+    set:
+    - type: angle
+      a: drive_l:plane(top)
+      b: base:plane(top)
+      angle_deg: 82.0
+      points:
+      - role: finger_l
+        local:
+        - 0.0
+        - 0.0
+        - 0
+        expect:
+          x: -8.04
+          y: -49.51
+    - type: angle
+      a: drive_r:plane(top)
+      b: base:plane(top)
+      angle_deg: 98.0
+      points:
+      - role: finger_r
+        local:
+        - 0.0
+        - 0.0
+        - 0
+        expect:
+          x: 8.04
+          y: -49.51
+      - role: idler_r
+        local:
+        - 50.0
+        - 0.0
+        - 0
+        expect:
+          x: 33.34
+          y: -43.61
