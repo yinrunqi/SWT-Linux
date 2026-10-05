@@ -277,6 +277,95 @@ def test_assembly_agent_keeps_raw_responses():
     assert outcome["llm_responses"][0]["choices"][0]["message"]["reasoning_content"] == "think1"
 
 
+class RecordingAsmSession(AsmSession):
+    def __init__(self, crash_on=None, fail=(), lost_on=None):
+        self.calls, self.crash_on, self.fail, self.lost_on = [], crash_on, set(fail), lost_on
+
+    def call(self, name, args):
+        self.calls.append((name, args))
+        if self.crash_on and args.get("role") == self.crash_on:
+            raise RuntimeError("SolidWorks 崩溃")
+        if self.lost_on and args.get("role") == self.lost_on:
+            return {"ok": False, "error": {"code": "FEATURE_FAILED", "message": "没有活动的装配体文档"}}
+        if args.get("role") in self.fail:
+            return {"ok": False, "error": {"code": "SW_FAIL", "message": "x"}}
+        return {"ok": True}
+
+
+def test_assembly_agent_resumes_from_checkpoint_without_repeating_llm_calls(tmp_path):
+    path = tmp_path / "agent.checkpoint.json"
+    first = ScriptedClient([(1, [_call("a", "insert_component", {"role": "base"}), _call("s", "get_assembly_state")]),
+                            (2, [_call("b", "insert_component", {"role": "arm"})])])
+    try:
+        AssemblyAgent(first, "m", RecordingAsmSession(crash_on="arm"), tools=[], checkpoint_path=path).run("装配")
+    except RuntimeError:
+        pass
+    saved = json.loads(path.read_text(encoding="utf-8"))
+    assert saved["status"] == "running" and saved["usage"]["calls"] == 2
+    assert saved["pending"]["tool_calls"][0]["id"] == "b"
+    assert [item["tool"] for item in saved["tool_log"]] == ["insert_component", "get_assembly_state"]
+
+    session = RecordingAsmSession()
+    second = ScriptedClient([(3, [_call("c", "finish", {"summary": "ok"})])])
+    outcome = AssemblyAgent(second, "m", session, tools=[], checkpoint_path=path).run("装配", resume=True)
+    assert outcome["status"] == "finished" and outcome["llm_calls"] == 3 and outcome["summary"] == "ok"
+    assert [(name, args.get("role")) for name, args in session.calls] == [
+        ("insert_component", "base"), ("insert_component", "arm"), ("finish", None)]
+    assert outcome["resumed"] == {"from_llm_calls": 2, "replayed_tools": 2, "mismatch": None}
+    assert [r["id"] for r in outcome["llm_responses"]] == ["resp1", "resp2", "resp3"]
+    assert json.loads(path.read_text(encoding="utf-8"))["status"] == "finished"
+
+
+def test_assembly_agent_stops_when_document_is_lost_and_resumes_the_round(tmp_path):
+    path = tmp_path / "agent.checkpoint.json"
+    first = ScriptedClient([(1, [_call("a", "insert_component", {"role": "base"})]),
+                            (2, [_call("b", "insert_component", {"role": "arm"}),
+                                 _call("c", "mate", {"role": "LOST"})])])
+    outcome = AssemblyAgent(first, "m", RecordingAsmSession(lost_on="LOST"), tools=[],
+                            checkpoint_path=path).run("装配")
+    assert outcome["status"] == "sw_lost" and outcome["llm_calls"] == 2
+    saved = json.loads(path.read_text(encoding="utf-8"))
+    assert [item["args"]["role"] for item in saved["tool_log"]] == ["base"]
+    assert [c["id"] for c in saved["pending"]["tool_calls"]] == ["b", "c"]
+    assert saved["messages"][-1]["role"] == "tool"
+
+    session = RecordingAsmSession()
+    second = ScriptedClient([(3, [_call("d", "finish", {"summary": "ok"})])])
+    outcome = AssemblyAgent(second, "m", session, tools=[], checkpoint_path=path).run("装配", resume=True)
+    assert outcome["status"] == "finished" and outcome["llm_calls"] == 3
+    assert [args.get("role") for _, args in session.calls] == ["base", "arm", "LOST", None]
+
+
+def test_assembly_agent_resume_fails_when_replay_differs_and_returns_finished_result(tmp_path):
+    path = tmp_path / "agent.checkpoint.json"
+    first = ScriptedClient([(1, [_call("a", "insert_component", {"role": "base"})]),
+                            (2, [_call("b", "finish", {"summary": "ok"})])])
+    AssemblyAgent(first, "m", RecordingAsmSession(), tools=[], checkpoint_path=path).run("装配")
+
+    session = RecordingAsmSession()
+    outcome = AssemblyAgent(ScriptedClient([]), "m", session, tools=[], checkpoint_path=path).run("装配", resume=True)
+    assert outcome["status"] == "finished" and outcome["summary"] == "ok" and outcome["llm_calls"] == 2
+    assert [args.get("role") for _, args in session.calls] == ["base"]
+
+    outcome = AssemblyAgent(ScriptedClient([]), "m", RecordingAsmSession(fail={"base"}), tools=[],
+                            checkpoint_path=path).run("装配", resume=True)
+    assert outcome["status"] == "resume_failed" and "insert_component" in outcome["error"]
+    assert json.loads(path.read_text(encoding="utf-8"))["status"] == "finished"
+
+
+def test_assembly_agent_rejects_checkpoint_of_another_goal(tmp_path):
+    path = tmp_path / "agent.checkpoint.json"
+    AssemblyAgent(ScriptedClient([(1, [_call("a", "finish", {"summary": "ok"})])]), "m", RecordingAsmSession(),
+                  tools=[], checkpoint_path=path).run("装配")
+    try:
+        AssemblyAgent(ScriptedClient([]), "m", RecordingAsmSession(), tools=[], checkpoint_path=path).run(
+            "别的装配", resume=True)
+    except ValueError as exc:
+        assert "另一个需求" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")
+
+
 def test_raw_response_without_model_dump_falls_back_to_repr():
     assert raw_response(SimpleNamespace(x=1)) == {"repr": "namespace(x=1)"}
 
@@ -316,3 +405,31 @@ def test_three_view_run_one_writes_trace_on_request_failure(tmp_path, monkeypatc
     assert trace["error"] == "web down"
     assert trace["request"]["capture_trace"] is True
     assert trace["request"]["image"] == "[image]"
+    assert trace["request"]["checkpoint_path"] == str(tmp_path / "d01_r1.checkpoint.json")
+    assert trace["request"]["resume"] is False
+    assert bench.needs_rerun(row)
+
+
+def test_three_view_resume_continues_interrupted_runs_from_checkpoint(tmp_path, monkeypatch):
+    bench = _load_three_view_bench()
+    monkeypatch.setattr(bench, "ROOT", tmp_path)
+    out_dir = tmp_path / "eval" / "artifacts" / "tv"
+    out_dir.mkdir(parents=True)
+    rows = [{"case": "d01", "repeat": 1, "status": "finished"},
+            {"case": "d01", "repeat": 2, "status": "llm_error"},
+            {"case": "d01", "repeat": 2, "status": "llm_error"}]
+    (out_dir / "runs.json").write_text(json.dumps(rows), encoding="utf-8")
+    (out_dir / "d01_r2.checkpoint.json").write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(bench, "load_tasks", lambda lang, ids: [{"case": "d01", "prompt": "p", "image": None}])
+    seen = []
+
+    def fake_run_one(task, k, args, resume=False):
+        seen.append((k, resume))
+        return {"case": task["case"], "repeat": k, "status": "finished", "duration_seconds": 1.0}
+
+    monkeypatch.setattr(bench, "run_one", fake_run_one)
+    monkeypatch.setattr(bench.sys, "argv", ["x", "--name", "tv", "--repeats", "3", "--resume"])
+    assert bench.main() == 0
+    assert seen == [(2, True), (3, False)]
+    log = json.loads((out_dir / "runs.json").read_text(encoding="utf-8"))
+    assert [(r["repeat"], r["status"]) for r in log] == [(1, "finished"), (2, "finished"), (3, "finished")]

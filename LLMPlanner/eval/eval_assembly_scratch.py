@@ -199,7 +199,13 @@ def infra_flags(assembly: dict) -> list[str]:
             flags.append(f"{key}: {err[:160]}")
     if assembly.get("infra_error"):
         flags.append(str(assembly["infra_error"])[:160])
+    if assembly.get("status") in ("sw_lost", "resume_failed"):
+        flags.append(f"agent {assembly['status']}: {str(assembly.get('error') or '')[:160]}")
     return flags
+
+
+# 这些状态说明 LLM 或 SolidWorks 中途出了问题、结果不完整，--resume 时从 checkpoint 接着跑
+RERUN_STATUSES = {"llm_error", "sw_lost", "resume_failed"}
 
 
 def _grade_step(step: Path, rubric_path: Path) -> dict:
@@ -232,11 +238,20 @@ def generate_part(
     model: str,
     max_llm_calls: int,
     reasoning_effort: str | None = None,
+    resume: bool = False,
 ) -> dict:
     from planner.workflow.agent import WorkflowAgent
     from planner.workflow.tools import WorkflowSession
 
     dest.parent.mkdir(parents=True, exist_ok=True)
+    result_path, checkpoint = dest.with_suffix(".result.json"), dest.with_suffix(".checkpoint.json")
+    if resume and result_path.is_file():
+        previous = json.loads(result_path.read_text(encoding="utf-8"))
+        if previous.get("status") not in RERUN_STATUSES and Path(str(previous["artifacts"].get("sldprt", ""))).is_file():
+            previous["reused"] = True
+            return previous
+    if not resume:
+        checkpoint.unlink(missing_ok=True)
     _close(sw)
     extra = spec.get("extra_tools") or []
     session = WorkflowSession(base_url=sw, extra_tools=extra)
@@ -244,8 +259,8 @@ def generate_part(
     started = time.perf_counter()
     outcome = WorkflowAgent(
         _openai(), model, session, max_llm_calls=max_llm_calls, extra_tools=extra,
-        reasoning_effort=reasoning_effort,
-    ).run(spec["prompt"])
+        reasoning_effort=reasoning_effort, checkpoint_path=checkpoint,
+    ).run(spec["prompt"], resume=resume)
     trace = dest.with_suffix(".agent.json")
     _write_json(trace, outcome)
     step, sldprt = dest.with_suffix(".step"), dest.with_suffix(".SLDPRT")
@@ -260,7 +275,7 @@ def generate_part(
     if step.is_file():
         grade = _grade_step(step, RUBRIC_DIR / f"{spec['id']}.yaml")
     _close(sw)
-    return {
+    result = {
         "part_id": spec["id"],
         "status": outcome["status"],
         "accepted": bool(grade and grade.get("accepted")),
@@ -272,10 +287,14 @@ def generate_part(
         "finish_reasons": outcome.get("finish_reasons"),
         "tool_calls": outcome["tool_calls"],
         "agent_summary": outcome.get("summary"),
-        "duration_seconds": round(time.perf_counter() - started, 2),
+        "resumed": outcome.get("resumed"),
+        "duration_seconds": outcome.get("duration_seconds", round(time.perf_counter() - started, 2)),
         "artifacts": artifacts,
         "trace": str(trace),
+        "checkpoint": str(checkpoint),
     }
+    _write_json(result_path, result)
+    return result
 
 
 def assemble(
@@ -289,12 +308,16 @@ def assemble(
     workflow: str = "v1",
     max_tokens: int = 8000,
     reasoning_effort: str | None = None,
+    resume: bool = False,
 ) -> dict:
     from planner.assembly_workflow.agent import AssemblyAgent
     from planner.assembly_workflow.session import AssemblySession
     from planner.assembly_workflow.tools import tool_names, tool_specs
 
     dest.parent.mkdir(parents=True, exist_ok=True)
+    checkpoint = dest.with_name("agent.checkpoint.json")
+    if not resume:
+        checkpoint.unlink(missing_ok=True)
     _close(sw)
     session = AssemblySession(base_url=sw, workflow=workflow, allowed_tools=tool_names(workflow))
     session.start_assembly(str(dest))
@@ -304,8 +327,8 @@ def assemble(
     LLM_CALL_LOG.clear()
     outcome = AssemblyAgent(
         _openai(), model, session, max_llm_calls=max_llm_calls, max_tokens=max_tokens,
-        tools=tool_specs(workflow), reasoning_effort=reasoning_effort,
-    ).run(goal)
+        tools=tool_specs(workflow), reasoning_effort=reasoning_effort, checkpoint_path=checkpoint,
+    ).run(goal, resume=resume)
     messages = outcome.get("messages") or []
     _write_json(dest.with_name("agent_messages.json"), messages)
     _write_json(dest.with_name("agent_llm_responses.json"), outcome.get("llm_responses") or [])
@@ -340,6 +363,9 @@ def assemble(
         "motion": motion,
         "token_usage": outcome["token_usage"],
         "llm_calls": outcome["llm_calls"],
+        "resumed": outcome.get("resumed"),
+        "checkpoint": str(checkpoint),
+        "agent_duration_seconds": outcome.get("duration_seconds"),
         "duration_seconds": round(time.perf_counter() - started, 2),
         "aliases": outcome.get("aliases"),
         "tool_calls": outcome["tool_calls"],
@@ -391,7 +417,8 @@ def _motion(session, spec: dict, parts: dict[str, Path], sw: str) -> dict:
     return motion
 
 
-def run_condition(case: dict, condition: str, repeat: int, args, workflow: str = "v1") -> dict:
+def run_condition(case: dict, condition: str, repeat: int, args, workflow: str = "v1",
+                  resume: bool = False) -> dict:
     case_id = case["case_id"]
     out = Path(args.output_dir).resolve() / workflow / case_id / f"{condition}_r{repeat}"
     out.mkdir(parents=True, exist_ok=True)
@@ -410,11 +437,12 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
             dest = out / "parts" / spec["id"]
             result = generate_part(
                 spec, dest, sw=args.sw, model=args.model, max_llm_calls=args.max_part_calls,
-                reasoning_effort=args.reasoning_effort,
+                reasoning_effort=args.reasoning_effort, resume=resume,
             )
             skipped = bool((result.get("grade") or {}).get("skipped"))
             print(
                 f"  part {spec['id']}: "
+                + ("[沿用上次结果] " if result.get("reused") else "[续跑] " if result.get("resumed") else "")
                 + ("grade=skipped(OCC) " if skipped else f"accepted={result['accepted']} score={result['score']} ")
                 + f"step={'yes' if Path(str(result['artifacts'].get('step', ''))).is_file() else 'NO'} "
                 f"status={result['status']} calls={result['llm_calls']}"
@@ -439,11 +467,14 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
     budget = asm_call_budget(case, args)
     retries = max(0, int(getattr(args, "infra_retries", 0) or 0))
     for attempt in range(retries + 1):
+        # 重试时从 checkpoint 接着跑：已有的 LLM 回复不重新请求；上次重放就对不上（resume_failed）则从头来
+        if attempt:
+            resume = assembly.get("status") != "resume_failed"
         try:
             assembly = assemble(
                 case, parts, out / f"{case_id}.SLDASM",
                 sw=args.sw, model=args.model, max_llm_calls=budget, workflow=workflow,
-                max_tokens=args.asm_max_tokens, reasoning_effort=args.reasoning_effort,
+                max_tokens=args.asm_max_tokens, reasoning_effort=args.reasoning_effort, resume=resume,
             )
         except Exception as exc:  # SolidWorks 已经死掉时连新建装配体都会失败
             assembly = {"status": "infra_exception", "infra_error": f"{type(exc).__name__}: {exc}",
@@ -578,8 +609,9 @@ def main() -> None:
     parser.add_argument("--output", default=str(ROOT / "eval" / "assembly_scratch_result.json"))
     parser.add_argument(
         "--resume", action="store_true",
-        help="keep finished rows of an existing --output and run only the missing ones; "
-        "rows with infra_error or an LLM error are rerun",
+        help="keep finished rows of an existing --output and run only the missing ones; rows with infra_error "
+        "or an interrupted agent (llm_error / sw_lost / resume_failed) are rerun, continuing from the part and "
+        "assembly checkpoints saved under --output-dir (finished parts are reused)",
     )
     args = parser.parse_args()
     names = []
@@ -606,9 +638,11 @@ def main() -> None:
                 parser.error(f"--resume：已有结果的 {key}={previous.get(key)!r} 与本次 {getattr(args, key)!r} 不一致")
         for row in previous.get("results") or []:
             asm = row.get("assembly") or {}
-            if asm.get("infra_error") or asm.get("status") == "llm_error":
-                print(f"[resume] 重跑 {row['case_id']} {row['condition']} r{row['repeat']} {row['workflow']}"
-                      f"（{asm.get('infra_error') or asm.get('error')}）", flush=True)
+            broken_parts = [p["part_id"] for p in row.get("parts") or [] if p.get("status") in RERUN_STATUSES]
+            if asm.get("infra_error") or asm.get("status") in RERUN_STATUSES or broken_parts:
+                print(f"[resume] 续跑 {row['case_id']} {row['condition']} r{row['repeat']} {row['workflow']}"
+                      f"（{asm.get('infra_error') or asm.get('error') or '零件中断: ' + ','.join(broken_parts)}）",
+                      flush=True)
                 continue
             rows.append(row)
         print(f"[resume] 保留已完成的 {len(rows)} 行", flush=True)
@@ -654,7 +688,7 @@ def main() -> None:
                         print(f"=== {case['case_id']} {condition} r{repeat} {workflow} === 已完成，跳过", flush=True)
                         continue
                     print(f"=== {case['case_id']} {condition} r{repeat} {workflow} ===", flush=True)
-                    row = run_condition(case, condition, repeat, args, workflow)
+                    row = run_condition(case, condition, repeat, args, workflow, resume=args.resume)
                     rows.append(row)
                     asm = row.get("assembly") or {}
                     print(

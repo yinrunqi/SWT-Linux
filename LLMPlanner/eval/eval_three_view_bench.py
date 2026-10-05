@@ -9,6 +9,9 @@ current part against it. Scoring is offline and needs no SolidWorks:
     venv-occ\\Scripts\\python.exe -X utf8 -m geomcheck.three_view --artifacts <out-dir> --output scores.json
     venv-occ\\Scripts\\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_three_view \\
         summary scores.json --repeats 2
+
+L1 runs save the agent state to <out-dir>/<case>_r<k>.checkpoint.json after every LLM reply and tool
+round (full conversation, raw LLM responses, tool log); --resume continues interrupted runs from it.
 """
 
 from __future__ import annotations
@@ -16,6 +19,7 @@ from __future__ import annotations
 import argparse
 import base64
 import json
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -24,9 +28,17 @@ from typing import Any
 import requests
 import yaml
 
+try:
+    from . import sw_watchdog
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import sw_watchdog
+
 ROOT = Path(__file__).resolve().parent.parent
 RUBRIC_DIR = ROOT / "eval" / "rubrics_three_view"
 PROMPT_FIELDS = {"zh": "prompt", "en": "prompt_en"}
+# 请求异常、LLM 接口出错、SolidWorks 文档丢失或续跑重放失败：都不是模型能力的结果，--resume 时续跑
+RERUN_STATUSES = {"llm_error", "sw_lost", "resume_failed"}
 
 
 def load_tasks(lang: str, ids: list[str] | None) -> list[dict]:
@@ -86,9 +98,16 @@ def _write_trace(path: Path, request: dict, status: int | None, body: Any, error
     path.write_text(json.dumps(trace, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
 
 
-def run_one(task: dict, k: int, args) -> dict:
+def needs_rerun(row: dict) -> bool:
+    return bool(row.get("error")) or row.get("status") in RERUN_STATUSES
+
+
+def run_one(task: dict, k: int, args, resume: bool = False) -> dict:
     started = time.perf_counter()
     stem = args.out_dir / f"{task['case']}_r{k}"
+    checkpoint = stem.parent / f"{stem.name}.checkpoint.json"
+    if not resume:
+        checkpoint.unlink(missing_ok=True)
     _close_documents(args.sw_url)
     time.sleep(1.0)
     payload = {
@@ -102,12 +121,15 @@ def run_one(task: dict, k: int, args) -> dict:
     }
     if args.action_level == "L1":
         # 端到端：图纸直接交给 plan_model（须为多模态模型），没有单独的读图阶段
-        payload.update({"max_turns": args.max_llm_calls, "views_tool": not args.no_views_tool})
+        payload.update({"max_turns": args.max_llm_calls, "views_tool": not args.no_views_tool,
+                        "checkpoint_path": str(checkpoint), "resume": resume})
     else:
         payload.update({"mode": args.mode, "vision_model": args.vision_model})
     trace_path = stem.parent / f"{stem.name}.trace.json"
     row: dict[str, Any] = {"case": task["case"], "repeat": k, "action_level": args.action_level,
                            "plan_model": args.plan_model, "trace": str(trace_path)}
+    if args.action_level == "L1":
+        row["checkpoint"] = str(checkpoint)
     status_code, body = None, None
     try:
         response = requests.post(f"{args.web_url}/api/run", json=payload, timeout=3600)
@@ -120,7 +142,9 @@ def run_one(task: dict, k: int, args) -> dict:
         row["token_usage"] = body.get("token_usage")
         row["status"] = (body.get("multi_turn") or {}).get("status") or (body.get("summary") or {}).get("status")
         if args.action_level == "L1":
-            summary = body.get("summary") or {}
+            summary, workflow = body.get("summary") or {}, body.get("workflow") or {}
+            row["workflow_error"] = workflow.get("error")
+            row["resumed"] = workflow.get("resumed")
             row["llm_calls"] = summary.get("llm_calls")
             row["tool_calls"] = summary.get("tool_calls")
             row["failed_modeling_calls"] = sum(1 for item in body.get("results") or [] if not item.get("success"))
@@ -166,20 +190,54 @@ def main() -> int:
     parser.add_argument("--web-url", default="http://localhost:5000")
     parser.add_argument("--sw-url", default="http://localhost:5100")
     parser.add_argument("--name", default=datetime.now().strftime("three_view_%Y%m%d_%H%M"))
-    parser.add_argument("--resume", action="store_true", help="skip runs whose STEP already exists")
+    parser.add_argument(
+        "--resume", action="store_true",
+        help="keep finished runs from <out-dir>/runs.json; runs that errored or were interrupted (llm_error / "
+        "sw_lost / resume_failed) and missing runs continue from their L1 checkpoints when one exists",
+    )
+    parser.add_argument(
+        "--sw-restarts", type=int, default=0,
+        help="SolidWorks watchdog: before each run restart SolidWorks and the HTTP service when either is down "
+        "or SolidWorks exceeds --sw-max-private-gb; a run that loses SolidWorks is restarted and continued from "
+        "its checkpoint up to this many times. 0 = off",
+    )
+    parser.add_argument("--sw-max-private-gb", type=float, default=12.0)
     args = parser.parse_args()
     args.out_dir = ROOT / "eval" / "artifacts" / args.name
     args.out_dir.mkdir(parents=True, exist_ok=True)
     log_path = args.out_dir / "runs.json"
     rows = json.loads(log_path.read_text(encoding="utf-8")) if args.resume and log_path.exists() else []
+    if rows:
+        kept = {(row["case"], row["repeat"]): row for row in rows if not needs_rerun(row)}
+        rows = list(kept.values())
+        print(f"resume: keeping {len(rows)} finished runs from {log_path}", flush=True)
+    done = {(row["case"], row["repeat"]) for row in rows}
+    sw_url = args.sw_url.rstrip("/")
 
     for task in load_tasks(args.lang, args.ids):
         for k in range(1, args.repeats + 1):
-            if args.resume and (args.out_dir / f"{task['case']}_r{k}.step").exists():
+            if (task["case"], k) in done:
                 continue
-            print(f"[{task['case']} r{k}]", flush=True)
-            row = run_one(task, k, args)
-            print(f"    status={row.get('status')} error={row.get('error')} {row['duration_seconds']}s", flush=True)
+            checkpoint = args.out_dir / f"{task['case']}_r{k}.checkpoint.json"
+            resuming = args.resume and args.action_level == "L1" and checkpoint.is_file()
+            print(f"[{task['case']} r{k}]{' resume from checkpoint' if resuming else ''}", flush=True)
+            for attempt in range(1 + args.sw_restarts):
+                if args.sw_restarts:
+                    reason = sw_watchdog.check(sw_url, args.sw_max_private_gb)
+                    if reason:
+                        print(f"  [watchdog] {reason}", flush=True)
+                        sw_watchdog.restart(sw_url)
+                row = run_one(task, k, args, resume=resuming)
+                lost = row.get("status") == "sw_lost" or (
+                    bool(row.get("error")) and sw_watchdog.check(sw_url, 0) is not None
+                )
+                if not args.sw_restarts or not lost or attempt == args.sw_restarts:
+                    break
+                print(f"  [watchdog] SolidWorks lost during the run ({row.get('status') or row.get('error')}); "
+                      "restarting and continuing from the checkpoint", flush=True)
+                resuming = args.action_level == "L1" and checkpoint.is_file()
+            print(f"    status={row.get('status')} error={row.get('error') or row.get('workflow_error')} "
+                  f"{row['duration_seconds']}s", flush=True)
             rows.append(row)
             log_path.write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"STEP files and run log in {args.out_dir}")

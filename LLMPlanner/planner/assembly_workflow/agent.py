@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import json
+import os
 import time
+from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 from planner.workflow.agent import raw_response
@@ -51,6 +54,16 @@ SYSTEM_PROMPT_V3 = """你是一名资深装配工程师，正在 SolidWorks 里�
 
 STATE_PLACEHOLDER = '{"ok": true, "note": "较早的状态快照已省略，以后面最新一次为准"}'
 
+# 续跑重放时跳过的只读工具；check_motion / check_pose / check_dof 会更新 finish 的门槛状态，要重放
+NO_REPLAY_TOOLS = {"get_assembly_state", "check_interference", "finish"}
+RESUMABLE_STATUSES = {"running", "llm_error", "sw_lost"}
+ENVIRONMENT_ERRORS = {"NO_PART", "SW_UNAVAILABLE"}
+
+
+def _environment_lost(result: dict) -> bool:
+    error = result.get("error") or {}
+    return error.get("code") in ENVIRONMENT_ERRORS or "没有活动的装配体文档" in str(error.get("message") or "")
+
 
 def _tool_calls_payload(message: Any) -> list[dict]:
     calls = []
@@ -91,6 +104,7 @@ class AssemblyAgent:
         max_stalls: int = 2,
         tools: list[dict] | None = None,
         reasoning_effort: str | None = None,
+        checkpoint_path: str | Path | None = None,
     ):
         self.client = client
         self.model = model
@@ -101,8 +115,12 @@ class AssemblyAgent:
         self.temperature = temperature
         self.max_stalls = max_stalls
         self.reasoning_effort = reasoning_effort
+        self.checkpoint_path = Path(checkpoint_path) if checkpoint_path else None
 
-    def run(self, goal: str) -> dict:
+    def run(self, goal: str, *, resume: bool = False) -> dict:
+        """设置了 checkpoint_path 时，每次拿到 LLM 回复、每轮工具执行完都把对话与中间结果落盘；
+        resume=True 且存在未完成的 checkpoint 时，在当前空装配体上按顺序重放已执行的工具，
+        再接着原对话继续，已拿到但还没执行的回复直接使用，不重新请求。"""
         started = time.perf_counter()
         v3 = bool(getattr(self.session, "v3", False))
         messages: list[dict] = [
@@ -112,48 +130,86 @@ class AssemblyAgent:
         usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "calls": 0}
         tool_log: list[dict] = []
         llm_responses: list[dict] = []
+        finish_reasons: list[str | None] = []
         failed_signatures: dict[str, int] = {}
         status, summary, stalls, error = "max_llm_calls", "", 0, None
         max_tokens, truncations = self.max_tokens, 0
         state_messages: list[int] = []
+        pending: dict | None = None
+        prior_seconds, resumed = 0.0, None
         # 未指定时不发送该字段，保持与历史结果相同的请求体。
         extra = {"reasoning_effort": self.reasoning_effort} if self.reasoning_effort else {}
 
-        for turn in range(self.max_llm_calls):
-            if v3 and len(state_messages) > 1:
-                for index in state_messages[:-1]:
-                    messages[index]["content"] = STATE_PLACEHOLDER
-                state_messages = state_messages[-1:]
-            try:
-                response = self.client.chat.completions.create(
-                    model=self.model,
-                    messages=messages,
-                    tools=self.tools,
-                    tool_choice="auto",
-                    temperature=self.temperature,
-                    max_tokens=max_tokens,
-                    **extra,
-                )
-            except Exception as exc:
-                status, error = "llm_error", f"{type(exc).__name__}: {exc}"
-                break
-            llm_responses.append(raw_response(response))
-            usage["calls"] += 1
-            if response.usage is not None:
-                for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
-                    usage[key] += int(getattr(response.usage, key, 0) or 0)
-            choice = response.choices[0]
-            message = choice.message
-            calls = _tool_calls_payload(message)
+        saved = self._load_checkpoint(goal) if resume else None
+        done = False
+        if saved:
+            messages, usage, tool_log = saved["messages"], saved["usage"], saved["tool_log"]
+            llm_responses, finish_reasons = saved["llm_responses"], saved.get("finish_reasons", [])
+            failed_signatures, stalls = saved["failed_signatures"], saved["stalls"]
+            truncations, max_tokens = saved["truncations"], saved["max_tokens"]
+            state_messages, pending = saved.get("state_messages", []), saved.get("pending")
+            prior_seconds = float(saved.get("duration_seconds") or 0)
+            mismatch = self._replay(tool_log)
+            resumed = {"from_llm_calls": usage["calls"], "replayed_tools": len(tool_log), "mismatch": mismatch}
+            if mismatch:
+                status, error, pending, done = "resume_failed", mismatch, None, True
+            elif saved.get("status") not in RESUMABLE_STATUSES:
+                # 上次已经正常结束，只是结果没送回评测端：恢复装配体后直接返回原结果
+                status, summary, error, pending, done = saved["status"], saved["summary"], saved["error"], None, True
+
+        def checkpoint(current_status: str = "running") -> None:
+            self._save_checkpoint({
+                "goal": goal, "model": self.model, "status": current_status, "summary": summary, "error": error,
+                "messages": messages, "usage": usage, "tool_log": tool_log, "llm_responses": llm_responses,
+                "finish_reasons": finish_reasons, "failed_signatures": failed_signatures, "stalls": stalls,
+                "truncations": truncations, "max_tokens": max_tokens, "state_messages": state_messages,
+                "pending": pending, "resumed": resumed, "reasoning_effort": self.reasoning_effort,
+                "duration_seconds": round(prior_seconds + time.perf_counter() - started, 2),
+            })
+
+        while not done and (pending is not None or usage["calls"] < self.max_llm_calls):
+            if pending is None:
+                if v3 and len(state_messages) > 1:
+                    for index in state_messages[:-1]:
+                        messages[index]["content"] = STATE_PLACEHOLDER
+                    state_messages = state_messages[-1:]
+                try:
+                    response = self.client.chat.completions.create(
+                        model=self.model,
+                        messages=messages,
+                        tools=self.tools,
+                        tool_choice="auto",
+                        temperature=self.temperature,
+                        max_tokens=max_tokens,
+                        **extra,
+                    )
+                except Exception as exc:
+                    status, error = "llm_error", f"{type(exc).__name__}: {exc}"
+                    break
+                llm_responses.append(raw_response(response))
+                usage["calls"] += 1
+                if response.usage is not None:
+                    for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
+                        usage[key] += int(getattr(response.usage, key, 0) or 0)
+                choice = response.choices[0]
+                finish_reasons.append(getattr(choice, "finish_reason", None))
+                pending = {"finish_reason": getattr(choice, "finish_reason", None),
+                           "content": choice.message.content or "",
+                           "tool_calls": _tool_calls_payload(choice.message)}
+                checkpoint()
+            reply, pending = pending, None
+            calls = reply["tool_calls"]
             # v3：输出被截断（常见于长篇推理）不算停滞；丢掉残缺回复，放宽长度再要一次，并提示直接给工具调用
-            if v3 and choice.finish_reason == "length" and not _all_args_parse(calls):
+            if v3 and reply["finish_reason"] == "length" and not _all_args_parse(calls):
                 truncations += 1
                 max_tokens = min(max(max_tokens, self.max_tokens) * 2, 32000)
                 if truncations == 1:
                     messages.append({"role": "user", "content": "上一条回复太长被截断了。少写分析，直接输出下一步的工具调用。"})
+                checkpoint()
                 continue
             max_tokens = self.max_tokens
-            assistant = {"role": "assistant", "content": message.content or ""}
+            round_start = (len(messages), len(tool_log), dict(failed_signatures), list(state_messages))
+            assistant = {"role": "assistant", "content": reply["content"]}
             if calls:
                 assistant["tool_calls"] = calls
             messages.append(assistant)
@@ -168,6 +224,7 @@ class AssemblyAgent:
                     "content": ("请继续调用工具推进装配；check_motion（或 check_pose + check_dof）通过并保存后调用 finish。"
                                 if v3 else "请继续调用工具推进装配；check_motion 通过并保存后调用 finish。"),
                 })
+                checkpoint()
                 continue
             stalls = 0
 
@@ -190,6 +247,13 @@ class AssemblyAgent:
                     if name == "finish" and result.get("ok"):
                         finished = True
                         summary = str(args.get("summary", ""))
+                if _environment_lost(result):
+                    # 装配文档或 SolidWorks 服务丢了，不是模型的错：撤回这一轮，留给 resume 重放后重做
+                    messages[round_start[0]:] = []
+                    del tool_log[round_start[1]:]
+                    failed_signatures, state_messages = round_start[2], round_start[3]
+                    status, error, pending = "sw_lost", f"{name}: {result['error'].get('message')}", reply
+                    break
                 if not result.get("ok"):
                     signature = f"{name}:{json.dumps(args, sort_keys=True, ensure_ascii=False)}"
                     failed_signatures[signature] = failed_signatures.get(signature, 0) + 1
@@ -203,17 +267,22 @@ class AssemblyAgent:
                     "message": (result.get("error") or {}).get("message", ""),
                 })
                 if v3 and call is calls[-1]:
-                    remaining = self.max_llm_calls - turn - 1
+                    remaining = self.max_llm_calls - usage["calls"]
                     result["budget"] = {"remaining_llm_calls": remaining}
                     if remaining <= 5 and not self.session.saved:
                         result["budget"]["warning"] = "调用预算将尽：先 save_assembly 保存当前结果，再继续修改。"
                 if v3 and name == "get_assembly_state" and result.get("ok"):
                     state_messages.append(len(messages))
                 messages.append({"role": "tool", "tool_call_id": call["id"], "content": dumps_result(result)})
+            if status == "sw_lost":
+                break
             if finished:
                 status = "finished"
                 break
+            checkpoint()
 
+        if status != "resume_failed":
+            checkpoint(status)
         return {
             "status": status,
             "summary": summary,
@@ -221,6 +290,7 @@ class AssemblyAgent:
             "truncations": truncations,
             "llm_calls": usage["calls"],
             "reasoning_effort": self.reasoning_effort,
+            "finish_reasons": finish_reasons,
             "tool_calls": tool_log,
             "token_usage": usage,
             "last_motion": self.session.last_motion,
@@ -228,5 +298,35 @@ class AssemblyAgent:
             "saved": self.session.saved,
             "messages": messages,
             "llm_responses": llm_responses,
-            "duration_seconds": round(time.perf_counter() - started, 2),
+            "resumed": resumed,
+            "duration_seconds": round(prior_seconds + time.perf_counter() - started, 2),
         }
+
+    def _load_checkpoint(self, goal: str) -> dict | None:
+        if not self.checkpoint_path or not self.checkpoint_path.is_file():
+            return None
+        saved = json.loads(self.checkpoint_path.read_text(encoding="utf-8"))
+        if saved.get("goal") != goal or saved.get("model") != self.model:
+            raise ValueError(f"checkpoint {self.checkpoint_path} 属于另一个需求或模型，不能续跑")
+        return saved
+
+    def _save_checkpoint(self, state: dict) -> None:
+        if not self.checkpoint_path:
+            return
+        self.checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+        state = {"version": 1, "updated_at": datetime.now().astimezone().isoformat(timespec="seconds"), **state}
+        tmp = self.checkpoint_path.with_name(self.checkpoint_path.name + ".tmp")
+        tmp.write_text(json.dumps(state, ensure_ascii=False, default=str), encoding="utf-8")
+        os.replace(tmp, self.checkpoint_path)
+
+    def _replay(self, tool_log: list[dict]) -> str | None:
+        """按原顺序重放改动装配体的工具（失败的也重放，保证组件与配合的自动编号一致）；结果与记录不符时返回说明。"""
+        for index, item in enumerate(tool_log, 1):
+            if item["tool"] in NO_REPLAY_TOOLS or "_raw" in item["args"]:
+                continue
+            result = self.session.call(item["tool"], item["args"])
+            code = (result.get("error") or {}).get("code")
+            if bool(result.get("ok")) != item["ok"] or code != item["error_code"]:
+                return (f"重放第 {index} 个工具调用 {item['tool']} 时结果与记录不一致："
+                        f"记录 ok={item['ok']} code={item['error_code']}，重放 ok={bool(result.get('ok'))} code={code}")
+        return None
