@@ -260,26 +260,28 @@ def generate_part(
     _close(sw)
     extra = spec.get("extra_tools") or []
     session = WorkflowSessionV2(base_url=sw, extra_tools=extra)
-    session.start_part()
     started = time.perf_counter()
-    outcome = WorkflowAgent(
-        _openai(), model, session, max_llm_calls=max_llm_calls, extra_tools=extra,
-        reasoning_effort=reasoning_effort, checkpoint_path=checkpoint, view_tool=view_tool,
-    ).run(spec["prompt"], resume=resume)
+    step, sldprt = dest.with_suffix(".step"), dest.with_suffix(".SLDPRT")
+    try:
+        session.start_part()
+        outcome = WorkflowAgent(
+            _openai(), model, session, max_llm_calls=max_llm_calls, extra_tools=extra,
+            reasoning_effort=reasoning_effort, checkpoint_path=checkpoint, view_tool=view_tool,
+        ).run(spec["prompt"], resume=resume)
+        artifacts = {}
+        try:
+            requests.post(f"{sw}/api/export-step", json={"stepPath": str(step)}, timeout=120)
+            requests.post(f"{sw}/api/save-part-as", json={"savePath": str(sldprt)}, timeout=120)
+            artifacts = {"step": str(step), "sldprt": str(sldprt)}
+        except Exception as exc:
+            artifacts = {"error": str(exc)}
+    finally:
+        _close(sw)
     trace = dest.with_suffix(".agent.json")
     _write_json(trace, outcome)
-    step, sldprt = dest.with_suffix(".step"), dest.with_suffix(".SLDPRT")
-    artifacts = {}
-    try:
-        requests.post(f"{sw}/api/export-step", json={"stepPath": str(step)}, timeout=120)
-        requests.post(f"{sw}/api/save-part-as", json={"savePath": str(sldprt)}, timeout=120)
-        artifacts = {"step": str(step), "sldprt": str(sldprt)}
-    except Exception as exc:
-        artifacts = {"error": str(exc)}
     grade = None
     if step.is_file():
         grade = _grade_step(step, RUBRIC_DIR / f"{spec['id']}.yaml")
-    _close(sw)
     result = {
         "part_id": spec["id"],
         "part_workflow": part_workflow,
@@ -303,7 +305,14 @@ def generate_part(
     return result
 
 
-def assemble(
+def assemble(case: dict, parts: dict[str, Path], dest: Path, *, sw: str, **kwargs) -> dict:
+    try:
+        return _assemble(case, parts, dest, sw=sw, **kwargs)
+    finally:
+        _close(sw)
+
+
+def _assemble(
     case: dict,
     parts: dict[str, Path],
     dest: Path,
@@ -360,7 +369,6 @@ def assemble(
         motion = _motion(session, case["motion"], parts, sw)
     except Exception as exc:
         motion = {"passed": False, "score": 0.0, "score_v1": 0.0, "error": str(exc)}
-    _close(sw)
     return {
         "status": outcome["status"],
         "error": outcome.get("error"),

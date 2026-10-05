@@ -13,11 +13,14 @@ test_stool.py — 四脚板凳建模测试
     python test/test_stool.py stool_fillet # 带圆角的板凳
 """
 
+import os
 import sys
 import math
+import pytest
 import requests
 
-BASE_URL = "http://localhost:5100"
+BASE_URL = os.environ.get("SW_API_URL", "http://localhost:5100").rstrip("/")
+pytestmark = pytest.mark.solidworks
 
 
 def api_get(endpoint: str, timeout: int = 60) -> dict:

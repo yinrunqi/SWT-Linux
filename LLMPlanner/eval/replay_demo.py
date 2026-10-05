@@ -13,6 +13,7 @@
 默认原样重放全部调用，包括评测时失败并已回滚的调用：跳过它们可能改变 SolidWorks 自动编号的特征名，
 后续按名称引用特征的调用就会对不上。--skip-failed 只建议在确认没有这类引用时使用。
 需要 C# 服务的 /api/view/fit（没有时只跳过视图调整，不影响重放）。
+结束（含出错）时关闭 SolidWorks 全部文档；要留着最终模型查看就加 --keep-open，看完记得手动关掉。
 """
 
 from __future__ import annotations
@@ -148,7 +149,10 @@ def replay(steps: list[dict], session, *, sw: str, target: str, query_tools: set
 
 
 def _close_all(sw: str) -> None:
-    requests.post(f"{sw}/api/close-all-documents", json={}, timeout=120)
+    try:
+        requests.post(f"{sw}/api/close-all-documents", json={}, timeout=120)
+    except requests.RequestException as exc:
+        print(f"关闭 SolidWorks 文档失败：{exc}", flush=True)
 
 
 def run_text(args: argparse.Namespace) -> int:
@@ -272,10 +276,16 @@ def main() -> int:
     parser.add_argument("--animate", action="store_true", help="装配：重放后在驱动件上加马达播放 Motion Study；多位姿测例依次摆位姿")
     parser.add_argument("--rpm", type=float, default=5)
     parser.add_argument("--sweep-deg", type=float, default=720, help="动画中驱动件转过的角度")
+    parser.add_argument("--keep-open", action="store_true",
+                        help="重放完把模型留在 SolidWorks 里查看（默认结束时关闭全部文档）")
     args = parser.parse_args()
     if args.kind == "assembly" and not args.artifacts:
         parser.error("assembly 需要 --artifacts")
-    return run_text(args) if args.kind == "text" else run_assembly(args)
+    try:
+        return run_text(args) if args.kind == "text" else run_assembly(args)
+    finally:
+        if not args.keep_open:
+            _close_all(args.sw)
 
 
 if __name__ == "__main__":

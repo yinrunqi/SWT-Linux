@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import base64
 import json
+import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -32,7 +33,7 @@ from planner.llm_client import SwLLMClient  # noqa: E402
 from planner.executor import SwExecutor  # noqa: E402
 
 
-SW_URL = "http://localhost:5100"
+SW_URL = os.environ.get("SW_API_URL", "http://localhost:5100").rstrip("/")
 DATASET_DIR = ROOT / "datasets" / "manual_three_view"
 SAMPLES_JSON = DATASET_DIR / "samples.json"
 

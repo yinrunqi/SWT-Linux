@@ -319,9 +319,12 @@ def main() -> None:
     dest = here / "gold_parts"
     spec = sys.argv[1] if len(sys.argv) > 1 else "all"
     built = {}
-    for name, build in BUILDERS.items():
-        if spec in ("all", name):
-            built[name] = {k: str(v) for k, v in build(dest / name).items()}
+    try:
+        for name, build in BUILDERS.items():
+            if spec in ("all", name):
+                built[name] = {k: str(v) for k, v in build(dest / name).items()}
+    finally:
+        close()
     print(yaml.safe_dump(built, allow_unicode=True, sort_keys=False))
 
 

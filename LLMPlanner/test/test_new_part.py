@@ -1,9 +1,13 @@
 """
 最小化测试：仅调用 new-part API，用于排查创建零件文档失败的问题。
 """
+import os
+
+import pytest
 import requests
 
-BASE = "http://localhost:5100"
+BASE = os.environ.get("SW_API_URL", "http://localhost:5100").rstrip("/")
+pytestmark = pytest.mark.solidworks
 
 def test_ping():
     """先测试服务是否可达"""

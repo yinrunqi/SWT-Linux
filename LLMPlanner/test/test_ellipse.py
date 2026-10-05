@@ -11,9 +11,13 @@ test_ellipse.py — 椭圆草图功能测试
 - C# HTTP API 服务已运行在 localhost:5100
 """
 
+import os
+
+import pytest
 import requests
 
-BASE = "http://localhost:5100"
+BASE = os.environ.get("SW_API_URL", "http://localhost:5100").rstrip("/")
+pytestmark = pytest.mark.solidworks
 
 
 def test_ellipse_extrusion():

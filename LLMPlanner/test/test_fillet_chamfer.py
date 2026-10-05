@@ -12,11 +12,14 @@
   python test_fillet_chamfer.py chamfer_dd   # 仅运行不等距倒角测试
 """
 
+import os
 import sys
+import pytest
 import requests
 import time
 
-BASE = "http://localhost:5100"
+BASE = os.environ.get("SW_API_URL", "http://localhost:5100").rstrip("/")
+pytestmark = pytest.mark.solidworks
 
 
 def api(method, path, json=None):

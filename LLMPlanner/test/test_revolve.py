@@ -16,12 +16,15 @@
   python test_revolve.py sphere       # 仅运行球体测试（圆弧轮廓旋转）
 """
 
+import os
 import sys
 import math
+import pytest
 import requests
 import time
 
-BASE = "http://localhost:5100"
+BASE = os.environ.get("SW_API_URL", "http://localhost:5100").rstrip("/")
+pytestmark = pytest.mark.solidworks
 
 
 def api(method, path, json=None):

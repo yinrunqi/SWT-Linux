@@ -10,11 +10,14 @@
   python test_cut_extrusion.py through  # 仅运行贯穿孔测试
 """
 
+import os
 import sys
+import pytest
 import requests
 import time
 
-BASE = "http://localhost:5100"
+BASE = os.environ.get("SW_API_URL", "http://localhost:5100").rstrip("/")
+pytestmark = pytest.mark.solidworks
 
 
 def api(method, path, json=None):
