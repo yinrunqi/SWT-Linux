@@ -12,6 +12,7 @@ import sys
 import os
 import threading
 import traceback
+from datetime import datetime
 from pathlib import Path
 
 PLANNER_ROOT = Path(__file__).resolve().parents[1]
@@ -1809,10 +1810,15 @@ def _run_workflow_l1(
     )
     session = create_session(version, base_url=executor.base_url, executor=executor, extra_tools=extra_tools)
     session.start_part()
+    label = Path(checkpoint_path).name.removesuffix(".checkpoint.json") if checkpoint_path else "web"
+
+    def log(line: str) -> None:
+        print(f"[{datetime.now():%H:%M:%S}] [{label}] {line}", flush=True)
+
     agent = WorkflowAgent(
         client, model, session, max_llm_calls=max_llm_calls, extra_tools=extra_tools,
         reasoning_effort=reasoning_effort, stream=True, checkpoint_path=checkpoint_path or None, version=version,
-        view_tool=view_tool,
+        view_tool=view_tool, log=log,
     )
     outcome = agent.run(instruction, image_b64=image_b64 or None, image_mime=image_mime, resume=resume)
     modeling_calls = [item for item in outcome["tool_calls"] if item["tool"] not in WORKFLOW_QUERY_TOOLS]

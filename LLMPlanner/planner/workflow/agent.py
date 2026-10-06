@@ -11,7 +11,7 @@ import os
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from .tools import IMAGE_KEY, TOOL_SPECS, WorkflowSession, dumps_result, tool_specs
 from .tools_v2 import WORKFLOW_VERSIONS, dumps_result_v2, tool_specs_v2
@@ -255,9 +255,12 @@ class WorkflowAgent:
         checkpoint_path: str | Path | None = None,
         version: str | None = None,
         view_tool: bool = True,
+        log: Callable[[str], None] | None = None,
     ):
         """version：v1 = L1，v2 = L1_v2；缺省跟随 session.version。
-        view_tool：L1_v2 是否提供 view_model 截图工具（骨干模型不支持图片输入时关掉）。"""
+        view_tool：L1_v2 是否提供 view_model 截图工具（骨干模型不支持图片输入时关掉）。
+        log：逐步进度输出（每次 LLM 调用、每个工具调用一行），评测时供终端监控。"""
+        self.log = log
         self.version = version or getattr(session, "version", "v1")
         if self.version not in WORKFLOW_VERSIONS:
             raise ValueError(f"未知的 workflow 版本 {self.version}")
@@ -320,6 +323,8 @@ class WorkflowAgent:
             pending, prior_seconds = saved.get("pending"), float(saved.get("duration_seconds") or 0)
             mismatch = self._replay(tool_log)
             resumed = {"from_llm_calls": usage["calls"], "replayed_tools": len(tool_log), "mismatch": mismatch}
+            self._log(f"续跑：重放 {len(tool_log)} 个工具，从第 {usage['calls']} 次 LLM 调用继续"
+                      + (f"，重放不一致：{mismatch}" if mismatch else ""))
             if mismatch:
                 status, error, pending, done = "resume_failed", mismatch, None, True
             elif saved.get("status") not in RESUMABLE_STATUSES:
@@ -354,6 +359,7 @@ class WorkflowAgent:
                         response = self.client.chat.completions.create(**request)
                 except Exception as exc:
                     status, error = "llm_error", f"{type(exc).__name__}: {exc}"
+                    self._log(f"LLM 错误：{error[:300]}")
                     break
                 llm_responses.append(raw_response(response))
                 usage["calls"] += 1
@@ -361,6 +367,10 @@ class WorkflowAgent:
                     for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
                         usage[key] += int(getattr(response.usage, key, 0) or 0)
                 choice = response.choices[0]
+                self._log(
+                    f"LLM #{usage['calls']}/{self.max_llm_calls} finish={getattr(choice, 'finish_reason', None)} "
+                    f"累计 {usage['total_tokens']} token，{time.perf_counter() - started + prior_seconds:.0f} s"
+                )
                 # 推理 token 计入 max_tokens；截断（length）时部分网关会把 usage 置 0，需单独记录。
                 finish_reasons.append(getattr(choice, "finish_reason", None))
                 pending = {"finish_reason": getattr(choice, "finish_reason", None),
@@ -452,6 +462,10 @@ class WorkflowAgent:
                 if was_blocked:
                     entry["blocked"] = True
                 tool_log.append(entry)
+                if entry["ok"]:
+                    self._log(f"  {name} ok")
+                else:
+                    self._log(f"  {name} 失败 {entry['error_code']}: {str(entry['message'])[:200]}")
                 if self.v2:
                     self._annotate_v2(name, result, messages, usage["calls"])
                 messages.append({"role": "tool", "tool_call_id": call["id"], "content": self._dumps(result)})
@@ -482,6 +496,8 @@ class WorkflowAgent:
             error = error or f"final_state: {exc}"
         if status != "resume_failed":
             checkpoint(status)
+        self._log(f"结束：status={status}，{usage['calls']} 次 LLM 调用，{len(tool_log)} 个工具调用，"
+                  f"{usage['total_tokens']} token" + (f"，error={str(error)[:200]}" if error else ""))
         return {
             "status": status,
             "summary": summary,
@@ -498,6 +514,10 @@ class WorkflowAgent:
             "resumed": resumed,
             "duration_seconds": round(prior_seconds + time.perf_counter() - started, 2),
         }
+
+    def _log(self, line: str) -> None:
+        if self.log:
+            self.log(line)
 
     def _load_checkpoint(self, goal: str) -> dict | None:
         if not self.checkpoint_path or not self.checkpoint_path.is_file():
