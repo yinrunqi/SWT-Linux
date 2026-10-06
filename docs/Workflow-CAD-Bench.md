@@ -377,7 +377,7 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --provider 
 | 二级门格海绵 `menger_sponge` | 7 | 两级分形挖孔（共 27 个方孔）必须全部贯穿且位置准确 |
 | 万向节叉 `u_joint_yoke` | 9 | 双叉臂与同轴十字轴承孔、半圆叉头、孔内键槽与径向紧定螺钉孔、叉臂外侧的轴承盖螺孔 |
 
-22 题共 217 个显式条目，配了 50 个针对性错误变体（相位转错、方向反了、少一级特征、孔不通等），每个都恰好在预期条目上失败。连同前 8 题，困难子集共 30 题、304 个条目、73 个错误变体。下面 Qwen 的参考结果只覆盖前 8 题；22 道新题上 claude-sonnet-5 的结果见 7.2 节，GPT-6-Astra 的结果见 7.3 节。
+22 题共 217 个显式条目，配了 50 个针对性错误变体（相位转错、方向反了、少一级特征、孔不通等），每个都恰好在预期条目上失败。连同前 8 题，困难子集共 30 题、304 个条目、73 个错误变体。下面 Qwen 的参考结果只覆盖前 8 题；22 道新题上 claude-sonnet-5 的结果见 7.2 节，GPT-6-Astra 的结果见 7.3 节；claude-sonnet-5 + L1_v2 在全部 30 题上的结果见 7.4 节。
 
 除了 OCC 参考实体，22 道新题还在 SolidWorks 里用 L1 的 24 个工具逐题建了一遍参考解（`LLMPlanner/eval/hard_l1_reference.py`，只调用模型能拿到的同一套工具），22 题全部 100 分，说明每道题在这套工具下都是可解的。其中最绕的是火箭尾段：`ref_plane` 只能建平行偏移面，45° 方位的尾翼要先阵列 8 片、再切掉 4 片。
 
@@ -542,6 +542,95 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --action-le
 
 - `spiral_staircase`：模型把 12 级台阶和 12 根栏杆柱逐级建出（每级一个 `ref_plane`、一次扇形 `extrude`、一次栏杆 `extrude`，共 36 次调用），用满 40 次预算，底座上的进线孔和 4 个地脚螺栓孔都没开。已经做对的台阶、栏杆也一并判失败，原因是 rubric 用进线孔 `cable` 给零件坐标系定方位，孔缺失后依赖这个坐标系的 7 个条目都报“未找到实体 cable”。
 - `brake_disc`：把模型的零件绕“轴线 + 螺栓孔”所在平面镜像后重新打分，10 项全部通过。题面的约束对这个平面对称：40 片筋每 9° 一片，5 个螺栓孔间隔 72° 且一孔正对一片筋，散热孔隔一个筋间隙排布。题面没有规定散热孔相对螺栓孔偏 +4.5° 还是 −4.5°，所以两种手性都符合题意，但 rubric 只接受一种。7.2 节 claude-sonnet-5 在这题上失败的条目相同、实测值完全一致，也是选了另一种手性。按“看过结果后不改 rubric”的约束这里没有调整；如果把镜像写法补进 `brake_disc.yaml`，两个模型这题都是 100，GPT-6-Astra 为 21/22、均分 96.8。
+
+### 7.4 claude-sonnet-5 + L1_v2 在全部 30 题上的结果
+
+L1_v2（`--action-level L1_v2`）是在 L1 失败分析基础上改进的工具集与系统提示词，L1 本身保持不变。改动见 `planner/workflow/tools_v2.py`：
+- 参数容错，以及逐特征的范围、去除量反馈；
+- 拒绝多实体，`get_model_state` 分组输出；
+- 新增凸包、极坐标轮廓；sweep 支持空间折线和螺旋路径，loft 支持点截面和引导线；
+- 真正的锥形沉头；多条边的圆角、倒角合并成一个特征；
+- 重复调用拦截，提示剩余调用预算；
+- 第 6 节的 `view_model` 截图工具。
+
+这一节用 L1_v2 把困难子集 30 题完整跑了一遍。前 8 题以前只有 Qwen 和 GPT-6-Astra 的结果，加难 22 题中有 3 题在 7.2 节里只有不计入均分的试跑；这是 claude-sonnet-5 第一次在同一协议下跑满 30 题。
+
+**评测方式**：除 `--action-level L1_v2` 外与 7.2 节相同：claude-sonnet-5，`reasoning_effort = medium`，中文题面，每题最多 40 次 LLM 调用，每题 1 次，只看 rubric。`view_model` 默认打开。代码版本为提交 439ec34（含 7fe624d 的 sweep/loft 扩展和 c4ae189 的沉头孔、多边圆角修复），再加 289209c 的逐步进度日志；日志不改变 agent 行为。
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --action-level L1_v2 --split hard `
+    --provider ttswitch --model claude-sonnet-5 --reasoning-effort medium --max-llm-calls 40 --repeats 1 `
+    --sw-restarts 2 --sw-max-private-gb 12 --resume `
+    --ids <题号...> --output eval\text_workflow_l1v2_mymodel_hard_result.json
+```
+
+30 题分两批跑：
+- `eval/text_workflow_l1v2_sonnet5_medium_hard_low11_result.json`：7.2 节 L1 分数最低的 11 题。第 10 名并列，两题都跑了。
+- `eval/text_workflow_l1v2_sonnet5_medium_hard_rest19_result.json`：其余 19 题。
+
+每题的 rubric 结果在结果 JSON 的 `rubric` 字段里。Web 后端终端逐行打印每次 LLM 调用（第几次、累计 token、耗时）和每个工具调用的成败，便于监控。
+
+**结果**（30 题）
+
+| 均分 | pass@1 | 核心形体率 | 平均 token | 平均 LLM 调用 | 平均工具调用 | 平均耗时 |
+|---|---|---|---|---|---|---|
+| 89.2（95% CI [84.1, 93.9]） | 0.533（16/30） | 0.967（29/30） | 349k | 12.0（无一题用满 40 次） | 19.9 | 618 s |
+
+均分的置信区间是对 30 题分数做 bootstrap 得到的。分组来看：
+- 前 8 题：均分 89.5，4/8 合格，核心形体 7/8。Qwen3.5-397B-A17B + L1 在这 8 题上均分 62.2。
+- 加难 22 题：均分 89.1，12/22 合格，核心形体 22/22。
+- 7.2 节的同一组 19 题：L1_v2 均分 88.6、10/19 合格、核心形体 19/19。claude-sonnet-5 + L1 按现行 rubric 是 78.0、8/19 合格、核心形体 17/19。
+
+| 任务 | rubric 分 | 合格 | LLM 调用 | Sonnet + L1 | GPT-6-Astra + L1 | 未通过的条目 |
+|---|---|---|---|---|---|---|
+| `geneva_wheel` | 100 | ✓ | 19 | 44.4 | 100 | — |
+| `gearbox_housing` | 100 | ✓ | 20 | 58.3 | 100 | — |
+| `honeycomb_panel` | 100 | ✓ | 10 | 50 | 100 | — |
+| `cold_plate` | 100 | ✓ | 7 | 90 | 100 | — |
+| `ratchet_wheel` | 100 | ✓ | 11 | 75 | 100 | — |
+| `finned_housing` | 100 | ✓ | 8 | — | 100 | — |
+| `sprocket` | 100 | ✓ | 10 | — | 100 | — |
+| `camshaft` | 100 | ✓ | 11 | — | 100 | — |
+| `impeller` | 100 | ✓ | 8 | — | 100 | — |
+| `heat_sink` | 100 | ✓ | 5 | 100 | 100 | — |
+| `truss_beam` | 100 | ✓ | 17 | 100 | 100 | — |
+| `hydraulic_manifold` | 100 | ✓ | 4 | （未计入） | 100 | — |
+| `injector_plate` | 100 | ✓ | 6 | 100 | 100 | — |
+| `robot_arm_link` | 100 | ✓ | 10 | 100 | 100 | — |
+| `menger_sponge` | 100 | ✓ | 5 | （未计入） | 100 | — |
+| `u_joint_yoke` | 100 | ✓ | 15 | 100 | 100 | — |
+| `connecting_rod` | 91.7 | | 10 | — | 100 | chamfers |
+| `wheel_rim` | 91.7 | | 12 | 100 | 100 | window_fillets |
+| `engine_piston` | 90.9 | | 18 | 81.8 | 100 | pin_bosses |
+| `planet_carrier` | 90.9 | | 11 | — | 100 | chamfers |
+| `crankshaft` | 85.7 | | 5 | 64.3 | 100 | bolt_holes, volume |
+| `spiral_staircase` | 80 | | 9 | 100 | 30 | column, base_holes |
+| `rocket_fin_can` | 77.8 | | 20 | （未计入） | 100 | fins, fin_planform |
+| `gear_pump_body` | 70 | | 14 | 30 | 100 | ports, port_bosses, volume |
+| `turbine_disk` | 70 | | 15 | 90 | 100 | web, fillets, volume |
+| `bt40_holder` | 70 | | 14 | 70 | 100 | flange, v_groove, volume |
+| `brake_disc` | 70 | | 14 | 100 | 80 | rings, hat, volume |
+| `quad_frame` | 66.7 | | 15 | — | 100 | plate, center_plate, fillets, volume |
+| `handwheel` | 66.7 | | 18 | — | 100 | hub, hex_bore, knob |
+| `pipe_manifold` | 54.5 | | 19 | 27.3 | 100 | main_pipe, branches, branch_bores, drain, volume |
+
+对照列的说明：
+- “Sonnet + L1”取自 `eval/rubric_hard22_sonnet5_medium.json`，已按提交 2e65989 放宽后的现行 rubric 重新打分：`brake_disc` 两种手性都接受，`ratchet_wheel` 在零件坐标系里量尺寸。所以 `brake_disc` 是 100、`ratchet_wheel` 是 75，与 7.2 节表格不同。
+- “GPT-6-Astra + L1”取自 7.3 节和 6.1 节的打分文件，用的是放宽前的 rubric，题面为英文。按 7.3 节的镜像分析，它的 `brake_disc` 在现行 rubric 下是 100。前 8 题那一轮早于 7d73ae1 的两处工具修复。
+- “—”表示该模型没有用 claude-sonnet-5 跑过这题；“（未计入）”的 3 题见 7.2 节末尾的试跑说明。
+
+观察：
+- L1 分数最低的 11 题里，L1_v2 有 9 题提高、1 题持平。这 11 题均分从 61.9 提高到 85.6，合格从 0 题增加到 5 题。
+- 槽轮、减速器箱体、蜂窝板从 44–58 分直接到满分；`pipe_manifold` 和 `gear_pump_body` 的核心形体也由失败变为通过。
+- 退步的有 4 题：`brake_disc`（100 → 70）、`spiral_staircase`（100 → 80）、`wheel_rim`（100 → 91.7）、`turbine_disk`（90 → 70）。每题只跑 1 次，单题的涨跌包含随机波动。
+- 没合格的 14 题里，有 4 题只差一个条目，其中 3 题是倒角或圆角：`connecting_rod`、`planet_carrier` 差倒角，`wheel_rim` 差窗角圆角。另一题是 `engine_piston` 差销座。
+- 平均 LLM 调用和工具调用都比 7.2 节的 L1 少：LLM 调用 12.0 对 21.9，工具调用 19.9 对 35.2，没有一题用满预算。
+
+运行情况：
+- 30 题都由智能体自己 `finish`，没有 LLM 接口错误；4 次回复因长度截断，都放宽上限后自动重试。
+- SolidWorks 私有内存超过 12 GB，看门狗在题间自动重启了 3 次，都没有影响正在跑的题。
+- `crankshaft` 为了加日志手动停过一次，用 `--resume` 从检查点续跑，已经拿到的回复没有重新请求。
+- 30 题共用 1047 万 token，总耗时约 5.2 小时。最慢的是 `menger_sponge`（2752 s，后期每次切除约 1 分钟）和 `rocket_fin_can`（2648 s）。
 
 ---
 
