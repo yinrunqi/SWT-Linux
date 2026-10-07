@@ -239,6 +239,7 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py `
 ```
 
 - 每次运行前会关闭所有文档，运行后把 `SLDPRT` 和 `STEP` 保存到 `eval/artifacts/<output 文件名>/<case>_r<k>.*`。
+- 默认用英文题面（`PROMPTS_EN`），缺省输出文件名带 `_en` 后缀；`--lang zh` 用中文原文。
 - `--ids soap_dish mug` 只跑指定的任务；`--action-level L0` 跑单轮原子规划；`--model` 换骨干模型。
 - `--split all` 只包含 50 道核心任务；8 道复杂综合件（四旋翼机架、凸轮轴、离心叶轮等）用 `--split hard` 单独跑，适合做演示。
 - 从零生成零件再装配（减速箱 / 发动机试点）见 [`Workflow-CAD-Assembly.md`](./Workflow-CAD-Assembly.md)。

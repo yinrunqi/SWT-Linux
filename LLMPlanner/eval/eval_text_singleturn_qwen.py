@@ -1949,7 +1949,7 @@ PROMPTS_EN = {
 PROMPT_LANGS = ("zh", "en")
 
 
-def case_prompt(case: TextCase, lang: str = "zh") -> str:
+def case_prompt(case: TextCase, lang: str = "en") -> str:
     if lang == "zh":
         return case.prompt
     if lang == "en":
@@ -2365,7 +2365,7 @@ def run_one(
     action_level: str = "L0",
     max_llm_calls: int = 40,
     artifact_stem: Path | None = None,
-    lang: str = "zh",
+    lang: str = "en",
     provider: str = "aiping",
     reasoning_effort: str | None = None,
     checkpoint: Path | None = None,
@@ -2548,7 +2548,7 @@ def _write_report(
     repeats: int = 1,
     strict_orientation: bool = False,
     action_level: str = "L0",
-    lang: str = "zh",
+    lang: str = "en",
     provider: str = "aiping",
     reasoning_effort: str | None = None,
     view_tool: bool | None = None,
@@ -2755,8 +2755,8 @@ def main() -> int:
     parser.add_argument(
         "--lang",
         choices=PROMPT_LANGS,
-        default="zh",
-        help="Task prompt language; en runs the English translation of every case",
+        default="en",
+        help="Task prompt language: en (default) uses PROMPTS_EN, zh the original Chinese prompts",
     )
     parser.add_argument(
         "--no-save-artifacts",
@@ -2826,6 +2826,9 @@ def main() -> int:
     results: list[dict] = []
     if args.resume and output.is_file():
         old = json.loads(output.read_text(encoding="utf-8"))
+        old_lang = old.get("prompt_lang", "zh")
+        if old.get("results") and old_lang != args.lang:
+            parser.error(f"--resume: {output.name} was run with --lang {old_lang}, not {args.lang}")
         balance_before = old.get("balance_before") or balance_before
         results = [item for item in old.get("results") or [] if not _needs_rerun(item)]
         print(f"resume: keeping {len(results)} finished runs from {output.name}", flush=True)

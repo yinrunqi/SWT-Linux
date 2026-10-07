@@ -1,8 +1,8 @@
 """Workflow-CAD-Bench 零件题（text-to-CAD 与三视图 track）的题目导出与结果汇总，与建模系统无关。
 
 用法（在 LLMPlanner 目录、venv-occ 中）：
-    python -m geomcheck.bench tasks --output tasks.jsonl
-    python -m geomcheck.bench tasks --lang en --output tasks_en.jsonl
+    python -m geomcheck.bench tasks --output tasks.jsonl            # 英文题面
+    python -m geomcheck.bench tasks --lang zh --output tasks_zh.jsonl
     python -m geomcheck.rubric --artifacts <STEP 目录> --output scores.json
     python -m geomcheck.bench summary scores.json --repeats 2
 
@@ -141,8 +141,9 @@ def main() -> None:
     sub = ap.add_subparsers(dest="cmd", required=True)
     t = sub.add_parser("tasks", help="导出题目 (case, kind, prompt) 为 JSONL")
     t.add_argument("--output", default="tasks.jsonl")
-    t.add_argument("--lang", choices=sorted(PROMPT_FIELDS), default="zh",
-                   help="题面语言：zh 导出 prompt 字段，en 导出 prompt_en 字段")
+    t.add_argument("--lang", choices=sorted(PROMPT_FIELDS),
+                   help="题面语言：en 导出 prompt_en 字段，zh 导出 prompt 字段；"
+                        "缺省时 text-to-CAD 为 en，三视图（rubric 目录名含 three_view）为 zh")
     s = sub.add_parser("summary", help="汇总 geomcheck.rubric 的打分结果")
     s.add_argument("scores", nargs="+", type=Path)
     s.add_argument("--repeats", type=int, default=2)
@@ -150,7 +151,7 @@ def main() -> None:
     args = ap.parse_args()
     rubric_dir = Path(args.rubric_dir)
     if args.cmd == "tasks":
-        tasks = load_tasks(rubric_dir, args.lang)
+        tasks = load_tasks(rubric_dir, args.lang or ("zh" if "three_view" in rubric_dir.name else "en"))
         Path(args.output).write_text("".join(json.dumps(x, ensure_ascii=False) + "\n" for x in tasks),
                                      encoding="utf-8")
         print(f"{len(tasks)} tasks -> {args.output}")

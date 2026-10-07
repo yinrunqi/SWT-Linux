@@ -71,7 +71,7 @@ Linux 和 macOS 上把 `venv-occ\Scripts\python.exe` 换成 `venv-occ/bin/python
 ```powershell
 # 1) 环境已按第 0 节配好
 
-# 2) 导出 50 个任务：每行一个 {"case", "kind", "prompt"}；加 --lang en 导出英文题面
+# 2) 导出 50 个任务：每行一个 {"case", "kind", "prompt"}；默认英文题面，加 --lang zh 导出中文原文
 venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench tasks --output tasks.jsonl
 
 # 3) 用你的系统逐题建模，把结果导出为 STEP：
@@ -102,7 +102,9 @@ ALL  tasks=50 runs=100 score=... ci95=[..., ...] pass@1=... pass@2=... core_form
 
 ### 2.1 来源与格式
 
-任务的唯一来源是 `LLMPlanner/eval/rubrics/<case>.yaml`，每个文件的 `prompt` 字段就是交给建模系统的原文（中文）。`prompt_en` 字段是逐句对应的英文版本：数值、单位和歧义程度与中文一致，rubric 的 `ungraded` 项在英文里同样不写明，打分规则不变。`geomcheck.bench tasks` 只是把这些字段导出成 JSONL（`--lang en` 导出 `prompt_en`）；`eval_text_singleturn_qwen.py --lang en` 用英文题面跑评测，结果文件名带 `_en` 后缀。
+任务的唯一来源是 `LLMPlanner/eval/rubrics/<case>.yaml`，每个文件的 `prompt` 字段就是交给建模系统的原文（中文）。`prompt_en` 字段是逐句对应的英文版本：数值、单位和歧义程度与中文一致，rubric 的 `ungraded` 项在英文里同样不写明，打分规则不变。50 道核心题和 30 道困难题都有 `prompt_en`，`eval_text_singleturn_qwen.py` 的 `PROMPTS_EN` 与它逐字一致（`test/test_text_singleturn_qwen.py` 检查）。
+
+从 2026-10-07 起，text-to-CAD 默认用英文题面：`geomcheck.bench tasks` 默认导出 `prompt_en`，`eval_text_singleturn_qwen.py` 默认 `--lang en`，缺省输出文件名带 `_en` 后缀。要用中文原文就加 `--lang zh`。下面第 6、7 节标为“中文题面”的结果都是在改默认值之前跑的，复现时要加 `--lang zh`。`--resume` 时，如果已有结果的 `prompt_lang` 与 `--lang` 不同，脚本会直接报错，以免把两种语言混在一个结果文件里。
 
 题面只给目标尺寸和功能细节，不给 API 序列、坐标布局或建模步骤，例如：
 
@@ -259,7 +261,7 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric `
 venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench summary eval\rubric_mymodel_l1.json --repeats 2
 ```
 
-评测脚本会自动把每次运行的 STEP 和 SLDPRT 存到 `eval/artifacts/<输出文件名>/`，并在结果 JSON 里记录 token、调用次数、失败操作数、耗时和费用。
+脚本默认用英文题面；本节下面 Qwen3.5-397B-A17B 的参考结果是中文题面，复现时要加 `--lang zh`。评测脚本会自动把每次运行的 STEP 和 SLDPRT 存到 `eval/artifacts/<输出文件名>/`，并在结果 JSON 里记录 token、调用次数、失败操作数、耗时和费用。
 
 L1 运行过程中，每次拿到 LLM 回复、每轮工具执行完，都会把完整对话、工具结果和原始回复写到同一目录下的 `<题号>_r<k>.checkpoint.json`。如果中途 SolidWorks 卡死或进程被结束，重启服务后在原命令后加 `--resume` 即可续跑：
 - 已经跑完的运行直接保留；
@@ -350,7 +352,7 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --provider 
 ```powershell
 venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --split all --action-level L1_v2 `
     --provider qwenlocal --model Qwen3.8-Flash-Next-FP8 --reasoning-effort medium --max-llm-calls 40 --repeats 1 `
-    --sw-restarts 2 --sw-max-private-gb 12 --resume --output eval\text_workflow_l1v2_qwen38flash_all_result.json
+    --sw-restarts 2 --sw-max-private-gb 12 --resume --lang zh --output eval\text_workflow_l1v2_qwen38flash_all_result.json
 venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric --artifacts eval\artifacts\text_workflow_l1v2_qwen38flash_all_result `
     --rubric-dir eval\rubrics --output eval\rubric_l1v2_qwen38flash_all.json
 venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench summary eval\rubric_l1v2_qwen38flash_all.json --repeats 1
@@ -486,7 +488,7 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 
 ```powershell
 venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --action-level L1 --split hard `
-    --provider ttswitch --model claude-sonnet-5 --reasoning-effort medium --max-llm-calls 40 --repeats 1 `
+    --provider ttswitch --model claude-sonnet-5 --reasoning-effort medium --max-llm-calls 40 --repeats 1 --lang zh `
     --sw-restarts 2 --sw-max-private-gb 12 `
     --ids crankshaft brake_disc wheel_rim geneva_wheel spiral_staircase engine_piston pipe_manifold `
           gearbox_housing heat_sink honeycomb_panel gear_pump_body cold_plate truss_beam turbine_disk `
@@ -615,7 +617,7 @@ L1_v2（`--action-level L1_v2`）是在 L1 失败分析基础上改进的工具�
 
 ```powershell
 venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --action-level L1_v2 --split hard `
-    --provider ttswitch --model claude-sonnet-5 --reasoning-effort medium --max-llm-calls 40 --repeats 1 `
+    --provider ttswitch --model claude-sonnet-5 --reasoning-effort medium --max-llm-calls 40 --repeats 1 --lang zh `
     --sw-restarts 2 --sw-max-private-gb 12 --resume `
     --ids <题号...> --output eval\text_workflow_l1v2_mymodel_hard_result.json
 ```
@@ -756,5 +758,5 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --action-le
 
 - rubric 是人工编写的。rubric 没写到的要求不会被检查，标为 `ungraded` 的内容也不打分。
 - 目前只有 OpenCASCADE 一个检查器。一个通过 SolidWorks API 评估同一套 rubric 的检查器正在开发，用来交叉验证。
-- 题面是中文。如果翻译成其他语言使用，请以 YAML 中的原文为准，并在报告里说明。
+- 题面原文是中文，英文版是逐句翻译。两种语言的结果不能直接比较，报告里要写明用的是哪一种。翻译成其他语言时，以 YAML 中的中文原文为准。
 - 旧的评分方式（包围盒、体积区间、特征树计数）已经被 rubric 取代，只在论文里用来对比说明两者的差别。
