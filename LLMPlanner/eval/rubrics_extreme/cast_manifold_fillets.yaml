@@ -1,0 +1,92 @@
+case: cast_manifold_fillets
+prompt: >-
+  创建一个铸造三通歧管，单一实体。主管是外径 50 的圆柱，轴线为 X 轴，x = −80~80；两端各有一个外径 90、厚 12 的法兰
+  （x = −80~−68 与 68~80），每个法兰上 4 个直径 11 的通孔均布在直径 70 的圆上，各孔与 +Z 方向成 45°（即孔心在
+  y = ±24.749、z = ±24.749）。竖直支管：外径 36，轴线为 Z 轴，从主管伸到 z = 60。侧支管：外径 30，轴线为 x = 40、z = 0
+  的直线，沿 +Y 伸到 y = 55。铸造圆角：两根支管与主管外表面的相贯线处倒 R5 圆角（沿整条相贯线），两个法兰内侧端面与主管
+  外圆柱的交线倒 R3 圆角。内孔：主管直径 34 贯通；竖直支管直径 22、侧支管直径 18，都从支管端面钻通到主管内孔。
+prompt_en: >-
+  Create a cast tee manifold as a single solid body. The main pipe is a 50mm-diameter cylinder on the X axis, x =
+  −80 to 80; each end has a flange of 90mm diameter and 12mm thickness (x = −80 to −68 and 68 to 80), each with 4
+  through holes of 11mm diameter evenly spaced on a 70mm circle, each at 45° to +Z (hole centres at y = ±24.749, z =
+  ±24.749). Vertical branch: 36mm outer diameter on the Z axis, rising from the main pipe to z = 60. Side branch:
+  30mm outer diameter on the line x = 40, z = 0, extending along +Y to y = 55. Casting fillets: R5 along the whole
+  intersection curve of each branch with the main pipe's outer surface, and R3 where the inner end face of each
+  flange meets the main pipe's outer cylinder. Bores: the main pipe has a 34mm through bore; the vertical branch has
+  a 22mm bore and the side branch an 18mm bore, each bored from the branch end face through into the main bore.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# M：主管轴线坐标系，轴 0 沿 +X（指向侧支管与主管轴线的交点 (40, 0, 0)），轴 1 指向竖直支管（+Z），轴 2 = −Y：
+# frame 坐标 (x + 80, z, −y)。滚球圆角在支管的对称平面内截出 R5 圆：
+# 竖直支管：y = 0 平面内球心 (±23, 0, 30)，圆角覆盖 x = 18~23；x = 0 平面内球心 (0, ±23, 19.261)，覆盖 y = 18~19.168。
+# 侧支管：x = 40 平面内球心 (40, 22.361, ±20)，覆盖 z = 15~16.667、y = 18.634~22.361。
+entities:
+  main:   {cylinder: {d: 50, side: outer}, count: 1}
+  vbr:    {cylinder: {d: 36, side: outer}, count: 1}
+  side:   {cylinder: {d: 30, side: outer}, count: 1}
+  ffil:   {torus: {minor_r: 3, major_r: 28, side: inner}, count: 2}
+  holes:  {cylinder: {d: 11, side: inner}, count: 8}
+  M:      {axis_frame: {axis: main, toward: {meet: [main, side]}, ref_dir: vbr, ref_dir_toward: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: x ±80、法兰 Ø90、竖直支管到 z = 60、侧支管到 y = 55
+    hard: true
+    check:
+      - bbox_sorted: [100, 105, 160]
+
+  - id: saddle_vertical
+    source: 竖直支管与主管相贯处 R5 圆角
+    derivation: >-
+      y = 0 平面：x = 20 处圆角顶到 z = 30 − sqrt(25 − 9) = 26，x = 22 处 25.101；x = 0 平面：y = 18.5 处主管顶 16.815、
+      圆角到 19.261 − sqrt(25 − 4.5²) = 17.082；z = 17.5 处支管壁外圆角到 y = 23 − sqrt(25 − 1.761²) = 18.320
+    check:
+      - line_material: {frame: M, along: 1, at: [100, null, 0], expect: [[-25, -17], [17, 26]]}
+      - line_material: {frame: M, along: 1, at: [102, null, 0], expect: [[-25, -17], [17, 25.101]]}
+      - line_material: {frame: M, along: 1, at: [80, null, -18.5], expect: [[-16.815, 17.082]]}
+      - line_material: {frame: M, along: 2, at: [80, 17.5, null], expect: [[-18.32, -11], [11, 18.32]]}
+
+  - id: saddle_side
+    source: 侧支管与主管相贯处 R5 圆角
+    derivation: >-
+      x = 40 平面：z = 16 处主管到 y = ±19.209、圆角把 +Y 侧延到 22.361 − 3 = 19.361；y = 20 处支管壁加圆角到
+      z = ±(20 − sqrt(25 − 2.361²)) = ±15.592
+    check:
+      - line_material: {frame: M, along: 2, at: [120, 16, null], expect: [[-19.361, -5.745], [5.745, 19.209]]}
+      - line_material: {frame: M, along: 1, at: [120, null, -20], expect: [[-15.592, -9], [9, 15.592]]}
+
+  - id: flange_fillets
+    source: 法兰内侧与主管 R3 圆角
+    check:
+      - exists: ffil
+
+  - id: flanges
+    source: 两端 Ø90×12 法兰，4×Ø11 于 PCD70、与 +Z 成 45°
+    check:
+      - exists: holes
+      - axis_through: {frame: M, items: holes,
+                       expect: [[6, 24.749, 24.749], [6, 24.749, -24.749], [6, -24.749, 24.749], [6, -24.749, -24.749],
+                                [154, 24.749, 24.749], [154, 24.749, -24.749], [154, -24.749, 24.749], [154, -24.749, -24.749]]}
+      - line_material: {frame: M, along: 0, at: [null, 0, 40], expect: [[0, 12], [148, 160]]}
+
+  - id: bores
+    source: 主管 Ø34 贯通，竖直 Ø22、侧向 Ø18 通入主孔
+    derivation: 竖直支管轴线上只剩主管底壁；侧支管轴线上只剩主管 −Y 侧壁（c2 = 17~25）
+    check:
+      - line_material: {frame: M, along: 1, at: [80, null, 0], expect: [[-25, -17]]}
+      - line_material: {frame: M, along: 2, at: [120, 0, null], expect: [[17, 25]]}
+      - line_material: {frame: M, along: 0, at: [null, 0, 0], expect: []}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 滚球圆角）体积 299421.98
+    check:
+      - volume: 299421.98
+
+ungraded: []

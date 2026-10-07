@@ -1,0 +1,87 @@
+case: tricylinder_node
+prompt: >-
+  创建一个空间桁架节点，单一实体。节点核心是三根半径 20、轴线分别为 X 轴、Y 轴、Z 轴的（足够长的）圆柱的公共部分
+  （三圆柱交体，即同时位于三根圆柱之内的区域）。从原点伸出三根管：沿 +X 的外径 24 管到 x = 60、沿 +Y 的外径 20 管到
+  y = 55、沿 +Z 的外径 16 管到 z = 50。一根直径 12 的实心斜撑从原点沿 (−1, −1, −1) 方向伸出，末端是半径 6 的球头，
+  球心距原点 50。三根管各有内孔：+X 管直径 14、+Y 管直径 12、+Z 管直径 8，都从管端面沿管轴钻到越过原点 5 的位置（平底），
+  三个孔在节点内部相互贯通。
+prompt_en: >-
+  Create a space-frame node as a single solid body. The node core is the common part of three (sufficiently long)
+  cylinders of radius 20 whose axes are the X, Y and Z axes (a tricylinder: the region inside all three cylinders at
+  once). Three tubes leave the origin: an outer-diameter-24 tube along +X to x = 60, an outer-diameter-20 tube along
+  +Y to y = 55 and an outer-diameter-16 tube along +Z to z = 50. A solid 12mm strut leaves the origin in the (−1,
+  −1, −1) direction and ends in a ball of radius 6 whose centre is 50 from the origin. Each tube has a bore — 14mm
+  in the +X tube, 12mm in the +Y tube and 8mm in the +Z tube — bored from the tube end face along the tube axis to 5
+  past the origin (flat bottom); the three bores intersect inside the node.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# N：+X 管轴线坐标系，轴 0 从 x = 60 的管端面（面积较大的端面）指向节点，轴 1 指向 +Y 管 → frame 坐标 (60 − x, y, −z)。
+# 三圆柱交体：沿 (1, 1, 1) 方向边界在 t = sqrt(3/2)·20 = 24.495；y = 0、z = 10 的 X 向线只在 |x| ≤ sqrt(20² − 10²) = 17.321 内。
+# 三个孔里 Ø14 最大：沿 (±1, ±1, ±1) 方向 2t²/3 ≤ 7² → t ≤ 8.573。
+entities:
+  tx:     {cylinder: {d: 24, side: outer}, count: 1}
+  ty:     {cylinder: {d: 20, side: outer}, count: 1}
+  tz:     {cylinder: {d: 16, side: outer}, count: 1}
+  strut:  {cylinder: {d: 12, side: outer}, count: 1}
+  ball:   {sphere: {d: 12}, count: 1}
+  N:      {axis_frame: {axis: tx, low: larger_area, ref_dir: ty, ref_dir_toward: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 由管长、斜撑与球头确定
+    derivation: 主惯性轴与 X/Y/Z 重合；球头最远点 50/√3 + 6 = 34.868 → 60 + 34.868、55 + 34.868、50 + 34.868
+    hard: true
+    check:
+      - bbox_sorted: [84.868, 89.868, 94.868]
+
+  - id: tricylinder_core
+    source: 三根 R20 圆柱的公共部分
+    derivation: y = 0、z = 10 的 X 向线：核心 |x| ≤ 17.321，Ø8 孔挖去 |x| ≤ 4，+X 管延到 60；(1, 1, 1) 方向核心到 24.495
+    check:
+      - line_material: {frame: N, along: 0, at: [null, 0, -10], expect: [[0, 56], [64, 77.321]]}
+      - ray_material: {frame: N, from: [60, 0, 0], dir: [-1, 1, -1], length: 60, expect: [[8.573, 24.495]]}
+
+  - id: tubes
+    source: +X Ø24 到 60、+Y Ø20 到 55、+Z Ø16 到 50
+    derivation: >-
+      x = 9、z = 0 的 Y 向线：核心 |y| ≤ sqrt(400 − 81) = 17.861，Ø14 孔挖去 |y| ≤ 7，+Y 管延到 55；
+      x = 7.5、y = 0 的 Z 向线：核心 |z| ≤ sqrt(400 − 56.25) = 18.540，Ø14 孔挖去 |z| ≤ 7，+Z 管延到 50
+    check:
+      - exists: tx
+      - exists: ty
+      - exists: tz
+      - line_material: {frame: N, along: 1, at: [51, null, 0], expect: [[-17.861, -7], [7, 55]]}
+      - line_material: {frame: N, along: 2, at: [52.5, 0, null], expect: [[-50, -7], [7, 18.54]]}
+
+  - id: strut
+    source: 沿 (−1, −1, −1) 的 Ø12 斜撑，SR6 球头球心距原点 50
+    derivation: 斜撑轴线上材料从孔壁 8.573 到球头顶 56；距原点 40 处横穿斜撑的射线穿过 r = −6~6
+    check:
+      - exists: strut
+      - exists: ball
+      - ray_material: {frame: N, from: [60, 0, 0], dir: [1, -1, 1], length: 70, expect: [[8.573, 56]]}
+      - ray_material: {frame: N, from: [76.023, -30.165, 23.094], dir: [0.70711, 0.70711, 0], length: 20, expect: [[4, 16]]}
+
+  - id: bores
+    source: Ø14 / Ø12 / Ø8 孔从管端钻到越过原点 5，在节点内贯通
+    derivation: >-
+      三根管轴线上都只剩孔底以外的核心：X 轴 x = −20~−6（Ø12 的 Y 向孔也穿过 X 轴），Y 轴 y = −20~−7，
+      Z 轴 z = −20~−7（都被 Ø14 的 X 向孔截到 7）
+    check:
+      - line_material: {frame: N, along: 0, at: [null, 0, 0], expect: [[66, 80]]}
+      - line_material: {frame: N, along: 1, at: [60, null, 0], expect: [[-20, -7]]}
+      - line_material: {frame: N, along: 2, at: [60, 0, null], expect: [[7, 20]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体体积 59655.57
+    check:
+      - volume: 59655.57
+
+ungraded: []

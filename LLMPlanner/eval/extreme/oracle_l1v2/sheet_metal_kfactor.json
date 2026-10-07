@@ -1,0 +1,199 @@
+{
+ "case": "sheet_metal_kfactor",
+ "tool_calls": 4,
+ "modeling_calls": 4,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 5,
+ "volume_mm3": 20455.07,
+ "bbox_mm": [
+  80.0,
+  60.0,
+  67.678
+ ],
+ "seconds": 30.2,
+ "rubric_score": 100.0,
+ "accepted": true,
+ "failed_items": [],
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "right_plane",
+    "loops": [
+     {
+      "type": "path",
+      "start": [
+       0.0,
+       0.0
+      ],
+      "segments": [
+       {
+        "to": [
+         0.0,
+         55.0
+        ]
+       },
+       {
+        "to": [
+         5.0,
+         60.0
+        ],
+        "through": [
+         1.464466,
+         58.535534
+        ]
+       },
+       {
+        "to": [
+         50.0,
+         60.0
+        ]
+       },
+       {
+        "to": [
+         53.535534,
+         58.535534
+        ],
+        "through": [
+         51.913417,
+         59.619398
+        ]
+       },
+       {
+        "to": [
+         67.67767,
+         44.393398
+        ]
+       },
+       {
+        "to": [
+         66.263456,
+         42.979185
+        ]
+       },
+       {
+        "to": [
+         52.12132,
+         57.12132
+        ]
+       },
+       {
+        "to": [
+         50.0,
+         58.0
+        ],
+        "through": [
+         51.14805,
+         57.771639
+        ]
+       },
+       {
+        "to": [
+         5.0,
+         58.0
+        ]
+       },
+       {
+        "to": [
+         2.0,
+         55.0
+        ],
+        "through": [
+         2.87868,
+         57.12132
+        ]
+       },
+       {
+        "to": [
+         2.0,
+         0.0
+        ]
+       },
+       {
+        "to": [
+         0.0,
+         0.0
+        ]
+       }
+      ]
+     }
+    ],
+    "direction": "both",
+    "depth": 80
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 20707.97
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "front_plane",
+    "centers": [
+     [
+      0,
+      25
+     ]
+    ],
+    "diameter": 8,
+    "direction": "+Z",
+    "depth": 2
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 20607.43
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "Y=60",
+    "centers": [
+     [
+      -25,
+      24.030973958179395
+     ],
+     [
+      25,
+      24.030973958179395
+     ]
+    ],
+    "diameter": 6,
+    "direction": "-Y",
+    "depth": 2
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 20494.34
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "path_3d": {
+     "points": [
+      [
+       0.0,
+       46.481866,
+       59.932348
+      ],
+      [
+       0.0,
+       50.724506,
+       64.174988
+      ]
+     ]
+    },
+    "profile_diameter": 5,
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 20455.07
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "sheet_metal_kfactor oracle"
+   }
+  }
+ ]
+}

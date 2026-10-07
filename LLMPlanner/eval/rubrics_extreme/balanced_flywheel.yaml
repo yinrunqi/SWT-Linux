@@ -1,0 +1,92 @@
+case: balanced_flywheel
+prompt: >-
+  创建一个静平衡飞轮，单一实体，轴线为 Z 轴、关于 z = 0 对称。回转截面：轮毂 r = 15~30、z = −20~20；腹板 r = 30~70、
+  z = −6~6；轮缘 r = 70~100、z = −15~15；腹板上下两面与轮毂外圆、轮缘内圆的 4 条交线倒 R4 圆角。中心孔直径 30，带一个
+  宽 8 的平键槽，键槽对称于 +X 方向，槽底平面在 x = 18.3，贯通轮毂全长。腹板上 6 个窗口：辐条中心线在 0°、60°、…、300°，
+  辐条为等宽 12 的直条（两侧边平行于中心线），窗口是 r = 38~62 的环带中扣除辐条后的 6 块，窗口的竖直棱边全部倒 R5。
+  轮缘上 r = 92、0° 方向（+X）有一个直径 12 的轴向通孔。在 r = 80、180° 方向（−X）钻一个轴向通孔作为平衡孔，
+  其直径要使整个零件的质心恰好落在轴线上（注意键槽同样偏在 +X 一侧）。
+prompt_en: >-
+  Create a statically balanced flywheel as a single solid body, on the Z axis and symmetric about z = 0. Revolved
+  section: hub r = 15 to 30, z = −20 to 20; web r = 30 to 70, z = −6 to 6; rim r = 70 to 100, z = −15 to 15; R4
+  fillets on the 4 circular edges where the top and bottom web faces meet the hub's outer cylinder and the rim's
+  inner cylinder. The 30mm centre bore has an 8mm-wide parallel keyway, symmetric about the +X direction, with its
+  flat bottom at x = 18.3, running the full hub length. 6 windows in the web: spoke centre lines at 0°, 60°, …,
+  300°; the spokes are straight bars of constant 12mm width (sides parallel to the centre line); the windows are the
+  6 pieces of the ring r = 38 to 62 left after removing the spokes, and every vertical window edge gets an R5
+  fillet. The rim has a 12mm axial through hole at r = 92 in the 0° (+X) direction. Make an axial through hole at r
+  = 80 in the 180° (−X) direction as the balancing hole; its diameter must put the centre of mass of the whole part
+  exactly on the axis (note that the keyway is also on the +X side).
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# F：中心孔轴线坐标系，轴 1 指向 Ø12 定位孔（+X）；frame 坐标 (z + 20, x, ±y)（零件关于 z = 0 与 y = 0 都对称）。
+# 平衡：π·6²·30·92（定位孔）+ 40·∫∫x dA（键槽，= 18435.7）= π·(d/2)²·30·80 → d = 13.243；不计键槽时 12.869。
+# 窗口角部 R5：内角圆心 (41.569, 11)、外角圆心 (55.929, 11)，y = 7 处窗口为 x = 38.569~58.929。
+entities:
+  bore:     {cylinder: {d: 30, side: inner}, count: 1}
+  loc:      {cylinder: {d: 12, side: inner}, count: 1}
+  balance:  {cylinder: {d: 13.243, side: inner}, count: 1}
+  F:        {axis_frame: {axis: bore, ref: loc}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 轮缘 Ø200、轮毂长 40
+    hard: true
+    check:
+      - bbox_sorted: [40, 200, 200]
+
+  - id: section
+    source: 轮毂 z ±20、腹板 z ±6、轮缘 z ±15
+    check:
+      - line_material: {frame: F, along: 0, at: [null, 25, 0], expect: [[0, 40]]}
+      - line_material: {frame: F, along: 0, at: [null, 50, 0], expect: [[14, 26]]}
+      - line_material: {frame: F, along: 0, at: [null, 85, 0], expect: [[5, 35]]}
+
+  - id: web_fillets
+    source: 腹板与轮毂、轮缘交线 R4
+    derivation: 从两个圆角圆心 (r, z) = (66, 10)、(34, 10) 沿 45° 指向交角的射线，材料从 4 开始
+    check:
+      - ray_material: {frame: F, from: [30, 0, 66], dir: [-1, 0, 1], length: 60, expect: [[4, 35.355]]}
+      - ray_material: {frame: F, from: [30, 0, 34], dir: [-1, 0, -1], length: 60, expect: [[4, 26.870]]}
+
+  - id: windows
+    source: 等宽 12 的直辐条、r 38~62 的窗口
+    derivation: x = 50 的弦线：辐条 |y| ≤ 6，窗口到 y = sqrt(62² − 50²) = 36.661，轮缘到 86.603
+    check:
+      - line_material: {frame: F, along: 2, at: [20, 50, null], expect: [[-86.603, -36.661], [-6, 6], [36.661, 86.603]]}
+
+  - id: window_corners
+    source: 窗口竖直棱 R5
+    check:
+      - line_material: {frame: F, along: 1, at: [20, null, 7],
+                        expect: [[-99.755, -58.929], [-38.569, -13.266], [13.266, 38.569], [58.929, 99.755]]}
+
+  - id: keyway
+    source: 宽 8、槽底在 x = 18.3 的贯通键槽，对称于 +X
+    check:
+      - ray_material: {frame: F, from: [20, 0, 0], dir: [0, 1, 0], length: 30, expect: [[18.3, 30]]}
+      - ray_material: {frame: F, from: [20, 17, -10], dir: [0, 0, 1], length: 20, expect: [[0, 6], [14, 20]]}
+      - line_material: {frame: F, along: 0, at: [null, 17, 0], expect: []}
+
+  - id: balance
+    source: r = 80、−X 方向的平衡孔，质心落在轴线上
+    derivation: 平衡孔直径 13.243（要计入键槽的偏心质量）
+    check:
+      - exists: balance
+      - axis_through: {frame: F, items: balance, point: [0, -80, 0]}
+      - axis_through: {frame: F, items: loc, point: [0, 92, 0]}
+      - center_of_mass: {frame: F, expect: [20, 0, 0]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体体积 643829.57
+    check:
+      - volume: 643829.57
+
+ungraded: []

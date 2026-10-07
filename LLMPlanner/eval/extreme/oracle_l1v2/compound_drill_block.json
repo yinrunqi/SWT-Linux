@@ -1,0 +1,229 @@
+{
+ "case": "compound_drill_block",
+ "tool_calls": 7,
+ "modeling_calls": 7,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 8,
+ "volume_mm3": 528768.33,
+ "bbox_mm": [
+  120.0,
+  80.0,
+  60.0
+ ],
+ "seconds": 75.3,
+ "rubric_score": 100.0,
+ "accepted": true,
+ "failed_items": [],
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "right_plane",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        0,
+        0
+       ],
+       [
+        40,
+        0
+       ],
+       [
+        60,
+        28.56296
+       ],
+       [
+        60,
+        80
+       ],
+       [
+        0,
+        80
+       ]
+      ]
+     }
+    ],
+    "direction": "+X",
+    "depth": 120
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 541724.45
+  },
+  {
+   "tool": "revolve",
+   "args": {
+    "plane": "X=57.940149",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        54.09576,
+        11.413598
+       ],
+       [
+        51.227878,
+        7.317838
+       ],
+       [
+        7.841963,
+        37.696983
+       ],
+       [
+        8.248864,
+        43.51594
+       ]
+      ]
+     }
+    ],
+    "axis_start": [
+     54.09576,
+     11.413598
+    ],
+    "axis_end": [
+     10.709845,
+     41.792743
+    ],
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 537878.92
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "Y=0",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       60,
+       20
+      ],
+      "size": [
+       120,
+       40
+      ]
+     }
+    ],
+    "direction": "-Y",
+    "depth": 60
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 825878.56
+  },
+  {
+   "tool": "revolve",
+   "args": {
+    "plane": "Y=-38.685969",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        38.341659,
+        56.332563
+       ],
+       [
+        44.002036,
+        58.322572
+       ],
+       [
+        64.586829,
+        -0.22877
+       ],
+       [
+        60.12217,
+        -5.619876
+       ]
+      ]
+     }
+    ],
+    "axis_start": [
+     38.341659,
+     56.332563
+    ],
+    "axis_end": [
+     58.926452,
+     -2.218779
+    ],
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 821083.95
+  },
+  {
+   "tool": "circular_pattern",
+   "args": {
+    "count": 2,
+    "axis": "X",
+    "center": [
+     0,
+     40.0,
+     -300.0
+    ],
+    "angle_deg": 15
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 815108.39
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "Y=0",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       60,
+       30
+      ],
+      "size": [
+       140,
+       80
+      ]
+     }
+    ],
+    "direction": "-Y",
+    "through_all": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 531903.64
+  },
+  {
+   "tool": "counterbore",
+   "args": {
+    "plane": "X=120",
+    "centers": [
+     [
+      30,
+      40
+     ]
+    ],
+    "through_diameter": 8,
+    "head_diameter": 14,
+    "head_depth": 6,
+    "depth": 50,
+    "direction": "-X"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 528768.33
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "compound_drill_block oracle"
+   }
+  }
+ ]
+}

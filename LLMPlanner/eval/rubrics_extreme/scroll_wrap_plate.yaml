@@ -1,0 +1,98 @@
+case: scroll_wrap_plate
+prompt: >-
+  创建一个涡旋压缩机的静涡旋盘，单一实体。底板是直径 150mm、厚 8mm 的圆盘（z = 0~8），轴线为 Z 轴；涡旋壁立在底板上表面，
+  高 30mm（z = 8~38）。涡旋壁的两侧壁面都是基圆半径 a = 3mm 的圆渐开线：以基圆上切点方位角 φ 为参数，壁面点为
+  (a(cosφ + u·sinφ), a(sinφ − u·cosφ))，内侧壁面 u = φ − 0.75，外侧壁面 u = φ + 0.75（壁厚 2·a·0.75 = 4.5mm），
+  φ 从 π 到 6π（涡旋从里向外逆时针展开，从 +Z 俯视）。壁的两端都沿 φ = π 和 φ = 6π 处的发生线（基圆切线）截平。
+  壁顶面上沿壁厚中线开一条密封槽：宽 1.5mm（两侧取 u = φ ∓ 0.25）、深 2mm，从 φ = 2π 到 φ = 6π − 0.5，两端同样沿发生线截平。
+  底板上：中心一个直径 10mm 的排气通孔；4 个直径 6.6mm 的通孔，均布在直径 140mm 的圆上，方位角 45°、135°、225°、315°；
+  (0, −70) 处一个直径 5mm 的定位销通孔。
+prompt_en: >-
+  Create the fixed scroll of a scroll compressor as a single solid body. The base plate is a disc of 150mm diameter
+  and 8mm thickness (z = 0 to 8) with its axis on the Z axis; the scroll wrap stands on the top face of the plate
+  and is 30mm tall (z = 8 to 38). Both side walls of the wrap are involutes of a base circle of radius a = 3mm: with
+  the azimuth φ of the tangent point on the base circle as parameter, a wall point is (a(cosφ + u·sinφ), a(sinφ −
+  u·cosφ)), with u = φ − 0.75 for the inner wall and u = φ + 0.75 for the outer wall (wall thickness 2·a·0.75 =
+  4.5mm), for φ from π to 6π (the spiral unwinds counterclockwise from the inside out, viewed from +Z). Both ends of
+  the wrap are cut along the generating lines (tangents to the base circle) at φ = π and φ = 6π. A tip-seal groove
+  runs along the middle of the wall on the wrap's top face: 1.5mm wide (sides at u = φ ∓ 0.25), 2mm deep, from φ =
+  2π to φ = 6π − 0.5, with both ends also cut along the generating lines. In the base plate: a 10mm discharge
+  through hole at the centre; 4 through holes of 6.6mm diameter evenly spaced on a 140mm circle at azimuths 45°,
+  135°, 225° and 315°; and a 5mm locating-pin through hole at (0, −70).
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# S：底板轴线坐标系，轴 0 从底面（面积较大）向上，轴 1 指向销孔（方位角 −90°），故 frame 方位角 deg = ψ + 90°。
+# 射线与渐开线 u = φ + k 的交点：φ − atan(φ + k) = ψ (mod 2π)，半径 r = a·sqrt(1 + (φ + k)²)。
+entities:
+  plate:  {cylinder: {d: 150, side: outer}, count: 1}
+  pin:    {cylinder: {d: 5, side: inner}, count: 1}
+  port:   {cylinder: {d: 10, side: inner}, count: 1}
+  bolt:   {cylinder: {d: 6.6, side: inner}, count: 4}
+  S:      {axis_frame: {axis: plate, low: larger_area, ref: pin}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 底板 Ø150，总高 38
+    hard: true
+    check:
+      - bbox_sorted: [38, 150, 150]
+
+  - id: involute_walls
+    source: 基圆半径 3、u = φ ∓ 0.75 的渐开线壁面，逆时针展开
+    derivation: >-
+      ψ = 0°：内壁 r = 21.098、40.049，外壁 25.636、44.560；ψ = 90°：25.850/30.376、44.773/49.283
+    check:
+      - radial_material: {frame: S, t: 20, deg: 90, expect: [[21.098, 25.636], [40.049, 44.56]]}
+      - radial_material: {frame: S, t: 20, deg: 180, expect: [[25.85, 30.376], [44.773, 49.283]]}
+      - radial_material: {frame: S, t: 20, deg: 330, expect: [[14.722, 19.295], [33.745, 38.261], [52.642, 57.149]]}
+
+  - id: wrap_ends
+    source: 两端沿 φ = π、6π 的发生线截平
+    derivation: >-
+      ψ = −90° 恰在外端（发生线方位约 −87.7°~−87.0°）之前，仍穿过第三圈 [54.216, 58.722]；
+      ψ = 110° 穿过内端截面 x = −3：r = 3/cos70° = 8.771，再到外壁 12.356
+    check:
+      - radial_material: {frame: S, t: 20, deg: 0, expect: [[16.323, 20.884], [35.322, 39.836], [54.216, 58.722]]}
+      - radial_material: {frame: S, t: 20, deg: 200, expect: [[8.771, 12.356], [26.904, 31.428], [45.823, 50.332]]}
+
+  - id: wrap_height
+    source: 壁高 30（z = 8~38），与底板连成一体
+    derivation: ψ = 0°、r = 21.8 处壁体（在密封槽之外）沿轴向从 0 到 38
+    check:
+      - line_material: {frame: S, along: 0, polar: [21.8, 90], expect: [[0, 38]]}
+
+  - id: tip_seal_groove
+    source: 宽 1.5、深 2 的密封槽，φ = 2π ~ 6π − 0.5
+    derivation: >-
+      z = 37 处 ψ = 0° 两圈壁都被槽分开（槽 22.613~24.125、41.553~43.057）；ψ = −90° 的第一圈（φ < 2π）和第三圈
+      （φ > 6π − 0.5）没有槽；壁中线 r = 23.367 处沿轴向只到 36
+    check:
+      - radial_material: {frame: S, t: 37, deg: 90,
+                          expect: [[21.098, 22.613], [24.125, 25.636], [40.049, 41.553], [43.057, 44.56]]}
+      - radial_material: {frame: S, t: 37, deg: 0,
+                          expect: [[16.323, 20.884], [35.322, 36.827], [38.332, 39.836], [54.216, 58.722]]}
+      - line_material: {frame: S, along: 0, polar: [23.367, 90], expect: [[0, 36]]}
+
+  - id: plate_holes
+    source: 中心 Ø10 排气孔、4×Ø6.6 于 Ø140 圆 45° 起均布、(0, −70) Ø5 销孔，均为通孔
+    check:
+      - exists: port
+      - exists: bolt
+      - through: {holes: bolt}
+      - radial_material: {frame: S, t: 4, deg: 0, expect: [[5, 67.5], [72.5, 75]]}
+      - radial_material: {frame: S, t: 4, deg: 135, expect: [[5, 66.7], [73.3, 75]]}
+      - radial_material: {frame: S, t: 4, deg: 90, expect: [[5, 75]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（解析渐开线 B 样条插值）体积 208104.79
+    check:
+      - volume: 208104.79
+
+ungraded: []

@@ -1,0 +1,247 @@
+{
+ "case": "die_cast_cover",
+ "tool_calls": 8,
+ "modeling_calls": 8,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 9,
+ "volume_mm3": 208565.58,
+ "bbox_mm": [
+  160.0,
+  100.0,
+  55.0
+ ],
+ "seconds": 92.2,
+ "rubric_score": 100.0,
+ "accepted": true,
+ "failed_items": [],
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       160,
+       100
+      ],
+      "corner_radius": 12
+     }
+    ],
+    "depth": 45,
+    "draft_deg": 3
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 688200.11
+  },
+  {
+   "tool": "shell",
+   "args": {
+    "thickness": 4.993148,
+    "open_faces": [
+     "face(-Z, outermost)"
+    ]
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 169233.66
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "Z=4",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       -60,
+       -30
+      ],
+      "diameter": 12
+     },
+     {
+      "type": "circle",
+      "center": [
+       -60,
+       30
+      ],
+      "diameter": 12
+     },
+     {
+      "type": "circle",
+      "center": [
+       60,
+       -30
+      ],
+      "diameter": 12
+     },
+     {
+      "type": "circle",
+      "center": [
+       60,
+       30
+      ],
+      "diameter": 12
+     }
+    ],
+    "direction": "+Z",
+    "depth": 36.5,
+    "draft_deg": 1.5,
+    "draft_outward": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 188216.62
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "right_plane",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        20,
+        -1.5
+       ],
+       [
+        20,
+        1.5
+       ],
+       [
+        40.5,
+        1.8578288310284605
+       ],
+       [
+        40.5,
+        -1.8578288310284605
+       ]
+      ]
+     }
+    ],
+    "direction": "both",
+    "depth": 150
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 198054.56
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "top_plane",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        -1.5,
+        20
+       ],
+       [
+        1.5,
+        20
+       ],
+       [
+        1.8578288310284605,
+        40.5
+       ],
+       [
+        -1.8578288310284605,
+        40.5
+       ]
+      ]
+     }
+    ],
+    "direction": "both",
+    "depth": 90
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 203646.82
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "Z=45",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       -40,
+       0
+      ],
+      "diameter": 40
+     }
+    ],
+    "direction": "+Z",
+    "depth": 10,
+    "draft_deg": 2
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 215995.05
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "Z=55",
+    "centers": [
+     [
+      -40,
+      0
+     ]
+    ],
+    "diameter": 20,
+    "direction": "-Z",
+    "through_all": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 209951.03
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "Z=4",
+    "centers": [
+     [
+      -60,
+      -30
+     ],
+     [
+      -60,
+      30
+     ],
+     [
+      60,
+      -30
+     ],
+     [
+      60,
+      30
+     ]
+    ],
+    "diameter": 4.2,
+    "direction": "+Z",
+    "depth": 25
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 208565.58
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "die_cast_cover oracle"
+   }
+  }
+ ]
+}

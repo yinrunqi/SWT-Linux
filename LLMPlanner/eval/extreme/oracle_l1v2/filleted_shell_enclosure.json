@@ -1,0 +1,260 @@
+{
+ "case": "filleted_shell_enclosure",
+ "tool_calls": 7,
+ "modeling_calls": 7,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 8,
+ "volume_mm3": 61358.55,
+ "bbox_mm": [
+  120.0,
+  80.0,
+  40.0
+ ],
+ "seconds": 97.0,
+ "rubric_score": 100.0,
+ "accepted": true,
+ "failed_items": [],
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       120,
+       80
+      ],
+      "corner_radius": 10
+     }
+    ],
+    "depth": 40
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 380566.37
+  },
+  {
+   "tool": "fillet",
+   "args": {
+    "radius": 6,
+    "edges": {
+     "origin": [
+      0,
+      39,
+      50
+     ],
+     "direction": [
+      0,
+      0,
+      -1
+     ]
+    }
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 377673.8
+  },
+  {
+   "tool": "shell",
+   "args": {
+    "thickness": 2.5,
+    "open_faces": [
+     "face(-Z, outermost)"
+    ]
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 56999.21
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       130,
+       90
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       117.6,
+       77.6
+      ],
+      "corner_radius": 8.8
+     }
+    ],
+    "direction": "+Z",
+    "depth": 2
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 56089.46
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "Z=5",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       -45,
+       -25
+      ],
+      "diameter": 8
+     },
+     {
+      "type": "circle",
+      "center": [
+       -45,
+       25
+      ],
+      "diameter": 8
+     },
+     {
+      "type": "circle",
+      "center": [
+       45,
+       -25
+      ],
+      "diameter": 8
+     },
+     {
+      "type": "circle",
+      "center": [
+       45,
+       25
+      ],
+      "diameter": 8
+     }
+    ],
+    "depth": 33
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 62623.97
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "Z=5",
+    "centers": [
+     [
+      -45,
+      -25
+     ],
+     [
+      -45,
+      25
+     ],
+     [
+      45,
+      -25
+     ],
+     [
+      45,
+      25
+     ]
+    ],
+    "diameter": 2.5,
+    "direction": "+Z",
+    "depth": 12
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 62388.35
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "Z=28",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       52.5,
+       -12
+      ],
+      "size": [
+       25,
+       3
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       52.5,
+       -6
+      ],
+      "size": [
+       25,
+       3
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       52.5,
+       0
+      ],
+      "size": [
+       25,
+       3
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       52.5,
+       6
+      ],
+      "size": [
+       25,
+       3
+      ]
+     },
+     {
+      "type": "rect",
+      "center": [
+       52.5,
+       12
+      ],
+      "size": [
+       25,
+       3
+      ]
+     }
+    ],
+    "direction": "+Z",
+    "through_all": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 61358.55
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "filleted_shell_enclosure oracle"
+   }
+  }
+ ]
+}

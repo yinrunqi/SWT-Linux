@@ -1,0 +1,191 @@
+{
+ "case": "worm_shaft",
+ "tool_calls": 4,
+ "modeling_calls": 4,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 5,
+ "volume_mm3": 59511.52,
+ "bbox_mm": [
+  36.167,
+  36.167,
+  115.0
+ ],
+ "seconds": 34.9,
+ "rubric_score": 100.0,
+ "accepted": true,
+ "failed_items": [],
+ "trajectory": [
+  {
+   "tool": "revolve",
+   "args": {
+    "plane": "top_plane",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        0,
+        0
+       ],
+       [
+        10,
+        0
+       ],
+       [
+        10,
+        4
+       ],
+       [
+        9.3,
+        4
+       ],
+       [
+        9.3,
+        5.3
+       ],
+       [
+        10,
+        5.3
+       ],
+       [
+        10,
+        25
+       ],
+       [
+        18,
+        25
+       ],
+       [
+        18,
+        85
+       ],
+       [
+        10,
+        85
+       ],
+       [
+        10,
+        115
+       ],
+       [
+        2.5,
+        115
+       ],
+       [
+        2.5,
+        103
+       ],
+       [
+        0,
+        101.4978484524311
+       ]
+      ]
+     }
+    ],
+    "axis_start": [
+     0,
+     0
+    ],
+    "axis_end": [
+     0,
+     120
+    ]
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 78050.69
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "helix": {
+     "axis": "Z",
+     "center": [
+      0,
+      0,
+      12.588499
+     ],
+     "radius": 15,
+     "pitch": 18.849556,
+     "height": 80,
+     "right_handed": false
+    },
+    "profile_plane": "Y=0",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        11.352207,
+        11.715758
+       ],
+       [
+        18.825807,
+        8.587871
+       ],
+       [
+        19.174193,
+        16.212022
+       ],
+       [
+        11.447793,
+        13.807561
+       ]
+      ]
+     }
+    ],
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 68969.57
+  },
+  {
+   "tool": "circular_pattern",
+   "args": {
+    "count": 2,
+    "axis": "Z",
+    "center": [
+     0,
+     0,
+     0
+    ],
+    "angle_deg": 360
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 59888.44
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "X=6.5",
+    "loops": [
+     {
+      "type": "slot",
+      "start": [
+       93,
+       0
+      ],
+      "end": [
+       107,
+       0
+      ],
+      "width": 6
+     }
+    ],
+    "direction": "+X",
+    "through_all": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 59511.52
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "worm_shaft oracle"
+   }
+  }
+ ]
+}

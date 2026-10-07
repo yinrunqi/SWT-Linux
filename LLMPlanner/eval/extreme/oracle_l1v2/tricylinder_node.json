@@ -1,0 +1,294 @@
+{
+ "case": "tricylinder_node",
+ "tool_calls": 11,
+ "modeling_calls": 11,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 12,
+ "volume_mm3": 59655.81,
+ "bbox_mm": [
+  94.868,
+  89.868,
+  84.868
+ ],
+ "seconds": 112.7,
+ "rubric_score": 100.0,
+ "accepted": true,
+ "failed_items": [],
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "right_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 40
+     }
+    ],
+    "direction": "both",
+    "depth": 60
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 75398.22
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "top_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       120,
+       120
+      ]
+     },
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 40
+     }
+    ],
+    "direction": "both",
+    "through_all": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 42666.7
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       0,
+       0
+      ],
+      "size": [
+       120,
+       120
+      ]
+     },
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 40
+     }
+    ],
+    "direction": "both",
+    "through_all": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 37490.47
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "right_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 24
+     }
+    ],
+    "direction": "+X",
+    "depth": 60
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 56287.75
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "top_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 20
+     }
+    ],
+    "direction": "+Y",
+    "depth": 55
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 67619.39
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 16
+     }
+    ],
+    "direction": "+Z",
+    "depth": 50
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 73786.57
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "path_3d": {
+     "points": [
+      [
+       0,
+       0,
+       0
+      ],
+      [
+       -28.86751345948129,
+       -28.86751345948129,
+       -28.86751345948129
+      ]
+     ]
+    },
+    "profile_diameter": 12
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 76954.55
+  },
+  {
+   "tool": "revolve",
+   "args": {
+    "plane": "X=-28.867513",
+    "loops": [
+     {
+      "type": "path",
+      "start": [
+       -34.867513,
+       -28.867513
+      ],
+      "segments": [
+       {
+        "to": [
+         -22.867513,
+         -28.867513
+        ]
+       },
+       {
+        "to": [
+         -34.867513,
+         -28.867513
+        ],
+        "through": [
+         -28.867513,
+         -22.867513
+        ]
+       }
+      ]
+     }
+    ],
+    "axis_start": [
+     -38.86751345948129,
+     -28.86751345948129
+    ],
+    "axis_end": [
+     -18.86751345948129,
+     -28.86751345948129
+    ]
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 77407.01
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "X=60",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 14,
+    "direction": "-X",
+    "depth": 65
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 67401.04
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "Y=55",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 12,
+    "direction": "-Y",
+    "depth": 60
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 61832.11
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "Z=50",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 8,
+    "direction": "-Z",
+    "depth": 55
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 59655.81
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "tricylinder_node oracle"
+   }
+  }
+ ]
+}

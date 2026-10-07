@@ -26,6 +26,13 @@ def test_rubric_english_prompts_match_eval_cases():
         assert rubric["prompt_en"] == PROMPTS_EN[rubric["case"]], path.name
 
 
+def test_extreme_split_comes_from_its_rubrics():
+    extreme = [case for case in CASES if case.split == "extreme"]
+    stems = {path.stem for path in (LLM_ROOT / "eval" / "rubrics_extreme").glob("*.yaml")}
+    assert len(extreme) == 20
+    assert {case.case_id for case in extreme} == stems
+
+
 def test_english_prompts_add_no_recipe_skills():
     registry = SkillRegistry(LLM_ROOT / "planner" / "skills")
     registry.load()

@@ -15,9 +15,10 @@ from OCP.BRep import BRep_Tool
 from OCP.BRepAdaptor import BRepAdaptor_Surface
 from OCP.BRepAlgoAPI import BRepAlgoAPI_Common
 from OCP.BRepBndLib import BRepBndLib
-from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeFace, BRepBuilderAPI_Transform
 from OCP.BRepCheck import BRepCheck_Analyzer
 from OCP.BRepClass3d import BRepClass3d_SolidClassifier
+from OCP.BRepExtrema import BRepExtrema_DistShapeShape
 from OCP.BRepGProp import BRepGProp, BRepGProp_Face
 from OCP.BRepMesh import BRepMesh_IncrementalMesh
 from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox, BRepPrimAPI_MakeCylinder
@@ -37,6 +38,7 @@ from OCP.TopAbs import (
     TopAbs_EDGE,
     TopAbs_FACE,
     TopAbs_IN,
+    TopAbs_REVERSED,
     TopAbs_SHELL,
     TopAbs_SOLID,
     TopAbs_VERTEX,
@@ -46,7 +48,7 @@ from OCP.TopExp import TopExp, TopExp_Explorer
 from OCP.TopLoc import TopLoc_Location
 from OCP.collections import IndexedMap_TopoDS_Shape_TopTools_ShapeMapHasher as ShapeMap
 from OCP.TopoDS import TopoDS, TopoDS_Shape
-from OCP.gp import gp_Ax1, gp_Ax2, gp_Ax3, gp_Dir, gp_Lin, gp_Pnt, gp_Trsf, gp_Vec
+from OCP.gp import gp_Ax1, gp_Ax2, gp_Ax3, gp_Dir, gp_Lin, gp_Pln, gp_Pnt, gp_Trsf, gp_Vec
 
 MESH_DEFLECTION = 0.01
 _ANG_EPS = 1e-4  # rad, 判定平行/同轴的方向容差
@@ -95,6 +97,27 @@ def _volume(shape: TopoDS_Shape) -> float:
     props = GProp_GProps()
     BRepGProp.VolumeProperties_s(shape, props)
     return float(props.Mass())
+
+
+def _mesh_volume(shape: TopoDS_Shape) -> float:
+    """按已有三角网格（散度定理）求体积；平面被长 B 样条边界围住时 GProp 的积分会明显失准。"""
+    total = 0.0
+    explorer = TopExp_Explorer(shape, TopAbs_FACE)
+    while explorer.More():
+        face = TopoDS.Face(explorer.Current())
+        explorer.Next()
+        loc = TopLoc_Location()
+        tri = BRep_Tool.Triangulation_s(face, loc)
+        if tri is None:
+            return math.nan
+        trsf = loc.Transformation()
+        pts = np.array([_np(tri.Node(i).Transformed(trsf)) for i in range(1, tri.NbNodes() + 1)])
+        idx = np.array([tri.Triangle(k).Get() for k in range(1, tri.NbTriangles() + 1)]) - 1
+        if face.Orientation() == TopAbs_REVERSED:
+            idx = idx[:, [0, 2, 1]]
+        a, b, c = pts[idx[:, 0]], pts[idx[:, 1]], pts[idx[:, 2]]
+        total += float(np.einsum("ij,ij->i", a, np.cross(b, c)).sum()) / 6
+    return total
 
 
 def _area(face) -> tuple[float, np.ndarray]:
@@ -148,6 +171,7 @@ class Surf:
     area: float = 0.0
     points: np.ndarray = field(default_factory=lambda: np.zeros((0, 3)))
     n_faces: int = 0
+    moment: np.ndarray = field(default_factory=lambda: np.zeros(3))  # 平面：面积 × 面质心
 
     def extent_along(self, d) -> tuple[float, float]:
         s = self.points @ unit(d)
@@ -177,10 +201,11 @@ def _classify_face(face) -> Surf:
     ad = BRepAdaptor_Surface(face)
     kind = ad.GetType()
     p, n = _face_normal(face)
-    area, _ = _area(face)
+    area, centre = _area(face)
     pts = _face_points(face)
     if kind == GeomAbs_Plane:
-        return Surf("plane", axis_o=p, axis_d=n, offset=float(np.dot(n, p)), area=area, points=pts)
+        return Surf("plane", axis_o=p, axis_d=n, offset=float(np.dot(n, p)), area=area, points=pts,
+                    moment=area * centre)
     if kind == GeomAbs_Cylinder:
         cyl = ad.Cylinder()
         o, d = _np(cyl.Axis().Location()), canon_dir(_np(cyl.Axis().Direction()))
@@ -305,8 +330,15 @@ class Part:
 
     def volume(self) -> float:
         if self._volume is None:
-            self._volume = _volume(self.shape)
+            exact, meshed = _volume(self.shape), _mesh_volume(self.shape)
+            # 网格在细圆管上偏小约 0.2%（角度偏差 0.1rad），只在差得更多时才认为 GProp 失准
+            self._volume = meshed if abs(exact - meshed) > 5e-3 * abs(meshed) else exact
         return self._volume
+
+    def center_of_mass(self) -> np.ndarray:
+        props = GProp_GProps()
+        BRepGProp.VolumeProperties_s(self.shape, props)
+        return _np(props.CentreOfMass())
 
     def genus(self) -> int:
         """Euler–Poincaré: V − E + F − (L − F) = 2(S − G)，退化边不计。"""
@@ -336,7 +368,25 @@ class Part:
         lo, hi = _np(box.CornerMin()), _np(box.CornerMax())
         if flip:
             lo[2], hi[2] = -hi[2], -lo[2]
+        # 被裁剪的 B 样条面（如磨平的扫掠弹簧丝）AddOptimal 会按未裁剪曲面估计；比网格点外扩明显时用到边界平面的距离校正
+        if len(self.points):
+            proj = self.points @ axes.T
+            mlo, mhi = proj.min(axis=0), proj.max(axis=0)
+            for k in range(3):
+                if lo[k] < mlo[k] - 10 * MESH_DEFLECTION:
+                    lo[k] += self._gap_to_plane(axes[k], lo[k], mlo[k] - lo[k])
+                if hi[k] > mhi[k] + 10 * MESH_DEFLECTION:
+                    hi[k] -= self._gap_to_plane(-axes[k], -hi[k], hi[k] - mhi[k])
         return lo, hi
+
+    def _gap_to_plane(self, d, level: float, cap: float) -> float:
+        """实体到平面 d·x = level（实体整体在 d·x ≥ level 一侧）的最近距离，不超过 cap。"""
+        size = float(np.max(np.ptp(self.points, axis=0))) * 4 + 10
+        n = unit(np.asarray(d, float))
+        pln = gp_Pln(gp_Pnt(*(n * level)), _dir(n))
+        face = BRepBuilderAPI_MakeFace(pln, -size, size, -size, size).Face()
+        dist = BRepExtrema_DistShapeShape(self.shape, face)
+        return min(float(dist.Value()), cap) if dist.IsDone() else 0.0
 
     # ---- 点 / 线 / 区域查询 ----
     def is_inside(self, p) -> bool:
@@ -350,14 +400,17 @@ class Part:
     def line_intervals(self, origin, direction, t0: float, t1: float) -> list[tuple[float, float]]:
         """直线 origin + t·direction 在 [t0, t1] 内穿过材料的区间。"""
         o, d = np.asarray(origin, float), unit(direction)
-        self._intersector.Perform(gp_Lin(_pnt(o), _dir(d)), t0, t1)
-        ts = sorted(
-            {t0, t1}
-            | {self._intersector.WParameter(i) for i in range(1, self._intersector.NbPnt() + 1)}
-        )
+        ts = {t0, t1}
+        # 直线恰好穿过回转面的顶点（如沿钻孔轴线穿过钻尖）时求交会漏掉该点；再用侧移 1e-4 的平行线补充分段点
+        side = unit(np.cross(d, (1.0, 0.0, 0.0) if abs(d[0]) < 0.9 else (0.0, 1.0, 0.0)))
+        for start in (o, o + 1e-4 * side):
+            self._intersector.Perform(gp_Lin(_pnt(start), _dir(d)), t0, t1)
+            ts |= {self._intersector.WParameter(i) for i in range(1, self._intersector.NbPnt() + 1)}
+        ts = sorted(ts)
         out: list[tuple[float, float]] = []
         for a, b in zip(ts, ts[1:]):
-            if b - a < 1e-9 or not self.is_inside(o + (a + b) / 2 * d):
+            # 相邻两交点之间内外状态不变；分类器偶尔在一小段范围内误判，取段内三点多数
+            if b - a < 1e-9 or sum(self.is_inside(o + (a + f * (b - a)) * d) for f in (0.25, 0.5, 0.75)) < 2:
                 continue
             if out and abs(out[-1][1] - a) < 1e-9:
                 out[-1] = (out[-1][0], b)

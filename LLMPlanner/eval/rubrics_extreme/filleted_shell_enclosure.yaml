@@ -1,0 +1,88 @@
+case: filleted_shell_enclosure
+prompt: >-
+  创建一个塑料外壳（底部开口的盒子），单一实体。外形是 120×80×40 的长方体（x = −60~60、y = −40~40、z = 0~40），
+  4 条竖直棱倒 R10 圆角，顶面的一圈棱边倒 R6 圆角（角部三面圆角自然过渡）；然后去掉底面、向内抽壳，壁厚处处 2.5mm
+  （内表面是外表面的等距面）。底部开口边缘外侧做一圈止口：z = 0~2 范围内外侧面整体向内缩 1.2mm（止口处壁厚 1.3mm）。
+  +X 端有 5 条通风槽，槽宽 3mm、中心线分别在 y = 0、±6、±12，沿 X 方向：把 x ≥ 40 且 z ≥ 28 的部分整体切穿
+  （槽从顶面穿过顶部圆角一直切到 +X 侧壁上 z = 28 处）。内部 4 个直径 8 的螺钉柱，轴线在 (±45, ±25)，从内顶面向下伸到
+  z = 5，每个柱子底端中心有一个直径 2.5、深 12 的孔（从 z = 5 向上到 z = 17）。
+prompt_en: >-
+  Create a plastic enclosure (a box open at the bottom) as a single solid body. The outer shape is a 120×80×40 block
+  (x = −60 to 60, y = −40 to 40, z = 0 to 40) with R10 fillets on the 4 vertical edges and R6 fillets on the loop of
+  top edges (blending naturally at the corners); the bottom face is then removed and the body is shelled inward with
+  a uniform 2.5mm wall (the inner surface is the offset of the outer surface). The bottom rim has an outer step: for
+  z = 0 to 2 the whole outer side surface is recessed inward by 1.2mm (1.3mm wall there). The +X end has 5 vent
+  slots, 3mm wide, with centre lines at y = 0, ±6 and ±12, running along X: everything with x ≥ 40 and z ≥ 28 inside
+  the slots is cut through (each slot runs from the top face over the top fillet and down the +X side wall to z =
+  28). Inside there are 4 screw bosses of 8mm diameter with axes at (±45, ±25), hanging from the inner top surface
+  down to z = 5; each boss has a 2.5mm hole, 12mm deep, at the centre of its bottom end (from z = 5 up to z = 17).
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# S：principal_frame，轴 0 = Z（封闭的顶面面积较大，取为低端 → c0 = 40 − z），轴 1 = Y（关于 y = 0 对称，正负都行），
+# 轴 2 = X（通风槽把 +X 侧面切小，−X 侧面为低端 → c2 = x + 60）。抽壳后内表面：竖直角 R7.5，顶部圆角 R3.5。
+entities:
+  S:      {principal_frame: {signs: {0: larger_area_low, 2: larger_area_low}}}
+  boss:   {cylinder: {d: 8, side: outer}, count: 4}
+  bhole:  {cylinder: {d: 2.5, side: inner}, count: 4}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 120×80×40
+    hard: true
+    check:
+      - bbox_sorted: [40, 80, 120]
+
+  - id: corner_fillets
+    source: 竖直棱 R10，抽壳后内侧 R7.5
+    derivation: z = 20 处从圆角轴 (50, 30) 沿 45° 向外的射线穿过 r = 7.5~10
+    check:
+      - ray_material: {frame: S, from: [20, 70, 110], dir: [0, 1, 1], length: 20, expect: [[7.5, 10]]}
+
+  - id: top_fillets
+    source: 顶面棱边 R6，抽壳后内侧 R3.5
+    derivation: x = 0 截面上从圆角轴 (y = 34, z = 34) 沿 45° 向外的射线穿过 r = 3.5~6
+    check:
+      - ray_material: {frame: S, from: [6, 74, 60], dir: [-1, 1, 0], length: 20, expect: [[3.5, 6]]}
+
+  - id: shell_wall
+    source: 去掉底面向内抽壳 2.5
+    check:
+      - line_material: {frame: S, along: 0, at: [null, 40, 30], expect: [[0, 2.5]]}
+      - line_material: {frame: S, along: 2, at: [35, 40, null], expect: [[0, 2.5], [117.5, 120]]}
+
+  - id: rim_step
+    source: 底边外侧止口，z = 0~2 内缩 1.2
+    check:
+      - line_material: {frame: S, along: 2, at: [39, 40, null], expect: [[1.2, 2.5], [117.5, 118.8]]}
+
+  - id: vents
+    source: +X 端 5 条宽 3 的通风槽，x ≥ 40、z ≥ 28 切穿
+    derivation: 槽中心 y = 0 处 x = 50 的竖线没有顶壁、z = 32 的 X 向线没有 +X 侧壁；槽间 y = 3 处都还在
+    check:
+      - line_material: {frame: S, along: 0, at: [null, 40, 110], expect: []}
+      - line_material: {frame: S, along: 0, at: [null, 43, 110], expect: [[0, 2.5]]}
+      - line_material: {frame: S, along: 2, at: [8, 40, null], expect: [[0, 2.5]]}
+      - line_material: {frame: S, along: 2, at: [8, 43, null], expect: [[0, 2.5], [117.5, 120]]}
+
+  - id: bosses
+    source: 4 个 Ø8 螺钉柱 (±45, ±25) 伸到 z = 5，柱底 Ø2.5 深 12 的孔
+    derivation: 柱壁内的竖线从顶面一直到 z = 5（c0 = 35）；柱轴线上到孔顶 z = 17（c0 = 23）
+    check:
+      - exists: boss
+      - exists: bhole
+      - line_material: {frame: S, along: 0, at: [null, 65, 107.5], expect: [[0, 35]]}
+      - line_material: {frame: S, along: 0, at: [null, 65, 105], expect: [[0, 23]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 圆角 + 等距抽壳）体积 61358.55
+    check:
+      - volume: 61358.55
+
+ungraded: []

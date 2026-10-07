@@ -1,0 +1,342 @@
+{
+ "case": "spherical_dome_ports",
+ "tool_calls": 11,
+ "modeling_calls": 11,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 12,
+ "volume_mm3": 586593.19,
+ "bbox_mm": [
+  200.0,
+  200.0,
+  136.933
+ ],
+ "seconds": 61.2,
+ "rubric_score": 100.0,
+ "accepted": true,
+ "failed_items": [],
+ "trajectory": [
+  {
+   "tool": "revolve",
+   "args": {
+    "plane": "top_plane",
+    "loops": [
+     {
+      "type": "path",
+      "start": [
+       0.0,
+       -40.0
+      ],
+      "segments": [
+       {
+        "to": [
+         100.0,
+         -40.0
+        ]
+       },
+       {
+        "to": [
+         100.0,
+         -30.0
+        ]
+       },
+       {
+        "to": [
+         80.0,
+         -30.0
+        ]
+       },
+       {
+        "to": [
+         80.0,
+         0.0
+        ]
+       },
+       {
+        "to": [
+         0.0,
+         80.0
+        ],
+        "through": [
+         56.568542,
+         56.568542
+        ]
+       },
+       {
+        "to": [
+         0.0,
+         -40.0
+        ]
+       }
+      ]
+     }
+    ],
+    "axis_start": [
+     0,
+     -50
+    ],
+    "axis_end": [
+     0,
+     100
+    ]
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 1989675.38
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "path_3d": {
+     "points": [
+      [
+       0,
+       0,
+       0
+      ],
+      [
+       72.975534,
+       42.132444,
+       70.706637
+      ]
+     ]
+    },
+    "profile_diameter": 30
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 2011391.16
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "path_3d": {
+     "points": [
+      [
+       0,
+       0,
+       0
+      ],
+      [
+       -45.466334,
+       -26.25,
+       90.932667
+      ]
+     ]
+    },
+    "profile_diameter": 24
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 2022909.14
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "right_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       40,
+       -30
+      ],
+      "diameter": 28
+     }
+    ],
+    "direction": "+X",
+    "depth": 100
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 2046685.6
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 50
+     }
+    ],
+    "depth": 95
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 2080033.51
+  },
+  {
+   "tool": "revolve",
+   "args": {
+    "plane": "top_plane",
+    "loops": [
+     {
+      "type": "path",
+      "start": [
+       0.0,
+       -41.0
+      ],
+      "segments": [
+       {
+        "to": [
+         72.0,
+         -41.0
+        ]
+       },
+       {
+        "to": [
+         72.0,
+         0.0
+        ]
+       },
+       {
+        "to": [
+         0.0,
+         72.0
+        ],
+        "through": [
+         50.911688,
+         50.911688
+        ]
+       },
+       {
+        "to": [
+         0.0,
+         -41.0
+        ]
+       }
+      ]
+     }
+    ],
+    "axis_start": [
+     0,
+     -50
+    ],
+    "axis_end": [
+     0,
+     100
+    ],
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 646864.07
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "path_3d": {
+     "points": [
+      [
+       0,
+       0,
+       0
+      ],
+      [
+       73.638948,
+       42.515467,
+       71.349425
+      ]
+     ]
+    },
+    "profile_diameter": 20,
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 634812.8
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "path_3d": {
+     "points": [
+      [
+       0,
+       0,
+       0
+      ],
+      [
+       -45.899346,
+       -26.5,
+       91.798693
+      ]
+     ]
+    },
+    "profile_diameter": 16,
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 628131.67
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "X=100",
+    "centers": [
+     [
+      40,
+      -30
+     ]
+    ],
+    "diameter": 18,
+    "direction": "-X",
+    "depth": 100
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 615722.23
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "Z=95",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 30,
+    "direction": "-Z",
+    "depth": 95
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 598908.24
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "Z=-40",
+    "polar": {
+     "center": [
+      0,
+      0
+     ],
+     "pcd": 180,
+     "count": 8,
+     "start_deg": 22.5
+    },
+    "diameter": 14,
+    "direction": "+Z",
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 586593.19
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "spherical_dome_ports oracle"
+   }
+  }
+ ]
+}

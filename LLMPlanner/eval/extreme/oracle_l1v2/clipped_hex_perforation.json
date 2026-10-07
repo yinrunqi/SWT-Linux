@@ -1,0 +1,1185 @@
+{
+ "case": "clipped_hex_perforation",
+ "tool_calls": 2,
+ "modeling_calls": 2,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 3,
+ "volume_mm3": 85103.17,
+ "bbox_mm": [
+  180.0,
+  160.0,
+  6.0
+ ],
+ "seconds": 97.8,
+ "rubric_score": 100.0,
+ "accepted": true,
+ "failed_items": [],
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "path",
+      "start": [
+       -56.568542,
+       70.0
+      ],
+      "segments": [
+       {
+        "to": [
+         56.568542,
+         70.0
+        ]
+       },
+       {
+        "to": [
+         -56.568542,
+         70.0
+        ],
+        "through": [
+         0.0,
+         -90.0
+        ]
+       }
+      ]
+     }
+    ],
+    "depth": 6
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 143408.04
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 20
+     },
+     {
+      "type": "circle",
+      "center": [
+       57.982756,
+       57.982756
+      ],
+      "diameter": 6.6
+     },
+     {
+      "type": "circle",
+      "center": [
+       -57.982756,
+       57.982756
+      ],
+      "diameter": 6.6
+     },
+     {
+      "type": "circle",
+      "center": [
+       -57.982756,
+       -57.982756
+      ],
+      "diameter": 6.6
+     },
+     {
+      "type": "circle",
+      "center": [
+       57.982756,
+       -57.982756
+      ],
+      "diameter": 6.6
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -36.0,
+       -62.353829
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -24.0,
+       -62.353829
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -12.0,
+       -62.353829
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       0.0,
+       -62.353829
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       12.0,
+       -62.353829
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       24.0,
+       -62.353829
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       36.0,
+       -62.353829
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -42.0,
+       -51.961524
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -30.0,
+       -51.961524
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -18.0,
+       -51.961524
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -6.0,
+       -51.961524
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       6.0,
+       -51.961524
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       18.0,
+       -51.961524
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       30.0,
+       -51.961524
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       42.0,
+       -51.961524
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -48.0,
+       -41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -36.0,
+       -41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -24.0,
+       -41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -12.0,
+       -41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       0.0,
+       -41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       12.0,
+       -41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       24.0,
+       -41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       36.0,
+       -41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       48.0,
+       -41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -54.0,
+       -31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -42.0,
+       -31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -30.0,
+       -31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -18.0,
+       -31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -6.0,
+       -31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       6.0,
+       -31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       18.0,
+       -31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       30.0,
+       -31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       42.0,
+       -31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       54.0,
+       -31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -60.0,
+       -20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -48.0,
+       -20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -36.0,
+       -20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -24.0,
+       -20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -12.0,
+       -20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       12.0,
+       -20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       24.0,
+       -20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       36.0,
+       -20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       48.0,
+       -20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       60.0,
+       -20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -66.0,
+       -10.392305
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -54.0,
+       -10.392305
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -42.0,
+       -10.392305
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -30.0,
+       -10.392305
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       30.0,
+       -10.392305
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       42.0,
+       -10.392305
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       54.0,
+       -10.392305
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       66.0,
+       -10.392305
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -72.0,
+       0.0
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -60.0,
+       0.0
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -48.0,
+       0.0
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -36.0,
+       0.0
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -24.0,
+       0.0
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       24.0,
+       0.0
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       36.0,
+       0.0
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       48.0,
+       0.0
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       60.0,
+       0.0
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       72.0,
+       0.0
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -66.0,
+       10.392305
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -54.0,
+       10.392305
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -42.0,
+       10.392305
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -30.0,
+       10.392305
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       30.0,
+       10.392305
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       42.0,
+       10.392305
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       54.0,
+       10.392305
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       66.0,
+       10.392305
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -60.0,
+       20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -48.0,
+       20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -36.0,
+       20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -24.0,
+       20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -12.0,
+       20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       12.0,
+       20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       24.0,
+       20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       36.0,
+       20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       48.0,
+       20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       60.0,
+       20.78461
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -54.0,
+       31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -42.0,
+       31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -30.0,
+       31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -18.0,
+       31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -6.0,
+       31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       6.0,
+       31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       18.0,
+       31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       30.0,
+       31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       42.0,
+       31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       54.0,
+       31.176915
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -48.0,
+       41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -36.0,
+       41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -24.0,
+       41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -12.0,
+       41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       0.0,
+       41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       12.0,
+       41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       24.0,
+       41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       36.0,
+       41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       48.0,
+       41.569219
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -42.0,
+       51.961524
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -30.0,
+       51.961524
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -18.0,
+       51.961524
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       -6.0,
+       51.961524
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       6.0,
+       51.961524
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       18.0,
+       51.961524
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       30.0,
+       51.961524
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     },
+     {
+      "type": "regular_polygon",
+      "center": [
+       42.0,
+       51.961524
+      ],
+      "sides": 6,
+      "across_flats": 10,
+      "angle_deg": 90
+     }
+    ],
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 85103.17
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "clipped_hex_perforation oracle"
+   }
+  }
+ ]
+}

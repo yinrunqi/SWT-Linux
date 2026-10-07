@@ -1,0 +1,95 @@
+case: inch_callout_plate
+prompt: >-
+  按下面这张英制图纸的标注创建零件（单一实体），图纸单位为英寸，建模单位用 mm（1 in = 25.4 mm）。坐标原点在板的左下角
+  （下表面），X 向右、Y 向上、Z 为板厚方向。板：6.000 × 4.000 × .500，4 个竖直角 R.250；顶面外轮廓一圈 .030 × 45° 倒角。
+  孔（全部从顶面加工，位置为孔心坐标）：
+  ① 4X ⌀"H" DRILL THRU（字母钻 H）于 (.375, .375)、(5.625, .375)、(.375, 3.625)、(5.625, 3.625)；
+  ② ⌀.531 THRU ⌴ ⌀.812 ↧ .313（沉头孔）于 (1.500, 2.000)；
+  ③ ⌀.391 THRU ⌵ ⌀.750 × 82°（锥形沉孔，顶面处直径 .750，锥角 82°）于 (4.500, 2.000)；
+  ④ 3X 10-32 UNF 螺纹底孔：#21 DRILL ↧ .375（深度不含钻尖，钻尖 118°，不建螺纹），均布在以孔 ③ 为圆心的 ⌀1.250 圆上，
+  第一个孔在孔 ③ 的正上方（+Y 方向），其余逆时针每隔 120°；
+  ⑤ .250 宽的长圆通孔，两端半圆圆心在 (2.500, .750) 和 (3.500, .750)。
+prompt_en: >-
+  Model the part (a single solid body) from the following inch drawing callouts; the drawing is in inches and the
+  model must be in mm (1 in = 25.4 mm). The origin is the lower-left corner of the plate (bottom face), X to the
+  right, Y up, Z through the thickness. Plate: 6.000 × 4.000 × .500 with R.250 on the 4 vertical corners and a
+  .030 × 45° chamfer around the top outer edge. Holes (all machined from the top face; positions are hole centres):
+  ① 4X ⌀"H" DRILL THRU (letter drill H) at (.375, .375), (5.625, .375), (.375, 3.625), (5.625, 3.625); ② ⌀.531 THRU
+  ⌴ ⌀.812 ↧ .313 (counterbore) at (1.500, 2.000); ③ ⌀.391 THRU ⌵ ⌀.750 × 82° (countersink, .750 diameter at the top
+  face, 82° included angle) at (4.500, 2.000); ④ 3X 10-32 UNF tap drill holes: #21 DRILL ↧ .375 (depth excludes the
+  118° drill point; do not model threads), equally spaced on a ⌀1.250 circle centred on hole ③, the first directly
+  above hole ③ (+Y), the others every 120° counterclockwise; ⑤ a .250-wide slot through the plate with its end-arc
+  centres at (2.500, .750) and (3.500, .750).
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 换算：字母钻 H = .266 in = 6.756；#21 = .159 in = 4.039；⌀.531 = 13.487，⌀.812 = 20.625，⌀.391 = 9.931。
+# C：沉头孔轴线坐标系，轴 0 从下表面（面积较大）向上，轴 1 指向锥形沉孔 → frame 坐标 (z, x − 38.1, y − 50.8)。
+entities:
+  cb:       {cylinder: {d: 20.625, side: inner}, count: 1}
+  csk:      {cylinder: {d: 9.931, side: inner}, count: 1}
+  corner:   {cylinder: {d: 6.756, side: inner}, count: 4}
+  tap:      {cylinder: {d: 4.039, side: inner}, count: 3}
+  C:        {axis_frame: {axis: cb, low: larger_area, ref: csk}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 6.000 × 4.000 × .500 in
+    hard: true
+    check:
+      - bbox_sorted: [12.7, 101.6, 152.4]
+
+  - id: plate
+    source: R.250 竖直角、顶面 .030 × 45° 倒角
+    derivation: y = 1 处角部圆弧到 x = 6.35 − sqrt(6.35² − 5.35²) = 2.930；x = 0.3 处顶面被倒角削到 12.238
+    check:
+      - line_material: {frame: C, along: 1, at: [6, null, -49.8], expect: [[-35.171, 111.371]]}
+      - line_material: {frame: C, along: 0, at: [null, -37.8, 0], expect: [[0, 12.238]]}
+
+  - id: corner_holes
+    source: 4X 字母钻 H 通孔
+    check:
+      - exists: corner
+      - axis_through: {frame: C, items: corner,
+                       expect: [[0, -28.575, -41.275], [0, 104.775, -41.275], [0, -28.575, 41.275], [0, 104.775, 41.275]]}
+
+  - id: counterbore
+    source: ⌀.531 THRU ⌴ ⌀.812 ↧ .313
+    check:
+      - exists: cb
+      - line_material: {frame: C, along: 0, at: [null, 0, 0], expect: []}
+      - line_material: {frame: C, along: 0, at: [null, 8, 0], expect: [[0, 4.75]]}
+
+  - id: countersink
+    source: ⌀.391 THRU ⌵ ⌀.750 × 82°
+    derivation: r = 7 处锥面深 (9.525 − 7)/tan41° = 2.905
+    check:
+      - line_material: {frame: C, along: 0, at: [null, 76.2, 0], expect: []}
+      - line_material: {frame: C, along: 0, at: [null, 83.2, 0], expect: [[0, 9.795]]}
+
+  - id: tapped_holes
+    source: 3X #21 ↧ .375，⌀1.250 圆、第一个在 +Y
+    derivation: 孔底圆柱段止于 z = 3.175，118° 钻尖顶点在 z = 3.175 − 2.019/tan59° = 1.962
+    check:
+      - exists: tap
+      - axis_through: {frame: C, items: tap, expect: [[0, 76.2, 15.875], [0, 62.452, -7.938], [0, 89.948, -7.938]]}
+      - line_material: {frame: C, along: 0, at: [null, 76.2, 15.875], expect: [[0, 1.962]]}
+
+  - id: slot
+    source: .250 宽、端心 (2.5, .75)~(3.5, .75) 的长圆通孔
+    check:
+      - line_material: {frame: C, along: 1, at: [6, null, -31.75], expect: [[-38.1, 22.225], [53.975, 114.3]]}
+      - line_material: {frame: C, along: 2, at: [6, 38.1, null], expect: [[-50.8, -34.925], [-28.575, 50.8]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体体积 186602.07
+    check:
+      - volume: 186602.07
+
+ungraded: []

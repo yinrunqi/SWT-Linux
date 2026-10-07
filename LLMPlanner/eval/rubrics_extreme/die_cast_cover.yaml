@@ -1,0 +1,125 @@
+case: die_cast_cover
+prompt: >-
+  创建一个压铸盖，单一实体，开口朝下。以分型面（盖的底面，也就是开口所在的平面）为 z = 0，Z 轴向上，盖的中心在原点，长边沿 X。
+  外形：z = 0 处外轮廓是 160×100mm、四个竖直角为 R12 的圆角矩形；全部外侧壁（含四个圆角）以 z = 0 为中性面按 3° 拔模、
+  越往上越小，外形高 45mm，顶面是平面。内腔从底面挖入：z = 0 处内腔轮廓是 150×90mm、四角 R7 的圆角矩形，全部内侧壁同样以
+  z = 0 为中性面按 3° 拔模、越往上越小；内腔顶在 z = 40（顶板厚 5mm）。内腔里有：
+  （1）4 根螺钉柱，轴线在 (±60, ±30)，从内腔顶向下伸到 z = 4；柱子在 z = 4 处直径 12mm，柱面以 z = 4 为中性面按 1.5° 拔模、
+  越往上越粗；每根柱子中心有一个直径 4.2mm 的平底盲孔，从柱子底端面（z = 4）向上深 25mm。
+  （2）两条十字交叉的加强筋，中面分别是 y = 0 和 x = 0，从内腔顶向下伸到 z = 20，两端与内壁连成一体；筋在 z = 20 处厚 3mm
+  （关于中面对称），两个侧面各按 1° 拔模、越往上越厚。
+  顶面上 (−40, 0) 处有一个圆台形凸台：底部（z = 45）直径 40mm，顶到 z = 55，侧面按 2° 拔模、越往上越细；凸台中心有一个直径
+  20mm 的竖直通孔，穿过凸台、顶板和下方的加强筋，一直通到内腔。
+prompt_en: >-
+  Create a die-cast cover as a single solid body, open at the bottom. The parting plane (the bottom face of the
+  cover, i.e. the plane of the opening) is z = 0, the Z axis points up, the cover is centered at the origin and its
+  long side runs along X. Exterior: at z = 0 the outer outline is a 160×100mm rectangle with R12 vertical corners;
+  all outer side walls (including the four corner rounds) carry a 3° draft about the neutral plane z = 0, shrinking
+  upward; the exterior is 45mm tall with a flat top face. The cavity is recessed from the bottom face: at z = 0 its
+  outline is a 150×90mm rectangle with R7 corners, and all inner side walls also carry a 3° draft about the neutral
+  plane z = 0, shrinking upward; the cavity ceiling is at z = 40 (5mm top plate). Inside the cavity: (1) 4 screw
+  bosses with axes at (±60, ±30), hanging from the cavity ceiling down to z = 4; each boss is 12mm in diameter at
+  z = 4 and its surface carries a 1.5° draft about the neutral plane z = 4, growing thicker upward; each boss has a
+  4.2mm-diameter flat-bottomed blind hole at its center, 25mm deep upward from the boss end face (z = 4). (2) Two
+  crossing stiffening ribs with mid-planes y = 0 and x = 0, hanging from the cavity ceiling down to z = 20 and
+  merging with the inner walls at both ends; each rib is 3mm thick at z = 20 (symmetric about its mid-plane) and
+  both of its side faces carry a 1° draft, growing thicker upward. On the top face at (−40, 0) there is a
+  frustum-shaped boss: 40mm in diameter at its base (z = 45), top at z = 55, side drafted 2° so that it narrows
+  upward; the boss has a 20mm-diameter vertical through hole at its center that passes through the boss, the top
+  plate and the rib below, all the way into the cavity.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# P：principal_frame，轴 0 = Z（低端为分型面，其环形端面比凸台顶面大），轴 1 = Y（c1 = y + 50 或 50 − y），
+# 轴 2 = X（c2 = x + 80 或 80 − x）。轴 1、2 的正负不定，探测点取关于 x、y 对称的位置；涉及 (−40, 0) 凸台的用 expect_any 或孔轴 frame。
+# 外壁在 z 处离中心 80 − z·tan3°（Y 向 50 − z·tan3°），内壁 75 − z·tan3°（45 − z·tan3°），tan3° = 0.052408；
+# 螺钉柱半径 6 + (z − 4)·tan1.5°；筋厚 3 + 2(z − 20)·tan1°；凸台半径 20 − (z − 45)·tan2°。
+entities:
+  P:        {principal_frame: {signs: {0: larger_area_low}}}
+  hole20:   {cylinder: {d: 20, side: inner}, count: 1}
+  hole42:   {cylinder: {d: 4.2, side: inner}, count: 4}
+  H:        {axis_frame: {axis: hole20, low: larger_area}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 底部外廓 160×100mm；凸台顶到 z = 55
+    hard: true
+    check:
+      - bbox_sorted: [55, 100, 160]
+
+  - id: outer_draft
+    source: 外侧壁以 z = 0 为中性面拔模 3°、向上收小
+    derivation: z = 44 处外壁在 x = ±77.694、y = ±47.694
+    check:
+      - line_material: {frame: P, along: 2, at: [44, 70, null], expect: [[2.306, 157.694]]}
+      - line_material: {frame: P, along: 1, at: [44, null, 80], expect: [[2.306, 97.694]]}
+
+  - id: cavity_draft
+    source: 内腔 z = 0 处 150×90mm，内壁拔模 3° 向上收小，腔顶 z = 40
+    derivation: >-
+      y = 20 线上：z = 2 处壁为 x ∈ ±[74.895, 79.895]；z = 38 处壁为 ±[73.009, 78.009]，并穿过 x = 0 的筋（厚 3.628）
+    check:
+      - line_material: {frame: P, along: 2, at: [2, 70, null], expect: [[0.105, 5.105], [154.895, 159.895]]}
+      - line_material: {frame: P, along: 2, at: [38, 70, null],
+                        expect: [[1.991, 6.991], [78.186, 81.814], [153.009, 158.009]]}
+      - line_material: {frame: P, along: 0, at: [null, 85, 110], expect: [[40, 45]]}
+
+  - id: corners
+    source: 外角 R12、内角 R7，圆角面随侧壁一起拔模
+    derivation: >-
+      从中心朝外角圆心 (68, 38) 方向的水平射线：z = 30 处依次穿过十字筋、螺钉柱，外壁在 [83.325, 88.325]
+      （角心距 77.897，内外半径 7 − 1.572、12 − 1.572）；z = 10 处外壁在 [84.373, 89.373]
+    check:
+      - ray_material: {frame: P, from: [30, 50, 80], dir: [0, 38, 68], length: 120,
+                       expect: [[0, 3.433], [61.083, 72.939], [83.325, 88.325]]}
+      - ray_material: {frame: P, from: [10, 50, 80], dir: [0, 38, 68], length: 120,
+                       expect: [[61.68, 72.342], [84.373, 89.373]]}
+
+  - id: bosses
+    source: 4 根螺钉柱，轴线 (±60, ±30)，伸到 z = 4，z = 4 处直径 12mm，拔模 1.5° 向上变粗
+    derivation: y = 30 线上：z = 5 处柱半径 6.026（中心有 Ø4.2 孔）；z = 38 处柱半径 6.890
+    check:
+      - line_material: {frame: P, along: 2, at: [5, 80, null],
+                        expect: [[0.262, 5.262], [13.974, 17.9], [22.1, 26.026], [133.974, 137.9], [142.1, 146.026],
+                                 [154.738, 159.738]]}
+      - line_material: {frame: P, along: 2, at: [38, 80, null],
+                        expect: [[1.991, 6.991], [13.11, 26.89], [78.186, 81.814], [133.11, 146.89], [153.009, 158.009]]}
+      - line_material: {frame: P, along: 0, at: [null, 80, 24], expect: [[4, 45]]}
+
+  - id: boss_holes
+    source: 每根柱子中心直径 4.2mm、深 25mm 的平底盲孔
+    check:
+      - exists: hole42
+      - pocket_depth: {pocket: hole42, value: 25}
+
+  - id: ribs
+    source: 十字筋伸到 z = 20，z = 20 处厚 3mm，两侧各拔模 1° 向上变厚
+    derivation: z = 30 处筋厚 3 + 20·tan1° = 3.349
+    check:
+      - line_material: {frame: P, along: 2, at: [30, 65, null], expect: [[1.572, 6.572], [78.325, 81.675], [153.428, 158.428]]}
+      - line_material: {frame: P, along: 1, at: [30, null, 100], expect: [[1.572, 6.572], [48.325, 51.675], [93.428, 98.428]]}
+      - line_material: {frame: P, along: 0, at: [null, 65, 80], expect: [[20, 45]]}
+
+  - id: top_boss
+    source: (−40, 0) 处底径 40mm、顶到 z = 55、拔模 2° 的圆台凸台，中心直径 20mm 通孔
+    derivation: 凸台半径 z = 50 处 19.825、z = 54 处 19.686；y = 0、z = 50 的 X 向线穿过凸台两侧
+    check:
+      - exists: hole20
+      - through: {holes: hole20}
+      - radial_material: {frame: H, t: 50, deg: 0, expect: [[10, 19.825]]}
+      - radial_material: {frame: H, t: 54, deg: 90, expect: [[10, 19.686]]}
+      - line_material: {frame: P, along: 2, at: [50, 50, null],
+                        expect_any: [[[20.175, 30], [50, 59.825]], [[100.175, 110], [130, 139.825]]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 拔模 + 布尔运算）体积 208639.59
+    check:
+      - volume: 208639.59
+
+ungraded: []

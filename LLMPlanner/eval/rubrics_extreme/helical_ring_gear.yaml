@@ -1,0 +1,106 @@
+case: helical_ring_gear
+prompt: >-
+  创建一个斜齿内齿圈，单一实体。齿圈是外径 180mm 的圆柱环，轴线为 Z 轴，齿宽 20mm（z = 0~20）。内齿参数：齿数 54，
+  法面模数 2.5mm，法面压力角 20°，螺旋角 15°，右旋（沿 +Z 前进时，齿向绕 Z 轴逆时针转动，从 +Z 一侧俯视），标准齿轮、不变位，
+  齿顶高系数 1、齿根高系数 1.25（内齿轮的齿顶圆在分度圆以内、齿根圆在分度圆以外）。端面齿廓是标准渐开线，齿根圆与齿槽两侧的
+  渐开线直接相交（不做齿根圆角），齿顶圆是内孔。在 z = 10 的端面截面上，φ = 0°（+X 方向）正对一个齿的齿厚中心。
+  6 个直径 9mm 的轴向通孔均布在直径 160mm 的圆上，分别位于 φ = 0°、60°、…、300°。z = 10 处、φ = 90° 方向有一个直径 4mm
+  的径向润滑油孔，从外圆柱面钻通到齿槽。z = 20 一端的齿顶圆棱边倒角 1×45°（该端面上齿顶开口直径比齿顶圆大 2mm），z = 0 一端不倒角。
+prompt_en: >-
+  Create a helical internal ring gear as a single solid body. The ring is a cylinder of 180mm outer diameter with
+  its axis on the Z axis, face width 20mm (z = 0 to 20). Internal teeth: 54 teeth, normal module 2.5mm, normal
+  pressure angle 20°, helix angle 15°, right hand (moving along +Z the teeth turn counterclockwise about the Z axis
+  when viewed from the +Z side), standard gear without profile shift, addendum coefficient 1 and dedendum
+  coefficient 1.25 (for an internal gear the tip circle lies inside the reference circle and the root circle outside
+  it). The transverse tooth profile is a standard involute; the root circle meets the involutes on both sides of
+  each tooth space directly (no root fillet), and the tip circle forms the bore. In the transverse section at z =
+  10, φ = 0° (the +X direction) points at the middle of a tooth. 6 axial through holes of 9mm diameter are evenly
+  spaced on a 160mm circle at φ = 0°, 60°, ..., 300°. At z = 10 there is a 4mm radial lubrication hole in the φ =
+  90° direction, bored from the outer cylindrical surface through into the tooth space. On the z = 20 end the
+  tip-circle edge is chamfered 1×45° (on that end face the tip opening is 2mm larger in diameter than the tip
+  circle); the z = 0 end is not chamfered.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# G：齿圈轴线坐标系，轴 0 从不倒角的 z = 0 端指向 z = 20（该端面面积较大），轴 1 指向润滑油孔（φ = 90°），
+# 于是 frame 方位角 deg = φ − 90°。
+# 端面参数：mt = 2.5/cos15° = 2.58819，αt = atan(tan20°/cos15°) = 20.6469°，d = 139.762，rb = 65.3928，
+# 齿顶圆半径 ra = 67.381，齿根圆半径 rf = 73.006；齿槽半角 η(r) = π/(2z) + inv αt − inv α_r，cos α_r = rb/r。
+# 右旋：z 处齿中心方位角 φc = (z − 10)·tan15°/69.881（弧度），z = 2 → −1.7575°，z = 18 → +1.7575°。
+entities:
+  outer:   {cylinder: {d: 180, side: outer}, count: 1}
+  lube:    {cylinder: {d: 4, side: inner}, count: 1}
+  bolt:    {cylinder: {d: 9, side: inner}, count: 6}
+  G:       {axis_frame: {axis: outer, low: larger_area, ref_dir: lube, ref_dir_toward: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 外径 180mm、齿宽 20mm
+    hard: true
+    check:
+      - bbox_sorted: [20, 180, 180]
+
+  - id: tip_root
+    source: 法面模数 2.5、螺旋角 15°、齿顶高系数 1、齿根高系数 1.25 → 齿顶圆 Ø134.762、齿根圆 Ø146.012
+    derivation: z = 10 截面上 φ = 20°（齿中心）从齿顶圆起是材料，φ = 23.333°（齿槽中心）从齿根圆起
+    check:
+      - radial_material: {frame: G, t: 10, deg: -70, expect: [[67.381, 90]]}
+      - radial_material: {frame: G, t: 10, deg: -66.6667, expect: [[73.006, 90]]}
+
+  - id: involute_flank
+    source: 端面渐开线齿廓（端面压力角 20.6469°，基圆半径 65.3928）
+    derivation: 离齿槽中心 1.333° 的射线在 η(r) = 1.333° 处进入材料：r = 70.909；离 0.833° 处 r = 72.31
+    check:
+      - radial_material: {frame: G, t: 10, deg: -68, expect: [[70.909, 90]]}
+      - radial_material: {frame: G, t: 10, deg: -72, expect: [[70.909, 90]]}
+      - radial_material: {frame: G, t: 10, deg: -67.5, expect: [[72.31, 90]]}
+
+  - id: helix_hand
+    source: 螺旋角 15°、右旋
+    derivation: z = 2 处齿中心转到 φ = 18.2425°，z = 18 处转到 21.7575°；反向的位置正好落在齿槽附近
+    check:
+      - radial_material: {frame: G, t: 2, deg: -71.7575, expect: [[67.381, 90]]}
+      - radial_material: {frame: G, t: 18, deg: -68.2425, expect: [[67.381, 90]]}
+      - radial_material: {frame: G, t: 2, deg: -68.2425, expect: [[73.006, 90]]}
+      - radial_material: {frame: G, t: 18, deg: -71.7575, expect: [[73.006, 90]]}
+
+  - id: helix_flank
+    source: 螺旋角 15°（齿面随高度连续扭转）
+    derivation: z = 18 处离齿槽中心 1.333° 的射线同样在 r = 70.909 处进入材料
+    check:
+      - radial_material: {frame: G, t: 18, deg: -66.2425, expect: [[70.909, 90]]}
+
+  - id: bolt_holes
+    source: 6×Ø9 轴向通孔，分布圆 Ø160，位于 φ = 0°、60°…（正对 z = 10 截面上的齿中心）
+    check:
+      - exists: bolt
+      - through: {holes: bolt}
+      - radial_material: {frame: G, t: 10, deg: -90, expect: [[67.381, 75.5], [84.5, 90]]}
+      - radial_material: {frame: G, t: 10, deg: -30, expect: [[67.381, 75.5], [84.5, 90]]}
+
+  - id: lube_hole
+    source: z = 10、φ = 90° 的 Ø4 径向油孔，通到齿槽（54 齿时 φ = 90° 正是齿槽中心）
+    check:
+      - exists: lube
+      - radial_material: {frame: G, t: 10, deg: 0, expect: []}
+      - radial_material: {frame: G, t: 10, deg: 3.3333, expect: [[67.381, 90]]}
+
+  - id: tip_chamfer
+    source: z = 20 端齿顶倒角 1×45°
+    derivation: z = 19.5 处齿中心（φ = 22.087°）的齿顶从 r = 67.381 + 0.5 开始
+    check:
+      - radial_material: {frame: G, t: 19.5, deg: -67.9129, expect: [[67.881, 90]]}
+      - radial_material: {frame: G, t: 0.5, deg: -71.6871, expect: [[67.381, 90]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 渐开线端面沿螺旋扫掠 + 布尔运算）体积 193162.12
+    check:
+      - volume: 193162.12
+
+ungraded: []

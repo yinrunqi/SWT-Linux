@@ -1,0 +1,354 @@
+{
+ "description": "extreme 20 题的 L1_v2 oracle 轨迹（手写工具调用，不调用 LLM）；llm_calls_one_tool_per_turn = 工具调用数 + finish",
+ "tools": "L1_v2 (planner/workflow/tools_v2.py)",
+ "accepted": 20,
+ "cases": [
+  {
+   "case": "helical_ring_gear",
+   "tool_calls": 5,
+   "modeling_calls": 5,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 6,
+   "volume_mm3": 193176.72,
+   "bbox_mm": [
+    180.0,
+    180.0,
+    20.0
+   ],
+   "seconds": 385.2,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "worm_shaft",
+   "tool_calls": 4,
+   "modeling_calls": 4,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 5,
+   "volume_mm3": 59511.52,
+   "bbox_mm": [
+    36.167,
+    36.167,
+    115.0
+   ],
+   "seconds": 34.9,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "compound_drill_block",
+   "tool_calls": 7,
+   "modeling_calls": 7,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 8,
+   "volume_mm3": 528768.33,
+   "bbox_mm": [
+    120.0,
+    80.0,
+    60.0
+   ],
+   "seconds": 75.3,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "variable_fillet_bracket",
+   "tool_calls": 5,
+   "modeling_calls": 5,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 6,
+   "volume_mm3": 157695.66,
+   "bbox_mm": [
+    120.016,
+    60.0,
+    80.0
+   ],
+   "seconds": 63.0,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "roller_cam",
+   "tool_calls": 4,
+   "modeling_calls": 4,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 5,
+   "volume_mm3": 96078.76,
+   "bbox_mm": [
+    86.0,
+    84.998,
+    30.0
+   ],
+   "seconds": 213.7,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "naca_wing_rib",
+   "tool_calls": 2,
+   "modeling_calls": 2,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 3,
+   "volume_mm3": 16546.54,
+   "bbox_mm": [
+    240.068,
+    30.679,
+    4.0
+   ],
+   "seconds": 72.2,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "scroll_wrap_plate",
+   "tool_calls": 3,
+   "modeling_calls": 3,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 4,
+   "volume_mm3": 208060.01,
+   "bbox_mm": [
+    150.0,
+    150.0,
+    38.0
+   ],
+   "seconds": 323.9,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "variable_pitch_spring",
+   "tool_calls": 7,
+   "modeling_calls": 7,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 8,
+   "volume_mm3": 10825.17,
+   "bbox_mm": [
+    45.799,
+    45.513,
+    74.017
+   ],
+   "seconds": 692.4,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "pipe_route_3d",
+   "tool_calls": 12,
+   "modeling_calls": 12,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 13,
+   "volume_mm3": 220102.53,
+   "bbox_mm": [
+    270.311,
+    280.311,
+    238.284
+   ],
+   "seconds": 116.2,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "sheet_metal_kfactor",
+   "tool_calls": 4,
+   "modeling_calls": 4,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 5,
+   "volume_mm3": 20455.07,
+   "bbox_mm": [
+    80.0,
+    60.0,
+    67.678
+   ],
+   "seconds": 30.2,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "cast_manifold_fillets",
+   "tool_calls": 10,
+   "modeling_calls": 10,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 11,
+   "volume_mm3": 299426.2,
+   "bbox_mm": [
+    160.0,
+    100.0,
+    105.0
+   ],
+   "seconds": 94.0,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "die_cast_cover",
+   "tool_calls": 8,
+   "modeling_calls": 8,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 9,
+   "volume_mm3": 208565.58,
+   "bbox_mm": [
+    160.0,
+    100.0,
+    55.0
+   ],
+   "seconds": 92.2,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "balanced_flywheel",
+   "tool_calls": 2,
+   "modeling_calls": 2,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 3,
+   "volume_mm3": 643829.59,
+   "bbox_mm": [
+    200.0,
+    200.0,
+    40.0
+   ],
+   "seconds": 25.2,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "inch_callout_plate",
+   "tool_calls": 7,
+   "modeling_calls": 7,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 8,
+   "volume_mm3": 186602.07,
+   "bbox_mm": [
+    152.4,
+    101.6,
+    12.7
+   ],
+   "seconds": 107.3,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "clipped_hex_perforation",
+   "tool_calls": 2,
+   "modeling_calls": 2,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 3,
+   "volume_mm3": 85103.17,
+   "bbox_mm": [
+    180.0,
+    160.0,
+    6.0
+   ],
+   "seconds": 97.8,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "tangent_link_lever",
+   "tool_calls": 4,
+   "modeling_calls": 4,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 5,
+   "volume_mm3": 120448.94,
+   "bbox_mm": [
+    180.0,
+    107.0,
+    20.0
+   ],
+   "seconds": 25.3,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "filleted_shell_enclosure",
+   "tool_calls": 7,
+   "modeling_calls": 7,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 8,
+   "volume_mm3": 61358.55,
+   "bbox_mm": [
+    120.0,
+    80.0,
+    40.0
+   ],
+   "seconds": 97.0,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "tricylinder_node",
+   "tool_calls": 11,
+   "modeling_calls": 11,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 12,
+   "volume_mm3": 59655.81,
+   "bbox_mm": [
+    94.868,
+    89.868,
+    84.868
+   ],
+   "seconds": 112.7,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "twisted_flute_knob",
+   "tool_calls": 8,
+   "modeling_calls": 8,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 9,
+   "volume_mm3": 36912.85,
+   "bbox_mm": [
+    42.041,
+    42.069,
+    34.761
+   ],
+   "seconds": 46.4,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  },
+  {
+   "case": "spherical_dome_ports",
+   "tool_calls": 11,
+   "modeling_calls": 11,
+   "failed_calls": 0,
+   "llm_calls_one_tool_per_turn": 12,
+   "volume_mm3": 586593.19,
+   "bbox_mm": [
+    200.0,
+    200.0,
+    136.933
+   ],
+   "seconds": 61.2,
+   "rubric_score": 100.0,
+   "accepted": true,
+   "failed_items": []
+  }
+ ],
+ "llm_calls": {
+  "min": 3,
+  "median": 7.0,
+  "mean": 7.15,
+  "p90": 12,
+  "max": 13
+ }
+}

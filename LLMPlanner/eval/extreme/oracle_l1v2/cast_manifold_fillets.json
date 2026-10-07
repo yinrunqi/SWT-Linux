@@ -1,0 +1,318 @@
+{
+ "case": "cast_manifold_fillets",
+ "tool_calls": 10,
+ "modeling_calls": 10,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 11,
+ "volume_mm3": 299426.2,
+ "bbox_mm": [
+  160.0,
+  100.0,
+  105.0
+ ],
+ "seconds": 94.0,
+ "rubric_score": 100.0,
+ "accepted": true,
+ "failed_items": [],
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "right_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 50
+     }
+    ],
+    "direction": "both",
+    "depth": 160
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 314159.27
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "X=-80",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 90
+     },
+     {
+      "type": "circle",
+      "center": [
+       24.749,
+       24.749
+      ],
+      "diameter": 11
+     },
+     {
+      "type": "circle",
+      "center": [
+       24.749,
+       -24.749
+      ],
+      "diameter": 11
+     },
+     {
+      "type": "circle",
+      "center": [
+       -24.749,
+       24.749
+      ],
+      "diameter": 11
+     },
+     {
+      "type": "circle",
+      "center": [
+       -24.749,
+       -24.749
+      ],
+      "diameter": 11
+     }
+    ],
+    "direction": "+X",
+    "depth": 12
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 362376.43
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "X=80",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 90
+     },
+     {
+      "type": "circle",
+      "center": [
+       24.749,
+       24.749
+      ],
+      "diameter": 11
+     },
+     {
+      "type": "circle",
+      "center": [
+       24.749,
+       -24.749
+      ],
+      "diameter": 11
+     },
+     {
+      "type": "circle",
+      "center": [
+       -24.749,
+       24.749
+      ],
+      "diameter": 11
+     },
+     {
+      "type": "circle",
+      "center": [
+       -24.749,
+       -24.749
+      ],
+      "diameter": 11
+     }
+    ],
+    "direction": "-X",
+    "depth": 12
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 410593.59
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 36
+     }
+    ],
+    "direction": "+Z",
+    "depth": 60
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 448002.24
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "top_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       40,
+       0
+      ],
+      "diameter": 30
+     }
+    ],
+    "direction": "+Y",
+    "depth": 55
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 470045.93
+  },
+  {
+   "tool": "fillet",
+   "args": {
+    "radius": 5,
+    "edges": [
+     {
+      "origin": [
+       0.0,
+       40.0,
+       18.349352
+      ],
+      "direction": [
+       0,
+       -1,
+       0
+      ]
+     },
+     {
+      "origin": [
+       9.689111,
+       24.84848,
+       17.5
+      ],
+      "direction": [
+       0.866025,
+       0.0,
+       -0.5
+      ]
+     }
+    ]
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 470603.99
+  },
+  {
+   "tool": "fillet",
+   "args": {
+    "radius": 3,
+    "edges": [
+     {
+      "origin": [
+       50.0,
+       13.0,
+       22.51666
+      ],
+      "direction": [
+       1,
+       0,
+       0
+      ]
+     },
+     {
+      "origin": [
+       -50.0,
+       13.0,
+       22.51666
+      ],
+      "direction": [
+       -1,
+       0,
+       0
+      ]
+     }
+    ]
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 471227.02
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "X=-80",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 34,
+    "direction": "+X",
+    "through_all": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 325959.78
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "Z=60",
+    "centers": [
+     [
+      0,
+      0
+     ]
+    ],
+    "diameter": 22,
+    "direction": "-Z",
+    "depth": 60
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 309253.98
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "Y=55",
+    "centers": [
+     [
+      40,
+      0
+     ]
+    ],
+    "diameter": 18,
+    "direction": "-Y",
+    "depth": 55
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 299426.2
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "cast_manifold_fillets oracle"
+   }
+  }
+ ]
+}

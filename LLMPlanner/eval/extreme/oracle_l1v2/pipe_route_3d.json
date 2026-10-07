@@ -1,0 +1,354 @@
+{
+ "case": "pipe_route_3d",
+ "tool_calls": 12,
+ "modeling_calls": 12,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 13,
+ "volume_mm3": 220102.53,
+ "bbox_mm": [
+  270.311,
+  280.311,
+  238.284
+ ],
+ "seconds": 116.2,
+ "rubric_score": 100.0,
+ "accepted": true,
+ "failed_items": [],
+ "trajectory": [
+  {
+   "tool": "sweep",
+   "args": {
+    "path_3d": {
+     "points": [
+      [
+       0,
+       0,
+       0
+      ],
+      [
+       150,
+       0,
+       0
+      ],
+      [
+       150,
+       60,
+       0
+      ]
+     ],
+     "corner_radius": 45
+    },
+    "profile_diameter": 30
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 134787.87
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "path_3d": {
+     "points": [
+      [
+       150,
+       60,
+       0
+      ],
+      [
+       150,
+       120,
+       0
+      ],
+      [
+       230,
+       200,
+       140
+      ]
+     ],
+     "corner_radius": 60
+    },
+    "profile_diameter": 30
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 298915.93
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "right_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 80
+     },
+     {
+      "type": "circle",
+      "center": [
+       21.213203,
+       21.213203
+      ],
+      "diameter": 9
+     },
+     {
+      "type": "circle",
+      "center": [
+       -21.213203,
+       21.213203
+      ],
+      "diameter": 9
+     },
+     {
+      "type": "circle",
+      "center": [
+       -21.213203,
+       -21.213203
+      ],
+      "diameter": 9
+     },
+     {
+      "type": "circle",
+      "center": [
+       21.213203,
+       -21.213203
+      ],
+      "diameter": 9
+     }
+    ],
+    "direction": "+X",
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 339568.14
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "path_3d": {
+     "points": [
+      [
+       224.666667,
+       194.666667,
+       130.666667
+      ],
+      [
+       230,
+       200,
+       140
+      ]
+     ]
+    },
+    "profile_diameter": 90
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 407428.49
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       150,
+       60
+      ],
+      "diameter": 20
+     }
+    ],
+    "direction": "-Z",
+    "depth": 70
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 424985.63
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "path_3d": {
+     "points": [
+      [
+       -1,
+       0,
+       0
+      ],
+      [
+       150,
+       0,
+       0
+      ],
+      [
+       150,
+       60,
+       0
+      ]
+     ],
+     "corner_radius": 45
+    },
+    "profile_diameter": 24,
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 338721.39
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "path_3d": {
+     "points": [
+      [
+       150,
+       60,
+       0
+      ],
+      [
+       150,
+       120,
+       0
+      ],
+      [
+       230.444444,
+       200.444444,
+       140.777778
+      ]
+     ],
+     "corner_radius": 60
+    },
+    "profile_diameter": 24,
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 233677.14
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "Z=-70",
+    "centers": [
+     [
+      150,
+      60
+     ]
+    ],
+    "diameter": 14,
+    "direction": "+Z",
+    "depth": 70
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 224664.63
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "path_3d": {
+     "points": [
+      [
+       198.046909,
+       215.758865,
+       132.539554
+      ],
+      [
+       204.269131,
+       221.981087,
+       143.428443
+      ]
+     ]
+    },
+    "profile_diameter": 11,
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 223524.02
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "path_3d": {
+     "points": [
+      [
+       208.649575,
+       172.685573,
+       151.094205
+      ],
+      [
+       214.871797,
+       178.907795,
+       161.983094
+      ]
+     ]
+    },
+    "profile_diameter": 11,
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 222383.61
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "path_3d": {
+     "points": [
+      [
+       250.397535,
+       172.685579,
+       127.238224
+      ],
+      [
+       256.619757,
+       178.907801,
+       138.127113
+      ]
+     ]
+    },
+    "profile_diameter": 11,
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 221243.17
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "path_3d": {
+     "points": [
+      [
+       239.794869,
+       215.758871,
+       108.683573
+      ],
+      [
+       246.017091,
+       221.981093,
+       119.572462
+      ]
+     ]
+    },
+    "profile_diameter": 11,
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 220102.53
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "pipe_route_3d oracle"
+   }
+  }
+ ]
+}

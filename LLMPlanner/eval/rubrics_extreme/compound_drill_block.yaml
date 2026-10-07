@@ -1,0 +1,121 @@
+case: compound_drill_block
+prompt: >-
+  创建一个钻孔块，单一实体。长方体 120×80×60mm，占 x = 0~120、y = 0~80、z = 0~60（Z 向上）。前上棱（y = 0、z = 60 的棱）被一个斜面切掉：
+  斜面与前面（y = 0）交于 z = 40 的水平线，与顶面成 35° 夹角。
+  孔 A：直径 12mm，入口中心在顶面上的 (x, y) = (40, 55)。孔轴线方向按两个投影角确定：在主视图（XZ 投影）中轴线与竖直方向成 20°，
+  越往下越偏向 +X；在左视图（YZ 投影）中轴线与竖直方向成 15°，越往下越偏向 −Y。孔 A 是盲孔，圆柱部分一直钻到孔轴线降到 z = 8 处，
+  孔底为 118° 钻尖。
+  孔 B：直径 10mm，轴线垂直于斜面，入口中心在斜面上 z = 50 的那条水平线上，入口的 x 坐标要选得使孔 B 的轴线恰好与孔 A 的轴线相交；
+  孔 B 从斜面钻入，圆柱部分一直钻到它的轴线与孔 A 轴线的交点为止，孔底为 118° 钻尖。
+  孔 C：在右端面（x = 120）上 (y, z) = (40, 30) 处沿 −X 方向加工的沉孔：沉孔直径 14mm、从右端面量深 6mm；通孔部分直径 8mm、平底，
+  从右端面量总深 50mm。
+prompt_en: >-
+  Create a multi-hole block as a single solid body: a 120×80×60mm box occupying x = 0~120, y = 0~80, z = 0~60 (Z
+  up). The front top edge (the edge at y = 0, z = 60) is cut off by an inclined face that meets the front face (y =
+  0) along the horizontal line z = 40 and makes a 35° angle with the top face. Hole A: 12mm in diameter, entry
+  center at (x, y) = (40, 55) on the top face. Its axis direction is given by two projected angles: in the front
+  view (XZ projection) the axis makes 20° with the vertical, leaning toward +X as it goes down; in the left view (YZ
+  projection) it makes 15° with the vertical, leaning toward −Y as it goes down. Hole A is blind: its cylindrical
+  part continues until the hole axis has descended to z = 8, ending in a 118° conical point. Hole B: 10mm in
+  diameter, its axis perpendicular to the inclined face, its entry center on the horizontal line z = 50 of the
+  inclined face, with the entry x coordinate chosen so that the axis of hole B intersects the axis of hole A
+  exactly; hole B enters from the inclined face, its cylindrical part ending at the intersection point of the two
+  axes, with a 118° conical point. Hole C: a counterbored hole machined in the −X direction at (y, z) = (40, 30) on
+  the right end face (x = 120): counterbore 14mm in diameter and 6mm deep measured from the right end face; the
+  8mm-diameter hole below it is flat-bottomed with a total depth of 50mm measured from the right end face.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# P：principal_frame，c0 = z（底面整面最大），c1 = 80 − y（后面 120×60 比前面 120×40 大），c2 = x（左端面比有沉孔的右端面大）；右手系。
+# 孔 A 方向（每下降 1mm）：(tan20°, −tan15°, −1) = (0.36397, −0.26795, −1)，空间与竖直夹角 24.32°，|d| = 1.097393。
+# 斜面内法向 (0, sin35°, −cos35°)；斜面上 z = 50 处 y = 10/tan35° = 14.2815。
+# 孔 B 轴线在 x = xb 平面内：y − 14.2815 = tan35°·(50 − z)；与孔 A 联立得 A 下降 v = 49.290，
+# 交点 Q = (57.9401, 41.7927, 10.7098)，孔 B 入口 (57.9401, 14.2815, 50)。
+entities:
+  P:        {principal_frame: {signs: {0: larger_area_low, 1: larger_area_low, 2: larger_area_low}}}
+  holeA:    {cylinder: {d: 12, side: inner}, count: 1}
+  holeB:    {cylinder: {d: 10, side: inner}, count: 1}
+  cbore:    {cylinder: {d: 14, side: inner}, count: 1}
+  holeC:    {cylinder: {d: 8, side: inner}, count: 1}
+  # 孔 B 的钻尖落在孔 A 的孔腔里，只剩孔 A 的钻尖锥面
+  tips:     {cone: {semi_angle: 59, side: inner}, count: 1}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 120×80×60mm 长方体
+    hard: true
+    check:
+      - bbox_sorted: [60, 80, 120]
+
+  - id: slope
+    source: 斜面与前面交于 z = 40，与顶面成 35°
+    derivation: x = 20 处：z = 50 时斜面在 y = 14.2815，z = 45 时在 y = 7.1407；y = 0.5 处前面高 40 + 0.5·tan35° = 40.350
+    check:
+      - line_material: {frame: P, along: 1, at: [50, null, 20], expect: [[0, 65.719]]}
+      - line_material: {frame: P, along: 1, at: [45, null, 20], expect: [[0, 72.859]]}
+      - line_material: {frame: P, along: 0, at: [null, 79.5, 20], expect: [[0, 40.35]]}
+
+  - id: hole_a_direction
+    source: 主视图偏 20°（向下偏 +X）、左视图偏 15°（向下偏 −Y）
+    check:
+      - exists: holeA
+      - axis_dir: {frame: P, items: holeA, expect: [[-1, 0.26795, 0.36397]]}
+
+  - id: hole_a_entry
+    source: 入口中心在顶面 (40, 55)
+    check:
+      - axis_through: {frame: P, items: holeA, point: [60, 25, 40]}
+
+  - id: hole_a_depth
+    source: 圆柱部分钻到轴线降到 z = 8，118° 钻尖
+    derivation: >-
+      从入口上方 5mm 沿孔轴向下：圆柱段长 52·1.097393 = 57.064，钻尖 6/tan59° = 3.605，材料从 65.670 开始；
+      轴线在 z = 0 穿出底面，距起点 64.556·1.097393 = 70.843
+    check:
+      - exists: tips
+      - ray_material: {frame: P, from: [64.5563, 23.7792, 38.3417], dir: [-1, 0.26795, 0.36397], length: 120,
+                       expect: [[65.67, 70.843]]}
+
+  - id: hole_b_direction
+    source: 孔 B 轴线垂直于斜面
+    check:
+      - exists: holeB
+      - axis_dir: {frame: P, items: holeB, expect: [[-0.81915, -0.57358, 0]]}
+
+  - id: hole_b_meets_a
+    source: 入口在斜面 z = 50 的水平线上，x 坐标使孔 B 轴线与孔 A 轴线相交
+    check:
+      - axis_through: {frame: P, items: holeB, point: [50, 65.7185, 57.9401]}
+      - axis_through: {frame: P, items: holeB, point: [10.7098, 38.2073, 57.9401]}
+      - axis_through: {frame: P, items: holeA, point: [10.7098, 38.2073, 57.9401]}
+
+  - id: hole_b_depth
+    source: 孔 B 钻到两轴交点为止（交点在孔 A 内）
+    derivation: 参考实体中孔 B 圆柱面从斜面入口到与孔 A 孔壁相贯处，沿轴长 44.648
+    check:
+      - extent_along: {axis: holeB, of: holeB, value: 44.648}
+
+  - id: hole_c
+    source: 右端面 (y, z) = (40, 30) 处沉孔 Ø14 深 6，Ø8 平底孔总深 50
+    derivation: Ø8 孔壁从沉孔底（x = 114）到孔底（x = 70），长 44
+    check:
+      - exists: cbore
+      - exists: holeC
+      - coaxial: [holeC, cbore]
+      - parallel_to_frame: {frame: P, axis: 2, items: holeC}
+      - axis_positions: {frame: P, items: holeC, axes: [0, 1], expect: [[30, 40]]}
+      - pocket_depth: {pocket: cbore, value: 6, probe_r: 5.5}
+      - pocket_depth: {pocket: holeC, value: 44}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 布尔运算）体积 528769.15
+    check:
+      - volume: 528769.15
+
+ungraded: []

@@ -1,0 +1,108 @@
+case: variable_fillet_bracket
+prompt: >-
+  创建一个 L 形支架，单一实体（Z 向上）。底板 120×60×10mm，占 x = 0~120、y = 0~60、z = 0~10；立板在底板后缘，占 x = 0~120、
+  y = 50~60、z = 0~80，与底板连成一体。按以下顺序加工：
+  （1）底板上表面与立板前表面（y = 50）之间沿 X 方向的内角棱做变半径圆角：x = 0 端半径 3mm，x = 120 端半径 9mm，半径沿棱长线性变化。
+  （2）圆角做完后，在 x = 56~64 处加一块厚 8mm 的三角形加强筋，筋在 YZ 平面内的三个顶点是 (y, z) = (50, 10)、(10, 10)、(50, 60)，
+  与底板、立板和圆角合成一体。
+  （3）立板顶部前棱（y = 50、z = 80）做不等边倒角：沿立板前表面向下 6mm、沿顶面向后 3mm；立板顶部后棱（y = 60、z = 80）倒 R3 圆角；
+  底板前上棱（y = 0、z = 10）倒 2mm×45° 倒角。
+  （4）底板上 (30, 25) 和 (90, 25) 两处各一个沉头通孔：通孔直径 6.6mm，顶面处为 90° 锥形沉头，沉头在顶面上的直径 13mm。
+  （5）立板上沿 Y 方向贯通一个水平腰形孔：宽 12mm，两端半圆的圆心在 (x, z) = (45, 50) 和 (75, 50)。
+prompt_en: >-
+  Create an L-shaped bracket as a single solid body (Z up). The base plate is 120×60×10mm, occupying x = 0~120,
+  y = 0~60, z = 0~10; the upright plate sits on the rear edge of the base, occupying x = 0~120, y = 50~60, z = 0~80,
+  and is joined to the base. Machine it in this order: (1) Apply a variable-radius fillet to the inside corner edge
+  along X between the top face of the base and the front face of the upright (y = 50): radius 3mm at the x = 0 end,
+  9mm at the x = 120 end, varying linearly along the edge length. (2) After the fillet, add a triangular stiffening
+  rib 8mm thick at x = 56~64 whose three vertices in the YZ plane are (y, z) = (50, 10), (10, 10) and (50, 60); it
+  merges with the base, the upright and the fillet. (3) Chamfer the front top edge of the upright (y = 50, z = 80)
+  with unequal legs: 6mm down the front face of the upright and 3mm back along the top face; round the rear top edge
+  of the upright (y = 60, z = 80) with R3; chamfer the front top edge of the base (y = 0, z = 10) 2mm×45°. (4) The
+  base has a countersunk through hole at each of (30, 25) and (90, 25): through-hole diameter 6.6mm, with a 90°
+  conical countersink at the top face whose diameter on the top face is 13mm. (5) A horizontal slot runs through the
+  upright in the Y direction: 12mm wide, with the centers of its two semicircular ends at (x, z) = (45, 50) and
+  (75, 50).
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# P：principal_frame，c0 = 60 − y（立板背面最大），c1 = z（底面），c2 = 120 − x（x = 120 端 R9 圆角面积更大）；右手系。
+# 变半径圆角在 x 处半径 r = 3 + 0.05x，截面是与两面相切的圆弧：离立板前表面 u 处圆角面高出底板 r − √(2ru − u²)。
+entities:
+  P:        {principal_frame: {signs: {0: larger_area_low, 1: larger_area_low, 2: larger_area_low}}}
+  hole:     {cylinder: {d: 6.6, side: inner}, count: 2}
+  csk:      {cone: {semi_angle: 45, side: inner}, count: 2}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 底板 120×60，立板高 80
+    hard: true
+    check:
+      - bbox_sorted: [60, 80, 120]
+
+  - id: fillet_small_end
+    source: x = 0 端 R3，线性变化
+    derivation: x = 20 处 r = 4，u = 1：4 − √7 = 1.354
+    check:
+      - line_material: {frame: P, along: 1, at: [11, null, 100], expect: [[0, 11.354]]}
+
+  - id: fillet_large_end
+    source: x = 120 端 R9，线性变化
+    derivation: x = 100 处 r = 8，u = 2：8 − √28 = 2.709；x = 110 处 r = 8.5，u = 1：8.5 − 4 = 4.5
+    check:
+      - line_material: {frame: P, along: 1, at: [12, null, 20], expect: [[0, 12.709]]}
+      - line_material: {frame: P, along: 1, at: [11, null, 10], expect: [[0, 14.5]]}
+
+  - id: rib
+    source: x = 56~64、顶点 (50, 10)、(10, 10)、(50, 60) 的三角筋
+    derivation: y = 30 处筋顶高 10 + 50·20/40 = 35；腰形孔只穿立板，y = 45、z = 50 处筋仍完整
+    check:
+      - line_material: {frame: P, along: 2, at: [30, 30, null], expect: [[56, 64]]}
+      - line_material: {frame: P, along: 1, at: [30, null, 60], expect: [[0, 35]]}
+      - line_material: {frame: P, along: 2, at: [15, 50, null], expect: [[56, 64]]}
+
+  - id: top_chamfer
+    source: 立板顶部前棱不等边倒角：前表面向下 6、顶面向后 3
+    derivation: z = 79 处倒角面在 y = 50 + 3·5/6 = 52.5（背面 R3 圆角在 z = 79 处 y = 57 + √5 = 59.236）；z = 75 处 y = 50.5
+    check:
+      - line_material: {frame: P, along: 0, at: [null, 79, 90], expect: [[0.764, 7.5]]}
+      - line_material: {frame: P, along: 0, at: [null, 75, 90], expect: [[0, 9.5]]}
+
+  - id: back_round
+    source: 立板顶部后棱 R3 圆角
+    check:
+      - blend_faces: {radius: 3, side: outer, min_count: 1}
+
+  - id: base_chamfer
+    source: 底板前上棱 2mm×45°
+    check:
+      - line_material: {frame: P, along: 1, at: [59, null, 110], expect: [[0, 9]]}
+
+  - id: countersinks
+    source: (30, 25)、(90, 25) 处 Ø6.6 通孔，90° 沉头，顶面直径 13mm
+    derivation: 离孔轴 5.5mm 处沉头面在 z = 10 − (6.5 − 5.5) = 9
+    check:
+      - exists: hole
+      - exists: csk
+      - through: {holes: hole}
+      - axis_positions: {frame: P, items: hole, axes: [0, 2], expect: [[35, 90], [35, 30]]}
+      - line_material: {frame: P, along: 1, at: [35, null, 95.5], expect: [[0, 9]]}
+
+  - id: slot
+    source: 宽 12mm，圆心 (45, 50)、(75, 50) 的水平腰形孔
+    check:
+      - line_material: {frame: P, along: 2, at: [5, 50, null], expect: [[0, 39], [81, 120]]}
+      - line_material: {frame: P, along: 1, at: [5, null, 60], expect: [[0, 44], [56, 80]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 线性变半径圆角 + 布尔运算）体积 157599.14
+    check:
+      - volume: 157599.14
+
+ungraded: []

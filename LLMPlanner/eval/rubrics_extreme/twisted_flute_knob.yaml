@@ -1,0 +1,79 @@
+case: twisted_flute_knob
+prompt: >-
+  创建一个扭转槽旋钮，单一实体，轴线为 Z 轴。主体是直径 40、z = 0~34 的圆柱，顶面外缘倒 R4 圆角。z = 0~30 的侧面上有
+  6 条扭转的凹槽：任一高度 z 的水平截面上，凹槽是 6 个半径 5 的圆（圆心在 r = 21 的圆上）从直径 40 的圆中挖掉的部分；
+  z = 0 处 6 个圆心在 30°、90°、…、330°，截面随高度匀速扭转，左旋：每升高 30 顺时针转 40°（从 +Z 一侧俯视），
+  到 z = 30 为止，凹槽在 z = 30 处是平的端面，z = 30~34 是完整的圆柱。底部 D 形盲孔：直径 6 的圆在 x = 2.5 处被切平
+  （保留 x ≤ 2.5 的部分为孔），孔深 15（平底）。z = 8 处沿 +X 方向有一个直径 2.5 的紧定螺钉孔，从外圆柱面钻到 D 形孔的平面。
+prompt_en: >-
+  Create a twisted-flute knob as a single solid body on the Z axis. The body is a 40mm-diameter cylinder from z = 0
+  to 34 with an R4 fillet on the top outer edge. From z = 0 to 30 the side has 6 twisted flutes: in the horizontal
+  section at any height z, the flutes are the parts of the 40mm circle removed by 6 circles of radius 5 whose
+  centres lie on the r = 21 circle; at z = 0 the 6 centres are at 30°, 90°, …, 330°, and the section twists
+  uniformly with height, left-handed: it turns 40° clockwise (viewed from the +Z side) for every 30 of rise, up to z
+  = 30; at z = 30 the flutes end in flat faces; z = 30 to 34 is a full cylinder. At the bottom there is a D-shaped
+  blind hole: a 6mm circle cut flat at x = 2.5 (the hole is the part with x ≤ 2.5), 15 deep with a flat bottom. At z
+  = 8 a 2.5mm set-screw hole runs along +X from the outer cylinder to the flat of the D hole.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# K：外圆柱轴线坐标系，轴 0 从底面（面积较大）向上，轴 1 指向紧定螺钉孔（+X）→ frame 坐标 (z, x, y)，deg 从 +X 逆时针量。
+# 高度 z 处槽心方位角 30° − 40°·z/30 + 60°k：z = 5 为 23.333°，z = 20 为 3.333°，z = 28 为 −7.333°；
+# 右旋时 z = 20 为 56.667°，不扭转时为 30°。槽心方向上材料到 r = 21 − 5 = 16；槽与槽之间的圆柱面到 r = 20。
+entities:
+  body:   {cylinder: {d: 40, side: outer}, count: 1}
+  screw:  {cylinder: {d: 2.5, side: inner}, count: 1}
+  K:      {axis_frame: {axis: body, low: larger_area, ref_dir: screw, ref_dir_toward: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: Ø40 × 34
+    hard: true
+    check:
+      - bbox_sorted: [34, 40, 40]
+
+  - id: flute_section
+    source: 6 个半径 5、圆心在 r = 21 的圆挖出的槽
+    check:
+      - radial_material: {frame: K, t: 20, deg: 3.333, expect: [[0, 16]]}
+      - radial_material: {frame: K, t: 20, deg: 33.333, expect: [[0, 20]]}
+
+  - id: left_twist
+    source: 左旋，每升高 30 顺时针转 40°
+    derivation: z = 5、28 处槽心在 23.333°、352.667°；D 孔平面在 x = 2.5，23.333° 方向上 r = 2.5/cos23.333° = 2.722
+    check:
+      - radial_material: {frame: K, t: 5, deg: 23.333, expect: [[2.722, 16]]}
+      - radial_material: {frame: K, t: 5, deg: 53.333, expect: [[3, 20]]}
+      - radial_material: {frame: K, t: 28, deg: 352.667, expect: [[0, 16]]}
+      - radial_material: {frame: K, t: 28, deg: 22.667, expect: [[0, 20]]}
+
+  - id: cap
+    source: z = 30~34 为完整圆柱，顶面外缘 R4
+    derivation: 槽心方向上，z = 31、33 处只受 R4 圆角限制：16 + sqrt(4² − 1²) = 19.873、16 + sqrt(4² − 3²) = 18.646
+    check:
+      - radial_material: {frame: K, t: 31, deg: 3.333, expect: [[0, 19.873]]}
+      - radial_material: {frame: K, t: 33, deg: 3.333, expect: [[0, 18.646]]}
+
+  - id: d_bore
+    source: Ø6 D 形盲孔，平面在 x = 2.5，深 15
+    check:
+      - line_material: {frame: K, along: 1, at: [5, null, 0], expect: [[-20, -3], [2.5, 20]]}
+      - line_material: {frame: K, along: 0, at: [null, 0, 0], expect: [[15, 34]]}
+
+  - id: set_screw
+    source: z = 8、沿 +X 的 Ø2.5 孔通到 D 孔平面
+    check:
+      - line_material: {frame: K, along: 1, at: [8, null, 0], expect: [[-20, -3]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（水平圆截面沿左旋螺旋线扫掠切槽）体积 36880.22
+    check:
+      - volume: 36880.22
+
+ungraded: []

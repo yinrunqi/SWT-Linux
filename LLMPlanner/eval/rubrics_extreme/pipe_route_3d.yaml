@@ -1,0 +1,114 @@
+case: pipe_route_3d
+prompt: >-
+  创建一段三维弯管管路，单一实体。管子外径 30mm、内径 24mm，内孔沿整条管路贯通、两端开口。管路中心线由交点（PI 点）确定：
+  P0 (0, 0, 0)、P1 (150, 0, 0)、P2 (150, 120, 0)、P3 (230, 200, 140)。中心线由沿 P0P1、P1P2、P2P3 的直线段和两段圆弧组成：
+  P1 处圆弧的中心线弯曲半径 45mm，P2 处 60mm，圆弧与前后两段直线都相切（PI 点是相邻直线段延长线的交点，不在管子上）。
+  P0 端焊一个直径 80、厚 10 的法兰，法兰外端面与管端齐平（在过 P0、垂直于 P0P1 的平面上，法兰占 x = 0~10），法兰上
+  4 个直径 9 的通孔均布在直径 60 的圆上，各孔与 +Y、+Z 方向都成 45°。P3 端焊一个直径 90、厚 12 的法兰，外端面在过 P3、
+  垂直于 P2P3 的平面上，4 个直径 11 的通孔均布在直径 68 的圆上，跨在 P1、P2、P3 所在平面的两侧（每个孔与该平面成 45°）。
+  在 P1P2 段上 (150, 60, 0) 处向 −Z 方向接一根支管：外径 20、内径 14，管口端面在 z = −70，支管内孔与主管内孔连通。
+prompt_en: >-
+  Create a three-dimensional bent pipe run as a single solid body. The tube has 30mm outer diameter and 24mm inner
+  diameter; the bore runs through the whole route and is open at both ends. The tube centreline is defined by points
+  of intersection (PI points): P0 (0, 0, 0), P1 (150, 0, 0), P2 (150, 120, 0) and P3 (230, 200, 140). The centreline
+  consists of straight segments along P0P1, P1P2 and P2P3 joined by two circular arcs: the centreline bend radius is
+  45mm at P1 and 60mm at P2, and each arc is tangent to the straight segments on both sides (the PI points are the
+  intersections of the extended straight segments and do not lie on the tube). A flange of 80mm diameter and 10mm
+  thickness is welded to the P0 end with its outer face flush with the tube end (in the plane through P0
+  perpendicular to P0P1, so the flange occupies x = 0 to 10); it has 4 through holes of 9mm diameter evenly spaced
+  on a 60mm circle, each hole at 45° to both the +Y and +Z directions. A flange of 90mm diameter and 12mm thickness
+  is welded to the P3 end with its outer face in the plane through P3 perpendicular to P2P3; it has 4 through holes
+  of 11mm diameter evenly spaced on a 68mm circle, straddling the plane containing P1, P2 and P3 (each hole at 45°
+  to that plane). A branch tube leaves segment P1P2 at (150, 60, 0) in the −Z direction: 20mm outer diameter, 14mm
+  inner diameter, with its end face at z = −70; the branch bore connects to the main bore.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# F：P0 法兰轴线坐标系，轴 0 从 P0 端面指向管路（朝 P1 弯头弯心一侧），轴 1 指向 P1 弯头弯心 → frame 坐标即题面坐标。
+# 弯头：转角 θ，切线长 T = R·tan(θ/2)，弯心 C = PI + R/cos(θ/2)·unit(v − u)。
+# P1：θ = 90°，T = 45，C1 = (105, 45, 0)。P2：u = +Y，v = (80, 80, 140)/180，θ = 63.612°，T = 37.210，
+# C2 = (179.768, 82.790, 52.095)，弯头平面法向 (0.86824, 0, −0.49614)（与 P1 弯头不共面）。
+entities:
+  flange0:  {cylinder: {d: 80, side: outer}, count: 1}
+  bend1:    {torus: {minor_r: 15, major_r: 45, side: outer}, count: 1}
+  bend2:    {torus: {minor_r: 15, major_r: 60, side: outer}, count: 1}
+  holes9:   {cylinder: {d: 9, side: inner}, count: 4}
+  holes11:  {cylinder: {d: 11, side: inner}, count: 4}
+  F:        {axis_frame: {axis: flange0, toward: {center: bend1}, ref_point: {center: bend1}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 由管路走向、法兰与支管完全确定
+    hard: true
+    check:
+      - bbox_sorted: [238.284, 270.311, 280.311]
+
+  - id: bend_p1
+    source: P1 处 R45 弯头，与 P0P1、P1P2 相切
+    derivation: 从弯心 C1 指向 P1 的射线穿过管壁：45 ∓ 15、45 ∓ 12
+    check:
+      - exists: bend1
+      - axis_dir: {frame: F, items: bend1, expect: [[0, 0, 1]]}
+      - ray_material: {frame: F, from: [105, 45, 0], dir: [1, -1, 0], length: 100, expect: [[30, 33], [57, 60]]}
+
+  - id: bend_p2
+    source: P2 处 R60 弯头，与 P1P2、P2P3 相切（空间弯头）
+    derivation: 从弯心 C2 指向 P2 的射线：60 ∓ 15、60 ∓ 12
+    check:
+      - exists: bend2
+      - axis_dir: {frame: F, items: bend2, expect: [[0.86824, 0, -0.49614]]}
+      - ray_material: {frame: F, from: [179.768, 82.790, 52.095], dir: [-29.768, 37.210, -52.095], length: 100,
+                       expect: [[45, 48], [72, 75]]}
+
+  - id: straights
+    source: 外径 30、内径 24 的直管段，沿 P0P1 与 P2P3
+    derivation: P0P1 段 x = 50 处竖直射线；P2P3 直段中点 (195.602, 165.602, 79.804) 沿弯头 P2 平面法向的射线
+    check:
+      - ray_material: {frame: F, from: [50, 0, -20], dir: [0, 0, 1], length: 40, expect: [[5, 8], [32, 35]]}
+      - ray_material: {frame: F, from: [178.237, 165.602, 89.727], dir: [0.86824, 0, -0.49614], length: 40,
+                       expect: [[5, 8], [32, 35]]}
+
+  - id: branch
+    source: (150, 60, 0) 处向 −Z 的 Ø20/Ø14 支管，管口 z = −70，内孔与主管连通
+    derivation: >-
+      x = 158.5 的竖线在支管壁内从 −70 到主管孔底 −sqrt(12² − 8.5²) = −8.471，再穿过主管顶壁 8.471~12.359；
+      支管轴线上只剩主管顶壁 12~15
+    check:
+      - line_material: {frame: F, along: 2, at: [158.5, 60, null], expect: [[-70, -8.471], [8.471, 12.359]]}
+      - line_material: {frame: F, along: 2, at: [150, 60, null], expect: [[12, 15]]}
+
+  - id: flange_p0
+    source: P0 端 Ø80×10 法兰，4×Ø9 于 PCD60，与 +Y、+Z 各成 45°
+    check:
+      - axis_dir: {frame: F, items: holes9, expect: [[1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0]]}
+      - axis_through: {frame: F, items: holes9,
+                       expect: [[0, 21.213, 21.213], [0, -21.213, 21.213], [0, -21.213, -21.213], [0, 21.213, -21.213]]}
+      - line_material: {frame: F, along: 0, at: [null, 0, 30], expect: [[0, 10]]}
+
+  - id: flange_p3
+    source: P3 端 Ø90×12 法兰，端面过 P3 且垂直于 P2P3，4×Ø11 于 PCD68 跨 P1P2P3 平面布置
+    derivation: >-
+      v3 = (0.44444, 0.44444, 0.77778)，平面内垂直方向 e = (−0.22051, 0.89581, −0.38589)，孔心 = P3 + 34·(e·cos45° ± …)；
+      从端面外 1mm、半径 20 处逆 v3 的射线穿过法兰 1~13
+    check:
+      - axis_dir: {frame: F, items: holes11,
+                   expect: [[0.44444, 0.44444, 0.77778], [0.44444, 0.44444, 0.77778], [0.44444, 0.44444, 0.77778],
+                            [0.44444, 0.44444, 0.77778]]}
+      - axis_through: {frame: F, items: holes11,
+                       expect: [[203.825, 221.537, 142.651], [214.427, 178.463, 161.205], [256.175, 178.463, 137.349],
+                                [245.573, 221.537, 118.795]]}
+      - ray_material: {frame: F, from: [226.034, 218.360, 133.060], dir: [-0.44444, -0.44444, -0.77778], length: 20,
+                       expect: [[1, 13]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（圆柱 + 环面段布尔运算）体积 220105.71
+    check:
+      - volume: 220105.71
+
+ungraded: []

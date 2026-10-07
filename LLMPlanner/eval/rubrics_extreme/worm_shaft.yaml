@@ -1,0 +1,127 @@
+case: worm_shaft
+prompt: >-
+  创建一根双头左旋蜗杆轴，单一实体，轴线沿 Z。从左端面（z = 0）起依次为：左轴颈直径 20mm（z = 0~25）；
+  螺纹段 z = 25~85；右轴颈直径 20mm（z = 85~115）。螺纹段是 ZA 型（阿基米德）蜗杆：轴向模数 3mm，头数 2，
+  左旋（从 +Z 一侧俯视，沿螺旋线朝 +Z 前进时绕轴线顺时针转），分度圆直径 30mm，齿顶圆直径 36mm，齿根圆直径 22.8mm。
+  在通过轴线的截面内，齿的两侧齿廓都是直线，齿形角 20°（齿侧与径向线的夹角），分度圆处齿厚等于齿槽宽（各为轴向齿距的一半）；
+  齿顶是直径 36mm 的圆柱面，齿槽底是直径 22.8mm 的圆柱面；螺纹在 z = 25 和 z = 85 两个台阶平面处直接截止（不倒角、不收尾）。
+  方位角以轴线为原点、从 +Z 一侧俯视逆时针为正，0° 方向是下面键槽中心所在的径向。螺纹相位：在 z = 55 的横截面上，
+  方位角 0° 方向正对一个齿的齿厚中心。右轴颈上有一个平键槽：宽 6mm，槽底是距轴线 6.5mm 的平面，沿轴向从 z = 90 到
+  z = 110，两端是用直径 6mm 立铣刀铣出的半圆。左轴颈上 z = 4~5.3 处有一道宽 1.3mm 的卡簧槽，槽底直径 18.6mm。
+  右端面中心有一个螺纹底孔：直径 5mm，圆柱部分从右端面量深 12mm，孔底为 118° 钻尖。
+prompt_en: >-
+  Create a double-start left-hand worm shaft as a single solid body, with its axis along Z. From the left end face
+  (z = 0): a left journal 20mm in diameter (z = 0~25); the threaded section z = 25~85; a right journal 20mm in
+  diameter (z = 85~115). The threaded section is a ZA (Archimedean) worm: axial module 3mm, 2 starts, left-hand
+  (viewed from the +Z side, a point moving along the helix toward +Z turns clockwise about the axis), reference
+  diameter 30mm, tip diameter 36mm, root diameter 22.8mm. In any section through the axis both tooth flanks are
+  straight lines with a 20° profile angle (angle between flank and radial line), and on the reference diameter the
+  tooth thickness equals the space width (each half the axial pitch). The tooth tips are the 36mm-diameter cylinder,
+  the space bottoms are the 22.8mm-diameter cylinder, and the thread simply stops at the two shoulder planes z = 25
+  and z = 85 (no chamfer, no run-out). Azimuth is measured about the axis, counterclockwise positive when viewed
+  from the +Z side, with 0° being the radial direction through the center of the keyway below. Thread phase: in the
+  cross-section z = 55, the 0° direction passes through the middle of a tooth. The right journal has a parallel
+  keyway 6mm wide whose bottom is a flat plane 6.5mm from the axis, running axially from z = 90 to z = 110, with
+  semicircular ends as cut by a 6mm-diameter end mill. The left journal has a 1.3mm-wide retaining-ring groove at z
+  = 4~5.3 with a groove-bottom diameter of 18.6mm. The center of the right end face has a tapping hole 5mm in
+  diameter whose cylindrical part is 12mm deep measured from the right end face, ending in a 118° conical point.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿轴线，t = 0 在左端面（右端面有中心孔，面积较小）；轴 1 指向键槽一侧（键槽两端 R3 圆柱面的轴线
+# 方向），轴 2 = 轴 0 × 轴 1，方位角即题面方位角。
+# 齿中心所在的轴向位置：z = 55 − 导程·φ/360 + k·p（左旋），p = 3π = 9.42478，导程 = 2p = 18.84956。
+# 轴向截面内半齿厚 h(r) = p/4 − (r − 15)·tan20° = 2.35619 − 0.36397(r − 15)。
+entities:
+  journal:  {cylinder: {d: 20, side: outer}}
+  kw_end:   {cylinder: {d: 6, side: inner}, count: 2}
+  drill_tip: {cone: {semi_angle: 59, side: inner}, count: 1}
+  frame:    {axis_frame: {axis: journal, low: larger_area, ref_dir: kw_end, ref_dir_toward: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 齿顶圆直径 36mm；总长 115mm
+    hard: true
+    check:
+      - bbox_sorted: [36, 36, 115]
+
+  - id: journals
+    source: 两端轴颈直径 20mm，左 z = 0~25，右 z = 85~115
+    check:
+      - radial_material: {frame: frame, t: 12, deg: 0, expect: [[0, 10]]}
+      - radial_material: {frame: frame, t: 100, deg: 180, expect: [[0, 10]]}
+
+  - id: ring_groove
+    source: z = 4~5.3 处宽 1.3mm、槽底直径 18.6mm 的卡簧槽
+    check:
+      - line_material: {frame: frame, along: 0, polar: [9.65, 180], expect: [[0, 4], [5.3, 115]]}
+
+  - id: tip_root
+    source: 齿顶圆直径 36mm、齿根圆直径 22.8mm；z = 55 处 0° 方向正对齿中心
+    derivation: 0° 方向齿中心在 z = 55 + k·p，齿槽中心在 55 + p/2 = 59.712
+    check:
+      - radial_material: {frame: frame, t: 55, deg: 0, expect: [[0, 18]]}
+      - radial_material: {frame: frame, t: 59.712, deg: 0, expect: [[0, 11.4]]}
+
+  - id: two_starts
+    source: 头数 2
+    derivation: 两头在同一截面上相隔 180°，故 (55, 180°) 也是齿中心；单头时该处为齿槽中心
+    check:
+      - radial_material: {frame: frame, t: 55, deg: 180, expect: [[0, 18]]}
+      - radial_material: {frame: frame, t: 59.712, deg: 180, expect: [[0, 11.4]]}
+
+  - id: left_hand
+    source: 左旋
+    derivation: 方位 45° 处齿中心在 z = 55 − 18.84956/8 = 52.644，齿槽中心在 57.356（右旋时两者对调）
+    check:
+      - radial_material: {frame: frame, t: 52.644, deg: 45, expect: [[0, 18]]}
+      - radial_material: {frame: frame, t: 57.356, deg: 45, expect: [[0, 11.4]]}
+      - radial_material: {frame: frame, t: 52.644, deg: 225, expect: [[0, 18]]}
+
+  - id: flank
+    source: 轴向截面直线齿廓，齿形角 20°，分度圆齿厚为齿距一半
+    derivation: >-
+      离齿中心轴向 0.3mm 的齿侧点在 h(r) = 2.056 处，r = 15 + 0.3/tan20° = 15.824；
+      离齿中心 1.0mm 处 r = 15 + 1.0/tan20° = 17.747
+    check:
+      - radial_material: {frame: frame, t: 57.056, deg: 0, expect: [[0, 15.824]]}
+      - radial_material: {frame: frame, t: 52.944, deg: 0, expect: [[0, 15.824]]}
+      - radial_material: {frame: frame, t: 56.356, deg: 0, expect: [[0, 17.747]]}
+
+  - id: thread_ends
+    source: 螺纹在 z = 25 和 z = 85 的台阶平面处直接截止
+    derivation: >-
+      z = 25.5 处齿中心方位 φ = (29.5 − 3p)·360/导程 = 23.409°；z = 84.5 处 φ = (4p − 29.5)·360/导程 = 156.592°
+    check:
+      - radial_material: {frame: frame, t: 25.5, deg: 23.409, expect: [[0, 18]]}
+      - radial_material: {frame: frame, t: 24.5, deg: 23.409, expect: [[0, 10]]}
+      - radial_material: {frame: frame, t: 84.5, deg: 156.592, expect: [[0, 18]]}
+      - radial_material: {frame: frame, t: 85.5, deg: 156.592, expect: [[0, 10]]}
+
+  - id: keyway
+    source: 宽 6mm、槽底距轴线 6.5mm、z = 90~110 的圆头键槽
+    check:
+      - exists: kw_end
+      - radial_material: {frame: frame, t: 100, deg: 0, expect: [[0, 6.5]]}
+      - line_material: {frame: frame, along: 0, polar: [8, 0], expect: [[0, 90], [110, 115]]}
+
+  - id: center_hole
+    source: 右端面中心直径 5mm、圆柱部分深 12mm、118° 钻尖的底孔
+    derivation: 钻尖高 2.5/tan59° = 1.502，轴线上孔底在 115 − 12 − 1.502 = 101.498；半径 2 处在 103 − 0.5/tan59° = 102.700
+    check:
+      - exists: drill_tip
+      - line_material: {frame: frame, along: 0, polar: [0, 0], expect: [[0, 101.498]]}
+      - line_material: {frame: frame, along: 0, polar: [2, 90], expect: [[0, 102.7]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（OCC 螺旋扫掠 + 布尔运算）体积 59535.76
+    check:
+      - volume: 59535.76
+
+ungraded: []

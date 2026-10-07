@@ -1,0 +1,93 @@
+case: roller_cam
+prompt: >-
+  创建一个滚子从动件盘形凸轮，单一实体。凸轮盘厚 14mm（z = 0~14）；轮毂是外径 50mm 的圆柱，从 z = 0 到 z = 30；中心孔直径 25mm 贯穿，
+  孔上开一个沿全长贯通的键槽：宽 8mm，槽底平面到孔轴线的距离 15.8mm。以孔轴线为原点、从 +Z 一侧俯视，以键槽中心线方向为极角 φ = 0°，
+  逆时针为正。凸轮的理论廓线（滚子中心的轨迹）是极坐标曲线 R(φ) = 45 + s(φ) mm，升程 s(φ) 为：
+  0°~150° 按摆线运动规律升程 20mm，s = 20·[u − sin(2πu)/(2π)]，u = φ/150°；150°~180° 远休止，s = 20；
+  180°~300° 按 3-4-5 多项式回程，s = 20·[1 − (10u³ − 15u⁴ + 6u⁵)]，u = (φ − 180°)/120°；300°~360° 近休止，s = 0。
+  滚子半径 12mm；凸轮的实际轮廓是理论廓线向内、沿法向距离 12mm 的等距线（滚子圆族的内包络），轮廓面平行于 Z 轴。
+  轮毂上 z = 22 处有一个直径 5mm 的径向紧定螺钉孔，沿 φ = 0° 方向从轮毂外表面钻通到中心孔。
+prompt_en: >-
+  Create a disc cam for a roller follower as a single solid body. The cam plate is 14mm thick (z = 0~14); the hub is
+  a 50mm-outer-diameter cylinder from z = 0 to z = 30; a 25mm-diameter center bore runs through, with a keyway along
+  its full length: 8mm wide, with the keyway bottom plane 15.8mm from the bore axis. Take the bore axis as origin,
+  viewed from the +Z side, with the keyway centerline direction as polar angle φ = 0°, counterclockwise positive.
+  The pitch curve of the cam (the path of the roller center) is the polar curve R(φ) = 45 + s(φ) mm with lift s(φ):
+  0°~150° cycloidal rise of 20mm, s = 20·[u − sin(2πu)/(2π)], u = φ/150°; 150°~180° outer rest, s = 20; 180°~300°
+  3-4-5 polynomial return, s = 20·[1 − (10u³ − 15u⁴ + 6u⁵)], u = (φ − 180°)/120°; 300°~360° inner rest, s = 0. The
+  roller radius is 12mm; the actual cam contour is the inward offset of the pitch curve by 12mm measured along the
+  normal (the inner envelope of the family of roller circles), and the contour surface is parallel to Z. The hub has
+  a 5mm-diameter radial set-screw hole at z = 22, running along the φ = 0° direction from the hub outer surface
+  through to the center bore.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# frame：轴 0 沿中心孔轴线，t = 0 在盘底面（比轮毂顶面大）；轴 1 指向紧定螺钉孔一侧（φ = 0°），方位角即 φ。
+# 实际轮廓沿射线的半径由法向等距线与射线求交得到（20 万点独立数值计算，与参考实体一致）；
+# 括号内为错误地沿径向减 12 的结果：30° 33.878（33.973）、75° 42.404（43.0）、120° 51.974（52.027）、
+# 210° 50.719（50.930）、240° 42.182（43.0）、270° 34.757（35.070）。理论廓线凸处最小曲率半径 44.8 > 12，无根切。
+entities:
+  bore:     {cylinder: {d: 25, side: inner}, count: 1}
+  screw:    {cylinder: {d: 5, side: inner}, count: 1}
+  frame:    {axis_frame: {axis: bore, low: larger_area, ref_dir: screw, ref_dir_toward: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 由廓线和轮毂高 30 确定的外形
+    derivation: 实际轮廓 x ∈ [−53, 33]，y ∈ [−36.836, 48.165]
+    hard: true
+    check:
+      - bbox_sorted: [30, 85.001, 86]
+
+  - id: hub
+    source: 轮毂外径 50mm，z = 0~30；中心孔直径 25mm
+    check:
+      - radial_material: {frame: frame, t: 20, deg: 180, expect: [[12.5, 25]]}
+      - line_material: {frame: frame, along: 0, polar: [20, 180], expect: [[0, 30]]}
+
+  - id: keyway
+    source: 宽 8mm、槽底距轴线 15.8mm、沿 φ = 0° 的贯通键槽
+    derivation: 偏 3° 的射线在 15.8/cos3° = 15.822 处碰到槽底
+    check:
+      - radial_material: {frame: frame, t: 27, deg: 3, expect: [[15.822, 25]]}
+      - radial_material: {frame: frame, t: 7, deg: -20, expect: [[12.5, 33]]}
+
+  - id: rise
+    source: 0°~150° 摆线升程，滚子半径 12 的法向等距
+    check:
+      - radial_material: {frame: frame, t: 7, deg: 30, expect: [[12.5, 33.878]]}
+      - radial_material: {frame: frame, t: 7, deg: 75, expect: [[12.5, 42.404]]}
+      - radial_material: {frame: frame, t: 7, deg: 120, expect: [[12.5, 51.974]]}
+
+  - id: dwells
+    source: 150°~180° 远休止 s = 20；300°~360° 近休止 s = 0
+    check:
+      - radial_material: {frame: frame, t: 7, deg: 165, expect: [[12.5, 53]]}
+      - radial_material: {frame: frame, t: 7, deg: 330, expect: [[12.5, 33]]}
+
+  - id: return
+    source: 180°~300° 3-4-5 多项式回程，滚子半径 12 的法向等距
+    check:
+      - radial_material: {frame: frame, t: 7, deg: 210, expect: [[12.5, 50.719]]}
+      - radial_material: {frame: frame, t: 7, deg: 240, expect: [[12.5, 42.182]]}
+      - radial_material: {frame: frame, t: 7, deg: 270, expect: [[12.5, 34.757]]}
+
+  - id: set_screw
+    source: z = 22 处沿 φ = 0° 的直径 5mm 径向螺钉孔，钻通到中心孔
+    check:
+      - exists: screw
+      - radial_material: {frame: frame, t: 22, deg: 0, expect: []}
+      - radial_material: {frame: frame, t: 22, deg: 180, expect: [[12.5, 25]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（1440 点法向等距插值样条拉伸）体积 96081.41
+    check:
+      - volume: 96081.41
+
+ungraded: []

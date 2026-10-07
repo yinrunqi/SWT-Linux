@@ -1,0 +1,90 @@
+case: variable_pitch_spring
+prompt: >-
+  创建一个左旋变螺距圆柱压缩弹簧，单一实体。钢丝直径 4mm（圆截面），弹簧中径 40mm，轴线为 Z 轴，总圈数 7。钢丝中心线是螺旋线，
+  起点在 (20, 0, 0)；左旋：沿 +Z 上升时绕 Z 轴顺时针转（从 +Z 一侧俯视）。螺距随圈数 n（从起点算起的转数）变化：
+  n = 0~0.75 螺距 5mm；n = 0.75~1.25 螺距从 5mm 线性增大到 12mm；n = 1.25~5.75 螺距 12mm；n = 5.75~6.25 螺距从 12mm
+  线性减小到 5mm；n = 6.25~7 螺距 5mm。中心线高度是螺距对圈数的积分（第 n 圈处 z = ∫₀ⁿ 螺距 dn），终点在 z = 70。
+  钢丝两端截面垂直于中心线。两端磨平：用平面 z = 0 和 z = 70 把伸出这两个平面的钢丝材料全部切掉。
+prompt_en: >-
+  Create a left-hand variable-pitch cylindrical compression spring as a single solid body. Wire diameter 4mm (round
+  section), mean coil diameter 40mm, axis on the Z axis, 7 total turns. The wire centreline is a helix starting at
+  (20, 0, 0); left hand: rising along +Z it turns clockwise about the Z axis (viewed from the +Z side). The pitch
+  varies with the turn count n (revolutions from the start): pitch 5mm for n = 0 to 0.75; from n = 0.75 to 1.25 the
+  pitch increases linearly from 5mm to 12mm; pitch 12mm for n = 1.25 to 5.75; from n = 5.75 to 6.25 it decreases
+  linearly from 12mm to 5mm; pitch 5mm for n = 6.25 to 7. The centreline height is the integral of the pitch over
+  the turns (at turn n, z = ∫₀ⁿ pitch dn), ending at z = 70. The wire end sections are perpendicular to the
+  centreline. Both ends are ground flat: cut away all of the wire beyond the planes z = 0 and z = 70.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# 弹簧没有解析回转面：P 的最长轴为弹簧轴向，axis 为穿过包围盒中心的轴线；S 的轴 0 从磨平的低端向上，
+# 轴 1 指向低端磨平面的质心（参考实体测得该方位比钢丝起点顺着旋向转过 60.391°；两端关于中截面对称，取哪端为低端都一样）。
+# 方位角 deg 处、半径 20 的轴向线与第 n 圈相交：世界方位角 = −360°·n，中心高度 z(n)，钢丝在该线上的半长 2/cos λ，
+# tan λ = 螺距/(2π·20)（12mm 螺距时 2.009，5mm 时 2.002）。
+entities:
+  P:      {principal_frame: {}}
+  axis:   {bbox_axis: {frame: P, axis: 2}}
+  S:      {axis_frame: {axis: axis, ref_point: {end_face: {frame: P, axis: 2, end: low}}}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 中径 40 + 钢丝 4 → 外径 44；磨平后高 70
+    hard: true
+    check:
+      - bbox_sorted: [44, 44, 70]
+
+  - id: wire_coil
+    source: 钢丝 Ø4、中径 40
+    derivation: 有效圈中心高度 z = 19.013 处的径向线穿过钢丝 r = 18~22
+    check:
+      - radial_material: {frame: S, t: 19.013, deg: 0, expect: [[18, 22]]}
+
+  - id: left_hand
+    source: 左旋
+    derivation: >-
+      第一圈（螺距 5 段）里，deg = 240、270 的轴向线分别在 z = 0.504~4.507（n = 0.501）、0.087~4.090（n = 0.418）
+      碰到钢丝；右旋时这两处对应 n = 0.835、0.918，钢丝要高出约 1.7~2.7mm
+    check:
+      - ray_material: {frame: S, from: [-1, -10, -17.3205], dir: [1, 0, 0], length: 7, expect: [[1.504, 5.507]]}
+      - ray_material: {frame: S, from: [-1, 0, -20], dir: [1, 0, 0], length: 7, expect: [[1.087, 5.09]]}
+
+  - id: end_pitch
+    source: 端圈螺距 5，n = 0.75~1.25 线性过渡到 12
+    derivation: deg = 0（n = 0.168 + k）处：z = 0~2.840（被磨平面截断）、5.053~9.068（过渡段 n = 1.168，z = 7.061）
+    check:
+      - ray_material: {frame: S, from: [-1, 20, 0], dir: [1, 0, 0], length: 12, expect: [[1, 3.84], [6.053, 10.068]]}
+
+  - id: active_pitch
+    source: n = 1.25~5.75 螺距 12
+    derivation: deg = 0 处中心高度 19.013、31.013、43.013、55.013；deg = 180 处 13.013、25.013、37.013、49.013
+    check:
+      - ray_material: {frame: S, from: [12, 20, 0], dir: [1, 0, 0], length: 50,
+                       expect: [[5.005, 9.021], [17.005, 21.021], [29.005, 33.021], [41.005, 45.021]]}
+      - ray_material: {frame: S, from: [8, -20, 0], dir: [1, 0, 0], length: 50,
+                       expect: [[3.004, 7.022], [15.005, 19.021], [27.005, 31.021], [39.005, 43.021]]}
+
+  - id: top_end
+    source: n = 5.75~6.25 过渡回 5，末圈螺距 5，终点 z = 70 处磨平
+    derivation: deg = 90 处 z = 61.810~65.822、67.587~70（被磨平面截断）；deg = 0 处 63.789~67.794
+    check:
+      - ray_material: {frame: S, from: [58, 0, 20], dir: [1, 0, 0], length: 13, expect: [[3.81, 7.822], [9.587, 12]]}
+      - ray_material: {frame: S, from: [58, 20, 0], dir: [1, 0, 0], length: 13, expect: [[5.789, 9.794]]}
+
+  - id: ground_ends
+    source: 两端用 z = 0、z = 70 平面磨平
+    derivation: 两个磨平面都是钢丝管在端部被平面截出的月牙形，面积 157.96（参考实体）
+    check:
+      - extreme_plane_areas: {frame: S, axis: 0, values: [157.96, 157.97]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体（中心线 B 样条插值 + 圆截面扫掠 + 平面截切）体积 10818.15
+    check:
+      - volume: 10818.15
+
+ungraded: []

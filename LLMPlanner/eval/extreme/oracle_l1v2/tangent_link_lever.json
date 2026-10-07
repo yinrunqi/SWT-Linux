@@ -1,0 +1,257 @@
+{
+ "case": "tangent_link_lever",
+ "tool_calls": 4,
+ "modeling_calls": 4,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 5,
+ "volume_mm3": 120448.94,
+ "bbox_mm": [
+  180.0,
+  107.0,
+  20.0
+ ],
+ "seconds": 25.3,
+ "rubric_score": 100.0,
+ "accepted": true,
+ "failed_items": [],
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "path",
+      "start": [
+       1.785714,
+       -24.936143
+      ],
+      "segments": [
+       {
+        "to": [
+         141.071429,
+         -14.961686
+        ]
+       },
+       {
+        "to": [
+         141.365564,
+         14.937712
+        ],
+        "through": [
+         154.999274,
+         -0.147555
+        ]
+       },
+       {
+        "to": [
+         71.562857,
+         73.209414
+        ],
+        "through": [
+         97.380471,
+         33.192302
+        ]
+       },
+       {
+        "to": [
+         48.038748,
+         70.963562
+        ],
+        "through": [
+         58.859543,
+         81.945684
+        ]
+       },
+       {
+        "to": [
+         -0.599934,
+         24.992801
+        ],
+        "through": [
+         32.544888,
+         38.640512
+        ]
+       },
+       {
+        "to": [
+         1.785714,
+         -24.936143
+        ],
+        "through": [
+         -24.971511,
+         -1.19316
+        ]
+       }
+      ]
+     }
+    ],
+    "depth": 12
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 119079.54
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "Z=12",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 50
+     }
+    ],
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 134787.5
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "Z=12",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       140,
+       0
+      ],
+      "diameter": 30
+     }
+    ],
+    "depth": 4
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 137614.94
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "path",
+      "start": [
+       4.0,
+       11.842719
+      ],
+      "segments": [
+       {
+        "to": [
+         4.0,
+         15.8
+        ]
+       },
+       {
+        "to": [
+         -4.0,
+         15.8
+        ]
+       },
+       {
+        "to": [
+         -4.0,
+         11.842719
+        ]
+       },
+       {
+        "to": [
+         4.0,
+         11.842719
+        ],
+        "through": [
+         0.0,
+         -12.5
+        ]
+       }
+      ]
+     },
+     {
+      "type": "circle",
+      "center": [
+       140,
+       0
+      ],
+      "diameter": 15
+     },
+     {
+      "type": "circle",
+      "center": [
+       60,
+       70
+      ],
+      "diameter": 10
+     },
+     {
+      "type": "path",
+      "start": [
+       74.339218,
+       15.801289
+      ],
+      "segments": [
+       {
+        "to": [
+         64.451655,
+         40.273864
+        ],
+        "through": [
+         70.465973,
+         28.470101
+        ]
+       },
+       {
+        "to": [
+         57.667271,
+         36.03451
+        ],
+        "through": [
+         58.939786,
+         41.546379
+        ]
+       },
+       {
+        "to": [
+         66.514037,
+         14.137995
+        ],
+        "through": [
+         63.048502,
+         25.473248
+        ]
+       },
+       {
+        "to": [
+         74.339218,
+         15.801289
+        ],
+        "through": [
+         71.258274,
+         11.057052
+        ]
+       }
+      ]
+     }
+    ],
+    "through_all": true,
+    "direction": "+Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 120448.94
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "tangent_link_lever oracle"
+   }
+  }
+ ]
+}

@@ -1,0 +1,98 @@
+case: naca_wing_rib
+prompt: >-
+  创建一个 NACA 4412 翼型的机翼翼肋，单一实体，肋板厚 4mm（z = 0~4）。翼型弦长 c = 240mm，前缘在原点、后缘在 (240, 0)，
+  上表面朝 +Y。按 NACA 四位数翼型的标准定义构造（记 x̄ = x/c）：中弧线最大弯度 m = 0.04、位置 p = 0.4，
+  x̄ < p 时 yc = c·m/p²·(2p·x̄ − x̄²)，x̄ ≥ p 时 yc = c·m/(1−p)²·(1 − 2p + 2p·x̄ − x̄²)；厚度分布
+  yt = 5·0.12·c·(0.2969√x̄ − 0.1260x̄ − 0.3516x̄² + 0.2843x̄³ − 0.1036x̄⁴)（末项取 −0.1036，使后缘闭合成尖点）；
+  上下表面点是中弧线点沿中弧线法向各偏移 ±yt（即 x = x̄c ∓ yt·sinθ，y = yc ± yt·cosθ，θ 为中弧线斜率角）。
+  翼型外形用光滑曲线连接，前缘圆滑，后缘为尖角。肋板上有：
+  （1）3 个圆形减重孔，圆心在中弧线上，分别位于 x = 60、110、160，每个孔的直径 = 2·yt(x) − 12mm（yt 按上式在该 x 处计算）；
+  （2）一个翼梁缺口：在 x = 90~102 之间，从上表面一直向下切到 y = 9.6（x = 96 处的中弧线高度），缺口底面是平面，两侧竖直，
+  贯穿肋板厚度。
+prompt_en: >-
+  Create a wing rib with a NACA 4412 airfoil profile as a single solid body; the rib plate is 4mm thick (z = 0 to
+  4). The chord is c = 240mm with the leading edge at the origin and the trailing edge at (240, 0); the upper
+  surface faces +Y. Build it with the standard NACA four-digit definition (x̄ = x/c): maximum mean-line height m =
+  0.04 (as a fraction of c) at p = 0.4, yc = c·m/p²·(2p·x̄ − x̄²) for x̄ < p and yc = c·m/(1−p)²·(1 − 2p + 2p·x̄ −
+  x̄²) for x̄ ≥ p; thickness distribution yt = 5·0.12·c·(0.2969√x̄ − 0.1260x̄ − 0.3516x̄² + 0.2843x̄³ − 0.1036x̄⁴)
+  (last coefficient −0.1036 so the trailing edge closes to a sharp point); the upper and lower surface points are
+  the mean-line points offset by ±yt along the mean-line normal (x = x̄c ∓ yt·sinθ, y = yc ± yt·cosθ, where θ is the
+  mean-line slope angle). Join the profile with smooth curves: a smooth rounded leading edge and a sharp trailing
+  edge. The rib has: (1) 3 circular lightening holes centred on the mean line at x = 60, 110 and 160, each with
+  diameter 2·yt(x) − 12mm (yt evaluated with the formula above at that x); (2) a spar notch between x = 90 and 102,
+  cut from the upper surface straight down to y = 9.6 (the mean-line height at x = 96), with a flat bottom and
+  vertical sides, through the full plate thickness.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# P：principal_frame，轴 0 = 板厚，轴 1 = Y，轴 2 = 弦向 X（前缘一端截面更宽，取为低端）。
+# 前缘最靠前的点 x = −0.0721（上表面前缘段沿法向偏移后略越过原点），下表面最低 y = −6.9600，上表面最高 y = 23.7212：
+# c2 = x + 0.0721，c1 = y + 6.9600。等厚平板翻面后与原件全等，轴 1 的正负两种取向都评（either_hand）。
+entities:
+  P:      {principal_frame: {signs: {2: wider_end_low}, either_hand: 1}}
+  hole60:  {cylinder: {d: 16.516, side: inner}, count: 1}
+  hole110: {cylinder: {d: 14.552, side: inner}, count: 1}
+  hole160: {cylinder: {d: 6.986, side: inner}, count: 1}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 弦长 240、NACA 4412 外形、板厚 4
+    derivation: x ∈ [−0.072, 240]，y ∈ [−6.960, 23.721]
+    hard: true
+    check:
+      - bbox_sorted: [4, 30.681, 240.072]
+
+  - id: thickness_normal
+    source: 厚度沿中弧线法向叠加（不是竖直叠加）
+    derivation: >-
+      x = 24 处下表面 y = −6.873、上表面 y = 15.836（竖直叠加会得到 −7.039、15.439）；x = 5 处 [−4.334, 7.441]
+    check:
+      - line_material: {frame: P, along: 1, at: [2, null, 24.072], expect: [[0.087, 22.796]]}
+      - line_material: {frame: P, along: 1, at: [2, null, 5.072], expect: [[2.626, 14.401]]}
+
+  - id: aft_profile
+    source: 中弧线 x̄ ≥ p 段与厚度分布
+    derivation: x = 200 处 y ∈ [−0.618, 9.922]（竖直叠加得 [−0.653, 9.838]）
+    check:
+      - line_material: {frame: P, along: 1, at: [2, null, 200.072], expect: [[6.342, 16.882]]}
+
+  - id: closed_te
+    source: 末项系数 −0.1036，后缘闭合
+    derivation: x = 235 处 y ∈ [−0.055, 1.391]（末项取 −0.1015 的开口后缘会厚约 0.5mm）
+    check:
+      - line_material: {frame: P, along: 1, at: [2, null, 235.072], expect: [[6.905, 8.351]]}
+
+  - id: lightening_holes
+    source: 圆心在中弧线上、直径 2·yt − 12 的三个减重孔
+    derivation: >-
+      x = 60：yc = 8.25、yt = 14.258 → Ø16.516；x = 110：yc = 9.509、Ø14.552；x = 160：yc = 7.704、Ø6.986
+    check:
+      - exists: hole60
+      - exists: hole110
+      - exists: hole160
+      - line_material: {frame: P, along: 1, at: [2, null, 60.072], expect: [[0.94, 6.952], [23.468, 29.532]]}
+      - line_material: {frame: P, along: 1, at: [2, null, 110.072], expect: [[3.202, 9.193], [23.745, 29.755]]}
+      - line_material: {frame: P, along: 1, at: [2, null, 160.072], expect: [[5.207, 11.171], [18.157, 24.226]]}
+
+  - id: spar_notch
+    source: x = 90~102、底面 y = 9.6 的翼梁缺口
+    derivation: x = 96 处材料只到 y = 9.6；y = 15 的弦向线依次穿过前缘、孔 60、缺口、孔 110
+    check:
+      - line_material: {frame: P, along: 1, at: [2, null, 96.072], expect: [[2.64, 16.56]]}
+      - line_material: {frame: P, along: 2, at: [2, 21.96, null],
+                        expect: [[21.44, 55.315], [64.829, 90.072], [102.072, 105.298], [114.846, 173.958]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: >-
+      参考实体（解析点列 B 样条插值）体积 16546.43（三角网格积分；GProp 在长 B 样条边界的平面上会算成 17118.96，
+      轮廓面积 4722.67 × 厚 4 − 3 孔 − 缺口可交叉验证）
+    check:
+      - volume: 16546.43
+
+ungraded: []

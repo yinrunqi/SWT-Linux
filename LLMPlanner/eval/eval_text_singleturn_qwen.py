@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 import requests
+import yaml
 
 LLM_ROOT = Path(__file__).resolve().parent.parent
 if str(LLM_ROOT) not in sys.path:
@@ -1948,6 +1949,37 @@ PROMPTS_EN = {
 }
 PROMPT_LANGS = ("zh", "en")
 
+# 极难子集（extreme）20 题：中英文题面、外形与体积都直接取自 eval/rubrics_extreme（rubric 与参考实体一同校验），
+# 不计入 all。
+EXTREME_RUBRIC_DIR = LLM_ROOT / "eval" / "rubrics_extreme"
+
+
+def _rubric_check_value(rubric: dict, key: str):
+    return next(chk[key] for item in rubric["rubrics"] for chk in item["check"] if key in chk)
+
+
+def _load_extreme_cases() -> tuple[TextCase, ...]:
+    cases = []
+    for path in sorted(EXTREME_RUBRIC_DIR.glob("*.yaml")):
+        rubric = yaml.safe_load(path.read_text(encoding="utf-8"))
+        volume = float(_rubric_check_value(rubric, "volume"))
+        cases.append(TextCase(
+            rubric["case"],
+            rubric["case"],
+            rubric["prompt"],
+            tuple(float(x) for x in _rubric_check_value(rubric, "bbox_sorted")),
+            2.0,
+            (0.97 * volume, 1.03 * volume),
+            (("solid_features", 1),),
+            split="extreme",
+        ))
+        PROMPTS_EN[rubric["case"]] = rubric["prompt_en"]
+    return tuple(cases)
+
+
+EXTREME_CASES = _load_extreme_cases()
+CASES = CASES + EXTREME_CASES
+
 
 def case_prompt(case: TextCase, lang: str = "en") -> str:
     if lang == "zh":
@@ -2035,7 +2067,7 @@ def _save_artifacts(sw_url: str, stem: Path | None) -> dict:
     return saved
 
 
-RUBRIC_DIRS = (LLM_ROOT / "eval" / "rubrics_hard", LLM_ROOT / "eval" / "rubrics")
+RUBRIC_DIRS = (LLM_ROOT / "eval" / "rubrics_hard", EXTREME_RUBRIC_DIR, LLM_ROOT / "eval" / "rubrics")
 OCC_PYTHON = LLM_ROOT / "venv-occ" / "Scripts" / "python.exe"
 
 
@@ -2747,9 +2779,9 @@ def main() -> int:
     )
     parser.add_argument(
         "--split",
-        choices=("dev", "heldout", "demo", "heldout2", "demo3", "heldout3", "heldout4", "hard", "all"),
+        choices=("dev", "heldout", "demo", "heldout2", "demo3", "heldout3", "heldout4", "hard", "extreme", "all"),
         default="dev",
-        help="Case split (all = the 50 core cases; hard = the 8 showcase cases); "
+        help="Case split (all = the 50 core cases; hard = the 30 showcase cases; extreme = the 20 hardest cases); "
         "heldout cases must never be used to tune prompts, tools or code",
     )
     parser.add_argument(
@@ -2809,7 +2841,7 @@ def main() -> int:
         if (
             (not args.ids or case.case_id in set(args.ids))
             and case.case_id not in historical_ids
-            and (case.split == args.split or (args.split == "all" and case.split != "hard"))
+            and (case.split == args.split or (args.split == "all" and case.split not in ("hard", "extreme")))
         )
     ]
     output = args.output

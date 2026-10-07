@@ -1,0 +1,84 @@
+case: clipped_hex_perforation
+prompt: >-
+  创建一块六角孔阵穿孔板，单一实体。板厚 6（z = 0~6）：直径 180、圆心在原点的圆板，在 y = 70 处切平（保留 y ≤ 70 的部分）。
+  中心通孔直径 20；4 个直径 6.6 的通孔在 r = 82 的圆上，位于 45°、135°、225°、315°。六角通孔：正六边形，对边距 10，
+  两条对边平行于 Y 轴（顶点朝 ±Y）；孔心位于点阵 (12i + 6j, 10.392j)（i、j 取所有整数，10.392 = 12·sin60°）上。
+  只保留 6 个顶点全部满足以下条件的孔：离原点的距离在 16 到 78 之间，并且 y ≤ 64；有任何一个顶点越界的孔整个不开（不要开半个孔）。
+prompt_en: >-
+  Create a hexagonally perforated plate as a single solid body. Thickness 6 (z = 0 to 6): a 180mm-diameter disc
+  centred on the origin, cut flat at y = 70 (keep y ≤ 70). A 20mm centre through hole; 4 through holes of 6.6mm
+  diameter on the r = 82 circle at 45°, 135°, 225° and 315°. Hexagonal through holes: regular hexagons, 10mm across
+  flats, with two opposite flats parallel to the Y axis (vertices pointing ±Y); hole centres on the lattice (12i +
+  6j, 10.392j) for all integers i and j (10.392 = 12·sin60°). Keep only holes whose 6 vertices all satisfy: distance
+  from the origin between 16 and 78, and y ≤ 64; a hole with any vertex outside these limits is omitted entirely (no
+  partial holes).
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# P：principal_frame，轴 0 = 板厚，轴 1 = Y（y = 70 的切平面为低端 → c1 = 70 − y），轴 2 = X（c2 = x + 90，左右对称）。
+# 保留 107 个孔。孔心 (72, 0) 的外顶点离 r = 78 还有 0.946，保留；(66, 31.177) 孔心在界内但顶点越界 0.749，不开；
+# (0, 62.354) 被 y ≤ 64 剔除；(18, 10.392) 被 r ≥ 16 剔除（顶点朝 ±X 时会保留）；(6, 51.962)、(−12, 20.785) 保留。
+entities:
+  P:      {principal_frame: {signs: {1: larger_area_low}}}
+  bore:   {cylinder: {d: 20, side: inner}, count: 1}
+  bolts:  {cylinder: {d: 6.6, side: inner}, count: 4}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: Ø180 圆板在 y = 70 处切平，厚 6
+    hard: true
+    check:
+      - bbox_sorted: [6, 160, 180]
+
+  - id: outline
+    source: Ø180 圆、y = 70 切平
+    derivation: y = 69 的弦线 x = ±sqrt(90² − 69²) = ±57.784
+    check:
+      - line_material: {frame: P, along: 2, at: [3, 1, null], expect: [[32.216, 147.784]]}
+
+  - id: bore_and_bolts
+    source: Ø20 中心孔；4×Ø6.6 于 r = 82、45° 起每 90°
+    check:
+      - axis_through: {frame: P, items: bore, point: [3, 70, 90]}
+      - axis_through: {frame: P, items: bolts,
+                       expect: [[3, 12.017, 32.017], [3, 12.017, 147.983], [3, 127.983, 32.017], [3, 127.983, 147.983]]}
+
+  - id: hex_orientation
+    source: 对边 10、两条对边平行于 Y（顶点朝 ±Y）
+    derivation: >-
+      从孔 (−12, 20.785) 中心沿 X：对边 5 处出孔，(0, 20.785) 被剔除，材料到下一个孔 (12, 20.785) 的边 x = 7；
+      沿 +Y：顶点 5.774 处出孔
+    check:
+      - ray_material: {frame: P, from: [3, 49.215, 78], dir: [0, 0, 1], length: 25, expect: [[5, 19]]}
+      - ray_material: {frame: P, from: [3, 49.215, 78], dir: [0, -1, 0], length: 12, expect: [[5.774, 12]]}
+
+  - id: clip_outer
+    source: 顶点全部在 r ≤ 78 内才开孔
+    check:
+      - line_material: {frame: P, along: 0, at: [null, 70, 162], expect: []}
+      - line_material: {frame: P, along: 0, at: [null, 38.823, 156], expect: [[0, 6]]}
+
+  - id: clip_flat
+    source: 顶点全部满足 y ≤ 64 才开孔
+    check:
+      - line_material: {frame: P, along: 0, at: [null, 18.038, 96], expect: []}
+      - line_material: {frame: P, along: 0, at: [null, 7.646, 90], expect: [[0, 6]]}
+
+  - id: clip_hub
+    source: 顶点全部在 r ≥ 16 外才开孔
+    check:
+      - line_material: {frame: P, along: 0, at: [null, 49.215, 78], expect: []}
+      - line_material: {frame: P, along: 0, at: [null, 59.608, 108], expect: [[0, 6]]}
+
+  - id: volume
+    source: 孔数与位置由取舍规则完全确定（107 个六角孔）
+    derivation: 参考实体体积 85103.17（每少开或多开一个孔差 520，约 0.6%；配合上面的探测）
+    check:
+      - volume: 85103.17
+
+ungraded: []

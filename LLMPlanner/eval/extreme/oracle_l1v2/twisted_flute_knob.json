@@ -1,0 +1,218 @@
+{
+ "case": "twisted_flute_knob",
+ "tool_calls": 8,
+ "modeling_calls": 8,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 9,
+ "volume_mm3": 36912.85,
+ "bbox_mm": [
+  42.041,
+  42.069,
+  34.761
+ ],
+ "seconds": 46.4,
+ "rubric_score": 100.0,
+ "accepted": true,
+ "failed_items": [],
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       0,
+       0
+      ],
+      "diameter": 40
+     }
+    ],
+    "depth": 34
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 42725.66
+  },
+  {
+   "tool": "fillet",
+   "args": {
+    "radius": 4,
+    "edges": {
+     "origin": [
+      19,
+      0,
+      40
+     ],
+     "direction": [
+      0,
+      0,
+      -1
+     ]
+    }
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 42313.45
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "helix": {
+     "axis": "Z",
+     "center": [
+      0,
+      0,
+      22.5
+     ],
+     "radius": 21,
+     "pitch": 270.0,
+     "height": 7.5,
+     "right_handed": false
+    },
+    "profile_plane": "Z=22.5",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       21,
+       0
+      ],
+      "diameter": 10
+     }
+    ],
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 42112.4
+  },
+  {
+   "tool": "circular_pattern",
+   "args": {
+    "count": 6,
+    "axis": "Z",
+    "center": [
+     0,
+     0,
+     0
+    ],
+    "angle_deg": 360
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 41107.14
+  },
+  {
+   "tool": "sweep",
+   "args": {
+    "helix": {
+     "axis": "-Z",
+     "center": [
+      0,
+      0,
+      22.5
+     ],
+     "radius": 21,
+     "pitch": 270.0,
+     "height": 23.5,
+     "right_handed": false
+    },
+    "profile_plane": "Z=22.5",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       21,
+       0
+      ],
+      "diameter": 10
+     }
+    ],
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 40490.26
+  },
+  {
+   "tool": "circular_pattern",
+   "args": {
+    "count": 6,
+    "axis": "Z",
+    "center": [
+     0,
+     0,
+     0
+    ],
+    "angle_deg": 360
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 37405.94
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "path",
+      "start": [
+       2.5,
+       1.658312
+      ],
+      "segments": [
+       {
+        "to": [
+         2.5,
+         -1.658312
+        ],
+        "through": [
+         -3.0,
+         0.0
+        ]
+       },
+       {
+        "to": [
+         2.5,
+         1.658312
+        ]
+       }
+      ]
+     }
+    ],
+    "direction": "+Z",
+    "depth": 15
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 36998.7
+  },
+  {
+   "tool": "hole",
+   "args": {
+    "plane": "X=21",
+    "centers": [
+     [
+      8,
+      0
+     ]
+    ],
+    "diameter": 2.5,
+    "direction": "-X",
+    "depth": 18.5
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 36912.85
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "twisted_flute_knob oracle"
+   }
+  }
+ ]
+}

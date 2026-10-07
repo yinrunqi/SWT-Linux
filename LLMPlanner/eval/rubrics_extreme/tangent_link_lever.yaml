@@ -1,0 +1,103 @@
+case: tangent_link_lever
+prompt: >-
+  创建一个三孔连杆，单一实体。底板厚 12mm（z = 0~12），俯视外轮廓由三个圆和三段连接线组成：圆 A 圆心 (0, 0)、半径 25；
+  圆 B 圆心 (140, 0)、半径 15；圆 C 圆心 (60, 70)、半径 12。A 与 B 之间在下方（−Y 一侧）用两圆的外公切线连接；
+  B 与 C 之间用半径 80 的凹圆弧连接，A 与 C 之间用半径 50 的凹圆弧连接，凹圆弧与两端的圆都相切，圆心在三角形 ABC 之外
+  （轮廓在这两处向里凹）。外轮廓只由这些线段组成，各段之间相切过渡。
+  A 处轮毂：直径 50 的圆柱从 z = 0 到 z = 20；中心孔直径 25 贯通，孔上开一个贯通键槽，宽 8mm、关于 YZ 平面对称、朝 +Y，
+  槽底平面 y = 15.8。B 处轮毂：直径 30 的圆柱从 z = 0 到 z = 16，中心孔直径 15 贯通。C 处中心孔直径 10 贯通。
+  底板上有一条以 A 为圆心的圆弧槽：中心线半径 72，槽宽 8，两端为半圆，两端中心分别在方位角 12° 和 32°（从 +X 逆时针量），贯穿底板。
+prompt_en: >-
+  Create a three-hole link lever as a single solid body. The base plate is 12mm thick (z = 0 to 12). Viewed from
+  above, the outline consists of three circles and three connecting curves: circle A centred at (0, 0), radius 25;
+  circle B centred at (140, 0), radius 15; circle C centred at (60, 70), radius 12. A and B are connected on the
+  lower side (the −Y side) by the external common tangent of the two circles; B and C are connected by a concave
+  arc of radius 80, and A and C by a concave arc of radius 50; each concave arc is tangent to both circles it joins
+  and has its centre outside triangle ABC (the outline is concave there). The outline consists only of these
+  curves, joined tangentially. Hub A: a 50mm-diameter cylinder from z = 0 to z = 20, with a 25mm through bore and a
+  through keyway in the bore, 8mm wide, symmetric about the YZ plane, pointing +Y, with the keyway bottom plane at
+  y = 15.8. Hub B: a 30mm-diameter cylinder from z = 0 to z = 16 with a 15mm through bore. At C there is a 10mm
+  through hole. The plate has an arc slot centred on A: centreline radius 72, width 8, semicircular ends whose
+  centres are at azimuths 12° and 32° (measured counterclockwise from +X), cut through the plate.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# L：A 孔轴线坐标系，轴 0 从底面（面积较大）向上，轴 1 指向 B 孔（+X），轴 2 = +Y；c1 = x、c2 = y。
+# 外公切线：法向角 −85.904°，切点 (1.786, −24.936)、(141.071, −14.962)，y = −24.936 + 0.071611·(x − 1.786)。
+# B–C 凹弧圆心 (148.649, 94.606)（到 B 95、到 C 92），C–A 凹弧圆心 (−1.800, 74.978)（到 C 62、到 A 75）。
+entities:
+  boreA:  {cylinder: {d: 25, side: inner}, count: 1}
+  holeB:  {cylinder: {d: 15, side: inner}, count: 1}
+  holeC:  {cylinder: {d: 10, side: inner}, count: 1}
+  L:      {axis_frame: {axis: boreA, low: larger_area, ref: holeB}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 三圆与外公切线围成的外形，A 轮毂高 20
+    derivation: >-
+      包围盒沿主方向（外公切线方向，与 X 轴成 4.096°）：长 25 + 140·cos4.096° + 15 = 179.642，
+      宽 = 公切线到 C 圆最远点 25 + (−60·sin4.096° + 70·cos4.096°) + 12 = 102.536
+    hard: true
+    check:
+      - bbox_sorted: [20, 102.536, 179.642]
+
+  - id: tangent_line
+    source: A、B 下侧外公切线
+    derivation: x = 20 处 y = −23.632，x = 100 处 y = −17.903
+    check:
+      - line_material: {frame: L, along: 2, at: [6, 20, null], expect: [[-23.632, 29.981]]}
+      - line_material: {frame: L, along: 2, at: [6, 100, null], expect: [[-17.903, 31.097]]}
+
+  - id: concave_bc
+    source: B–C 之间 R80 凹弧，与两圆外切
+    derivation: >-
+      x = 120 处上边界 y = 94.606 − sqrt(80² − 28.649²) = 19.911；x = 80 处 y = 94.606 − sqrt(80² − 68.649²) = 53.529
+    check:
+      - line_material: {frame: L, along: 2, at: [6, 120, null], expect: [[-16.471, 19.911]]}
+      - line_material: {frame: L, along: 2, at: [6, 80, null], expect: [[-19.335, 53.529]]}
+
+  - id: concave_ca
+    source: A–C 之间 R50 凹弧，与两圆外切
+    derivation: x = 40 处上边界 y = 74.978 − sqrt(50² − 41.8²) = 47.544（下边界为公切线 −22.199）；y = 50 处左边界 41.514
+    check:
+      - line_material: {frame: L, along: 2, at: [6, 40, null], expect: [[-22.199, 47.544]]}
+      - line_material: {frame: L, along: 1, at: [6, null, 50], expect: [[41.514, 82.238]]}
+
+  - id: hubs
+    source: A 轮毂 Ø50 高 20、B 轮毂 Ø30 高 16，其余板厚 12
+    check:
+      - line_material: {frame: L, along: 0, at: [null, -20, 0], expect: [[0, 20]]}
+      - line_material: {frame: L, along: 0, at: [null, 140, -11], expect: [[0, 16]]}
+      - line_material: {frame: L, along: 0, at: [null, 60, 50], expect: [[0, 12]]}
+
+  - id: holes_keyway
+    source: A 孔 Ø25 带宽 8、槽底 y = 15.8 的键槽（朝 +Y），B 孔 Ø15，C 孔 Ø10
+    derivation: >-
+      x = 0 的线上孔 + 键槽占 y = −12.5~15.8，上方到 C–A 凹弧 y = 25.010；y = 0 的线上 A 孔 ±12.5、B 孔 132.5~147.5
+    check:
+      - exists: holeB
+      - exists: holeC
+      - line_material: {frame: L, along: 2, at: [6, 0, null], expect: [[-25, -12.5], [15.8, 25.01]]}
+      - line_material: {frame: L, along: 1, at: [6, null, 0], expect: [[-25, -12.5], [12.5, 132.5], [147.5, 155]]}
+
+  - id: arc_slot
+    source: 以 A 为圆心、R72、宽 8、两端中心在 12° 与 32° 的圆弧槽
+    derivation: >-
+      x = 60 的线：槽内弧 R68 在 y = 32，上端半圆（中心 (61.060, 38.155)）顶在 y = 42.012；C 孔占 65~75，C 圆顶 82；
+      y = 30 的线在 x = 61.025~69.828 穿过槽（内弧 R68 与外弧 R76）
+    check:
+      - line_material: {frame: L, along: 2, at: [6, 60, null], expect: [[-20.767, 32], [42.012, 65], [75, 82]]}
+      - line_material: {frame: L, along: 1, at: [6, null, 30], expect: [[20.039, 61.025], [69.828, 101.467]]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体体积 120448.94
+    check:
+      - volume: 120448.94
+
+ungraded: []

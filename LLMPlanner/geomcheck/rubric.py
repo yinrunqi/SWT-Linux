@@ -37,6 +37,7 @@ from .occ_part import (
 )
 
 _PROBE = 0.05  # mm，判定“孔端外侧/内侧”时离开端面的距离
+_EDGE_EPS = 0.01  # mm，最外端平面离外形极值的容差（导出的样条/环面采样点会略超出磨平端面）
 
 
 class EntityMissing(Exception):
@@ -166,7 +167,9 @@ def principal_axes(part: Part) -> np.ndarray:
                 score = w1 + w2 + weight(np.cross(d1, d2))
                 if best is None or score > best[0] + 1e-6:
                     best = (score, d1, d2)
-    if best is not None:
+    # 最强方向没有正交伙伴、又比所有正交对都重（如折线圆角近似的弹簧：磨平端面 vs 一堆略斜的环面轴）时，
+    # 不能让偶然正交的两个小面方向抢走主轴
+    if best is not None and best[0] >= weight(dirs[0][0]) - 1e-6:
         _, d1, d2 = best
     else:
         d1 = dirs[0][0]
@@ -188,7 +191,7 @@ def _extreme_plane_area(ctx: Ctx, frame: Frame, axis: int, sign: int) -> float:
     edge = (base + frame.hi[axis]) if sign > 0 else -(base + frame.lo[axis])
     return sum(
         s.area for s in ctx.part.surfs
-        if s.kind == "plane" and float(np.dot(s.axis_d, d)) > 1 - 1e-6 and abs(s.offset - edge) < 1e-3
+        if s.kind == "plane" and float(np.dot(s.axis_d, d)) > 1 - 1e-6 and abs(s.offset - edge) < _EDGE_EPS
     )
 
 
@@ -237,6 +240,11 @@ def sel_principal_frame(ctx: Ctx, a: dict) -> Frame:
         if rule not in _SIGN_RULES:
             raise ValueError(f"未知的方向规则 {rule}")
         frame = _SIGN_RULES[rule](ctx, frame, int(axis), lambda ax: _box_frame(part, ax))
+    # either_hand: k：轴 k 的正负无从判定（如等厚平板翻面后与原件全等），两种取向各评一次
+    if "either_hand" in a and ctx.hand < 0:
+        axes = frame.axes.copy()
+        axes[int(a["either_hand"])] *= -1
+        frame = _box_frame(part, axes)
     return frame
 
 
@@ -263,10 +271,43 @@ def sel_world_frame(ctx: Ctx, a: dict) -> Frame:
     return Frame(origin, frame.axes, frame.lo - shift, frame.hi - shift, frame.extra)
 
 
+def _point(ctx: Ctx, spec: dict) -> np.ndarray:
+    """``{center: 实体}``：球/环面中心；``{meet: [实体a, 实体b]}``：两轴线公垂线中点（两轴相交时即交点）；
+    ``{end_face: {frame, axis, end: low|high}}``：frame 轴 ``axis`` 一端、法向沿该轴的平面（如弹簧磨平端面）的面积加权质心。"""
+    if "center" in spec:
+        return np.asarray(_axis(ctx.items(spec["center"])[0]).o, float)
+    if "end_face" in spec:
+        a = spec["end_face"]
+        frame = ctx.frame(a["frame"])
+        sign = -1 if a.get("end", "low") == "low" else 1
+        d = sign * frame.axes[int(a["axis"])]
+        top = float(np.max(ctx.part.points @ d))
+        faces = [s for s in ctx.part.surfs
+                 if s.kind == "plane" and float(np.dot(s.axis_d, d)) > 1 - 1e-6 and abs(s.offset - top) < _EDGE_EPS]
+        if not faces:
+            raise EntityMissing("端部没有平面")
+        return np.sum([s.moment for s in faces], axis=0) / sum(s.area for s in faces)
+    x, y = (_axis(ctx.items(n)[0]) for n in spec["meet"])
+    w = x.o - y.o
+    b = float(np.dot(x.d, y.d))
+    den = 1 - b * b
+    if den < 1e-12:
+        raise ValueError("两轴线平行，没有交点")
+    s = (b * np.dot(y.d, w) - np.dot(x.d, w)) / den
+    t = (np.dot(y.d, w) - b * np.dot(x.d, w)) / den
+    return (x.o + s * x.d + y.o + t * y.d) / 2
+
+
 def sel_axis_frame(ctx: Ctx, a: dict) -> Frame:
-    """沿实体轴线的坐标系：原点在轴线上零件的低端。"""
+    """沿实体轴线的坐标系：原点在轴线上零件的低端。
+
+    ``toward``：轴 0 取指向该点（point 规格见 ``_point``）的方向；
+    ``ref_point``：轴 1 指向该点（与轴 0 不平行的特征用它，比 ``ref`` 的轴线垂足更稳）。
+    """
     part = ctx.part
     ax = _axis(ctx.items(a["axis"])[0])
+    if "toward" in a and float(np.dot(_point(ctx, a["toward"]) - ax.o, ax.d)) < 0:
+        ax = Axis(ax.o, -ax.d)
 
     hand = ctx.hand if a.get("either_hand") else 1
 
@@ -283,6 +324,8 @@ def sel_axis_frame(ctx: Ctx, a: dict) -> Frame:
     if "ref" in a:
         ref = _axis(ctx.items(a["ref"])[0])
         e1 = ref.o - ax.o
+    elif "ref_point" in a:
+        e1 = _point(ctx, a["ref_point"]) - ax.o
     elif "ref_dir" in a:
         ref_item = ctx.items(a["ref_dir"])[0]
         e1 = _axis(ref_item).d
@@ -301,7 +344,7 @@ def sel_base_frame(ctx: Ctx, a: dict) -> Frame | None:
     """底座坐标系：0 = 底座长边，1 = 宽边，2 = 向上；原点在底面外廓中心。"""
     part = ctx.part
     planes = [s for s in part.surfs if s.kind == "plane"]
-    extreme = [s for s in planes if abs(float(np.max(part.points @ s.axis_d)) - s.offset) < 1e-3]
+    extreme = [s for s in planes if abs(float(np.max(part.points @ s.axis_d)) - s.offset) < _EDGE_EPS]
     if not extreme:
         return None
     bottom = max(extreme, key=lambda s: s.area)
@@ -607,6 +650,14 @@ def ck_volume_range(ctx: Ctx, rng) -> Result:
     return lo <= v <= hi, {"measured": _r(v, 2), "range": [_r(lo, 2), _r(hi, 2)]}
 
 
+def ck_center_of_mass(ctx: Ctx, a) -> Result:
+    """质心的 frame 坐标；``expect`` 中为 null 的分量不检查。"""
+    frame = ctx.frame(a["frame"])
+    got = frame.local(ctx.part.center_of_mass())
+    ok = all(e is None or ctx.near(float(g), e) for g, e in zip(got, a["expect"]))
+    return ok, {"measured": [_r(float(g)) for g in got]}
+
+
 def _sorted_extents(ctx: Ctx) -> list[float]:
     axes = principal_axes(ctx.part)
     lo, hi = ctx.part.extents(axes)
@@ -872,6 +923,61 @@ def ck_radial_material(ctx: Ctx, a) -> Result:
     return _match_intervals(ctx, got, a["expect"]), {"measured": got}
 
 
+def _frame_dir(frame: Frame, v) -> np.ndarray:
+    return unit(np.asarray(v, float) @ frame.axes)
+
+
+def ck_ray_material(ctx: Ctx, a) -> Result:
+    """从 frame 坐标 ``from`` 出发、沿 frame 分量 ``dir``（不必单位化）的射线上的材料区间（以离起点距离表示）。"""
+    frame = ctx.frame(a["frame"])
+    p = frame.world(a["from"])
+    segs = ctx.part.line_intervals(p, _frame_dir(frame, a["dir"]), 0, a.get("length", 1e3))
+    got = [[_r(s0), _r(s1)] for s0, s1 in segs]
+    options = a["expect_any"] if "expect_any" in a else [a["expect"]]
+    return any(_match_intervals(ctx, got, e) for e in options), {"measured": got}
+
+
+def ck_point_material(ctx: Ctx, a) -> Result:
+    """frame 坐标下的点：``inside`` 中的点都在材料内，``outside`` 中的都不在。"""
+    frame = ctx.frame(a["frame"])
+    bad_in = [p for p in a.get("inside", []) if not ctx.part.is_inside(frame.world(p))]
+    bad_out = [p for p in a.get("outside", []) if ctx.part.is_inside(frame.world(p))]
+    return not bad_in and not bad_out, {"not_inside": bad_in, "not_outside": bad_out}
+
+
+def ck_axis_dir(ctx: Ctx, a) -> Result:
+    """实体轴线方向（不分正负）与 frame 分量 ``expect`` 中的方向逐一对应（按集合匹配）。"""
+    frame = ctx.frame(a["frame"])
+    got = [_axis(it).d for it in ctx.items(a["items"])]
+    want = [_frame_dir(frame, v) for v in a["expect"]]
+    remaining = list(range(len(got)))
+    ok = len(got) == len(want)
+    for w in want:
+        hit = next((i for i in remaining if parallel(got[i], w, _eps_ang(ctx))), None)
+        if hit is None:
+            ok = False
+            break
+        remaining.remove(hit)
+    return ok, {"measured": [[_r(x, 4) for x in frame.axes @ d] for d in got]}
+
+
+def ck_axis_through(ctx: Ctx, a) -> Result:
+    """实体轴线经过 frame 坐标点：``point`` 对所有实体，或 ``expect`` 列表按集合逐一对应。"""
+    frame = ctx.frame(a["frame"])
+    axes = [_axis(it) for it in ctx.items(a["items"])]
+    pts = [frame.world(a["point"])] * len(axes) if "point" in a else [frame.world(p) for p in a["expect"]]
+    dist = [[line_distance(x.o, x.d, p) for p in pts] for x in axes]
+    remaining = list(range(len(pts)))
+    ok = len(axes) == len(pts)
+    for row in dist:
+        hit = next((j for j in remaining if row[j] <= ctx.tol_len), None)
+        if hit is None:
+            ok = False
+            break
+        remaining.remove(hit)
+    return ok, {"min_dist": [_r(min(row)) for row in dist]}
+
+
 def ck_axis_positions(ctx: Ctx, a) -> Result:
     """实体轴线在 frame 两个坐标轴上的位置（轴线须平行于第三个坐标轴），按集合匹配。"""
     frame = ctx.frame(a["frame"])
@@ -956,7 +1062,7 @@ def _end_faces(ctx: Ctx, frame: Frame, ax: int, side: str) -> list[Surf]:
     base = float(np.dot(frame.origin, frame.axes[ax]))
     edge = (base + frame.hi[ax]) if sign > 0 else -(base + frame.lo[ax])
     return [s for s in ctx.part.surfs
-            if s.kind == "plane" and float(np.dot(s.axis_d, d)) > 1 - 1e-6 and abs(s.offset - edge) < 1e-3]
+            if s.kind == "plane" and float(np.dot(s.axis_d, d)) > 1 - 1e-6 and abs(s.offset - edge) < _EDGE_EPS]
 
 
 def _face_center(frame: Frame, faces: list[Surf], ax: int) -> tuple[np.ndarray, np.ndarray]:
@@ -1679,11 +1785,16 @@ def _plain(x):
     return x
 
 
+def _wants_either(args) -> bool:
+    v = (args or {}).get("either_hand")
+    return v is not None and v is not False
+
+
 def evaluate(rubric: dict, part: Part) -> dict:
     """需求没有规定旋向时（如两组错位的孔谁在前），rubric 的 axis_frame 写 either_hand: true，
     在右手与镜像两种坐标系下各评一次，取得分高者。"""
     specs = rubric.get("entities", {})
-    either = any(isinstance(spec, dict) and (spec.get("axis_frame") or {}).get("either_hand")
+    either = any(isinstance(spec, dict) and any(_wants_either(spec.get(k)) for k in ("axis_frame", "principal_frame"))
                  for spec in specs.values())
     if not either:
         return _evaluate(rubric, part, 1)

@@ -1,0 +1,91 @@
+case: sheet_metal_kfactor
+prompt: >-
+  创建一个钣金折弯支架，单一实体。板厚 2mm，所有折弯内侧半径 3mm，K 因子 0.4（中性层到内侧面的距离 = 0.4 × 板厚），
+  板宽 80mm（x = −40~40）。侧视（YZ 平面）形状：底板水平，下表面在 z = 0，前缘在 y = 0；底板后端向上折 90° 成竖板，
+  竖板外侧面在 y = 60；竖板平直段从 z = 5 到 z = 50；竖板顶端再朝 −Y 方向（朝底板一侧）折 45°，折后是长 20mm 的平直唇边。
+  孔位按展开图给出：展开图是把整块板沿折弯展平后的平板，长度方向坐标 s 从底板前缘（s = 0）量起，横向坐标就是 x。
+  孔（都垂直于所在板面贯通）：直径 8 的孔在 s = 25、x = 0；两个直径 6 的孔在 s = 80、x = ±25；直径 5 的孔在 s = 122、x = 0。
+prompt_en: >-
+  Create a bent sheet-metal bracket as a single solid body. Sheet thickness 2mm, inside radius 3mm for every bend,
+  K-factor 0.4 (the neutral layer lies 0.4 × thickness from the inside surface), width 80mm (x = −40 to 40). Side
+  view (YZ plane): the base is horizontal with its bottom surface at z = 0 and its front edge at y = 0; at its rear
+  the base is bent up 90° into a vertical wall whose outer face is at y = 60; the flat part of the wall runs from
+  z = 5 to z = 50; at the top the wall is bent 45° towards −Y (towards the base side), followed by a flat lip 20mm
+  long. Hole positions are given on the flat pattern: the flat pattern is the sheet unfolded along its bends; its
+  length coordinate s is measured from the front edge of the base (s = 0) and its cross coordinate is x. Holes (each
+  through the sheet, perpendicular to the local face): an 8mm hole at s = 25, x = 0; two 6mm holes at s = 80,
+  x = ±25; a 5mm hole at s = 122, x = 0.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# P：principal_frame，轴 0 = Y（竖板外侧大平面取为低端 → c0 = 60 − y），轴 1 = Z（c1 = z），轴 2 = X（c2 = x + 40，左右对称）。
+# 展开长度：底板平直 55，折弯 1 展开 BA = π/2·(3 + 0.4·2) = 5.969，竖板平直 45，折弯 2 BA = π/4·3.8 = 2.985，唇边 20。
+# s = 80 在竖板上：z = 5 + (80 − 60.969) = 24.031；s = 122 在唇边上距唇边起点 13.046：
+# 两个折弯的内侧面也是 Ø6 圆柱（轴沿 X），所以 h6 只取轴线沿 Y 的圆柱。
+# 唇边中面起点 (y, z) = (55 + 4cos45°, 50 + 4sin45°) = (57.828, 52.828)，沿 (−sin45°, cos45°) 走 13.046 → (48.603, 62.054)。
+entities:
+  P:    {principal_frame: {signs: {0: larger_area_low, 1: larger_area_low}}}
+  h8:   {cylinder: {d: 8, side: inner}, count: 1}
+  h6:   {cylinder: {d: 6, side: inner, along: {frame: P, axis: 0}}, count: 2}
+  h5:   {cylinder: {d: 5, side: inner}, count: 1}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 底板到竖板外侧 60、宽 80；最高点是唇边外侧末端 50 + 5·sin45° + 20·cos45° = 67.678
+    hard: true
+    check:
+      - bbox_sorted: [60, 67.678, 80]
+
+  - id: bends
+    source: 内侧半径 3、板厚 2 的 90° 与 45° 折弯
+    derivation: 从两个折弯的圆心沿角平分线向外的射线穿过 r = 3~5
+    check:
+      - ray_material: {frame: P, from: [5, 5, 50], dir: [-1, -1, 0], length: 10, expect: [[3, 5]]}
+      - ray_material: {frame: P, from: [5, 50, 50], dir: [-0.92388, 0.38268, 0], length: 10, expect: [[3, 5]]}
+
+  - id: flats
+    source: 底板到 y = 55 起弯，竖板平直段 z = 5~50
+    derivation: 底板中面 z = 1 的线从 y = 0 到出折弯区 y = 58；竖板中面 y = 59 的线从 z = 2 到 53
+    check:
+      - line_material: {frame: P, along: 0, at: [null, 1, 50], expect: [[2, 60]]}
+      - line_material: {frame: P, along: 1, at: [1, null, 50], expect: [[2, 53]]}
+
+  - id: lip
+    source: 向 −Y 折 45°、长 20 的唇边
+    derivation: 唇边上距起点 5 处沿板面法向穿过厚 2；从唇边中面起点沿唇边方向材料长 20
+    check:
+      - ray_material: {frame: P, from: [9.243, 52.828, 50], dir: [-0.70711, 0.70711, 0], length: 10, expect: [[4, 6]]}
+      - ray_material: {frame: P, from: [2.172, 52.828, 50], dir: [0.70711, 0.70711, 0], length: 40, expect: [[0, 20]]}
+
+  - id: base_hole
+    source: 展开图 s = 25、x = 0 的 Ø8 孔（在底板上，s 即 y）
+    check:
+      - axis_dir: {frame: P, items: h8, expect: [[0, 1, 0]]}
+      - axis_through: {frame: P, items: h8, point: [35, 0, 40]}
+
+  - id: wall_holes
+    source: 展开图 s = 80、x = ±25 的 Ø6 孔，按 K = 0.4 的折弯展开量换算到竖板
+    derivation: z = 5 + 80 − (55 + 5.969) = 24.031（K = 0.5 时为 23.717，按内侧半径 BA = 4.712 时为 25.288）
+    check:
+      - axis_dir: {frame: P, items: h6, expect: [[1, 0, 0], [1, 0, 0]]}
+      - axis_through: {frame: P, items: h6, expect: [[0, 24.031, 15], [0, 24.031, 65]]}
+
+  - id: lip_hole
+    source: 展开图 s = 122、x = 0 的 Ø5 孔（在唇边上）
+    derivation: 孔心 (y, z) = (48.603, 62.054)，轴线沿唇边法向 (0, cos45°, sin45°)
+    check:
+      - axis_dir: {frame: P, items: h5, expect: [[-0.70711, 0.70711, 0]]}
+      - axis_through: {frame: P, items: h5, point: [11.397, 62.054, 40]}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 平直段 120·80·2 + 折弯 (π/2 + π/4)·(5² − 3²)/2·80 − 孔 = 20455.07
+    check:
+      - volume: 20455.07
+
+ungraded: []

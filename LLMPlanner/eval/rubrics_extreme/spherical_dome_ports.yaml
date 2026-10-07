@@ -1,0 +1,106 @@
+case: spherical_dome_ports
+prompt: >-
+  创建一个带多个接管的半球形封头，单一实体，内部是连通的空腔。球心在原点：半球壳外半径 80、内半径 72，位于 z ≥ 0；
+  下接一段筒节，外径 160、内径 144，从 z = −30 到 z = 0；筒节底部是底法兰，外径 200、内径 144，z = −40 ~ −30，
+  8 个直径 14 的通孔均布在直径 180 的圆上，第一个孔在方位角 22.5°（从 +X 逆时针量，从 +Z 俯视），其余每隔 45°。
+  接管（每根接管的外圆柱都从封头外表面伸出，内孔与空腔连通，端面垂直于接管轴线）：
+  N1：径向接管，轴线过球心，方向为纬度 40°（从赤道面向上量）、经度 30°（方位角），外径 30、内径 20，端面距球心 110；
+  N2：径向接管，纬度 60°、经度 210°，外径 24、内径 16，端面距球心 105；
+  N3：水平接管，轴线是直线 y = −30、z = 40，沿 +X 方向伸出（不过球心），外径 28、内径 18，端面在 x = 100；
+  顶部竖直接管：轴线为 Z 轴，外径 50、内径 30，顶面 z = 95。
+prompt_en: >-
+  Create a hemispherical vessel head with several nozzles as a single solid body with one connected internal cavity.
+  The sphere centre is at the origin: the hemispherical shell has outer radius 80 and inner radius 72 and lies in z
+  ≥ 0; below it is a cylindrical course of 160 outer and 144 inner diameter from z = −30 to z = 0; at its bottom is
+  a base flange of 200 outer and 144 inner diameter, z = −40 to −30, with 8 through holes of 14mm diameter evenly
+  spaced on a 180mm circle, the first at azimuth 22.5° (measured counterclockwise from +X viewed from +Z) and the
+  rest every 45°. Nozzles (each nozzle's outer cylinder protrudes from the outer surface of the head, its bore
+  connects to the cavity, and its end face is perpendicular to its axis): N1: a radial nozzle whose axis passes
+  through the sphere centre in the direction of latitude 40° (measured up from the equatorial plane) and longitude
+  30° (azimuth), 30 outer and 20 inner diameter, end face 110 from the sphere centre; N2: radial, latitude 60°,
+  longitude 210°, 24 outer and 16 inner diameter, end face 105 from the centre; N3: a horizontal nozzle whose axis
+  is the line y = −30, z = 40, protruding in the +X direction (not through the sphere centre), 28 outer and 18 inner
+  diameter, end face at x = 100; top nozzle: vertical along the Z axis, 50 outer and 30 inner diameter, top face at
+  z = 95.
+tolerance: {length_mm: 0.1, angle_deg: 0.5, volume_rel: 0.01}
+
+# D：底法兰轴线坐标系，轴 0 从法兰底面（面积较大）向上，轴 1 指向 N3 所在的 +X 一侧 → frame 坐标 (z + 40, x, y)，
+# 世界方向 (dx, dy, dz) 写成 frame 分量 (dz, dx, dy)。球心在 frame (40, 0, 0)。
+# N1 方向 (0.66341, 0.38302, 0.64279)，N2 方向 (−0.43301, −0.25, 0.86603)；
+# 平行于接管轴线、偏离 e 的直线在 sqrt(72² − e²) 处进入球壳内表面，一直是材料到接管端面。
+entities:
+  base:   {cylinder: {d: 200, side: outer}, count: 1}
+  n1:     {cylinder: {d: 20, side: inner}, count: 1}
+  n2:     {cylinder: {d: 16, side: inner}, count: 1}
+  n3:     {cylinder: {d: 28, side: outer}, count: 1}
+  n3bore: {cylinder: {d: 18, side: inner}, count: 1}
+  holes:  {cylinder: {d: 14, side: inner}, count: 8}
+  D:      {axis_frame: {axis: base, low: larger_area, ref_dir: n3, ref_dir_toward: true}}
+
+rubrics:
+  - id: solid
+    source: 单一实体
+    hard: true
+    check:
+      - single_valid_solid: {}
+
+  - id: envelope
+    source: 底法兰 Ø200；最高点是 N2 端面外缘 105·sin60° + 12·cos60° = 96.933
+    hard: true
+    check:
+      - bbox_sorted: [136.933, 200, 200]
+
+  - id: shell
+    source: SR80/SR72 半球壳 + Ø160/Ø144 筒节
+    check:
+      - ray_material: {frame: D, from: [40, 0, 0], dir: [0.34202, -0.46985, 0.81380], length: 120, expect: [[72, 80]]}
+      - radial_material: {frame: D, t: 25, deg: 60, expect: [[72, 80]]}
+
+  - id: base_flange
+    source: Ø200/Ø144 底法兰，8×Ø14 于 PCD180，从 22.5° 起每隔 45°
+    check:
+      - exists: holes
+      - radial_material: {frame: D, t: 5, deg: 0, expect: [[72, 100]]}
+      - radial_material: {frame: D, t: 5, deg: 22.5, expect: [[72, 83], [97, 100]]}
+
+  - id: nozzle_n1
+    source: 纬度 40°、经度 30° 的径向接管 Ø30/Ø20，端面距球心 110
+    derivation: 偏离轴线 12.5（在管壁内）的平行线从 sqrt(72² − 12.5²) = 70.907 到 110 都是材料
+    check:
+      - axis_dir: {frame: D, items: n1, expect: [[0.64279, 0.66341, 0.38302]]}
+      - axis_through: {frame: D, items: n1, point: [40, 0, 0]}
+      - ray_material: {frame: D, from: [40, -6.25, 10.825], dir: [0.64279, 0.66341, 0.38302], length: 150,
+                       expect: [[70.907, 110]]}
+      - ray_material: {frame: D, from: [40, 0, 0], dir: [0.64279, 0.66341, 0.38302], length: 150, expect: []}
+
+  - id: nozzle_n2
+    source: 纬度 60°、经度 210° 的径向接管 Ø24/Ø16，端面距球心 105
+    derivation: 偏离轴线 10 的平行线从 sqrt(72² − 10²) = 71.302 到 105
+    check:
+      - axis_dir: {frame: D, items: n2, expect: [[0.86603, -0.43301, -0.25]]}
+      - axis_through: {frame: D, items: n2, point: [40, 0, 0]}
+      - ray_material: {frame: D, from: [40, 5, -8.660], dir: [0.86603, -0.43301, -0.25], length: 150,
+                       expect: [[71.302, 105]]}
+
+  - id: nozzle_n3
+    source: 轴线 y = −30、z = 40 的水平接管 Ø28/Ø18，沿 +X，端面 x = 100（不过球心）
+    derivation: 管壁内 z = 51.5 的平行线在 x = sqrt(72² − 30² − 51.5²) = 40.395 进入内腔壁，到 x = 100
+    check:
+      - axis_dir: {frame: D, items: n3bore, expect: [[0, 1, 0]]}
+      - axis_through: {frame: D, items: n3bore, point: [80, 0, -30]}
+      - ray_material: {frame: D, from: [91.5, 0, -30], dir: [0, 1, 0], length: 150, expect: [[40.395, 100]]}
+
+  - id: top_nozzle
+    source: 顶部 Ø50/Ø30 竖直接管，顶面 z = 95
+    derivation: 半径 20 的竖线从 z = sqrt(72² − 20²) = 69.166 到 95
+    check:
+      - line_material: {frame: D, along: 0, polar: [20, 90], expect: [[109.166, 135]]}
+      - line_material: {frame: D, along: 0, polar: [0, 0], expect: []}
+
+  - id: volume
+    source: 由以上尺寸完全确定
+    derivation: 参考实体体积 586585.17
+    check:
+      - volume: 586585.17
+
+ungraded: []

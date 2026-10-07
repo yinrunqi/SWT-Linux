@@ -1,0 +1,272 @@
+{
+ "case": "variable_fillet_bracket",
+ "tool_calls": 5,
+ "modeling_calls": 5,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 6,
+ "volume_mm3": 157695.66,
+ "bbox_mm": [
+  120.016,
+  60.0,
+  80.0
+ ],
+ "seconds": 63.0,
+ "rubric_score": 100.0,
+ "accepted": true,
+ "failed_items": [],
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "right_plane",
+    "loops": [
+     {
+      "type": "path",
+      "start": [
+       0.0,
+       0.0
+      ],
+      "segments": [
+       {
+        "to": [
+         0.0,
+         60.0
+        ]
+       },
+       {
+        "to": [
+         77.0,
+         60.0
+        ]
+       },
+       {
+        "to": [
+         80.0,
+         57.0
+        ],
+        "through": [
+         79.12132,
+         59.12132
+        ]
+       },
+       {
+        "to": [
+         80.0,
+         53.0
+        ]
+       },
+       {
+        "to": [
+         74.0,
+         50.0
+        ]
+       },
+       {
+        "to": [
+         10.0,
+         50.0
+        ]
+       },
+       {
+        "to": [
+         10.0,
+         2.0
+        ]
+       },
+       {
+        "to": [
+         8.0,
+         0.0
+        ]
+       }
+      ]
+     }
+    ],
+    "direction": "+X",
+    "depth": 120
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 154448.23
+  },
+  {
+   "tool": "loft",
+   "args": {
+    "sections": [
+     {
+      "plane": "X=0",
+      "loops": [
+       {
+        "type": "path",
+        "start": [
+         10.0,
+         47.0
+        ],
+        "segments": [
+         {
+          "to": [
+           13.0,
+           50.0
+          ],
+          "through": [
+           10.87868,
+           49.12132
+          ]
+         },
+         {
+          "to": [
+           13.0,
+           51.0
+          ]
+         },
+         {
+          "to": [
+           9.0,
+           51.0
+          ]
+         },
+         {
+          "to": [
+           9.0,
+           47.0
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "plane": "X=120",
+      "loops": [
+       {
+        "type": "path",
+        "start": [
+         10.0,
+         41.0
+        ],
+        "segments": [
+         {
+          "to": [
+           19.0,
+           50.0
+          ],
+          "through": [
+           12.636039,
+           47.363961
+          ]
+         },
+         {
+          "to": [
+           19.0,
+           51.0
+          ]
+         },
+         {
+          "to": [
+           9.0,
+           51.0
+          ]
+         },
+         {
+          "to": [
+           9.0,
+           41.0
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 155453.73
+  },
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "X=56",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        10,
+        50
+       ],
+       [
+        10,
+        10
+       ],
+       [
+        60,
+        50
+       ]
+      ]
+     }
+    ],
+    "direction": "+X",
+    "depth": 8
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 163391.82
+  },
+  {
+   "tool": "countersink",
+   "args": {
+    "plane": "Z=10",
+    "centers": [
+     [
+      30,
+      25
+     ],
+     [
+      90,
+      25
+     ]
+    ],
+    "through_diameter": 6.6,
+    "head_diameter": 13,
+    "angle_deg": 90,
+    "through_all": true,
+    "direction": "-Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 162426.63
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "Y=60",
+    "loops": [
+     {
+      "type": "slot",
+      "start": [
+       45,
+       50
+      ],
+      "end": [
+       75,
+       50
+      ],
+      "width": 12
+     }
+    ],
+    "direction": "-Y",
+    "depth": 10
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 157695.66
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "variable_fillet_bracket oracle"
+   }
+  }
+ ]
+}

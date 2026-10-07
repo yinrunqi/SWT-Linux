@@ -1,0 +1,224 @@
+{
+ "case": "inch_callout_plate",
+ "tool_calls": 7,
+ "modeling_calls": 7,
+ "failed_calls": 0,
+ "llm_calls_one_tool_per_turn": 8,
+ "volume_mm3": 186602.07,
+ "bbox_mm": [
+  152.4,
+  101.6,
+  12.7
+ ],
+ "seconds": 107.3,
+ "rubric_score": 100.0,
+ "accepted": true,
+ "failed_items": [],
+ "trajectory": [
+  {
+   "tool": "extrude",
+   "args": {
+    "plane": "front_plane",
+    "loops": [
+     {
+      "type": "rect",
+      "center": [
+       76.19999999999999,
+       50.8
+      ],
+      "size": [
+       152.39999999999998,
+       101.6
+      ],
+      "corner_radius": 6.35
+     }
+    ],
+    "depth": 12.7
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 196205.18
+  },
+  {
+   "tool": "chamfer",
+   "args": {
+    "distance": 0.7619999999999999,
+    "edges": {
+     "origin": [
+      76.19999999999999,
+      1.0,
+      22.7
+     ],
+     "direction": [
+      0,
+      0,
+      -1
+     ]
+    }
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 196061.33
+  },
+  {
+   "tool": "cut",
+   "args": {
+    "plane": "Z=12.7",
+    "loops": [
+     {
+      "type": "circle",
+      "center": [
+       9.524999999999999,
+       9.524999999999999
+      ],
+      "diameter": 6.7564
+     },
+     {
+      "type": "circle",
+      "center": [
+       142.875,
+       9.524999999999999
+      ],
+      "diameter": 6.7564
+     },
+     {
+      "type": "circle",
+      "center": [
+       9.524999999999999,
+       92.07499999999999
+      ],
+      "diameter": 6.7564
+     },
+     {
+      "type": "circle",
+      "center": [
+       142.875,
+       92.07499999999999
+      ],
+      "diameter": 6.7564
+     },
+     {
+      "type": "slot",
+      "start": [
+       63.5,
+       19.049999999999997
+      ],
+      "end": [
+       88.89999999999999,
+       19.049999999999997
+      ],
+      "width": 6.35
+     }
+    ],
+    "through_all": true,
+    "direction": "-Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 191789.43
+  },
+  {
+   "tool": "counterbore",
+   "args": {
+    "plane": "Z=12.7",
+    "centers": [
+     [
+      38.099999999999994,
+      50.8
+     ]
+    ],
+    "through_diameter": 13.4874,
+    "head_diameter": 20.6248,
+    "head_depth": 7.9502,
+    "through_all": true,
+    "direction": "-Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 188454.7
+  },
+  {
+   "tool": "countersink",
+   "args": {
+    "plane": "Z=12.7",
+    "centers": [
+     [
+      114.3,
+      50.8
+     ]
+    ],
+    "through_diameter": 9.9314,
+    "head_diameter": 19.049999999999997,
+    "angle_deg": 82,
+    "through_all": true,
+    "direction": "-Z"
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 186983.66
+  },
+  {
+   "tool": "revolve",
+   "args": {
+    "plane": "X=114.3",
+    "loops": [
+     {
+      "type": "polygon",
+      "points": [
+       [
+        13.7,
+        66.675
+       ],
+       [
+        13.7,
+        68.6943
+       ],
+       [
+        3.1750000000000007,
+        68.6943
+       ],
+       [
+        1.9616821519976484,
+        66.675
+       ]
+      ]
+     }
+    ],
+    "axis_start": [
+     14.7,
+     66.675
+    ],
+    "axis_end": [
+     0,
+     66.675
+    ],
+    "cut": true
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 186856.47
+  },
+  {
+   "tool": "circular_pattern",
+   "args": {
+    "count": 3,
+    "axis": "Z",
+    "center": [
+     114.3,
+     50.8,
+     0
+    ],
+    "angle_deg": 360
+   },
+   "ok": true,
+   "error": null,
+   "volume_mm3": 186602.07
+  },
+  {
+   "tool": "finish",
+   "args": {
+    "summary": "inch_callout_plate oracle"
+   }
+  }
+ ]
+}
