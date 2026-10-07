@@ -38,6 +38,12 @@ KINDS = {
                              "pipe_manifold gearbox_housing heat_sink honeycomb_panel gear_pump_body cold_plate "
                              "truss_beam turbine_disk bt40_holder hydraulic_manifold rocket_fin_can "
                              "ratchet_wheel injector_plate robot_arm_link menger_sponge u_joint_yoke",
+    # 极难子集，rubric 在 eval/rubrics_extreme
+    "Extreme parts": "worm_shaft compound_drill_block variable_fillet_bracket roller_cam helical_ring_gear "
+                     "naca_wing_rib scroll_wrap_plate variable_pitch_spring pipe_route_3d sheet_metal_kfactor "
+                     "cast_manifold_fillets die_cast_cover balanced_flywheel inch_callout_plate "
+                     "clipped_hex_perforation tangent_link_lever filleted_shell_enclosure tricylinder_node "
+                     "twisted_flute_knob spherical_dome_ports",
     # 三视图 track，rubric 在 eval/rubrics_three_view，题面附图纸（tasks 中的 image 字段）
     "Three-view basic parts": "b01_l_bracket b02_plate_with_holes b03_t_bracket b04_keycap b05_keycap_full "
                               "b06_lock_striker b07_switch_panel b11_gear_disc b22_round_bowl",

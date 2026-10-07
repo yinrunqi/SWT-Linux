@@ -4,7 +4,7 @@ Workflow-CAD-Bench 有三个 track：
 
 | track | 输入 | 任务数 | 文档 |
 |---|---|---|---|
-| text-to-CAD | 自然语言设计要求 | 50（另有 30 道困难子集） | 本文第 1–7 节 |
+| text-to-CAD | 自然语言设计要求 | 50（另有 30 道困难子集、20 道极难子集） | 本文第 1–8 节 |
 | 三视图生成 CAD | 工程图（三视图 PNG）+ 一句中性题面 | 50 | [`Workflow-CAD-Bench-3Views.md`](./Workflow-CAD-Bench-3Views.md) |
 | 复杂装配体生成 | 自然语言装配要求 | 见装配文档 | [`Workflow-CAD-Bench-Assembly.md`](./Workflow-CAD-Bench-Assembly.md) |
 
@@ -60,7 +60,13 @@ venv-occ\Scripts\python.exe -c "import OCP, numpy, yaml; print('occ ok')"
 venv-occ\Scripts\python.exe -m pytest geomcheck/tests -q -p no:cacheprovider
 ```
 
-测试会用 OpenCASCADE 直接构造三组参考实体和变体：text-to-CAD 的 50 个参考实体、12 个合法变体和 62 个错误变体，困难子集的 30 个参考实体和 74 个变体，以及三视图 track 的 50 个参考实体和 133 个错误变体（见 [`Workflow-CAD-Bench-3Views.md`](./Workflow-CAD-Bench-3Views.md) 第 4 节）。它们分别用 rubric 和图像分打分，再加上检查器其余模块的单元测试，应该显示 `612 passed`，全部跑完约 8 分钟。这一步通过，说明你机器上的检查器和我们的打分结果完全一致。
+测试会用 OpenCASCADE 直接构造四组参考实体和变体：
+- text-to-CAD 的 50 个参考实体、12 个合法变体和 62 个错误变体；
+- 困难子集的 30 个参考实体和 74 个变体；
+- 极难子集的 20 个参考实体和 71 个错误变体（见第 8 节）；
+- 三视图 track 的参考实体和错误变体（见 [`Workflow-CAD-Bench-3Views.md`](./Workflow-CAD-Bench-3Views.md) 第 4 节）。
+
+它们分别用 rubric 和图像分打分，再加上检查器其余模块的单元测试，应该显示 `1116 passed`，全部跑完约 20 分钟。这一步通过，说明你机器上的检查器和我们的打分结果完全一致。
 
 Linux 和 macOS 上把 `venv-occ\Scripts\python.exe` 换成 `venv-occ/bin/python` 即可，下文同理。以下命令都在 `LLMPlanner` 目录下执行。
 
@@ -102,7 +108,7 @@ ALL  tasks=50 runs=100 score=... ci95=[..., ...] pass@1=... pass@2=... core_form
 
 ### 2.1 来源与格式
 
-任务的唯一来源是 `LLMPlanner/eval/rubrics/<case>.yaml`，每个文件的 `prompt` 字段就是交给建模系统的原文（中文）。`prompt_en` 字段是逐句对应的英文版本：数值、单位和歧义程度与中文一致，rubric 的 `ungraded` 项在英文里同样不写明，打分规则不变。50 道核心题和 30 道困难题都有 `prompt_en`，`eval_text_singleturn_qwen.py` 的 `PROMPTS_EN` 与它逐字一致（`test/test_text_singleturn_qwen.py` 检查）。
+任务的唯一来源是 `LLMPlanner/eval/rubrics/<case>.yaml`，每个文件的 `prompt` 字段就是交给建模系统的原文（中文）。`prompt_en` 字段是逐句对应的英文版本：数值、单位和歧义程度与中文一致，rubric 的 `ungraded` 项在英文里同样不写明，打分规则不变。50 道核心题、30 道困难题和 20 道极难题都有 `prompt_en`。前两组在 `eval_text_singleturn_qwen.py` 的 `PROMPTS_EN` 里有一份副本，`test/test_text_singleturn_qwen.py` 检查它与 YAML 逐字一致。极难题的中英文题面由脚本直接从 `eval/rubrics_extreme` 读取，没有副本。
 
 从 2026-10-07 起，text-to-CAD 默认用英文题面：`geomcheck.bench tasks` 默认导出 `prompt_en`，`eval_text_singleturn_qwen.py` 默认 `--lang en`，缺省输出文件名带 `_en` 后缀。要用中文原文就加 `--lang zh`。下面第 6、7 节标为“中文题面”的结果都是在改默认值之前跑的，复现时要加 `--lang zh`。`--resume` 时，如果已有结果的 `prompt_lang` 与 `--lang` 不同，脚本会直接报错，以免把两种语言混在一个结果文件里。
 
@@ -754,7 +760,117 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --action-le
 
 ---
 
-## 8. 已知局限
+## 8. 极难子集：20 道最难题（extreme）
+
+第 7 节的困难子集上，GPT-6-Astra 和自部署 Qwen3.8 都已经接近饱和（pass@1 分别为 0.91 和 0.77），所以又准备了 20 道更难的题。和困难子集相比，这 20 道题的难点不在特征多，而在下面三类：
+- **精确曲线**：渐开线、NACA 翼型、凸轮的升程规律与滚子包络、圆渐开线涡旋、变螺距螺旋线。
+- **需要先求解的工程量**：法面参数换算成端面参数、钣金 K 因子展开、两个投影角合成的空间孔方向、平衡孔直径（由质心条件决定）、英制图纸标注和字母钻、公切线的切点。
+- **SolidWorks 里也不好做的操作**：变半径圆角、拔模、等厚抽壳，以及沿整条相贯线的马鞍圆角。
+
+极难子集**不计入** 50 题和困难子集的统计。rubric 在 `LLMPlanner/eval/rubrics_extreme/`，每个 YAML 都有中文 `prompt` 和逐句对应的英文 `prompt_en`。`geomcheck/bench.py` 里把它们单列为 `Extreme parts` 一类，`eval_text_singleturn_qwen.py` 里对应 `--split extreme`。
+
+### 8.1 任务列表
+
+“oracle 调用”是 8.3 节里 SolidWorks 实机参考解的工具调用数；“LLM 调用”等于工具调用数加 1（最后一次 `finish`），含义见 8.3 节。
+
+| 任务（case id） | 显式条目 | 主要难点 | oracle 工具调用 | LLM 调用 |
+|---|---|---|---|---|
+| 双头左旋蜗杆轴 `worm_shaft` | 12 | ZA 型直线齿廓的双头左旋螺旋槽、z = 55 截面上的螺纹相位、螺纹在台阶处直接截止、卡簧槽、键槽、带钻尖的中心孔 | 4 | 5 |
+| 复合角钻孔块 `compound_drill_block` | 11 | 由两个投影角确定的空间斜孔；垂直于 35° 斜面、且轴线与孔 A 相交的孔 B（入口位置要求解）；118° 钻尖；沉孔 | 7 | 8 |
+| 变半径圆角 L 形支架 `variable_fillet_bracket` | 11 | 半径 3 → 9 线性变化的圆角、圆角之后再加筋、不等边倒角、锥形沉头孔、腰形孔 | 5 | 6 |
+| 滚子从动件盘形凸轮 `roller_cam` | 9 | 摆线升程 + 3-4-5 多项式回程的理论廓线、沿法向内移 12 的滚子包络、以键槽为基准的相位、径向紧定孔 | 4 | 5 |
+| 斜齿内齿圈 `helical_ring_gear` | 10 | 法面模数和压力角换算到端面、渐开线内齿、15° 右旋、z = 10 截面上的齿相位、只在一端倒角 | 5 | 6 |
+| NACA 4412 翼肋 `naca_wing_rib` | 8 | 沿中弧线法向叠加厚度的翼型、闭合尖后缘、直径随 yt(x) 变化的减重孔、翼梁缺口 | 2 | 3 |
+| 涡旋压缩机静涡旋盘 `scroll_wrap_plate` | 8 | 两侧壁都是圆渐开线的涡旋壁、两端沿发生线截平、顶部密封槽 | 3 | 4 |
+| 左旋变螺距压缩弹簧 `variable_pitch_spring` | 9 | 分段线性变螺距（中心线高度是螺距对圈数的积分）、左旋、两端磨平 | 7 | 8 |
+| 三维弯管管路 `pipe_route_3d` | 9 | 由交点（PI 点）和弯曲半径确定的空间中心线、两端法兰孔的方位、内孔连通的支管 | 12 | 13 |
+| K 因子钣金支架 `sheet_metal_kfactor` | 9 | 按 K 因子把展开图上的孔位换算到折弯后、90° 和 45° 两道折弯 | 4 | 5 |
+| 铸造三通歧管 `cast_manifold_fillets` | 8 | 沿整条相贯线的 R5 马鞍圆角、法兰内侧圆角、法兰孔的 45° 方位、贯通内孔 | 10 | 11 |
+| 压铸盖 `die_cast_cover` | 10 | 内外侧壁都以分型面为中性面拔模 3°、反向拔模的螺钉柱、两侧拔模的十字筋、拔模凸台和通孔 | 8 | 9 |
+| 静平衡飞轮 `balanced_flywheel` | 9 | 平衡孔直径由质心落在轴线上的条件求出（要计入键槽的偏心）、窗口竖直棱边 R5、腹板圆角 | 2 | 3 |
+| 英制图纸标注板 `inch_callout_plate` | 9 | 英寸换算、字母钻 H、21 号钻（10-32 UNF 螺纹底孔）、沉孔与 82° 锥形沉孔、螺栓圆上孔的相位 | 7 | 8 |
+| 六角孔阵裁切板 `clipped_hex_perforation` | 9 | 六边形点阵按“6 个顶点全部在界内”筛选、尖顶朝 ±Y、切平的圆板 | 2 | 3 |
+| 相切三孔连杆 `tangent_link_lever` | 9 | 外公切线和两段与圆相切的凹圆弧组成的外轮廓（切点要求解）、键槽、圆弧槽 | 4 | 5 |
+| 圆角抽壳外壳 `filleted_shell_enclosure` | 9 | 先圆角再等厚抽壳、止口、切过顶部圆角的通风槽、螺钉柱 | 7 | 8 |
+| 三圆柱交体节点 `tricylinder_node` | 7 | 三根圆柱的公共部分（Steinmetz 体）、三向管和在节点内相互贯通的盲孔、空间斜撑与球头 | 11 | 12 |
+| 扭转槽旋钮 `twisted_flute_knob` | 8 | 6 条匀速左旋扭转的凹槽（每个水平截面上是圆）、凹槽在 z = 30 处平截、D 形孔与紧定孔 | 8 | 9 |
+| 球形封头接管 `spherical_dome_ports` | 9 | 按纬度、经度给出的径向接管、不过球心的水平接管、法兰孔相位、连通的内腔 | 11 | 12 |
+
+20 题共 183 个显式条目（每题 7–12 个），没有隐含条目，共 361 个几何检查。
+
+### 8.2 评测方式
+
+打分方式与前面各节完全相同：只读 STEP 的几何，对照 `eval/rubrics_extreme/<case>.yaml` 打分；题目分数是通过的显式条目占比，所有显式条目都通过才算合格。容差也一样（长度 0.1 mm、角度 0.5°、体积 1%）。提交要求见第 3 节：每题每次运行一个 `<case>_r<k>.step`，单一实体，单位 mm。
+
+**用任意系统评测**（只需要第 0 节的 `venv-occ`，不需要 SolidWorks）：
+
+```powershell
+# 1) 导出 20 道题；默认英文题面，加 --lang zh 导出中文原文
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_extreme tasks --output tasks_extreme.jsonl
+
+# 2) 用你的系统逐题建模，导出为 my_extreme_run\<case>_r1.step ...
+
+# 3) 打分与汇总
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric --artifacts my_extreme_run --rubric-dir eval/rubrics_extreme --output my_extreme_scores.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_extreme summary my_extreme_scores.json --repeats 1
+```
+
+汇总输出的第一行是全部 20 题的均分、95% 置信区间、pass@k 和核心形体率，第二行是 `Extreme parts` 一类（就是这 20 题）。用 8.3 节的 20 个 oracle STEP 走一遍这三步，得到 `score=100.0 pass@1=1.0 core_form=1.0`。
+
+**用 Workflow-CAD 评测**（环境与启动方式见第 6 节）：
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --action-level L1_v2 --split extreme `
+    --provider <provider> --model <model> --reasoning-effort medium --max-llm-calls 40 --repeats 1 --lang en `
+    --sw-restarts 2 --sw-max-private-gb 12 --resume --output eval\text_workflow_l1v2_mymodel_extreme_en_result.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric --rubric-dir eval\rubrics_extreme `
+    --artifacts eval\artifacts\text_workflow_l1v2_mymodel_extreme_en_result --output eval\rubric_mymodel_extreme_en.json
+```
+
+脚本在每题导出 STEP 后会自动用 `eval/rubrics_extreme` 打 rubric 分，写进结果 JSON 的 `rubric` 字段。建议协议与 7.4 节一致：L1_v2、每题最多 40 次 LLM 调用、温度 0、只看 rubric；报告里写明题面语言和每题次数。目前还没有任何模型在这 20 题上的结果。
+
+### 8.3 SolidWorks 实机可解性与 oracle 轨迹的 LLM 调用次数
+
+为了确认每道题在 Workflow-CAD 的工具集下确实做得出来，我们在 SolidWorks 里给每题手写了一条 **oracle workflow 轨迹**（`LLMPlanner/eval/extreme_l1v2_reference.py`）。它只调用模型能拿到的那套 L1_v2 工具（`planner/workflow/tools_v2.py`），参数也是模型能填的同一套，导出 STEP 后用上面的 rubric 打分。20 题在同一次运行里**全部 100 分**，没有失败的工具调用。20 题共约 48 分钟，最慢的是弹簧（692 s）和内齿圈（385 s）。
+
+**LLM 调用次数的口径**：oracle 本身不调用 LLM。统计时假设智能体每轮发一个工具调用、每次都成功，最后再用一轮调用 `finish`，所以“LLM 调用 = 工具调用数 + 1”。这是智能体在这套工具下完成每道题所需 LLM 调用数的一个参考下限：没有算查询模型状态、截图检查和出错重试。
+
+| 最少 | 中位数 | 平均 | p90 | 最多 |
+|---|---|---|---|---|
+| 3 | 7 | 7.15 | 12 | 13 |
+
+每题的工具调用数和 LLM 调用数见 8.1 节的表。完整轨迹（每次工具调用的名称和参数）在 `LLMPlanner/eval/extreme/oracle_l1v2/<case>.json`，汇总在同目录的 `summary.json`。字段 `tool_calls` 是工具调用数，`llm_calls_one_tool_per_turn` 是 LLM 调用数，另外还有 `rubric_score`、`volume_mm3`、`bbox_mm` 和 `seconds`。重放某几题（需要 SolidWorks、C# 服务和 Web 后端，不调用 LLM）：
+
+```powershell
+venv\Scripts\python.exe -X utf8 eval\extreme_l1v2_reference.py worm_shaft helical_ring_gear   # 不带题号则跑全部 20 题
+```
+
+需要注意三点：
+- **调用次数少，不代表题目简单。** oracle 里的精确曲线和需要求解的量都是先用 Python 离线算好，再以多段线坐标或数值直接填进工具参数的，例如渐开线、NACA 翼型点、凸轮包络、平衡孔直径和切点。智能体必须自己算出这些数，难点主要在这里。
+- **蜗杆有一处工具层面的已知问题。** SolidWorks 沿螺旋线扫掠非圆截面时，会把截面绕起点切向多转约 2.67°。这个偏差在每个方位角上都一样，加密螺旋线采样点也消除不了。不补偿的话，齿侧面偏离理论直线约 0.034 + 0.0475·(r − 15) mm：半径 13 处 −0.06 mm，半径 17 处 +0.13 mm，超出 0.1 mm 的容差，`flank` 条目失败。oracle 是把截面预先反向转了 2.67° 才拿到满分的。智能体不知道要做这个补偿，蜗杆的 `flank` 条目很可能失败；在修好 `sweep` 的螺旋路径之前，分析结果时要考虑这一点。
+- **组合方式很多。** 有几题的 oracle 用了不显然的组合：
+  - 复合角斜孔：先建临时块，旋转切出种子孔，再用圆周阵列转到斜向，最后切掉临时块；
+  - 压铸盖：外侧拔模用拉伸自带的拔模角，内腔用壁厚为 5·cos3° 的抽壳；
+  - 内齿圈：三个按螺旋角转过的端面截面放样切出一个齿槽，再圆周阵列 54 个。
+  
+  这些只是一种可行解；rubric 只看几何，用别的建法同样可以满分。
+
+### 8.4 rubric 本身是怎么验证的
+
+和前几组一样，每题都有一个直接用 OpenCASCADE 按题面构造的参考实体（`geomcheck/tests/refs_extreme.py`），必须得 100 分，并且体积与 rubric 推导值相差不超过 0.05%。另有 71 个针对性错误变体，测试断言**恰好**是预期的那几个条目失败（`geomcheck/tests/test_refs_extreme.py`）。这些变体包括：旋向反了、单头当双头、法面模数当成端面模数、平衡孔不计键槽、字母钻 H 当成 1/4 in、K 因子取 0.5、六角孔按孔心而不是顶点筛选、变半径圆角做成等半径等。
+
+```powershell
+venv-occ\Scripts\python.exe -m pytest geomcheck/tests/test_refs_extreme.py -q -p no:cacheprovider
+```
+
+在 SolidWorks 上做 oracle 时发现并修正了几处问题，都在 OCC 参考实体和 oracle STEP 上重新验证过：
+- **翼肋的 rubric 体积**：平面被长 B 样条围住时，OpenCASCADE 的体积积分会明显失准，原来的 17119 是错的，正确值是 16546.43。现在检查器在精确积分和网格体积相差超过 0.5% 时改用网格体积，rubric 也改成了正确值。
+- **变半径圆角支架**：腰形孔如果切穿整个零件，会在加强筋上开出缺口，原来的 rubric 查不出来，现在加了沿筋的材料探针。
+- **弹簧的端面判定**：SolidWorks 导出的磨平端面上，采样点会超出端面平面 0.002–0.003 mm，原来按 0.001 mm 的容差会判成“端部没有平面”。现在端面容差是 0.01 mm。另外修正了主轴坐标系在细圆环面上误选方向的问题。
+
+---
+
+## 9. 已知局限
 
 - rubric 是人工编写的。rubric 没写到的要求不会被检查，标为 `ungraded` 的内容也不打分。
 - 目前只有 OpenCASCADE 一个检查器。一个通过 SolidWorks API 评估同一套 rubric 的检查器正在开发，用来交叉验证。
