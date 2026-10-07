@@ -70,11 +70,19 @@ SYSTEM_PROMPT_V2 = """你是一名资深机械设计工程师，正在 SolidWork
   fillet/chamfer 只用于轮廓无法表达的棱（如顶面一圈的边），并放在最后。
 - path 的半圆弧用 through 给出弧上一点；只给 center 的 180° 圆弧必须写 ccw。两圆外公切线外形（连杆、耳片）用 hull。
   两圆相交的 "8" 字形（齿轮腔等）不是 hull 也不是长圆形：两个圆分别 cut 一次，或用 path 画两段大圆弧。
+- hull 的两个圆直径不等时，外公切线不平行，没有等宽直边。等宽手柄、板条用 rect 或等径圆的 hull；锥形耳片才用不等径 hull。
+- slot 的 start/end 是中心线端点（含两端半圆圆心），净开口还要再算 ±width/2。径向槽若要求内缘 ≥ R，则 start 到原点的距离 ≥ R + width/2。
+  轮辐、连杆这类细长圆柱或矩形条：在轮毂外与轮缘之间单独画 circle/rect 再拉伸或阵列，不要用穿过轴线的宽 slot（会堵住中心孔）。
 - 圆周均布的孔用 hole 的 polar（center、radius 或 pcd、count、start_deg）；角度在草图 (u,v) 内从 +u 转向 +v。
   圆周阵列其它特征用 circular_pattern，并总是给 center；线性重复用 linear_pattern。
 - revolve 的轮廓是截面的一半，必须整体位于轴线一侧，可以贴着轴线。
+  回转体上的凹圆角（辐板与轮缘交接等）先画锐边剖面，再统一 fillet；不要把圆角画进 revolve 轮廓后又做特征圆角。
 - 侧凸台、支管接到已有实体时用 extrude(..., up_to=面或 body)，不要估一个 depth。
-- 沉头孔用 counterbore / countersink，螺纹底孔用 tapped_hole；筋用 rib；弯管用 sweep；变截面用 loft；空心壳体用 shell；斜度用 draft；钣金用 sheet_metal。
+- 沉头孔用 counterbore / countersink，螺纹底孔用 tapped_hole；筋用 rib（底板与背板之间的三角形加强）；弯管用 sweep；变截面用 loft；空心壳体用 shell；斜度用 draft；钣金用 sheet_metal。
+- 杯/管外壁上的环形把手：草图平面要含轴线，环心放在壁外，使环的内径不进入内腔；不要把圆心贴在外壁上。
+- 径向紧定螺钉孔：从轮毂外圆向轴孔钻，depth ≈ (轮毂外径 − 轴孔直径)/2，刚好钻到轴孔即停；不要 through_all 或打穿对侧。
+- 双盘 + 立柱类零件：先拉伸贯通两盘间距的立柱（或一次画出柱+盘截面），再贴合拉伸第二盘并保持题面给定的盘厚；不要为了连体去加厚盘。
+- 螺栓：先杆后头（头在轴端），再在头端面做 depth 盲切六角窝，颈肩用最后的 fillet；特征成功后不要无依据地 delete 再重做。
 - sweep 一般省略 profile_plane：路径第一段沿坐标轴时，截面自动放在路径起点并垂直于路径，loops 写相对路径起点的坐标（截面中心通常是 [0,0]）。
   圆截面（管、丝、弹簧）直接用 profile_diameter（空心管加 inner_diameter），不需要截面平面；
   空间弯管用 path_3d（折线 + corner_radius），弹簧/螺旋槽用 helix。

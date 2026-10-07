@@ -127,6 +127,31 @@ def test_hull_of_two_circles_has_closed_form_area():
     assert (u0, v0, u1, v1) == pytest.approx((-20, -20, 20, 68), abs=0.05)
 
 
+def test_unequal_hull_warns_about_non_parallel_sides():
+    notes: list[str] = []
+    prepare_loops([{
+        "type": "hull",
+        "circles": [{"center": [0, 0], "diameter": 40}, {"center": [100, 0], "diameter": 15}],
+    }], notes)
+    assert any("直径不等" in note and "等宽" in note for note in notes)
+    equal_notes: list[str] = []
+    prepare_loops([{
+        "type": "hull",
+        "circles": [{"center": [0, 0], "diameter": 20}, {"center": [50, 0], "diameter": 20}],
+    }], equal_notes)
+    assert not any("直径不等" in note for note in equal_notes)
+
+
+def test_v2_prompt_covers_failure_patterns():
+    assert "等宽手柄" in SYSTEM_PROMPT_V2
+    assert "R + width/2" in SYSTEM_PROMPT_V2 or "R+width/2" in SYSTEM_PROMPT_V2
+    assert "穿过轴线的宽 slot" in SYSTEM_PROMPT_V2
+    assert "紧定螺钉" in SYSTEM_PROMPT_V2
+    assert "双盘" in SYSTEM_PROMPT_V2
+    assert "环形把手" in SYSTEM_PROMPT_V2
+    assert "等宽手柄" not in SYSTEM_PROMPT
+
+
 def test_half_arc_with_center_only_must_give_ccw():
     loop = {"type": "path", "start": [10, 0], "segments": [{"to": [-10, 0], "center": [0, 0]}]}
     with pytest.raises(WorkflowError) as info:

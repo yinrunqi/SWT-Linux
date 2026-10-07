@@ -225,6 +225,18 @@ def prepare_loops(loops: Any, notes: list[str] | None = None) -> Any:
     for index, loop in enumerate(loops):
         kind = str(loop.get("type", "")).lower() if isinstance(loop, dict) else ""
         if kind == "hull":
+            circles = loop.get("circles") if isinstance(loop, dict) else None
+            if isinstance(circles, list) and len(circles) == 2:
+                try:
+                    r1 = _circle_radius(circles[0], f"轮廓 {index} 的 circles[0]")
+                    r2 = _circle_radius(circles[1], f"轮廓 {index} 的 circles[1]")
+                    if abs(r1 - r2) > 1e-3:
+                        notes.append(
+                            f"轮廓 {index}: hull 两圆直径不等（{2 * r1:g} 与 {2 * r2:g}），"
+                            "外公切线不平行、没有等宽直边；若题面要等宽手柄/板条，请改用 rect 或等径圆的 hull"
+                        )
+                except WorkflowError:
+                    pass
             loop = hull_loop(loop, index)
         if kind == "annular_sector" and (full := _full_sector(loop, index, notes)):
             prepared.extend(full)
@@ -276,7 +288,10 @@ _PLANE_DESC_V2 = (
 )
 _LOOP_DESC_V2_EXTRA = (
     "hull: {circles:[{center:[u,v], diameter}, {center:[u,v], diameter}]}（两个圆加两条外公切线围成的外形，"
-    "如连杆、腰形耳片；圆孔另外用 circle 轮廓）。"
+    "如连杆、腰形耳片；圆孔另外用 circle 轮廓）。两圆直径不等时外公切线不平行、没有等宽直边；"
+    "等宽手柄/板条请用 rect 或等径圆的 hull。"
+    "slot 的 start/end 是中心线端点（两端半圆圆心），净开口再 ±width/2；径向槽内缘要 ≥R 时，"
+    "start 到原点距离 ≥ R+width/2。轮辐不要用穿过轴线的宽 slot。"
     "path 中只给 center 的 180° 圆弧必须写 ccw，半圆最好用 through。"
 )
 _POLAR_SCHEMA = {
@@ -1001,6 +1016,8 @@ class WorkflowSessionV2(WorkflowSession):
                 hint=(
                     "新增的部分没有和已有实体连成一体：只有线/点接触（相切）或中间有间隙，或者切除把零件切成了几块。"
                     "让新凸台伸入已有实体 ≥0.5mm（例如把轮廓或深度加长一点），或检查切除范围。"
+                    "双盘+立柱：先做贯通两盘间距的立柱，再贴合拉伸第二盘并保持题面给定的盘厚，不要为了连体去加厚盘；"
+                    "或一次画出柱+盘的完整截面再拉伸。"
                 ),
                 rolled_back=rolled_back,
                 bodies=after.get("bodies"),
