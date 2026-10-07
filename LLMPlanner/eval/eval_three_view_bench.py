@@ -179,7 +179,7 @@ def main() -> int:
                              "L0: legacy vision-IR + blueprint pipeline")
     parser.add_argument(
         "--provider",
-        choices=["aiping", "ttswitch", "juheai"],
+        choices=["aiping", "ttswitch", "juheai", "qwenlocal"],
         default="aiping",
         help="LLM service the Web backend uses: ttswitch reads OPENAI_* from .env, others read <PROVIDER>_*",
     )

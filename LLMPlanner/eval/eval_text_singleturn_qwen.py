@@ -32,10 +32,10 @@ except ImportError:
 
 MODEL = "Qwen3.5-397B-A17B"
 # Web 后端按 provider 选择 .env 中的 Key / Base URL：ttswitch 用 OPENAI_*，其余用 <PROVIDER>_*。
-PROVIDERS = ("aiping", "ttswitch", "juheai")
+PROVIDERS = ("aiping", "ttswitch", "juheai", "qwenlocal")
 # L1：工程师级工具 + 闭环 Agent；L1_v2 是在 L1 失败轨迹上改进后的版本，两者并存
 WORKFLOW_LEVELS = ("L1", "L1_v2")
-PROVIDER_LABELS = {"aiping": "AI Ping", "ttswitch": "TT Switch", "juheai": "juheai"}
+PROVIDER_LABELS = {"aiping": "AI Ping", "ttswitch": "TT Switch", "juheai": "juheai", "qwenlocal": "self-served Qwen"}
 
 
 @dataclass(frozen=True)

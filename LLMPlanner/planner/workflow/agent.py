@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 from datetime import datetime
 from pathlib import Path
@@ -125,12 +126,31 @@ def _image_part(image_b64: str, mime: str) -> dict:
 
 # 未显式指定 reasoning_effort 时按模型取默认值；键是去掉 "basic/" 之类前缀后的完整模型名
 DEFAULT_REASONING_EFFORTS = {"claude-sonnet-5": "medium"}
+# 上下文窗口较小的模型（输入 + 推理 + 输出共用）；未列出的模型不做处理
+CONTEXT_LIMITS = {"qwen3.8-flash-next-fp8": 73728}
+# 截断重试时输出上限翻倍的封顶值。推理模型单次思考可能超过 8K，不能封得太低；
+# 有 CONTEXT_LIMITS 的模型在输入变长时会按服务端报告的输入长度自动压缩本轮输出
+MAX_OUTPUT_TOKENS: dict[str, int] = {}
+DEFAULT_MAX_OUTPUT_TOKENS = 32000
+CONTEXT_MARGIN = 64
+MIN_OUTPUT_TOKENS = 2048
+_CONTEXT_OVERFLOW = re.compile(r"maximum context length is \d+ tokens.*?prompt contains at least (\d+) input tokens", re.S)
+
+
+def _model_key(model: str) -> str:
+    return str(model or "").rsplit("/", 1)[-1].strip().lower()
 
 
 def default_reasoning_effort(model: str, reasoning_effort: str | None = None) -> str | None:
     if reasoning_effort:
         return reasoning_effort
-    return DEFAULT_REASONING_EFFORTS.get(str(model or "").rsplit("/", 1)[-1].strip().lower())
+    return DEFAULT_REASONING_EFFORTS.get(_model_key(model))
+
+
+def _context_overflow_prompt_tokens(exc: Exception) -> int | None:
+    """vLLM 式的超长报错（400）里给出的输入 token 数；不是这类错误时返回 None。"""
+    match = _CONTEXT_OVERFLOW.search(str(exc))
+    return int(match.group(1)) if match else None
 
 
 def raw_response(response: Any) -> dict:
@@ -256,11 +276,16 @@ class WorkflowAgent:
         version: str | None = None,
         view_tool: bool = True,
         log: Callable[[str], None] | None = None,
+        context_limit: int | None = None,
     ):
         """version：v1 = L1，v2 = L1_v2；缺省跟随 session.version。
         view_tool：L1_v2 是否提供 view_model 截图工具（骨干模型不支持图片输入时关掉）。
-        log：逐步进度输出（每次 LLM 调用、每个工具调用一行），评测时供终端监控。"""
+        log：逐步进度输出（每次 LLM 调用、每个工具调用一行），评测时供终端监控。
+        context_limit：模型上下文 token 数，缺省查 CONTEXT_LIMITS；超长时压缩本轮输出上限，仍装不下则以
+        context_exceeded 结束。"""
         self.log = log
+        self.context_limit = context_limit or CONTEXT_LIMITS.get(_model_key(model))
+        self.max_output_tokens = MAX_OUTPUT_TOKENS.get(_model_key(model), DEFAULT_MAX_OUTPUT_TOKENS)
         self.version = version or getattr(session, "version", "v1")
         if self.version not in WORKFLOW_VERSIONS:
             raise ValueError(f"未知的 workflow 版本 {self.version}")
@@ -347,16 +372,21 @@ class WorkflowAgent:
                 request = {"model": self.model, "messages": messages, "tools": self.tools, "tool_choice": "auto",
                            "temperature": self.temperature, "max_tokens": max_tokens, **extra}
                 try:
-                    if self.stream:
-                        for attempt in range(1, STREAM_ATTEMPTS + 1):
-                            try:
-                                response = _streamed_completion(self.client, **request)
-                                break
-                            except StreamFailed:
-                                if attempt == STREAM_ATTEMPTS:
-                                    raise
-                    else:
-                        response = self.client.chat.completions.create(**request)
+                    try:
+                        response = self._complete(request)
+                    except Exception as exc:
+                        prompt_tokens = _context_overflow_prompt_tokens(exc)
+                        if prompt_tokens is None or not self.context_limit:
+                            raise
+                        # 上下文装不下这一轮的 max_tokens：按服务端报告的输入长度压缩输出上限再试一次
+                        room = self.context_limit - prompt_tokens - CONTEXT_MARGIN
+                        if room < MIN_OUTPUT_TOKENS:
+                            status = "context_exceeded"
+                            error = f"输入 {prompt_tokens} token，上下文上限 {self.context_limit}，剩余不足 {MIN_OUTPUT_TOKENS}"
+                            self._log(f"上下文用尽：{error}")
+                            break
+                        self._log(f"上下文接近上限：输入 {prompt_tokens} token，本轮 max_tokens {max_tokens} → {room}")
+                        response = self._complete({**request, "max_tokens": room})
                 except Exception as exc:
                     status, error = "llm_error", f"{type(exc).__name__}: {exc}"
                     self._log(f"LLM 错误：{error[:300]}")
@@ -382,7 +412,7 @@ class WorkflowAgent:
             # 输出被截断（推理模型常把额度用在思考上）不算停滞：丢掉残缺回复，放宽长度再要一次
             if reply["finish_reason"] == "length" and not _all_args_parse(calls):
                 truncations += 1
-                max_tokens = min(max(max_tokens, self.max_tokens) * 2, 32000)
+                max_tokens = min(max(max_tokens, self.max_tokens) * 2, self.max_output_tokens)
                 if truncations == 1:
                     messages.append({"role": "user", "content": "上一条回复太长被截断了。少写分析，直接输出下一步的工具调用。"})
                 checkpoint()
@@ -514,6 +544,16 @@ class WorkflowAgent:
             "resumed": resumed,
             "duration_seconds": round(prior_seconds + time.perf_counter() - started, 2),
         }
+
+    def _complete(self, request: dict) -> Any:
+        if not self.stream:
+            return self.client.chat.completions.create(**request)
+        for attempt in range(1, STREAM_ATTEMPTS + 1):
+            try:
+                return _streamed_completion(self.client, **request)
+            except StreamFailed:
+                if attempt == STREAM_ATTEMPTS:
+                    raise
 
     def _log(self, line: str) -> None:
         if self.log:

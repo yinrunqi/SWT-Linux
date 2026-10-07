@@ -9,7 +9,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from planner.workflow.agent import _image_part, _without_images, default_reasoning_effort, raw_response
+from planner.workflow.agent import (
+    DEFAULT_MAX_OUTPUT_TOKENS,
+    MAX_OUTPUT_TOKENS,
+    _image_part,
+    _model_key,
+    _without_images,
+    default_reasoning_effort,
+    raw_response,
+)
 from planner.workflow.tools import IMAGE_KEY, dumps_result
 
 from .session import AssemblySession
@@ -212,7 +220,8 @@ class AssemblyAgent:
             # v3：输出被截断（常见于长篇推理）不算停滞；丢掉残缺回复，放宽长度再要一次，并提示直接给工具调用
             if v3 and reply["finish_reason"] == "length" and not _all_args_parse(calls):
                 truncations += 1
-                max_tokens = min(max(max_tokens, self.max_tokens) * 2, 32000)
+                cap = MAX_OUTPUT_TOKENS.get(_model_key(self.model), DEFAULT_MAX_OUTPUT_TOKENS)
+                max_tokens = min(max(max_tokens, self.max_tokens) * 2, cap)
                 if truncations == 1:
                     messages.append({"role": "user", "content": "上一条回复太长被截断了。少写分析，直接输出下一步的工具调用。"})
                 checkpoint()

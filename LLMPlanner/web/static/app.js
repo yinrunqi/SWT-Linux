@@ -36,6 +36,11 @@ const PROVIDER_DEFAULTS = {
     visionModel: "basic/claude-sonnet-5",
     planModel: "basic/claude-sonnet-5",
   },
+  qwenlocal: {
+    baseUrl: "",
+    visionModel: "Qwen3.8-Flash-Next-FP8",
+    planModel: "Qwen3.8-Flash-Next-FP8",
+  },
 };
 
 // 齿轮 Motion Study 控件
