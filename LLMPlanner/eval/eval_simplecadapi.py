@@ -172,12 +172,14 @@ def tool_run_python(code: str, work: Path, n: int, timeout: float, deliverable: 
 
 
 def chat(client: OpenAI, model: str, messages: list, session: str, temperature: float | None,
-         reasoning_effort: str | None = None) -> object:
+         reasoning_effort: str | None = None, max_tokens: int | None = None) -> object:
     kw = dict(model=model, messages=messages, tools=TOOLS, extra_headers={"X-Session-Id": session})
     if temperature is not None:
         kw["temperature"] = temperature
     if reasoning_effort:
         kw["reasoning_effort"] = reasoning_effort
+    if max_tokens:
+        kw["max_tokens"] = max_tokens
     for attempt in range(6):
         # 网关会发保活字节，httpx 的读超时因此不会触发，只能在外面加硬截止时间
         pool = ThreadPoolExecutor(max_workers=1)

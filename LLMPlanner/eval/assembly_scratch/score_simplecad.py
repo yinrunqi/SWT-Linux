@@ -45,6 +45,10 @@ SERVICE_BAT = Path.home() / "start_sw_service.bat"
 AXIS_TOL = math.sin(math.radians(1.0))
 LINE_TOL_MM = 0.15
 DRIFT_MM, DRIFT_DEG = 0.05, 0.1
+SW_LOST_MARKERS = (
+    "RPC 服务器不可用", "远程过程调用失败", "0x800706BA", "0x800706BE",
+    "系统调用失败", "0x80010100", "RPC_E_SYS_CALL_FAILED",
+)
 DEFAULT_PLANES = {"right": 0, "top": 1, "front": 2}  # 基准面 → 法向所在的零件局部轴
 
 
@@ -57,21 +61,16 @@ def _schtask(name: str, command: str) -> None:
 
 
 def restart_solidworks() -> None:
-    print("  重启 SolidWorks 与服务", flush=True)
-    for image in ("Chapter1.ConnectToSw.exe", "SLDWORKS.exe"):
-        subprocess.run(["taskkill", "/F", "/IM", image], capture_output=True)
-    time.sleep(5)
-    _schtask("SwApp", f'"{SW_EXE}"')
-    time.sleep(90)
-    _schtask("SwService", str(SERVICE_BAT))
-    for _ in range(60):
-        time.sleep(2)
+    """不杀进程。评测机上的 SolidWorks 由桌面会话维护，这里只等 ping 恢复。"""
+    print("  等待已有 SolidWorks 服务（不重启进程）", flush=True)
+    for _ in range(90):
         try:
             if requests.get(f"{SW}/api/ping", timeout=3).ok:
                 return
         except requests.RequestException:
             pass
-    raise RuntimeError("服务重启后仍无响应")
+        time.sleep(2)
+    raise RuntimeError("服务仍无响应（未重启进程）")
 
 
 rescorer.restart_solidworks = restart_solidworks
@@ -515,7 +514,9 @@ def score_run(run: dict, art: Path, rebuild: bool) -> dict:
             try:
                 summary = Bridge(run_dir, case, export, sha).build()
                 break
-            except requests.RequestException as exc:
+            except (requests.RequestException, RuntimeError) as exc:
+                if isinstance(exc, RuntimeError) and not any(m in str(exc) for m in SW_LOST_MARKERS):
+                    raise
                 if attempt:
                     return {**row, "assembly_score": None, "motion_score": None, "e2e": False,
                             "infra_error": f"bridge: {exc}"}
@@ -582,7 +583,17 @@ def main() -> None:
         if (run["case_id"], run["repeat"]) in done:
             continue
         print(f"=== {run['case_id']} r{run['repeat']}", flush=True)
-        row = score_run(run, art, args.rebuild)
+        try:
+            row = score_run(run, art, args.rebuild)
+        except Exception as exc:  # noqa: BLE001
+            print(f"  本测例失败，继续下一个：{type(exc).__name__}: {exc}", flush=True)
+            row = {
+                "case_id": run["case_id"], "repeat": run["repeat"], "condition": "gen",
+                "workflow": "simplecadapi", "model": run.get("model"),
+                "part_pass_rate": run.get("part_pass_rate", 0.0),
+                "assembly_score": None, "motion_score": None, "e2e": False,
+                "infra_error": f"{type(exc).__name__}: {exc}",
+            }
         rows = [r for r in rows if (r["case_id"], r["repeat"]) != (row["case_id"], row["repeat"])] + [row]
         b = row.get("bridge") or {}
         print(f"  parts={row['part_pass_rate']:.2f} rubric={row['assembly_score']} motion={row['motion_score']} "

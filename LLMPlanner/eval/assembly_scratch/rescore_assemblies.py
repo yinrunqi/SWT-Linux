@@ -44,7 +44,7 @@ def rescore(path: Path, case: dict, aliases: dict[str, str]) -> dict:
         session = AssemblySession(base_url=SW, timeout=300)
         call("/api/assembly/open", {"assemblyPath": str(path)})
         present = {c["name"] for c in session.asmwf("components").get("components") or []}
-    except requests.RequestException as exc:
+    except (requests.RequestException, RuntimeError) as exc:
         raise ServiceHung(str(exc)) from exc
     session.aliases = {role: name for role, name in aliases.items() if name in present}
     started = time.perf_counter()

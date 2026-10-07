@@ -369,7 +369,7 @@ def run_agent(client: OpenAI, args, *, system: str, user: str, work: Path, max_c
     try:
         while calls < max_calls:
             calls += 1
-            r = chat(client, args.model, messages, session, args.temperature, args.reasoning_effort)
+            r = chat(client, args.model, messages, session, args.temperature, args.reasoning_effort, args.max_tokens)
             raw_responses.append(r.model_dump() if hasattr(r, "model_dump") else json.loads(r.json()))
             _usage_add(usage, r.usage)
             msg = r.choices[0].message
@@ -420,7 +420,8 @@ def run_agent(client: OpenAI, args, *, system: str, user: str, work: Path, max_c
         status, error = "error", f"{type(e).__name__}: {e}"
     record = {"status": status, "error": error, "llm_calls": calls, "tool_counts": counts,
               "token_usage": usage, "elapsed_s": round(time.time() - t0, 1),
-              "max_calls": max_calls, "reasoning_effort": args.reasoning_effort}
+              "max_calls": max_calls, "reasoning_effort": args.reasoning_effort,
+              "max_tokens": args.max_tokens}
     _write_json(work / "transcript.json", {**record, "messages": messages})
     _write_json(work / "llm_responses.json", raw_responses)
     return record
@@ -588,6 +589,8 @@ def main() -> None:
     ap.add_argument("--temperature", type=float, default=0.0, help="模型不支持时自动去掉")
     ap.add_argument("--reasoning-effort", choices=["low", "medium", "high"], default=None,
                     help="不传时用上游默认（实测与 high 相当）")
+    ap.add_argument("--max-tokens", type=int, default=None,
+                    help="单次输出上限（含隐藏思考）；开 reasoning_effort 且不传时上游默认 16000")
     ap.add_argument("--output", required=True, help="汇总 JSON；产物在 eval/artifacts/<输出文件名>/")
     ap.add_argument("--rerun", action="store_true", help="忽略已有记录重新跑")
     ap.add_argument("--reextract", action="store_true", help="只从已保存的装配包重新提取，不调 LLM")
