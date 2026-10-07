@@ -4,7 +4,7 @@
 
 看图建模有两条流程：
 
-- **L1 端到端（推荐，评测默认）**：图纸直接交给 L1 闭环 Agent 的规划模型，由它自己读图、调用工具建模。它和 text-to-CAD 共用同一个 Agent、同一套 24 个工具、同一份系统提示词，另外多一个对照用的 `render_views` 工具。规划模型必须是**多模态模型**，同时支持图片输入和 function calling。
+- **L1 / L1_v2 端到端（推荐，评测默认 L1）**：图纸直接交给闭环 Agent 的规划模型，由它自己读图、调用工具建模。L1 和 text-to-CAD 共用同一个 Agent、同一套 24 个工具、同一份系统提示词，另外多一个对照用的 `render_views` 工具；L1_v2 使用 text-to-CAD 失败分析后形成的 v2 workflow，并可额外调用 `view_model` 查看 SolidWorks 当前截图。规划模型必须是**多模态模型**，同时支持图片输入和 function calling。
 - **L0 读图 + 蓝图（旧流程）**：先由视觉模型把图纸读成结构化中间表示，再生成蓝图交给 L0 多轮 Agent 执行。网页界面上传图片时走的是这条流程。
 
 ---
@@ -113,10 +113,12 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 
 | 参数 | 默认值 | 说明 |
 |---|---|---|
-| `--action-level` | `L1` | `L1` = 端到端；`L0` = 旧的读图 + 蓝图流程 |
+| `--action-level` | `L1` | `L1` = 原版端到端；`L1_v2` = 与 text-to-CAD 相同的 v2 workflow；`L0` = 旧的读图 + 蓝图流程 |
 | `--plan-model` | `Qwen3.5-397B-A17B` | L1 下必须换成多模态模型 |
+| `--reasoning-effort` | 服务端默认 | `none` / `minimal` / `low` / `medium` / `high` / `xhigh`；L1 和 L1_v2 每轮都传给模型 |
 | `--max-llm-calls` | 40 | L1 的 LLM 调用预算，与 text-to-CAD 一致 |
 | `--no-views-tool` | 关 | 不提供 `render_views`，用于消融对比 |
+| `--no-view-tool` | 关 | L1_v2 不提供 `view_model`；不影响输入图纸和 `render_views` |
 | `--ids` | 全部 50 题 | 只跑指定的 case |
 | `--repeats` | 2 | 每题独立运行次数 |
 | `--lang` | `zh` | `en` 时使用 YAML 里的 `prompt_en` |
@@ -131,7 +133,20 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 
 `runs.json` 里 L1 每次运行记录：`status`（`finished` / `max_llm_calls` / `stalled` / `llm_error`）、`llm_calls`、`tool_calls`、`failed_modeling_calls`、`render_views_calls`、`token_usage`、`duration_seconds`、`plan_model`、`action_level`，以及 trace 文件路径 `trace`。
 
-### 3.3 消融：有无 `render_views`
+### 3.3 自部署 Qwen3.8-Flash-Next-FP8 + L1_v2
+
+这组设置与 text-to-CAD track 一致：`qwenlocal`、`L1_v2`、`reasoning_effort=medium`、最多 40 次 LLM 调用。模型名命中 Agent 的统一配置后，上下文上限自动按 73,728 token 处理；接近上限时，两条 track 使用同一段逻辑压缩当轮 `max_tokens`。
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py `
+    --provider qwenlocal --plan-model Qwen3.8-Flash-Next-FP8 `
+    --action-level L1_v2 --reasoning-effort medium --max-llm-calls 40 `
+    --ids b01_l_bracket --repeats 1 --name three_view_l1v2_qwen38_smoke
+```
+
+自部署端仍须支持图片输入和 function calling；text-to-CAD 能运行只能证明工具调用正常，不能证明视觉输入正常。先通过单题 smoke 后再去掉 `--ids` 跑全量。
+
+### 3.4 消融：有无 `render_views`
 
 ```powershell
 venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py --plan-model <多模态模型> `
@@ -140,7 +155,7 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py --plan-model <�
 
 两组结果用同样的命令打分。比较均分、pass@k 和平均 LLM 调用数，就能看出投影对照对结果的影响。
 
-### 3.4 直接调用 HTTP 接口
+### 3.5 直接调用 HTTP 接口
 
 ```python
 import base64, requests
@@ -183,7 +198,7 @@ print(resp["summary"])
 | `planner/workflow/errors.py` | 新错误码 `RENDER_FAILED` |
 | `web/app.py` | L1 接受 `image` 与 `views_tool`；`_image_mime` 判断图片格式；`render_views` 计为查询工具 |
 | `geomcheck/drawing.py` | 命令行入口：`python -m geomcheck.drawing in.step out.png [标题]`，投影出不带标注的三视图 |
-| `eval/eval_three_view_bench.py` | 默认 L1；新增 `--action-level`、`--max-llm-calls`、`--no-views-tool`；记录调用统计 |
+| `eval/eval_three_view_bench.py` | 默认 L1，也支持 L1_v2；`--reasoning-effort`、`--max-llm-calls`、`--no-views-tool`、`--no-view-tool` 与 text-to-CAD 对齐；记录调用统计 |
 | `test/test_workflow_three_view.py` | 离线测试（8 个）：图纸放进首条消息、系统提示词不变、纯文本消息不变、投影图只保留最新一张、`render_views` 按需启用、空零件与投影失败的错误码、真实投影子进程、图片格式判断 |
 
 离线测试不需要 SolidWorks，也不调用模型：

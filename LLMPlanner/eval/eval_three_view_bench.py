@@ -37,6 +37,7 @@ except ImportError:
 ROOT = Path(__file__).resolve().parent.parent
 RUBRIC_DIR = ROOT / "eval" / "rubrics_three_view"
 PROMPT_FIELDS = {"zh": "prompt", "en": "prompt_en"}
+WORKFLOW_LEVELS = ("L1", "L1_v2")
 # 请求异常、LLM 接口出错、SolidWorks 文档丢失或续跑重放失败：都不是模型能力的结果，--resume 时续跑
 RERUN_STATUSES = {"llm_error", "sw_lost", "resume_failed"}
 
@@ -119,16 +120,20 @@ def run_one(task: dict, k: int, args, resume: bool = False) -> dict:
         "use_cache": False,
         "capture_trace": True,
     }
-    if args.action_level == "L1":
+    if args.action_level in WORKFLOW_LEVELS:
         # 端到端：图纸直接交给 plan_model（须为多模态模型），没有单独的读图阶段
         payload.update({"max_turns": args.max_llm_calls, "views_tool": not args.no_views_tool,
                         "checkpoint_path": str(checkpoint), "resume": resume})
+        if args.action_level == "L1_v2":
+            payload["view_tool"] = not args.no_view_tool
+        if args.reasoning_effort:
+            payload["reasoning_effort"] = args.reasoning_effort
     else:
         payload.update({"mode": args.mode, "vision_model": args.vision_model})
     trace_path = stem.parent / f"{stem.name}.trace.json"
     row: dict[str, Any] = {"case": task["case"], "repeat": k, "action_level": args.action_level,
                            "plan_model": args.plan_model, "trace": str(trace_path)}
-    if args.action_level == "L1":
+    if args.action_level in WORKFLOW_LEVELS:
         row["checkpoint"] = str(checkpoint)
     status_code, body = None, None
     try:
@@ -141,11 +146,13 @@ def run_one(task: dict, k: int, args, resume: bool = False) -> dict:
         _write_trace(trace_path, payload, status_code, body, None)
         row["token_usage"] = body.get("token_usage")
         row["status"] = (body.get("multi_turn") or {}).get("status") or (body.get("summary") or {}).get("status")
-        if args.action_level == "L1":
+        if args.action_level in WORKFLOW_LEVELS:
             summary, workflow = body.get("summary") or {}, body.get("workflow") or {}
             row["workflow_error"] = workflow.get("error")
             row["resumed"] = workflow.get("resumed")
             row["reasoning_effort"] = workflow.get("reasoning_effort")
+            row["view_tool"] = workflow.get("view_tool")
+            row["context_limit"] = workflow.get("context_limit")
             row["llm_calls"] = summary.get("llm_calls")
             row["tool_calls"] = summary.get("tool_calls")
             row["failed_modeling_calls"] = sum(1 for item in body.get("results") or [] if not item.get("success"))
@@ -174,8 +181,9 @@ def main() -> int:
     parser.add_argument("--ids", nargs="*", help="case ids (default: all)")
     parser.add_argument("--repeats", type=int, default=2)
     parser.add_argument("--lang", choices=sorted(PROMPT_FIELDS), default="zh")
-    parser.add_argument("--action-level", choices=["L1", "L0"], default="L1",
+    parser.add_argument("--action-level", choices=["L0", *WORKFLOW_LEVELS], default="L1",
                         help="L1: end-to-end workflow agent that sees the drawing (plan model must accept images); "
+                             "L1_v2: L1 with the text-to-CAD failure-analysis improvements and view_model; "
                              "L0: legacy vision-IR + blueprint pipeline")
     parser.add_argument(
         "--provider",
@@ -184,8 +192,19 @@ def main() -> int:
         help="LLM service the Web backend uses: ttswitch reads OPENAI_* from .env, others read <PROVIDER>_*",
     )
     parser.add_argument("--plan-model", default="Qwen3.5-397B-A17B")
+    parser.add_argument(
+        "--reasoning-effort",
+        choices=("none", "minimal", "low", "medium", "high", "xhigh"),
+        default=None,
+        help="L1/L1_v2 only; sent on every agent call. Omitted = the same model-specific default as text-to-CAD",
+    )
     parser.add_argument("--max-llm-calls", type=int, default=40, help="L1 LLM call budget")
     parser.add_argument("--no-views-tool", action="store_true", help="L1: do not offer render_views (ablation)")
+    parser.add_argument(
+        "--no-view-tool",
+        action="store_true",
+        help="L1_v2: do not offer the view_model SolidWorks screenshot tool",
+    )
     parser.add_argument("--mode", choices=["multi_turn", "single_turn"], default="multi_turn", help="L0 only")
     parser.add_argument("--vision-model", default="GLM-4.6V", help="L0 only")
     parser.add_argument("--web-url", default="http://localhost:5000")
@@ -204,6 +223,11 @@ def main() -> int:
     )
     parser.add_argument("--sw-max-private-gb", type=float, default=12.0)
     args = parser.parse_args()
+    if args.reasoning_effort and args.action_level not in WORKFLOW_LEVELS:
+        parser.error("--reasoning-effort requires --action-level L1 or L1_v2")
+    if args.action_level in WORKFLOW_LEVELS:
+        from planner.workflow.agent import default_reasoning_effort
+        args.reasoning_effort = default_reasoning_effort(args.plan_model, args.reasoning_effort)
     args.out_dir = ROOT / "eval" / "artifacts" / args.name
     args.out_dir.mkdir(parents=True, exist_ok=True)
     log_path = args.out_dir / "runs.json"
@@ -220,7 +244,7 @@ def main() -> int:
             if (task["case"], k) in done:
                 continue
             checkpoint = args.out_dir / f"{task['case']}_r{k}.checkpoint.json"
-            resuming = args.resume and args.action_level == "L1" and checkpoint.is_file()
+            resuming = args.resume and args.action_level in WORKFLOW_LEVELS and checkpoint.is_file()
             print(f"[{task['case']} r{k}]{' resume from checkpoint' if resuming else ''}", flush=True)
             for attempt in range(1 + args.sw_restarts):
                 if args.sw_restarts:
@@ -236,7 +260,7 @@ def main() -> int:
                     break
                 print(f"  [watchdog] SolidWorks lost during the run ({row.get('status') or row.get('error')}); "
                       "restarting and continuing from the checkpoint", flush=True)
-                resuming = args.action_level == "L1" and checkpoint.is_file()
+                resuming = args.action_level in WORKFLOW_LEVELS and checkpoint.is_file()
             print(f"    status={row.get('status')} error={row.get('error') or row.get('workflow_error')} "
                   f"{row['duration_seconds']}s", flush=True)
             rows.append(row)

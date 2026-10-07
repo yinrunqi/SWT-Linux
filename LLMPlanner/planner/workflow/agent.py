@@ -534,6 +534,7 @@ class WorkflowAgent:
             "error": error,
             "llm_calls": usage["calls"],
             "reasoning_effort": self.reasoning_effort,
+            "context_limit": self.context_limit,
             "view_tool": self.view_tool,
             "finish_reasons": finish_reasons,
             "tool_calls": tool_log,

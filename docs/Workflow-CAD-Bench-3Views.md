@@ -169,6 +169,7 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.tests.refs_three_view
 工作方式、环境要求和完整参数见 [`Workflow-CAD-3Views.md`](./Workflow-CAD-3Views.md)，这里只列要点。用 `eval/eval_three_view_bench.py`。它把图纸和题面发给 `/api/run`，把每次运行的 STEP 存到 `eval/artifacts/<name>/<case>_r<k>.step`，再按上面的命令离线打分。默认走 **L1 端到端**：
 
 - 与 text-to-CAD 共用同一个 L1 Agent、同一套 24 个工具和同一份系统提示词。区别只有输入：图纸作为图片放在首条用户消息里，Agent 每次调用模型都能看到它。另附一段固定说明，交代图纸的视图方位与模型坐标的对应关系，所有题目都一样。
+- `--action-level L1_v2` 使用与 text-to-CAD 完全相同的 v2 workflow，并默认开放 `view_model`；`--no-view-tool` 可关闭它。`render_views` 是三视图 track 额外提供的图纸对照工具，二者互不替代。
 - 没有单独的读图阶段，`--plan-model` 必须是支持图片输入的多模态模型。
 - 带图时 Agent 额外获得一个 `render_views` 工具：把当前零件导出为 STEP，在 `venv-occ` 里投影成不带标注的三视图（版式与输入图纸相同），以图片形式返回，并附包围盒和体积，方便模型逐个视图对照。上下文里只保留最新一张投影图。投影只用当前零件，不接触参考实体。`--no-views-tool` 关掉这个工具，用于消融。
 - 后端所在环境没有 OCP，投影通过子进程调用 `venv-occ\Scripts\python.exe`；放在别处时用环境变量 `GEOMCHECK_PYTHON` 指定。
@@ -178,6 +179,17 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py --plan-model <�
 venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view --artifacts eval\artifacts\three_view_l1_<model> --output eval\three_view_l1_<model>_scores.json
 venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_three_view summary eval\three_view_l1_<model>_scores.json --repeats 2
 ```
+
+自部署 Qwen3.8-Flash-Next-FP8 使用与 text-to-CAD 相同的 provider、推理强度和上下文配置：
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py `
+    --provider qwenlocal --plan-model Qwen3.8-Flash-Next-FP8 `
+    --action-level L1_v2 --reasoning-effort medium --max-llm-calls 40 `
+    --ids b01_l_bracket --repeats 1 --name three_view_l1v2_qwen38_smoke
+```
+
+Agent 会按模型名自动采用 73,728 token 上下文上限，并使用与 text-to-CAD 相同的超长处理逻辑。该模型部署还必须支持图片输入；先跑上述单题 smoke，确认无误后再去掉 `--ids`。
 
 `runs.json` 里每次运行另记 LLM 调用数、工具调用数、失败的建模调用数和 `render_views` 调用数。LLM 的完整输出存在 `<case>_r<k>.trace.json`，包括整段对话和每次调用的原始响应。运行过程中每次 LLM 回复、每轮工具后还会写 `<case>_r<k>.checkpoint.json`；中断后在原命令后加 `--resume`，已完成的运行保留，中断的运行从 checkpoint 续跑（与 text-to-CAD 相同），`--sw-restarts N` 可在 SolidWorks 崩溃时自动重启后续跑。`--action-level L0` 仍可使用旧流程：先由 `--vision-model` 把图纸读成结构化中间表示，再生成蓝图交给 L0 多轮 Agent。
 

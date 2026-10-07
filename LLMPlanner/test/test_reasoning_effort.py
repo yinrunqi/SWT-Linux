@@ -95,6 +95,12 @@ def test_claude_sonnet_5_defaults_to_medium_on_every_agent():
         assert WorkflowAgent(None, model, StubSession()).reasoning_effort is None
 
 
+def test_qwen38_uses_same_context_limit_for_every_track():
+    for model in ("Qwen3.8-Flash-Next-FP8", "qwen3.8-flash-next-fp8"):
+        agent = WorkflowAgent(None, model, StubSession())
+        assert agent.context_limit == 73728
+
+
 def _post(json_body, monkeypatch):
     captured = {}
 

@@ -399,7 +399,8 @@ def test_three_view_run_one_writes_trace_on_request_failure(tmp_path, monkeypatc
     monkeypatch.setattr(bench, "_close_documents", lambda url: None)
     monkeypatch.setattr(bench.time, "sleep", lambda s: None)
     args = SimpleNamespace(out_dir=tmp_path, sw_url="sw", web_url="web", plan_model="m", action_level="L1",
-                           max_llm_calls=40, no_views_tool=False, provider="aiping")
+                           max_llm_calls=40, no_views_tool=False, no_view_tool=False,
+                           reasoning_effort=None, provider="aiping")
     row = bench.run_one({"case": "d01", "prompt": "p", "image": image}, 1, args)
     trace = json.loads(Path(row["trace"]).read_text(encoding="utf-8"))
     assert trace["error"] == "web down"
@@ -408,6 +409,31 @@ def test_three_view_run_one_writes_trace_on_request_failure(tmp_path, monkeypatc
     assert trace["request"]["checkpoint_path"] == str(tmp_path / "d01_r1.checkpoint.json")
     assert trace["request"]["resume"] is False
     assert bench.needs_rerun(row)
+
+
+def test_three_view_l1_v2_sends_text_track_reasoning_and_view_settings(tmp_path, monkeypatch):
+    bench = _load_three_view_bench()
+    image = tmp_path / "d.png"
+    image.write_bytes(b"\x89PNG")
+
+    def boom(*args, **kwargs):
+        raise ConnectionError("stop after request capture")
+
+    monkeypatch.setattr(bench.requests, "post", boom)
+    monkeypatch.setattr(bench, "_close_documents", lambda url: None)
+    monkeypatch.setattr(bench.time, "sleep", lambda s: None)
+    args = SimpleNamespace(
+        out_dir=tmp_path, sw_url="sw", web_url="web", plan_model="Qwen3.8-Flash-Next-FP8",
+        action_level="L1_v2", max_llm_calls=40, no_views_tool=False, no_view_tool=False,
+        reasoning_effort="medium", provider="qwenlocal",
+    )
+    row = bench.run_one({"case": "d01", "prompt": "p", "image": image}, 1, args)
+    request = json.loads(Path(row["trace"]).read_text(encoding="utf-8"))["request"]
+    assert request["provider"] == "qwenlocal"
+    assert request["action_level"] == "L1_v2"
+    assert request["reasoning_effort"] == "medium"
+    assert request["views_tool"] is True
+    assert request["view_tool"] is True
 
 
 def test_three_view_resume_continues_interrupted_runs_from_checkpoint(tmp_path, monkeypatch):
