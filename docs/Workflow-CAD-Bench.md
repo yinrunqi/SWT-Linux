@@ -329,6 +329,62 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --provider 
 
 58 个 STEP 与运行记录一一对应，OCC 读出的体积与 SolidWorks 实测体积最大相对偏差 0.004%，困难题体积与参考实体一致（例如 `quad_frame` 36432.05 对参考 36432.1）。
 
+### 6.2 自部署 Qwen3.8-Flash-Next-FP8 + L1_v2（2026-10-06）
+
+设置：
+
+- Workflow-CAD L1_v2（含 `view_model` 截图工具），每次运行最多 40 次 LLM 调用；
+- 模型 `Qwen3.8-Flash-Next-FP8`，自部署 vLLM 的 OpenAI 兼容接口（`--provider qwenlocal`，地址和 key 读 `.env` 的 `QWENLOCAL_BASE_URL`、`QWENLOCAL_API_KEY`），`--reasoning-effort medium`，温度 0；
+- 中文题面，每题 1 次；
+- 代码版本为提交 d44ebf2。
+
+服务端上下文为 73728 token，输入、推理和输出共用。agent 对这个模型的处理（`planner/workflow/agent.py` 的 `CONTEXT_LIMITS`）：
+- 截断重试时输出上限从 8000 起翻倍，最多 32000；
+- 如果服务端返回超长 400，就按报错里的输入 token 数把本轮 `max_tokens` 压到窗口剩余量，再试一次；
+- 剩余不足 2048 时以 `context_exceeded` 结束。
+
+这一轮没有触发过压缩，也没有 `context_exceeded`。
+
+命令（困难 30 题把 `--split all` 换成 `--split hard`，结果见 7.5 节）：
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --split all --action-level L1_v2 `
+    --provider qwenlocal --model Qwen3.8-Flash-Next-FP8 --reasoning-effort medium --max-llm-calls 40 --repeats 1 `
+    --sw-restarts 2 --sw-max-private-gb 12 --resume --output eval\text_workflow_l1v2_qwen38flash_all_result.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric --artifacts eval\artifacts\text_workflow_l1v2_qwen38flash_all_result `
+    --rubric-dir eval\rubrics --output eval\rubric_l1v2_qwen38flash_all.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench summary eval\rubric_l1v2_qwen38flash_all.json --repeats 1
+```
+
+结果文件是 `eval/text_workflow_l1v2_qwen38flash_all_result.json`，rubric 打分是 `eval/rubric_l1v2_qwen38flash_all.json`。离线重打的分数与结果 JSON 里 `rubric` 字段逐题一致。
+
+| 零件类型 | 任务数 | 均分 | pass@1 | 平均 token | 平均 LLM 调用 | 平均耗时 |
+|---|---|---|---|---|---|---|
+| 日常物品 | 9 | 96.7 | 0.78 | 210.4k | 9.4 | 678 s |
+| 常见机加工件 | 19 | 95.7 | 0.84 | 104.2k | 6.8 | 89 s |
+| 多特征零件 | 8 | 100 | 1.0 | 157.8k | 10.0 | 132 s |
+| 特定操作零件 | 14 | 100 | 1.0 | 81.2k | 5.6 | 63 s |
+| **全部 50 题** | **50** | **97.8**（95% CI [95.4, 99.6]） | **0.90**（45/50） | 125.5k | 7.4 | 195 s |
+
+核心形体率 1.0（50/50），共用 627 万 token，总耗时 2.7 小时。“日常物品”的平均 token 和耗时主要被 `phone_stand` 拉高（116 万 token、5297 s），其余 8 题平均 101 s。
+
+对照：Qwen3.5-397B-A17B + L1 的 50 题均分 84.9、pass@1 0.74、核心形体率 0.85（每题 2 次）；GPT-6-Astra + L1 是 99.2、0.98、1.0（英文题面）。三者的工具集、题面语言和次数不完全相同。
+
+不合格的 5 题：
+
+| 任务 | rubric 分 | LLM 调用 | 未通过的条目 |
+|---|---|---|---|
+| `wrench` | 60 | 6 | handle, handle_centered, volume |
+| `gear_disc` | 75 | 7 | slots |
+| `mug` | 80 | 6 | handle_ring, cavity_clear |
+| `socket_bolt` | 83.3 | 23 | socket |
+| `phone_stand` | 90 | 37 | ribs |
+
+运行情况：
+- 50 题都由智能体自己 `finish`。5 次回复因长度截断，都放宽上限后自动重试。
+- `phone_stand` 第 5 次 LLM 调用时连接被服务端断开（`RemoteProtocolError: peer closed connection`），单次请求约 260 s。原因很可能是服务端或代理的空闲超时：这个服务不流式返回推理内容，长时间思考期间连接上没有数据。两批跑完后用 `--resume` 从检查点续跑，前 4 次回复没有重新请求，最终共 37 次调用，得 90 分。
+- 建模时脚本打印的 `score` 是旧版近似分（见 6.1 节），这一轮它给出 96.14、37/50 合格，不作为结果。
+
 ---
 
 ## 7. 困难子集：30 个复杂综合件（showcase）
@@ -377,7 +433,7 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --provider 
 | 二级门格海绵 `menger_sponge` | 7 | 两级分形挖孔（共 27 个方孔）必须全部贯穿且位置准确 |
 | 万向节叉 `u_joint_yoke` | 9 | 双叉臂与同轴十字轴承孔、半圆叉头、孔内键槽与径向紧定螺钉孔、叉臂外侧的轴承盖螺孔 |
 
-22 题共 217 个显式条目，配了 50 个针对性错误变体（相位转错、方向反了、少一级特征、孔不通等），每个都恰好在预期条目上失败。连同前 8 题，困难子集共 30 题、304 个条目、73 个错误变体。下面 Qwen 的参考结果只覆盖前 8 题；22 道新题上 claude-sonnet-5 的结果见 7.2 节，GPT-6-Astra 的结果见 7.3 节；claude-sonnet-5 + L1_v2 在全部 30 题上的结果见 7.4 节。
+22 题共 217 个显式条目，配了 50 个针对性错误变体（相位转错、方向反了、少一级特征、孔不通等），每个都恰好在预期条目上失败。连同前 8 题，困难子集共 30 题、304 个条目、73 个错误变体。下面 Qwen 的参考结果只覆盖前 8 题；22 道新题上 claude-sonnet-5 的结果见 7.2 节，GPT-6-Astra 的结果见 7.3 节；claude-sonnet-5 + L1_v2 在全部 30 题上的结果见 7.4 节；自部署 Qwen3.8-Flash-Next-FP8 + L1_v2 的结果见 7.5 节。
 
 除了 OCC 参考实体，22 道新题还在 SolidWorks 里用 L1 的 24 个工具逐题建了一遍参考解（`LLMPlanner/eval/hard_l1_reference.py`，只调用模型能拿到的同一套工具），22 题全部 100 分，说明每道题在这套工具下都是可解的。其中最绕的是火箭尾段：`ref_plane` 只能建平行偏移面，45° 方位的尾翼要先阵列 8 片、再切掉 4 片。
 
@@ -631,6 +687,68 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --action-le
 - SolidWorks 私有内存超过 12 GB，看门狗在题间自动重启了 3 次，都没有影响正在跑的题。
 - `crankshaft` 为了加日志手动停过一次，用 `--resume` 从检查点续跑，已经拿到的回复没有重新请求。
 - 30 题共用 1047 万 token，总耗时约 5.2 小时。最慢的是 `menger_sponge`（2752 s，后期每次切除约 1 分钟）和 `rocket_fin_can`（2648 s）。
+
+### 7.5 自部署 Qwen3.8-Flash-Next-FP8 + L1_v2 在全部 30 题上的结果
+
+设置和代码版本与 6.2 节相同，命令把 `--split all` 换成 `--split hard`。除骨干模型外，协议与 7.4 节一致：L1_v2、`view_model` 打开、中文题面、每题最多 40 次 LLM 调用、每题 1 次、只看 rubric。结果文件是 `eval/text_workflow_l1v2_qwen38flash_hard_result.json`，rubric 打分是 `eval/rubric_l1v2_qwen38flash_hard.json`（`--rubric-dir eval\rubrics_hard`）。
+
+`geomcheck.bench summary` 按 50 道核心题汇总，不适用于困难子集。下表的均分和置信区间直接由 30 题的 rubric 分算出，置信区间是对题目做 bootstrap（10000 次）。
+
+| 均分 | pass@1 | 核心形体率 | 平均 token | 平均 LLM 调用 | 平均工具调用 | 平均耗时 |
+|---|---|---|---|---|---|---|
+| 95.1（95% CI [91.4, 98.3]） | 0.767（23/30） | 0.967（29/30） | 311k | 14.7（无一题用满 40 次） | 18.1 | 673 s |
+
+分组来看：
+- 前 8 题：均分 93.6，6/8 合格，核心形体 8/8。
+- 加难 22 题：均分 95.7，17/22 合格，核心形体 21/22。
+- 对照 7.4 节的 claude-sonnet-5 + L1_v2（89.2、16/30、核心形体 29/30）：9 题更高、18 题持平、3 题更低。
+
+| 任务 | rubric 分 | 合格 | LLM 调用 | token | 耗时 (s) | Sonnet + L1_v2 | 未通过的条目 |
+|---|---|---|---|---|---|---|---|
+| `brake_disc` | 100 | ✓ | 9 | 171k | 785 | 70 | — |
+| `bt40_holder` | 100 | ✓ | 10 | 187k | 575 | 70 | — |
+| `camshaft` | 100 | ✓ | 5 | 87k | 209 | 100 | — |
+| `cold_plate` | 100 | ✓ | 7 | 130k | 336 | 100 | — |
+| `connecting_rod` | 100 | ✓ | 8 | 138k | 246 | 91.7 | — |
+| `engine_piston` | 100 | ✓ | 22 | 477k | 941 | 90.9 | — |
+| `finned_housing` | 100 | ✓ | 9 | 155k | 205 | 100 | — |
+| `gear_pump_body` | 100 | ✓ | 14 | 248k | 261 | 70 | — |
+| `gearbox_housing` | 100 | ✓ | 20 | 385k | 504 | 100 | — |
+| `heat_sink` | 100 | ✓ | 5 | 83k | 225 | 100 | — |
+| `honeycomb_panel` | 100 | ✓ | 14 | 384k | 966 | 100 | — |
+| `hydraulic_manifold` | 100 | ✓ | 6 | 100k | 225 | 100 | — |
+| `impeller` | 100 | ✓ | 9 | 155k | 280 | 100 | — |
+| `injector_plate` | 100 | ✓ | 18 | 351k | 318 | 100 | — |
+| `menger_sponge` | 100 | ✓ | 8 | 133k | 265 | 100 | — |
+| `pipe_manifold` | 100 | ✓ | 10 | 210k | 452 | 54.5 | — |
+| `quad_frame` | 100 | ✓ | 26 | 728k | 2230 | 66.7 | — |
+| `ratchet_wheel` | 100 | ✓ | 8 | 134k | 178 | 100 | — |
+| `robot_arm_link` | 100 | ✓ | 12 | 212k | 204 | 100 | — |
+| `sprocket` | 100 | ✓ | 13 | 235k | 342 | 100 | — |
+| `truss_beam` | 100 | ✓ | 11 | 186k | 272 | 100 | — |
+| `u_joint_yoke` | 100 | ✓ | 10 | 184k | 369 | 100 | — |
+| `wheel_rim` | 100 | ✓ | 18 | 351k | 629 | 91.7 | — |
+| `spiral_staircase` | 90 | | 12 | 287k | 850 | 80 | column |
+| `geneva_wheel` | 88.9 | | 12 | 205k | 270 | 100 | set_screw |
+| `planet_carrier` | 81.8 | | 17 | 301k | 246 | 90.9 | discs, volume |
+| `crankshaft` | 78.6 | | 35 | 808k | 968 | 85.7 | phasing, counterweights, volume |
+| `rocket_fin_can` | 77.8 | | 34 | 931k | 3559 | 77.8 | outer, fin_planform（核心形体失败） |
+| `turbine_disk` | 70 | | 38 | 906k | 2720 | 70 | web, fillets, volume |
+| `handwheel` | 66.7 | | 22 | 459k | 559 | 66.7 | hex_bore, spokes, volume |
+
+观察：
+- 7.4 节里 claude-sonnet-5 没合格的 14 题中，Qwen3.8 合格了 8 题，包括 `pipe_manifold`（54.5 → 100）、`quad_frame`（66.7 → 100），以及 `brake_disc`、`bt40_holder`、`gear_pump_body`（都是 70 → 100）。7.4 节里只差一个倒角、圆角或销座的 `connecting_rod`、`wheel_rim`、`engine_piston` 也都满分。
+- 两个模型都没合格的有 6 题：`spiral_staircase`、`planet_carrier`、`crankshaft`、`rocket_fin_can`、`turbine_disk`、`handwheel`。其中后三题两者分数完全相同，`turbine_disk` 未通过的条目也相同（web, fillets, volume），`rocket_fin_can` 都失败在 fin_planform，`handwheel` 都失败在 hex_bore。
+- 更低的 3 题：`geneva_wheel`（100 → 88.9）、`planet_carrier`（90.9 → 81.8）、`crankshaft`（85.7 → 78.6）。每题只跑 1 次，单题的涨跌包含随机波动。
+- 和 claude-sonnet-5 相比，调用更多、耗时更长，但 token 更少：平均 LLM 调用 14.7 对 12.0，平均耗时 673 s 对 618 s，平均 token 311k 对 349k。最慢的三题 `rocket_fin_can`（3559 s）、`turbine_disk`（2720 s）和 `quad_frame`（2230 s）都用了 26 次以上调用，单次调用常超过 1 分钟。
+
+运行情况：
+- 30 题都由智能体自己 `finish`，没有 LLM 接口错误和 `context_exceeded`；8 次回复因长度截断，都放宽上限后自动重试。
+- SolidWorks 私有内存超过 12 GB，看门狗在 `wheel_rim` 和 `bt40_holder` 开始前各重启了一次，没有影响正在跑的题。
+- 30 题共用 932 万 token，总耗时约 5.6 小时。
+- 脚本打印的旧版近似分是 96.25、26/30 合格，不作为结果。
+
+把 6.2 节的 50 题和这 30 题合在一起，80 题 rubric 均分 96.8，68/80 合格，核心形体 79/80，共 1559 万 token。
 
 ---
 
