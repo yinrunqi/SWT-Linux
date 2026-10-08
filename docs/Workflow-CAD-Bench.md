@@ -353,7 +353,7 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --provider 
 
 这一轮没有触发过压缩，也没有 `context_exceeded`。
 
-命令（困难 30 题把 `--split all` 换成 `--split hard`，结果见 7.5 节）：
+命令（困难 30 题把 `--split all` 换成 `--split hard`，结果见 7.5 节；修复 prompt 后用英文题面重跑的结果见 6.3、7.6 节）：
 
 ```powershell
 venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --split all --action-level L1_v2 `
@@ -392,6 +392,69 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench summary eval\rubric_l1v2_
 - 50 题都由智能体自己 `finish`。5 次回复因长度截断，都放宽上限后自动重试。
 - `phone_stand` 第 5 次 LLM 调用时连接被服务端断开（`RemoteProtocolError: peer closed connection`），单次请求约 260 s。原因很可能是服务端或代理的空闲超时：这个服务不流式返回推理内容，长时间思考期间连接上没有数据。两批跑完后用 `--resume` 从检查点续跑，前 4 次回复没有重新请求，最终共 37 次调用，得 90 分。
 - 建模时脚本打印的 `score` 是旧版近似分（见 6.1 节），这一轮它给出 96.14、37/50 合格，不作为结果。
+
+### 6.3 Qwen3.8-Flash-Next-FP8 + L1_v2，修复 prompt 后用英文题面重跑（2026-10-08）
+
+和 6.2 节相比只改了两处，其余设置（模型、`--reasoning-effort medium`、40 次调用上限、每题 1 次、看门狗）都相同：
+
+- 代码换成提交 5f0d673。针对 6.2、7.5 节不合格的 12 题，在 L1_v2 系统提示词和工具反馈里加了几条规则：不等径 hull 没有等宽直边、slot 端点是中心线端点、轮辐不用穿轴的宽 slot、回转体先锐边后圆角、杯壁环形把手、径向紧定螺钉孔深度、双盘 + 立柱的建模顺序、螺栓先杆后头；
+- 题面用英文（`--lang en`，现在的默认值）。
+
+困难 30 题的结果见 7.6 节。
+
+运行方式：先单独重跑了 12 道不合格题，再跑其余 68 题；`phone_stand` 两批里都有，只计后一次。每题只计一次从头到尾没有中断的运行。下面几种运行都删掉检查点从头重跑，直到没有为止：
+
+- LLM 接口错误：服务端返回空的流式响应，组装回复时报 ValidationError，记为 `llm_error`；
+- Web 后端崩溃导致的连接错误；
+- 从检查点续跑过的运行。
+
+重跑过的有 `stepped_block`、`knob`、`pillow_block`、`phone_stand` 和困难集的 `quad_frame`。
+
+命令（`--ids` 列出要跑的题；困难集把 `--split all` 换成 `--split hard`）：
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --split all --action-level L1_v2 `
+    --provider qwenlocal --model Qwen3.8-Flash-Next-FP8 --reasoning-effort medium --max-llm-calls 40 --repeats 1 `
+    --sw-restarts 2 --sw-max-private-gb 12 --lang en --resume `
+    --ids <题号...> --output eval\text_workflow_l1v2_qwen38flash_rest46_core_en_result.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric --artifacts eval\artifacts\text_workflow_l1v2_qwen38flash_core_en_result `
+    --rubric-dir eval\rubrics --output eval\rubric_l1v2_qwen38flash_core_en.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench summary eval\rubric_l1v2_qwen38flash_core_en.json --repeats 1
+```
+
+两批结果合并在 `eval/text_workflow_l1v2_qwen38flash_core_en_result.json` 里，`merged_from` 字段记录每题来自哪一批：
+
+- 46 题来自 `..._rest46_core_en_result.json`；
+- `wrench`、`gear_disc`、`mug`、`socket_bolt` 来自 `..._fail5_core_en_result.json`，其中的 `phone_stand` 是续跑过的，不用。
+
+合并后的 STEP 复制到 `eval/artifacts/text_workflow_l1v2_qwen38flash_core_en_result/`，离线重打的分数与结果 JSON 里的 `rubric` 字段逐题一致。
+
+| 零件类型 | 任务数 | 均分 | pass@1 | 平均 token | 平均 LLM 调用 | 平均耗时 |
+|---|---|---|---|---|---|---|
+| 日常物品 | 9 | 93.3 | 0.78 | 199.0k | 9.4 | 1289 s |
+| 常见机加工件 | 19 | 97.8 | 0.89 | 78.1k | 5.2 | 208 s |
+| 多特征零件 | 8 | 81.3 | 0.75 | 139.1k | 8.6 | 104 s |
+| 特定操作零件 | 14 | 100 | 1.0 | 86.1k | 5.6 | 53 s |
+| **全部 50 题** | **50** | **95.0**（95% CI [90.2, 98.9]） | **0.88**（44/50） | 111.8k | 6.6 | 343 s |
+
+核心形体率 0.96（48/50），共用 559 万 token，总耗时 4.8 小时。这一轮服务端有一段时间明显变慢，单次调用 100–200 s（例如 `flange` 只用 4 次调用却花了 276 s），耗时不能和 6.2 节直接比。
+
+不合格的 6 题：
+
+| 任务 | rubric 分 | 6.2 节 | LLM 调用 | 未通过的条目 |
+|---|---|---|---|---|
+| `fork_end` | 22.2 | 100 | 12 | outer, shank, block, ears, ear_tips, pin_hole, volume（核心形体失败） |
+| `twin_arm_rocker` | 28.6 | 100 | 8 | outer, hub, plates, profile, volume（核心形体失败） |
+| `key` | 60 | 100 | 7 | ring_hole, teeth |
+| `gear_disc` | 75 | 75 | 7 | slots |
+| `phone_stand` | 80 | 90 | 28 | ribs, vents |
+| `socket_bolt` | 83.3 | 83.3 | 7 | neck_fillet |
+
+和 6.2 节相比，均分 97.8 → 95.0，合格 45 → 44：
+
+- `wrench`（60 → 100）、`mug`（80 → 100）修好了；
+- `gear_disc`、`socket_bolt` 分数没变。`socket_bolt` 未通过的条目从 socket 变成了 neck_fillet；
+- `key`、`fork_end`、`twin_arm_rocker` 从满分变成不合格，`phone_stand` 从 90 降到 80。新失败题的原因分析见 7.6 节。
 
 ---
 
@@ -441,7 +504,7 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench summary eval\rubric_l1v2_
 | 二级门格海绵 `menger_sponge` | 7 | 两级分形挖孔（共 27 个方孔）必须全部贯穿且位置准确 |
 | 万向节叉 `u_joint_yoke` | 9 | 双叉臂与同轴十字轴承孔、半圆叉头、孔内键槽与径向紧定螺钉孔、叉臂外侧的轴承盖螺孔 |
 
-22 题共 217 个显式条目，配了 50 个针对性错误变体（相位转错、方向反了、少一级特征、孔不通等），每个都恰好在预期条目上失败。连同前 8 题，困难子集共 30 题、304 个条目、73 个错误变体。下面 Qwen 的参考结果只覆盖前 8 题；22 道新题上 claude-sonnet-5 的结果见 7.2 节，GPT-6-Astra 的结果见 7.3 节；claude-sonnet-5 + L1_v2 在全部 30 题上的结果见 7.4 节；自部署 Qwen3.8-Flash-Next-FP8 + L1_v2 的结果见 7.5 节。
+22 题共 217 个显式条目，配了 50 个针对性错误变体（相位转错、方向反了、少一级特征、孔不通等），每个都恰好在预期条目上失败。连同前 8 题，困难子集共 30 题、304 个条目、73 个错误变体。下面 Qwen 的参考结果只覆盖前 8 题；22 道新题上 claude-sonnet-5 的结果见 7.2 节，GPT-6-Astra 的结果见 7.3 节；claude-sonnet-5 + L1_v2 在全部 30 题上的结果见 7.4 节；自部署 Qwen3.8-Flash-Next-FP8 + L1_v2 的结果见 7.5 节，修复 prompt 后用英文题面重跑的结果见 7.6 节。
 
 除了 OCC 参考实体，22 道新题还在 SolidWorks 里用 L1 的 24 个工具逐题建了一遍参考解（`LLMPlanner/eval/hard_l1_reference.py`，只调用模型能拿到的同一套工具），22 题全部 100 分，说明每道题在这套工具下都是可解的。其中最绕的是火箭尾段：`ref_plane` 只能建平行偏移面，45° 方位的尾翼要先阵列 8 片、再切掉 4 片。
 
@@ -757,6 +820,83 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py --action-le
 - 脚本打印的旧版近似分是 96.25、26/30 合格，不作为结果。
 
 把 6.2 节的 50 题和这 30 题合在一起，80 题 rubric 均分 96.8，68/80 合格，核心形体 79/80，共 1559 万 token。
+
+### 7.6 修复 prompt 后用英文题面重跑全部 30 题（2026-10-08）
+
+设置、代码版本（5f0d673）、英文题面和“每题只计一次没有中断的运行”的规则都与 6.3 节相同。
+
+两批结果合并在 `eval/text_workflow_l1v2_qwen38flash_hard_en_result.json`：
+
+- 23 题来自 `..._rest23_hard_en_result.json`；
+- 7.5 节不合格的 7 题来自 `..._fail7_hard_en_result.json`。
+
+rubric 打分是 `eval/rubric_l1v2_qwen38flash_hard_en.json`（`--rubric-dir eval\rubrics_hard`），均分和置信区间的算法同 7.5 节。
+
+| 均分 | pass@1 | 核心形体率 | 平均 token | 平均 LLM 调用 | 平均工具调用 | 平均耗时 |
+|---|---|---|---|---|---|---|
+| 96.1（95% CI [92.7, 98.9]） | 0.80（24/30） | 1.0（30/30） | 288k | 13.7（无一题用满 40 次） | 16.7 | 558 s |
+
+分组来看：
+
+- 前 8 题：均分 95.1，6/8 合格；
+- 加难 22 题：均分 96.5，18/22 合格。
+
+不合格的 6 题：
+
+| 任务 | rubric 分 | 7.5 节 | LLM 调用 | 未通过的条目 |
+|---|---|---|---|---|
+| `pipe_manifold` | 63.6 | 100 | 18 | branches, branch_bores, drain, volume |
+| `handwheel` | 77.8 | 66.7 | 17 | spokes, volume |
+| `crankshaft` | 78.6 | 78.6 | 30 | phasing, counterweights, volume |
+| `connecting_rod` | 83.3 | 100 | 8 | centerline, oil_hole |
+| `spiral_staircase` | 90 | 90 | 10 | column |
+| `turbine_disk` | 90 | 70 | 9 | dovetail |
+
+和 7.5 节相比，均分 95.1 → 96.1，合格 23 → 24：
+
+- 修好了 3 题：`geneva_wheel`（88.9 → 100）、`planet_carrier`（81.8 → 100）、`rocket_fin_can`（77.8 → 100）；
+- 提高但仍不合格的 2 题：`turbine_disk`（70 → 90）、`handwheel`（66.7 → 77.8）；
+- 新失败的 2 题：`connecting_rod`、`pipe_manifold`（都从 100 降下来）。
+
+运行情况：
+
+- 30 题都由智能体自己 `finish`；12 次回复因长度截断，都放宽上限后自动重试；
+- 看门狗在 `gearbox_housing` 开始前重启过一次 SolidWorks；
+- 30 题共用 865 万 token，总耗时约 4.7 小时。
+
+**80 题合计**（6.3 节 50 题 + 本节 30 题）：
+
+- rubric 均分 95.4（95% CI [92.1, 98.0]），68/80 合格，核心形体 78/80；
+- 平均 9.3 次 LLM 调用，共 1424 万 token；
+- 对照 6.2 + 7.5 节：均分 96.8，68/80 合格，核心形体 79/80。
+
+修好的 7 题和新失败的 5 题正好抵消，所以合格数不变。
+
+**新失败的 5 题是否由 prompt 修改引起。** 这一轮的推理内容没有被服务端返回，只能从工具调用序列判断。每题只跑了 1 次，而且同时换了代码和题面语言，所以下面的判断不能区分 prompt 修改、语言切换和随机波动。
+
+| 任务 | 错在哪里 | 与新规则的关系 |
+|---|---|---|
+| `twin_arm_rocker` | 先拉伸 40 mm 轮毂，再把两块板贴在轮毂两端外侧（Z = −8~0 和 40~48），总长变成 56 mm。题面要求板的外侧面与轮毂端面齐平，即板在轮毂长度之内 | 可能有关。做法和新增的“双盘 + 立柱：先做贯通两盘间距的立柱，再贴合拉伸第二盘”一致，这条规则可能被套用到了“轮毂 + 两块板”上 |
+| `fork_end` | 叉根块画在 Y = 25~35，嵌进了杆顶，没有接在杆顶 Y = 35~45 上；总高少 10 mm，后面的特征全部跟着下移 | 无关，没有涉及新规则的特征 |
+| `key` | 把 10×5 环孔作为头部拉伸的内轮廓，随后从 x = 0 拉伸 42 mm 的杆，盖住了半个环孔；齿槽检查也随之失败 | 无关 |
+| `connecting_rod` | 油孔先切 5.5 mm，刚好通到销孔，这是对的；随后模型自己把深度改成 25.5 mm，穿过销孔，在对面孔壁上又切出 0.5 mm 的盲坑 | 关系不大。第一次的深度和新增的紧定螺钉孔规则一致，出错的是之后没有依据的修改 |
+| `pipe_manifold` | 支管从 Z = 0 起按空心管拉伸，排水凸台从 Z = 0 按实心拉伸，主管内腔里留下了多余材料，体积多 5.6%。7.5 节是先做完所有实体，最后统一开孔 | 无关，属于建模顺序错误 |
+
+新加的工具反馈在这 5 题里没有起误导作用：
+
+- “不等径 hull”提示在 80 题中触发了 7 题，模型都继续用 hull，这些题本来就应该用 hull；
+- “双盘 + 立柱”提示触发了 5 题，都不在这 5 道新失败题里。
+
+要区分这几种原因，可以在同一代码下用 `--lang zh` 重跑这 5 题，或在 d44ebf2 代码下用 `--lang en` 重跑这 5 题，每题多跑几次。
+
+**不合格的 12 题有没有受外部因素影响。** 都没有：
+
+- 全部由智能体自己 `finish`，没有 LLM 接口错误、`context_exceeded` 或续跑；
+- LLM 调用最多 30 次，没有用满 40 次；
+- 工具返回里没有 SolidWorks 连接或 COM 异常；
+- 两次看门狗重启都发生在题目开始前（`phone_stand` 和 `gearbox_housing`）。
+
+截断的回复（`phone_stand` 2 次，`pipe_manifold`、`crankshaft`、`turbine_disk` 各 1 次）都放宽上限后自动重试了。`fork_end` 有一次工具参数不是合法 JSON，`pipe_manifold` 有一次 cut 漏了 `loops`，都被工具拒绝后由模型改正了参数。这 12 题的失败都是模型自身的建模错误。
 
 ---
 
