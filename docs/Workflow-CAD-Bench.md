@@ -896,7 +896,70 @@ rubric 打分是 `eval/rubric_l1v2_qwen38flash_hard_en.json`（`--rubric-dir eva
 - 工具返回里没有 SolidWorks 连接或 COM 异常；
 - 两次看门狗重启都发生在题目开始前（`phone_stand` 和 `gearbox_housing`）。
 
-截断的回复（`phone_stand` 2 次，`pipe_manifold`、`crankshaft`、`turbine_disk` 各 1 次）都放宽上限后自动重试了。`fork_end` 有一次工具参数不是合法 JSON，`pipe_manifold` 有一次 cut 漏了 `loops`，都被工具拒绝后由模型改正了参数。这 12 题的失败都是模型自身的建模错误。
+截断的回复（`phone_stand` 2 次，`pipe_manifold`、`crankshaft`、`turbine_disk` 各 1 次）都放宽上限后自动重试了。`fork_end` 有一次工具参数不是合法 JSON，`pipe_manifold` 有一次 cut 漏了 `loops`，都被工具拒绝后由模型改正了参数。
+
+### 7.7 不合格 12 题的逐题原因和系统修正（2026-10-08）
+
+逐题查看了 6.3 和 7.6 节不合格 12 题的建模轨迹。其中 3 题是系统缺陷，2 题是检查器缺陷，5 题可以用 prompt 规则覆盖，2 题是模型自身错误。
+
+| 任务 | 原因 | 类别 | 修正 |
+|---|---|---|---|
+| `socket_bolt` | 头杆交线的圆角用射线选边，选中的却是杆底的边。`SelectByRay` 会选射线 2 mm 以内的任意一条边，包括原点背后的边 | 系统 | 射线选边 |
+| `handwheel` | 有三处问题：<br>• 轮辐画成中面上的长圆再拉伸，得到两面平的扁条，不是圆柱；<br>• `circular_pattern` 的 `angle_deg=72` 被当成相邻间隔，实际是总角度，5 根轮辐挤在 72° 内；<br>• `edit_feature` 改角度时数值按 mm 换算 | 系统 + prompt | 阵列参数检查、`edit_feature` 单位、轮辐规则 |
+| `gear_disc` | 槽内缘正好在 r = 18，`min_r_in` 用严格比较，判为不合格 | 检查器 | 加长度容差 |
+| `spiral_staircase` | SolidWorks 把顶部半球回转成大半径 1.17e-5 mm 的退化圆环面，检查器没认出是球面 | 检查器 | 退化圆环面按球面分类 |
+| `turbine_disk` | 为了切透把榫槽轮廓延长到 r = 131，但把 10 mm 槽口宽度画在了 131 处，题面要求在 130 处 | prompt | 延长切除轮廓时沿原边线方向延长 |
+| `twin_arm_rocker` | 两块板贴在轮毂两端外侧 | prompt | 说明“板外侧面与轮毂端面齐平”的含义 |
+| `fork_end` | 叉根块嵌进杆顶，没有接在杆的端面上 | prompt | 题面给出的相邻各段首尾相接 |
+| `key` | 杆的拉伸把环孔重新填上了 | prompt | 被凸台盖住的孔最后再开 |
+| `pipe_manifold` | 空心支管和凸台拉进了主管内腔 | prompt | 同上 |
+| `connecting_rod` | 油孔深度被模型自己改成 25.5 mm，穿过销孔又切到对面孔壁 | prompt | 钻到孔为止，钻通后不再加深 |
+| `crankshaft` | 曲拐 A 的第二块曲柄臂朝向 −38，与第一块不一致 | 模型 | 无 |
+| `phone_stand` | 筋板放在板宽以内；通风孔开在 X = −14 的平面上，穿过了斜板 | 模型 | 无 |
+
+**系统修正**
+
+- **射线选边**（`SwCommands.Helpers.cs` 的 `SelectEdgeByRayHit`）：
+  - 用 `RayIntersections` 求射线与实体的第一个交点（t ≥ 0）；
+  - 交点在边上就选这条边，在面或顶点上就选离交点最近的边；
+  - 没有交点时才退回 `SelectByRay`。
+  - `fillet`、`chamfer` 的 `ray` 选边和 `SelectEdgesByRays` 都改用这个函数。
+- **`edit_feature` 单位**：
+  - 服务端按尺寸类型换算：长度用 mm，角度用度，计数不换算；
+  - 返回 `old_value_mm` / `old_value_deg` 等带单位的字段。
+- **`circular_pattern` 参数**：
+  - 说明 `angle_deg` 是阵列覆盖的总角度，默认 360；
+  - `angle_deg × count = 360` 且 `angle_deg < 360` 时，判为把间隔当成了总角度，拒绝执行。
+
+**检查器修正**
+
+- `ck_angular_openings` 的 `min_r_in` 比较加上 `tol_len`；
+- `occ_part._classify_face` 把大半径小于 `_POS_EPS` 的圆环面按球面处理。
+
+**prompt 规则**（`SYSTEM_PROMPT_V2`）
+
+- 圆柱轮辐要在垂直于轮辐的平面上画圆，或者用扫掠的 `profile_diameter`；
+- 整圈阵列省略 `angle_deg`；
+- 切除轮廓伸出实体时，沿原边线方向延长；
+- 钻到某个孔的孔，深度为到孔壁的距离再加不超过 1 mm，钻通后不再加深；
+- “板的外侧面与轮毂端面齐平”表示板在轮毂长度之内；
+- 题面按区间或“上端接…”给出的相邻各段首尾相接；
+- 会被凸台盖住的孔和内腔放在凸台之后做；不确定时，先做完所有实体，最后统一开孔。
+
+**用修正后的检查器离线重算 6.3 和 7.6 节**
+
+结果在 `eval/rubric_l1v2_qwen38flash_{core_en,hard_en}_rescored.json`。只有两题的分数变化：
+
+- `gear_disc`：75 → 100；
+- `spiral_staircase`：90 → 100。
+
+| | 均分 | 合格 |
+|---|---|---|
+| 核心 50 题 | 95.0 → 95.5 | 44 → 45 |
+| 困难 30 题 | 96.1 → 96.4 | 24 → 25 |
+| 80 题合计 | 95.4 → 95.8 | 68 → 70 |
+
+系统和 prompt 修正需要重新跑 LLM 才能看到效果，本节还没有重跑。
 
 ---
 

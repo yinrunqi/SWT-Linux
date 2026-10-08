@@ -432,12 +432,17 @@ def test_edit_feature_validates_name():
 
     def request(method, path, body=None):
         if path == "/api/modify-dimension":
-            return {"success": True, "oldValue": 0.01, "newValue": body["newValue"]}
+            unit = "deg" if session.angular else "mm"
+            return {"success": True, "unit": unit, "oldValueUser": 10.0, "newValueUser": body["newValueUser"]}
         return PlaneSession._request(session, method, path, body)
 
     session._request = request
+    session.angular = False
     missing = session.call("edit_feature", {"name": "没有", "value": 20})
     assert missing["error"]["code"] == "TOOL_ARGS"
     ok = session.call("edit_feature", {"name": "凸台-拉伸1", "value": 20})
     assert ok["ok"] is True
-    assert ok["new_value_mm"] == 20.0
+    assert ok["new_value_mm"] == 20.0 and ok["old_value_mm"] == 10.0
+    session.angular = True
+    angle = session.call("edit_feature", {"name": "凸台-拉伸1", "value": 288})
+    assert angle["new_value_deg"] == 288.0 and "new_value_mm" not in angle

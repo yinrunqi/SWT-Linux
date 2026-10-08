@@ -423,6 +423,7 @@ def _build_specs_v2() -> list[dict]:
                 "把最近一个特征绕平行于 axis 的轴圆周阵列 count 份（含原特征）。center 为轴线经过的点 [x,y,z] mm，请总是给出；"
                 "缺省时自动找唯一的圆柱面。结果中 expected_delta_mm3 = 种子特征体积变化×(count−1)，与实际相差大说明有实例没生效。"
             ),
+            properties={"angle_deg": {"type": "number", "description": "阵列覆盖的总角度，默认 360（整圈均分）；不是相邻两份的间隔"}},
         ),
         "linear_pattern": dict(
             description="把最近一个特征沿 1~2 个坐标方向线性阵列（含原特征）。direction 如 +X / -Z。结果会核对体积是否等于种子×份数。",
@@ -487,7 +488,8 @@ def _build_specs_v2() -> list[dict]:
         ),
         "edit_feature": dict(
             description=(
-                "修改已有实体特征的尺寸（拉伸深度、筋厚、圆角半径等）。name 来自 get_model_state；value 单位 mm。"
+                "修改已有实体特征的第一个尺寸（拉伸深度、筋厚、圆角半径、阵列总角度等）。name 来自 get_model_state；"
+                "value 对长度尺寸是 mm，对角度尺寸是度；结果里的 old_value_mm / old_value_deg 标明了单位。"
                 "基准面不能用它修改，请直接用新的 \"Z=…\" 平面。"
             ),
         ),
@@ -1585,6 +1587,13 @@ class WorkflowSessionV2(WorkflowSession):
         return name
 
     def circular_pattern(self, args: dict) -> dict:
+        angle = self._num(args, "angle_deg", 360)
+        count = int(args.get("count") or 0)
+        if count >= 2 and angle < 360 and abs(angle * count - 360) < 1e-6:
+            raise WorkflowError(
+                "TOOL_ARGS", f"angle_deg={angle:g} 是阵列覆盖的总角度，不是相邻间隔；{count} 份会挤在 {angle:g}° 内",
+                hint=f"整圈均分 {count} 份请省略 angle_deg 或写 360。",
+            )
         center = self._resolve_numbers(args.get("center"))
         if not center:
             result = super().circular_pattern(args)

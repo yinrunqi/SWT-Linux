@@ -212,7 +212,7 @@ TOOL_SPECS: list[dict] = [
     ),
     _tool(
         "edit_feature",
-        "修改已有特征的尺寸（拉伸深度、筋厚、圆角半径等），不要删除重做。name 来自 get_model_state；value 单位 mm。",
+        "修改已有特征的尺寸（拉伸深度、筋厚、圆角半径等），不要删除重做。name 来自 get_model_state；value 对长度尺寸是 mm，对角度尺寸是度。",
         {"name": {"type": "string"}, "value": _NUM, "dimension": {"type": "string", "description": "尺寸名，缺省改该特征的第一个尺寸"}},
         ["name", "value"],
     ),
@@ -1170,15 +1170,16 @@ class WorkflowSession:
         data = self._request("POST", "/api/modify-dimension", {
             "featureName": name,
             "dimensionName": str(args.get("dimension") or ""),
-            "newValue": value / 1000,
+            "newValueUser": value,
         })
         if not data.get("success"):
             raise WorkflowError("FEATURE_FAILED", str(data.get("message") or "编辑特征失败"))
         after = self.snapshot()
+        unit = str(data.get("unit") or "mm")
         return {
             "edited": name,
-            "old_value_mm": _round(float(data.get("oldValue") or 0) * 1000),
-            "new_value_mm": _round(value),
+            f"old_value_{unit}": _round(float(data.get("oldValueUser") or 0)),
+            f"new_value_{unit}": _round(float(data.get("newValueUser") or value)),
             "volume_mm3": _round(self._volume(after), 2),
             "volume_delta_mm3": _round(self._volume(after) - self._volume(before), 2),
             "bbox_mm": self._bbox(after),

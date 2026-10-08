@@ -1473,9 +1473,10 @@ namespace Chapter1.ConnectToSw
                 var body = ReadJsonBody(req);
                 string featureName = GetString(body, "featureName");
                 string dimensionName = GetStringOrDefault(body, "dimensionName", "");
-                double newValue = GetDouble(body, "newValue");
+                bool userUnits = body.ContainsKey("newValueUser");
+                double newValue = userUnits ? GetDouble(body, "newValueUser") : GetDouble(body, "newValue");
 
-                var result = _commands.ModifyFeatureDimension(featureName, dimensionName, newValue);
+                var result = _commands.ModifyFeatureDimension(featureName, dimensionName, newValue, userUnits);
                 SendJson(resp, 200, new
                 {
                     success = true,
@@ -1484,6 +1485,9 @@ namespace Chapter1.ConnectToSw
                     dimensionName = result["dimensionName"],
                     oldValue = result["oldValue"],
                     newValue = result["newValue"],
+                    unit = result["unit"],
+                    oldValueUser = result["oldValueUser"],
+                    newValueUser = result["newValueUser"],
                 });
             }
             catch (KeyNotFoundException ex)

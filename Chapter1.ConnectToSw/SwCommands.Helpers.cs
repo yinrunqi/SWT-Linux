@@ -13,6 +13,73 @@ namespace Chapter1.ConnectToSw
         #region 辅助方法
 
         /// <summary>
+        /// 射线选边：取射线正方向上第一个命中的面，选中该面上离命中点最近的边（命中点落在边上时就是这条边）。
+        /// SelectByRay 按“离射线 2mm 内的边”选，射线贴着别的面掠过或两条边离射线一样近时会选错，
+        /// 例如沿杆身射向螺栓头底面会选中杆的另一端圆边。射线没命中实体时才退回 SelectByRay。
+        /// </summary>
+        private bool SelectEdgeByRayHit(IModelDocExtension ext, double rx, double ry, double rz,
+            double dx, double dy, double dz, bool append)
+        {
+            var bodies = (ActiveDoc as IPartDoc)?.GetBodies2((int)swBodyType_e.swSolidBody, true) as object[];
+            double len = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+            if (bodies != null && bodies.Length > 0 && len > 1e-12)
+            {
+                double ux = dx / len, uy = dy / len, uz = dz / len;
+                var wrapped = bodies.Select(b => new System.Runtime.InteropServices.DispatchWrapper(b)).ToArray();
+                int n = ext.RayIntersections(wrapped, new[] { rx, ry, rz }, new[] { ux, uy, uz },
+                    (int)(swRayPtsOpts_e.swRayPtsOptsTOPOLS | swRayPtsOpts_e.swRayPtsOptsNORMALS), 1e-7, 0, false);
+                var points = n > 0 ? ActiveDoc.GetRayIntersectionsPoints() as double[] : null;
+                var topology = n > 0 ? ActiveDoc.GetRayIntersectionsTopology() as object[] : null;
+                int best = -1;
+                double bestT = double.MaxValue;
+                for (int i = 0; points != null && topology != null && i < n && i < topology.Length && 9 * i + 5 < points.Length; i++)
+                {
+                    double t = (points[9 * i + 3] - rx) * ux + (points[9 * i + 4] - ry) * uy + (points[9 * i + 5] - rz) * uz;
+                    if (t >= -1e-9 && t < bestT)
+                    {
+                        bestT = t;
+                        best = i;
+                    }
+                }
+                if (best >= 0)
+                {
+                    double hx = points[9 * best + 3], hy = points[9 * best + 4], hz = points[9 * best + 5];
+                    IEdge edge = topology[best] as IEdge;
+                    if (edge == null && topology[best] is IFace2 face)
+                        edge = NearestEdge(face.GetEdges() as object[], hx, hy, hz);
+                    if (edge == null && topology[best] is IVertex vertex)
+                        edge = NearestEdge(vertex.GetEdges() as object[], hx, hy, hz);
+                    if (edge != null && ((IEntity)edge).Select4(append, null))
+                    {
+                        Console.WriteLine($"[SwCommands] 射线命中点 ({hx * 1000:F2},{hy * 1000:F2},{hz * 1000:F2})mm，选中离它最近的边");
+                        return true;
+                    }
+                }
+            }
+            return ext.SelectByRay(rx, ry, rz, dx, dy, dz, 0.002, (int)swSelectType_e.swSelEDGES, append, 0, 0);
+        }
+
+        private static IEdge NearestEdge(object[] edges, double x, double y, double z)
+        {
+            IEdge best = null;
+            double bestD = double.MaxValue;
+            foreach (object item in edges ?? new object[0])
+            {
+                var edge = item as IEdge;
+                var p = edge?.GetClosestPointOn(x, y, z) as double[];
+                if (p == null || p.Length < 3)
+                    continue;
+                double d = (p[0] - x) * (p[0] - x) + (p[1] - y) * (p[1] - y) + (p[2] - z) * (p[2] - z);
+                if (d < bestD)
+                {
+                    bestD = d;
+                    best = edge;
+                }
+            }
+            return best;
+        }
+
+        /// <summary>
         /// 根据语义化边位置名称（如 "top_front", "bottom_left" 等）自动计算射线参数并选中对应的边。
         /// 
         /// 支持的位置名称格式为 "面1_面2"，表示两个面的交线（即边）。
@@ -69,8 +136,7 @@ namespace Chapter1.ConnectToSw
 
             Console.WriteLine($"[SwCommands] {featureLabel}: 计算射线 起点({rx:F4},{ry:F4},{rz:F4}) 方向({dx:F4},{dy:F4},{dz:F4})");
 
-            bool sel = ext.SelectByRay(rx, ry, rz, dx, dy, dz, 0.002,
-                (int)swSelectType_e.swSelEDGES, false, 0, 0);
+            bool sel = SelectEdgeByRayHit(ext, rx, ry, rz, dx, dy, dz, false);
 
             if (!sel)
                 throw new InvalidOperationException(

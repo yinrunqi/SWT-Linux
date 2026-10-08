@@ -502,9 +502,10 @@ namespace Chapter1.ConnectToSw
         /// 修改指定特征的尺寸值。
         /// featureName: 特征名称（如 "Boss-Extrude1" / "凸台-拉伸1"）
         /// dimensionName: 尺寸名称（如 "D1"），如果为空则修改该特征的第一个尺寸
-        /// newValue: 新的尺寸值，单位：米
+        /// newValue: 新的尺寸值，单位：米（userUnits=true 时为 mm，角度尺寸为度，计数尺寸为个数）
         /// </summary>
-        public Dictionary<string, object> ModifyFeatureDimension(string featureName, string dimensionName, double newValue)
+        public Dictionary<string, object> ModifyFeatureDimension(string featureName, string dimensionName, double newValue,
+            bool userUnits = false)
         {
             EnsureActiveDoc();
 
@@ -585,6 +586,14 @@ namespace Chapter1.ConnectToSw
 
             Console.WriteLine($"[SwCommands] 尺寸旧值: {oldValue:F6} 米 (原始类型: {rawValue?.GetType().Name})");
 
+            int dimType = targetDim.GetType();
+            string unit = dimType == (int)swDimensionParamType_e.swDimensionParamTypeDoubleAngular ? "deg"
+                : dimType == (int)swDimensionParamType_e.swDimensionParamTypeInteger ? "count" : "mm";
+            double userScale = unit == "deg" ? 180.0 / Math.PI : unit == "count" ? 1.0 : 1000.0;
+            double oldUser = oldValue * userScale;
+            if (userUnits)
+                newValue /= userScale;
+
             // 设置新值
             int retCode = targetDim.SetSystemValue3(
                 newValue,
@@ -611,7 +620,10 @@ namespace Chapter1.ConnectToSw
                 { "dimensionName", resolvedDimName },
                 { "oldValue", oldValue },
                 { "newValue", newValue },
-                { "message", $"已修改 {featureName} 的 {resolvedDimName}: {oldValue:F4} -> {newValue:F4} 米" },
+                { "unit", unit },
+                { "oldValueUser", oldUser },
+                { "newValueUser", newValue * userScale },
+                { "message", $"已修改 {featureName} 的 {resolvedDimName}: {oldUser:G6} -> {newValue * userScale:G6} {unit}" },
             };
         }
 
@@ -688,9 +700,8 @@ namespace Chapter1.ConnectToSw
             else if (edgeSelection.ToLower() == "ray")
             {
                 // 通过射线选中边
-                Console.WriteLine($"[SwCommands] 圆角: 射线选边 起点({rx},{ry},{rz}) 方向({dx},{dy},{dz}) 容差=0.002m");
-                bool sel = ext.SelectByRay(rx, ry, rz, dx, dy, dz, 0.002,
-                    (int)swSelectType_e.swSelEDGES, false, 0, 0);
+                Console.WriteLine($"[SwCommands] 圆角: 射线选边 起点({rx},{ry},{rz}) 方向({dx},{dy},{dz})");
+                bool sel = SelectEdgeByRayHit(ext, rx, ry, rz, dx, dy, dz, false);
                 if (!sel)
                 {
                     // 输出包围盒帮助调试
@@ -833,8 +844,7 @@ namespace Chapter1.ConnectToSw
                 var r = rays[i];
                 if (r == null || r.Length != 6)
                     throw new ArgumentException($"rays[{i}] 须为 [rx,ry,rz,dx,dy,dz]");
-                bool selected = ext.SelectByRay(r[0], r[1], r[2], r[3], r[4], r[5], 0.002,
-                    (int)swSelectType_e.swSelEDGES, i > 0, 0, 0);
+                bool selected = SelectEdgeByRayHit(ext, r[0], r[1], r[2], r[3], r[4], r[5], i > 0);
                 if (!selected)
                     throw new InvalidOperationException(
                         $"第 {i + 1} 条射线未命中任何边：起点({r[0]},{r[1]},{r[2]}) 方向({r[3]},{r[4]},{r[5]})");
@@ -910,9 +920,8 @@ namespace Chapter1.ConnectToSw
             }
             else if (edgeSelection.ToLower() == "ray")
             {
-                Console.WriteLine($"[SwCommands] 倒角: 射线选边 起点({rx},{ry},{rz}) 方向({dx},{dy},{dz}) 容差=0.002m");
-                bool sel = ext.SelectByRay(rx, ry, rz, dx, dy, dz, 0.002,
-                    (int)swSelectType_e.swSelEDGES, false, 0, 0);
+                Console.WriteLine($"[SwCommands] 倒角: 射线选边 起点({rx},{ry},{rz}) 方向({dx},{dy},{dz})");
+                bool sel = SelectEdgeByRayHit(ext, rx, ry, rz, dx, dy, dz, false);
                 if (!sel)
                 {
                     string bboxInfo = "";

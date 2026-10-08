@@ -150,6 +150,12 @@ def test_v2_prompt_covers_failure_patterns():
     assert "双盘" in SYSTEM_PROMPT_V2
     assert "环形把手" in SYSTEM_PROMPT_V2
     assert "等宽手柄" not in SYSTEM_PROMPT
+    assert "两面平的扁条" in SYSTEM_PROMPT_V2
+    assert "沿原边线的方向延长" in SYSTEM_PROMPT_V2
+    assert "首尾相接" in SYSTEM_PROMPT_V2
+    assert "最后统一开孔" in SYSTEM_PROMPT_V2
+    assert "钻通后不要再加深" in SYSTEM_PROMPT_V2
+    assert "外侧面就是轮毂端面" in SYSTEM_PROMPT_V2
 
 
 def test_half_arc_with_center_only_must_give_ccw():
@@ -527,6 +533,16 @@ def test_pattern_volume_is_checked_against_seed():
     assert session.ran[-1][0]["params"]["axisFeature"] == session.features[-3]
     session.call("circular_pattern", {"count": 6, "axis": "Y", "center": [0, 5, 0]})
     assert len([1 for path, _ in session.requests if path == "/api/ref-axis/planes"]) == 1
+
+
+def test_circular_pattern_rejects_spacing_given_as_total_angle():
+    session = FakeV2(delta=-100)
+    session.call("hole", {"plane": "top", "centers": [[20, 0]], "diameter": 5, "depth": 3})
+    result = session.call("circular_pattern", {"count": 5, "axis": "Y", "center": [0, 0, 0], "angle_deg": 72})
+    assert result["error"]["code"] == "TOOL_ARGS"
+    assert "总角度" in result["error"]["message"]
+    partial = session.call("circular_pattern", {"count": 3, "axis": "Y", "center": [0, 0, 0], "angle_deg": 90})
+    assert partial["ok"] is True
 
 
 def test_face_sketch_selects_observed_face_directly():

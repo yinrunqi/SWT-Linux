@@ -216,6 +216,10 @@ def _classify_face(face) -> Surf:
     if kind == GeomAbs_Torus:
         tor = ad.Torus()
         o, d = _np(tor.Axis().Location()), canon_dir(_np(tor.Axis().Direction()))
+        if tor.MajorRadius() < _POS_EPS:
+            # 圆弧圆心离转轴只差舍入误差时 SolidWorks 回转出大半径≈0 的圆环面，几何上是球面
+            side = "outer" if np.dot(n, p - o) > 0 else "inner"
+            return Surf("sphere", side, tor.MinorRadius() + tor.MajorRadius(), axis_o=o, area=area, points=pts)
         radial = unit((p - o) - np.dot(p - o, d) * d)
         tube_center = o + tor.MajorRadius() * radial
         side = "outer" if np.dot(n, p - tube_center) > 0 else "inner"

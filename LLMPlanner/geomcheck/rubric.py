@@ -1324,7 +1324,7 @@ def ck_angular_openings(ctx: Ctx, a) -> Result:
                     and ((o["r_out"] is None) == (ref["r_out"] is None)) \
                     and (o["r_out"] is None or ctx.near(o["r_out"], ref["r_out"]))
         if "min_r_in" in a:
-            ok = ok and all(o["r_in"] >= a["min_r_in"] for o in openings)
+            ok = ok and all(o["r_in"] >= a["min_r_in"] - ctx.tol_len for o in openings)
         per_t.append({
             "t": t, "r": _r(r), "count": len(openings), "gaps_deg": [_r(g, 2) for g in gaps],
             "arc_deg": [_r(o["arc_deg"], 2) for o in openings], "chord": [_r(o["chord"]) for o in openings],
