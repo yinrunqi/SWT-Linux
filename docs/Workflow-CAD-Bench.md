@@ -980,6 +980,54 @@ rubric 打分是 `eval/rubric_l1v2_qwen38flash_hard_en.json`（`--rubric-dir eva
 
 上面的离线重算只用了评测时导出的 STEP，所以 `socket_bolt` 仍按 83.3 计入。系统和 prompt 修正的效果需要重新跑 LLM 才能看到，本节还没有重跑。
 
+### 7.8 修正系统后完整重跑 80 题（2026-10-08）
+
+在 7.7 节的系统、检查器和 prompt 修正全部合入后，仍使用 Qwen3.8-Flash-Next-FP8、英文题面、`L1_v2`、`reasoning_effort=medium`、最多 40 次 LLM 调用和每题 1 次运行，重新跑完全部 80 题。
+
+运行分两步进行：
+
+- 先重跑上一组经修正检查器判为不合格的 10 题，结果在 `eval/text_workflow_l1v2_qwen38flash_fix5_{core_en,hard_en}_result.json`；
+- 再重跑原来合格的 70 题，结果在 `eval/text_workflow_l1v2_qwen38flash_pass{45_core_en,25_hard_en}_result.json`。
+
+最终按题目合并为：
+
+- `eval/text_workflow_l1v2_qwen38flash_v3_core_en_result.json`（50 题）；
+- `eval/text_workflow_l1v2_qwen38flash_v3_hard_en_result.json`（30 题）。
+
+合并结果的 `merged_from` 字段记录了每题来自哪一批。STEP 用修正后的检查器重新打分，结果在 `eval/rubric_l1v2_qwen38flash_v3_{core_en,hard_en}.json`；离线重打分与结果 JSON 中保存的 rubric 分数逐题一致。
+
+| 题集 | 均分（95% CI） | pass@1 | 核心形体率 | 平均 token | 平均 LLM 调用 | 平均工具调用 | 平均耗时 |
+|---|---|---|---|---|---|---|---|
+| 核心 50 题 | 98.5（[96.7, 100.0]） | 0.94（47/50） | 1.0（50/50） | 109k | 6.4 | 6.9 | 91 s |
+| 困难 30 题 | 95.7（[89.6, 99.5]） | 0.87（26/30） | 0.97（29/30） | 247k | 11.9 | 16.0 | 465 s |
+| **80 题合计** | **97.5（[94.9, 99.3]）** | **0.91（73/80）** | **0.99（79/80）** | **161k** | **8.5** | **10.3** | **231 s** |
+
+80 题共用 1285 万 token，总耗时约 5.2 小时。没有一题用满 40 次 LLM 调用；最多的是 39 次。
+
+与 6.3 + 7.6 节的原始结果相比：
+
+| | 均分 | 合格 | 核心形体 |
+|---|---:|---:|---:|
+| 修正前（6.3 + 7.6） | 95.4 | 68/80 | 78/80 |
+| 仅修正检查器后（7.7） | 95.8 | 70/80 | 78/80 |
+| 修正系统后完整重跑 | **97.5** | **73/80** | **79/80** |
+
+最终不合格的 7 题：
+
+| 任务 | rubric 分 | LLM 调用 | 未通过的条目 |
+|---|---:|---:|---|
+| `phone_stand` | 70.0 | 31 | plate, u_slot, vents, plate_leans_back |
+| `rounded_stool` | 71.4 | 10 | legs, leg_position |
+| `vase` | 83.3 | 5 | profile |
+| `cold_plate` | 80.0 | 8 | seal_groove, volume |
+| `connecting_rod` | 83.3 | 18 | centerline, oil_hole |
+| `crankshaft` | 85.7 | 11 | journals, volume |
+| `handwheel` | 22.2 | 11 | outer, rim, hub, spokes, handle, knob, volume（核心形体失败） |
+
+其中 `rounded_stool`、`vase`、`cold_plate` 在上一组中合格，这次单次运行没有合格；`key`、`socket_bolt`、`fork_end`、`twin_arm_rocker`、`pipe_manifold` 和 `turbine_disk` 则由不合格变为 100 分。每题只运行 1 次，因此不能把这 3 道回退与随机波动区分开。
+
+**外部因素检查。** 80 次最终采用的运行都由智能体自己 `finish`，没有 LLM 接口错误、从检查点续跑、Web 连接错误或 SolidWorks COM 异常。运行过程中因电脑休眠而中断的 `crankshaft` 没有计入结果；恢复后删除检查点，从空零件重新跑完。5 次回复因长度截断，均由智能体放宽输出上限后在同一次运行内自动重试，不影响建模状态。
+
 ---
 
 ## 8. 极难子集：20 道最难题（extreme）
