@@ -49,7 +49,11 @@ def build_steps(llm_responses: list[Any] | None, tool_log: list[dict]) -> list[d
         for turn, response in enumerate(llm_responses, 1):
             if not isinstance(response, dict):
                 continue
-            message = (response.get("choices") or [{}])[0].get("message") or {}
+            choice = (response.get("choices") or [{}])[0]
+            if choice.get("finish_reason") == "length":
+                # 截断的回复被智能体丢弃后重试，其中的工具调用没有执行
+                continue
+            message = choice.get("message") or {}
             calls = message.get("tool_calls") or []
             text = {"content": message.get("content") or "", "reasoning": message.get("reasoning_content") or ""}
             if not calls:

@@ -12,10 +12,15 @@ namespace Chapter1.ConnectToSw
     {
         #region 辅助方法
 
+        private const double RayEdgeRadius = 0.002;
+
         /// <summary>
         /// 射线选边：取射线正方向上第一个命中的面，选中该面上离命中点最近的边（命中点落在边上时就是这条边）。
-        /// SelectByRay 按“离射线 2mm 内的边”选，射线贴着别的面掠过或两条边离射线一样近时会选错，
-        /// 例如沿杆身射向螺栓头底面会选中杆的另一端圆边。射线没命中实体时才退回 SelectByRay。
+        /// 以下两种情况改选射线正方向上最先经过、离射线 2mm 内的边：
+        /// 射线在命中之前已经掠过这条边（例如贴着型腔内壁射下去，先经过口部内缘，再打到腔底）；
+        /// 命中点 2mm 内没有边（射线从实体外掠过目标棱，先撞上了别的面）。
+        /// 两种都找不到就不选，不退回 SelectByRay：它也按“离射线 2mm 内的边”选，但不分射线前后、
+        /// 两条边一样近时随意取，例如沿杆身射向螺栓头底面会选中杆的另一端圆边。
         /// </summary>
         private bool SelectEdgeByRayHit(IModelDocExtension ext, double rx, double ry, double rz,
             double dx, double dy, double dz, bool append)
@@ -25,6 +30,7 @@ namespace Chapter1.ConnectToSw
             if (bodies != null && bodies.Length > 0 && len > 1e-12)
             {
                 double ux = dx / len, uy = dy / len, uz = dz / len;
+                IEdge passing = EdgeAlongRay(bodies, rx, ry, rz, ux, uy, uz, out double passD, out double passT);
                 var wrapped = bodies.Select(b => new System.Runtime.InteropServices.DispatchWrapper(b)).ToArray();
                 int n = ext.RayIntersections(wrapped, new[] { rx, ry, rz }, new[] { ux, uy, uz },
                     (int)(swRayPtsOpts_e.swRayPtsOptsTOPOLS | swRayPtsOpts_e.swRayPtsOptsNORMALS), 1e-7, 0, false);
@@ -45,21 +51,73 @@ namespace Chapter1.ConnectToSw
                 {
                     double hx = points[9 * best + 3], hy = points[9 * best + 4], hz = points[9 * best + 5];
                     IEdge edge = topology[best] as IEdge;
+                    double hitD = 0;
                     if (edge == null && topology[best] is IFace2 face)
-                        edge = NearestEdge(face.GetEdges() as object[], hx, hy, hz);
+                        edge = NearestEdge(face.GetEdges() as object[], hx, hy, hz, out hitD);
                     if (edge == null && topology[best] is IVertex vertex)
-                        edge = NearestEdge(vertex.GetEdges() as object[], hx, hy, hz);
-                    if (edge != null && ((IEntity)edge).Select4(append, null))
+                        edge = NearestEdge(vertex.GetEdges() as object[], hx, hy, hz, out hitD);
+                    bool passedFirst = passing != null && passT < bestT - 1e-4;
+                    if (edge != null && !passedFirst && hitD <= RayEdgeRadius && ((IEntity)edge).Select4(append, null))
                     {
-                        Console.WriteLine($"[SwCommands] 射线命中点 ({hx * 1000:F2},{hy * 1000:F2},{hz * 1000:F2})mm，选中离它最近的边");
+                        Console.WriteLine($"[SwCommands] 射线命中点 ({hx * 1000:F2},{hy * 1000:F2},{hz * 1000:F2})mm，选中离它 {hitD * 1000:F2}mm 的边");
                         return true;
                     }
                 }
+                if (passing != null && ((IEntity)passing).Select4(append, null))
+                {
+                    Console.WriteLine($"[SwCommands] 射线在 t={passT * 1000:F2}mm 处离边 {passD * 1000:F2}mm，选中这条边");
+                    return true;
+                }
+                return false;
             }
-            return ext.SelectByRay(rx, ry, rz, dx, dy, dz, 0.002, (int)swSelectType_e.swSelEDGES, append, 0, 0);
+            return ext.SelectByRay(rx, ry, rz, dx, dy, dz, RayEdgeRadius, (int)swSelectType_e.swSelEDGES, append, 0, 0);
         }
 
-        private static IEdge NearestEdge(object[] edges, double x, double y, double z)
+        /// <summary>
+        /// 射线正方向（t ≥ 0）上离射线不超过 RayEdgeRadius 的边里，沿射线最先经过的一条。
+        /// 不取离射线最近的：斜着掠过一排棱时，远处的棱可能比目标棱离射线更近。
+        /// 边与射线的最近点用交替投影求：边上取离射线点最近的点，再投回射线。
+        /// </summary>
+        private static IEdge EdgeAlongRay(object[] bodies, double ox, double oy, double oz,
+            double ux, double uy, double uz, out double bestD, out double bestT)
+        {
+            IEdge best = null;
+            bestD = double.MaxValue;
+            bestT = double.MaxValue;
+            foreach (IBody2 body in bodies.OfType<IBody2>())
+            {
+                foreach (object item in body.GetEdges() as object[] ?? new object[0])
+                {
+                    if (!(item is IEdge edge))
+                        continue;
+                    double t = 0, d = double.MaxValue;
+                    for (int k = 0; k < 12; k++)
+                    {
+                        var p = edge.GetClosestPointOn(ox + t * ux, oy + t * uy, oz + t * uz) as double[];
+                        if (p == null || p.Length < 3)
+                            break;
+                        double nt = Math.Max(0, (p[0] - ox) * ux + (p[1] - oy) * uy + (p[2] - oz) * uz);
+                        double qx = ox + nt * ux - p[0], qy = oy + nt * uy - p[1], qz = oz + nt * uz - p[2];
+                        d = Math.Sqrt(qx * qx + qy * qy + qz * qz);
+                        bool done = Math.Abs(nt - t) < 1e-7;
+                        t = nt;
+                        if (done)
+                            break;
+                    }
+                    if (d > RayEdgeRadius)
+                        continue;
+                    if (t < bestT - 1e-6 || (Math.Abs(t - bestT) <= 1e-6 && d < bestD))
+                    {
+                        best = edge;
+                        bestD = d;
+                        bestT = t;
+                    }
+                }
+            }
+            return best;
+        }
+
+        private static IEdge NearestEdge(object[] edges, double x, double y, double z, out double bestDist)
         {
             IEdge best = null;
             double bestD = double.MaxValue;
@@ -76,6 +134,7 @@ namespace Chapter1.ConnectToSw
                     best = edge;
                 }
             }
+            bestDist = best == null ? double.MaxValue : Math.Sqrt(bestD);
             return best;
         }
 

@@ -159,7 +159,7 @@ TOOL_SPECS: list[dict] = [
     _tool(
         "fillet",
         "对边倒圆角。edges: \"all\"（全部边）、长方体语义边名（如 top_front、top_back、front_left 等），"
-        "或射线 {origin:[x,y,z], direction:[dx,dy,dz]}（mm，射线命中的面上离交点最近的边）。",
+        "或射线 {origin:[x,y,z], direction:[dx,dy,dz]}（mm，射线命中的面上离交点 2mm 内最近的边）。",
         {"radius": _NUM, "edges": {"type": ["string", "object"]}},
         ["radius"],
     ),

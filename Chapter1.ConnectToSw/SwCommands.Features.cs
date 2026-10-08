@@ -719,7 +719,7 @@ namespace Chapter1.ConnectToSw
                     catch { }
                     Console.WriteLine($"[SwCommands] 圆角: 射线未命中任何边。{bboxInfo}");
                     throw new InvalidOperationException(
-                        $"未能通过射线选中边。射线起点({rx},{ry},{rz})，方向({dx},{dy},{dz})。{bboxInfo}请确保射线起点在实体附近且方向指向边。");
+                        $"未能通过射线选中边。射线起点({rx},{ry},{rz})，方向({dx},{dy},{dz})。{bboxInfo}射线命中的面上离命中点 2mm 内要有目标边，或者射线要在 2mm 内掠过目标边。");
                 }
                 edgeCount = 1;
                 Console.WriteLine($"[SwCommands] 圆角: 通过射线选中 1 条边");
@@ -938,7 +938,7 @@ namespace Chapter1.ConnectToSw
                     catch { }
                     Console.WriteLine($"[SwCommands] 倒角: 射线未命中任何边。{bboxInfo}");
                     throw new InvalidOperationException(
-                        $"未能通过射线选中边。射线起点({rx},{ry},{rz})，方向({dx},{dy},{dz})。{bboxInfo}请确保射线起点在实体附近且方向指向边。");
+                        $"未能通过射线选中边。射线起点({rx},{ry},{rz})，方向({dx},{dy},{dz})。{bboxInfo}射线命中的面上离命中点 2mm 内要有目标边，或者射线要在 2mm 内掠过目标边。");
                 }
                 edgeCount = 1;
                 Console.WriteLine($"[SwCommands] 倒角: 通过射线选中 1 条边");
