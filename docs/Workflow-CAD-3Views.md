@@ -4,7 +4,7 @@
 
 看图建模有两条流程：
 
-- **L1 / L1_v2 端到端（推荐，评测默认 L1）**：图纸直接交给闭环 Agent 的规划模型，由它自己读图、调用工具建模。L1 和 text-to-CAD 共用同一个 Agent、同一套 24 个工具、同一份系统提示词，另外多一个对照用的 `render_views` 工具；L1_v2 使用 text-to-CAD 失败分析后形成的 v2 workflow，并可额外调用 `view_model` 查看 SolidWorks 当前截图。规划模型必须是**多模态模型**，同时支持图片输入和 function calling。
+- **L1 / L1_v2 端到端（推荐，评测默认 L1_v2）**：图纸直接交给闭环 Agent 的规划模型，由它自己读图、调用工具建模。L1 和 text-to-CAD 共用同一个 Agent、同一套 24 个工具、同一份系统提示词，另外多一个对照用的 `render_views` 工具；L1_v2 使用 text-to-CAD 失败分析后形成的 v2 workflow，并可额外调用 `view_model` 查看 SolidWorks 当前截图。默认模型是自部署的 `Qwen3.8-Flash-Next-FP8`，规划模型必须是**多模态模型**，同时支持图片输入和 function calling。
 - **L0 读图 + 蓝图（旧流程）**：先由视觉模型把图纸读成结构化中间表示，再生成蓝图交给 L0 多轮 Agent 执行。网页界面上传图片时走的是这条流程。
 
 ---
@@ -91,31 +91,32 @@ trace 要等整次运行结束才写。L1 运行过程中另有 `<case>_r<k>.che
 ### 3.1 先跑通一道题
 
 ```powershell
-venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py --plan-model <多模态模型> `
-    --ids b01_l_bracket --repeats 1 --name smoke_three_view_l1
-venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view --artifacts eval\artifacts\smoke_three_view_l1
+venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py `
+    --ids b01_l_bracket --repeats 1 --name three_view_l1v2_qwen38_smoke
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view --artifacts eval\artifacts\three_view_l1v2_qwen38_smoke
 ```
 
-SolidWorks 里会建出一个 L 型支架，`eval\artifacts\smoke_three_view_l1\` 下会出现 `b01_l_bracket_r1.step`、`.SLDPRT`、`.trace.json`（完整的 LLM 记录）和 `runs.json`。打分输出 rubric 得分和图像分。
+SolidWorks 里会建出一个 L 型支架，`eval\artifacts\three_view_l1v2_qwen38_smoke\` 下会出现 `b01_l_bracket_r1.step`、`.SLDPRT`、`.trace.json`（完整的 LLM 记录）和 `runs.json`。打分输出 rubric 得分和图像分。
 
 ### 3.2 批量运行 50 道三视图题
 
 ```powershell
-venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py --plan-model <多模态模型> `
-    --repeats 2 --name three_view_l1_<model>
+venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py `
+    --repeats 2 --name three_view_l1v2_qwen38
 venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view `
-    --artifacts eval\artifacts\three_view_l1_<model> --output eval\three_view_l1_<model>_scores.json
+    --artifacts eval\artifacts\three_view_l1v2_qwen38 --output eval\three_view_l1v2_qwen38_scores.json
 venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_three_view `
-    summary eval\three_view_l1_<model>_scores.json --repeats 2
+    summary eval\three_view_l1v2_qwen38_scores.json --repeats 2
 ```
 
 `eval_three_view_bench.py` 的参数：
 
 | 参数 | 默认值 | 说明 |
 |---|---|---|
-| `--action-level` | `L1` | `L1` = 原版端到端；`L1_v2` = 与 text-to-CAD 相同的 v2 workflow；`L0` = 旧的读图 + 蓝图流程 |
-| `--plan-model` | `Qwen3.5-397B-A17B` | L1 下必须换成多模态模型 |
-| `--reasoning-effort` | 服务端默认 | `none` / `minimal` / `low` / `medium` / `high` / `xhigh`；L1 和 L1_v2 每轮都传给模型 |
+| `--action-level` | `L1_v2` | 与 text-to-CAD 相同的 v2 workflow；`L1` = 原版端到端；`L0` = 旧的读图 + 蓝图流程 |
+| `--provider` | `qwenlocal` | 读取 `.env` 的 `QWENLOCAL_BASE_URL` 与 `QWENLOCAL_API_KEY` |
+| `--plan-model` | `Qwen3.8-Flash-Next-FP8` | 自部署多模态模型 |
+| `--reasoning-effort` | `medium` | 默认 Qwen 自动取 `medium`；也可显式设为 `none` / `minimal` / `low` / `high` / `xhigh` |
 | `--max-llm-calls` | 40 | L1 的 LLM 调用预算，与 text-to-CAD 一致 |
 | `--no-views-tool` | 关 | 不提供 `render_views`，用于消融对比 |
 | `--no-view-tool` | 关 | L1_v2 不提供 `view_model`；不影响输入图纸和 `render_views` |
@@ -198,7 +199,7 @@ print(resp["summary"])
 | `planner/workflow/errors.py` | 新错误码 `RENDER_FAILED` |
 | `web/app.py` | L1 接受 `image` 与 `views_tool`；`_image_mime` 判断图片格式；`render_views` 计为查询工具 |
 | `geomcheck/drawing.py` | 命令行入口：`python -m geomcheck.drawing in.step out.png [标题]`，投影出不带标注的三视图 |
-| `eval/eval_three_view_bench.py` | 默认 L1，也支持 L1_v2；`--reasoning-effort`、`--max-llm-calls`、`--no-views-tool`、`--no-view-tool` 与 text-to-CAD 对齐；记录调用统计 |
+| `eval/eval_three_view_bench.py` | 默认自部署 Qwen + L1_v2 + medium；`--reasoning-effort`、`--max-llm-calls`、`--no-views-tool`、`--no-view-tool` 与 text-to-CAD 对齐；记录调用统计 |
 | `test/test_workflow_three_view.py` | 离线测试（8 个）：图纸放进首条消息、系统提示词不变、纯文本消息不变、投影图只保留最新一张、`render_views` 按需启用、空零件与投影失败的错误码、真实投影子进程、图片格式判断 |
 
 离线测试不需要 SolidWorks，也不调用模型：

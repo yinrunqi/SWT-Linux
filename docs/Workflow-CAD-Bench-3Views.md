@@ -166,7 +166,7 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.tests.refs_three_view
 
 ### 5.1 用 Workflow-CAD 跑
 
-工作方式、环境要求和完整参数见 [`Workflow-CAD-3Views.md`](./Workflow-CAD-3Views.md)，这里只列要点。用 `eval/eval_three_view_bench.py`。它把图纸和题面发给 `/api/run`，把每次运行的 STEP 存到 `eval/artifacts/<name>/<case>_r<k>.step`，再按上面的命令离线打分。默认走 **L1 端到端**：
+工作方式、环境要求和完整参数见 [`Workflow-CAD-3Views.md`](./Workflow-CAD-3Views.md)，这里只列要点。用 `eval/eval_three_view_bench.py`。它把图纸和题面发给 `/api/run`，把每次运行的 STEP 存到 `eval/artifacts/<name>/<case>_r<k>.step`，再按上面的命令离线打分。默认走自部署 `Qwen3.8-Flash-Next-FP8` 的 **L1_v2 端到端**，`provider=qwenlocal`、`reasoning_effort=medium`：
 
 - 与 text-to-CAD 共用同一个 L1 Agent、同一套 24 个工具和同一份系统提示词。区别只有输入：图纸作为图片放在首条用户消息里，Agent 每次调用模型都能看到它。另附一段固定说明，交代图纸的视图方位与模型坐标的对应关系，所有题目都一样。
 - `--action-level L1_v2` 使用与 text-to-CAD 完全相同的 v2 workflow，并默认开放 `view_model`；`--no-view-tool` 可关闭它。`render_views` 是三视图 track 额外提供的图纸对照工具，二者互不替代。
@@ -175,9 +175,9 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.tests.refs_three_view
 - 后端所在环境没有 OCP，投影通过子进程调用 `venv-occ\Scripts\python.exe`；放在别处时用环境变量 `GEOMCHECK_PYTHON` 指定。
 
 ```powershell
-venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py --plan-model <多模态模型> --repeats 2 --name three_view_l1_<model>
-venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view --artifacts eval\artifacts\three_view_l1_<model> --output eval\three_view_l1_<model>_scores.json
-venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_three_view summary eval\three_view_l1_<model>_scores.json --repeats 2
+venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py --repeats 2 --name three_view_l1v2_qwen38
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view --artifacts eval\artifacts\three_view_l1v2_qwen38 --output eval\three_view_l1v2_qwen38_scores.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_three_view summary eval\three_view_l1v2_qwen38_scores.json --repeats 2
 ```
 
 自部署 Qwen3.8-Flash-Next-FP8 使用与 text-to-CAD 相同的 provider、推理强度和上下文配置：

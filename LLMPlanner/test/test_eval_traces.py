@@ -415,8 +415,10 @@ def test_three_view_l1_v2_sends_text_track_reasoning_and_view_settings(tmp_path,
     bench = _load_three_view_bench()
     image = tmp_path / "d.png"
     image.write_bytes(b"\x89PNG")
+    sent = {}
 
-    def boom(*args, **kwargs):
+    def boom(url, **kwargs):
+        sent.update(kwargs["json"])
         raise ConnectionError("stop after request capture")
 
     monkeypatch.setattr(bench.requests, "post", boom)
@@ -434,6 +436,38 @@ def test_three_view_l1_v2_sends_text_track_reasoning_and_view_settings(tmp_path,
     assert request["reasoning_effort"] == "medium"
     assert request["views_tool"] is True
     assert request["view_tool"] is True
+    assert sent["image"].startswith("data:image/png;base64,")
+    assert sent["plan_model"] == "Qwen3.8-Flash-Next-FP8"
+
+
+def test_three_view_cli_defaults_to_qwen_l1_v2_medium(tmp_path, monkeypatch):
+    bench = _load_three_view_bench()
+    monkeypatch.setattr(bench, "ROOT", tmp_path)
+    monkeypatch.setattr(bench, "load_tasks", lambda lang, ids: [{"case": "d01", "prompt": "p", "image": None}])
+    captured = {}
+
+    def fake_run_one(task, k, args, resume=False):
+        captured.update({
+            "action_level": args.action_level,
+            "provider": args.provider,
+            "plan_model": args.plan_model,
+            "reasoning_effort": args.reasoning_effort,
+            "view_tool": not args.no_view_tool,
+            "views_tool": not args.no_views_tool,
+        })
+        return {"case": task["case"], "repeat": k, "status": "finished", "duration_seconds": 0.0}
+
+    monkeypatch.setattr(bench, "run_one", fake_run_one)
+    monkeypatch.setattr(bench.sys, "argv", ["x", "--name", "defaults", "--repeats", "1"])
+    assert bench.main() == 0
+    assert captured == {
+        "action_level": "L1_v2",
+        "provider": "qwenlocal",
+        "plan_model": "Qwen3.8-Flash-Next-FP8",
+        "reasoning_effort": "medium",
+        "view_tool": True,
+        "views_tool": True,
+    }
 
 
 def test_three_view_resume_continues_interrupted_runs_from_checkpoint(tmp_path, monkeypatch):

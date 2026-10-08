@@ -2,9 +2,10 @@
 
 Each task posts the benchmark drawing (eval/three_view/drawings/<case>.png) and the neutral
 prompt from eval/rubrics_three_view/<case>.yaml to /api/run, then exports the final part as
-<out-dir>/<case>_r<k>.step. The default --action-level L1 is end to end: the L1 workflow agent sees
-the drawing itself (so --plan-model must accept images) and may call render_views to compare the
-current part against it. Scoring is offline and needs no SolidWorks:
+<out-dir>/<case>_r<k>.step. The default is the self-served Qwen3.8-Flash-Next-FP8 with
+--action-level L1_v2 and --reasoning-effort medium. The workflow agent sees the drawing itself
+(so the deployed model must accept images) and may call render_views and view_model to inspect
+the current part. Scoring is offline and needs no SolidWorks:
 
     venv-occ\\Scripts\\python.exe -X utf8 -m geomcheck.three_view --artifacts <out-dir> --output scores.json
     venv-occ\\Scripts\\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_three_view \\
@@ -181,22 +182,22 @@ def main() -> int:
     parser.add_argument("--ids", nargs="*", help="case ids (default: all)")
     parser.add_argument("--repeats", type=int, default=2)
     parser.add_argument("--lang", choices=sorted(PROMPT_FIELDS), default="zh")
-    parser.add_argument("--action-level", choices=["L0", *WORKFLOW_LEVELS], default="L1",
+    parser.add_argument("--action-level", choices=["L0", *WORKFLOW_LEVELS], default="L1_v2",
                         help="L1: end-to-end workflow agent that sees the drawing (plan model must accept images); "
                              "L1_v2: L1 with the text-to-CAD failure-analysis improvements and view_model; "
                              "L0: legacy vision-IR + blueprint pipeline")
     parser.add_argument(
         "--provider",
         choices=["aiping", "ttswitch", "juheai", "qwenlocal"],
-        default="aiping",
+        default="qwenlocal",
         help="LLM service the Web backend uses: ttswitch reads OPENAI_* from .env, others read <PROVIDER>_*",
     )
-    parser.add_argument("--plan-model", default="Qwen3.5-397B-A17B")
+    parser.add_argument("--plan-model", default="Qwen3.8-Flash-Next-FP8")
     parser.add_argument(
         "--reasoning-effort",
         choices=("none", "minimal", "low", "medium", "high", "xhigh"),
         default=None,
-        help="L1/L1_v2 only; sent on every agent call. Omitted = the same model-specific default as text-to-CAD",
+        help="L1/L1_v2 only; sent on every agent call. Omitted = medium for the default self-served Qwen",
     )
     parser.add_argument("--max-llm-calls", type=int, default=40, help="L1 LLM call budget")
     parser.add_argument("--no-views-tool", action="store_true", help="L1: do not offer render_views (ablation)")
@@ -227,6 +228,8 @@ def main() -> int:
         parser.error("--reasoning-effort requires --action-level L1 or L1_v2")
     if args.action_level in WORKFLOW_LEVELS:
         from planner.workflow.agent import default_reasoning_effort
+        if args.reasoning_effort is None and args.plan_model.lower() == "qwen3.8-flash-next-fp8":
+            args.reasoning_effort = "medium"
         args.reasoning_effort = default_reasoning_effort(args.plan_model, args.reasoning_effort)
     args.out_dir = ROOT / "eval" / "artifacts" / args.name
     args.out_dir.mkdir(parents=True, exist_ok=True)
