@@ -1,0 +1,1270 @@
+{
+ "request": {
+  "instruction": "根据所附三视图（第三角画法，单位 mm）建模角钢支架，单一实体。",
+  "image": "[image]",
+  "provider": "qwenlocal",
+  "plan_model": "Qwen3.8-Flash-Next-FP8",
+  "action_level": "L1_v2",
+  "use_cache": false,
+  "capture_trace": true,
+  "max_turns": 40,
+  "views_tool": true,
+  "checkpoint_path": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d09_angle_bracket_r1.checkpoint.json",
+  "resume": true,
+  "view_tool": true,
+  "reasoning_effort": "medium"
+ },
+ "response_status": 200,
+ "response": {
+  "action_level": "L1_v2",
+  "mode": "workflow",
+  "plan": {
+   "notes": "角钢支架（D09），单一实体，包络 60(X)×40(Y)×100(Z) mm。\n1) 基体：在 Z=0 平面画 L 形截面（底板 X 0→60 厚 8，立板 Y 0→40 厚 8，内侧折弯 R5）沿 +Z 拉伸 100 mm。\n2) 水平板长圆孔：在 Y=8 平面上切两个 8 宽、中心线长 14（总长 22）两端半圆的槽，轴线位于 Z=20 与 Z=80（中心距 60，前后对称），沿 -Y 贯穿。\n3) 立板 2×Ø9 通孔：在 X=0 平面上打 Ø9 通孔，圆心 (Y=26, Z=25) 与 (Y=26, Z=75)，中心距 50，沿 +X 贯穿立板。\n体积 70522 mm³，bodies=1，与三视图各视图尺寸一致。",
+   "steps": [
+    {
+     "operation": "extrude",
+     "params": {
+      "depth": 100,
+      "direction": "+Z",
+      "loops": [
+       {
+        "segments": [
+         {
+          "to": [
+           60,
+           0
+          ]
+         },
+         {
+          "to": [
+           60,
+           8
+          ]
+         },
+         {
+          "to": [
+           13,
+           8
+          ]
+         },
+         {
+          "through": [
+           9.4645,
+           9.4645
+          ],
+          "to": [
+           8,
+           13
+          ]
+         },
+         {
+          "to": [
+           8,
+           40
+          ]
+         },
+         {
+          "to": [
+           0,
+           40
+          ]
+         }
+        ],
+        "start": [
+         0,
+         0
+        ],
+        "type": "path"
+       }
+      ],
+      "plane": "Z=0"
+     }
+    },
+    {
+     "operation": "cut",
+     "params": {
+      "direction": "-Z",
+      "loops": [
+       {
+        "end": [
+         44,
+         42
+        ],
+        "start": [
+         22,
+         42
+        ],
+        "type": "slot",
+        "width": 8
+       },
+       {
+        "end": [
+         44,
+         58
+        ],
+        "start": [
+         22,
+         58
+        ],
+        "type": "slot",
+        "width": 8
+       }
+      ],
+      "plane": "Z=40",
+      "through_all": true
+     }
+    },
+    {
+     "operation": "cut",
+     "params": {
+      "direction": "-Y",
+      "loops": [
+       {
+        "end": [
+         43,
+         20
+        ],
+        "start": [
+         29,
+         20
+        ],
+        "type": "slot",
+        "width": 8
+       },
+       {
+        "end": [
+         43,
+         80
+        ],
+        "start": [
+         29,
+         80
+        ],
+        "type": "slot",
+        "width": 8
+       }
+      ],
+      "plane": "Y=8",
+      "through_all": true
+     }
+    },
+    {
+     "operation": "hole",
+     "params": {
+      "centers": [
+       [
+        25,
+        26
+       ],
+       [
+        75,
+        26
+       ]
+      ],
+      "diameter": 9,
+      "direction": "+X",
+      "plane": "X=0",
+      "through_all": true
+     }
+    }
+   ],
+   "user_intent": "根据所附三视图（第三角画法，单位 mm）建模角钢支架，单一实体。"
+  },
+  "raw_llm_trace": [
+   {
+    "content": "你是一名资深机械设计工程师，正在 SolidWorks 中用工具逐步建出用户描述的零件。\n\n## 坐标与单位\n- 所有长度单位 mm，角度单位度。SolidWorks 基准面：front_plane = XY（法向 +Z），top_plane = XZ（法向 +Y），right_plane = YZ（法向 +X）。\n- 需求给了坐标系或坐标（如 \"Z 轴向上\"、\"x ∈ [−50, 50]\"、\"底面在 z = 0\"）时，严格按需求的坐标建模，不要换轴、不要平移。\n  需求没有说明时：+Y 向上，底面放在 Y=0，X、Z 方向以原点为中心，回转体轴线沿 Y。\n- 每个草图平面都有固定的 (u,v) 坐标，数值就是模型坐标：法向沿 Z → u=X, v=Y；法向沿 Y → u=X, v=Z；法向沿 X → u=Z, v=Y。\n- 平面最稳定的写法是 \"Z=10\"、\"Y=-12.5\"、\"X=0\"：垂直于该轴、位于该坐标处的平面，法向为 +轴，自动创建或复用基准面。\n  实体面用 face(+Z, outermost) 这类方向写法；top/bottom/front/back/left/right 固定指 ±Y/±Z/±X，Z 向上的零件不要用 top/bottom。\n  face#index 每个特征之后都可能重新编号，只能用最新一次 get_model_state 里的。\n\n## 草图与特征规则\n- 一次 extrude/cut 画一个区域：外环加上它内部的内环（孔）。部分重叠的轮廓会被拒绝，需要拆成先后两个特征（实体会自动合并）或合并成一个 polygon/path。\n- 零件必须是单一实体：每个新凸台都要和已有实体有面接触或伸入其中（建议伸入 ≥0.5mm）；只在一条线或一个点上相切（圆柱贴平面、两圆柱相切、棱对棱）会生成独立实体并被拒绝。\n- 拉伸方向：基准面和 \"Z=…\" 平面默认沿 +法向，实体面默认沿外法向；direction=both 时 depth 是总厚度（两侧各一半）。\n- cut 默认朝实体内部切。单向 through_all 只切穿草图平面一侧；草图平面（含实体面）背后还有凸台、轮毂等材料时，\n  要整根贯穿就在零件端面上画，或用 direction=both。\n- L 形、U 形、T 形、台阶等截面不变的形状，用一个 polygon/path 画出整个截面再拉伸一次，比多块拼接可靠。\n- 外形上的圆角（板的竖直棱、耳片端部、槽口）直接在轮廓里表达：rect/polygon 的 corner_radius、slot、hull、annular_sector 或 path 的圆弧段；\n  fillet/chamfer 只用于轮廓无法表达的棱（如顶面一圈的边），并放在最后。\n- path 的半圆弧用 through 给出弧上一点；只给 center 的 180° 圆弧必须写 ccw。两圆外公切线外形（连杆、耳片）用 hull。\n  两圆相交的 \"8\" 字形（齿轮腔等）不是 hull 也不是长圆形：两个圆分别 cut 一次，或用 path 画两段大圆弧。\n- hull 的两个圆直径不等时，外公切线不平行，没有等宽直边。等宽手柄、板条用 rect 或等径圆的 hull；锥形耳片才用不等径 hull。\n- slot 的 start/end 是中心线端点（含两端半圆圆心），净开口还要再算 ±width/2。径向槽若要求内缘 ≥ R，则 start 到原点的距离 ≥ R + width/2。\n  轮辐、连杆这类细长圆柱或矩形条：在轮毂外与轮缘之间单独画 circle/rect 再拉伸或阵列，不要用穿过轴线的宽 slot（会堵住中心孔）。\n  圆柱形轮辐的截面是圆：在垂直于轮辐的平面上画 circle 沿径向拉伸（或 sweep 的 profile_diameter）；在中面上拉伸 slot/rect 得到的是两面平的扁条。\n- 圆周均布的孔用 hole 的 polar（center、radius 或 pcd、count、start_deg）；角度在草图 (u,v) 内从 +u 转向 +v。\n  圆周阵列其它特征用 circular_pattern，并总是给 center；angle_deg 是阵列覆盖的总角度，整圈均分时省略。线性重复用 linear_pattern。\n- 为了切透而把切除轮廓伸出实体边界时，沿原边线的方向延长（斜边保持原斜率）；题面给定的宽度仍在题面给定的位置上，不要挪到延长后的端点。\n- revolve 的轮廓是截面的一半，必须整体位于轴线一侧，可以贴着轴线。\n  回转体上的凹圆角（辐板与轮缘交接等）先画锐边剖面，再统一 fillet；不要把圆角画进 revolve 轮廓后又做特征圆角。\n- 侧凸台、支管接到已有实体时用 extrude(..., up_to=面或 body)，不要估一个 depth。\n- 沉头孔用 counterbore / countersink，螺纹底孔用 tapped_hole；筋用 rib（底板与背板之间的三角形加强）；弯管用 sweep；变截面用 loft；空心壳体用 shell；斜度用 draft；钣金用 sheet_metal。\n- 杯/管外壁上的环形把手：草图平面要含轴线，环心放在壁外，使环的内径不进入内腔；不要把圆心贴在外壁上。\n- 径向紧定螺钉孔、油孔等“钻到某个孔为止”的孔：depth 取外表面到该孔壁的距离（如 (轮毂外径 − 轴孔直径)/2），最多再加 1mm；\n  钻通后不要再加深，也不要 through_all，否则会打到孔的对侧壁。\n- 双盘 + 立柱类零件：先拉伸贯通两盘间距的立柱（或一次画出柱+盘截面），再贴合拉伸第二盘并保持题面给定的盘厚；不要为了连体去加厚盘。\n  “板的外侧面与轮毂端面齐平”表示板在轮毂长度之内、外侧面就是轮毂端面，不要贴在端面外侧。\n- 题面按区间或“上端接…”给出的相邻各段首尾相接：后一段从前一段的端面开始，端面贴合就连成一体，不要把一段整段嵌进另一段。\n- 孔、内腔、通槽要放在会占到它们位置的凸台之后：后拉伸的实体会把先切出的孔或内轮廓重新填上\n  （例如先开环孔、再拉伸盖过它的杆；先做空心管、再把支管或凸台拉进管腔）。不确定时先做完所有实体，最后统一开孔。\n- 螺栓：先杆后头（头在轴端），再在头端面做 depth 盲切六角窝，颈肩用最后的 fillet；特征成功后不要无依据地 delete 再重做。\n- sweep 一般省略 profile_plane：路径第一段沿坐标轴时，截面自动放在路径起点并垂直于路径，loops 写相对路径起点的坐标（截面中心通常是 [0,0]）。\n  圆截面（管、丝、弹簧）直接用 profile_diameter（空心管加 inner_diameter），不需要截面平面；\n  空间弯管用 path_3d（折线 + corner_radius），弹簧/螺旋槽用 helix。\n- loft 首尾截面可以收成一点（{plane, point}）；需要控制中间形状时加 guides，要和相邻段平滑相接时用 start_tangent/end_tangent=normal。\n- 改已有特征的尺寸用 edit_feature。delete_feature 会连带删除依赖它的后续特征（结果的 also_removed），删除前想清楚。\n\n## 每步核对\n- 每个特征的结果都有 volume_delta_mm3、bbox_mm、extent_mm（本特征在模型坐标中的范围）、removal_ratio/fill_ratio（实际体积变化 ÷ 轮廓面积×深度）\n  和 new_cylinders（新出现的孔/凸台圆柱面及其轴线位置）。逐项和预期比较；出现 warnings 时先处理再继续。\n- 倒圆/倒角结果的 estimated_edge_length_mm 是按 90° 棱估算的被处理总棱长，和预期差很多说明边选错了。\n- 阵列结果的 expected_delta_mm3 是种子×份数，和实际相差大说明有实例没生效。\n\n## 工作方式\n1. 先读懂需求，列出总体尺寸、各特征的坐标与数量；可以用 set_parameters 定义驱动参数，之后用 \"=表达式\" 引用。\n   \"相距 / 距轴线 / 偏心 / 中心距 X mm\" 是中心到中心的距离，直接用 X，不要除以 2；只有直径换半径才除以 2。\n   有方位要求的特征（\"沿某条槽的方向\"、\"与销孔错开 30°\"），先写出每个参照特征的实际方位角，再算这个特征的方位。\n2. 先建基体，再逐个添加特征。互不依赖的特征可以在一次回复里并行调用多个工具，节省调用次数。\n3. 工具失败时会自动回滚，模型保持调用前的状态。阅读错误码和提示，修改参数或换一种做法；同一个失败的调用不会被执行第三次。\n4. 每个工具结果里有 llm_calls_left（剩余的模型调用次数），据此安排节奏，留出核对和 finish 的次数。\n5. 全部完成后调用 get_model_state，逐项核对：总体尺寸、孔/凸台的数量与直径（cylinder_groups）、只有一个实体；不满足就继续修改。\n6. 核对无误后调用 finish，并在 summary 中说明零件的组成与关键尺寸。\n",
+    "role": "system"
+   },
+   {
+    "content": [
+     {
+      "text": "建模需求：\n根据所附三视图（第三角画法，单位 mm）建模角钢支架，单一实体。\n\n当前是一个空零件，请开始建模。\n\n附图是零件的三视图（第三角画法）。图纸坐标与模型坐标一致：主视图沿 -Z 方向看（图上右 = +X、上 = +Y）；俯视图在主视图上方，从 +Y 往下看（图上右 = +X、下 = +Z）；右视图在主视图右方，从 +X 看（图上右 = -Z、上 = +Y）。实线是可见边，虚线是隐藏边，点画线是中心线。全部尺寸从图纸读取。",
+      "type": "text"
+     },
+     {
+      "text": "[image]",
+      "type": "text"
+     }
+    ],
+    "role": "user"
+   },
+   {
+    "content": "",
+    "role": "assistant",
+    "tool_calls": [
+     {
+      "function": {
+       "arguments": "{\"plane\": \"Z=0\", \"direction\": \"+Z\", \"depth\": 100, \"loops\": [{\"type\": \"path\", \"start\": [0, 0], \"segments\": [{\"to\": [60, 0]}, {\"to\": [60, 8]}, {\"to\": [13, 8]}, {\"to\": [8, 13], \"through\": [9.4645, 9.4645]}, {\"to\": [8, 40]}, {\"to\": [0, 40]}]}]}",
+       "name": "extrude"
+      },
+      "id": "chatcmpl-tool-84af856380c457f0",
+      "type": "function"
+     }
+    ]
+   },
+   {
+    "content": "{\"ok\": true, \"created\": [\"草图1\", \"凸台-拉伸1\"], \"volume_mm3\": 74136.53, \"volume_delta_mm3\": 74136.53, \"bbox_mm\": {\"X\": [0.0, 60.0], \"Y\": [0.0, 40.0], \"Z\": [0.0, 100.0], \"size\": [60.0, 40.0, 100.0]}, \"plane\": \"front_plane: 平面 Z=0mm，法向 +Z；u=X, v=Y（模型坐标，mm）\", \"direction\": \"+Z\", \"region_area_mm2\": 741.390205, \"profile_uv_bbox\": {\"u\": [0.0, 60.0], \"v\": [0.0, 40.0]}, \"new_cylinders\": [{\"diameter_mm\": 10.0, \"axis\": \"Z\", \"count\": 1, \"axis_at_mm\": [[13.0, 13.0, 0.0]]}], \"bodies\": 1, \"extent_mm\": {\"X\": [0.0, 60.0], \"Y\": [0.0, 40.0], \"Z\": [0.0, 100.0]}, \"fill_ratio\": 1.0, \"llm_calls_left\": 39}",
+    "role": "tool",
+    "tool_call_id": "chatcmpl-tool-84af856380c457f0"
+   },
+   {
+    "content": "",
+    "role": "assistant",
+    "tool_calls": [
+     {
+      "function": {
+       "arguments": "{\"plane\": \"Z=40\", \"through_all\": true, \"direction\": \"-Z\", \"loops\": [{\"type\": \"slot\", \"start\": [22, 42], \"end\": [44, 42], \"width\": 8}, {\"type\": \"slot\", \"start\": [22, 58], \"end\": [44, 58], \"width\": 8}]}",
+       "name": "cut"
+      },
+      "id": "chatcmpl-tool-a631edcfa705b831",
+      "type": "function"
+     }
+    ]
+   },
+   {
+    "content": "{\"ok\": false, \"error\": {\"code\": \"FEATURE_FAILED\", \"message\": \"[FEATURE_FAILED] feature_cut_extrusion: 切除拉伸失败，请确保草图闭合且位于实体面上。请查看 C# 控制台的调试信息。\", \"plane\": \"基准面1: 平面 Z=40mm，法向 +Z；u=X, v=Y（模型坐标，mm）\", \"direction\": \"-Z\", \"region_area_mm2\": 452.403416, \"profile_uv_bbox\": {\"u\": [18.0, 48.0], \"v\": [38.0, 62.0]}, \"hint\": \"SolidWorks 在切除范围内找不到可去除的材料时也会报这个错：检查轮廓沿切除方向是否真的穿过实体，是否与已有的孔/槽/空腔完全重合（已切过的部分不能再切），方向是否朝向实体外侧。\", \"rolled_back\": [\"草图2\"]}, \"notes\": [\"Z=40 → 新建基准面 基准面1（基准面1: 平面 Z=40mm，法向 +Z；u=X, v=Y（模型坐标，mm））\"], \"llm_calls_left\": 38}",
+    "role": "tool",
+    "tool_call_id": "chatcmpl-tool-a631edcfa705b831"
+   },
+   {
+    "content": "\n\n图纸基体已建好（L 形 60×40×8，长 100，内角 R5）。现在按俯视图/右视图开两个长圆孔和两个 Ø9 通孔。\n\n",
+    "role": "assistant",
+    "tool_calls": [
+     {
+      "function": {
+       "arguments": "{\"direction\": \"-Y\", \"through_all\": true, \"loops\": [{\"start\": [29, 20], \"end\": [43, 20], \"type\": \"slot\", \"width\": 8}, {\"start\": [29, 80], \"end\": [43, 80], \"type\": \"slot\", \"width\": 8}], \"plane\": \"Y=8\"}",
+       "name": "cut"
+      },
+      "id": "chatcmpl-tool-8db6214a5da01e7c",
+      "type": "function"
+     }
+    ]
+   },
+   {
+    "content": "{\"ok\": true, \"created\": [\"草图3\", \"切除-拉伸3\"], \"volume_mm3\": 71540.28, \"volume_delta_mm3\": -2596.25, \"bbox_mm\": {\"X\": [0.0, 60.0], \"Y\": [0.0, 40.0], \"Z\": [0.0, 100.0], \"size\": [60.0, 40.0, 100.0]}, \"plane\": \"基准面2: 平面 Y=8mm，法向 +Y；u=X, v=Z（模型坐标，mm）\", \"direction\": \"-Y\", \"region_area_mm2\": 324.403416, \"profile_uv_bbox\": {\"u\": [25.0, 47.0], \"v\": [16.0, 84.0]}, \"new_cylinders\": [{\"diameter_mm\": 8.0, \"axis\": \"Y\", \"count\": 4, \"axis_at_mm\": [[29.0, 0.0, 20.0], [29.0, 0.0, 80.0], [43.0, 0.0, 20.0], [43.0, 0.0, 80.0]]}], \"bodies\": 1, \"extent_mm\": {\"X\": [25.0, 47.0], \"Y\": [0.0, 8.0], \"Z\": [16.0, 84.0]}, \"warnings\": [\"草图平面 Y=8 不在零件 Y 方向的端部（范围 [0, 40]），单向 through_all 只切了 -Y 一侧；Y∈[8, 40] 一侧若在轮廓范围内也有材料（如凸台、轮毂），那部分没有切。要整根贯穿，改在零件端面上画，或用 direction=both。\"], \"notes\": [\"Y=8 → 新建基准面 基准面2（基准面2: 平面 Y=8mm，法向 +Y；u=X, v=Z（模型坐标，mm））\"], \"llm_calls_left\": 37}",
+    "role": "tool",
+    "tool_call_id": "chatcmpl-tool-8db6214a5da01e7c"
+   },
+   {
+    "content": "",
+    "role": "assistant",
+    "tool_calls": [
+     {
+      "function": {
+       "arguments": "{\"plane\": \"X=0\", \"diameter\": 9, \"direction\": \"+X\", \"through_all\": true, \"centers\": [[25, 26], [75, 26]]}",
+       "name": "hole"
+      },
+      "id": "chatcmpl-tool-ae9ce24305712bd7",
+      "type": "function"
+     }
+    ]
+   },
+   {
+    "content": "{\"ok\": true, \"created\": [\"草图4\", \"切除-拉伸4\"], \"volume_mm3\": 70522.41, \"volume_delta_mm3\": -1017.88, \"bbox_mm\": {\"X\": [0.0, 60.0], \"Y\": [0.0, 40.0], \"Z\": [0.0, 100.0], \"size\": [60.0, 40.0, 100.0]}, \"plane\": \"right_plane: 平面 X=0mm，法向 +X；u=Z, v=Y（模型坐标，mm）\", \"direction\": \"+X\", \"region_area_mm2\": 127.030214, \"profile_uv_bbox\": {\"u\": [20.5, 79.5], \"v\": [21.5, 30.5]}, \"new_cylinders\": [{\"diameter_mm\": 9.0, \"axis\": \"X\", \"count\": 2, \"axis_at_mm\": [[0.0, 26.0, 25.0], [0.0, 26.0, 75.0]]}], \"bodies\": 1, \"extent_mm\": {\"X\": [0.0, 60.0], \"Y\": [21.5, 30.5], \"Z\": [20.5, 79.5]}, \"llm_calls_left\": 36}",
+    "role": "tool",
+    "tool_call_id": "chatcmpl-tool-ae9ce24305712bd7"
+   },
+   {
+    "content": "",
+    "role": "assistant",
+    "tool_calls": [
+     {
+      "function": {
+       "arguments": "{\"views\": [\"front\", \"top\", \"right\"]}",
+       "name": "view_model"
+      },
+      "id": "chatcmpl-tool-a38a22d60aaecd55",
+      "type": "function"
+     }
+    ]
+   },
+   {
+    "content": "{\"ok\": true, \"bbox_mm\": {\"X\": [0.0, 60.0], \"Y\": [0.0, 40.0], \"Z\": [0.0, 100.0], \"size\": [60.0, 40.0, 100.0]}, \"volume_mm3\": 70522.41, \"views\": [\"前视：沿 -Z 看，右 = +X，上 = +Y\", \"俯视：从 +Y 往下看，右 = +X，下 = +Z\", \"右视：从 +X 看，右 = -Z，上 = +Y\"], \"note\": \"截图附在下一条消息里\", \"llm_calls_left\": 35}",
+    "role": "tool",
+    "tool_call_id": "chatcmpl-tool-a38a22d60aaecd55"
+   },
+   {
+    "content": [
+     {
+      "text": "view_model：SolidWorks 中当前零件的截图如下，每格上方标有视向与坐标方向。",
+      "type": "text"
+     },
+     {
+      "text": "[image]",
+      "type": "text"
+     }
+    ],
+    "role": "user"
+   },
+   {
+    "content": "\n\n三视图与图纸完全对应：主视图 L 形（立边 40、横边 60、厚 8、内角 R5），俯视图两个 8×22 长圆孔（中心距 22，前后对称于 Z=50），右视图 2×Ø9 通孔（中心高 26、间距 50）。\n\n",
+    "role": "assistant",
+    "tool_calls": [
+     {
+      "function": {
+       "arguments": "{}",
+       "name": "get_model_state"
+      },
+      "id": "chatcmpl-tool-8307780739f4229c",
+      "type": "function"
+     }
+    ]
+   },
+   {
+    "content": "{\"ok\": true, \"state\": {\"features\": [{\"name\": \"草图1\", \"type\": \"ProfileFeature\"}, {\"name\": \"凸台-拉伸1\", \"type\": \"Extrusion\"}, {\"name\": \"基准面1\", \"type\": \"RefPlane\"}, {\"name\": \"基准面2\", \"type\": \"RefPlane\"}, {\"name\": \"草图3\", \"type\": \"ProfileFeature\"}, {\"name\": \"切除-拉伸3\", \"type\": \"ICE\"}, {\"name\": \"草图4\", \"type\": \"ProfileFeature\"}, {\"name\": \"切除-拉伸4\", \"type\": \"ICE\"}], \"bbox_mm\": {\"X\": [0.0, 60.0], \"Y\": [0.0, 40.0], \"Z\": [0.0, 100.0], \"size\": [60.0, 40.0, 100.0]}, \"volume_mm3\": 70522.41, \"bodies\": 1, \"planar_faces\": [{\"ref\": \"face#1\", \"normal\": \"-Y\", \"at\": \"Y=0.000\", \"area_mm2\": 5675.47, \"u_range\": [0.0, 60.0], \"v_range\": [0.0, 100.0], \"uv\": \"u=X,v=Z\", \"alias\": \"bottom\"}, {\"ref\": \"face#3\", \"normal\": \"+Y\", \"at\": \"Y=8.000\", \"area_mm2\": 4375.47, \"u_range\": [13.0, 60.0], \"v_range\": [0.0, 100.0], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#0\", \"normal\": \"-X\", \"at\": \"X=0.000\", \"area_mm2\": 3872.77, \"u_range\": [0.0, 100.0], \"v_range\": [0.0, 40.0], \"uv\": \"u=Z,v=Y\", \"alias\": \"left\"}, {\"ref\": \"face#5\", \"normal\": \"+X\", \"at\": \"X=8.000\", \"area_mm2\": 2572.77, \"u_range\": [0.0, 100.0], \"v_range\": [13.0, 40.0], \"uv\": \"u=Z,v=Y\"}, {\"ref\": \"face#2\", \"normal\": \"+X\", \"at\": \"X=60.000\", \"area_mm2\": 800.0, \"u_range\": [0.0, 100.0], \"v_range\": [0.0, 8.0], \"uv\": \"u=Z,v=Y\", \"alias\": \"right\"}, {\"ref\": \"face#6\", \"normal\": \"+Y\", \"at\": \"Y=40.000\", \"area_mm2\": 800.0, \"u_range\": [0.0, 8.0], \"v_range\": [0.0, 100.0], \"uv\": \"u=X,v=Z\", \"alias\": \"top\"}, {\"ref\": \"face#7\", \"normal\": \"+Z\", \"at\": \"Z=100.000\", \"area_mm2\": 741.37, \"u_range\": [0.0, 60.0], \"v_range\": [0.0, 40.0], \"uv\": \"u=X,v=Y\", \"alias\": \"front\"}, {\"ref\": \"face#8\", \"normal\": \"-Z\", \"at\": \"Z=0.000\", \"area_mm2\": 741.37, \"u_range\": [0.0, 60.0], \"v_range\": [0.0, 40.0], \"uv\": \"u=X,v=Y\", \"alias\": \"back\"}, {\"ref\": \"face#10\", \"normal\": \"+Z\", \"at\": \"Z=76.000\", \"area_mm2\": 112.0, \"u_range\": [29.0, 43.0], \"v_range\": [0.0, 8.0], \"uv\": \"u=X,v=Y\"}, {\"ref\": \"face#12\", \"normal\": \"-Z\", \"at\": \"Z=84.000\", \"area_mm2\": 112.0, \"u_range\": [29.0, 43.0], \"v_range\": [0.0, 8.0], \"uv\": \"u=X,v=Y\"}, {\"ref\": \"face#14\", \"normal\": \"+Z\", \"at\": \"Z=16.000\", \"area_mm2\": 112.0, \"u_range\": [29.0, 43.0], \"v_range\": [0.0, 8.0], \"uv\": \"u=X,v=Y\"}, {\"ref\": \"face#16\", \"normal\": \"-Z\", \"at\": \"Z=24.000\", \"area_mm2\": 112.0, \"u_range\": [29.0, 43.0], \"v_range\": [0.0, 8.0], \"uv\": \"u=X,v=Y\"}], \"cylinder_groups\": [{\"diameter_mm\": 10.0, \"axis\": \"Z\", \"span_mm\": [0.0, 100.0], \"refs\": [\"face#4\"], \"count\": 1, \"axis_at_mm\": [[13.0, 13.0, 0.0]]}, {\"diameter_mm\": 9.0, \"axis\": \"X\", \"span_mm\": [0.0, 8.0], \"refs\": [\"face#17\", \"face#18\"], \"count\": 2, \"axis_at_mm\": [[0.0, 26.0, 75.0], [0.0, 26.0, 25.0]]}, {\"diameter_mm\": 8.0, \"axis\": \"Y\", \"span_mm\": [0.0, 8.0], \"refs\": [\"face#9\", \"face#11\", \"face#13\", \"face#15\"], \"count\": 4, \"axis_at_mm\": [[29.0, 0.0, 80.0], [43.0, 0.0, 80.0], [29.0, 0.0, 20.0], [43.0, 0.0, 20.0]]}], \"reference_planes\": [{\"name\": \"基准面1\", \"normal\": \"+Z\", \"at\": \"Z=40.000\", \"uv\": \"u=X,v=Y\"}, {\"name\": \"基准面2\", \"normal\": \"+Y\", \"at\": \"Y=8.000\", \"uv\": \"u=X,v=Z\"}], \"parameters\": {}}, \"llm_calls_left\": 34}",
+    "role": "tool",
+    "tool_call_id": "chatcmpl-tool-8307780739f4229c"
+   },
+   {
+    "content": "\n\n模型核对完毕：单一实体，包围盒 60×40×100 mm；L 形截面（立边高 40、底板长 60、壁厚 8、内侧折弯 R5）；水平板上两个 8×22 两端半圆长圆孔（中心距 60，前后对称于 Z=50）；立板上 2×Ø9 通孔（中心高 Y=26，间距 50）。\n\n",
+    "role": "assistant",
+    "tool_calls": [
+     {
+      "function": {
+       "arguments": "{\"summary\": \"角钢支架（D09），单一实体，包络 60(X)×40(Y)×100(Z) mm。\\n1) 基体：在 Z=0 平面画 L 形截面（底板 X 0→60 厚 8，立板 Y 0→40 厚 8，内侧折弯 R5）沿 +Z 拉伸 100 mm。\\n2) 水平板长圆孔：在 Y=8 平面上切两个 8 宽、中心线长 14（总长 22）两端半圆的槽，轴线位于 Z=20 与 Z=80（中心距 60，前后对称），沿 -Y 贯穿。\\n3) 立板 2×Ø9 通孔：在 X=0 平面上打 Ø9 通孔，圆心 (Y=26, Z=25) 与 (Y=26, Z=75)，中心距 50，沿 +X 贯穿立板。\\n体积 70522 mm³，bodies=1，与三视图各视图尺寸一致。\"}",
+       "name": "finish"
+      },
+      "id": "chatcmpl-tool-b91e7ef2e28264c8",
+      "type": "function"
+     }
+    ]
+   },
+   {
+    "content": "{\"ok\": true, \"final_state\": {\"bbox_mm\": {\"X\": [0.0, 60.0], \"Y\": [0.0, 40.0], \"Z\": [0.0, 100.0], \"size\": [60.0, 40.0, 100.0]}, \"volume_mm3\": 70522.41}, \"llm_calls_left\": 33}",
+    "role": "tool",
+    "tool_call_id": "chatcmpl-tool-b91e7ef2e28264c8"
+   }
+  ],
+  "results": [
+   {
+    "error_code": null,
+    "message": "OK",
+    "operation": "extrude",
+    "step": 1,
+    "success": true
+   },
+   {
+    "error_code": "FEATURE_FAILED",
+    "message": "[FEATURE_FAILED] feature_cut_extrusion: 切除拉伸失败，请确保草图闭合且位于实体面上。请查看 C# 控制台的调试信息。",
+    "operation": "cut",
+    "step": 2,
+    "success": false
+   },
+   {
+    "error_code": null,
+    "message": "OK",
+    "operation": "cut",
+    "step": 3,
+    "success": true
+   },
+   {
+    "error_code": null,
+    "message": "OK",
+    "operation": "hole",
+    "step": 4,
+    "success": true
+   }
+  ],
+  "success": true,
+  "summary": {
+   "all_ok": true,
+   "llm_calls": 7,
+   "status": "finished",
+   "succeeded": 3,
+   "token_usage": {
+    "calls": 7,
+    "completion_tokens": 15694,
+    "prompt_tokens": 121153,
+    "total_tokens": 136847
+   },
+   "tool_calls": 7,
+   "total": 4
+  },
+  "token_usage": {
+   "calls": 7,
+   "completion_tokens": 15694,
+   "prompt_tokens": 121153,
+   "total_tokens": 136847
+  },
+  "workflow": {
+   "context_limit": 73728,
+   "duration_seconds": 250.63,
+   "error": null,
+   "final_state": {
+    "bbox_mm": {
+     "X": [
+      0.0,
+      60.0
+     ],
+     "Y": [
+      0.0,
+      40.0
+     ],
+     "Z": [
+      0.0,
+      100.0
+     ],
+     "size": [
+      60.0,
+      40.0,
+      100.0
+     ]
+    },
+    "bodies": 1,
+    "cylinder_groups": [
+     {
+      "axis": "Z",
+      "axis_at_mm": [
+       [
+        13.0,
+        13.0,
+        0.0
+       ]
+      ],
+      "count": 1,
+      "diameter_mm": 10.0,
+      "refs": [
+       "face#4"
+      ],
+      "span_mm": [
+       0.0,
+       100.0
+      ]
+     },
+     {
+      "axis": "X",
+      "axis_at_mm": [
+       [
+        0.0,
+        26.0,
+        75.0
+       ],
+       [
+        0.0,
+        26.0,
+        25.0
+       ]
+      ],
+      "count": 2,
+      "diameter_mm": 9.0,
+      "refs": [
+       "face#17",
+       "face#18"
+      ],
+      "span_mm": [
+       0.0,
+       8.0
+      ]
+     },
+     {
+      "axis": "Y",
+      "axis_at_mm": [
+       [
+        29.0,
+        0.0,
+        80.0
+       ],
+       [
+        43.0,
+        0.0,
+        80.0
+       ],
+       [
+        29.0,
+        0.0,
+        20.0
+       ],
+       [
+        43.0,
+        0.0,
+        20.0
+       ]
+      ],
+      "count": 4,
+      "diameter_mm": 8.0,
+      "refs": [
+       "face#9",
+       "face#11",
+       "face#13",
+       "face#15"
+      ],
+      "span_mm": [
+       0.0,
+       8.0
+      ]
+     }
+    ],
+    "features": [
+     {
+      "name": "草图1",
+      "type": "ProfileFeature"
+     },
+     {
+      "name": "凸台-拉伸1",
+      "type": "Extrusion"
+     },
+     {
+      "name": "基准面1",
+      "type": "RefPlane"
+     },
+     {
+      "name": "基准面2",
+      "type": "RefPlane"
+     },
+     {
+      "name": "草图3",
+      "type": "ProfileFeature"
+     },
+     {
+      "name": "切除-拉伸3",
+      "type": "ICE"
+     },
+     {
+      "name": "草图4",
+      "type": "ProfileFeature"
+     },
+     {
+      "name": "切除-拉伸4",
+      "type": "ICE"
+     }
+    ],
+    "parameters": {},
+    "planar_faces": [
+     {
+      "alias": "bottom",
+      "area_mm2": 5675.47,
+      "at": "Y=0.000",
+      "normal": "-Y",
+      "ref": "face#1",
+      "u_range": [
+       0.0,
+       60.0
+      ],
+      "uv": "u=X,v=Z",
+      "v_range": [
+       0.0,
+       100.0
+      ]
+     },
+     {
+      "area_mm2": 4375.47,
+      "at": "Y=8.000",
+      "normal": "+Y",
+      "ref": "face#3",
+      "u_range": [
+       13.0,
+       60.0
+      ],
+      "uv": "u=X,v=Z",
+      "v_range": [
+       0.0,
+       100.0
+      ]
+     },
+     {
+      "alias": "left",
+      "area_mm2": 3872.77,
+      "at": "X=0.000",
+      "normal": "-X",
+      "ref": "face#0",
+      "u_range": [
+       0.0,
+       100.0
+      ],
+      "uv": "u=Z,v=Y",
+      "v_range": [
+       0.0,
+       40.0
+      ]
+     },
+     {
+      "area_mm2": 2572.77,
+      "at": "X=8.000",
+      "normal": "+X",
+      "ref": "face#5",
+      "u_range": [
+       0.0,
+       100.0
+      ],
+      "uv": "u=Z,v=Y",
+      "v_range": [
+       13.0,
+       40.0
+      ]
+     },
+     {
+      "alias": "right",
+      "area_mm2": 800.0,
+      "at": "X=60.000",
+      "normal": "+X",
+      "ref": "face#2",
+      "u_range": [
+       0.0,
+       100.0
+      ],
+      "uv": "u=Z,v=Y",
+      "v_range": [
+       0.0,
+       8.0
+      ]
+     },
+     {
+      "alias": "top",
+      "area_mm2": 800.0,
+      "at": "Y=40.000",
+      "normal": "+Y",
+      "ref": "face#6",
+      "u_range": [
+       0.0,
+       8.0
+      ],
+      "uv": "u=X,v=Z",
+      "v_range": [
+       0.0,
+       100.0
+      ]
+     },
+     {
+      "alias": "front",
+      "area_mm2": 741.37,
+      "at": "Z=100.000",
+      "normal": "+Z",
+      "ref": "face#7",
+      "u_range": [
+       0.0,
+       60.0
+      ],
+      "uv": "u=X,v=Y",
+      "v_range": [
+       0.0,
+       40.0
+      ]
+     },
+     {
+      "alias": "back",
+      "area_mm2": 741.37,
+      "at": "Z=0.000",
+      "normal": "-Z",
+      "ref": "face#8",
+      "u_range": [
+       0.0,
+       60.0
+      ],
+      "uv": "u=X,v=Y",
+      "v_range": [
+       0.0,
+       40.0
+      ]
+     },
+     {
+      "area_mm2": 112.0,
+      "at": "Z=76.000",
+      "normal": "+Z",
+      "ref": "face#10",
+      "u_range": [
+       29.0,
+       43.0
+      ],
+      "uv": "u=X,v=Y",
+      "v_range": [
+       0.0,
+       8.0
+      ]
+     },
+     {
+      "area_mm2": 112.0,
+      "at": "Z=84.000",
+      "normal": "-Z",
+      "ref": "face#12",
+      "u_range": [
+       29.0,
+       43.0
+      ],
+      "uv": "u=X,v=Y",
+      "v_range": [
+       0.0,
+       8.0
+      ]
+     },
+     {
+      "area_mm2": 112.0,
+      "at": "Z=16.000",
+      "normal": "+Z",
+      "ref": "face#14",
+      "u_range": [
+       29.0,
+       43.0
+      ],
+      "uv": "u=X,v=Y",
+      "v_range": [
+       0.0,
+       8.0
+      ]
+     },
+     {
+      "area_mm2": 112.0,
+      "at": "Z=24.000",
+      "normal": "-Z",
+      "ref": "face#16",
+      "u_range": [
+       29.0,
+       43.0
+      ],
+      "uv": "u=X,v=Y",
+      "v_range": [
+       0.0,
+       8.0
+      ]
+     }
+    ],
+    "reference_planes": [
+     {
+      "at": "Z=40.000",
+      "name": "基准面1",
+      "normal": "+Z",
+      "uv": "u=X,v=Y"
+     },
+     {
+      "at": "Y=8.000",
+      "name": "基准面2",
+      "normal": "+Y",
+      "uv": "u=X,v=Z"
+     }
+    ],
+    "volume_mm3": 70522.41
+   },
+   "finish_reasons": [
+    "tool_calls",
+    "tool_calls",
+    "tool_calls",
+    "tool_calls",
+    "tool_calls",
+    "tool_calls",
+    "tool_calls"
+   ],
+   "llm_calls": 7,
+   "llm_responses": [
+    {
+     "choices": [
+      {
+       "finish_reason": "tool_calls",
+       "index": 0,
+       "logprobs": null,
+       "message": {
+        "annotations": null,
+        "audio": null,
+        "content": null,
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": [
+         {
+          "function": {
+           "arguments": "{\"plane\": \"Z=0\", \"direction\": \"+Z\", \"depth\": 100, \"loops\": [{\"type\": \"path\", \"start\": [0, 0], \"segments\": [{\"to\": [60, 0]}, {\"to\": [60, 8]}, {\"to\": [13, 8]}, {\"to\": [8, 13], \"through\": [9.4645, 9.4645]}, {\"to\": [8, 40]}, {\"to\": [0, 40]}]}]}",
+           "name": "extrude"
+          },
+          "id": "chatcmpl-tool-84af856380c457f0",
+          "type": "function"
+         }
+        ]
+       }
+      }
+     ],
+     "created": 1791517363,
+     "id": "chatcmpl-8d582c1f86cc4179",
+     "model": "Qwen3.8-Flash-Next-FP8",
+     "object": "chat.completion",
+     "service_tier": null,
+     "system_fingerprint": null,
+     "usage": {
+      "completion_tokens": 4290,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": null,
+       "audio_tokens": null,
+       "reasoning_tokens": 4121,
+       "rejected_prediction_tokens": null
+      },
+      "prompt_tokens": 15472,
+      "prompt_tokens_details": null,
+      "total_tokens": 19762
+     }
+    },
+    {
+     "choices": [
+      {
+       "finish_reason": "tool_calls",
+       "index": 0,
+       "logprobs": null,
+       "message": {
+        "annotations": null,
+        "audio": null,
+        "content": null,
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": [
+         {
+          "function": {
+           "arguments": "{\"plane\": \"Z=40\", \"through_all\": true, \"direction\": \"-Z\", \"loops\": [{\"type\": \"slot\", \"start\": [22, 42], \"end\": [44, 42], \"width\": 8}, {\"type\": \"slot\", \"start\": [22, 58], \"end\": [44, 58], \"width\": 8}]}",
+           "name": "cut"
+          },
+          "id": "chatcmpl-tool-a631edcfa705b831",
+          "type": "function"
+         }
+        ]
+       }
+      }
+     ],
+     "created": 1791517422,
+     "id": "chatcmpl-ae90593a63b06a0a",
+     "model": "Qwen3.8-Flash-Next-FP8",
+     "object": "chat.completion",
+     "service_tier": null,
+     "system_fingerprint": null,
+     "usage": {
+      "completion_tokens": 298,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": null,
+       "audio_tokens": null,
+       "reasoning_tokens": 163,
+       "rejected_prediction_tokens": null
+      },
+      "prompt_tokens": 15989,
+      "prompt_tokens_details": null,
+      "total_tokens": 16287
+     }
+    },
+    {
+     "choices": [
+      {
+       "finish_reason": "tool_calls",
+       "index": 0,
+       "logprobs": null,
+       "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "\n\n图纸基体已建好（L 形 60×40×8，长 100，内角 R5）。现在按俯视图/右视图开两个长圆孔和两个 Ø9 通孔。\n\n",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": [
+         {
+          "function": {
+           "arguments": "{\"direction\": \"-Y\", \"through_all\": true, \"loops\": [{\"start\": [29, 20], \"end\": [43, 20], \"type\": \"slot\", \"width\": 8}, {\"start\": [29, 80], \"end\": [43, 80], \"type\": \"slot\", \"width\": 8}], \"plane\": \"Y=8\"}",
+           "name": "cut"
+          },
+          "id": "chatcmpl-tool-8db6214a5da01e7c",
+          "type": "function"
+         }
+        ]
+       }
+      }
+     ],
+     "created": 1791517434,
+     "id": "chatcmpl-95b98e8dfd8ed88e",
+     "model": "Qwen3.8-Flash-Next-FP8",
+     "object": "chat.completion",
+     "service_tier": null,
+     "system_fingerprint": null,
+     "usage": {
+      "completion_tokens": 7455,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": null,
+       "audio_tokens": null,
+       "reasoning_tokens": 7269,
+       "rejected_prediction_tokens": null
+      },
+      "prompt_tokens": 16408,
+      "prompt_tokens_details": null,
+      "total_tokens": 23863
+     }
+    },
+    {
+     "choices": [
+      {
+       "finish_reason": "tool_calls",
+       "index": 0,
+       "logprobs": null,
+       "message": {
+        "annotations": null,
+        "audio": null,
+        "content": null,
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": [
+         {
+          "function": {
+           "arguments": "{\"plane\": \"X=0\", \"diameter\": 9, \"direction\": \"+X\", \"through_all\": true, \"centers\": [[25, 26], [75, 26]]}",
+           "name": "hole"
+          },
+          "id": "chatcmpl-tool-ae9ce24305712bd7",
+          "type": "function"
+         }
+        ]
+       }
+      }
+     ],
+     "created": 1791517538,
+     "id": "chatcmpl-9013ba22926bf182",
+     "model": "Qwen3.8-Flash-Next-FP8",
+     "object": "chat.completion",
+     "service_tier": null,
+     "system_fingerprint": null,
+     "usage": {
+      "completion_tokens": 2601,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": null,
+       "audio_tokens": null,
+       "reasoning_tokens": 2506,
+       "rejected_prediction_tokens": null
+      },
+      "prompt_tokens": 17117,
+      "prompt_tokens_details": null,
+      "total_tokens": 19718
+     }
+    },
+    {
+     "choices": [
+      {
+       "finish_reason": "tool_calls",
+       "index": 0,
+       "logprobs": null,
+       "message": {
+        "annotations": null,
+        "audio": null,
+        "content": null,
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": [
+         {
+          "function": {
+           "arguments": "{\"views\": [\"front\", \"top\", \"right\"]}",
+           "name": "view_model"
+          },
+          "id": "chatcmpl-tool-a38a22d60aaecd55",
+          "type": "function"
+         }
+        ]
+       }
+      }
+     ],
+     "created": 1791517575,
+     "id": "chatcmpl-b3d598f84fc6a2d5",
+     "model": "Qwen3.8-Flash-Next-FP8",
+     "object": "chat.completion",
+     "service_tier": null,
+     "system_fingerprint": null,
+     "usage": {
+      "completion_tokens": 193,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": null,
+       "audio_tokens": null,
+       "reasoning_tokens": 157,
+       "rejected_prediction_tokens": null
+      },
+      "prompt_tokens": 17569,
+      "prompt_tokens_details": null,
+      "total_tokens": 17762
+     }
+    },
+    {
+     "choices": [
+      {
+       "finish_reason": "tool_calls",
+       "index": 0,
+       "logprobs": null,
+       "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "\n\n三视图与图纸完全对应：主视图 L 形（立边 40、横边 60、厚 8、内角 R5），俯视图两个 8×22 长圆孔（中心距 22，前后对称于 Z=50），右视图 2×Ø9 通孔（中心高 26、间距 50）。\n\n",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": [
+         {
+          "function": {
+           "arguments": "{}",
+           "name": "get_model_state"
+          },
+          "id": "chatcmpl-tool-8307780739f4229c",
+          "type": "function"
+         }
+        ]
+       }
+      }
+     ],
+     "created": 1791517581,
+     "id": "chatcmpl-b24039149348cd7a",
+     "model": "Qwen3.8-Flash-Next-FP8",
+     "object": "chat.completion",
+     "service_tier": null,
+     "system_fingerprint": null,
+     "usage": {
+      "completion_tokens": 354,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": null,
+       "audio_tokens": null,
+       "reasoning_tokens": 253,
+       "rejected_prediction_tokens": null
+      },
+      "prompt_tokens": 18431,
+      "prompt_tokens_details": null,
+      "total_tokens": 18785
+     }
+    },
+    {
+     "choices": [
+      {
+       "finish_reason": "tool_calls",
+       "index": 0,
+       "logprobs": null,
+       "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "\n\n模型核对完毕：单一实体，包围盒 60×40×100 mm；L 形截面（立边高 40、底板长 60、壁厚 8、内侧折弯 R5）；水平板上两个 8×22 两端半圆长圆孔（中心距 60，前后对称于 Z=50）；立板上 2×Ø9 通孔（中心高 Y=26，间距 50）。\n\n",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": [
+         {
+          "function": {
+           "arguments": "{\"summary\": \"角钢支架（D09），单一实体，包络 60(X)×40(Y)×100(Z) mm。\\n1) 基体：在 Z=0 平面画 L 形截面（底板 X 0→60 厚 8，立板 Y 0→40 厚 8，内侧折弯 R5）沿 +Z 拉伸 100 mm。\\n2) 水平板长圆孔：在 Y=8 平面上切两个 8 宽、中心线长 14（总长 22）两端半圆的槽，轴线位于 Z=20 与 Z=80（中心距 60，前后对称），沿 -Y 贯穿。\\n3) 立板 2×Ø9 通孔：在 X=0 平面上打 Ø9 通孔，圆心 (Y=26, Z=25) 与 (Y=26, Z=75)，中心距 50，沿 +X 贯穿立板。\\n体积 70522 mm³，bodies=1，与三视图各视图尺寸一致。\"}",
+           "name": "finish"
+          },
+          "id": "chatcmpl-tool-b91e7ef2e28264c8",
+          "type": "function"
+         }
+        ]
+       }
+      }
+     ],
+     "created": 1791517587,
+     "id": "chatcmpl-8ff4bc51fa4a6a24",
+     "model": "Qwen3.8-Flash-Next-FP8",
+     "object": "chat.completion",
+     "service_tier": null,
+     "system_fingerprint": null,
+     "usage": {
+      "completion_tokens": 503,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": null,
+       "audio_tokens": null,
+       "reasoning_tokens": 119,
+       "rejected_prediction_tokens": null
+      },
+      "prompt_tokens": 20167,
+      "prompt_tokens_details": null,
+      "total_tokens": 20670
+     }
+    }
+   ],
+   "reasoning_effort": "medium",
+   "resumed": {
+    "from_llm_calls": 0,
+    "mismatch": null,
+    "replayed_tools": 0
+   },
+   "status": "finished",
+   "summary": "角钢支架（D09），单一实体，包络 60(X)×40(Y)×100(Z) mm。\n1) 基体：在 Z=0 平面画 L 形截面（底板 X 0→60 厚 8，立板 Y 0→40 厚 8，内侧折弯 R5）沿 +Z 拉伸 100 mm。\n2) 水平板长圆孔：在 Y=8 平面上切两个 8 宽、中心线长 14（总长 22）两端半圆的槽，轴线位于 Z=20 与 Z=80（中心距 60，前后对称），沿 -Y 贯穿。\n3) 立板 2×Ø9 通孔：在 X=0 平面上打 Ø9 通孔，圆心 (Y=26, Z=25) 与 (Y=26, Z=75)，中心距 50，沿 +X 贯穿立板。\n体积 70522 mm³，bodies=1，与三视图各视图尺寸一致。",
+   "token_usage": {
+    "calls": 7,
+    "completion_tokens": 15694,
+    "prompt_tokens": 121153,
+    "total_tokens": 136847
+   },
+   "tool_calls": [
+    {
+     "args": {
+      "depth": 100,
+      "direction": "+Z",
+      "loops": [
+       {
+        "segments": [
+         {
+          "to": [
+           60,
+           0
+          ]
+         },
+         {
+          "to": [
+           60,
+           8
+          ]
+         },
+         {
+          "to": [
+           13,
+           8
+          ]
+         },
+         {
+          "through": [
+           9.4645,
+           9.4645
+          ],
+          "to": [
+           8,
+           13
+          ]
+         },
+         {
+          "to": [
+           8,
+           40
+          ]
+         },
+         {
+          "to": [
+           0,
+           40
+          ]
+         }
+        ],
+        "start": [
+         0,
+         0
+        ],
+        "type": "path"
+       }
+      ],
+      "plane": "Z=0"
+     },
+     "error_code": null,
+     "message": "",
+     "ok": true,
+     "tool": "extrude"
+    },
+    {
+     "args": {
+      "direction": "-Z",
+      "loops": [
+       {
+        "end": [
+         44,
+         42
+        ],
+        "start": [
+         22,
+         42
+        ],
+        "type": "slot",
+        "width": 8
+       },
+       {
+        "end": [
+         44,
+         58
+        ],
+        "start": [
+         22,
+         58
+        ],
+        "type": "slot",
+        "width": 8
+       }
+      ],
+      "plane": "Z=40",
+      "through_all": true
+     },
+     "error_code": "FEATURE_FAILED",
+     "message": "[FEATURE_FAILED] feature_cut_extrusion: 切除拉伸失败，请确保草图闭合且位于实体面上。请查看 C# 控制台的调试信息。",
+     "ok": false,
+     "tool": "cut"
+    },
+    {
+     "args": {
+      "direction": "-Y",
+      "loops": [
+       {
+        "end": [
+         43,
+         20
+        ],
+        "start": [
+         29,
+         20
+        ],
+        "type": "slot",
+        "width": 8
+       },
+       {
+        "end": [
+         43,
+         80
+        ],
+        "start": [
+         29,
+         80
+        ],
+        "type": "slot",
+        "width": 8
+       }
+      ],
+      "plane": "Y=8",
+      "through_all": true
+     },
+     "error_code": null,
+     "message": "",
+     "ok": true,
+     "tool": "cut"
+    },
+    {
+     "args": {
+      "centers": [
+       [
+        25,
+        26
+       ],
+       [
+        75,
+        26
+       ]
+      ],
+      "diameter": 9,
+      "direction": "+X",
+      "plane": "X=0",
+      "through_all": true
+     },
+     "error_code": null,
+     "message": "",
+     "ok": true,
+     "tool": "hole"
+    },
+    {
+     "args": {
+      "views": [
+       "front",
+       "top",
+       "right"
+      ]
+     },
+     "error_code": null,
+     "message": "",
+     "ok": true,
+     "tool": "view_model"
+    },
+    {
+     "args": {},
+     "error_code": null,
+     "message": "",
+     "ok": true,
+     "tool": "get_model_state"
+    },
+    {
+     "args": {
+      "summary": "角钢支架（D09），单一实体，包络 60(X)×40(Y)×100(Z) mm。\n1) 基体：在 Z=0 平面画 L 形截面（底板 X 0→60 厚 8，立板 Y 0→40 厚 8，内侧折弯 R5）沿 +Z 拉伸 100 mm。\n2) 水平板长圆孔：在 Y=8 平面上切两个 8 宽、中心线长 14（总长 22）两端半圆的槽，轴线位于 Z=20 与 Z=80（中心距 60，前后对称），沿 -Y 贯穿。\n3) 立板 2×Ø9 通孔：在 X=0 平面上打 Ø9 通孔，圆心 (Y=26, Z=25) 与 (Y=26, Z=75)，中心距 50，沿 +X 贯穿立板。\n体积 70522 mm³，bodies=1，与三视图各视图尺寸一致。"
+     },
+     "error_code": null,
+     "message": "",
+     "ok": true,
+     "tool": "finish"
+    }
+   ],
+   "view_tool": true
+  }
+ },
+ "error": null
+}

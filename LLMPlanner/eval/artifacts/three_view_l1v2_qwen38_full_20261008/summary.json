@@ -1,0 +1,844 @@
+{
+  "name": "three_view_l1v2_qwen38_full_20261008",
+  "config": {
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "reasoning_effort": "medium",
+    "context_limit": 73728,
+    "view_tool": true,
+    "max_llm_calls": 40,
+    "repeats": 1
+  },
+  "n": 50,
+  "finished": 50,
+  "rubric_mean": 95.1,
+  "image_mean": 98.04,
+  "accepted": 40,
+  "hard_ok": 48,
+  "groups": {
+    "b": {
+      "n": 9,
+      "rubric_mean": 100.0,
+      "image_mean": 100.0,
+      "accepted": 9
+    },
+    "c": {
+      "n": 4,
+      "rubric_mean": 87.86,
+      "image_mean": 98.32,
+      "accepted": 2
+    },
+    "d": {
+      "n": 37,
+      "rubric_mean": 94.69,
+      "image_mean": 97.53,
+      "accepted": 29
+    }
+  },
+  "llm_calls": 452,
+  "prompt_tokens": 8347027,
+  "completion_tokens": 961675,
+  "duration_hours": 4.29,
+  "cases": [
+    {
+      "case": "b01_l_bracket",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 4,
+      "tokens": {
+        "calls": 4,
+        "completion_tokens": 955,
+        "prompt_tokens": 66101,
+        "total_tokens": 67056
+      },
+      "duration_seconds": 30.66
+    },
+    {
+      "case": "b02_plate_with_holes",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 3,
+      "tokens": {
+        "calls": 3,
+        "completion_tokens": 708,
+        "prompt_tokens": 48957,
+        "total_tokens": 49665
+      },
+      "duration_seconds": 32.35
+    },
+    {
+      "case": "b03_t_bracket",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 4,
+      "tokens": {
+        "calls": 4,
+        "completion_tokens": 1296,
+        "prompt_tokens": 64569,
+        "total_tokens": 65865
+      },
+      "duration_seconds": 30.43
+    },
+    {
+      "case": "b04_keycap",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 4,
+      "tokens": {
+        "calls": 4,
+        "completion_tokens": 4225,
+        "prompt_tokens": 63449,
+        "total_tokens": 67674
+      },
+      "duration_seconds": 70.73
+    },
+    {
+      "case": "b05_keycap_full",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 6,
+      "tokens": {
+        "calls": 6,
+        "completion_tokens": 12871,
+        "prompt_tokens": 99424,
+        "total_tokens": 112295
+      },
+      "duration_seconds": 190.08
+    },
+    {
+      "case": "b06_lock_striker",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 4,
+      "tokens": {
+        "calls": 4,
+        "completion_tokens": 2242,
+        "prompt_tokens": 64213,
+        "total_tokens": 66455
+      },
+      "duration_seconds": 46.42
+    },
+    {
+      "case": "b07_switch_panel",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 5,
+      "tokens": {
+        "calls": 5,
+        "completion_tokens": 1761,
+        "prompt_tokens": 82771,
+        "total_tokens": 84532
+      },
+      "duration_seconds": 52.32
+    },
+    {
+      "case": "b11_gear_disc",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 5,
+      "tokens": {
+        "calls": 5,
+        "completion_tokens": 887,
+        "prompt_tokens": 82964,
+        "total_tokens": 83851
+      },
+      "duration_seconds": 42.19
+    },
+    {
+      "case": "b22_round_bowl",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 7,
+      "tokens": {
+        "calls": 7,
+        "completion_tokens": 7471,
+        "prompt_tokens": 116094,
+        "total_tokens": 123565
+      },
+      "duration_seconds": 122.6
+    },
+    {
+      "case": "c1_mech_keyboard",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 6,
+      "tokens": {
+        "calls": 6,
+        "completion_tokens": 4501,
+        "prompt_tokens": 112056,
+        "total_tokens": 116557
+      },
+      "duration_seconds": 157.52
+    },
+    {
+      "case": "c2_gearbox",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 7,
+      "tokens": {
+        "calls": 7,
+        "completion_tokens": 13139,
+        "prompt_tokens": 124616,
+        "total_tokens": 137755
+      },
+      "duration_seconds": 203.97
+    },
+    {
+      "case": "c3_gear_pair",
+      "status": "finished",
+      "rubric_score": 71.43,
+      "image_score": 99.75,
+      "hard_ok": false,
+      "accepted": false,
+      "llm_calls": 30,
+      "tokens": {
+        "calls": 30,
+        "completion_tokens": 73795,
+        "prompt_tokens": 679561,
+        "total_tokens": 753356
+      },
+      "duration_seconds": 1341.63
+    },
+    {
+      "case": "c4_desktop_pen_holder",
+      "status": "finished",
+      "rubric_score": 80.0,
+      "image_score": 93.53,
+      "hard_ok": true,
+      "accepted": false,
+      "llm_calls": 26,
+      "tokens": {
+        "calls": 26,
+        "completion_tokens": 66348,
+        "prompt_tokens": 554402,
+        "total_tokens": 620750
+      },
+      "duration_seconds": 1105.15
+    },
+    {
+      "case": "d01_v_block",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 6,
+      "tokens": {
+        "calls": 6,
+        "completion_tokens": 10933,
+        "prompt_tokens": 100569,
+        "total_tokens": 111502
+      },
+      "duration_seconds": 165.52
+    },
+    {
+      "case": "d02_bearing_block",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 11,
+      "tokens": {
+        "calls": 11,
+        "completion_tokens": 7514,
+        "prompt_tokens": 199683,
+        "total_tokens": 207197
+      },
+      "duration_seconds": 157.77
+    },
+    {
+      "case": "d03_rib_bracket",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 26,
+      "tokens": {
+        "calls": 26,
+        "completion_tokens": 167381,
+        "prompt_tokens": 507332,
+        "total_tokens": 674713
+      },
+      "duration_seconds": 2232.85
+    },
+    {
+      "case": "d04_flange_cover",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 7,
+      "tokens": {
+        "calls": 7,
+        "completion_tokens": 8441,
+        "prompt_tokens": 120377,
+        "total_tokens": 128818
+      },
+      "duration_seconds": 136.47
+    },
+    {
+      "case": "d05_stepped_shaft",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 5,
+      "tokens": {
+        "calls": 5,
+        "completion_tokens": 3811,
+        "prompt_tokens": 88099,
+        "total_tokens": 91910
+      },
+      "duration_seconds": 87.11
+    },
+    {
+      "case": "d06_u_clevis",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 6,
+      "tokens": {
+        "calls": 6,
+        "completion_tokens": 7938,
+        "prompt_tokens": 102362,
+        "total_tokens": 110300
+      },
+      "duration_seconds": 139.6
+    },
+    {
+      "case": "d07_eccentric_cam",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 8,
+      "tokens": {
+        "calls": 8,
+        "completion_tokens": 4933,
+        "prompt_tokens": 137205,
+        "total_tokens": 142138
+      },
+      "duration_seconds": 101.29
+    },
+    {
+      "case": "d08_pipe_tee",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 10,
+      "tokens": {
+        "calls": 10,
+        "completion_tokens": 12233,
+        "prompt_tokens": 186848,
+        "total_tokens": 199081
+      },
+      "duration_seconds": 227.41
+    },
+    {
+      "case": "d09_angle_bracket",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 7,
+      "tokens": {
+        "calls": 7,
+        "completion_tokens": 15694,
+        "prompt_tokens": 121153,
+        "total_tokens": 136847
+      },
+      "duration_seconds": 239.18
+    },
+    {
+      "case": "d10_clamp_plate",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 5,
+      "tokens": {
+        "calls": 5,
+        "completion_tokens": 5141,
+        "prompt_tokens": 83829,
+        "total_tokens": 88970
+      },
+      "duration_seconds": 104.27
+    },
+    {
+      "case": "d11_dovetail_slide",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 7,
+      "tokens": {
+        "calls": 7,
+        "completion_tokens": 7032,
+        "prompt_tokens": 122120,
+        "total_tokens": 129152
+      },
+      "duration_seconds": 128.4
+    },
+    {
+      "case": "d12_cut_block",
+      "status": "finished",
+      "rubric_score": 71.43,
+      "image_score": 67.33,
+      "hard_ok": true,
+      "accepted": false,
+      "llm_calls": 18,
+      "tokens": {
+        "calls": 18,
+        "completion_tokens": 64652,
+        "prompt_tokens": 333079,
+        "total_tokens": 397731
+      },
+      "duration_seconds": 916.48
+    },
+    {
+      "case": "d13_v_pulley",
+      "status": "finished",
+      "rubric_score": 77.78,
+      "image_score": 81.5,
+      "hard_ok": true,
+      "accepted": false,
+      "llm_calls": 8,
+      "tokens": {
+        "calls": 8,
+        "completion_tokens": 28136,
+        "prompt_tokens": 146463,
+        "total_tokens": 174599
+      },
+      "duration_seconds": 413.56
+    },
+    {
+      "case": "d14_link_rod",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 7,
+      "tokens": {
+        "calls": 7,
+        "completion_tokens": 10118,
+        "prompt_tokens": 131374,
+        "total_tokens": 141492
+      },
+      "duration_seconds": 186.75
+    },
+    {
+      "case": "d15_motor_mount",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 14,
+      "tokens": {
+        "calls": 14,
+        "completion_tokens": 79610,
+        "prompt_tokens": 265431,
+        "total_tokens": 345041
+      },
+      "duration_seconds": 1145.44
+    },
+    {
+      "case": "d16_heat_sink",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 5,
+      "tokens": {
+        "calls": 5,
+        "completion_tokens": 3358,
+        "prompt_tokens": 84252,
+        "total_tokens": 87610
+      },
+      "duration_seconds": 94.69
+    },
+    {
+      "case": "d17_pipe_clamp",
+      "status": "finished",
+      "rubric_score": 57.14,
+      "image_score": 83.21,
+      "hard_ok": false,
+      "accepted": false,
+      "llm_calls": 14,
+      "tokens": {
+        "calls": 14,
+        "completion_tokens": 27997,
+        "prompt_tokens": 273853,
+        "total_tokens": 301850
+      },
+      "duration_seconds": 435.44
+    },
+    {
+      "case": "d18_gear_rack",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 99.51,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 7,
+      "tokens": {
+        "calls": 7,
+        "completion_tokens": 10485,
+        "prompt_tokens": 121660,
+        "total_tokens": 132145
+      },
+      "duration_seconds": 197.04
+    },
+    {
+      "case": "d19_hinge_leaf",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 11,
+      "tokens": {
+        "calls": 11,
+        "completion_tokens": 18723,
+        "prompt_tokens": 205228,
+        "total_tokens": 223951
+      },
+      "duration_seconds": 362.77
+    },
+    {
+      "case": "d20_ribbed_base",
+      "status": "finished",
+      "rubric_score": 85.71,
+      "image_score": 96.53,
+      "hard_ok": true,
+      "accepted": false,
+      "llm_calls": 7,
+      "tokens": {
+        "calls": 7,
+        "completion_tokens": 22938,
+        "prompt_tokens": 125575,
+        "total_tokens": 148513
+      },
+      "duration_seconds": 388.32
+    },
+    {
+      "case": "d21_t_slot_block",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 6,
+      "tokens": {
+        "calls": 6,
+        "completion_tokens": 2080,
+        "prompt_tokens": 102223,
+        "total_tokens": 104303
+      },
+      "duration_seconds": 56.92
+    },
+    {
+      "case": "d22_flanged_bushing",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 8,
+      "tokens": {
+        "calls": 8,
+        "completion_tokens": 9290,
+        "prompt_tokens": 136114,
+        "total_tokens": 145404
+      },
+      "duration_seconds": 154.69
+    },
+    {
+      "case": "d23_cross_plate",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 18,
+      "tokens": {
+        "calls": 18,
+        "completion_tokens": 27724,
+        "prompt_tokens": 344902,
+        "total_tokens": 372626
+      },
+      "duration_seconds": 433.52
+    },
+    {
+      "case": "d24_u_channel",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 8,
+      "tokens": {
+        "calls": 8,
+        "completion_tokens": 3581,
+        "prompt_tokens": 138391,
+        "total_tokens": 141972
+      },
+      "duration_seconds": 83.64
+    },
+    {
+      "case": "d25_step_pin",
+      "status": "finished",
+      "rubric_score": 87.5,
+      "image_score": 94.96,
+      "hard_ok": true,
+      "accepted": false,
+      "llm_calls": 17,
+      "tokens": {
+        "calls": 17,
+        "completion_tokens": 33834,
+        "prompt_tokens": 321655,
+        "total_tokens": 355489
+      },
+      "duration_seconds": 509.25
+    },
+    {
+      "case": "d26_square_flange",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 5,
+      "tokens": {
+        "calls": 5,
+        "completion_tokens": 2270,
+        "prompt_tokens": 84237,
+        "total_tokens": 86507
+      },
+      "duration_seconds": 61.38
+    },
+    {
+      "case": "d27_guide_rail",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 4,
+      "tokens": {
+        "calls": 4,
+        "completion_tokens": 1875,
+        "prompt_tokens": 65660,
+        "total_tokens": 67535
+      },
+      "duration_seconds": 48.66
+    },
+    {
+      "case": "d28_round_cup",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 10,
+      "tokens": {
+        "calls": 10,
+        "completion_tokens": 40226,
+        "prompt_tokens": 168257,
+        "total_tokens": 208483
+      },
+      "duration_seconds": 549.36
+    },
+    {
+      "case": "d29_hanger_bracket",
+      "status": "finished",
+      "rubric_score": 71.43,
+      "image_score": 93.98,
+      "hard_ok": true,
+      "accepted": false,
+      "llm_calls": 8,
+      "tokens": {
+        "calls": 8,
+        "completion_tokens": 12434,
+        "prompt_tokens": 143982,
+        "total_tokens": 156416
+      },
+      "duration_seconds": 238.14
+    },
+    {
+      "case": "d30_valve_body",
+      "status": "finished",
+      "rubric_score": 85.71,
+      "image_score": 98.24,
+      "hard_ok": true,
+      "accepted": false,
+      "llm_calls": 8,
+      "tokens": {
+        "calls": 8,
+        "completion_tokens": 13629,
+        "prompt_tokens": 135956,
+        "total_tokens": 149585
+      },
+      "duration_seconds": 225.64
+    },
+    {
+      "case": "d31_lever_arm",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 19,
+      "tokens": {
+        "calls": 19,
+        "completion_tokens": 55219,
+        "prompt_tokens": 381437,
+        "total_tokens": 436656
+      },
+      "duration_seconds": 873.36
+    },
+    {
+      "case": "d32_tool_holder",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 5,
+      "tokens": {
+        "calls": 5,
+        "completion_tokens": 2105,
+        "prompt_tokens": 86152,
+        "total_tokens": 88257
+      },
+      "duration_seconds": 58.13
+    },
+    {
+      "case": "d33_shell_housing",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 8,
+      "tokens": {
+        "calls": 8,
+        "completion_tokens": 13963,
+        "prompt_tokens": 141548,
+        "total_tokens": 155511
+      },
+      "duration_seconds": 228.35
+    },
+    {
+      "case": "d34_fixture_plate",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 7,
+      "tokens": {
+        "calls": 7,
+        "completion_tokens": 10109,
+        "prompt_tokens": 118480,
+        "total_tokens": 128589
+      },
+      "duration_seconds": 174.52
+    },
+    {
+      "case": "d35_shaft_collar",
+      "status": "finished",
+      "rubric_score": 66.67,
+      "image_score": 93.42,
+      "hard_ok": true,
+      "accepted": false,
+      "llm_calls": 8,
+      "tokens": {
+        "calls": 8,
+        "completion_tokens": 10632,
+        "prompt_tokens": 135228,
+        "total_tokens": 145860
+      },
+      "duration_seconds": 180.83
+    },
+    {
+      "case": "d36_flanged_tube",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 8,
+      "tokens": {
+        "calls": 8,
+        "completion_tokens": 5883,
+        "prompt_tokens": 141782,
+        "total_tokens": 147665
+      },
+      "duration_seconds": 124.01
+    },
+    {
+      "case": "d37_column_base",
+      "status": "finished",
+      "rubric_score": 100.0,
+      "image_score": 100.0,
+      "hard_ok": true,
+      "accepted": true,
+      "llm_calls": 5,
+      "tokens": {
+        "calls": 5,
+        "completion_tokens": 9554,
+        "prompt_tokens": 85354,
+        "total_tokens": 94908
+      },
+      "duration_seconds": 157.0
+    }
+  ]
+}

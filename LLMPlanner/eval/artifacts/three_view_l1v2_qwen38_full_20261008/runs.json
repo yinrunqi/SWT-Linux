@@ -1,0 +1,1500 @@
+[
+  {
+    "case": "b01_l_bracket",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b01_l_bracket_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b01_l_bracket_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 4,
+      "completion_tokens": 955,
+      "prompt_tokens": 66101,
+      "total_tokens": 67056
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 4,
+    "tool_calls": 4,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b01_l_bracket_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b01_l_bracket_r1.SLDPRT"
+    },
+    "duration_seconds": 30.66
+  },
+  {
+    "case": "b02_plate_with_holes",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b02_plate_with_holes_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b02_plate_with_holes_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 3,
+      "completion_tokens": 708,
+      "prompt_tokens": 48957,
+      "total_tokens": 49665
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 3,
+    "tool_calls": 3,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b02_plate_with_holes_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b02_plate_with_holes_r1.SLDPRT"
+    },
+    "duration_seconds": 32.35
+  },
+  {
+    "case": "b03_t_bracket",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b03_t_bracket_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b03_t_bracket_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 4,
+      "completion_tokens": 1296,
+      "prompt_tokens": 64569,
+      "total_tokens": 65865
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 4,
+    "tool_calls": 4,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b03_t_bracket_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b03_t_bracket_r1.SLDPRT"
+    },
+    "duration_seconds": 30.43
+  },
+  {
+    "case": "b04_keycap",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b04_keycap_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b04_keycap_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 4,
+      "completion_tokens": 4225,
+      "prompt_tokens": 63449,
+      "total_tokens": 67674
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 4,
+    "tool_calls": 4,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b04_keycap_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b04_keycap_r1.SLDPRT"
+    },
+    "duration_seconds": 70.73
+  },
+  {
+    "case": "b05_keycap_full",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b05_keycap_full_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b05_keycap_full_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 6,
+      "completion_tokens": 12871,
+      "prompt_tokens": 99424,
+      "total_tokens": 112295
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 6,
+    "tool_calls": 6,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b05_keycap_full_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b05_keycap_full_r1.SLDPRT"
+    },
+    "duration_seconds": 190.08
+  },
+  {
+    "case": "b06_lock_striker",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b06_lock_striker_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b06_lock_striker_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 4,
+      "completion_tokens": 2242,
+      "prompt_tokens": 64213,
+      "total_tokens": 66455
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 4,
+    "tool_calls": 4,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b06_lock_striker_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b06_lock_striker_r1.SLDPRT"
+    },
+    "duration_seconds": 46.42
+  },
+  {
+    "case": "b07_switch_panel",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b07_switch_panel_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b07_switch_panel_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 5,
+      "completion_tokens": 1761,
+      "prompt_tokens": 82771,
+      "total_tokens": 84532
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 5,
+    "tool_calls": 6,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 1,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b07_switch_panel_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b07_switch_panel_r1.SLDPRT"
+    },
+    "duration_seconds": 52.32
+  },
+  {
+    "case": "b11_gear_disc",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b11_gear_disc_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b11_gear_disc_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 5,
+      "completion_tokens": 887,
+      "prompt_tokens": 82964,
+      "total_tokens": 83851
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": {
+      "from_llm_calls": 3,
+      "mismatch": null,
+      "replayed_tools": 3
+    },
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 5,
+    "tool_calls": 6,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b11_gear_disc_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b11_gear_disc_r1.SLDPRT"
+    },
+    "duration_seconds": 42.19
+  },
+  {
+    "case": "b22_round_bowl",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b22_round_bowl_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b22_round_bowl_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 7,
+      "completion_tokens": 7471,
+      "prompt_tokens": 116094,
+      "total_tokens": 123565
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 7,
+    "tool_calls": 7,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b22_round_bowl_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\b22_round_bowl_r1.SLDPRT"
+    },
+    "duration_seconds": 122.6
+  },
+  {
+    "case": "c1_mech_keyboard",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\c1_mech_keyboard_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\c1_mech_keyboard_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 6,
+      "completion_tokens": 4501,
+      "prompt_tokens": 112056,
+      "total_tokens": 116557
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 6,
+    "tool_calls": 6,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 1,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\c1_mech_keyboard_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\c1_mech_keyboard_r1.SLDPRT"
+    },
+    "duration_seconds": 157.52
+  },
+  {
+    "case": "c2_gearbox",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\c2_gearbox_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\c2_gearbox_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 7,
+      "completion_tokens": 13139,
+      "prompt_tokens": 124616,
+      "total_tokens": 137755
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 7,
+    "tool_calls": 9,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\c2_gearbox_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\c2_gearbox_r1.SLDPRT"
+    },
+    "duration_seconds": 203.97
+  },
+  {
+    "case": "c3_gear_pair",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\c3_gear_pair_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\c3_gear_pair_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 30,
+      "completion_tokens": 73795,
+      "prompt_tokens": 679561,
+      "total_tokens": 753356
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": {
+      "from_llm_calls": 1,
+      "mismatch": null,
+      "replayed_tools": 1
+    },
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 30,
+    "tool_calls": 29,
+    "failed_modeling_calls": 11,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\c3_gear_pair_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\c3_gear_pair_r1.SLDPRT"
+    },
+    "duration_seconds": 1341.63
+  },
+  {
+    "case": "c4_desktop_pen_holder",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\c4_desktop_pen_holder_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\c4_desktop_pen_holder_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 26,
+      "completion_tokens": 66348,
+      "prompt_tokens": 554402,
+      "total_tokens": 620750
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": {
+      "from_llm_calls": 0,
+      "mismatch": null,
+      "replayed_tools": 0
+    },
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 26,
+    "tool_calls": 25,
+    "failed_modeling_calls": 1,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\c4_desktop_pen_holder_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\c4_desktop_pen_holder_r1.SLDPRT"
+    },
+    "duration_seconds": 1105.15
+  },
+  {
+    "case": "d01_v_block",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d01_v_block_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d01_v_block_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 6,
+      "completion_tokens": 10933,
+      "prompt_tokens": 100569,
+      "total_tokens": 111502
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": {
+      "from_llm_calls": 0,
+      "mismatch": null,
+      "replayed_tools": 0
+    },
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 6,
+    "tool_calls": 6,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d01_v_block_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d01_v_block_r1.SLDPRT"
+    },
+    "duration_seconds": 165.52
+  },
+  {
+    "case": "d02_bearing_block",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d02_bearing_block_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d02_bearing_block_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 11,
+      "completion_tokens": 7514,
+      "prompt_tokens": 199683,
+      "total_tokens": 207197
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": {
+      "from_llm_calls": 0,
+      "mismatch": null,
+      "replayed_tools": 0
+    },
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 11,
+    "tool_calls": 11,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d02_bearing_block_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d02_bearing_block_r1.SLDPRT"
+    },
+    "duration_seconds": 157.77
+  },
+  {
+    "case": "d03_rib_bracket",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d03_rib_bracket_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d03_rib_bracket_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 26,
+      "completion_tokens": 167381,
+      "prompt_tokens": 507332,
+      "total_tokens": 674713
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": {
+      "from_llm_calls": 0,
+      "mismatch": null,
+      "replayed_tools": 0
+    },
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 26,
+    "tool_calls": 28,
+    "failed_modeling_calls": 1,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d03_rib_bracket_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d03_rib_bracket_r1.SLDPRT"
+    },
+    "duration_seconds": 2232.85
+  },
+  {
+    "case": "d04_flange_cover",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d04_flange_cover_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d04_flange_cover_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 7,
+      "completion_tokens": 8441,
+      "prompt_tokens": 120377,
+      "total_tokens": 128818
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": {
+      "from_llm_calls": 0,
+      "mismatch": null,
+      "replayed_tools": 0
+    },
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 7,
+    "tool_calls": 8,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d04_flange_cover_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d04_flange_cover_r1.SLDPRT"
+    },
+    "duration_seconds": 136.47
+  },
+  {
+    "case": "d05_stepped_shaft",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d05_stepped_shaft_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d05_stepped_shaft_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 5,
+      "completion_tokens": 3811,
+      "prompt_tokens": 88099,
+      "total_tokens": 91910
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": {
+      "from_llm_calls": 0,
+      "mismatch": null,
+      "replayed_tools": 0
+    },
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 5,
+    "tool_calls": 7,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d05_stepped_shaft_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d05_stepped_shaft_r1.SLDPRT"
+    },
+    "duration_seconds": 87.11
+  },
+  {
+    "case": "d06_u_clevis",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d06_u_clevis_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d06_u_clevis_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 6,
+      "completion_tokens": 7938,
+      "prompt_tokens": 102362,
+      "total_tokens": 110300
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": {
+      "from_llm_calls": 0,
+      "mismatch": null,
+      "replayed_tools": 0
+    },
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 6,
+    "tool_calls": 9,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d06_u_clevis_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d06_u_clevis_r1.SLDPRT"
+    },
+    "duration_seconds": 139.6
+  },
+  {
+    "case": "d07_eccentric_cam",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d07_eccentric_cam_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d07_eccentric_cam_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 8,
+      "completion_tokens": 4933,
+      "prompt_tokens": 137205,
+      "total_tokens": 142138
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": {
+      "from_llm_calls": 0,
+      "mismatch": null,
+      "replayed_tools": 0
+    },
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 8,
+    "tool_calls": 8,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 1,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d07_eccentric_cam_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d07_eccentric_cam_r1.SLDPRT"
+    },
+    "duration_seconds": 101.29
+  },
+  {
+    "case": "d08_pipe_tee",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d08_pipe_tee_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d08_pipe_tee_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 10,
+      "completion_tokens": 12233,
+      "prompt_tokens": 186848,
+      "total_tokens": 199081
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": {
+      "from_llm_calls": 0,
+      "mismatch": null,
+      "replayed_tools": 0
+    },
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 10,
+    "tool_calls": 13,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d08_pipe_tee_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d08_pipe_tee_r1.SLDPRT"
+    },
+    "duration_seconds": 227.41
+  },
+  {
+    "case": "d09_angle_bracket",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d09_angle_bracket_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d09_angle_bracket_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 7,
+      "completion_tokens": 15694,
+      "prompt_tokens": 121153,
+      "total_tokens": 136847
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": {
+      "from_llm_calls": 0,
+      "mismatch": null,
+      "replayed_tools": 0
+    },
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 7,
+    "tool_calls": 7,
+    "failed_modeling_calls": 1,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d09_angle_bracket_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d09_angle_bracket_r1.SLDPRT"
+    },
+    "duration_seconds": 239.18
+  },
+  {
+    "case": "d10_clamp_plate",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d10_clamp_plate_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d10_clamp_plate_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 5,
+      "completion_tokens": 5141,
+      "prompt_tokens": 83829,
+      "total_tokens": 88970
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 5,
+    "tool_calls": 7,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d10_clamp_plate_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d10_clamp_plate_r1.SLDPRT"
+    },
+    "duration_seconds": 104.27
+  },
+  {
+    "case": "d11_dovetail_slide",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d11_dovetail_slide_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d11_dovetail_slide_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 7,
+      "completion_tokens": 7032,
+      "prompt_tokens": 122120,
+      "total_tokens": 129152
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 7,
+    "tool_calls": 9,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d11_dovetail_slide_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d11_dovetail_slide_r1.SLDPRT"
+    },
+    "duration_seconds": 128.4
+  },
+  {
+    "case": "d12_cut_block",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d12_cut_block_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d12_cut_block_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 18,
+      "completion_tokens": 64652,
+      "prompt_tokens": 333079,
+      "total_tokens": 397731
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 18,
+    "tool_calls": 18,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d12_cut_block_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d12_cut_block_r1.SLDPRT"
+    },
+    "duration_seconds": 916.48
+  },
+  {
+    "case": "d13_v_pulley",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d13_v_pulley_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d13_v_pulley_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 8,
+      "completion_tokens": 28136,
+      "prompt_tokens": 146463,
+      "total_tokens": 174599
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 8,
+    "tool_calls": 9,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 1,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d13_v_pulley_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d13_v_pulley_r1.SLDPRT"
+    },
+    "duration_seconds": 413.56
+  },
+  {
+    "case": "d14_link_rod",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d14_link_rod_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d14_link_rod_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 7,
+      "completion_tokens": 10118,
+      "prompt_tokens": 131374,
+      "total_tokens": 141492
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 7,
+    "tool_calls": 10,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d14_link_rod_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d14_link_rod_r1.SLDPRT"
+    },
+    "duration_seconds": 186.75
+  },
+  {
+    "case": "d15_motor_mount",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d15_motor_mount_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d15_motor_mount_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 14,
+      "completion_tokens": 79610,
+      "prompt_tokens": 265431,
+      "total_tokens": 345041
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 14,
+    "tool_calls": 17,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d15_motor_mount_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d15_motor_mount_r1.SLDPRT"
+    },
+    "duration_seconds": 1145.44
+  },
+  {
+    "case": "d16_heat_sink",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d16_heat_sink_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d16_heat_sink_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 5,
+      "completion_tokens": 3358,
+      "prompt_tokens": 84252,
+      "total_tokens": 87610
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 5,
+    "tool_calls": 6,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 1,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d16_heat_sink_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d16_heat_sink_r1.SLDPRT"
+    },
+    "duration_seconds": 94.69
+  },
+  {
+    "case": "d17_pipe_clamp",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d17_pipe_clamp_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d17_pipe_clamp_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 14,
+      "completion_tokens": 27997,
+      "prompt_tokens": 273853,
+      "total_tokens": 301850
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 14,
+    "tool_calls": 15,
+    "failed_modeling_calls": 4,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d17_pipe_clamp_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d17_pipe_clamp_r1.SLDPRT"
+    },
+    "duration_seconds": 435.44
+  },
+  {
+    "case": "d18_gear_rack",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d18_gear_rack_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d18_gear_rack_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 7,
+      "completion_tokens": 10485,
+      "prompt_tokens": 121660,
+      "total_tokens": 132145
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 7,
+    "tool_calls": 7,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d18_gear_rack_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d18_gear_rack_r1.SLDPRT"
+    },
+    "duration_seconds": 197.04
+  },
+  {
+    "case": "d19_hinge_leaf",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d19_hinge_leaf_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d19_hinge_leaf_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 11,
+      "completion_tokens": 18723,
+      "prompt_tokens": 205228,
+      "total_tokens": 223951
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 11,
+    "tool_calls": 14,
+    "failed_modeling_calls": 3,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d19_hinge_leaf_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d19_hinge_leaf_r1.SLDPRT"
+    },
+    "duration_seconds": 362.77
+  },
+  {
+    "case": "d20_ribbed_base",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d20_ribbed_base_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d20_ribbed_base_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 7,
+      "completion_tokens": 22938,
+      "prompt_tokens": 125575,
+      "total_tokens": 148513
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 7,
+    "tool_calls": 10,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 1,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d20_ribbed_base_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d20_ribbed_base_r1.SLDPRT"
+    },
+    "duration_seconds": 388.32
+  },
+  {
+    "case": "d21_t_slot_block",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d21_t_slot_block_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d21_t_slot_block_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 6,
+      "completion_tokens": 2080,
+      "prompt_tokens": 102223,
+      "total_tokens": 104303
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 6,
+    "tool_calls": 6,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d21_t_slot_block_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d21_t_slot_block_r1.SLDPRT"
+    },
+    "duration_seconds": 56.92
+  },
+  {
+    "case": "d22_flanged_bushing",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d22_flanged_bushing_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d22_flanged_bushing_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 8,
+      "completion_tokens": 9290,
+      "prompt_tokens": 136114,
+      "total_tokens": 145404
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 8,
+    "tool_calls": 8,
+    "failed_modeling_calls": 2,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d22_flanged_bushing_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d22_flanged_bushing_r1.SLDPRT"
+    },
+    "duration_seconds": 154.69
+  },
+  {
+    "case": "d23_cross_plate",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d23_cross_plate_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d23_cross_plate_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 18,
+      "completion_tokens": 27724,
+      "prompt_tokens": 344902,
+      "total_tokens": 372626
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 18,
+    "tool_calls": 18,
+    "failed_modeling_calls": 2,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d23_cross_plate_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d23_cross_plate_r1.SLDPRT"
+    },
+    "duration_seconds": 433.52
+  },
+  {
+    "case": "d24_u_channel",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d24_u_channel_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d24_u_channel_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 8,
+      "completion_tokens": 3581,
+      "prompt_tokens": 138391,
+      "total_tokens": 141972
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 8,
+    "tool_calls": 8,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d24_u_channel_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d24_u_channel_r1.SLDPRT"
+    },
+    "duration_seconds": 83.64
+  },
+  {
+    "case": "d25_step_pin",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d25_step_pin_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d25_step_pin_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 17,
+      "completion_tokens": 33834,
+      "prompt_tokens": 321655,
+      "total_tokens": 355489
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 17,
+    "tool_calls": 19,
+    "failed_modeling_calls": 9,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d25_step_pin_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d25_step_pin_r1.SLDPRT"
+    },
+    "duration_seconds": 509.25
+  },
+  {
+    "case": "d26_square_flange",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d26_square_flange_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d26_square_flange_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 5,
+      "completion_tokens": 2270,
+      "prompt_tokens": 84237,
+      "total_tokens": 86507
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 5,
+    "tool_calls": 7,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d26_square_flange_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d26_square_flange_r1.SLDPRT"
+    },
+    "duration_seconds": 61.38
+  },
+  {
+    "case": "d27_guide_rail",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d27_guide_rail_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d27_guide_rail_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 4,
+      "completion_tokens": 1875,
+      "prompt_tokens": 65660,
+      "total_tokens": 67535
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 4,
+    "tool_calls": 4,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d27_guide_rail_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d27_guide_rail_r1.SLDPRT"
+    },
+    "duration_seconds": 48.66
+  },
+  {
+    "case": "d28_round_cup",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d28_round_cup_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d28_round_cup_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 10,
+      "completion_tokens": 40226,
+      "prompt_tokens": 168257,
+      "total_tokens": 208483
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 10,
+    "tool_calls": 9,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d28_round_cup_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d28_round_cup_r1.SLDPRT"
+    },
+    "duration_seconds": 549.36
+  },
+  {
+    "case": "d29_hanger_bracket",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d29_hanger_bracket_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d29_hanger_bracket_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 8,
+      "completion_tokens": 12434,
+      "prompt_tokens": 143982,
+      "total_tokens": 156416
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 8,
+    "tool_calls": 10,
+    "failed_modeling_calls": 1,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d29_hanger_bracket_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d29_hanger_bracket_r1.SLDPRT"
+    },
+    "duration_seconds": 238.14
+  },
+  {
+    "case": "d30_valve_body",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d30_valve_body_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d30_valve_body_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 8,
+      "completion_tokens": 13629,
+      "prompt_tokens": 135956,
+      "total_tokens": 149585
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 8,
+    "tool_calls": 8,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d30_valve_body_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d30_valve_body_r1.SLDPRT"
+    },
+    "duration_seconds": 225.64
+  },
+  {
+    "case": "d31_lever_arm",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d31_lever_arm_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d31_lever_arm_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 19,
+      "completion_tokens": 55219,
+      "prompt_tokens": 381437,
+      "total_tokens": 436656
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 19,
+    "tool_calls": 24,
+    "failed_modeling_calls": 2,
+    "render_views_calls": 1,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d31_lever_arm_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d31_lever_arm_r1.SLDPRT"
+    },
+    "duration_seconds": 873.36
+  },
+  {
+    "case": "d32_tool_holder",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d32_tool_holder_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d32_tool_holder_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 5,
+      "completion_tokens": 2105,
+      "prompt_tokens": 86152,
+      "total_tokens": 88257
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 5,
+    "tool_calls": 6,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d32_tool_holder_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d32_tool_holder_r1.SLDPRT"
+    },
+    "duration_seconds": 58.13
+  },
+  {
+    "case": "d33_shell_housing",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d33_shell_housing_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d33_shell_housing_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 8,
+      "completion_tokens": 13963,
+      "prompt_tokens": 141548,
+      "total_tokens": 155511
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 8,
+    "tool_calls": 9,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d33_shell_housing_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d33_shell_housing_r1.SLDPRT"
+    },
+    "duration_seconds": 228.35
+  },
+  {
+    "case": "d34_fixture_plate",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d34_fixture_plate_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d34_fixture_plate_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 7,
+      "completion_tokens": 10109,
+      "prompt_tokens": 118480,
+      "total_tokens": 128589
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 7,
+    "tool_calls": 7,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d34_fixture_plate_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d34_fixture_plate_r1.SLDPRT"
+    },
+    "duration_seconds": 174.52
+  },
+  {
+    "case": "d35_shaft_collar",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d35_shaft_collar_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d35_shaft_collar_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 8,
+      "completion_tokens": 10632,
+      "prompt_tokens": 135228,
+      "total_tokens": 145860
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 8,
+    "tool_calls": 8,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d35_shaft_collar_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d35_shaft_collar_r1.SLDPRT"
+    },
+    "duration_seconds": 180.83
+  },
+  {
+    "case": "d36_flanged_tube",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d36_flanged_tube_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d36_flanged_tube_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 8,
+      "completion_tokens": 5883,
+      "prompt_tokens": 141782,
+      "total_tokens": 147665
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 8,
+    "tool_calls": 10,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d36_flanged_tube_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d36_flanged_tube_r1.SLDPRT"
+    },
+    "duration_seconds": 124.01
+  },
+  {
+    "case": "d37_column_base",
+    "repeat": 1,
+    "action_level": "L1_v2",
+    "plan_model": "Qwen3.8-Flash-Next-FP8",
+    "trace": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d37_column_base_r1.trace.json",
+    "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d37_column_base_r1.checkpoint.json",
+    "token_usage": {
+      "calls": 5,
+      "completion_tokens": 9554,
+      "prompt_tokens": 85354,
+      "total_tokens": 94908
+    },
+    "status": "finished",
+    "workflow_error": null,
+    "resumed": null,
+    "reasoning_effort": "medium",
+    "view_tool": true,
+    "context_limit": 73728,
+    "llm_calls": 5,
+    "tool_calls": 7,
+    "failed_modeling_calls": 0,
+    "render_views_calls": 0,
+    "artifacts": {
+      "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d37_column_base_r1.step",
+      "sldprt": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\three_view_l1v2_qwen38_full_20261008\\d37_column_base_r1.SLDPRT"
+    },
+    "duration_seconds": 157.0
+  }
+]

@@ -974,7 +974,14 @@ class WorkflowSessionV2(WorkflowSession):
         if name in _HOLE_TOOLS and args.get("polar") is not None:
             centers = list(self._resolve_numbers(args.get("centers")) or [])
             generated = polar_centers(self._resolve_numbers(args["polar"]))
-            args["centers"] = centers + generated
+            # 模型有时既给 polar，又把极坐标阵列的第一个圆心放进 centers。
+            # 重复圆会生成重合草图实体，SolidWorks 可能长时间卡在切除特征中。
+            merged: list[list[float]] = []
+            for value in centers + generated:
+                center = [float(item) for item in value]
+                if not any(math.dist(center, existing) <= 1e-6 for existing in merged):
+                    merged.append(center)
+            args["centers"] = merged
             self._notes.append(f"polar 生成的圆心 (u,v): {generated}")
         return args
 

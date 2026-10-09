@@ -36,6 +36,8 @@ except ImportError:
     import sw_watchdog
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 RUBRIC_DIR = ROOT / "eval" / "rubrics_three_view"
 PROMPT_FIELDS = {"zh": "prompt", "en": "prompt_en"}
 WORKFLOW_LEVELS = ("L1", "L1_v2")

@@ -193,11 +193,100 @@ Agent 会按模型名自动采用 73,728 token 上下文上限，并使用与 te
 
 `runs.json` 里每次运行另记 LLM 调用数、工具调用数、失败的建模调用数和 `render_views` 调用数。LLM 的完整输出存在 `<case>_r<k>.trace.json`，包括整段对话和每次调用的原始响应。运行过程中每次 LLM 回复、每轮工具后还会写 `<case>_r<k>.checkpoint.json`；中断后在原命令后加 `--resume`，已完成的运行保留，中断的运行从 checkpoint 续跑（与 text-to-CAD 相同），`--sw-restarts N` 可在 SolidWorks 崩溃时自动重启后续跑。`--action-level L0` 仍可使用旧流程：先由 `--vision-model` 把图纸读成结构化中间表示，再生成蓝图交给 L0 多轮 Agent。
 
-这个 track 目前还没有参考结果。
+参考结果见第 6 节。
 
 ---
 
-## 6. 已知局限
+## 6. 参考结果：Qwen3.8-Flash-Next-FP8 + L1_v2
+
+### 6.1 配置
+
+2026-10-08 至 10-09 跑完全部 50 题，每题 1 次，SolidWorks 2025。
+
+| 项 | 取值 |
+|---|---|
+| 模型 | 自部署 `Qwen3.8-Flash-Next-FP8`（`provider=qwenlocal`），图纸作为图片直接输入 |
+| workflow | `--action-level L1_v2`，开放 `view_model` 与 `render_views` |
+| 推理强度 / 上下文 | `reasoning_effort=medium`，73,728 token |
+| 预算 | `--max-llm-calls 40`，`--repeats 1` |
+| 打分 | `geomcheck.three_view`（rubric + 图像分），`geomcheck.bench summary` 汇总 |
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py --action-level L1_v2 --provider qwenlocal `
+    --plan-model Qwen3.8-Flash-Next-FP8 --reasoning-effort medium --max-llm-calls 40 --repeats 1 `
+    --name three_view_l1v2_qwen38_full_20261008 --resume --sw-restarts 3 --sw-max-private-gb 12
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view --artifacts eval\artifacts\three_view_l1v2_qwen38_full_20261008 `
+    --output eval\artifacts\three_view_l1v2_qwen38_full_20261008\scores.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_three_view `
+    summary eval\three_view_l1v2_qwen38_full_20261008_scores.json --repeats 1
+```
+
+运行中途远端 Qwen 服务断网约 11 小时，10 道题（`c3`、`c4`、`d01`–`d08`）因此记为 `llm_error`。网络恢复后，这 10 题全部用 `--resume` 重跑，有 checkpoint 的从 checkpoint 接着跑。`b11_gear_disc` 也曾从 checkpoint 续跑一次：当时多边形阵列孔的圆心有重复，SolidWorks 卡在切除特征里，修复后才续跑（`tools_v2.py` 现在会对 `polar` 生成的圆心和 `centers` 去重）。最终 50 题都是 `finished`，没有遗留外部故障导致的运行。`eval/_run_three_view_until_done.py` 会先轮询 Qwen 的 `/models` 接口，等服务可用后再执行上面的续跑命令，直到 50 题全部完成。
+
+### 6.2 总体结果
+
+| 指标 | 结果 |
+|---|---|
+| rubric 均分 | **95.1**（95% CI [91.8, 97.8]） |
+| pass@1（rubric 全部条目通过） | **0.80**（40/50） |
+| core_form（hard 条目全部通过） | 0.96（48/50） |
+| 显式条目通过 | 331/349 |
+| 图像分均值 | **98.0**；39 题为 100 |
+
+按题目类型：
+
+| 类型 | 题数 | rubric | pass@1 | 图像分 |
+|---|---|---|---|---|
+| 基础零件 | 9 | 100.0 | 1.000 | 100.0 |
+| 组合零件 | 4 | 87.9 | 0.500 | 98.3 |
+| 投影基础零件 | 18 | 95.9 | 0.833 | 97.5 |
+| 投影组合零件 | 19 | 93.6 | 0.737 | 97.6 |
+
+### 6.3 未通过的 10 题
+
+| case | rubric | 图像分 | 失败条目 | 实测情况 |
+|---|---|---|---|---|
+| `c3_gear_pair` | 71.43 | 99.75 | `solids`（hard）、`tips_on_center_line` | 两个齿轮合并成了 1 个实体；中心连线上的材料是连续的 [-24, 114]，两齿轮的齿顶之间应有间隙 |
+| `c4_desktop_pen_holder` | 80.00 | 93.53 | `bottom_slots`、`fillets` | 底部槽的截面位置不对；圆角所在的轴线位置偏离图纸 |
+| `d12_cut_block` | 71.43 | 67.33 | `profile`、`volume` | 斜切面没切到位，体积 85036.5，参考值 71036.5（+19.7%） |
+| `d13_v_pulley` | 77.78 | 81.50 | `grooves`、`volume` | V 槽深度、位置不对，体积 +5.6% |
+| `d17_pipe_clamp` | 57.14 | 83.21 | `solids`（hard）、`bolt_holes`、`volume` | 上下两半合并成了 1 个实体；螺栓孔只做了 2 个（应有 4 个），孔轴方向也不对 |
+| `d20_ribbed_base` | 85.71 | 96.53 | `ribs` | 筋板位置或长度不对 |
+| `d25_step_pin` | 87.50 | 94.96 | `groove` | 退刀槽位置偏了（实测在 55.95–58.95） |
+| `d29_hanger_bracket` | 71.43 | 93.98 | `pin_hole`、`volume` | 销孔没打通，方向也不对，体积 −1.1% |
+| `d30_valve_body` | 85.71 | 98.24 | `face_holes` | 端面四孔的孔位与图纸不符，沿孔轴的材料分布也不符 |
+| `d35_shaft_collar` | 66.67 | 93.42 | `clamp_hole`、`volume` | 夹紧螺钉孔没打通，体积 +1.6% |
+
+只有 2 题 hard 条目失败，都是题面要求"两个分开的实体"的题（C3、D17），模型都把两个实体合并成了一个。其余失败几乎都是局部特征读错或建错：孔没打通、孔或槽的位置不对、斜切或 V 槽的深度不对。这 8 题的 hard 条目（单一合法实体、外形包围盒）都通过了。图像分最低的两题是 D12（67.3）和 D13（81.5），对应的正是斜切面和 V 槽这两处可见的较大几何偏差。
+
+### 6.4 调用与开销
+
+| 指标 | 结果 |
+|---|---|
+| LLM 调用 | 共 452 次；每题中位数 7、平均 9.0、p90 18、最多 30（C3） |
+| 按组平均 LLM 调用 | B 组 4.7，C 组 17.2，D 组 9.2 |
+| token | 输入 8,347,027，输出 961,675，合计 9,308,702；每题平均 186k |
+| 工具调用 | 共 500 次，其中失败的建模调用 37 次；`render_views` 共调用 7 次 |
+| 耗时 | 50 题累计 4.29 小时；每题中位数 162 秒，最长 2233 秒（D03） |
+
+对照第 4.1 节的 oracle 下限（平均 6.9 次调用）：通过的 40 题平均 7.7 次 LLM 调用，接近下限；未通过的 10 题平均 14.4 次，多出来的调用主要花在返工上。调用次数明显偏多的是 C3（30 次）、C4（26）、D03（26）、D31（19），其中 C3 有 11 次建模调用失败。没有一道题用满 40 次的预算。
+
+### 6.5 产物
+
+全部产物在 `eval/artifacts/three_view_l1v2_qwen38_full_20261008/`，可直接核验：
+
+| 文件 | 内容 |
+|---|---|
+| `<case>_r1.step` / `<case>_r1.SLDPRT` | 50 题的最终零件 |
+| `<case>_r1.trace.json` | 完整 LLM 轨迹：整段对话和每次调用的原始响应 |
+| `<case>_r1.checkpoint.json` | 运行结束时的 checkpoint |
+| `runs.json` | 每题的状态、LLM / 工具调用数、token 用量、耗时、续跑记录 |
+| `scores.json` | 逐题 rubric 条目与图像分明细（`eval/three_view_l1v2_qwen38_full_20261008_scores.json` 为同一份副本） |
+| `summary.json` | 本节的汇总数字和逐题一览 |
+
+---
+
+## 7. 已知局限
 
 - rubric 是人工编写的，图纸上没有被 rubric 覆盖的内容不会被检查。
 - rubric 的坐标系允许左手系，所以对称性足够强的零件，其镜像件可能通过 rubric。镜像件的图像分低于满分，这种情况由图像分发现。

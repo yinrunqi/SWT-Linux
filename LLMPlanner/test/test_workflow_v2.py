@@ -347,6 +347,20 @@ def test_hole_accepts_polar_layout():
     assert "polar" in result["notes"][0]
 
 
+def test_polar_layout_deduplicates_explicit_seed_center():
+    session = FakeV2(delta=-300)
+    result = session.call("hole", {
+        "plane": "top",
+        "centers": [[20, 0]],
+        "polar": {"center": [0, 0], "radius": 20, "count": 6},
+        "diameter": 5,
+        "depth": 4,
+    })
+    assert result["ok"] is True, result
+    circles = session.ran[0][1]["params"]["circles"]
+    assert len(circles) == 6
+
+
 # ------------------------------------------------------------ 平面写法
 
 
