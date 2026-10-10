@@ -307,6 +307,9 @@ class Part:
         self._intersector.Load(shape, 1e-7)
         self._face_intersectors: list | None = None
         self.sw_mass: dict | None = None
+        self._valid: bool | None = None
+        # 实体无效时可挂外部求交（如 eval/rubric_sw_rays.py 用 SolidWorks 真机），签名同 line_intervals
+        self.ray_oracle = None
         self._volume: float | None = None
 
     @classmethod
@@ -333,7 +336,23 @@ class Part:
         return len(self._subshapes(TopAbs_SHELL))
 
     def is_valid(self) -> bool:
-        return bool(BRepCheck_Analyzer(self.shape).IsValid())
+        if self._valid is None:
+            self._valid = bool(BRepCheck_Analyzer(self.shape).IsValid())
+        return self._valid
+
+    def _sw_extents(self, axes: np.ndarray) -> tuple[np.ndarray, np.ndarray] | None:
+        """实体无效时 OCC 包围盒不可信；坐标轴与世界轴对齐则改用 SolidWorks 包围盒。"""
+        box = (self.sw_mass or {}).get("bbox_mm")
+        if not box or self.is_valid():
+            return None
+        idx = np.argmax(np.abs(axes), axis=1)
+        if not np.allclose(np.abs(axes[np.arange(3), idx]), 1.0, atol=1e-6):
+            return None
+        wlo, whi = np.asarray(box[:3], float), np.asarray(box[3:], float)
+        sign = np.sign(axes[np.arange(3), idx])
+        lo = np.where(sign > 0, wlo[idx], -whi[idx])
+        hi = np.where(sign > 0, whi[idx], -wlo[idx])
+        return lo, hi
 
     def volume(self) -> float:
         if self._volume is None:
@@ -362,6 +381,8 @@ class Part:
     def extents(self, axes: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """在正交坐标系 ``axes``（行向量，可为左手系）下的精确包围盒（世界坐标投影）。"""
         axes = np.asarray(axes, float)
+        if (sw := self._sw_extents(axes)) is not None:
+            return sw
         flip = np.linalg.det(axes) < 0
         rh = axes.copy()
         if flip:
@@ -430,6 +451,8 @@ class Part:
     def line_intervals(self, origin, direction, t0: float, t1: float) -> list[tuple[float, float]]:
         """直线 origin + t·direction 在 [t0, t1] 内穿过材料的区间。"""
         o, d = np.asarray(origin, float), unit(direction)
+        if self.ray_oracle is not None:
+            return self.ray_oracle(o, d, t0, t1)
         ts = {t0, t1}
         # 直线恰好穿过回转面的顶点（如沿钻孔轴线穿过钻尖）时求交会漏掉该点；再用侧移 1e-4 的平行线补充分段点
         side = unit(np.cross(d, (1.0, 0.0, 0.0) if abs(d[0]) < 0.9 else (0.0, 1.0, 0.0)))

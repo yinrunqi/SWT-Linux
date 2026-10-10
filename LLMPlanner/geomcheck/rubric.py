@@ -678,11 +678,6 @@ def ck_center_of_mass(ctx: Ctx, a) -> Result:
 
 def _sorted_extents(ctx: Ctx) -> list[float]:
     axes = principal_axes(ctx.part)
-    sw = _sw_mass(ctx)
-    # SolidWorks 包围盒沿世界坐标轴，只有主方向与世界轴对齐时才等价
-    if sw and sw.get("bbox_mm") and np.allclose(np.sort(np.abs(axes), axis=1)[:, -1], 1.0, atol=1e-6):
-        box = np.asarray(sw["bbox_mm"], float)
-        return sorted(float(x) for x in box[3:] - box[:3])
     lo, hi = ctx.part.extents(axes)
     return sorted(float(x) for x in hi - lo)
 
