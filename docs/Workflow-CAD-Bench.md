@@ -1097,7 +1097,7 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric --rubric-dir eval\rubric
     --artifacts eval\artifacts\text_workflow_l1v2_mymodel_extreme_en_result --output eval\rubric_mymodel_extreme_en.json
 ```
 
-脚本在每题导出 STEP 后会自动用 `eval/rubrics_extreme` 打 rubric 分，写进结果 JSON 的 `rubric` 字段。建议协议与 7.4 节一致：L1_v2、每题最多 40 次 LLM 调用、温度 0、只看 rubric；报告里写明题面语言和每题次数。自部署 Qwen3.8-Flash-Next-FP8 的结果见 8.5 节。
+脚本在每题导出 STEP 后会自动用 `eval/rubrics_extreme` 打 rubric 分，写进结果 JSON 的 `rubric` 字段。建议协议与 7.4 节一致：L1_v2、每题最多 40 次 LLM 调用、温度 0、只看 rubric；报告里写明题面语言和每题次数。自部署 Qwen3.8-Flash-Next-FP8 的结果见 8.5 节和 8.6 节（修正系统后完整重跑）。
 
 ### 8.3 SolidWorks 实机可解性与 oracle 轨迹的 LLM 调用次数
 
@@ -1184,11 +1184,90 @@ venv-occ\Scripts\python.exe -m pytest geomcheck/tests/test_refs_extreme.py -q -p
 - 另有 3 次截断出在工具参数里：`scroll_wrap_plate` 的 `loops`、`variable_pitch_spring` 的 `path_3d` 和 `roller_cam` 的 `loops`。这 3 次推理只用了 6–7k token，参数却在 32000 处被截断，推测是模型在手写密集点列。
 - 回复以 `stop` 结束而没有工具调用的情况，在这 985 次调用中只出现过 1 次。
 
+### 8.6 修正系统后完整重跑 20 题（2026-10-10）
+
+设置与 8.5 节相同：Qwen3.8-Flash-Next-FP8、英文题面、`L1_v2`、`reasoning_effort=medium`、最多 40 次 LLM 调用、每题 1 次运行。workflow 在 8.5 节之后做了这些改动：
+
+- 新增参数曲线工具（NACA 翼型、渐开线等，曲线表达式里允许弧度三角函数）和变螺距螺旋；`max_tokens` 上限提到 16000。
+- 未知参数直接报错，可忽略的参数给出提示；`hole`/`tapped_hole` 支持钻尖角 `tip_angle`；`shell` 回显开口面。
+- 新增 `axis_cylinder`：按起点、方向（向量、`+X`、经纬度或朝向某点）和长度做斜孔或斜接管，不必由模型自己算端点。
+
+20 题全部重跑。结果在 `eval/text_workflow_l1v2_qwen38flash_extreme_en_r2_result.json`，STEP 离线重打分在 `eval/text_workflow_l1v2_qwen38flash_extreme_en_r2_rubric.json`。
+
+| 范围 | 均分（95% CI） | pass@1 | 核心形体率 |
+|---|---|---|---|
+| 20 题，纯离线打分 | 88.5（[77.9, 96.3]） | 0.65（13/20） | 0.90（18/20） |
+| 20 题，`spherical_dome_ports` 用 SolidWorks 射线求交 | 91.3（[83.1, 97.2]） | 0.65（13/20） | 0.90（18/20） |
+
+8.5 节按 20 题计（缺失记 0 分）是 71.8 分、9/20 合格。
+
+两行的区别只在 `spherical_dome_ports`，见下面的“评分工具修正”。第二行的逐题打分在 `eval/text_workflow_l1v2_qwen38flash_extreme_en_r2_rubric_swrays.json`。
+
+20 题共 319 次 LLM 调用、386 次工具调用、837 万 token、4.5 小时；平均每题 16.0 次 LLM 调用、418k token、13 分钟。只有 `pipe_route_3d` 用满了 40 次。
+
+| 任务 | 8.5 节 | 本轮 rubric 分 | LLM 调用 | 工具调用 | 截断 | token | 耗时（min） | 未通过的条目 |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `cast_manifold_fillets` | 100.0 | 100.0 | 9 | 17 | 0 | 221k | 2 | — |
+| `clipped_hex_perforation` | 100.0 | 100.0 | 13 | 14 | 1 | 434k | 33 | — |
+| `compound_drill_block` | 72.7 | 100.0 | 7 | 9 | 0 | 166k | 8 | — |
+| `filleted_shell_enclosure` | 33.3 | 100.0 | 17 | 17 | 0 | 380k | 8 | — |
+| `helical_ring_gear` | 70.0 | 100.0 | 21 | 23 | 1 | 661k | 27 | — |
+| `naca_wing_rib` | 12.5 | 100.0 | 13 | 12 | 1 | 302k | 8 | — |
+| `scroll_wrap_plate` | — | 100.0 | 7 | 11 | 0 | 151k | 6 | — |
+| `sheet_metal_kfactor` | 100.0 | 100.0 | 22 | 24 | 1 | 578k | 24 | — |
+| `tangent_link_lever` | 100.0 | 100.0 | 8 | 12 | 0 | 192k | 5 | — |
+| `tricylinder_node` | 100.0 | 100.0 | 19 | 22 | 1 | 446k | 8 | — |
+| `twisted_flute_knob` | 100.0 | 100.0 | 18 | 18 | 0 | 440k | 11 | — |
+| `variable_fillet_bracket` | 90.9 | 100.0 | 10 | 13 | 0 | 228k | 7 | — |
+| `variable_pitch_spring` | 22.2 | 100.0 | 7 | 7 | 0 | 131k | 1 | — |
+| `worm_shaft` | — | 91.7 | 24 | 25 | 1 | 610k | 23 | flank |
+| `die_cast_cover` | 100.0 | 90.0 | 33 | 33 | 0 | 887k | 16 | top_boss |
+| `spherical_dome_ports` | 77.8 | 88.9（离线 33.3） | 11 | 17 | 0 | 272k | 7 | nozzle_n3 |
+| `balanced_flywheel` | 100.0 | 77.8 | 19 | 26 | 1 | 507k | 30 | web_fillets, volume |
+| `inch_callout_plate` | 77.8 | 77.8 | 12 | 14 | 0 | 266k | 4 | corner_holes, tapped_holes |
+| `roller_cam` | 100.0 | 66.7 | 9 | 11 | 0 | 253k | 6 | envelope, rise, return（核心形体失败） |
+| `pipe_route_3d` | 77.8 | 33.3 | 40 | 61 | 1 | 1242k | 32 | envelope, bend_p2, straights, branch, flange_p3, volume（核心形体失败） |
+
+新工具直接针对的几题（`naca_wing_rib`、`variable_pitch_spring`、`scroll_wrap_plate`、`compound_drill_block`、`spherical_dome_ports`）都有提升，前四题拿到 100 分。
+
+`balanced_flywheel`、`roller_cam`、`pipe_route_3d` 下降，原因是模型本身建错了：
+- `roller_cam` 的升程曲线写错。
+- `pipe_route_3d` 的折弯和支管位置偏了。
+
+每题只跑 1 次，单题分数波动很大，逐题的升降不宜过度解读。
+
+**外部因素与重跑。** 最终 20 次运行都由智能体自己 `finish`，没有 LLM 接口错误、Web 连接错误或 SolidWorks COM 异常。运行过程中有三处受外部因素影响，都已处理：
+
+- `filleted_shell_enclosure`：模型在一次 `cut` 里画了两个完全重合的轮廓，草图预检计算内外环时进入死循环，卡了 1.5 小时。修复（`planner/workflow/sketch_check.py`）后删掉检查点，从头重跑。
+- `helical_ring_gear`：上下文超限，记为 `llm_error`。vLLM 报告的输入长度只是下界（上限 − 请求输出 + 1），原逻辑只压缩一次 `max_tokens`，压缩后仍然超限。现在改为每次至少缩到 3/4，循环重试（`planner/workflow/agent.py`）。这题也删掉检查点从头重跑。
+- `cast_manifold_fillets`：SolidWorks 文档丢失后从检查点续跑，补完 9 次工具调用后得 100 分，结果保留。
+
+此外，`roller_cam` 跑到一半时为让出 SolidWorks 中断过一次，删掉检查点后从头重跑。看门狗因 SolidWorks 私有内存超过 12 GB 重启过一次，重启发生在题目开始之前。
+
+**评分工具修正。** 有两题的 STEP 被 OpenCASCADE 读成无效实体，问题在 OCC 读取 SolidWorks 导出的退化圆环面（多半来自圆角），SolidWorks 里的实体本身是好的：
+
+- `spherical_dome_ports`：7 个圆环面读坏，算出的体积为负。
+- `tangent_link_lever`：1 个平面读坏。
+
+两种 STEP 导出方式和 NURBS 转换都绕不过去，所以给 rubric 加了备用路径：
+
+- 评测导出 STEP 时，同时写一个 `<stem>.swmass.json`，记录 SolidWorks 的实体数、体积和世界坐标包围盒。已有的产物可以用 `eval/backfill_swmass.py` 补写。
+- OCC 判定实体无效时，实体检查和体积检查改用这份数据。坐标轴与世界轴对齐时，坐标系和外形尺寸也改用 SolidWorks 的包围盒。
+- OCC 判定有效时一律不受影响。
+
+修正后 `tangent_link_lever` 从 77.8 分升到 100 分。
+
+`spherical_dome_ports` 修正后只到 33.3 分，因为 OCC 在无效实体上的射线内外判定仍然不对，这只能在真机上解决。`eval/rubric_sw_rays.py` 用 SolidWorks 的 `RayIntersections` 对单个 SLDPRT 求交，其余检查照旧，这题用它测得 88.9 分。
+
+为确认这个脚本不改变正常题的结果，在 8 道 OCC 判定有效的题上做了对照，分数与 OCC 完全一致：4 道 100 分的题仍是 100 分，4 道有真错的题分数不变。`spherical_dome_ports` 剩下的 `nozzle_n3` 是模型真错：N3 管壁内的一条线在 x = 53.4 处穿出球壳外表面，到 x = 62.5 才重新进入接管，说明接管外圆柱没有接上封头。
+
+**长度截断。** 319 次调用中截断 8 次（2.5%），分布在 8 题，每题 1 次。8.5 节是 305 次中截断 25 次（8.2%）。
+
 ---
 
 ## 9. 已知局限
 
 - rubric 是人工编写的。rubric 没写到的要求不会被检查，标为 `ungraded` 的内容也不打分。
-- 目前只有 OpenCASCADE 一个检查器。一个通过 SolidWorks API 评估同一套 rubric 的检查器正在开发，用来交叉验证。
+- 目前只有 OpenCASCADE 一个检查器。一个通过 SolidWorks API 评估同一套 rubric 的检查器正在开发，用来交叉验证。OCC 会把少数 SolidWorks 导出的退化圆环面读成无效实体；这时实体、体积和包围盒类检查改用 `.swmass.json` 中的 SolidWorks 数据，射线类检查只能用 `eval/rubric_sw_rays.py` 在真机上补测（见 8.6 节）。
 - 题面原文是中文，英文版是逐句翻译。两种语言的结果不能直接比较，报告里要写明用的是哪一种。翻译成其他语言时，以 YAML 中的中文原文为准。
 - 旧的评分方式（包围盒、体积区间、特征树计数）已经被 rubric 取代，只在论文里用来对比说明两者的差别。
