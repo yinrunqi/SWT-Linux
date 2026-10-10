@@ -2071,8 +2071,11 @@ def _save_artifacts(sw_url: str, stem: Path | None) -> dict:
         body = response.json()
         if not body.get("success"):
             raise RuntimeError(body.get("message") or f"HTTP {response.status_code}")
-        path.write_text(json.dumps({"body_count": body.get("bodyCount"), "volume_mm3": body.get("volumeMm3")}),
-                        encoding="utf-8")
+        box = body.get("boundingBox") or {}
+        bbox = [float(box[f"{side}{axis}"]) * 1000 for side in ("min", "max") for axis in "XYZ"] \
+            if all(f"{side}{axis}" in box for side in ("min", "max") for axis in "XYZ") else None
+        path.write_text(json.dumps({"body_count": body.get("bodyCount"), "volume_mm3": body.get("volumeMm3"),
+                                    "bbox_mm": bbox}), encoding="utf-8")
         saved["swmass"] = str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
     except Exception as exc:
         saved["swmass_error"] = str(exc)

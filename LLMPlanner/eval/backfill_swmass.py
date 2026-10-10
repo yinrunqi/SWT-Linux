@@ -1,4 +1,4 @@
-"""给已有评测产物补写 <stem>.swmass.json（SolidWorks 实体数与体积），供 rubric 在 OCC 判实体无效时使用。
+"""给已有评测产物补写 <stem>.swmass.json（SolidWorks 实体数、体积与包围盒），供 rubric 在 OCC 判实体无效时使用。
 
     venv\\Scripts\\python.exe -X utf8 eval\\backfill_swmass.py --artifacts eval\\artifacts\\<run> [--force]
 """
@@ -26,7 +26,9 @@ def _mass(sw, path: Path) -> dict:
     try:
         bodies = doc.GetBodies2(SW_SOLID_BODY, True) or []
         mass = doc.Extension.CreateMassProperty
-        return {"body_count": len(bodies), "volume_mm3": mass.Volume * 1e9 if mass else None}
+        box = doc.GetPartBox(True)
+        return {"body_count": len(bodies), "volume_mm3": mass.Volume * 1e9 if mass else None,
+                "bbox_mm": [v * 1000 for v in box] if box else None}
     finally:
         sw.CloseDoc(doc.GetTitle)
 
