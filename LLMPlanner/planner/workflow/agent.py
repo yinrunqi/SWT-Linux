@@ -395,21 +395,25 @@ class WorkflowAgent:
                 request = {"model": self.model, "messages": messages, "tools": self.tools, "tool_choice": "auto",
                            "temperature": self.temperature, "max_tokens": max_tokens, **extra}
                 try:
-                    try:
-                        response = self._complete(request)
-                    except Exception as exc:
-                        prompt_tokens = _context_overflow_prompt_tokens(exc)
-                        if prompt_tokens is None or not self.context_limit:
-                            raise
-                        # 上下文装不下这一轮的 max_tokens：按服务端报告的输入长度压缩输出上限再试一次
-                        room = self.context_limit - prompt_tokens - CONTEXT_MARGIN
-                        if room < MIN_OUTPUT_TOKENS:
-                            status = "context_exceeded"
-                            error = f"输入 {prompt_tokens} token，上下文上限 {self.context_limit}，剩余不足 {MIN_OUTPUT_TOKENS}"
-                            self._log(f"上下文用尽：{error}")
-                            break
-                        self._log(f"上下文接近上限：输入 {prompt_tokens} token，本轮 max_tokens {max_tokens} → {room}")
-                        response = self._complete({**request, "max_tokens": room})
+                    response, requested = None, max_tokens
+                    while response is None:
+                        try:
+                            response = self._complete({**request, "max_tokens": requested})
+                        except Exception as exc:
+                            prompt_tokens = _context_overflow_prompt_tokens(exc)
+                            if prompt_tokens is None or not self.context_limit:
+                                raise
+                            # 服务端报的输入长度可能只是下界（上限 - 请求输出 + 1），所以每次至少缩到 3/4
+                            room = min(self.context_limit - prompt_tokens - CONTEXT_MARGIN, requested * 3 // 4)
+                            if room < MIN_OUTPUT_TOKENS:
+                                break
+                            self._log(f"上下文接近上限：输入至少 {prompt_tokens} token，本轮 max_tokens {requested} → {room}")
+                            requested = room
+                    if response is None:
+                        status = "context_exceeded"
+                        error = f"输入 {prompt_tokens} token，上下文上限 {self.context_limit}，剩余不足 {MIN_OUTPUT_TOKENS}"
+                        self._log(f"上下文用尽：{error}")
+                        break
                 except Exception as exc:
                     status, error = "llm_error", f"{type(exc).__name__}: {exc}"
                     self._log(f"LLM 错误：{error[:300]}")

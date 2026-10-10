@@ -116,6 +116,16 @@ def test_axis_cylinder_rejects_an_empty_range():
     assert result["ok"] is False and "to 必须大于 from" in result["error"]["message"]
 
 
+def test_identical_loops_are_rejected_instead_of_hanging():
+    from planner.workflow.profiles import normalize_loops
+    from planner.workflow.sketch_check import check_profile
+
+    rect = {"type": "rect", "center": [0, 0], "size": [140, 100], "corner_radius": 20}
+    check = check_profile(normalize_loops([rect, dict(rect), {"type": "circle", "center": [0, 0], "diameter": 20}]))
+    assert not check.ok
+    assert any("完全重合" in issue.message for issue in check.issues)
+
+
 def test_shell_echoes_open_faces_and_warns_about_top_bottom():
     session = FakeV2(delta=-500.0)
     result = session.call("shell", {"thickness": 2, "open_faces": ["bottom"]})

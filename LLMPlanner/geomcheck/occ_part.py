@@ -32,7 +32,8 @@ from OCP.GeomAbs import (
     GeomAbs_Torus,
 )
 from OCP.GProp import GProp_GProps
-from OCP.IntCurvesFace import IntCurvesFace_ShapeIntersector
+from OCP.IntCurvesFace import IntCurvesFace_Intersector, IntCurvesFace_ShapeIntersector
+from OCP.Standard import Standard_Failure, Standard_NullObject
 from OCP.STEPControl import STEPControl_Reader
 from OCP.TopAbs import (
     TopAbs_EDGE,
@@ -304,6 +305,7 @@ class Part:
         self._classifiers = [BRepClass3d_SolidClassifier(s) for s in self.solids]
         self._intersector = IntCurvesFace_ShapeIntersector()
         self._intersector.Load(shape, 1e-7)
+        self._face_intersectors: list | None = None
         self._volume: float | None = None
 
     @classmethod
@@ -401,6 +403,29 @@ class Part:
                 return True
         return False
 
+    def _line_hits(self, line: gp_Lin, t0: float, t1: float) -> set[float]:
+        try:
+            self._intersector.Perform(line, t0, t1)
+            return {self._intersector.WParameter(i) for i in range(1, self._intersector.NbPnt() + 1)}
+        except (Standard_Failure, Standard_NullObject):
+            pass
+        # 无效 B-rep 上个别面求交会抛 NullObject：逐面求交并跳过这些面
+        if self._face_intersectors is None:
+            self._face_intersectors = []
+            for face in self._subshapes(TopAbs_FACE):
+                try:
+                    self._face_intersectors.append(IntCurvesFace_Intersector(TopoDS.Face(face), 1e-7))
+                except (Standard_Failure, Standard_NullObject):
+                    continue
+        hits: set[float] = set()
+        for intersector in self._face_intersectors:
+            try:
+                intersector.Perform(line, t0, t1)
+                hits |= {intersector.WParameter(i) for i in range(1, intersector.NbPnt() + 1)}
+            except (Standard_Failure, Standard_NullObject):
+                continue
+        return hits
+
     def line_intervals(self, origin, direction, t0: float, t1: float) -> list[tuple[float, float]]:
         """直线 origin + t·direction 在 [t0, t1] 内穿过材料的区间。"""
         o, d = np.asarray(origin, float), unit(direction)
@@ -408,8 +433,7 @@ class Part:
         # 直线恰好穿过回转面的顶点（如沿钻孔轴线穿过钻尖）时求交会漏掉该点；再用侧移 1e-4 的平行线补充分段点
         side = unit(np.cross(d, (1.0, 0.0, 0.0) if abs(d[0]) < 0.9 else (0.0, 1.0, 0.0)))
         for start in (o, o + 1e-4 * side):
-            self._intersector.Perform(gp_Lin(_pnt(start), _dir(d)), t0, t1)
-            ts |= {self._intersector.WParameter(i) for i in range(1, self._intersector.NbPnt() + 1)}
+            ts |= self._line_hits(gp_Lin(_pnt(start), _dir(d)), t0, t1)
         ts = sorted(ts)
         out: list[tuple[float, float]] = []
         for a, b in zip(ts, ts[1:]):

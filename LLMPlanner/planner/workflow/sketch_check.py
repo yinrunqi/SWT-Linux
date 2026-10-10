@@ -147,11 +147,19 @@ def check_profile(loops: list[dict], *, min_wall_mm: float | None = None) -> Ske
             continue
         geoms[index] = geom
 
+    # 重合的轮廓互相包含，会让父环关系成环
+    for index in sorted(geoms):
+        for other in sorted(geoms):
+            if other < index and other in geoms and index in geoms and geoms[other].equals(geoms[index]):
+                result.add("SKETCH_LOOPS_OVERLAP", f"轮廓 {other} 与 {index} 完全重合", other, index)
+                del geoms[index]
+                break
+
     # 嵌套关系：被某个轮廓完全包含的是内环，取包含它的最小轮廓为父环。
     for index, geom in geoms.items():
         parents = [
             other for other, other_geom in geoms.items()
-            if other != index and other_geom.contains(geom)
+            if other != index and other_geom.contains(geom) and not geom.contains(other_geom)
         ]
         if parents:
             result.inner_loops[index] = min(parents, key=lambda item: geoms[item].area)
@@ -188,7 +196,7 @@ def check_profile(loops: list[dict], *, min_wall_mm: float | None = None) -> Ske
     area = 0.0
     for index, geom in geoms.items():
         depth, cursor = 0, index
-        while cursor in result.inner_loops:
+        while cursor in result.inner_loops and depth <= len(geoms):
             depth += 1
             cursor = result.inner_loops[cursor]
         area += geom.area if depth % 2 == 0 else -geom.area

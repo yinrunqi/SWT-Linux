@@ -78,6 +78,15 @@ def test_truncation_retry_grows_then_shrinks_to_the_window():
     assert [r["max_tokens"] for r in client.requests] == [16000, 32000, 32000, 73728 - 50000 - 64]
 
 
+def test_keeps_shrinking_when_the_reported_input_is_only_a_lower_bound():
+    client = Client([_overflow(73728 - 32000 + 1, 32000), _overflow(73728 - 24000 + 1, 24000),
+                     _reply([("finish", {"summary": "ok"})])])
+    agent = WorkflowAgent(client, QWEN, Session(), version="v1", max_tokens=32000)
+    outcome = agent.run("立方体")
+    assert outcome["status"] == "finished"
+    assert [r["max_tokens"] for r in client.requests] == [32000, 24000, 18000]
+
+
 def test_other_models_keep_reporting_llm_error():
     client = Client([_overflow(68000, 8000)])
     outcome = WorkflowAgent(client, "claude-sonnet-5", Session(), version="v1").run("立方体")
