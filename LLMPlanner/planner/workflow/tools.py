@@ -12,6 +12,7 @@ import base64
 import json
 import math
 import os
+import re
 import subprocess
 import tempfile
 from pathlib import Path
@@ -38,6 +39,7 @@ RENDER_TIMEOUT_S = 180
 IMAGE_KEY = "_image_png_b64"
 MAX_PLANAR_FACES = 40
 MAX_CYLINDER_FACES = 30
+_VERTICAL_ALIAS = re.compile(r"^(?:\w+\.)?(?:top|bottom)$|^[上下]$", re.IGNORECASE)
 
 _LOOP_SCHEMA = {
     "type": "object",
@@ -1377,17 +1379,28 @@ class WorkflowSession:
         if self._volume(before) <= 0:
             raise WorkflowError("NO_BODY", "零件中还没有实体，无法抽壳")
         thickness = self._num(args, "thickness", required=True)
-        faces = [self._frame(item, before).sw_reference for item in (args.get("open_faces") or [])]
-        if not faces:
+        names = [str(item) for item in (args.get("open_faces") or [])]
+        frames = [self._frame(item, before) for item in names]
+        if not frames:
             raise WorkflowError("TOOL_ARGS", "open_faces 不能为空")
         operation = {
             "operation": "feature_shell", "route": "/api/feature/shell",
-            "params": {"thickness": thickness / 1000, "openFaces": faces, "outward": bool(args.get("outward", False))},
+            "params": {
+                "thickness": thickness / 1000, "openFaces": [frame.sw_reference for frame in frames],
+                "outward": bool(args.get("outward", False)),
+            },
         }
-        return self._transaction(
+        result = self._transaction(
             [operation], expect="decrease", before=before,
-            context={"thickness_mm": thickness, "open_faces": faces},
+            context={"thickness_mm": thickness, "open_faces": [frame.describe() for frame in frames]},
         )
+        if any(_VERTICAL_ALIAS.match(name.strip()) for name in names):
+            result = {**result, "warnings": [
+                *result.get("warnings", []),
+                "top/bottom 固定指外法向 +Y/-Y 的最外平面；若零件按 Z 向上建模，开口面应写 face(+Z)/face(-Z)。"
+                "请核对上面 open_faces 的法向是否就是要去掉的面",
+            ]}
+        return result
 
     def draft(self, args: dict) -> dict:
         before = self.snapshot()

@@ -12,6 +12,7 @@ L1 的工具名、参数和行为保持不变；这里只在子类里覆盖：
 from __future__ import annotations
 
 import copy
+import difflib
 import json
 import math
 import re
@@ -310,6 +311,10 @@ _POLAR_SCHEMA = {
         "span_deg 缺省 360 为均布。结果里会回显实际圆心。"
     ),
 }
+_TIP_ANGLE = {
+    "type": "number",
+    "description": "盲孔孔底钻尖锥角（全角，度），麻花钻 118；depth 不含钻尖。省略为平底",
+}
 _EXTENT_NOTE = (
     "结果中 extent_mm 是本特征在模型坐标中的范围（X/Y/Z，mm），removal_ratio / fill_ratio 是实际体积变化"
     "与 轮廓面积×深度 之比，new_cylinders 列出新出现的圆柱面（孔/凸台）。"
@@ -393,8 +398,12 @@ def _build_specs_v2() -> list[dict]:
             }},
         ),
         "hole": dict(
-            description="在平面上按圆心列表（centers）或极坐标布孔（polar）打同直径的圆孔（切除），给 depth 或 through_all=true。",
-            properties={"polar": _POLAR_SCHEMA}, required=["plane", "diameter"],
+            description=(
+                "在平面上按圆心列表（centers）或极坐标布孔（polar）打同直径的圆孔（切除），给 depth 或 through_all=true。"
+                "钻孔盲孔的锥形孔底给 tip_angle（麻花钻 118°）：depth 为全直径圆柱段的深度（到钻尖肩部），"
+                "钻尖锥另加 (diameter/2)/tan(tip_angle/2)；不给 tip_angle 为平底孔。"
+            ),
+            properties={"polar": _POLAR_SCHEMA, "tip_angle": _TIP_ANGLE}, required=["plane", "diameter"],
         ),
         "counterbore": dict(properties={"polar": _POLAR_SCHEMA},
                             required=["plane", "through_diameter", "head_diameter", "head_depth"]),
@@ -410,7 +419,7 @@ def _build_specs_v2() -> list[dict]:
             },
             required=["plane", "through_diameter", "head_diameter"],
         ),
-        "tapped_hole": dict(properties={"polar": _POLAR_SCHEMA}, required=["plane", "diameter"]),
+        "tapped_hole": dict(properties={"polar": _POLAR_SCHEMA, "tip_angle": _TIP_ANGLE}, required=["plane", "diameter"]),
         "fillet": dict(
             description=(
                 "对边倒圆角。一般放在最后；外形轮廓上的圆角（板的竖直棱等）优先在轮廓里用 corner_radius 表达。"
@@ -542,6 +551,50 @@ VIEW_MODEL_SPEC = _tool(
     {"views": {"type": "array", "items": {"type": "string"}, "description": "视向列表，最多 4 个"}},
     [],
 )
+
+
+_TOOL_PARAMS: dict[str, set[str]] = {
+    spec["function"]["name"]: set(spec["function"]["parameters"]["properties"])
+    for spec in [*TOOL_SPECS_V2, *map(_patch_spec, EXTRA_TOOL_SPECS.values()), VIEW_MODEL_SPEC]
+}
+# 对象型参数里的字段，用来提示“这个字段应写在哪个对象里”
+_NESTED_FIELDS = {
+    "path_3d": ("points", "corner_radius", "spline", "curve"),
+    "helix": ("axis", "center", "diameter", "radius", "pitch", "turns", "height", "right_handed"),
+    "polar": ("center", "radius", "pcd", "count", "start_deg", "span_deg"),
+}
+# 不影响结果的多余参数只提示，不拒绝
+_IGNORABLE_ARGS = {"name", "description", "comment", "note", "notes", "reason", "summary", "propagate"}
+
+
+def unknown_arg_issue(tool: str, args: dict) -> tuple[list[str], WorkflowError | None]:
+    """返回 (可忽略的多余参数, 需要拒绝时的错误)。不认识的工具不检查。"""
+    known = _TOOL_PARAMS.get(tool)
+    if known is None:
+        return [], None
+    unknown = [key for key in args if key not in known]
+    ignorable = [key for key in unknown if key in _IGNORABLE_ARGS]
+    rejected = [key for key in unknown if key not in _IGNORABLE_ARGS]
+    if not rejected:
+        return ignorable, None
+    hints = []
+    for key in rejected:
+        owners = [owner for owner, fields in _NESTED_FIELDS.items() if owner in known and key in fields]
+        if owners:
+            hints.append(f"{key} 应写在 {' 或 '.join(owners)} 对象里面")
+            continue
+        close = difflib.get_close_matches(key, sorted(known), n=1, cutoff=0.75)
+        if close:
+            hints.append(f"{key} 是不是 {close[0]}")
+            continue
+        others = sorted(name for name, params in _TOOL_PARAMS.items() if key in params)
+        if others:
+            hints.append(f"{key} 是 {', '.join(others[:4])} 的参数，{tool} 没有这个参数")
+    error = WorkflowError(
+        "TOOL_ARGS", f"{tool} 不认识参数 {', '.join(rejected)}；未知参数不会生效，本次调用未执行",
+        hint="；".join(hints) + ("。" if hints else "") + f"{tool} 的参数：{', '.join(sorted(known))}",
+    )
+    return ignorable, error
 
 
 def tool_specs_v2(extra_tools: list[str] | None = None, *, view_tool: bool = True) -> list[dict]:
@@ -1003,6 +1056,11 @@ class WorkflowSessionV2(WorkflowSession):
         original = args or {}
         self._notes = []
         try:
+            ignored, rejected = unknown_arg_issue(name, original)
+            if rejected is not None:
+                raise rejected
+            if ignored:
+                self._notes.append(f"已忽略多余参数 {', '.join(ignored)}（{name} 不使用它们）")
             prepared = self._prepare_args(name, coerce_args(original)) if self.has_part else coerce_args(original)
         except WorkflowError as exc:
             result = {"ok": False, "error": _with_hint(exc.to_dict(), original, name)}
@@ -1638,6 +1696,66 @@ class WorkflowSessionV2(WorkflowSession):
                 hint="倒某个面上的边：每条边给一条射线 {origin, direction}，命中该面、离目标棱约 1mm；多条边写成射线数组。",
             )
         return super()._edge_params(edges)
+
+    def hole(self, args: dict) -> dict:
+        """tip_angle 给出时：先打 depth 深的圆柱孔，再从孔底用带拔模角的盲切切出钻尖锥。"""
+        tip = self._num(args, "tip_angle")
+        if not tip:
+            return super().hole({key: value for key, value in args.items() if key != "tip_angle"})
+        if not 60 <= tip < 180:
+            raise WorkflowError("TOOL_ARGS", f"tip_angle={tip:g} 不合理（麻花钻常用 118°，中心钻 60°）")
+        if args.get("through_all") or args.get("up_to"):
+            raise WorkflowError("TOOL_ARGS", "通孔没有钻尖；tip_angle 只用于给了 depth 的盲孔")
+        depth = self._num(args, "depth", required=True)
+        diameter = self._num(args, "diameter", required=True)
+        centers = self._resolve_numbers(args.get("centers"))
+        if not isinstance(centers, list) or not centers:
+            raise WorkflowError("TOOL_ARGS", "centers 必须是非空的 [[u,v], ...]（或给 polar）")
+        before = self.snapshot()
+        if self._volume(before) <= 0:
+            raise WorkflowError("NO_BODY", "零件中还没有实体，无法打孔")
+        frame = self._frame(args.get("plane"), before)
+        mode, sign = self._cut_direction(frame, args.get("direction"), before)
+        if mode == "both":
+            raise WorkflowError("TOOL_ARGS", "带钻尖的盲孔不支持 direction=both")
+        direction = f"{'+' if sign > 0 else '-'}{frame.axis}"
+        body = super().hole({**{k: v for k, v in args.items() if k != "tip_angle"}, "direction": direction})
+        half = math.radians(tip / 2)
+        radius = diameter / 2
+        # 锥尖留 0.01mm 的小平面，避免拔模切除收成一点时失败
+        cone_depth = (radius - 0.005) / math.tan(half)
+        bottom = frame.offset_mm + sign * depth
+        bottom_text = f"{bottom:.6f}".rstrip("0").rstrip(".")
+        try:
+            plane = self._axis_plane(f"{frame.axis}={bottom_text}")
+            snapshot = self.snapshot()
+            bottom_frame = self._frame(plane, snapshot)
+            loops, _check, _warnings = self._profile(
+                {"loops": [{"type": "circle", "center": c, "diameter": diameter} for c in centers]},
+                bottom_frame, removing=True)
+            feature, _actual = self._cut_feature(
+                bottom_frame, {"direction": direction, "depth": cone_depth, "through_all": False}, snapshot)
+            feature = {**feature, "route": "/api/feature/cut-extrusion",
+                       "params": {**feature["params"], "draftAngleDeg": tip / 2}}
+            cone = self._transaction(
+                [self._open_sketch(bottom_frame), *draw_operations(bottom_frame, loops), feature],
+                expect="decrease", before=snapshot, context={})
+        except WorkflowError as exc:
+            self._rollback(body.get("created") or [])
+            exc.context["hint"] = "圆柱孔部分已回滚，失败的是孔底钻尖锥；可以先不给 tip_angle 打平底孔"
+            raise
+        after = self.snapshot()
+        return {
+            **body,
+            "created": (body.get("created") or []) + (cone.get("created") or []),
+            "volume_mm3": _round(self._volume(after), 2),
+            "volume_delta_mm3": _round(self._volume(after) - self._volume(before), 2),
+            "bbox_mm": self._bbox(after),
+            "drill_point": (
+                f"孔底 {frame.axis}={bottom_text} 处加 {tip:g}° 钻尖锥，锥高 {_round(radius / math.tan(half), 3)} mm，"
+                f"孔总深（含钻尖）{_round(depth + radius / math.tan(half), 3)} mm"
+            ),
+        }
 
     def countersink(self, args: dict) -> dict:
         """锥形沉头：带拔模角的盲切切出 head_diameter → through_diameter 的锥台，再打通孔。"""
