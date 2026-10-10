@@ -95,7 +95,7 @@ def _close(sw: str) -> None:
         pass
 
 
-def _openai():
+def _openai(timeout: float = 180):
     import os
     import uuid
     from openai import OpenAI
@@ -104,7 +104,7 @@ def _openai():
     client = OpenAI(
         api_key=os.environ["OPENAI_API_KEY"],
         base_url=os.environ.get("OPENAI_BASE_URL") or None,
-        timeout=180,
+        timeout=timeout,
         max_retries=2,
         default_headers={"X-Session-Id": f"assembly-eval-{uuid.uuid4().hex}"},
     )
@@ -113,6 +113,8 @@ def _openai():
 
     def logged(**kwargs):
         response = create(**kwargs)
+        if kwargs.get("stream"):
+            return response
         choice = response.choices[0]
         details = getattr(response.usage, "completion_tokens_details", None)
         LLM_CALL_LOG.append({
@@ -262,11 +264,14 @@ def generate_part(
     session = WorkflowSessionV2(base_url=sw, extra_tools=extra)
     started = time.perf_counter()
     step, sldprt = dest.with_suffix(".step"), dest.with_suffix(".SLDPRT")
+    def log(line: str) -> None:
+        print(f"    [{time.strftime('%H:%M:%S')}] [{spec['id']}] {line}", flush=True)
+
     try:
         session.start_part()
         outcome = WorkflowAgent(
-            _openai(), model, session, max_llm_calls=max_llm_calls, extra_tools=extra,
-            reasoning_effort=reasoning_effort, checkpoint_path=checkpoint, view_tool=view_tool,
+            _openai(timeout=600), model, session, max_llm_calls=max_llm_calls, extra_tools=extra,
+            reasoning_effort=reasoning_effort, stream=True, checkpoint_path=checkpoint, view_tool=view_tool, log=log,
         ).run(spec["prompt"], resume=resume)
         artifacts = {}
         try:

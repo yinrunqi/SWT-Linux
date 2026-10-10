@@ -27,7 +27,7 @@ def fake_env(monkeypatch):
     monkeypatch.setattr(workflow_agent, "WorkflowAgent", FakeAgent)
     monkeypatch.setattr(WorkflowSessionV2, "start_part", lambda self: None)
     monkeypatch.setattr(scratch, "_close", lambda sw: None)
-    monkeypatch.setattr(scratch, "_openai", lambda: None)
+    monkeypatch.setattr(scratch, "_openai", lambda timeout=180: None)
     monkeypatch.setattr(scratch.requests, "post", lambda *a, **k: None)
     return FakeAgent.created
 
@@ -43,7 +43,21 @@ def test_generate_part_uses_l1_v2(fake_env, tmp_path, view_tool):
     assert isinstance(made["session"], WorkflowSessionV2)
     assert made["view_tool"] is view_tool
     assert made["extra_tools"] == ["spur_gear"]
+    assert made["stream"] is True
+    assert callable(made["log"])
     assert result["part_workflow"] == {"version": "L1_v2", "view_tool": view_tool}
+
+
+def test_openai_wrapper_passes_streams_through(monkeypatch):
+    from openai.resources.chat.completions import Completions
+
+    stream = object()
+    monkeypatch.setenv("OPENAI_API_KEY", "test")
+    monkeypatch.setattr(Completions, "create", lambda self, **kwargs: stream)
+    client = scratch._openai(timeout=600)
+
+    assert client.timeout == 600
+    assert client.chat.completions.create(model="m", messages=[], stream=True) is stream
 
 
 def test_resume_does_not_reuse_l1_part(fake_env, tmp_path):
