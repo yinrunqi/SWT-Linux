@@ -306,6 +306,7 @@ class Part:
         self._intersector = IntCurvesFace_ShapeIntersector()
         self._intersector.Load(shape, 1e-7)
         self._face_intersectors: list | None = None
+        self.sw_mass: dict | None = None
         self._volume: float | None = None
 
     @classmethod

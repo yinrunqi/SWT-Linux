@@ -2064,6 +2064,18 @@ def _save_artifacts(sw_url: str, stem: Path | None) -> dict:
             saved[key] = str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
         except Exception as exc:
             saved[f"{key}_error"] = str(exc)
+    # OCC 读 SolidWorks 的退化圆环面等会判实体无效，rubric 届时改用这里的实体数与体积
+    path = stem.with_suffix(".swmass.json").resolve()
+    try:
+        response = requests.get(f"{sw_url}/api/model-observation", timeout=120)
+        body = response.json()
+        if not body.get("success"):
+            raise RuntimeError(body.get("message") or f"HTTP {response.status_code}")
+        path.write_text(json.dumps({"body_count": body.get("bodyCount"), "volume_mm3": body.get("volumeMm3")}),
+                        encoding="utf-8")
+        saved["swmass"] = str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
+    except Exception as exc:
+        saved["swmass_error"] = str(exc)
     return saved
 
 

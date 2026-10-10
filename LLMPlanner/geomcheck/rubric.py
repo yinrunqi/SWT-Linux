@@ -549,8 +549,18 @@ def _r(x, n=3):
     return round(float(x), n)
 
 
+def _sw_mass(ctx: Ctx) -> dict | None:
+    """OCC 判实体无效但 SolidWorks 有质量属性时返回后者（实体数、体积）。"""
+    sw = ctx.part.sw_mass
+    if ctx.part.is_valid() or not sw or sw.get("body_count") is None or not sw.get("volume_mm3"):
+        return None
+    return sw
+
+
 def ck_single_valid_solid(ctx: Ctx, a) -> Result:
     p = ctx.part
+    if sw := _sw_mass(ctx):
+        return sw["body_count"] == 1, {"solids": p.n_solids, "valid": False, "sw_bodies": sw["body_count"]}
     ok = p.n_solids == 1 and p.is_valid()
     return ok, {"solids": p.n_solids, "shells": p.n_shells, "valid": p.is_valid()}
 
@@ -558,8 +568,16 @@ def ck_single_valid_solid(ctx: Ctx, a) -> Result:
 def ck_solid_count(ctx: Ctx, value) -> Result:
     """恰有 value 个实体且整体有效（如两个分开的零件）。"""
     p = ctx.part
+    if sw := _sw_mass(ctx):
+        return sw["body_count"] == value, {"solids": p.n_solids, "valid": False, "sw_bodies": sw["body_count"]}
     ok = p.n_solids == value and p.is_valid()
     return ok, {"solids": p.n_solids, "valid": p.is_valid()}
+
+
+def _volume(ctx: Ctx) -> tuple[float, dict]:
+    if sw := _sw_mass(ctx):
+        return float(sw["volume_mm3"]), {"source": "solidworks"}
+    return ctx.part.volume(), {}
 
 
 def ck_exists(ctx: Ctx, name) -> Result:
@@ -640,14 +658,14 @@ def ck_equal_angular(ctx: Ctx, a) -> Result:
 
 
 def ck_volume(ctx: Ctx, value) -> Result:
-    v = ctx.part.volume()
-    return abs(v - value) <= ctx.tol_vol * value, {"measured": _r(v, 2), "expected": value}
+    v, source = _volume(ctx)
+    return abs(v - value) <= ctx.tol_vol * value, {"measured": _r(v, 2), "expected": value, **source}
 
 
 def ck_volume_range(ctx: Ctx, rng) -> Result:
-    v = ctx.part.volume()
+    v, source = _volume(ctx)
     lo, hi = rng[0] * (1 - ctx.tol_vol), rng[1] * (1 + ctx.tol_vol)
-    return lo <= v <= hi, {"measured": _r(v, 2), "range": [_r(lo, 2), _r(hi, 2)]}
+    return lo <= v <= hi, {"measured": _r(v, 2), "range": [_r(lo, 2), _r(hi, 2)], **source}
 
 
 def ck_center_of_mass(ctx: Ctx, a) -> Result:
@@ -1851,6 +1869,15 @@ def load_rubric(path: str | Path) -> dict:
     return yaml.safe_load(Path(path).read_text(encoding="utf-8"))
 
 
+def load_part(step: str | Path) -> Part:
+    """读 STEP；同名 .swmass.json（评测导出时记下的 SolidWorks 实体数与体积）一并挂上。"""
+    part = Part.from_step(step)
+    sidecar = Path(step).with_suffix(".swmass.json")
+    if sidecar.exists():
+        part.sw_mass = json.loads(sidecar.read_text(encoding="utf-8"))
+    return part
+
+
 def _print(res: dict, label: str) -> None:
     print(f"{label}: score={res['score']} explicit={res['passed']}/{res['total']} "
           f"implied={res['implied_passed']}/{res['implied_total']} hard_ok={res['hard_ok']} accepted={res['accepted']}")
@@ -1872,7 +1899,7 @@ def main() -> None:
     results = []
     if args.step:
         rubric = load_rubric(args.rubric)
-        res = evaluate(rubric, Part.from_step(args.step))
+        res = evaluate(rubric, load_part(args.step))
         _print(res, Path(args.step).name)
         results.append({"step": args.step, **res})
     else:
@@ -1881,7 +1908,7 @@ def main() -> None:
             rubric_path = Path(args.rubric_dir) / f"{case}.yaml"
             if not rubric_path.exists():
                 continue
-            res = evaluate(load_rubric(rubric_path), Part.from_step(step))
+            res = evaluate(load_rubric(rubric_path), load_part(step))
             _print(res, step.name)
             results.append({"step": str(step), **res})
     if args.output:
