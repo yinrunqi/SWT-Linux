@@ -1097,7 +1097,7 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric --rubric-dir eval\rubric
     --artifacts eval\artifacts\text_workflow_l1v2_mymodel_extreme_en_result --output eval\rubric_mymodel_extreme_en.json
 ```
 
-脚本在每题导出 STEP 后会自动用 `eval/rubrics_extreme` 打 rubric 分，写进结果 JSON 的 `rubric` 字段。建议协议与 7.4 节一致：L1_v2、每题最多 40 次 LLM 调用、温度 0、只看 rubric；报告里写明题面语言和每题次数。目前还没有任何模型在这 20 题上的结果。
+脚本在每题导出 STEP 后会自动用 `eval/rubrics_extreme` 打 rubric 分，写进结果 JSON 的 `rubric` 字段。建议协议与 7.4 节一致：L1_v2、每题最多 40 次 LLM 调用、温度 0、只看 rubric；报告里写明题面语言和每题次数。自部署 Qwen3.8-Flash-Next-FP8 的结果见 8.5 节。
 
 ### 8.3 SolidWorks 实机可解性与 oracle 轨迹的 LLM 调用次数
 
@@ -1137,6 +1137,52 @@ venv-occ\Scripts\python.exe -m pytest geomcheck/tests/test_refs_extreme.py -q -p
 - **翼肋的 rubric 体积**：平面被长 B 样条围住时，OpenCASCADE 的体积积分会明显失准，原来的 17119 是错的，正确值是 16546.43。现在检查器在精确积分和网格体积相差超过 0.5% 时改用网格体积，rubric 也改成了正确值。
 - **变半径圆角支架**：腰形孔如果切穿整个零件，会在加强筋上开出缺口，原来的 rubric 查不出来，现在加了沿筋的材料探针。
 - **弹簧的端面判定**：SolidWorks 导出的磨平端面上，采样点会超出端面平面 0.002–0.003 mm，原来按 0.001 mm 的容差会判成“端部没有平面”。现在端面容差是 0.01 mm。另外修正了主轴坐标系在细圆环面上误选方向的问题。
+
+### 8.5 自部署 Qwen3.8-Flash-Next-FP8 + L1_v2 的结果（2026-10-09，18/20 题）
+
+设置与 7.8 节相同：Qwen3.8-Flash-Next-FP8、英文题面、7.8 节的 `L1_v2` workflow、`reasoning_effort=medium`、最多 40 次 LLM 调用、每题 1 次运行。结果在 `eval/text_workflow_l1v2_qwen38flash_extreme_en_result.json`，STEP 离线重打分在 `eval/rubric_l1v2_qwen38flash_extreme_en.json`，与结果 JSON 中的 rubric 分数逐题一致。
+
+**目前只有 18 题有效结果**，另外 2 题还没有跑完：
+- `scroll_wrap_plate`：每次 LLM 调用要 5–7 分钟，多次因长度截断重试，第 29 次调用时超过了评测客户端 7200 s 的请求超时，结果记为 `error`。客户端超时已改为 14400 s。
+- `worm_shaft`：运行中电脑故障关机，没有结果。
+
+这 2 题需要删除检查点后从头重跑。
+
+| 范围 | 均分（95% CI） | pass@1 | 核心形体率 |
+|---|---|---|---|
+| 已完成的 18 题 | 79.7（[65.8, 91.5]） | 0.50（9/18） | 0.89（16/18） |
+| 按 20 题计、缺失的 2 题记 0 分 | 71.8（[55.0, 86.5]） | 0.45（9/20） | 0.80（16/20） |
+
+18 题平均每题 413k token、16.4 次 LLM 调用、18.4 次工具调用、23 分钟，共 744 万 token、6.9 小时。LLM 调用最多的一题用了 31 次，没有一题用满 40 次。
+
+| 任务 | rubric 分 | LLM 调用 | 工具调用 | 截断 | token | 耗时（min） | 未通过的条目 |
+|---|---:|---:|---:|---:|---:|---:|---|
+| `balanced_flywheel` | 100.0 | 18 | 17 | 1 | 431k | 23 | — |
+| `cast_manifold_fillets` | 100.0 | 11 | 14 | 0 | 233k | 8 | — |
+| `clipped_hex_perforation` | 100.0 | 18 | 17 | 1 | 510k | 40 | — |
+| `die_cast_cover` | 100.0 | 18 | 19 | 0 | 378k | 10 | — |
+| `roller_cam` | 100.0 | 14 | 10 | 4 | 417k | 38 | — |
+| `sheet_metal_kfactor` | 100.0 | 11 | 14 | 1 | 248k | 21 | — |
+| `tangent_link_lever` | 100.0 | 9 | 12 | 1 | 180k | 6 | — |
+| `tricylinder_node` | 100.0 | 17 | 17 | 0 | 322k | 5 | — |
+| `twisted_flute_knob` | 100.0 | 10 | 12 | 0 | 197k | 6 | — |
+| `variable_fillet_bracket` | 90.9 | 26 | 27 | 0 | 548k | 13 | rib |
+| `inch_callout_plate` | 77.8 | 9 | 12 | 0 | 171k | 4 | corner_holes, tapped_holes |
+| `pipe_route_3d` | 77.8 | 14 | 26 | 2 | 368k | 20 | bend_p2, volume |
+| `spherical_dome_ports` | 77.8 | 25 | 33 | 1 | 590k | 18 | nozzle_n1, nozzle_n3 |
+| `compound_drill_block` | 72.7 | 30 | 37 | 3 | 981k | 74 | hole_a_depth, hole_b_direction, hole_b_depth |
+| `helical_ring_gear` | 70.0 | 31 | 33 | 2 | 1132k | 92 | involute_flank, helix_flank, volume |
+| `filleted_shell_enclosure` | 33.3 | 12 | 13 | 0 | 230k | 5 | top_fillets, shell_wall, rim_step, vents, bosses, volume |
+| `variable_pitch_spring` | 22.2 | 12 | 10 | 2 | 288k | 17 | envelope, wire_coil, left_hand, end_pitch, active_pitch, top_end, ground_ends（核心形体失败） |
+| `naca_wing_rib` | 12.5 | 10 | 9 | 1 | 211k | 9 | envelope, thickness_normal, aft_profile, closed_te, lightening_holes, spar_notch, volume（核心形体失败） |
+
+**外部因素检查。** 18 次运行都由智能体自己 `finish`，没有 LLM 接口错误、从检查点续跑、Web 连接错误或 SolidWorks COM 异常。看门狗因 SolidWorks 私有内存超过 12 GB，在 `compound_drill_block` 和 `tangent_link_lever` 开始前各重启过一次 SolidWorks；重启发生在题目开始之前，不影响结果。
+
+**长度截断。** 最新 workflow 下，核心 50 题和困难 30 题（7.8 节）的 680 次 LLM 调用中只截断了 5 次（0.7%）。extreme 截断得明显更多，18 题加上 `scroll_wrap_plate` 中止前的 10 次调用，共 305 次调用中截断 25 次（8.2%），涉及 12 题，约占总耗时的 20%。
+- 截断的回复几乎都是推理 token 用满了 `max_tokens`，正文为空。其中一半出现在第 1 次调用（8000 上限），也就是整体规划阶段。
+- 上限放宽到 16000 和 32000 后，`roller_cam`、`scroll_wrap_plate` 等题仍会反复截断。
+- 另有 3 次截断出在工具参数里：`scroll_wrap_plate` 的 `loops`、`variable_pitch_spring` 的 `path_3d` 和 `roller_cam` 的 `loops`。这 3 次推理只用了 6–7k token，参数却在 32000 处被截断，推测是模型在手写密集点列。
+- 回复以 `stop` 结束而没有工具调用的情况，在这 985 次调用中只出现过 1 次。
 
 ---
 

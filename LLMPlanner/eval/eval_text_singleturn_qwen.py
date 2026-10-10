@@ -2442,8 +2442,8 @@ def run_one(
         response = requests.post(
             f"{web_url}/api/run",
             json=request_payload,
-            # 复杂件 40 次调用、推理模型单次回复数分钟时可能接近 1 小时；超时后客户端会在服务端仍在建模时发起下一次运行
-            timeout=7200,
+            # 复杂件 40 次调用、推理模型单次回复数分钟（截断重试更久）时可能超过 2 小时；超时后客户端会在服务端仍在建模时发起下一次运行
+            timeout=14400,
         )
         trace["response_status"] = response.status_code
         try:
