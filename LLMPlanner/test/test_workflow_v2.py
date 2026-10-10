@@ -81,7 +81,7 @@ def test_v1_specs_and_prompt_are_untouched():
 
 
 def test_v2_specs_keep_tool_names_and_add_new_options():
-    assert [s["function"]["name"] for s in TOOL_SPECS_V2] == [s["function"]["name"] for s in TOOL_SPECS]
+    assert [s["function"]["name"] for s in TOOL_SPECS_V2] == [s["function"]["name"] for s in TOOL_SPECS] + ["axis_cylinder"]
     by_name = {s["function"]["name"]: s["function"] for s in TOOL_SPECS_V2}
     assert "polar" in by_name["hole"]["parameters"]["properties"]
     assert "hull" in by_name["extrude"]["parameters"]["properties"]["loops"]["items"]["properties"]["type"]["enum"]

@@ -23,8 +23,8 @@ from . import param_curves
 from .errors import WorkflowError
 from .frames import UV_AXES, SketchFrame, face_frame
 from .params import FUNCTIONS as PARAM_FUNCTIONS
-from .profiles import draw_open_path, draw_operations
-from .refs import resolve_ref
+from .profiles import PROFILE_ROUTE, draw_open_path, draw_operations
+from .refs import _vec, resolve_ref
 from .tools import (
     AXES,
     EXTRA_TOOL_SPECS,
@@ -538,7 +538,35 @@ def _build_specs_v2() -> list[dict]:
     return specs
 
 
-TOOL_SPECS_V2: list[dict] = _build_specs_v2()
+_AXIS_DISTANCE = {
+    "type": ["number", "object"],
+    "description": "沿 direction 到 origin 的有符号距离 mm，或 {z: 8}（轴线到达 z=8 处，x/y 同理）、{point:[x,y,z]}（轴上一点）",
+}
+AXIS_CYLINDER_SPEC = _tool(
+    "axis_cylinder",
+    "沿任意空间轴线生成圆柱：凸台（接管、斜柱，inner_diameter 生成空心管）或 cut=true 的圆柱孔（斜孔、径向孔）。"
+    "轴线 = origin + s·direction，圆柱占 s ∈ [from, to]（mm，from 缺省 0）。不必自己算两端点坐标："
+    "direction 可写向量 [dx,dy,dz]（不必归一化，可用 \"=tand(20)\" 这类表达式），"
+    "或 {lat_deg, lon_deg}（纬度从 XY 平面向 +Z 量，经度从 +X 逆时针量；球心出发的径向接管直接用球心作 origin），"
+    "或 {toward:[x,y,z]}（指向轴上另一点）。"
+    "from/to 也可写成 {z: 8}（轴线到达 z=8 处）或 {point:[x,y,z]}。"
+    "斜孔：origin 取孔口中心，direction 指向材料内部，from 取 -diameter 左右，让圆柱从实体外开始，保证孔口完整。"
+    "盲孔的锥形孔底给 tip_angle（麻花钻 118°），钻尖接在 to 端之后。"
+    "结果回显两端点、单位方向和纬度/经度，请核对。轴向沿坐标轴的普通孔仍优先用 hole。",
+    {
+        "origin": {"type": "array", "items": {"type": "number"}, "description": "轴线上的参考点 [x,y,z] mm"},
+        "direction": {"type": ["array", "object"], "description": "[dx,dy,dz]、{lat_deg, lon_deg} 或 {toward:[x,y,z]}"},
+        "from": _AXIS_DISTANCE,
+        "to": _AXIS_DISTANCE,
+        "diameter": {"type": "number", "description": "圆柱直径 mm"},
+        "inner_diameter": {"type": "number", "description": "空心管内径 mm（仅凸台）"},
+        "cut": {"type": "boolean", "description": "true 为切除（孔）"},
+        "tip_angle": _TIP_ANGLE,
+    },
+    ["origin", "direction", "to", "diameter"],
+)
+
+TOOL_SPECS_V2: list[dict] = [*_build_specs_v2(), AXIS_CYLINDER_SPEC]
 
 
 VIEW_MODEL_SPEC = _tool(
@@ -1019,6 +1047,7 @@ class WorkflowSessionV2(WorkflowSession):
         self._notes: list[str] = []
         self._axes: dict[tuple, str] = {}
         self._handlers["view_model"] = self.view_model
+        self._handlers["axis_cylinder"] = self.axis_cylinder
 
     def view_model(self, args: dict) -> dict:
         from planner.sw_views import capture_grid
@@ -1756,6 +1785,169 @@ class WorkflowSessionV2(WorkflowSession):
                 f"孔总深（含钻尖）{_round(depth + radius / math.tan(half), 3)} mm"
             ),
         }
+
+    # ------------------------------------------------------------ 任意轴线圆柱
+
+    def _axis_direction(self, raw: Any, origin: list[float]) -> list[float]:
+        raw = self._resolve_numbers(coerce_args(raw) if isinstance(raw, dict) else raw)
+        if isinstance(raw, str):
+            axis, sign = _axis_spec(raw, "direction")
+            vector = [sign * value for value in _AXIS_VECTORS[axis]]
+        elif isinstance(raw, dict) and raw.get("toward") is not None:
+            target = _point3(raw["toward"], "direction.toward")
+            vector = [target[k] - origin[k] for k in range(3)]
+        elif isinstance(raw, dict) and raw.get("lat_deg") is not None and raw.get("lon_deg") is not None:
+            lat, lon = math.radians(float(raw["lat_deg"])), math.radians(float(raw["lon_deg"]))
+            vector = [math.cos(lat) * math.cos(lon), math.cos(lat) * math.sin(lon), math.sin(lat)]
+        elif isinstance(raw, (list, tuple)) and len(raw) == 3:
+            vector = [float(value) for value in raw]
+        else:
+            raise WorkflowError("TOOL_ARGS", "direction 应为 [dx,dy,dz]、{lat_deg, lon_deg} 或 {toward:[x,y,z]}")
+        norm = math.sqrt(sum(value * value for value in vector))
+        if norm < 1e-9:
+            raise WorkflowError("TOOL_ARGS", "direction 不能为零向量")
+        return [value / norm for value in vector]
+
+    def _axis_distance(self, raw: Any, origin: list[float], unit: list[float], what: str) -> float:
+        raw = self._resolve_numbers(coerce_args(raw) if isinstance(raw, dict) else raw)
+        if isinstance(raw, (int, float)):
+            return float(raw)
+        if isinstance(raw, dict) and raw.get("point") is not None:
+            point = _point3(raw["point"], f"{what}.point")
+            offset = [point[k] - origin[k] for k in range(3)]
+            s = sum(offset[k] * unit[k] for k in range(3))
+            miss = math.dist(point, [origin[k] + s * unit[k] for k in range(3)])
+            if miss > 0.05:
+                raise WorkflowError("TOOL_ARGS", f"{what}.point 离轴线 {miss:.3f} mm，不在轴线上")
+            return s
+        if isinstance(raw, dict):
+            keys = [key for key in raw if key.upper() in AXES]
+            if len(keys) == 1:
+                k = AXES.index(keys[0].upper())
+                if abs(unit[k]) < 1e-6:
+                    raise WorkflowError("TOOL_ARGS", f"轴线与 {keys[0].upper()} 平面平行，{what} 不能写成 {{{keys[0]}: …}}")
+                return (float(raw[keys[0]]) - origin[k]) / unit[k]
+        raise WorkflowError("TOOL_ARGS", f"{what} 应为距离（mm）、{{z: 值}} 或 {{point:[x,y,z]}}")
+
+    def axis_cylinder(self, args: dict) -> dict:
+        origin = _point3(self._resolve_numbers(args.get("origin")), "origin")
+        unit = self._axis_direction(args.get("direction"), origin)
+        start = self._axis_distance(args.get("from", 0), origin, unit, "from")
+        end = self._axis_distance(args.get("to"), origin, unit, "to") if args.get("to") is not None else None
+        if end is None:
+            raise WorkflowError("TOOL_ARGS", "缺少 to（圆柱终点沿轴线的位置）")
+        if end - start < 1e-3:
+            raise WorkflowError(
+                "TOOL_ARGS", f"沿 direction 的范围 from={start:g} → to={end:g} 为空：to 必须大于 from",
+                hint="direction 应从 from 端指向 to 端；钻孔时 direction 指向材料内部。")
+        diameter = self._num(args, "diameter", required=True)
+        cut = bool(args.get("cut", False))
+        tip = self._num(args, "tip_angle")
+        if tip and not cut:
+            raise WorkflowError("TOOL_ARGS", "tip_angle 只用于 cut=true 的盲孔")
+        if tip and not 60 <= tip < 180:
+            raise WorkflowError("TOOL_ARGS", f"tip_angle={tip:g} 不合理（麻花钻常用 118°）")
+        p0 = [_round(origin[k] + start * unit[k], 6) for k in range(3)]
+        p1 = [_round(origin[k] + end * unit[k], 6) for k in range(3)]
+        sweep_args: dict[str, Any] = {"path_3d": {"points": [p0, p1]}, "profile_diameter": diameter, "cut": cut}
+        if args.get("inner_diameter") is not None:
+            if cut:
+                raise WorkflowError("TOOL_ARGS", "inner_diameter 只用于凸台（空心管）")
+            sweep_args["inner_diameter"] = self._num(args, "inner_diameter")
+        before = self.snapshot()
+        result = self.sweep(sweep_args)
+        lat = math.degrees(math.asin(max(-1.0, min(1.0, unit[2]))))
+        lon = math.degrees(math.atan2(unit[1], unit[0])) % 360 if math.hypot(unit[0], unit[1]) > 1e-9 else 0.0
+        result["axis"] = {
+            "start": p0, "end": p1, "direction": [_round(value, 5) for value in unit],
+            "lat_deg": _round(lat, 3), "lon_deg": _round(lon, 3), "length_mm": _round(end - start, 4),
+        }
+        if not tip:
+            return result
+        try:
+            cone = self._axis_cone(p1, unit, diameter / 2, tip)
+        except WorkflowError as exc:
+            self._rollback(result.get("created") or [])
+            exc.context["hint"] = "圆柱孔部分已回滚，失败的是孔底钻尖锥；可以先不给 tip_angle 打平底孔"
+            raise
+        if not cone:
+            return result
+        after = self.snapshot()
+        height = diameter / 2 / math.tan(math.radians(tip / 2))
+        apex = [_round(p1[k] + height * unit[k], 4) for k in range(3)]
+        result.update({
+            "created": (result.get("created") or []) + cone,
+            "volume_mm3": _round(self._volume(after), 2),
+            "volume_delta_mm3": _round(self._volume(after) - self._volume(before), 2),
+            "bbox_mm": self._bbox(after),
+            "drill_point": f"{tip:g}° 钻尖锥接在 {p1} 之后，锥高 {_round(height, 3)} mm，锥尖 {apex}",
+        })
+        return result
+
+    @staticmethod
+    def _hole_bottom_face(snapshot: dict, point: list[float], unit: list[float]) -> int | None:
+        """扫描切除留下的孔底：中心在 point、法向与轴线平行的平面。"""
+        best, best_distance = None, 0.05
+        for face in snapshot.get("faces") or []:
+            if face.get("surfaceType") != "plane":
+                continue
+            normal = _vec(face.get("normal"))
+            norm = math.sqrt(sum(v * v for v in normal)) or 1.0
+            if abs(sum(normal[k] * unit[k] for k in range(3))) / norm < 0.999:
+                continue
+            center = [value * 1000 for value in _vec(face.get("center"))]
+            distance = math.dist(center, point)
+            if distance < best_distance:
+                best, best_distance = int(face.get("index")), distance
+        return best
+
+    def _axis_cone(self, point: list[float], unit: list[float], radius: float, tip: float) -> list[str]:
+        """在扫描切除留下的孔底平面上画半径 radius 的圆，带拔模角盲切出钻尖锥；返回新建特征名。"""
+        face = self._hole_bottom_face(self.snapshot(), point, unit)
+        if face is None:
+            self._notes.append("孔底没有留下平面（可能已落在别的孔腔里），没有生成钻尖")
+            return []
+        open_sketch = {"operation": "select_observed_face_and_sketch", "route": "/api/select-observed-face-and-sketch",
+                       "params": {"faceIndex": face, "exact": True}}
+        helper = [1.0, 0.0, 0.0] if abs(unit[0]) < 0.9 else [0.0, 1.0, 0.0]
+        e1 = _cross(unit, helper)
+        n1 = math.sqrt(sum(v * v for v in e1))
+        e1 = [v / n1 for v in e1]
+        e2 = list(_cross(unit, e1))
+
+        def at(a: float, b: float, keys: tuple[str, str, str]) -> dict:
+            return {keys[i]: (point[i] + radius * (a * e1[i] + b * e2[i])) / 1000 for i in range(3)}
+
+        segments = [
+            {"type": "arc", **at(1, 0, ("x1", "y1", "z1")), **at(-1, 0, ("x2", "y2", "z2")), **at(0, 1, ("xm", "ym", "zm"))},
+            {"type": "arc", **at(-1, 0, ("x1", "y1", "z1")), **at(1, 0, ("x2", "y2", "z2")), **at(0, -1, ("xm", "ym", "zm"))},
+        ]
+        depth = (radius - 0.005) / math.tan(math.radians(tip / 2))
+        expected = math.pi * radius * radius * radius / math.tan(math.radians(tip / 2)) / 3
+        last: WorkflowError | None = None
+        for flip in (False, True):
+            before = self.snapshot()
+            operations = [
+                open_sketch,
+                {"operation": "sketch_profile", "route": PROFILE_ROUTE, "params": {"segments": segments, "closed": True}},
+                {"operation": "feature_cut_extrusion", "route": "/api/feature/cut-extrusion",
+                 "params": {"depth": depth / 1000, "endCondition": "blind", "flipDirection": flip,
+                            "draftAngleDeg": tip / 2}},
+            ]
+            try:
+                cone = self._transaction(operations, expect="decrease", before=before, context={})
+            except WorkflowError as exc:
+                last = exc
+                continue
+            removed = -float(cone.get("volume_delta_mm3") or 0)
+            if removed <= expected * 1.3:
+                return list(cone.get("created") or [])
+            self._rollback(cone.get("created") or [])
+            last = WorkflowError("FEATURE_FAILED", f"钻尖锥去除 {removed:g} mm³，远大于理论值 {expected:.2f} mm³")
+        if last is not None and last.code == "FEATURE_FAILED" and "远大于" not in str(last):
+            self._notes.append("钻尖锥两个方向都没有切到材料（孔底可能已落在别的孔腔里），没有生成钻尖")
+            return []
+        raise last or WorkflowError("FEATURE_FAILED", "钻尖锥切除失败")
 
     def countersink(self, args: dict) -> dict:
         """锥形沉头：带拔模角的盲切切出 head_diameter → through_diameter 的锥台，再打通孔。"""

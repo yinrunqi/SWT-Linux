@@ -54,6 +54,68 @@ def test_hole_with_tip_angle_adds_a_drill_point_cone():
     assert flat["ok"] is False and "盲孔" in flat["error"]["message"]
 
 
+class AxisFake(FakeV2):
+    """在快照里放一个孔底平面（中心 bottom_mm，法向 bottom_normal），模拟扫描切除留下的孔底。"""
+
+    bottom_mm = None
+    bottom_normal = None
+
+    def snapshot(self):
+        data = super().snapshot()
+        if self.bottom_mm is not None:
+            data["faces"] = [*data.get("faces", []), {
+                "index": 999, "surfaceType": "plane", "area": 1e-4,
+                "center": {k: v / 1000 for k, v in zip("xyz", self.bottom_mm)},
+                "normal": dict(zip("xyz", self.bottom_normal)),
+            }]
+        return data
+
+
+def test_axis_cylinder_radial_nozzle_from_latitude_and_longitude():
+    session = AxisFake(delta=3000.0)
+    result = session.call("axis_cylinder", {
+        "origin": [0, 0, 0], "direction": {"lat_deg": 40, "lon_deg": 30}, "from": 60, "to": 110,
+        "diameter": 30, "inner_diameter": 20,
+    })
+    assert result["ok"] is True, result
+    unit = [math.cos(math.radians(40)) * math.cos(math.radians(30)),
+            math.cos(math.radians(40)) * math.sin(math.radians(30)), math.sin(math.radians(40))]
+    path = session.ran[0][0]["params"]["points"]
+    assert path[0] == pytest.approx([0.06 * u for u in unit], abs=1e-8)
+    assert path[1] == pytest.approx([0.11 * u for u in unit], abs=1e-8)
+    assert result["axis"]["lat_deg"] == pytest.approx(40) and result["axis"]["lon_deg"] == pytest.approx(30)
+
+
+def test_axis_cylinder_inclined_drill_to_a_z_level_with_a_point():
+    d = [math.tan(math.radians(20)), -math.tan(math.radians(15)), -1]
+    norm = math.sqrt(sum(v * v for v in d))
+    end = [40 + 52 * d[0], 55 + 52 * d[1], 8]
+    session = AxisFake(delta=-120.0)
+    session.bottom_mm, session.bottom_normal = end, [-v / norm for v in d]
+    result = session.call("axis_cylinder", {
+        "origin": [40, 55, 60], "direction": ["=tand(20)", "=-tand(15)", -1], "from": -12, "to": {"z": 8},
+        "diameter": 12, "cut": True, "tip_angle": 118,
+    })
+    assert result["ok"] is True, result
+    assert result["axis"]["end"] == pytest.approx(end, abs=1e-5)
+    assert session.ran[-1][0]["params"]["faceIndex"] == 999
+    cone = session.ran[-1][-1]
+    assert cone["params"]["draftAngleDeg"] == pytest.approx(59)
+    assert "118" in result["drill_point"]
+    no_floor = AxisFake(delta=-120.0).call("axis_cylinder", {
+        "origin": [40, 55, 60], "direction": d, "from": -12, "to": {"z": 8}, "diameter": 12, "cut": True,
+        "tip_angle": 118,
+    })
+    assert no_floor["ok"] is True and any("没有生成钻尖" in note for note in no_floor["notes"])
+
+
+def test_axis_cylinder_rejects_an_empty_range():
+    result = AxisFake(delta=-10.0).call("axis_cylinder", {
+        "origin": [0, 0, 0], "direction": [0, 0, 1], "from": 10, "to": {"z": 5}, "diameter": 4, "cut": True,
+    })
+    assert result["ok"] is False and "to 必须大于 from" in result["error"]["message"]
+
+
 def test_shell_echoes_open_faces_and_warns_about_top_bottom():
     session = FakeV2(delta=-500.0)
     result = session.call("shell", {"thickness": 2, "open_faces": ["bottom"]})
