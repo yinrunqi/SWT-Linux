@@ -234,6 +234,38 @@ def _streamed_completion(client: Any, **kwargs: Any) -> Any:
     })
 
 
+def complete_request(client: Any, request: dict, stream: bool) -> Any:
+    if not stream:
+        return client.chat.completions.create(**request)
+    for attempt in range(1, STREAM_ATTEMPTS + 1):
+        try:
+            return _streamed_completion(client, **request)
+        except StreamFailed:
+            if attempt == STREAM_ATTEMPTS:
+                raise
+
+
+def complete_within_context(
+    complete: Callable[[dict], Any], request: dict, context_limit: int | None, log: Callable[[str], None],
+) -> tuple[Any, int | None]:
+    """返回 (response, None)；上下文装不下、本轮输出上限已压到 MIN_OUTPUT_TOKENS 以下时返回 (None, 输入 token 数)。
+    其他错误原样抛出。"""
+    requested = request["max_tokens"]
+    while True:
+        try:
+            return complete({**request, "max_tokens": requested}), None
+        except Exception as exc:
+            prompt_tokens = _context_overflow_prompt_tokens(exc)
+            if prompt_tokens is None or not context_limit:
+                raise
+            # 服务端报的输入长度可能只是下界（上限 - 请求输出 + 1），所以每次至少缩到 3/4
+            room = min(context_limit - prompt_tokens - CONTEXT_MARGIN, requested * 3 // 4)
+            if room < MIN_OUTPUT_TOKENS:
+                return None, prompt_tokens
+            log(f"上下文接近上限：输入至少 {prompt_tokens} token，本轮 max_tokens {requested} → {room}")
+            requested = room
+
+
 def _first_user_message(goal: str, image_b64: str | None, image_mime: str) -> dict:
     text = f"建模需求：\n{goal}\n\n当前是一个空零件，请开始建模。"
     if not image_b64:
@@ -395,20 +427,8 @@ class WorkflowAgent:
                 request = {"model": self.model, "messages": messages, "tools": self.tools, "tool_choice": "auto",
                            "temperature": self.temperature, "max_tokens": max_tokens, **extra}
                 try:
-                    response, requested = None, max_tokens
-                    while response is None:
-                        try:
-                            response = self._complete({**request, "max_tokens": requested})
-                        except Exception as exc:
-                            prompt_tokens = _context_overflow_prompt_tokens(exc)
-                            if prompt_tokens is None or not self.context_limit:
-                                raise
-                            # 服务端报的输入长度可能只是下界（上限 - 请求输出 + 1），所以每次至少缩到 3/4
-                            room = min(self.context_limit - prompt_tokens - CONTEXT_MARGIN, requested * 3 // 4)
-                            if room < MIN_OUTPUT_TOKENS:
-                                break
-                            self._log(f"上下文接近上限：输入至少 {prompt_tokens} token，本轮 max_tokens {requested} → {room}")
-                            requested = room
+                    response, prompt_tokens = complete_within_context(
+                        self._complete, request, self.context_limit, self._log)
                     if response is None:
                         status = "context_exceeded"
                         error = f"输入 {prompt_tokens} token，上下文上限 {self.context_limit}，剩余不足 {MIN_OUTPUT_TOKENS}"
@@ -574,14 +594,7 @@ class WorkflowAgent:
         }
 
     def _complete(self, request: dict) -> Any:
-        if not self.stream:
-            return self.client.chat.completions.create(**request)
-        for attempt in range(1, STREAM_ATTEMPTS + 1):
-            try:
-                return _streamed_completion(self.client, **request)
-            except StreamFailed:
-                if attempt == STREAM_ATTEMPTS:
-                    raise
+        return complete_request(self.client, request, self.stream)
 
     def _log(self, line: str) -> None:
         if self.log:

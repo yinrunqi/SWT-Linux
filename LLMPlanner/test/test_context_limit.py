@@ -87,6 +87,40 @@ def test_keeps_shrinking_when_the_reported_input_is_only_a_lower_bound():
     assert [r["max_tokens"] for r in client.requests] == [32000, 24000, 18000]
 
 
+class AsmSession:
+    saved, last_motion, aliases = True, None, {}
+
+    def call(self, name, args):
+        return {"ok": True}
+
+
+def _truncated():
+    return SimpleNamespace(choices=[SimpleNamespace(
+        message=SimpleNamespace(content="", reasoning_content=None, tool_calls=[]), finish_reason="length")],
+        usage=None, model_dump=lambda mode="python": {})
+
+
+def test_assembly_agent_shrinks_and_stops_like_the_part_agent():
+    from planner.assembly_workflow.agent import AssemblyAgent
+
+    client = Client([_overflow(68000, 16000), _reply([("get_assembly_state", {})]), _overflow(72500, 16000)])
+    lines = []
+    outcome = AssemblyAgent(client, QWEN, AsmSession(), tools=[], log=lines.append).run("装配")
+    assert [r["max_tokens"] for r in client.requests] == [16000, 73728 - 68000 - 64, 16000]
+    assert outcome["status"] == "context_exceeded" and "72500" in outcome["error"]
+    assert outcome["context_limit"] == 73728
+    assert any("上下文接近上限" in line for line in lines)
+
+
+def test_assembly_agent_truncation_retry_matches_the_part_agent():
+    from planner.assembly_workflow.agent import AssemblyAgent
+
+    client = Client([_truncated(), _truncated(), _overflow(50000, 32000), _reply([("finish", {"summary": "ok"})])])
+    outcome = AssemblyAgent(client, QWEN, AsmSession(), tools=[]).run("装配")
+    assert outcome["status"] == "finished" and outcome["truncations"] == 2
+    assert [r["max_tokens"] for r in client.requests] == [16000, 32000, 32000, 73728 - 50000 - 64]
+
+
 def test_other_models_keep_reporting_llm_error():
     client = Client([_overflow(68000, 8000)])
     outcome = WorkflowAgent(client, "claude-sonnet-5", Session(), version="v1").run("立方体")

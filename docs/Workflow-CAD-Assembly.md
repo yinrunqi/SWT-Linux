@@ -27,7 +27,7 @@ L1（可选 spur_gear）→ 接口 rubric
 | `gen` | L1_v2 生成零件（带 `view_model` 截图，`--no-view-tool` 关掉）+ Agent 装配 |
 | `e2e` | 与 gen 相同，但零件接口必须全部合格才进入装配；端到端成功 = 零件全过且运动检查通过 |
 
-`gen` / `e2e` 的零件阶段与 text-to-CAD 的 L1_v2 是同一套 workflow：同一个 `WorkflowSessionV2`、工具表和系统提示，请求同样走流式、单次超时 600 s，终端逐步打印每次 LLM 调用和工具调用。2026-10-10 之前零件阶段是非流式请求、超时 180 s，长回复可能读超时后重发。
+`gen` / `e2e` 的零件阶段与 text-to-CAD 的 L1_v2 是同一套 workflow：同一个 `WorkflowSessionV2`、工具表和系统提示，请求同样走流式、单次超时 600 s，终端逐步打印每次 LLM 调用和工具调用。2026-10-10 之前零件阶段是非流式请求、超时 180 s，长回复可能读超时后重发。默认模型、上下文处理和调用预算见 [Workflow-CAD-Bench-Assembly.md](Workflow-CAD-Bench-Assembly.md) 第 1 节"模型与 LLM 设置"。
 
 ## 2. 装配工具
 

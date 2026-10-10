@@ -167,6 +167,16 @@
    - 运动检查（第 4 节），由评测器加马达、采样。
 4. 汇总。结果写到 `eval/assembly_scratch_result.json`，装配体和零件存在 `eval/artifacts/assembly_scratch/<workflow>/<case>/<condition>_r<repeat>/`。智能体结束后评测器先把当前装配体存成检查点再评分，所以即使智能体没调用 `save_assembly`，评分用的也是它最后的状态；同目录的 `rubric_inputs.json` 存下 rubric 的原始输入（组件、配合、别名），以后改 rubric 可以离线重评。
 
+模型与 LLM 设置（2026-10-10 起的默认值，与 text-to-CAD 的 Qwen L1_v2 评测相同，见 [Workflow-CAD-Bench.md](Workflow-CAD-Bench.md) 6.2 节）：
+- 模型 `Qwen3.8-Flash-Next-FP8`，自部署 vLLM（`--provider qwenlocal`，读 `.env` 的 `QWENLOCAL_BASE_URL`、`QWENLOCAL_API_KEY`）；不指定 `--reasoning-effort` 时用 `medium`，温度 0。`--provider ttswitch|aiping|juheai` 和 `--model` 可以换服务和模型；不再读 `.env` 的 `PLAN_MODEL`。
+- 零件阶段与装配阶段的请求方式相同：流式、单次超时 600 s，终端逐步打印每次 LLM 调用和工具调用。
+- 每轮 `max_tokens` 16000（装配阶段 `--asm-max-tokens`）。输出被截断时丢掉残缺回复，上限翻倍重试，最多 32000，放宽后的上限保留到本次运行结束。
+- 服务端上下文 73728 token，输入、推理和输出共用。服务端返回超长 400 时，按报错里的输入 token 数把本轮 `max_tokens` 压到窗口剩余量再试；剩余不足 2048 时以 `context_exceeded` 结束。
+- 调用预算：零件每个 40 次（`--max-part-calls`），装配 100 次（`--max-asm-calls`）。
+- 结果 JSON 记录 `provider`、`model`、`reasoning_effort`、`asm_max_tokens`，`--resume` 时要求一致（旧结果的 `provider` 视为 `ttswitch`）。
+
+此前（第 6 节各结果）的设置不同：模型要用 `--model` 指定（6.1、6.2 节是 claude-sonnet-5），走 `.env` 的 `OPENAI_*` 网关；非流式请求，超时 180 s；装配阶段 `max_tokens` 8000，截断重试只在 v3 里有，而且下一轮会把上限重置回 8000；没有上下文窗口处理。所以第 6 节的结果不能直接和新默认设置的结果对比。
+
 基础设施故障自动识别（`infra_flags`）：装配阶段的工具报错或运动评测错误里出现 SolidWorks 不可用、RPC 服务器不可用、活动文档丢失、请求超时等标记时，该行记 `infra_contaminated`。评测器会重启 SolidWorks 和服务，只重做装配阶段（零件不重建），最多 `--infra-retries` 次（默认 1）；重试后仍被污染的行保留在 `all_rows` 里，但不进 `summary`，`n_infra_contaminated` 单独报告。
 
 LLM 输出落盘与续跑（与 text-to-CAD 的 L1 评测相同）：
@@ -698,7 +708,9 @@ venv\Scripts\python.exe -X utf8 eval\assembly_scratch\build_reference_assemblies
 # 阳性对照
 venv\Scripts\python.exe -X utf8 eval\assembly_scratch\rescore_assemblies.py --reference --out eval\assembly_reference_rescore.json
 
-# 正式评测（--condition gold|gen|e2e|all，--workflow v1|v2|both）
+# 正式评测（--condition gold|gen|e2e|all，--workflow v1|v2|both）；默认自部署 Qwen3.8-Flash-Next-FP8 + medium
+venv\Scripts\python.exe -X utf8 -u eval\eval_assembly_scratch.py --cases bench,bench2 --condition gen --workflow v2 --repeats 1 `
+    --output eval\assembly_gen_qwen38flash_v2.json --output-dir eval\artifacts\assembly_gen_qwen38flash_v2 --resume
 venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --cases gearbox,engine --condition gold --workflow both --repeats 2
 venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --cases desk_lamp,umbrella,drill_gearbox,sewing_machine,projector --condition gen --workflow v2
 # 扩展测例：--cases bench 表示全部 20 个

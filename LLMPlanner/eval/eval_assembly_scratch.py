@@ -25,8 +25,17 @@ ensure_test_env_loaded()
 CASES_DIR = ROOT / "eval" / "assembly_scratch"
 RUBRIC_DIR = CASES_DIR / "rubrics"
 RECIPES = ROOT / "planner" / "skills" / "recipes"
-LLM_CALL_LOG: list[dict] = []
-MODEL = os.environ.get("PLAN_MODEL") or os.environ.get("PLANNER_MODEL") or "gemini-3.5-flash"
+# ttswitch 读 .env 的 OPENAI_*，其余读 <PROVIDER>_*
+PROVIDER_ENV = {
+    "aiping": ("AIPING_API_KEY", "AIPING_BASE_URL"),
+    "ttswitch": ("OPENAI_API_KEY", "OPENAI_BASE_URL"),
+    "juheai": ("JUHEAI_API_KEY", "JUHEAI_BASE_URL"),
+    "qwenlocal": ("QWENLOCAL_API_KEY", "QWENLOCAL_BASE_URL"),
+}
+PROVIDER = "qwenlocal"
+MODEL = "Qwen3.8-Flash-Next-FP8"
+# 未指定 --reasoning-effort 时的默认值
+MODEL_REASONING_EFFORTS = {"qwen3.8-flash-next-fp8": "medium"}
 
 
 # 测例 yaml 文件名 → case_id；命令行两种都认
@@ -95,15 +104,17 @@ def _close(sw: str) -> None:
         pass
 
 
-def _openai(timeout: float = 180):
-    import os
+def _openai(provider: str = PROVIDER, timeout: float = 600):
     import uuid
     from openai import OpenAI
 
+    from planner.workflow.agent import _context_overflow_prompt_tokens
+
+    key_var, url_var = PROVIDER_ENV[provider]
     # 每个智能体运行一个新 client：TT Switch 只在同一 X-Session-Id 下复用 prompt 缓存，其他服务忽略这个头。
     client = OpenAI(
-        api_key=os.environ["OPENAI_API_KEY"],
-        base_url=os.environ.get("OPENAI_BASE_URL") or None,
+        api_key=os.environ.get(key_var) or "EMPTY",
+        base_url=os.environ.get(url_var) or None,
         timeout=timeout,
         max_retries=2,
         default_headers={"X-Session-Id": f"assembly-eval-{uuid.uuid4().hex}"},
@@ -111,28 +122,14 @@ def _openai(timeout: float = 180):
     # 网关上游偶发以 400 model_param_invalid 拒收同一请求，重放即可通过；SDK 不重试 400。
     create = client.chat.completions.create
 
-    def logged(**kwargs):
-        response = create(**kwargs)
-        if kwargs.get("stream"):
-            return response
-        choice = response.choices[0]
-        details = getattr(response.usage, "completion_tokens_details", None)
-        LLM_CALL_LOG.append({
-            "finish_reason": choice.finish_reason,
-            "completion_tokens": getattr(response.usage, "completion_tokens", None),
-            "reasoning_tokens": getattr(details, "reasoning_tokens", None),
-            "prompt_tokens": getattr(response.usage, "prompt_tokens", None),
-            "prompt_cache_hit_tokens": getattr(response.usage, "prompt_cache_hit_tokens", None),
-            "n_tool_calls": len(choice.message.tool_calls or []),
-            "text_chars": len(choice.message.content or ""),
-        })
-        return response
-
     def create_with_retry(**kwargs):
         for delay in (5, 15, 30, 60, 120, 180, 300):
             try:
-                return logged(**kwargs)
+                return create(**kwargs)
             except Exception as exc:
+                # 上下文超长由 agent 压缩输出上限后重发，原样重放只会再被拒
+                if _context_overflow_prompt_tokens(exc) is not None:
+                    raise
                 print(f"  [LLM retry in {delay}s] {type(exc).__name__}: {str(exc)[:120]}")
                 if os.environ.get("EVAL_DUMP_REJECTED"):
                     Path(os.environ["EVAL_DUMP_REJECTED"]).write_text(
@@ -140,10 +137,25 @@ def _openai(timeout: float = 180):
                 if isinstance(exc, openai.BadRequestError) and delay > 5:
                     raise
                 time.sleep(delay)
-        return logged(**kwargs)
+        return create(**kwargs)
 
     client.chat.completions.create = create_with_retry
     return client
+
+
+def _call_detail(raw: dict) -> dict:
+    choice = (raw.get("choices") or [{}])[0]
+    message = choice.get("message") or {}
+    usage = raw.get("usage") or {}
+    return {
+        "finish_reason": choice.get("finish_reason"),
+        "completion_tokens": usage.get("completion_tokens"),
+        "reasoning_tokens": (usage.get("completion_tokens_details") or {}).get("reasoning_tokens"),
+        "prompt_tokens": usage.get("prompt_tokens"),
+        "prompt_cache_hit_tokens": usage.get("prompt_cache_hit_tokens"),
+        "n_tool_calls": len(message.get("tool_calls") or []),
+        "text_chars": len(message.get("content") or ""),
+    }
 
 
 ASSEMBLY_RUBRIC_DIR = CASES_DIR / "assembly_rubrics"
@@ -242,6 +254,7 @@ def generate_part(
     reasoning_effort: str | None = None,
     resume: bool = False,
     view_tool: bool = True,
+    provider: str = PROVIDER,
 ) -> dict:
     from planner.workflow.agent import WorkflowAgent
     from planner.workflow.tools_v2 import WorkflowSessionV2
@@ -270,7 +283,7 @@ def generate_part(
     try:
         session.start_part()
         outcome = WorkflowAgent(
-            _openai(timeout=600), model, session, max_llm_calls=max_llm_calls, extra_tools=extra,
+            _openai(provider), model, session, max_llm_calls=max_llm_calls, extra_tools=extra,
             reasoning_effort=reasoning_effort, stream=True, checkpoint_path=checkpoint, view_tool=view_tool, log=log,
         ).run(spec["prompt"], resume=resume)
         artifacts = {}
@@ -326,10 +339,11 @@ def _assemble(
     model: str,
     max_llm_calls: int,
     workflow: str = "v1",
-    max_tokens: int = 8000,
+    max_tokens: int = 16000,
     reasoning_effort: str | None = None,
     resume: bool = False,
     view_tool: bool = True,
+    provider: str = PROVIDER,
 ) -> dict:
     from planner.assembly_workflow.agent import AssemblyAgent
     from planner.assembly_workflow.session import AssemblySession
@@ -345,11 +359,14 @@ def _assemble(
     listing = "\n".join(f"- {role}: {path}" for role, path in parts.items())
     goal = _recipes(workflow) + "\n\n" + case["assembly"]["prompt"] + "\n\n零件文件：\n" + listing
     started = time.perf_counter()
-    LLM_CALL_LOG.clear()
+
+    def log(line: str) -> None:
+        print(f"    [{time.strftime('%H:%M:%S')}] [assembly] {line}", flush=True)
+
     outcome = AssemblyAgent(
-        _openai(), model, session, max_llm_calls=max_llm_calls, max_tokens=max_tokens,
+        _openai(provider), model, session, max_llm_calls=max_llm_calls, max_tokens=max_tokens,
         tools=tool_specs(workflow, view_tool=view_tool), reasoning_effort=reasoning_effort,
-        checkpoint_path=checkpoint, view_tool=view_tool,
+        checkpoint_path=checkpoint, view_tool=view_tool, stream=True, log=log,
     ).run(goal, resume=resume)
     messages = outcome.get("messages") or []
     _write_json(dest.with_name("agent_messages.json"), messages)
@@ -391,7 +408,7 @@ def _assemble(
         "aliases": outcome.get("aliases"),
         "tool_calls": outcome["tool_calls"],
         "agent_texts": agent_texts,
-        "llm_calls_detail": list(LLM_CALL_LOG),
+        "llm_calls_detail": [_call_detail(raw) for raw in outcome.get("llm_responses") or []],
         "agent_last_motion": outcome.get("last_motion"),
         "agent_last_pose": session.last_pose,
         "truncations": outcome.get("truncations"),
@@ -459,7 +476,7 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
             result = generate_part(
                 spec, dest, sw=args.sw, model=args.model, max_llm_calls=args.max_part_calls,
                 reasoning_effort=args.reasoning_effort, resume=resume,
-                view_tool=getattr(args, "part_view_tool", True),
+                view_tool=getattr(args, "part_view_tool", True), provider=getattr(args, "provider", PROVIDER),
             )
             skipped = bool((result.get("grade") or {}).get("skipped"))
             print(
@@ -497,7 +514,7 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
                 case, parts, out / f"{case_id}.SLDASM",
                 sw=args.sw, model=args.model, max_llm_calls=budget, workflow=workflow,
                 max_tokens=args.asm_max_tokens, reasoning_effort=args.reasoning_effort, resume=resume,
-                view_tool=not getattr(args, "no_view_tool", False),
+                view_tool=not getattr(args, "no_view_tool", False), provider=getattr(args, "provider", PROVIDER),
             )
         except Exception as exc:  # SolidWorks 已经死掉时连新建装配体都会失败
             assembly = {"status": "infra_exception", "infra_error": f"{type(exc).__name__}: {exc}",
@@ -613,6 +630,10 @@ def main() -> None:
     parser.add_argument("--workflow", default="v1", choices=["v1", "v2", "v3", "both"],
                         help="v1=手写场景配方与原工具集；v2=数据导出的通用配方与扩展工具集；"
                              "v3=v2 + 增量状态、秩法自由度、自动闭环、位姿自检、截断重试与预算提示")
+    parser.add_argument(
+        "--provider", choices=sorted(PROVIDER_ENV), default=PROVIDER,
+        help="LLM service for both stages: ttswitch reads OPENAI_* from .env, others read <PROVIDER>_*",
+    )
     parser.add_argument("--model", default=MODEL)
     parser.add_argument("--sw", default="http://localhost:5100")
     parser.add_argument("--max-part-calls", type=int, default=40)
@@ -621,7 +642,7 @@ def main() -> None:
                         help=">0 时装配预算 = max(--max-asm-calls, 系数 × 角色数)，在跑之前冻结")
     parser.add_argument("--infra-retries", type=int, default=1,
                         help="装配阶段出现 SolidWorks 崩溃 / 超时痕迹时，重启 SolidWorks 后重跑的次数")
-    parser.add_argument("--asm-max-tokens", type=int, default=8000)
+    parser.add_argument("--asm-max-tokens", type=int, default=16000)
     parser.add_argument("--no-view-tool", action="store_true",
                         help="不提供截图工具：v3 装配不带 view_assembly，gen/e2e 的零件阶段不带 view_model"
                              "（骨干模型不支持图片输入时必须加）")
@@ -629,7 +650,8 @@ def main() -> None:
         "--reasoning-effort",
         choices=("none", "minimal", "low", "medium", "high", "xhigh"),
         default=None,
-        help="sent as reasoning_effort on every part and assembly agent call; omitted = provider default",
+        help="sent as reasoning_effort on every part and assembly agent call; "
+             "omitted = medium for the default self-served Qwen, else the model default",
     )
     parser.add_argument("--output-dir", default=str(ROOT / "eval" / "artifacts" / "assembly_scratch"))
     parser.add_argument("--output", default=str(ROOT / "eval" / "assembly_scratch_result.json"))
@@ -656,8 +678,11 @@ def main() -> None:
         except ImportError as exc:
             parser.error(f"e2e 条件要在建模时给零件打分才能决定是否装配，但 OCC 不可用（{exc}）；改用 --condition gen")
     workflows = ["v1", "v2"] if args.workflow == "both" else [args.workflow]
-    from planner.workflow.agent import default_reasoning_effort
-    args.reasoning_effort = default_reasoning_effort(args.model, args.reasoning_effort)
+    from planner.workflow.agent import _model_key, default_reasoning_effort
+    if not os.environ.get(PROVIDER_ENV[args.provider][1]):
+        parser.error(f"--provider {args.provider} 需要在 .env 里设置 {PROVIDER_ENV[args.provider][1]}")
+    args.reasoning_effort = default_reasoning_effort(
+        args.model, args.reasoning_effort or MODEL_REASONING_EFFORTS.get(_model_key(args.model)))
     # 只有 v3 装配工具集带截图工具；之前的结果没有这个字段，都是不带截图的
     args.view_tool = "v3" in workflows and not args.no_view_tool
     args.part_view_tool = not args.no_view_tool
@@ -666,7 +691,8 @@ def main() -> None:
     if args.resume and Path(args.output).is_file():
         previous = json.loads(Path(args.output).read_text(encoding="utf-8"))
         previous.setdefault("view_tool", False)
-        for key in ("model", "reasoning_effort", "asm_max_tokens", "view_tool"):
+        previous.setdefault("provider", "ttswitch")
+        for key in ("provider", "model", "reasoning_effort", "asm_max_tokens", "view_tool"):
             if previous.get(key) != getattr(args, key):
                 parser.error(f"--resume：已有结果的 {key}={previous.get(key)!r} 与本次 {getattr(args, key)!r} 不一致")
         for row in previous.get("results") or []:
@@ -703,7 +729,8 @@ def main() -> None:
             "part_grading_skipped": any(
                 (part.get("grade") or {}).get("skipped") for row in rows for part in row.get("parts") or []
             ),
-            "base_url": os.environ.get("OPENAI_BASE_URL"),
+            "provider": args.provider,
+            "base_url": os.environ.get(PROVIDER_ENV[args.provider][1]),
             "reasoning_effort": args.reasoning_effort,
             "prompt_lang": "zh",
             "asm_max_tokens": args.asm_max_tokens,

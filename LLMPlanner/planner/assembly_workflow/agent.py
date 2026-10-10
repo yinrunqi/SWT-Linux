@@ -7,14 +7,18 @@ import os
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from planner.workflow.agent import (
+    CONTEXT_LIMITS,
     DEFAULT_MAX_OUTPUT_TOKENS,
     MAX_OUTPUT_TOKENS,
+    MIN_OUTPUT_TOKENS,
     _image_part,
     _model_key,
     _without_images,
+    complete_request,
+    complete_within_context,
     default_reasoning_effort,
     raw_response,
 )
@@ -109,17 +113,26 @@ class AssemblyAgent:
         session: AssemblySession,
         *,
         max_llm_calls: int = 100,
-        max_tokens: int = 8000,
+        max_tokens: int = 16000,
         temperature: float = 0.0,
         max_stalls: int = 2,
         tools: list[dict] | None = None,
         reasoning_effort: str | None = None,
         checkpoint_path: str | Path | None = None,
         view_tool: bool = True,
+        stream: bool = False,
+        log: Callable[[str], None] | None = None,
+        context_limit: int | None = None,
     ):
-        """view_tool=False 时去掉 view_assembly 截图工具（骨干模型不支持图片输入时用）。"""
+        """view_tool=False 时去掉 view_assembly 截图工具（骨干模型不支持图片输入时用）。
+        stream / log / context_limit 与零件 WorkflowAgent 相同：流式请求、逐步进度输出、小上下文模型超长时
+        压缩本轮输出上限，仍装不下则以 context_exceeded 结束。"""
         self.client = client
         self.model = model
+        self.stream = stream
+        self.log = log
+        self.context_limit = context_limit or CONTEXT_LIMITS.get(_model_key(model))
+        self.max_output_tokens = MAX_OUTPUT_TOKENS.get(_model_key(model), DEFAULT_MAX_OUTPUT_TOKENS)
         self.session = session
         self.view_tool = view_tool
         self.tools = [spec for spec in tools or TOOL_SPECS
@@ -168,6 +181,8 @@ class AssemblyAgent:
             prior_seconds = float(saved.get("duration_seconds") or 0)
             mismatch = self._replay(tool_log)
             resumed = {"from_llm_calls": usage["calls"], "replayed_tools": len(tool_log), "mismatch": mismatch}
+            self._log(f"续跑：重放 {len(tool_log)} 个工具，从第 {usage['calls']} 次 LLM 调用继续"
+                      + (f"，重放不一致：{mismatch}" if mismatch else ""))
             if mismatch:
                 status, error, pending, done = "resume_failed", mismatch, None, True
             elif saved.get("status") not in RESUMABLE_STATUSES:
@@ -191,18 +206,20 @@ class AssemblyAgent:
                     for index in state_messages[:-1]:
                         messages[index]["content"] = STATE_PLACEHOLDER
                     state_messages = state_messages[-1:]
+                request = {"model": self.model, "messages": messages, "tools": self.tools, "tool_choice": "auto",
+                           "temperature": self.temperature, "max_tokens": max_tokens, **extra}
                 try:
-                    response = self.client.chat.completions.create(
-                        model=self.model,
-                        messages=messages,
-                        tools=self.tools,
-                        tool_choice="auto",
-                        temperature=self.temperature,
-                        max_tokens=max_tokens,
-                        **extra,
-                    )
+                    response, prompt_tokens = complete_within_context(
+                        lambda body: complete_request(self.client, body, self.stream),
+                        request, self.context_limit, self._log)
+                    if response is None:
+                        status = "context_exceeded"
+                        error = f"输入 {prompt_tokens} token，上下文上限 {self.context_limit}，剩余不足 {MIN_OUTPUT_TOKENS}"
+                        self._log(f"上下文用尽：{error}")
+                        break
                 except Exception as exc:
                     status, error = "llm_error", f"{type(exc).__name__}: {exc}"
+                    self._log(f"LLM 错误：{error[:300]}")
                     break
                 llm_responses.append(raw_response(response))
                 usage["calls"] += 1
@@ -210,6 +227,10 @@ class AssemblyAgent:
                     for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
                         usage[key] += int(getattr(response.usage, key, 0) or 0)
                 choice = response.choices[0]
+                self._log(
+                    f"LLM #{usage['calls']}/{self.max_llm_calls} finish={getattr(choice, 'finish_reason', None)} "
+                    f"累计 {usage['total_tokens']} token，{time.perf_counter() - started + prior_seconds:.0f} s"
+                )
                 finish_reasons.append(getattr(choice, "finish_reason", None))
                 pending = {"finish_reason": getattr(choice, "finish_reason", None),
                            "content": choice.message.content or "",
@@ -217,16 +238,15 @@ class AssemblyAgent:
                 checkpoint()
             reply, pending = pending, None
             calls = reply["tool_calls"]
-            # v3：输出被截断（常见于长篇推理）不算停滞；丢掉残缺回复，放宽长度再要一次，并提示直接给工具调用
-            if v3 and reply["finish_reason"] == "length" and not _all_args_parse(calls):
+            # 输出被截断（推理模型常把额度用在思考上）不算停滞：丢掉残缺回复，放宽长度再要一次，并提示直接给工具调用
+            if reply["finish_reason"] == "length" and not _all_args_parse(calls):
                 truncations += 1
-                cap = MAX_OUTPUT_TOKENS.get(_model_key(self.model), DEFAULT_MAX_OUTPUT_TOKENS)
-                max_tokens = min(max(max_tokens, self.max_tokens) * 2, cap)
+                max_tokens = min(max(max_tokens, self.max_tokens) * 2, self.max_output_tokens)
                 if truncations == 1:
                     messages.append({"role": "user", "content": "上一条回复太长被截断了。少写分析，直接输出下一步的工具调用。"})
                 checkpoint()
                 continue
-            max_tokens = self.max_tokens
+            # 放宽后的上限保留到本次装配结束：后续步骤的思考量相近，重置会让每步都先白白截断几次
             round_start = (len(messages), len(tool_log), dict(failed_signatures), list(state_messages))
             assistant = {"role": "assistant", "content": reply["content"]}
             if calls:
@@ -291,6 +311,11 @@ class AssemblyAgent:
                     "error_code": (result.get("error") or {}).get("code"),
                     "message": (result.get("error") or {}).get("message", ""),
                 })
+                entry = tool_log[-1]
+                if entry["ok"]:
+                    self._log(f"  {name} ok")
+                else:
+                    self._log(f"  {name} 失败 {entry['error_code']}: {str(entry['message'])[:200]}")
                 if v3 and call is calls[-1]:
                     remaining = self.max_llm_calls - usage["calls"]
                     result["budget"] = {"remaining_llm_calls": remaining}
@@ -315,11 +340,14 @@ class AssemblyAgent:
 
         if status != "resume_failed":
             checkpoint(status)
+        self._log(f"结束：status={status}，{usage['calls']} 次 LLM 调用，{len(tool_log)} 个工具调用，"
+                  f"{usage['total_tokens']} token" + (f"，error={str(error)[:200]}" if error else ""))
         return {
             "status": status,
             "summary": summary,
             "error": error,
             "truncations": truncations,
+            "context_limit": self.context_limit,
             "llm_calls": usage["calls"],
             "reasoning_effort": self.reasoning_effort,
             "view_tool": self.view_tool,
@@ -334,6 +362,10 @@ class AssemblyAgent:
             "resumed": resumed,
             "duration_seconds": round(prior_seconds + time.perf_counter() - started, 2),
         }
+
+    def _log(self, line: str) -> None:
+        if self.log:
+            self.log(line)
 
     def _load_checkpoint(self, goal: str) -> dict | None:
         if not self.checkpoint_path or not self.checkpoint_path.is_file():

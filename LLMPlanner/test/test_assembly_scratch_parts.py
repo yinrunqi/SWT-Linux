@@ -27,7 +27,7 @@ def fake_env(monkeypatch):
     monkeypatch.setattr(workflow_agent, "WorkflowAgent", FakeAgent)
     monkeypatch.setattr(WorkflowSessionV2, "start_part", lambda self: None)
     monkeypatch.setattr(scratch, "_close", lambda sw: None)
-    monkeypatch.setattr(scratch, "_openai", lambda timeout=180: None)
+    monkeypatch.setattr(scratch, "_openai", lambda *a, **k: None)
     monkeypatch.setattr(scratch.requests, "post", lambda *a, **k: None)
     return FakeAgent.created
 
@@ -52,12 +52,47 @@ def test_openai_wrapper_passes_streams_through(monkeypatch):
     from openai.resources.chat.completions import Completions
 
     stream = object()
-    monkeypatch.setenv("OPENAI_API_KEY", "test")
+    monkeypatch.setenv("QWENLOCAL_BASE_URL", "http://qwen.local/v1")
+    monkeypatch.delenv("QWENLOCAL_API_KEY", raising=False)
     monkeypatch.setattr(Completions, "create", lambda self, **kwargs: stream)
-    client = scratch._openai(timeout=600)
+    client = scratch._openai()
 
     assert client.timeout == 600
+    assert str(client.base_url).startswith("http://qwen.local/v1")
     assert client.chat.completions.create(model="m", messages=[], stream=True) is stream
+
+
+def test_openai_wrapper_does_not_replay_context_overflow(monkeypatch):
+    from openai.resources.chat.completions import Completions
+
+    calls = []
+
+    def overflow(self, **kwargs):
+        calls.append(kwargs)
+        raise ValueError("maximum context length is 73728 tokens. However, your prompt contains at least "
+                         "70000 input tokens")
+
+    monkeypatch.setenv("QWENLOCAL_BASE_URL", "http://qwen.local/v1")
+    monkeypatch.setattr(Completions, "create", overflow)
+    monkeypatch.setattr(scratch.time, "sleep", lambda s: pytest.fail("不应等待重试"))
+    with pytest.raises(ValueError):
+        scratch._openai().chat.completions.create(model="m", messages=[])
+    assert len(calls) == 1
+
+
+def test_call_detail_reads_raw_response():
+    raw = {"choices": [{"finish_reason": "tool_calls", "message": {"content": "ab", "tool_calls": [{}, {}]}}],
+           "usage": {"prompt_tokens": 10, "completion_tokens": 5, "completion_tokens_details": {"reasoning_tokens": 3}}}
+    assert scratch._call_detail(raw) == {
+        "finish_reason": "tool_calls", "completion_tokens": 5, "reasoning_tokens": 3, "prompt_tokens": 10,
+        "prompt_cache_hit_tokens": None, "n_tool_calls": 2, "text_chars": 2,
+    }
+
+
+def test_defaults_match_text2cad_qwen():
+    assert scratch.PROVIDER == "qwenlocal"
+    assert scratch.MODEL == "Qwen3.8-Flash-Next-FP8"
+    assert scratch.MODEL_REASONING_EFFORTS["qwen3.8-flash-next-fp8"] == "medium"
 
 
 def test_resume_does_not_reuse_l1_part(fake_env, tmp_path):

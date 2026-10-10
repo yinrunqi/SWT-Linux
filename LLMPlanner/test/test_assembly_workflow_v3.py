@@ -227,7 +227,7 @@ def test_agent_retries_truncation_prunes_state_and_reports_budget():
     agent = AssemblyAgent(client, "fake", s, max_llm_calls=6, max_tokens=1000, tools=tool_specs("v3"))
     result = agent.run("装配四杆")
     assert result["truncations"] == 1 and result["status"] == "stalled"
-    assert [r["max_tokens"] for r in client.requests[:3]] == [1000, 2000, 1000]
+    assert [r["max_tokens"] for r in client.requests[:3]] == [1000, 2000, 2000]
     assert client.requests[1]["messages"][-1]["role"] == "user"
     last = client.requests[3]["messages"]
     states = [m for m in last if m["role"] == "tool"]
