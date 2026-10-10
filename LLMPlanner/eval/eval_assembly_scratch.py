@@ -627,7 +627,7 @@ def main() -> None:
     parser.add_argument("--cases", default="gearbox,engine")
     parser.add_argument("--condition", default="gold", choices=["gold", "gen", "e2e", "all"])
     parser.add_argument("--repeats", type=int, default=2)
-    parser.add_argument("--workflow", default="v1", choices=["v1", "v2", "v3", "both"],
+    parser.add_argument("--workflow", default="v2", choices=["v1", "v2", "v3", "both"],
                         help="v1=手写场景配方与原工具集；v2=数据导出的通用配方与扩展工具集；"
                              "v3=v2 + 增量状态、秩法自由度、自动闭环、位姿自检、截断重试与预算提示")
     parser.add_argument(
