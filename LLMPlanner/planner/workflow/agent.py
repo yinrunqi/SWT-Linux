@@ -92,7 +92,11 @@ SYSTEM_PROMPT_V2 = """你是一名资深机械设计工程师，正在 SolidWork
 - 螺栓：先杆后头（头在轴端），再在头端面做 depth 盲切六角窝，颈肩用最后的 fillet；特征成功后不要无依据地 delete 再重做。
 - sweep 一般省略 profile_plane：路径第一段沿坐标轴时，截面自动放在路径起点并垂直于路径，loops 写相对路径起点的坐标（截面中心通常是 [0,0]）。
   圆截面（管、丝、弹簧）直接用 profile_diameter（空心管加 inner_diameter），不需要截面平面；
-  空间弯管用 path_3d（折线 + corner_radius），弹簧/螺旋槽用 helix。
+  空间弯管用 path_3d（折线 + corner_radius），弹簧/螺旋槽用 helix（变螺距时 pitch 写 [[圈数, 螺距], ...]）。
+- 由公式定义的曲线（渐开线齿廓、涡旋、凸轮廓线、翼型、摆线、变螺距或非圆螺旋等）不要自己算坐标、手写几十上百个点：
+  平面轮廓里写 {curve:{u:"…t…", v:"…t…", t:[t0, t1]}} 段或 {type:"curve", u, v, t} 轮廓，空间路径写 path_3d={curve:{x, y, z, t}}，
+  由系统按公式采样成光滑样条。表达式可引用 set_parameters 的参数；sin/cos 用弧度，sind/cosd 用度；分段函数用 step/clamp/min/max。
+  手写长点列既容易算错，也会让回复过长被截断。
 - loft 首尾截面可以收成一点（{plane, point}）；需要控制中间形状时加 guides，要和相邻段平滑相接时用 start_tangent/end_tangent=normal。
 - 改已有特征的尺寸用 edit_feature。delete_feature 会连带删除依赖它的后续特征（结果的 also_removed），删除前想清楚。
 
@@ -281,7 +285,7 @@ class WorkflowAgent:
         session: WorkflowSession,
         *,
         max_llm_calls: int = 40,
-        max_tokens: int = 8000,
+        max_tokens: int = 16000,
         temperature: float = 0.0,
         max_stalls: int = 2,
         extra_tools: list[str] | None = None,

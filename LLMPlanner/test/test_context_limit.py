@@ -55,14 +55,14 @@ def test_parses_vllm_overflow_message():
 
 
 def test_shrinks_max_tokens_to_fit_the_window():
-    client = Client([_overflow(68000, 8000), _reply([("finish", {"summary": "ok"})])])
+    client = Client([_overflow(68000, 16000), _reply([("finish", {"summary": "ok"})])])
     outcome = WorkflowAgent(client, QWEN, Session(), version="v1").run("立方体")
     assert outcome["status"] == "finished"
-    assert [r["max_tokens"] for r in client.requests] == [8000, 73728 - 68000 - 64]
+    assert [r["max_tokens"] for r in client.requests] == [16000, 73728 - 68000 - 64]
 
 
 def test_stops_cleanly_when_the_window_is_full():
-    client = Client([_reply([("get_model_state", {})]), _overflow(72500, 8000)])
+    client = Client([_reply([("get_model_state", {})]), _overflow(72500, 16000)])
     outcome = WorkflowAgent(client, QWEN, Session(), version="v1").run("立方体")
     assert outcome["status"] == "context_exceeded"
     assert "72500" in outcome["error"]
@@ -75,7 +75,7 @@ def test_truncation_retry_grows_then_shrinks_to_the_window():
         usage=None, model_dump=lambda mode="python": {})
     client = Client([truncated, truncated, _overflow(50000, 32000), _reply([("finish", {"summary": "ok"})])])
     WorkflowAgent(client, QWEN, Session(), version="v1").run("立方体")
-    assert [r["max_tokens"] for r in client.requests] == [8000, 16000, 32000, 73728 - 50000 - 64]
+    assert [r["max_tokens"] for r in client.requests] == [16000, 32000, 32000, 73728 - 50000 - 64]
 
 
 def test_other_models_keep_reporting_llm_error():

@@ -18,6 +18,7 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
+from . import param_curves
 from .errors import WorkflowError
 from .frames import UV_AXES, SketchFrame, face_frame
 from .params import FUNCTIONS as PARAM_FUNCTIONS
@@ -293,6 +294,13 @@ _LOOP_DESC_V2_EXTRA = (
     "slot 的 start/end 是中心线端点（两端半圆圆心），净开口再 ±width/2；径向槽内缘要 ≥R 时，"
     "start 到原点距离 ≥ R+width/2。轮辐不要用穿过轴线的宽 slot。"
     "path 中只给 center 的 180° 圆弧必须写 ccw，半圆最好用 through。"
+    "精确曲线（渐开线、阿基米德/渐开线涡旋、凸轮廓线、翼型、摆线等）不要手写点列，写成参数曲线由系统采样成样条："
+    "path 的一段可以是 {curve:{u:\"t 的表达式\", v:\"t 的表达式\", t:[t0, t1]}}（曲线起点与上一点不重合时自动补直线；"
+    "path 的第一段是 curve 时 start 可省略，取曲线起点），与直线/圆弧段混用拼成闭合轮廓；"
+    "整条闭合曲线可直接写轮廓 {type:\"curve\", u, v, t:[t0, t1]}（首尾重合则闭合，否则自动补直线）。"
+    "表达式可引用 set_parameters 定义的参数，函数有 sin/cos/tan/asin/acos/atan/atan2（弧度）、sind/cosd/tand（度）、"
+    "sqrt/exp/log/hypot/abs/min/max/clamp(x,lo,hi)/step(x)（x≥0 为 1，用于分段函数），常量 pi。"
+    "一条 curve 内部必须光滑；有尖角处（如翼型尖后缘、凸轮升程段之间若不光滑）拆成两段 curve。"
 )
 _POLAR_SCHEMA = {
     "type": "object",
@@ -329,7 +337,7 @@ def _patch_spec(spec: dict, description: str | None = None, properties: dict | N
         if isinstance(items, dict) and items.get("type") == "object" and "enum" in (items.get("properties") or {}).get("type", {}):
             items = copy.deepcopy(items)
             items["description"] = items["description"] + _LOOP_DESC_V2_EXTRA
-            items["properties"]["type"]["enum"] = [*items["properties"]["type"]["enum"], "hull"]
+            items["properties"]["type"]["enum"] = [*items["properties"]["type"]["enum"], "hull", "curve"]
             value["items"] = items
     return spec
 
@@ -432,9 +440,13 @@ def _build_specs_v2() -> list[dict]:
             description=(
                 "沿开放路径扫描截面（cut=true 为扫描切除）。路径三选一："
                 "(1) 平面路径 path_plane + path_start + path_segments；"
-                "(2) 空间折线 path_3d={points:[[x,y,z],...], corner_radius?}（mm，模型坐标，corner_radius 给每个转角加圆角，弯管常用）；"
+                "(2) 空间折线 path_3d={points:[[x,y,z],...], corner_radius?}（mm，模型坐标，corner_radius 写在 path_3d 里面，给每个转角加圆角，弯管常用）；"
+                "空间曲线写 path_3d={curve:{x:\"t 的表达式\", y:…, z:…, t:[t0, t1]}}，由系统采样成光滑样条（表达式写法同轮廓的 curve），"
+                "或 path_3d={points:[...], spline:true} 让样条通过各点；不要手写几十上百个点的折线；"
                 "(3) 螺旋线 helix={axis:\"Z\"|\"-Y\"…, center:[x,y,z]（螺旋起始端的轴心）, diameter|radius, pitch, turns|height, "
-                "right_handed?=true}，起点在 center 沿 +X（axis 为 X 时沿 +Z）偏一个半径处（弹簧、螺旋槽、螺纹）。"
+                "right_handed?=true}，起点在 center 沿 +X（axis 为 X 时沿 +Z）偏一个半径处（弹簧、螺旋槽、螺纹）；"
+                "变螺距时 pitch 写成 [[圈数, 螺距], ...]（圈数从 0 起递增，相邻两点之间螺距线性变化），此时必须给 turns，"
+                "系统按螺距对圈数积分算轴向高度，结果里回显终点和总升高。"
                 "截面二选一：圆形截面 profile_diameter（+ 可选 inner_diameter 生成空心管），任意路径方向都可用，最省事；"
                 "或自定义闭合 loops：平面路径/折线路径省略 profile_plane 时，截面自动放在路径起点、垂直于起点切向"
                 "（要求第一段沿坐标轴），loops 以路径起点为原点 (0,0)、按该平面的 (u,v) 轴给出"
@@ -449,11 +461,11 @@ def _build_specs_v2() -> list[dict]:
                 },
                 "path_3d": {
                     "type": "object",
-                    "description": "空间折线路径 {points:[[x,y,z],...], corner_radius?}，mm",
+                    "description": "空间路径：折线 {points:[[x,y,z],...], corner_radius?}、样条 {points, spline:true} 或参数曲线 {curve:{x, y, z, t:[t0, t1]}}，mm",
                 },
                 "helix": {
                     "type": "object",
-                    "description": "螺旋线路径 {axis, center:[x,y,z], diameter|radius, pitch, turns|height, right_handed?}",
+                    "description": "螺旋线路径 {axis, center:[x,y,z], diameter|radius, pitch（常数或 [[圈数, 螺距], ...]）, turns|height, right_handed?}",
                 },
                 "profile_diameter": {"type": "number", "description": "圆形截面直径 mm（与 loops 二选一）"},
                 "inner_diameter": {"type": "number", "description": "圆形截面的内径 mm，生成空心管（仅凸台）"},
@@ -465,7 +477,8 @@ def _build_specs_v2() -> list[dict]:
                 "在两个或多个截面之间放样（cut=true 为放样切除）。sections 按顺序排列，每个 {plane, loops}；"
                 "第一个或最后一个截面可以写成 {plane, point:[u,v]}，收成一个点（尖顶、锥头）。"
                 "guides 为可选引导线数组，每条为平面开放路径 {plane, start, segments}（写法同 sweep 的平面路径）"
-                "或空间折线/样条 {points:[[x,y,z],...], spline?, corner_radius?}；引导线必须与每个截面的轮廓相交（端点落在截面轮廓上）。"
+                "或空间折线/样条 {points:[[x,y,z],...], spline?, corner_radius?}、空间参数曲线 {curve:{x, y, z, t:[t0, t1]}}；"
+                "平面路径的段也可以是 {curve:{u, v, t}}（写法同轮廓）。引导线必须与每个截面的轮廓相交（端点落在截面轮廓上）。"
                 "start_tangent / end_tangent = none（默认）| normal：首/尾截面处的侧面垂直于截面（平滑过渡到相邻的拉伸段），"
                 "tangent_length 为相切影响系数（默认 1）。"
             ),
@@ -593,7 +606,9 @@ def translate_loop(loop: dict, du: float, dv: float) -> dict:
         moved["points"] = [_shift_pair(point, du, dv) for point in moved["points"]]
     if isinstance(moved.get("segments"), list):
         moved["segments"] = [
-            {key: (_shift_pair(value, du, dv) if key in ("to", "center", "through") else value)
+            {key: (_shift_pair(value, du, dv) if key in ("to", "center", "through")
+                   else [_shift_pair(point, du, dv) for point in value] if key == "spline" and isinstance(value, list)
+                   else value)
              for key, value in step.items()} if isinstance(step, dict) else step
             for step in moved["segments"]
         ]
@@ -606,6 +621,9 @@ def translate_loop(loop: dict, du: float, dv: float) -> dict:
 def path_start_tangent(start: tuple[float, float], step: dict) -> tuple[float, float]:
     """开放路径第一段在起点处的 (u,v) 切向（未归一化）。center 圆弧不写 ccw 时按 L1 的默认顺时针。"""
     target = _pair(step.get("to"), "to")
+    if step.get("spline"):
+        first = _pair(step["spline"][0], "spline[0]")
+        return first[0] - start[0], first[1] - start[1]
     if "center" in step:
         cu, cv = _pair(step["center"], "center")
         ru, rv = start[0] - cu, start[1] - cv
@@ -660,15 +678,15 @@ def helix_geometry(spec: dict) -> dict:
     axis, sign = _axis_spec(spec.get("axis", "Z"), "helix.axis")
     center = _point3(spec.get("center"), "helix.center")
     radius = _circle_radius(spec, "helix")
-    pitch = float(spec.get("pitch") or 0)
-    if pitch <= 0:
-        raise WorkflowError("TOOL_ARGS", "helix.pitch（螺距 mm）必须为正")
+    table = _pitch_table(spec.get("pitch"))
+    pitch = table[0][1] if len(table) == 1 else None
     if spec.get("turns") is not None:
         turns = float(spec["turns"])
-    elif spec.get("height") is not None:
+    elif spec.get("height") is not None and pitch is not None:
         turns = float(spec["height"]) / pitch
     else:
-        raise WorkflowError("TOOL_ARGS", "helix 需要 turns（圈数）或 height（总高 mm）")
+        raise WorkflowError(
+            "TOOL_ARGS", "helix 需要 turns（圈数）" + ("或 height（总高 mm）" if pitch is not None else "（变螺距时必填）"))
     if turns <= 0 or turns > 200:
         raise WorkflowError("TOOL_ARGS", f"helix 圈数 {turns:g} 不合理")
     right = spec.get("right_handed", True)
@@ -680,25 +698,71 @@ def helix_geometry(spec: dict) -> dict:
         e_w = tuple(-value for value in e_w)
     count = max(8, math.ceil(turns * HELIX_POINTS_PER_TURN))
     points = []
+    length = 0.0
     for i in range(count + 1):
-        theta = 2 * math.pi * turns * i / count
-        rise = pitch * turns * i / count
+        n = turns * i / count
+        theta = 2 * math.pi * n
+        rise = _pitch_integral(table, n)
         points.append([
             round(center[k] + radius * (math.cos(theta) * e_u[k] + math.sin(theta) * e_w[k]) + rise * d[k], 6)
             for k in range(3)
         ])
+        if i:
+            length += math.dist(points[-2], points[-1])
+    if pitch is not None:
+        length = turns * math.hypot(2 * math.pi * radius, pitch)
+        pitch_text = f"螺距 {pitch:g}"
+    else:
+        pitch_text = f"变螺距 {[[_round(n, 4), _round(p, 4)] for n, p in table]}（[圈数, 螺距]，之间线性变化）"
+    height = _pitch_integral(table, turns)
     return {
         "points": points,
         "start": points[0],
         "radial": e_u,
         "axial": d,
         "normal": e_w,
-        "length_mm": turns * math.hypot(2 * math.pi * radius, pitch),
+        "length_mm": length,
         "describe": (
-            f"{'右' if right else '左'}旋螺旋线：轴 {'+' if sign > 0 else '-'}{axis}，起点 {points[0]}，"
-            f"半径 {radius:g}，螺距 {pitch:g}，{turns:g} 圈"
+            f"{'右' if right else '左'}旋螺旋线：轴 {'+' if sign > 0 else '-'}{axis}，起点 {points[0]}，终点 {points[-1]}，"
+            f"半径 {radius:g}，{pitch_text}，{turns:g} 圈，轴向总升高 {_round(height, 4):g}"
         ),
     }
+
+
+def _pitch_table(raw: Any) -> list[tuple[float, float]]:
+    """pitch 为常数，或 [[圈数, 螺距], ...]（圈数递增，之间线性插值，两端外延为常数）。"""
+    if isinstance(raw, (list, tuple)):
+        table = []
+        for item in raw:
+            if not isinstance(item, (list, tuple)) or len(item) != 2:
+                raise WorkflowError("TOOL_ARGS", "变螺距 helix.pitch 应为 [[圈数, 螺距], ...]")
+            table.append((float(item[0]), float(item[1])))
+        if not table or any(b[0] <= a[0] for a, b in zip(table, table[1:])):
+            raise WorkflowError("TOOL_ARGS", "helix.pitch 的圈数必须严格递增")
+    else:
+        table = [(0.0, float(raw or 0))]
+    if any(p <= 0 for _, p in table):
+        raise WorkflowError("TOOL_ARGS", "helix.pitch（螺距 mm）必须为正")
+    return table
+
+
+def _pitch_integral(table: list[tuple[float, float]], n: float) -> float:
+    """∫₀ⁿ pitch(m) dm：螺旋线转过 n 圈时的轴向升高。"""
+    if len(table) == 1:
+        return table[0][1] * n
+    knots = [(0.0, _pitch_at(table, 0.0))]
+    knots += [(m, p) for m, p in table if 0.0 < m < n]
+    knots.append((n, _pitch_at(table, n)))
+    return sum((b[0] - a[0]) * (a[1] + b[1]) / 2 for a, b in zip(knots, knots[1:]))
+
+
+def _pitch_at(table: list[tuple[float, float]], n: float) -> float:
+    if n <= table[0][0]:
+        return table[0][1]
+    for (m0, p0), (m1, p1) in zip(table, table[1:]):
+        if n <= m1:
+            return p0 + (p1 - p0) * (n - m0) / (m1 - m0)
+    return table[-1][1]
 
 
 def polyline_geometry(spec: Any) -> dict:
@@ -829,7 +893,8 @@ def _with_hint(error: dict, original: dict, tool: str = "") -> dict:
     elif code == "PARAM_FORBIDDEN":
         error.setdefault(
             "hint",
-            f"可用函数：{', '.join(PARAM_FUNCTIONS)}；常量 pi。三角函数按度计算，写 sind/cosd/tand（没有 sin/tan）。",
+            f"可用函数：{', '.join(PARAM_FUNCTIONS)}；常量 pi。三角函数按度计算，写 sind/cosd/tand"
+            "（按弧度的 sin/cos/tan 只能用在参数曲线 curve 的表达式里）。",
         )
     return error
 
@@ -960,7 +1025,7 @@ class WorkflowSessionV2(WorkflowSession):
             if isinstance(args.get(key), str):
                 args[key] = self._axis_plane(args[key])
         if "loops" in args:
-            args["loops"] = prepare_loops(args["loops"], self._notes)
+            args["loops"] = prepare_loops(self._expand_curve_loops(args["loops"]), self._notes)
         if isinstance(args.get("sections"), list):
             sections = []
             for section in args["sections"]:
@@ -968,9 +1033,21 @@ class WorkflowSessionV2(WorkflowSession):
                     section = coerce_args(section)
                     if isinstance(section.get("plane"), str):
                         section["plane"] = self._axis_plane(section["plane"])
-                    section["loops"] = prepare_loops(section.get("loops"), self._notes)
+                    section["loops"] = prepare_loops(self._expand_curve_loops(section.get("loops")), self._notes)
                 sections.append(section)
             args["sections"] = sections
+        if isinstance(args.get("path_segments"), list):
+            args["path_start"], args["path_segments"] = self._expand_curve_steps(
+                args.get("path_start"), args["path_segments"], "path_segments")
+        if isinstance(args.get("guides"), list):
+            guides = []
+            for guide in args["guides"]:
+                if isinstance(guide, dict) and isinstance(guide.get("segments"), list):
+                    guide = dict(guide)
+                    guide["start"], guide["segments"] = self._expand_curve_steps(
+                        guide.get("start"), guide["segments"], "guides[i].segments")
+                guides.append(guide)
+            args["guides"] = guides
         if name in _HOLE_TOOLS and args.get("polar") is not None:
             centers = list(self._resolve_numbers(args.get("centers")) or [])
             generated = polar_centers(self._resolve_numbers(args["polar"]))
@@ -984,6 +1061,69 @@ class WorkflowSessionV2(WorkflowSession):
             args["centers"] = merged
             self._notes.append(f"polar 生成的圆心 (u,v): {generated}")
         return args
+
+    def _curve_points(self, spec: Any, keys: tuple[str, ...], what: str) -> list[tuple]:
+        spec = coerce_args(spec) if isinstance(spec, dict) else spec
+        if isinstance(spec, dict) and spec.get("t") is not None:
+            spec = {**spec, "t": self._resolve_numbers(spec["t"])}
+        return param_curves.sample(spec, keys, self.params.resolve(), what)
+
+    def _expand_curve_steps(self, start: Any, steps: list, what: str) -> tuple[Any, list]:
+        """路径里的 {curve:{u, v, t}} 段 → 通过采样点的样条段；起点缺省时取第一条曲线的起点。"""
+        if not any(isinstance(step, dict) and "curve" in step for step in steps):
+            return start, steps
+        cursor = self._resolve_numbers(start)
+        expanded: list = []
+        after_curve = False
+        for index, step in enumerate(steps):
+            if not (isinstance(step, dict) and "curve" in step):
+                target = self._resolve_numbers(step["to"]) if isinstance(step, dict) and "to" in step else None
+                if (after_curve and target is not None and len(step) == 1
+                        and math.dist(_pair(cursor, "起点"), _pair(target, f"{what}[{index}].to")) <= 1e-3):
+                    self._notes.append(f"{what}[{index}] 与前一条曲线的终点重合，已省略")
+                    continue
+                expanded.append(step)
+                after_curve = False
+                if target is not None:
+                    cursor = target
+                continue
+            points = self._curve_points(step["curve"], ("u", "v"), f"{what}[{index}].curve")
+            first, last = list(points[0]), list(points[-1])
+            if cursor is None:
+                start = cursor = first
+            elif math.dist(_pair(cursor, "起点"), first) > 1e-3:
+                expanded.append({"to": first})
+                self._notes.append(
+                    f"{what}[{index}] 的曲线起点 {first} 与上一点 {list(cursor)} 不重合，已用直线连接")
+            expanded.append({"to": last, "spline": [list(p) for p in points[1:-1]]})
+            cursor = last
+            after_curve = True
+        return start, expanded
+
+    def _expand_curve_loops(self, loops: Any) -> Any:
+        if not isinstance(loops, list):
+            return loops
+        result = []
+        for index, loop in enumerate(loops):
+            kind = str(loop.get("type", "")).lower() if isinstance(loop, dict) else ""
+            if kind == "curve":
+                points = [list(p) for p in self._curve_points(loop, ("u", "v"), f"loops[{index}]")]
+                if math.dist(points[0], points[-1]) <= 1e-3:
+                    points = points[:-1]
+                    half = len(points) // 2
+                    if half < 2:
+                        raise WorkflowError("SKETCH_DEGENERATE", f"loops[{index}] 闭合曲线的点太少")
+                    segments = [{"to": points[half], "spline": points[1:half]},
+                                {"to": points[0], "spline": points[half + 1:]}]
+                else:
+                    segments = [{"to": points[-1], "spline": points[1:-1]}]
+                result.append({"type": "path", "start": points[0], "segments": segments})
+            elif kind == "path" and isinstance(loop.get("segments"), list):
+                start, segments = self._expand_curve_steps(loop.get("start"), loop["segments"], f"loops[{index}].segments")
+                result.append({**loop, "start": start, "segments": segments})
+            else:
+                result.append(loop)
+        return result
 
     def _axis_plane(self, text: str) -> str:
         """"Z=40" → 该位置的基准面名（Z=0 即 front_plane）；其它写法原样返回。"""
@@ -1227,6 +1367,9 @@ class WorkflowSessionV2(WorkflowSession):
         if args.get("path_3d") is not None:
             spec = args["path_3d"]
             spec = coerce_args(spec) if isinstance(spec, dict) else spec
+            if isinstance(spec, dict) and (spec.get("curve") is not None or spec.get("spline")):
+                curve = self._spline_path(spec, "path_3d")
+                return [path3d_operation(curve["points"], spline=True)], curve
             line = polyline_geometry(self._resolve_numbers(spec))
             op = path3d_operation(line["points"], corner_radius=line["corner_radius"])
             return [op], {**line, "kind": "polyline"}
@@ -1241,6 +1384,23 @@ class WorkflowSessionV2(WorkflowSession):
             {"operation": "close_sketch", "route": "/api/close-sketch-named", "params": {}},
         ]
         return operations, {"kind": "planar", "describe": path_frame.describe()}
+
+    def _spline_path(self, spec: dict, what: str) -> dict:
+        """{curve:{x, y, z, t}} 或 {points, spline:true} → 通过各点的 3D 样条。"""
+        if spec.get("curve") is not None:
+            points = [list(p) for p in self._curve_points(spec["curve"], ("x", "y", "z"), f"{what}.curve")]
+            source = "参数曲线"
+        else:
+            points = [_point3(p, f"{what}.points[i]") for p in self._resolve_numbers(spec.get("points")) or []]
+            source = "样条"
+        if len(points) < 2:
+            raise WorkflowError("TOOL_ARGS", f"{what} 样条至少需要 2 个点")
+        length = param_curves.polyline_length(points)
+        return {
+            "kind": "curve", "points": points, "start": points[0],
+            "tangent": [points[1][k] - points[0][k] for k in range(3)], "length_mm": length,
+            "describe": f"3D {source}样条 {len(points)} 点，起点 {points[0]}，终点 {points[-1]}",
+        }
 
     def _sweep_profile_frame(self, args: dict, path: dict, snapshot: dict) -> SketchFrame:
         explicit = str(args.get("profile_plane") or "auto").strip()
@@ -1319,6 +1479,9 @@ class WorkflowSessionV2(WorkflowSession):
             guide = coerce_args(guide) if isinstance(guide, dict) else guide
             if not isinstance(guide, dict):
                 raise WorkflowError("TOOL_ARGS", f"guides[{index}] 必须是对象")
+            if guide.get("curve") is not None:
+                operations.append(path3d_operation(self._spline_path(guide, f"guides[{index}]")["points"], spline=True))
+                continue
             if guide.get("points") is not None:
                 points = self._resolve_numbers(guide["points"])
                 if guide.get("spline"):

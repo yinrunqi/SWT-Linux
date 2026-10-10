@@ -39,6 +39,29 @@ FUNCTIONS = {
     "tand": lambda deg: math.tan(math.radians(deg)),
     "atand": lambda value: math.degrees(math.atan(value)),
     "atan2d": lambda y, x: math.degrees(math.atan2(y, x)),
+    "asind": lambda value: math.degrees(math.asin(value)),
+    "acosd": lambda value: math.degrees(math.acos(value)),
+    "exp": math.exp,
+    "log": math.log,
+    "hypot": math.hypot,
+    "sign": lambda value: float((value > 0) - (value < 0)),
+    # 分段函数：step(x) 在 x ≥ 0 时为 1；clamp(x, lo, hi) 把 x 限制在区间内
+    "step": lambda value: 1.0 if value >= 0 else 0.0,
+    "clamp": lambda value, lo, hi: min(max(value, lo), hi),
+}
+# 参数曲线（渐开线、螺线、翼型）习惯用弧度；普通参数表达式里不提供，免得 tan(30) 被当成弧度
+CURVE_FUNCTIONS = {
+    **FUNCTIONS,
+    "sin": math.sin,
+    "cos": math.cos,
+    "tan": math.tan,
+    "asin": math.asin,
+    "acos": math.acos,
+    "atan": math.atan,
+    "atan2": math.atan2,
+    "sinh": math.sinh,
+    "cosh": math.cosh,
+    "tanh": math.tanh,
 }
 CONSTANTS = {"pi": math.pi}
 
@@ -55,7 +78,7 @@ def _names(tree: ast.AST) -> set[str]:
     }
 
 
-def _parse(expr: str) -> ast.Expression:
+def _parse(expr: str, functions: Mapping[str, Any] = FUNCTIONS) -> ast.Expression:
     try:
         tree = ast.parse(str(expr).strip(), mode="eval")
     except SyntaxError as exc:
@@ -72,14 +95,14 @@ def _parse(expr: str) -> ast.Expression:
         if isinstance(node, ast.Constant) and not isinstance(node.value, (int, float)):
             raise WorkflowError("PARAM_FORBIDDEN", f"表达式 {expr!r} 只允许数值常量", expr=expr)
         if isinstance(node, ast.Call):
-            if not isinstance(node.func, ast.Name) or node.func.id not in FUNCTIONS or node.keywords:
+            if not isinstance(node.func, ast.Name) or node.func.id not in functions or node.keywords:
                 raise WorkflowError("PARAM_FORBIDDEN", f"表达式 {expr!r} 调用了不允许的函数", expr=expr)
     return tree
 
 
-def _eval(node: ast.AST, env: Mapping[str, float]) -> float:
+def _eval(node: ast.AST, env: Mapping[str, float], functions: Mapping[str, Any] = FUNCTIONS) -> float:
     if isinstance(node, ast.Expression):
-        return _eval(node.body, env)
+        return _eval(node.body, env, functions)
     if isinstance(node, ast.Constant):
         return float(node.value)
     if isinstance(node, ast.Name):
@@ -89,11 +112,11 @@ def _eval(node: ast.AST, env: Mapping[str, float]) -> float:
             raise WorkflowError("PARAM_UNDEFINED", f"未定义的参数 {node.id}", name=node.id)
         return env[node.id]
     if isinstance(node, ast.BinOp):
-        return _BINARY[type(node.op)](_eval(node.left, env), _eval(node.right, env))
+        return _BINARY[type(node.op)](_eval(node.left, env, functions), _eval(node.right, env, functions))
     if isinstance(node, ast.UnaryOp):
-        return _UNARY[type(node.op)](_eval(node.operand, env))
+        return _UNARY[type(node.op)](_eval(node.operand, env, functions))
     if isinstance(node, ast.Call):
-        return float(FUNCTIONS[node.func.id](*(_eval(arg, env) for arg in node.args)))
+        return float(functions[node.func.id](*(_eval(arg, env, functions) for arg in node.args)))
     raise WorkflowError("PARAM_FORBIDDEN", f"不支持的节点 {type(node).__name__}")
 
 

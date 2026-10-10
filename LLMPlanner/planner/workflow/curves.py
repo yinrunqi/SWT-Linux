@@ -1,10 +1,12 @@
-"""由直线和圆弧组成的闭合轮廓（单位 mm，平面 (u, v) 坐标）。
+"""由直线、圆弧和样条组成的闭合轮廓（单位 mm，平面 (u, v) 坐标）。
 
 内部段格式：
-    {"kind": "line", "p0": (u, v), "p1": (u, v)}
-    {"kind": "arc",  "p0": (u, v), "p1": (u, v), "c": (u, v), "ccw": bool}
+    {"kind": "line",   "p0": (u, v), "p1": (u, v)}
+    {"kind": "arc",    "p0": (u, v), "p1": (u, v), "c": (u, v), "ccw": bool}
+    {"kind": "spline", "p0": (u, v), "p1": (u, v), "pts": [p0, ..., p1]}
 圆弧从 p0 绕圆心 c 转到 p1，ccw 为 (u, v) 平面内的逆时针。发给 SolidWorks 时
 转成「起点 + 终点 + 弧上中点」的三点圆弧，与各平面草图坐标的手性无关。
+样条通过 pts 中的全部点（由参数曲线采样得到）。
 """
 
 from __future__ import annotations
@@ -46,6 +48,11 @@ def arc(p0: Point, p1: Point, center: Point, ccw: bool) -> dict:
     return {"kind": "arc", "p0": tuple(p0), "p1": tuple(p1), "c": tuple(center), "ccw": bool(ccw)}
 
 
+def spline(points: Sequence[Point]) -> dict:
+    pts = [tuple(p) for p in points]
+    return {"kind": "spline", "p0": pts[0], "p1": pts[-1], "pts": pts}
+
+
 def arc_sweep(segment: dict) -> float:
     """圆弧转过的角度（弧度，0 < sweep ≤ 2π）。"""
     c = segment["c"]
@@ -69,7 +76,9 @@ def discretize(segments: Sequence[dict]) -> list[Point]:
     points: list[Point] = []
     for segment in segments:
         points.append(tuple(segment["p0"]))
-        if segment["kind"] == "arc":
+        if segment["kind"] == "spline":
+            points.extend(segment["pts"][1:-1])
+        elif segment["kind"] == "arc":
             steps = max(4, math.ceil(math.degrees(arc_sweep(segment)) / ARC_STEP_DEG))
             points.extend(arc_point(segment, i / steps) for i in range(1, steps))
     return points
@@ -169,6 +178,8 @@ def _circumcenter(a: Point, b: Point, c: Point, index: int) -> Point:
 def _end_tangent(segment: dict) -> Point:
     if segment["kind"] == "line":
         return _unit(_sub(segment["p1"], segment["p0"]), 0)
+    if segment["kind"] == "spline":
+        return _unit(_sub(segment["pts"][-1], segment["pts"][-2]), 0)
     radial = _unit(_sub(segment["p1"], segment["c"]), 0)
     return (-radial[1], radial[0]) if segment["ccw"] else (radial[1], -radial[0])
 
@@ -181,6 +192,7 @@ def path(start: Point, steps: Sequence[dict], index: int = 0, pair=None, closed:
         "radius": r（可带 "ccw"，默认 true；"large": true 取大于 180° 的那段）
         "through": [u, v]（三点圆弧）
         "tangent": true（与上一段相切）
+        "spline": [[u, v], ...]（样条依次通过的中间点；参数曲线 curve 段展开后的写法）
     """
     pair = pair or (lambda value, name: (float(value[0]), float(value[1])))
     if not steps:
@@ -196,7 +208,10 @@ def path(start: Point, steps: Sequence[dict], index: int = 0, pair=None, closed:
         target = pair(step["to"], "to")
         if _norm(_sub(target, cursor)) <= LENGTH_EPS:
             raise WorkflowError("SKETCH_DEGENERATE", f"轮廓 {index} 第 {step_index} 段长度为零", loop=index)
-        if "center" in step:
+        if "spline" in step:
+            interior = [pair(p, "spline[i]") for p in step["spline"] or []]
+            segments.append(spline([cursor, *interior, target]))
+        elif "center" in step:
             center = pair(step["center"], "center")
             r0, r1 = _norm(_sub(cursor, center)), _norm(_sub(target, center))
             if abs(r0 - r1) > max(1e-3, 1e-4 * r0):

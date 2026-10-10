@@ -10,7 +10,7 @@ LLM 侧轮廓（单位 mm，坐标为所在平面的 (u, v)）：
     {"type": "annular_sector", "center": [u, v], "r_inner": a, "r_outer": b,
      "start_deg": s, "end_deg": e}                              # 扇环，r_inner=0 为扇形
     {"type": "path", "start": [u, v], "segments": [{"to": [u, v]}, {"to": [u, v], "center": [u, v]}, ...]}
-                                                                # 直线与圆弧组成的任意闭合轮廓，见 curves.path
+                                                                # 直线、圆弧与样条组成的任意闭合轮廓，见 curves.path
 """
 
 from __future__ import annotations
@@ -166,6 +166,8 @@ def _profile_segment(frame: SketchFrame, segment: dict) -> dict:
     end = frame.point_params(*segment["p1"], keys=("x2", "y2", "z2"))
     if segment["kind"] == "line":
         return {"type": "line", **start, **end}
+    if segment["kind"] == "spline":
+        return {"type": "spline", **start, **end, "points": [frame.point_params(u, v) for u, v in segment["pts"]]}
     mid = frame.point_params(*curves.arc_point(segment, 0.5), keys=("xm", "ym", "zm"))
     return {"type": "arc", **start, **end, **mid}
 

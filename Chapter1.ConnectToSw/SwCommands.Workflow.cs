@@ -14,7 +14,8 @@ namespace Chapter1.ConnectToSw
         /// 分别创建的直线/圆弧端点是独立的草图点，浮点误差下 SolidWorks 不认为轮廓闭合，
         /// 因此逐个接头添加「合并点」关系。坐标规则与其它草图接口一致（模型坐标，米）。
         /// segment: {type:"line", x1,y1,z1, x2,y2,z2} 或
-        ///          {type:"arc",  x1,y1,z1(起点), x2,y2,z2(终点), xm,ym,zm(弧上一点)}
+        ///          {type:"arc",  x1,y1,z1(起点), x2,y2,z2(终点), xm,ym,zm(弧上一点)} 或
+        ///          {type:"spline", x1,y1,z1, x2,y2,z2, points:[{x,y,z}, ...]}（通过全部点，首尾即起终点）
         /// </summary>
         public Dictionary<string, object> SketchProfile(
             List<Dictionary<string, object>> segments, bool closed = true)
@@ -30,7 +31,7 @@ namespace Chapter1.ConnectToSw
             var junctions = new List<double[]>();
             bool previousAddToDb = sketchManager.AddToDB;
             bool previousDisplayWhenAdded = sketchManager.DisplayWhenAdded;
-            int arcCount = 0;
+            int arcCount = 0, splineCount = 0;
             try
             {
                 sketchManager.AddToDB = true;
@@ -48,6 +49,27 @@ namespace Chapter1.ConnectToSw
                         item = sketchManager.Create3PointArc(
                             start[0], start[1], 0, end[0], end[1], 0, mid[0], mid[1], 0) as ISketchSegment;
                         arcCount++;
+                    }
+                    else if (type == "spline")
+                    {
+                        var raw = segment.ContainsKey("points") ? segment["points"] as System.Collections.IEnumerable : null;
+                        if (raw == null)
+                            throw new ArgumentException($"第 {created.Count} 段 spline 缺少 points");
+                        var data = new List<double>();
+                        foreach (var entry in raw)
+                        {
+                            var point = entry as Dictionary<string, object>;
+                            if (point == null)
+                                throw new ArgumentException("spline 的 points 每项须为 {x,y,z}");
+                            double[] sketchPoint = SketchPointOf(point, "x", "y", "z");
+                            data.Add(sketchPoint[0]);
+                            data.Add(sketchPoint[1]);
+                            data.Add(0);
+                        }
+                        if (data.Count < 6)
+                            throw new ArgumentException($"第 {created.Count} 段 spline 至少需要 2 个点");
+                        item = sketchManager.CreateSpline2(data.ToArray(), true) as ISketchSegment;
+                        splineCount++;
                     }
                     else
                     {
@@ -82,12 +104,13 @@ namespace Chapter1.ConnectToSw
             ActiveDoc.ClearSelection2(true);
 
             Console.WriteLine(
-                $"[SwCommands] 绘制轮廓: {created.Count} 段（圆弧 {arcCount}），合并端点 {merged}/{joints}");
+                $"[SwCommands] 绘制轮廓: {created.Count} 段（圆弧 {arcCount}，样条 {splineCount}），合并端点 {merged}/{joints}");
             return new Dictionary<string, object>
             {
                 { "sketchName", _activeSketchName ?? "" },
                 { "segmentCount", created.Count },
                 { "arcCount", arcCount },
+                { "splineCount", splineCount },
                 { "mergedJoints", merged },
                 { "joints", joints },
             };
@@ -119,6 +142,15 @@ namespace Chapter1.ConnectToSw
                 var arc = (ISketchArc)segment;
                 start = arc.GetStartPoint2() as ISketchPoint;
                 end = arc.GetEndPoint2() as ISketchPoint;
+            }
+            else if (segment.GetType() == (int)swSketchSegments_e.swSketchSPLINE)
+            {
+                var points = ((ISketchSpline)segment).GetPoints2() as object[];
+                if (points != null && points.Length > 0)
+                {
+                    start = points[0] as ISketchPoint;
+                    end = points[points.Length - 1] as ISketchPoint;
+                }
             }
             if (start == null) return end;
             if (end == null) return start;
