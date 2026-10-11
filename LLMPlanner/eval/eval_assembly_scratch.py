@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -23,6 +24,8 @@ from planner.workflow.tools import EXTRA_TOOLSET_VERSION
 ensure_test_env_loaded()
 
 CASES_DIR = ROOT / "eval" / "assembly_scratch"
+# 当前解释器没有 OCC 时，零件 rubric 交给检查器环境的子进程
+OCC_PYTHON = Path(os.getenv("GEOMCHECK_PYTHON") or ROOT / "venv-occ" / "Scripts" / "python.exe")
 RUBRIC_DIR = CASES_DIR / "rubrics"
 RECIPES = ROOT / "planner" / "skills" / "recipes"
 # ttswitch 读 .env 的 OPENAI_*，其余读 <PROVIDER>_*
@@ -222,11 +225,21 @@ def infra_flags(assembly: dict) -> list[str]:
 RERUN_STATUSES = {"llm_error", "sw_lost", "resume_failed"}
 
 
+def _occ_available() -> bool:
+    try:
+        import geomcheck.occ_part  # noqa: F401
+    except ImportError:
+        return OCC_PYTHON.is_file()
+    return True
+
+
 def _grade_step(step: Path, rubric_path: Path) -> dict:
     try:
         from geomcheck.occ_part import Part
         from geomcheck.rubric import evaluate, load_rubric
     except ImportError as exc:  # 未装 cadquery-ocp，或其 DLL 被系统策略拦截
+        if OCC_PYTHON.is_file():
+            return _grade_step_occ_python(step, rubric_path)
         return {
             "accepted": False,
             "score": None,
@@ -238,6 +251,25 @@ def _grade_step(step: Path, rubric_path: Path) -> dict:
         return evaluate(load_rubric(rubric_path), Part.from_step(step))
     except Exception as exc:
         return {"accepted": False, "score": 0.0, "error": f"{type(exc).__name__}: {exc}"}
+
+
+def _grade_step_occ_python(step: Path, rubric_path: Path) -> dict:
+    out = step.with_suffix(".rubric.json")
+    out.unlink(missing_ok=True)
+    try:
+        subprocess.run(
+            [str(OCC_PYTHON), "-X", "utf8", "-m", "geomcheck.rubric",
+             "--step", str(step), "--rubric", str(rubric_path), "--output", str(out)],
+            cwd=ROOT, capture_output=True, timeout=1800, check=True,
+        )
+        res = json.loads(out.read_text(encoding="utf-8"))[0]
+    except subprocess.CalledProcessError as exc:
+        tail = (exc.stderr or b"").decode("utf-8", "replace")[-300:]
+        return {"accepted": False, "score": 0.0, "error": f"venv-occ 打分失败 (exit {exc.returncode}): {tail}"}
+    except Exception as exc:
+        return {"accepted": False, "score": 0.0, "error": f"{type(exc).__name__}: {str(exc)[:300]}"}
+    res.pop("step", None)
+    return res
 
 
 def _write_json(path: Path, value) -> None:
@@ -672,11 +704,9 @@ def main() -> None:
             parser.error(f"未知测例 {token}，可选：{', '.join(CASE_FILES)}")
         names.append(name)
     conditions = ["gold", "gen", "e2e"] if args.condition == "all" else [args.condition]
-    if "e2e" in conditions:
-        try:
-            import geomcheck.occ_part  # noqa: F401
-        except ImportError as exc:
-            parser.error(f"e2e 条件要在建模时给零件打分才能决定是否装配，但 OCC 不可用（{exc}）；改用 --condition gen")
+    if "e2e" in conditions and not _occ_available():
+        parser.error(f"e2e 条件要在建模时给零件打分才能决定是否装配，但当前环境和 {OCC_PYTHON} 都没有 OCC；"
+                     "改用 --condition gen")
     workflows = ["v1", "v2"] if args.workflow == "both" else [args.workflow]
     from planner.workflow.agent import _model_key, default_reasoning_effort
     if not os.environ.get(PROVIDER_ENV[args.provider][1]):

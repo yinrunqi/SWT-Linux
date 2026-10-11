@@ -173,6 +173,7 @@
 - 每轮 `max_tokens` 16000（装配阶段 `--asm-max-tokens`）。输出被截断时丢掉残缺回复，上限翻倍重试，最多 32000，放宽后的上限保留到本次运行结束。
 - 服务端上下文 73728 token，输入、推理和输出共用。服务端返回超长 400 时，按报错里的输入 token 数把本轮 `max_tokens` 压到窗口剩余量再试；剩余不足 2048 时以 `context_exceeded` 结束。
 - 调用预算：零件每个 40 次（`--max-part-calls`），装配 100 次（`--max-asm-calls`）。
+- 零件接口 rubric 在建模时就打分：运行评测的解释器（通常是 `venv`）没有 OCC 时，交给 `venv-occ\Scripts\python.exe -m geomcheck.rubric` 子进程（可用环境变量 `GEOMCHECK_PYTHON` 指定别的解释器），与 text-to-CAD 的做法相同。两者都没有 OCC 时才记 `skipped`，之后用 `regrade_offline.py` 补算。2026-10-11 之前 `venv` 里跑的结果零件都记成 `skipped`。齿隙仍只在有 OCC 的解释器里当场量，`venv` 里记为 None，可用 `regrade_offline.py` 补量（只记录不计分）。
 - `--workflow` 默认 v3，带 `view_assembly` 截图工具（此前默认 v1；第 6 节结果都显式用了 `--workflow v2`）。
 - 结果 JSON 记录 `provider`、`model`、`reasoning_effort`、`asm_max_tokens`，`--resume` 时要求一致（旧结果的 `provider` 视为 `ttswitch`）。
 
@@ -747,7 +748,7 @@ venv\Scripts\python.exe -X utf8 eval\assembly_scratch\rescore_table.py eval\asse
 venv\Scripts\python.exe -X utf8 eval\assembly_scratch\rescore_unsuppress.py eval\assembly_v2_rescore_new.json
 # 6.2 节的旧口径 / 新口径两张大表（--extra 给出没有可重评装配体的行）
 venv\Scripts\python.exe -X utf8 eval\assembly_scratch\bench_table.py eval\assembly_v2_rescore_new.json --extra eval\assembly_gen_sonnet5_v2_core_projector_llm400.json
-# 建模机器上 OCC 不可用时（零件全判不合格、齿隙为 None），把结果 JSON 和 --output-dir 拷到能跑 OCC 的机器上离线补算
+# 建模机器上连 venv-occ 也没有 OCC 时（零件记 skipped、齿隙为 None），把结果 JSON 和 --output-dir 拷到能跑 OCC 的机器上离线补算
 # 零件接口 rubric、齿隙、运动分与 e2e（只需检查器环境）
 venv-occ/bin/python -X utf8 eval/assembly_scratch/regrade_offline.py eval/assembly_gen_xxx.json `
     --artifacts eval/artifacts/assembly_gen_xxx --output eval/assembly_gen_xxx_regraded.json

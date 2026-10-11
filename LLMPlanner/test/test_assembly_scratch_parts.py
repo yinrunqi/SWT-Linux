@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -87,6 +88,35 @@ def test_call_detail_reads_raw_response():
         "finish_reason": "tool_calls", "completion_tokens": 5, "reasoning_tokens": 3, "prompt_tokens": 10,
         "prompt_cache_hit_tokens": None, "n_tool_calls": 2, "text_chars": 2,
     }
+
+
+def test_grade_step_falls_back_to_occ_python(monkeypatch, tmp_path):
+    import builtins
+
+    real_import = builtins.__import__
+
+    def no_occ(name, *args, **kwargs):
+        if name.startswith("geomcheck.occ_part"):
+            raise ImportError("No module named 'OCP'")
+        return real_import(name, *args, **kwargs)
+
+    commands = []
+
+    def fake_run(cmd, **kwargs):
+        commands.append(cmd)
+        out = Path(cmd[cmd.index("--output") + 1])
+        out.write_text(json.dumps([{"step": "x", "score": 100.0, "accepted": True}]), encoding="utf-8")
+
+    occ_python = tmp_path / "python.exe"
+    occ_python.write_text("")
+    monkeypatch.setattr(builtins, "__import__", no_occ)
+    monkeypatch.setattr(scratch, "OCC_PYTHON", occ_python)
+    monkeypatch.setattr(scratch.subprocess, "run", fake_run)
+
+    grade = scratch._grade_step(tmp_path / "gear_a.step", tmp_path / "gear_a.yaml")
+
+    assert grade == {"score": 100.0, "accepted": True}
+    assert commands[0][0] == str(occ_python) and "geomcheck.rubric" in commands[0]
 
 
 def test_defaults_match_text2cad_qwen():
