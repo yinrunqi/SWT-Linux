@@ -1097,7 +1097,7 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric --rubric-dir eval\rubric
     --artifacts eval\artifacts\text_workflow_l1v2_mymodel_extreme_en_result --output eval\rubric_mymodel_extreme_en.json
 ```
 
-脚本在每题导出 STEP 后会自动用 `eval/rubrics_extreme` 打 rubric 分，写进结果 JSON 的 `rubric` 字段。建议协议与 7.4 节一致：L1_v2、每题最多 40 次 LLM 调用、温度 0、只看 rubric；报告里写明题面语言和每题次数。自部署 Qwen3.8-Flash-Next-FP8 的结果见 8.5 节和 8.6 节（修正系统后完整重跑）。
+脚本在每题导出 STEP 后会自动用 `eval/rubrics_extreme` 打 rubric 分，写进结果 JSON 的 `rubric` 字段。建议协议与 7.4 节一致：L1_v2、每题最多 40 次 LLM 调用、温度 0、只看 rubric；报告里写明题面语言和每题次数。自部署 Qwen3.8-Flash-Next-FP8 的结果见 8.5 节、8.6 节（修正系统后完整重跑）和 8.7 节（针对失败原因改进后再次重跑）。
 
 ### 8.3 SolidWorks 实机可解性与 oracle 轨迹的 LLM 调用次数
 
@@ -1262,6 +1262,89 @@ venv-occ\Scripts\python.exe -m pytest geomcheck/tests/test_refs_extreme.py -q -p
 为确认这个脚本不改变正常题的结果，在 8 道 OCC 判定有效的题上做了对照，分数与 OCC 完全一致：4 道 100 分的题仍是 100 分，4 道有真错的题分数不变。`spherical_dome_ports` 剩下的 `nozzle_n3` 是模型真错：N3 管壁内的一条线在 x = 53.4 处穿出球壳外表面，到 x = 62.5 才重新进入接管，说明接管外圆柱没有接上封头。
 
 **长度截断。** 319 次调用中截断 8 次（2.5%），分布在 8 题，每题 1 次。8.5 节是 305 次中截断 25 次（8.2%）。
+
+### 8.7 针对 8.6 节失败原因改进系统后重跑 20 题（2026-10-11）
+
+设置与 8.6 节相同：Qwen3.8-Flash-Next-FP8、英文题面、`L1_v2`、`reasoning_effort=medium`、最多 40 次 LLM 调用、每题 1 次运行。
+
+8.6 节有 7 题未通过。逐题分析后，按失败原因对 workflow 做了 6 处改动：
+
+| 8.6 节失败的题 | 失败原因 | 改动 |
+|---|---|---|
+| `inch_callout_plate` | 模型凭记忆换算英制钻头记错：H 钻记成 R 钻的 8.611mm（应为 6.756），#21 记成 3.010（应为 4.039） | `hole`、`tapped_hole` 和沉头孔的孔径可以直接写代号（`"#21"`、`"H"`、`"17/64"`、`"10-32 UNF"`、`"M8"`），系统按 ANSI 钻头表和推荐底孔表换算成 mm，并在 notes 里回显（`planner/workflow/standard_sizes.py`） |
+| `roller_cam` | 模型自己推导滚子凸轮的法向偏移公式，导数单位用了度而不是弧度，偏移退化成了径向偏移 | 平面参数曲线支持 `offset`，由系统沿法向等距偏移。闭合曲线 offset>0 向外、<0 向内；偏移量超过曲率半径时报错 |
+| `pipe_route_3d` | `path_3d` 只能给一个统一转角半径，两处弯管半径不同（R45、R60）。模型只好拆成两段，抄坐标又抄错一个点，40 次调用全部用完 | `path_3d` 支持逐角半径 `corner_radii`，Python 端和 C# 端（`Draw3DPath`）都已修改 |
+| `balanced_flywheel` | 圆角选到了外凸棱，没选到腹板与轮毂、轮缘交接处的凹角 | 圆角/倒角结果新增 `edge_kind`：体积减少说明选中的是凸棱，体积增加说明是凹棱 |
+| `spherical_dome_ports` | N3 接管的起点只有轴线落在球面上，截面边缘一侧露在球外，留了一道缝 | `axis_cylinder` 做凸台后，起点平面上残留朝外的端面时给出 warning；工具说明写明正确顺序：先建实心外形，接管从实体内部开始，再切内腔 |
+| `die_cast_cover` | 旋转轮廓里把半径 19.65 直接当成了坐标，锥台从“上小下大”画反成了“上大下小” | `revolve` 结果回显每个轮廓顶点的 [沿轴距离, 到轴半径] 和半径范围 |
+
+`worm_shaft` 的齿面相位偏了约 0.1–0.2mm，属于模型计算误差，没有针对它改。
+
+新功能都有离线单元测试（`test/test_extreme_feedback.py`，32 个），并在 SolidWorks 真机上逐项检查过：
+- 逐角半径弯管的体积与理论值一致；
+- `#21` 孔去除的体积正确；
+- 偏移圆的面积正确；
+- 起点露在球外的接管会给出 warning，起点埋进实体的不会。
+
+先重跑上表 6 题，再跑其余 14 题。结果在 `eval/text_workflow_l1v2_qwen38flash_extreme_en_r3_affected6_result.json` 和 `..._r3_rest14_result.json`，20 题合并的逐题 rubric 分在 `eval/text_workflow_l1v2_qwen38flash_extreme_en_r3_rubric.json`。
+
+| 范围 | 8.6 节 | 本轮 | 合格（8.6 节 → 本轮） |
+|---|---|---|---|
+| 20 题 | 91.3（[83.1, 97.2]） | 90.9（[84.4, 96.8]） | 13/20 → 13/20 |
+| 改动针对的 6 题 | 72.4 | 87.0 | 0/6 → 4/6 |
+| 其余 14 题 | 99.4 | 92.6 | 13/14 → 9/14 |
+
+本轮核心形体率 1.0（20/20），8.6 节是 0.90（18/20）。
+
+8.6 节一栏里 `spherical_dome_ports` 用的是 SolidWorks 射线求交的分数。本轮的 STEP 都被 OCC 判定为有效实体，`spherical_dome_ports` 又用 `eval/rubric_sw_rays.py` 在真机上复核过，分数与离线一致。
+
+20 题共 276 次 LLM 调用、328 次工具调用、785 万 token，没有题用满 40 次。累计耗时 8.8 小时，其中 `sheet_metal_kfactor` 因为模型服务器一度变慢（单次调用最长 58 分钟），用了 236 分钟。
+
+| 任务 | 8.6 节 | 本轮 rubric 分 | LLM 调用 | 工具调用 | 截断 | token | 耗时（min） | 未通过的条目 |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `cast_manifold_fillets` | 100.0 | 100.0 | 15 | 16 | 0 | 350k | 6 | — |
+| `clipped_hex_perforation` | 100.0 | 100.0 | 19 | 18 | 1 | 694k | 46 | — |
+| `compound_drill_block` | 100.0 | 100.0 | 7 | 9 | 0 | 167k | 6 | — |
+| `die_cast_cover` | 90.0 | 100.0 | 10 | 15 | 0 | 241k | 7 | — |
+| `filleted_shell_enclosure` | 100.0 | 100.0 | 14 | 14 | 0 | 321k | 7 | — |
+| `helical_ring_gear` | 100.0 | 100.0 | 37 | 38 | 1 | 1591k | 67 | — |
+| `inch_callout_plate` | 77.8 | 100.0 | 11 | 14 | 0 | 244k | 5 | — |
+| `pipe_route_3d` | 33.3 | 100.0 | 20 | 26 | 0 | 567k | 21 | — |
+| `roller_cam` | 66.7 | 100.0 | 11 | 12 | 0 | 245k | 6 | — |
+| `scroll_wrap_plate` | 100.0 | 100.0 | 7 | 12 | 0 | 164k | 7 | — |
+| `tricylinder_node` | 100.0 | 100.0 | 10 | 15 | 0 | 232k | 6 | — |
+| `variable_fillet_bracket` | 100.0 | 100.0 | 28 | 28 | 0 | 716k | 15 | — |
+| `variable_pitch_spring` | 100.0 | 100.0 | 8 | 8 | 0 | 162k | 2 | — |
+| `worm_shaft` | 91.7 | 91.7 | 9 | 13 | 1 | 283k | 20 | flank |
+| `sheet_metal_kfactor` | 100.0 | 88.9 | 14 | 14 | 0 | 364k | 236 | lip_hole |
+| `tangent_link_lever` | 100.0 | 77.8 | 8 | 11 | 1 | 192k | 7 | arc_slot, volume |
+| `naca_wing_rib` | 100.0 | 75.0 | 9 | 12 | 0 | 234k | 9 | lightening_holes, spar_notch |
+| `spherical_dome_ports` | 88.9 | 66.7 | 8 | 16 | 0 | 198k | 7 | shell, base_flange, nozzle_n3 |
+| `twisted_flute_knob` | 100.0 | 62.5 | 13 | 16 | 0 | 331k | 12 | left_twist, d_bore, set_screw |
+| `balanced_flywheel` | 77.8 | 55.6 | 18 | 21 | 1 | 555k | 37 | section, window_corners, keyway, balance |
+
+**改动针对的题。** 8.6 节里这 6 题失分的条目，本轮全部通过。其中 4 题拿到 100 分：
+- `pipe_route_3d` 用 `corner_radii` 一次扫出整根管，LLM 调用从 40 次降到 20 次。
+- `inch_callout_plate` 直接写钻头代号，由系统查表换算。
+- `roller_cam` 用 `offset` 偏移出凸轮廓线。
+- `die_cast_cover` 的锥台不再画反。
+
+另外 2 题原来的失分点修好了，但出了新错：
+- `spherical_dome_ports`：N3 接管按新的说明从实体内部开始建，不再留缝。但法兰上的 8 个螺栓孔用了 `through_all`，从 z = −40 一直钻到顶，其中两个孔打穿了 N1 和 N3 接管，所以多找到 2 个孔，N3 管壁上也出现缺口。shell 一项差 0.103mm，是模型给圆弧的经过点 (64.94, 46.94) 到球心的距离为 80.13，不是 80。
+- `balanced_flywheel`：腹板凹角 R4 圆角（8.6 节失分的 `web_fillets`）这次通过了。但键槽方向画反：键槽应该从 ⌀30 孔壁向外开到 x = 18.3，模型切掉的是 x = 18.3 到 30 这一段，把轮毂壁切穿了。平衡孔直径也跟着算错，做成 ⌀14.6，正确是 13.243。
+
+**其余 14 题。** 8.6 节里 13 题满分，本轮有 4 题掉分：`twisted_flute_knob`、`naca_wing_rib`、`tangent_link_lever`、`sheet_metal_kfactor`。逐题检查了这 4 题和 `worm_shaft` 的完整对话：
+- 钻头代号查表一次都没有被触发，接管起点 warning 和曲线偏移报错也都没出现；
+- 新增的回显只出现了两处：`twisted_flute_knob` 的圆角显示为外凸棱，判断正确；`worm_shaft` 的旋转轮廓回显了半径。两处都与失分条目无关；
+- 扣分都来自模型这次新犯的建模错误，例如扭转方向反了、轮廓画成自相交后改用别的画法。
+
+改动没有直接造成这些失分，但提示词和工具说明变了，模型看到的上下文也跟着变，可能间接改变建模路径。每题只跑 1 次，这种影响无法和运行间的随机波动分开。要确认改动的净效果，需要每题多跑几次（如 `--repeats 3`）再比较。
+
+**外部因素与重跑。** 有两题因为外部问题从头重跑，表中是重跑后的结果：
+- `balanced_flywheel`：第 4 次调用期间，SolidWorks 里的文档在模型思考时被关掉（`sw_lost`）。SolidWorks 和服务都没有重启，也没有别的进程调用服务，原因没查到。
+- `tangent_link_lever`：模型服务器刚恢复速度时中途断开连接（`RemoteProtocolError`），记为 `llm_error`。
+
+**长度截断。** 276 次调用中截断 5 次（1.8%），8.6 节是 319 次中 8 次（2.5%）。
 
 ---
 
