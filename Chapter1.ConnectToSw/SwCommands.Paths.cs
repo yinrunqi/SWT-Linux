@@ -11,11 +11,15 @@ namespace Chapter1.ConnectToSw
 
         /// <summary>
         /// 新建一张 3D 草图作为扫描路径 / 放样引导线，画完即退出草图。坐标为模型坐标（米）。
-        /// spline=false：折线，相邻段端点合并；cornerRadius &gt; 0 时在每个内部转角加草图圆角。
+        /// spline=false：折线，相邻段端点合并；cornerRadius &gt; 0 时在每个内部转角加草图圆角，
+        /// cornerRadii（按内部转角顺序，0 表示不倒圆）给出时逐角取半径。
         /// spline=true：一条通过全部点的样条（螺旋线等由调用方采样）。
         /// </summary>
-        public Dictionary<string, object> Sketch3DPath(List<double[]> points, bool spline, double cornerRadius)
+        public Dictionary<string, object> Sketch3DPath(List<double[]> points, bool spline, double cornerRadius,
+            List<double> cornerRadii = null)
         {
+            if (cornerRadii != null && cornerRadii.Count != Math.Max(0, (points?.Count ?? 0) - 2))
+                throw new ArgumentException($"cornerRadii 须有 {Math.Max(0, (points?.Count ?? 0) - 2)} 个（每个内部转角一个）");
             EnsureActiveDoc();
             if (points == null || points.Count < 2)
                 throw new ArgumentException("3D 路径至少需要 2 个点");
@@ -28,7 +32,7 @@ namespace Chapter1.ConnectToSw
             _activeSketchName = (LastFeatureOfType("3DProfileFeature") ?? "");
             try
             {
-                return Draw3DPath(points, spline, cornerRadius);
+                return Draw3DPath(points, spline, cornerRadius, cornerRadii);
             }
             finally
             {
@@ -38,7 +42,8 @@ namespace Chapter1.ConnectToSw
             }
         }
 
-        private Dictionary<string, object> Draw3DPath(List<double[]> points, bool spline, double cornerRadius)
+        private Dictionary<string, object> Draw3DPath(List<double[]> points, bool spline, double cornerRadius,
+            List<double> cornerRadii)
         {
             var sketchManager = ActiveDoc.SketchManager;
             var created = new List<ISketchSegment>();
@@ -83,7 +88,7 @@ namespace Chapter1.ConnectToSw
             }
 
             int merged = 0;
-            var corners = new List<ISketchPoint>();
+            var corners = new List<KeyValuePair<ISketchPoint, double>>();
             for (int i = 0; i + 1 < created.Count; i++)
             {
                 var a = EndpointNear3D(created[i], points[i + 1]);
@@ -93,20 +98,19 @@ namespace Chapter1.ConnectToSw
                 if (!a.Select4(false, null) || !b.Select4(true, null)) continue;
                 ActiveDoc.SketchAddConstraints("sgMERGEPOINTS");
                 merged++;
-                corners.Add(EndpointNear3D(created[i], points[i + 1]));
+                double radius = cornerRadii != null ? cornerRadii[i] : cornerRadius;
+                if (!spline && radius > 0)
+                    corners.Add(new KeyValuePair<ISketchPoint, double>(EndpointNear3D(created[i], points[i + 1]), radius));
             }
-            if (!spline && cornerRadius > 0)
+            foreach (var corner in corners)
             {
-                foreach (var corner in corners)
-                {
-                    ActiveDoc.ClearSelection2(true);
-                    if (corner == null || !corner.Select4(false, null)) continue;
-                    if (sketchManager.CreateFillet(
-                            cornerRadius, (int)swConstrainedCornerAction_e.swConstrainedCornerKeepGeometry) != null)
-                        filleted++;
-                }
+                ActiveDoc.ClearSelection2(true);
+                if (corner.Key == null || !corner.Key.Select4(false, null)) continue;
+                if (sketchManager.CreateFillet(
+                        corner.Value, (int)swConstrainedCornerAction_e.swConstrainedCornerKeepGeometry) != null)
+                    filleted++;
             }
-            if (!spline && cornerRadius > 0 && filleted < corners.Count)
+            if (filleted < corners.Count)
                 throw new InvalidOperationException(
                     $"3D 路径转角圆角只成功 {filleted}/{corners.Count} 个：圆角半径可能大于相邻线段长度");
             Console.WriteLine(

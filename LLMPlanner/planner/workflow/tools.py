@@ -998,9 +998,32 @@ class WorkflowSession:
         result = self._transaction(
             operations, expect="decrease" if is_cut else "increase", before=before,
             context={"plane": frame.describe(), "region_area_mm2": check["region_area_mm2"],
-                     "profile_uv_bbox": check.get("profile_uv_bbox")},
+                     "profile_uv_bbox": check.get("profile_uv_bbox"),
+                     **self._axial_radial_echo(loops, start, end)},
         )
         return {**result, "warnings": warnings} if warnings else result
+
+    @staticmethod
+    def _axial_radial_echo(loops: list[dict], start: list[float], end: list[float]) -> dict:
+        """把轮廓顶点换成 (沿轴位置, 到轴半径)，便于核对锥度、台阶半径是否画反。"""
+        du, dv = end[0] - start[0], end[1] - start[1]
+        length = math.hypot(du, dv)
+        radii, vertices = [], []
+        for loop in loops:
+            coords = list(to_geometry(loop).exterior.coords)[:-1]
+            pairs = [
+                [round(((u - start[0]) * du + (v - start[1]) * dv) / length, 4),
+                 round(abs(du * (v - start[1]) - dv * (u - start[0])) / length, 4)]
+                for u, v in coords
+            ]
+            radii.extend(r for _a, r in pairs)
+            if len(pairs) <= 12:
+                vertices.append(pairs)
+        echo: dict = {"profile_radius_range_mm": [round(min(radii), 4), round(max(radii), 4)]} if radii else {}
+        if vertices:
+            echo["profile_axial_radius"] = vertices
+            echo["profile_axial_radius_note"] = "每个顶点 [沿轴距离(从 axis_start 起), 到轴半径]，请核对锥面两端半径"
+        return echo
 
     @staticmethod
     def _check_axis_side(loops: list[dict], start: list[float], end: list[float]) -> None:

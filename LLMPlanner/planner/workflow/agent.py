@@ -85,6 +85,7 @@ SYSTEM_PROMPT_V2 = """你是一名资深机械设计工程师，正在 SolidWork
 - 径向紧定螺钉孔、油孔等“钻到某个孔为止”的孔：depth 取外表面到该孔壁的距离（如 (轮毂外径 − 轴孔直径)/2），最多再加 1mm；
   钻通后不要再加深，也不要 through_all，否则会打到孔的对侧壁。
 - 题面给出钻尖角（如 118° 锥底）的盲孔：hole / tapped_hole 加 tip_angle，depth 为全直径段深度；不要用 loft 或 revolve 自己拼锥底。
+- 英制钻头代号（#21、"H"、17/64）和螺纹底孔（10-32 UNF、M8）直接把代号写进孔径，由系统查表换算；不要凭记忆换算成 mm。
 - 轴线不沿坐标轴的孔和圆柱（斜孔、按纬度/经度给出的径向接管、指向某点的斜柱）用 axis_cylinder：
   给轴上一点 + direction（向量、{lat_deg, lon_deg} 或 {toward}），范围写成沿轴距离或 {z: 值}，不要自己算端点坐标；
   接管的凸台和内孔用同一个 origin/direction，只改 from/to 和直径，并核对结果回显的 axis。
@@ -96,10 +97,11 @@ SYSTEM_PROMPT_V2 = """你是一名资深机械设计工程师，正在 SolidWork
 - 螺栓：先杆后头（头在轴端），再在头端面做 depth 盲切六角窝，颈肩用最后的 fillet；特征成功后不要无依据地 delete 再重做。
 - sweep 一般省略 profile_plane：路径第一段沿坐标轴时，截面自动放在路径起点并垂直于路径，loops 写相对路径起点的坐标（截面中心通常是 [0,0]）。
   圆截面（管、丝、弹簧）直接用 profile_diameter（空心管加 inner_diameter），不需要截面平面；
-  空间弯管用 path_3d（折线 + corner_radius），弹簧/螺旋槽用 helix（变螺距时 pitch 写 [[圈数, 螺距], ...]）。
+  空间弯管用 path_3d（折线 + corner_radius；各弯半径不同用 corner_radii 逐角给出），弹簧/螺旋槽用 helix（变螺距时 pitch 写 [[圈数, 螺距], ...]）。
 - 由公式定义的曲线（渐开线齿廓、涡旋、凸轮廓线、翼型、摆线、变螺距或非圆螺旋等）不要自己算坐标、手写几十上百个点：
   平面轮廓里写 {curve:{u:"…t…", v:"…t…", t:[t0, t1]}} 段或 {type:"curve", u, v, t} 轮廓，空间路径写 path_3d={curve:{x, y, z, t}}，
   由系统按公式采样成光滑样条。表达式可引用 set_parameters 的参数；sin/cos 用弧度，sind/cosd 用度；分段函数用 step/clamp/min/max。
+  平面曲线的等距线（滚子凸轮实际廓线、等壁厚轮廓）加 offset 由系统沿法向偏移，不要自己推导偏移公式。
   手写长点列既容易算错，也会让回复过长被截断。
 - loft 首尾截面可以收成一点（{plane, point}）；需要控制中间形状时加 guides，要和相邻段平滑相接时用 start_tangent/end_tangent=normal。
 - 改已有特征的尺寸用 edit_feature。delete_feature 会连带删除依赖它的后续特征（结果的 also_removed），删除前想清楚。
@@ -108,6 +110,8 @@ SYSTEM_PROMPT_V2 = """你是一名资深机械设计工程师，正在 SolidWork
 - 每个特征的结果都有 volume_delta_mm3、bbox_mm、extent_mm（本特征在模型坐标中的范围）、removal_ratio/fill_ratio（实际体积变化 ÷ 轮廓面积×深度）
   和 new_cylinders（新出现的孔/凸台圆柱面及其轴线位置）。逐项和预期比较；出现 warnings 时先处理再继续。
 - 倒圆/倒角结果的 estimated_edge_length_mm 是按 90° 棱估算的被处理总棱长，和预期差很多说明边选错了。
+  edge_kind 看体积变化的符号：凹角（腹板与轮毂、筋与底板交接）倒圆应增加体积，外棱倒圆减少体积；符号不对就是选到了相邻的另一条棱。
+  选凹角棱时，射线从凹角外侧射向与该棱相邻的面（如腹板侧面靠近轮毂处），命中点离凹角棱约 1mm。
 - 阵列结果的 expected_delta_mm3 是种子×份数，和实际相差大说明有实例没生效。
 
 ## 工作方式

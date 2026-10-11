@@ -36,6 +36,60 @@ def _t_range(spec: Mapping[str, Any], what: str) -> tuple[float, float]:
     return t0, t1
 
 
+def _offset(spec: Mapping[str, Any], keys: Sequence[str], env: Mapping[str, float], what: str) -> float:
+    raw = spec.get("offset")
+    if raw in (None, 0):
+        return 0.0
+    if len(keys) != 2:
+        raise WorkflowError("TOOL_ARGS", f"{what}.offset 只用于平面曲线（u, v）")
+    if isinstance(raw, (int, float)):
+        return float(raw)
+    try:
+        return float(_eval(_parse(str(raw).strip().lstrip("="), CURVE_FUNCTIONS), dict(env), CURVE_FUNCTIONS))
+    except WorkflowError:
+        raise
+    except (ArithmeticError, ValueError) as exc:
+        raise WorkflowError("TOOL_ARGS", f"{what}.offset 计算失败: {exc}") from None
+
+
+def _offset_curve(base, t0: float, t1: float, offset: float, what: str):
+    """沿法向等距偏移：开放曲线 offset>0 偏向前进方向左侧；闭合曲线 offset>0 向外、<0 向内（与走向无关）。"""
+    span = t1 - t0
+    h = span * 1e-6
+
+    def tangent(t: float) -> tuple[float, float]:
+        a, b = base(t - h), base(t + h)
+        du, dv = b[0] - a[0], b[1] - a[1]
+        norm = math.hypot(du, dv)
+        if norm <= 1e-12:
+            raise WorkflowError("TOOL_ARGS", f"{what} 在 t={t:g} 处切向为零，无法按法向偏移")
+        return du / norm, dv / norm
+
+    probe = [base(t0 + span * i / 64) for i in range(65)]
+    closed = math.dist(probe[0], probe[-1]) <= 1e-3
+    sign = 1.0
+    if closed:
+        area = sum(probe[i][0] * probe[i + 1][1] - probe[i + 1][0] * probe[i][1] for i in range(64)) / 2
+        sign = -1.0 if area > 0 else 1.0
+    distance = sign * offset
+
+    def at(t: float) -> tuple:
+        p = base(t)
+        tu, tv = tangent(t)
+        return p[0] - tv * distance, p[1] + tu * distance
+
+    for i in range(256):
+        t = t0 + span * (i + 0.5) / 256
+        q0, q1 = at(t - span / 1024), at(t + span / 1024)
+        tu, tv = tangent(t)
+        if (q1[0] - q0[0]) * tu + (q1[1] - q0[1]) * tv <= 0:
+            raise WorkflowError(
+                "TOOL_ARGS", f"{what}.offset={offset:g} 大于曲线在 t≈{t:g} 处的曲率半径，偏移曲线会自交",
+                hint="减小 offset，或检查偏移方向（闭合曲线 offset>0 向外、<0 向内）。",
+            )
+    return at
+
+
 def sample(spec: Mapping[str, Any], keys: Sequence[str], env: Mapping[str, float], what: str = "curve") -> list[tuple]:
     """按弦高误差自适应采样，返回从 t0 到 t1 的点列（坐标单位与表达式一致，mm）。"""
     if not isinstance(spec, Mapping):
@@ -44,7 +98,7 @@ def sample(spec: Mapping[str, Any], keys: Sequence[str], env: Mapping[str, float
     t0, t1 = _t_range(spec, what)
     scope = dict(env)
 
-    def at(t: float) -> tuple:
+    def base(t: float) -> tuple:
         scope["t"] = t
         values = []
         for key, tree in zip(keys, trees):
@@ -58,6 +112,11 @@ def sample(spec: Mapping[str, Any], keys: Sequence[str], env: Mapping[str, float
                 raise WorkflowError("TOOL_ARGS", f"{what}.{key} 在 t={t:g} 处不是有限值")
             values.append(value)
         return tuple(values)
+
+    at = base
+    offset = _offset(spec, keys, env, what)
+    if offset:
+        at = _offset_curve(base, t0, t1, offset, what)
 
     ts = [t0 + (t1 - t0) * i / INITIAL_INTERVALS for i in range(INITIAL_INTERVALS + 1)]
     points = [at(t) for t in ts]

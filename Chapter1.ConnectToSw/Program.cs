@@ -1986,7 +1986,8 @@ namespace Chapter1.ConnectToSw
                 var body = ReadJsonBody(req);
                 var points = GetNumberRows(body, "points", 3) ?? new List<double[]>();
                 var result = _commands.Sketch3DPath(
-                    points, GetBoolOrDefault(body, "spline", false), GetDoubleOrDefault(body, "cornerRadius", 0));
+                    points, GetBoolOrDefault(body, "spline", false), GetDoubleOrDefault(body, "cornerRadius", 0),
+                    GetNumberList(body, "cornerRadii"));
                 SendJson(resp, 200, new { success = true, message = $"已绘制 3D 路径 {result["sketchName"]}", result });
             }
             catch (Exception ex)
@@ -3313,6 +3314,19 @@ namespace Chapter1.ConnectToSw
                     throw new ArgumentException($"{key} 的每一项须为 {width} 个数");
                 result.Add(values.ToArray());
             }
+            return result;
+        }
+
+        /// <summary>读取一维数值数组；键不存在时返回 null。</summary>
+        private static List<double> GetNumberList(Dictionary<string, object> body, string key)
+        {
+            if (!body.ContainsKey(key) || body[key] == null)
+                return null;
+            if (!(body[key] is System.Collections.IEnumerable values))
+                throw new ArgumentException($"{key} 须为数组");
+            var result = new List<double>();
+            foreach (var value in values)
+                result.Add(Convert.ToDouble(value));
             return result;
         }
 

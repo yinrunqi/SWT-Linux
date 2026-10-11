@@ -25,6 +25,7 @@ from .frames import UV_AXES, SketchFrame, face_frame
 from .params import FUNCTIONS as PARAM_FUNCTIONS
 from .profiles import PROFILE_ROUTE, draw_open_path, draw_operations
 from .refs import _vec, resolve_ref
+from .standard_sizes import resolve_size
 from .tools import (
     AXES,
     EXTRA_TOOL_SPECS,
@@ -42,6 +43,13 @@ _AXIS_BASE_PLANE = {"Z": "front_plane", "Y": "top_plane", "X": "right_plane"}
 _PLANE_KEYS = ("plane", "path_plane", "profile_plane", "reference", "up_to", "neutral")
 _BOOL_KEYS = {"through_all", "cut", "body", "both_sides", "outward", "flip", "draft_outward"}
 _HOLE_TOOLS = {"hole", "counterbore", "countersink", "tapped_hole"}
+# (参数名, 是否公称直径)：这些孔径可以写钻头/螺纹代号，由 standard_sizes 查表
+_SIZE_KEYS = {
+    "hole": (("diameter", False),),
+    "tapped_hole": (("diameter", False), ("thread_diameter", True)),
+    "counterbore": (("through_diameter", False),),
+    "countersink": (("through_diameter", False),),
+}
 _STATE_PLANAR_LIMIT = 60
 _STATE_CYLINDER_LIMIT = 40
 _NEW_CYLINDER_LIMIT = 12
@@ -302,6 +310,9 @@ _LOOP_DESC_V2_EXTRA = (
     "表达式可引用 set_parameters 定义的参数，函数有 sin/cos/tan/asin/acos/atan/atan2（弧度）、sind/cosd/tand（度）、"
     "sqrt/exp/log/hypot/abs/min/max/clamp(x,lo,hi)/step(x)（x≥0 为 1，用于分段函数），常量 pi。"
     "一条 curve 内部必须光滑；有尖角处（如翼型尖后缘、凸轮升程段之间若不光滑）拆成两段 curve。"
+    "等距（法向）偏移曲线加 offset（mm，可写表达式）：闭合 curve 轮廓 offset>0 向外、<0 向内；"
+    "path 里的 curve 段 offset>0 偏向前进方向左侧。滚子从动件凸轮的实际廓线 = 理论（节）曲线 offset −滚子半径，"
+    "不要自己推导法向偏移公式（容易把角度导数和弧度导数混用）。"
 )
 _POLAR_SCHEMA = {
     "type": "object",
@@ -318,6 +329,12 @@ _TIP_ANGLE = {
 _EXTENT_NOTE = (
     "结果中 extent_mm 是本特征在模型坐标中的范围（X/Y/Z，mm），removal_ratio / fill_ratio 是实际体积变化"
     "与 轮廓面积×深度 之比，new_cylinders 列出新出现的圆柱面（孔/凸台）。"
+)
+
+
+_SIZE_NOTE = (
+    "图纸给的是英制钻头代号时直接把代号写进孔径（hole/tapped_hole 的 diameter、沉头孔的 through_diameter）："
+    "号码钻 \"#21\"、字母钻 \"H\"、分数英寸 \"17/64\"，系统按 ANSI 钻头表换算成 mm 并在 notes 里回显，不要凭记忆换算。"
 )
 
 
@@ -401,7 +418,7 @@ def _build_specs_v2() -> list[dict]:
             description=(
                 "在平面上按圆心列表（centers）或极坐标布孔（polar）打同直径的圆孔（切除），给 depth 或 through_all=true。"
                 "钻孔盲孔的锥形孔底给 tip_angle（麻花钻 118°）：depth 为全直径圆柱段的深度（到钻尖肩部），"
-                "钻尖锥另加 (diameter/2)/tan(tip_angle/2)；不给 tip_angle 为平底孔。"
+                "钻尖锥另加 (diameter/2)/tan(tip_angle/2)；不给 tip_angle 为平底孔。" + _SIZE_NOTE
             ),
             properties={"polar": _POLAR_SCHEMA, "tip_angle": _TIP_ANGLE}, required=["plane", "diameter"],
         ),
@@ -419,7 +436,14 @@ def _build_specs_v2() -> list[dict]:
             },
             required=["plane", "through_diameter", "head_diameter"],
         ),
-        "tapped_hole": dict(properties={"polar": _POLAR_SCHEMA, "tip_angle": _TIP_ANGLE}, required=["plane", "diameter"]),
+        "tapped_hole": dict(
+            description=(
+                "螺纹底孔（可选装饰螺纹）。diameter 为底孔直径；thread_diameter 为公称直径（给了才加装饰螺纹）。"
+                "diameter 可写螺纹代号（\"10-32 UNF\"、\"M8\"、\"M8x1\"）自动取推荐底孔钻，或写钻头代号；"
+                "thread_diameter 写螺纹代号时取大径。" + _SIZE_NOTE
+            ),
+            properties={"polar": _POLAR_SCHEMA, "tip_angle": _TIP_ANGLE}, required=["plane", "diameter"],
+        ),
         "fillet": dict(
             description=(
                 "对边倒圆角。一般放在最后；外形轮廓上的圆角（板的竖直棱等）优先在轮廓里用 corner_radius 表达。"
@@ -450,6 +474,7 @@ def _build_specs_v2() -> list[dict]:
                 "沿开放路径扫描截面（cut=true 为扫描切除）。路径三选一："
                 "(1) 平面路径 path_plane + path_start + path_segments；"
                 "(2) 空间折线 path_3d={points:[[x,y,z],...], corner_radius?}（mm，模型坐标，corner_radius 写在 path_3d 里面，给每个转角加圆角，弯管常用）；"
+                "各转角弯曲半径不同时改写 corner_radii:[r1, r2, ...]（每个内部点一个，0 表示尖角），整条管一次扫出，不要拆成几段；"
                 "空间曲线写 path_3d={curve:{x:\"t 的表达式\", y:…, z:…, t:[t0, t1]}}，由系统采样成光滑样条（表达式写法同轮廓的 curve），"
                 "或 path_3d={points:[...], spline:true} 让样条通过各点；不要手写几十上百个点的折线；"
                 "(3) 螺旋线 helix={axis:\"Z\"|\"-Y\"…, center:[x,y,z]（螺旋起始端的轴心）, diameter|radius, pitch, turns|height, "
@@ -470,7 +495,7 @@ def _build_specs_v2() -> list[dict]:
                 },
                 "path_3d": {
                     "type": "object",
-                    "description": "空间路径：折线 {points:[[x,y,z],...], corner_radius?}、样条 {points, spline:true} 或参数曲线 {curve:{x, y, z, t:[t0, t1]}}，mm",
+                    "description": "空间路径：折线 {points:[[x,y,z],...], corner_radius? 或逐角 corner_radii?}、样条 {points, spline:true} 或参数曲线 {curve:{x, y, z, t:[t0, t1]}}，mm",
                 },
                 "helix": {
                     "type": "object",
@@ -486,7 +511,7 @@ def _build_specs_v2() -> list[dict]:
                 "在两个或多个截面之间放样（cut=true 为放样切除）。sections 按顺序排列，每个 {plane, loops}；"
                 "第一个或最后一个截面可以写成 {plane, point:[u,v]}，收成一个点（尖顶、锥头）。"
                 "guides 为可选引导线数组，每条为平面开放路径 {plane, start, segments}（写法同 sweep 的平面路径）"
-                "或空间折线/样条 {points:[[x,y,z],...], spline?, corner_radius?}、空间参数曲线 {curve:{x, y, z, t:[t0, t1]}}；"
+                "或空间折线/样条 {points:[[x,y,z],...], spline?, corner_radius? 或 corner_radii?}、空间参数曲线 {curve:{x, y, z, t:[t0, t1]}}；"
                 "平面路径的段也可以是 {curve:{u, v, t}}（写法同轮廓）。引导线必须与每个截面的轮廓相交（端点落在截面轮廓上）。"
                 "start_tangent / end_tangent = none（默认）| normal：首/尾截面处的侧面垂直于截面（平滑过渡到相邻的拉伸段），"
                 "tangent_length 为相切影响系数（默认 1）。"
@@ -551,6 +576,10 @@ AXIS_CYLINDER_SPEC = _tool(
     "或 {toward:[x,y,z]}（指向轴上另一点）。"
     "from/to 也可写成 {z: 8}（轴线到达 z=8 处）或 {point:[x,y,z]}。"
     "斜孔：origin 取孔口中心，direction 指向材料内部，from 取 -diameter 左右，让圆柱从实体外开始，保证孔口完整。"
+    "接管凸台：整个起点截面都要埋进已有实体，不能只让轴线与外表面的交点落在表面上——"
+    "轴线不过球心/不垂直于表面时，截面边缘处的外表面更靠里，会留缝。壳体类零件最稳的顺序是："
+    "先建实心外形，接管从实心体内部开始（如 from=0 或轴线进入实体很深处），再切内腔、最后打接管内孔。"
+    "起点截面露在实体外时结果会给出 warning。"
     "盲孔的锥形孔底给 tip_angle（麻花钻 118°），钻尖接在 to 端之后。"
     "结果回显两端点、单位方向和纬度/经度，请核对。轴向沿坐标轴的普通孔仍优先用 hole。",
     {
@@ -587,7 +616,7 @@ _TOOL_PARAMS: dict[str, set[str]] = {
 }
 # 对象型参数里的字段，用来提示“这个字段应写在哪个对象里”
 _NESTED_FIELDS = {
-    "path_3d": ("points", "corner_radius", "spline", "curve"),
+    "path_3d": ("points", "corner_radius", "corner_radii", "spline", "curve"),
     "helix": ("axis", "center", "diameter", "radius", "pitch", "turns", "height", "right_handed"),
     "polar": ("center", "radius", "pcd", "count", "start_deg", "span_deg"),
 }
@@ -853,9 +882,22 @@ def polyline_geometry(spec: Any) -> dict:
     if not isinstance(spec, dict):
         raise WorkflowError("TOOL_ARGS", "path_3d 应为 {points:[[x,y,z],...], corner_radius?}")
     raw = [_point3(p, "path_3d.points[i]") for p in spec.get("points") or []]
+    radius = float(spec.get("corner_radius") or 0)
+    per_corner = spec.get("corner_radii")
+    if per_corner is not None:
+        if not isinstance(per_corner, list) or len(per_corner) != max(0, len(raw) - 2):
+            raise WorkflowError(
+                "TOOL_ARGS", f"path_3d.corner_radii 须是 {max(0, len(raw) - 2)} 个数（每个内部点一个，0 表示不倒圆）",
+                hint="例：points 为 [P0, P1, P2, P3] 时写 corner_radii: [45, 60]。",
+            )
+        raw_radii = [0.0, *(float(r or 0) for r in per_corner), 0.0]
+    else:
+        raw_radii = [0.0, *([radius] * max(0, len(raw) - 2)), 0.0]
     points: list[list[float]] = []
-    for point in raw:
+    radii: list[float] = []
+    for point, r in zip(raw, raw_radii):
         if points and math.dist(point, points[-1]) < 1e-6:
+            radii[-1] = max(radii[-1], r)
             continue
         if len(points) >= 2:
             a, b = points[-2], points[-1]
@@ -863,12 +905,13 @@ def polyline_geometry(spec: Any) -> dict:
             w = [point[k] - b[k] for k in range(3)]
             if math.sqrt(sum(c * c for c in _cross(u, w))) <= 1e-9 * math.dist(a, b) * math.dist(b, point) \
                     and sum(u[k] * w[k] for k in range(3)) > 0:
-                points[-1] = point
+                points[-1], radii[-1] = point, r
                 continue
         points.append(point)
+        radii.append(r)
     if len(points) < 2:
         raise WorkflowError("TOOL_ARGS", "path_3d 至少需要 2 个不重合的点")
-    radius = float(spec.get("corner_radius") or 0)
+    radii[0] = radii[-1] = 0.0
     lengths = [math.dist(points[i], points[i + 1]) for i in range(len(points) - 1)]
     total = sum(lengths)
     cuts = [0.0] * len(lengths)
@@ -879,11 +922,11 @@ def polyline_geometry(spec: Any) -> dict:
         turn = math.acos(max(-1.0, min(1.0, sum(u[k] * w[k] for k in range(3)))))
         if turn > math.pi - 1e-6:
             raise WorkflowError("TOOL_ARGS", f"path_3d 在第 {i} 个点处原路折返")
-        if radius > 0:
-            tangent = radius * math.tan(turn / 2)
+        if radii[i] > 0:
+            tangent = radii[i] * math.tan(turn / 2)
             cuts[i - 1] += tangent
             cuts[i] += tangent
-            total += radius * turn - 2 * tangent
+            total += radii[i] * turn - 2 * tangent
     for i, (length, cut) in enumerate(zip(lengths, cuts)):
         if cut > length + 1e-6:
             raise WorkflowError(
@@ -891,24 +934,34 @@ def polyline_geometry(spec: Any) -> dict:
                 f"path_3d 第 {i} 段长 {length:g}mm，放不下两端的转角圆角（需 {cut:g}mm）",
                 hint="减小 corner_radius 或加长该段。",
             )
+    interior = radii[1:-1]
+    uniform = len(set(interior)) <= 1
+    if not interior or not any(interior):
+        rounding = ""
+    elif uniform:
+        rounding = f"，转角圆角 R{interior[0]:g}"
+    else:
+        rounding = "，转角圆角 " + "/".join(f"R{r:g}" for r in interior)
     return {
         "points": points,
         "start": points[0],
         "tangent": [points[1][k] - points[0][k] for k in range(3)],
-        "corner_radius": radius,
+        "corner_radius": interior[0] if interior and uniform else 0.0,
+        "corner_radii": None if uniform else interior,
         "length_mm": total,
-        "describe": f"3D 折线 {len(points)} 点" + (f"，转角圆角 R{radius:g}" if radius > 0 else ""),
+        "describe": f"3D 折线 {len(points)} 点{rounding}",
     }
 
 
-def path3d_operation(points: list[list[float]], *, spline: bool = False, corner_radius: float = 0) -> dict:
-    return {
-        "operation": "sketch3d_path", "route": "/api/sketch3d/path",
-        "params": {
-            "points": [[value / 1000.0 for value in point] for point in points],
-            "spline": spline, "cornerRadius": corner_radius / 1000.0,
-        },
+def path3d_operation(points: list[list[float]], *, spline: bool = False, corner_radius: float = 0,
+                     corner_radii: list[float] | None = None) -> dict:
+    params: dict[str, Any] = {
+        "points": [[value / 1000.0 for value in point] for point in points],
+        "spline": spline, "cornerRadius": corner_radius / 1000.0,
     }
+    if corner_radii is not None:
+        params["cornerRadii"] = [r / 1000.0 for r in corner_radii]
+    return {"operation": "sketch3d_path", "route": "/api/sketch3d/path", "params": params}
 
 
 @dataclass(frozen=True)
@@ -1147,6 +1200,13 @@ class WorkflowSessionV2(WorkflowSession):
                     merged.append(center)
             args["centers"] = merged
             self._notes.append(f"polar 生成的圆心 (u,v): {generated}")
+        for key, nominal in _SIZE_KEYS.get(name, ()):
+            value = args.get(key)
+            if isinstance(value, str) and value.strip() not in self.params.params:
+                found = resolve_size(value, nominal=nominal)
+                if found is not None:
+                    args[key] = round(found[0], 4)
+                    self._notes.append(f"{key}=\"{value}\" 按标准表取 {found[1]} = {found[0]:.4f}mm")
         return args
 
     def _curve_points(self, spec: Any, keys: tuple[str, ...], what: str) -> list[tuple]:
@@ -1458,7 +1518,7 @@ class WorkflowSessionV2(WorkflowSession):
                 curve = self._spline_path(spec, "path_3d")
                 return [path3d_operation(curve["points"], spline=True)], curve
             line = polyline_geometry(self._resolve_numbers(spec))
-            op = path3d_operation(line["points"], corner_radius=line["corner_radius"])
+            op = path3d_operation(line["points"], corner_radius=line["corner_radius"], corner_radii=line["corner_radii"])
             return [op], {**line, "kind": "polyline"}
         path_frame = self._frame(args.get("path_plane"), snapshot, arg="path_plane")
         start = self._uv_pair(args.get("path_start"), "path_start")
@@ -1577,9 +1637,12 @@ class WorkflowSessionV2(WorkflowSession):
                         raise WorkflowError("TOOL_ARGS", f"guides[{index}] 样条至少需要 2 个点")
                     operations.append(path3d_operation(points, spline=True))
                 else:
-                    line = polyline_geometry(
-                        {"points": points, "corner_radius": self._resolve_numbers(guide.get("corner_radius"))})
-                    operations.append(path3d_operation(line["points"], corner_radius=line["corner_radius"]))
+                    line = polyline_geometry({
+                        "points": points, "corner_radius": self._resolve_numbers(guide.get("corner_radius")),
+                        "corner_radii": self._resolve_numbers(guide.get("corner_radii")),
+                    })
+                    operations.append(path3d_operation(
+                        line["points"], corner_radius=line["corner_radius"], corner_radii=line["corner_radii"]))
                 continue
             plane = guide.get("plane")
             frame = self._frame(self._axis_plane(plane) if isinstance(plane, str) else plane, before,
@@ -1709,7 +1772,14 @@ class WorkflowSessionV2(WorkflowSession):
             if isinstance(item, dict) and (text := ray_ambiguity(before, item, index if len(selections) > 1 else None))
         ]
         result = self._transaction(operations, expect="change", before=before, context={})
-        delta = abs(float(result.get("volume_delta_mm3") or 0))
+        signed = float(result.get("volume_delta_mm3") or 0)
+        if signed:
+            result["edge_kind"] = (
+                "convex（外凸棱，体积减少）" if signed < 0 else "concave（内凹棱/交接处，体积增加）")
+            result["edge_kind_note"] = (
+                "倒圆/倒角外凸棱会减少体积，内凹棱（腹板与轮毂、筋与底板的交线等）会增加体积；"
+                "和题面要处理的棱不一致时说明射线选到了相邻的另一条棱。")
+        delta = abs(signed)
         section = FILLET_FACTOR * size * size if kind == "fillet" else size * size / 2
         if section > 0:
             result["estimated_edge_length_mm"] = _round(delta / section, 1)
@@ -1862,6 +1932,14 @@ class WorkflowSessionV2(WorkflowSession):
             "start": p0, "end": p1, "direction": [_round(value, 5) for value in unit],
             "lat_deg": _round(lat, 3), "lon_deg": _round(lon, 3), "length_mm": _round(end - start, 4),
         }
+        if not cut and self._volume(before) > 0:
+            exposed = self._exposed_start_face(before, self.snapshot(), p0, unit, diameter / 2)
+            if exposed is not None:
+                result["warnings"] = [*result.get("warnings", []), (
+                    f"凸台起点截面（{p0} 处）有一部分露在已有实体外（残留起点平面 face#{exposed}）："
+                    "起点没有完全埋进实体，凸台与壳体之间会留缝或台阶。"
+                    "把 from 往实体内部移，让整个起点截面都在材料里；内腔已经切好时，"
+                    "可删掉内腔切除，先做接管再重新切内腔。")]
         if not tip:
             return result
         try:
@@ -1883,6 +1961,35 @@ class WorkflowSessionV2(WorkflowSession):
             "drill_point": f"{tip:g}° 钻尖锥接在 {p1} 之后，锥高 {_round(height, 3)} mm，锥尖 {apex}",
         })
         return result
+
+    @staticmethod
+    def _exposed_start_face(before: dict, after: dict, point: list[float], unit: list[float],
+                            radius: float) -> int | None:
+        """凸台起点平面上露出的端面（法向朝 −unit、过 point、在圆柱截面内）；起点本来就在已有平面上时不算。"""
+
+        def on_start_plane(face: dict, facing: bool) -> bool:
+            if face.get("surfaceType") != "plane":
+                return False
+            normal = _vec(face.get("normal"))
+            norm = math.sqrt(sum(v * v for v in normal)) or 1.0
+            alignment = sum(normal[k] * unit[k] for k in range(3)) / norm
+            if (alignment > -0.999) if facing else (abs(alignment) < 0.999):
+                return False
+            center = [value * 1000 for value in _vec(face.get("center"))]
+            offset = [center[k] - point[k] for k in range(3)]
+            return abs(sum(offset[k] * unit[k] for k in range(3))) <= 0.05
+
+        if any(on_start_plane(face, False) for face in before.get("faces") or []):
+            return None
+        for face in after.get("faces") or []:
+            if not on_start_plane(face, True):
+                continue
+            center = [value * 1000 for value in _vec(face.get("center"))]
+            offset = [center[k] - point[k] for k in range(3)]
+            along = sum(offset[k] * unit[k] for k in range(3))
+            if math.sqrt(max(0.0, sum(v * v for v in offset) - along * along)) <= radius + 1e-3:
+                return int(face.get("index"))
+        return None
 
     @staticmethod
     def _hole_bottom_face(snapshot: dict, point: list[float], unit: list[float]) -> int | None:

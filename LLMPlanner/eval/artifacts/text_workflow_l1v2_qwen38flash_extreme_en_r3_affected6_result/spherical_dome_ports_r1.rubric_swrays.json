@@ -1,0 +1,277 @@
+[
+  {
+    "step": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\text_workflow_l1v2_qwen38flash_extreme_en_r3_affected6_result\\spherical_dome_ports_r1.step",
+    "ray_source": "solidworks",
+    "case": "spherical_dome_ports",
+    "score": 66.67,
+    "passed": 6,
+    "total": 9,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": false,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "envelope",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              136.933,
+              200.0,
+              200.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "shell",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "ray_material",
+            "ok": false,
+            "measured": [
+              [
+                71.998,
+                80.103
+              ]
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                72.0,
+                80.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "base_flange",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": false,
+            "found": 10,
+            "expected": 8
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                72.0,
+                100.0
+              ]
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                72.0,
+                83.0
+              ],
+              [
+                97.0,
+                100.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "nozzle_n1",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "axis_dir",
+            "ok": true,
+            "measured": [
+              [
+                0.6428,
+                0.6634,
+                0.383
+              ]
+            ]
+          },
+          {
+            "check": "axis_through",
+            "ok": true,
+            "min_dist": [
+              0.0
+            ]
+          },
+          {
+            "check": "ray_material",
+            "ok": true,
+            "measured": [
+              [
+                70.904,
+                110.0
+              ]
+            ]
+          },
+          {
+            "check": "ray_material",
+            "ok": true,
+            "measured": []
+          }
+        ]
+      },
+      {
+        "id": "nozzle_n2",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "axis_dir",
+            "ok": true,
+            "measured": [
+              [
+                -0.866,
+                0.433,
+                0.25
+              ]
+            ]
+          },
+          {
+            "check": "axis_through",
+            "ok": true,
+            "min_dist": [
+              0.0
+            ]
+          },
+          {
+            "check": "ray_material",
+            "ok": true,
+            "measured": [
+              [
+                71.3,
+                105.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "nozzle_n3",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "axis_dir",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                1.0,
+                0.0
+              ]
+            ]
+          },
+          {
+            "check": "axis_through",
+            "ok": true,
+            "min_dist": [
+              0.0
+            ]
+          },
+          {
+            "check": "ray_material",
+            "ok": false,
+            "measured": [
+              [
+                40.391,
+                77.739
+              ],
+              [
+                88.56,
+                100.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "top_nozzle",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                109.165,
+                135.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": []
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 587296.6,
+            "expected": 586585.17
+          }
+        ]
+      }
+    ]
+  }
+]
