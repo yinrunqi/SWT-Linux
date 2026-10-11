@@ -300,6 +300,12 @@ def generate_part(
             # 旧结果来自 L1 或另一种截图设置，checkpoint 也对不上，必须从头生成
             resume = False
         elif previous.get("status") not in RERUN_STATUSES and Path(str(previous["artifacts"].get("sldprt", ""))).is_file():
+            step = Path(str(previous["artifacts"].get("step", "")))
+            if (previous.get("grade") or {}).get("skipped") and step.is_file():
+                grade = _grade_step(step, RUBRIC_DIR / f"{spec['id']}.yaml")
+                if not grade.get("skipped"):
+                    previous.update(grade=grade, accepted=bool(grade.get("accepted")), score=grade.get("score"))
+                    _write_json(result_path, previous)
             previous["reused"] = True
             return previous
     if not resume:

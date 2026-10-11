@@ -119,6 +119,24 @@ def test_grade_step_falls_back_to_occ_python(monkeypatch, tmp_path):
     assert commands[0][0] == str(occ_python) and "geomcheck.rubric" in commands[0]
 
 
+def test_reused_part_with_skipped_grade_is_graded(fake_env, tmp_path, monkeypatch):
+    dest = tmp_path / "gear_a"
+    first = scratch.generate_part(SPEC, dest, sw="http://fake", model="m", max_llm_calls=3)
+    sldprt, step = dest.with_suffix(".SLDPRT"), dest.with_suffix(".step")
+    sldprt.write_text("x")
+    step.write_text("x")
+    first.update(artifacts={"sldprt": str(sldprt), "step": str(step)}, accepted=False, score=None,
+                 grade={"accepted": False, "score": None, "skipped": True})
+    dest.with_suffix(".result.json").write_text(json.dumps(first), encoding="utf-8")
+    monkeypatch.setattr(scratch, "_grade_step", lambda s, r: {"accepted": True, "score": 100.0})
+
+    again = scratch.generate_part(SPEC, dest, sw="http://fake", model="m", max_llm_calls=3, resume=True)
+
+    assert again["reused"] is True and again["accepted"] is True and again["score"] == 100.0
+    saved = json.loads(dest.with_suffix(".result.json").read_text(encoding="utf-8"))
+    assert saved["grade"] == {"accepted": True, "score": 100.0}
+
+
 def test_defaults_match_text2cad_qwen():
     assert scratch.PROVIDER == "qwenlocal"
     assert scratch.MODEL == "Qwen3.8-Flash-Next-FP8"
