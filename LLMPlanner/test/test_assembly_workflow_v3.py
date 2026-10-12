@@ -105,6 +105,40 @@ def test_v3_toolset_adds_check_pose():
     assert "at_z" in joint["function"]["parameters"]["properties"]
 
 
+class ArgsSession(AssemblySession):
+    def __init__(self):
+        super().__init__(workflow="v3", allowed_tools=tool_names("v3"))
+        self.has_assembly = True
+        self.seen: list[dict] = []
+        self._handlers["check_pose"] = self._record
+
+    def _record(self, args):
+        self.seen.append(args)
+        for pose in args["poses"]:
+            pose.get("set")
+        return {}
+
+
+def test_json_string_array_args_are_parsed():
+    s = ArgsSession()
+    result = s.call("check_pose", {"poses": '[{"name": "level", "set": []}]', "frame": "frame", "note": "[draft"})
+    assert result["ok"] is True
+    assert s.seen[0] == {"poses": [{"name": "level", "set": []}], "frame": "frame", "note": "[draft"}
+
+
+def test_wrong_arg_shape_is_a_tool_error_not_a_crash():
+    s = ArgsSession()
+    result = s.call("check_pose", {"poses": ["level"]})
+    assert result["ok"] is False and result["error"]["code"] == "TOOL_ARGS"
+
+
+def test_malformed_json_string_arg_names_the_parameter():
+    s = ArgsSession()
+    result = s.call("check_pose", {"poses": '[{"name": "level"}], {"name": "x"}]'})
+    assert result["ok"] is False and result["error"]["code"] == "TOOL_ARGS"
+    assert "参数 poses 应是数组或对象" in result["error"]["message"]
+
+
 def test_check_motion_deletes_study_after_sampling_failure():
     class FailingMotionSession(AssemblySession):
         def __init__(self):

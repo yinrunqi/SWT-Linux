@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import math
 from typing import Any
 
@@ -48,6 +49,17 @@ MUTATING_TOOLS = {
     "insert_component", "ground_component", "mate", "delete_mate", "joint", "close_loop", "mount_on_shaft",
     "revolute_joint", "slider_joint", "mesh_gears", "crank_slider", "rack_pinion", "screw_pair", "linear_coupler",
 }
+
+
+def _parse_json_string(value: Any) -> Any:
+    """模型常把数组 / 对象参数写成 JSON 字符串（如 poses="[{...}]"）；解析不出数组或对象时原样保留。"""
+    if not isinstance(value, str) or value.strip()[:1] not in ("[", "{"):
+        return value
+    try:
+        parsed = json.loads(value)
+    except ValueError:
+        return value
+    return parsed if isinstance(parsed, (list, dict)) else value
 
 
 def _plain(exc: WorkflowError) -> str:
@@ -158,7 +170,7 @@ class AssemblySession:
         return data
 
     def call(self, name: str, args: dict | None) -> dict:
-        args = args or {}
+        args = {key: _parse_json_string(value) for key, value in (args or {}).items()}
         entry = {"tool": name, "args": args}
         try:
             if name not in self._handlers or (self.allowed_tools is not None and name not in self.allowed_tools):
@@ -174,8 +186,15 @@ class AssemblySession:
             result = {"ok": False, "error": {"code": "REF", "message": str(exc)}}
         except WorkflowError as exc:
             result = {"ok": False, "error": exc.to_dict()}
-        except (KeyError, TypeError, ValueError) as exc:
-            result = {"ok": False, "error": {"code": "TOOL_ARGS", "message": f"参数错误: {exc}"}}
+        except (AttributeError, KeyError, TypeError, ValueError) as exc:
+            message = f"参数错误: {exc}"
+            for key, value in args.items():
+                if isinstance(value, str) and value.strip()[:1] in ("[", "{"):
+                    try:
+                        json.loads(value)
+                    except ValueError as bad:
+                        message += f"；参数 {key} 应是数组或对象，收到的是不合法的 JSON 字符串（{bad}）"
+            result = {"ok": False, "error": {"code": "TOOL_ARGS", "message": message}}
         entry["result"] = result
         self.log.append(entry)
         return result
