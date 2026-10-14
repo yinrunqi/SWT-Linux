@@ -2757,7 +2757,7 @@ def main() -> int:
         "--reasoning-effort",
         choices=("none", "minimal", "low", "medium", "high", "xhigh"),
         default=None,
-        help="L1 only; sent as reasoning_effort on every agent call. Omitted = provider default",
+        help="Sent as reasoning_effort on each L1 agent call or the L0 plan call. Omitted = provider default",
     )
     parser.add_argument(
         "--skip-qwen-historical",
@@ -2845,8 +2845,6 @@ def main() -> int:
         help="L1_v2: do not offer the view_model SolidWorks screenshot tool (required for text-only models)",
     )
     args = parser.parse_args()
-    if args.reasoning_effort and args.action_level not in WORKFLOW_LEVELS:
-        parser.error("--reasoning-effort requires --action-level L1")
     if args.action_level in WORKFLOW_LEVELS:
         from planner.workflow.agent import default_reasoning_effort
         args.reasoning_effort = default_reasoning_effort(args.model, args.reasoning_effort)

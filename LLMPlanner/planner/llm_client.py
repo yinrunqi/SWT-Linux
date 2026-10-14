@@ -369,6 +369,7 @@ class SwLLMClient:
         registry: Optional[SkillRegistry] = None,
         vision_model: Optional[str] = None,
         plan_model: Optional[str] = None,
+        reasoning_effort: Optional[str] = None,
     ):
         """
         Args:
@@ -383,6 +384,8 @@ class SwLLMClient:
                 - "routed"（默认）：core 全量 + 仅注入当前输入模态和能力所需的 Skill。
                 - "full"：仅用于兼容性测试，注入所有 recipes/input_modes。
             registry: 可选自定义 SkillRegistry；缺省用默认（planner/skills/）。
+            reasoning_effort: 可选推理强度，透传给兼容 OpenAI 的 Plan 模型请求。
+                未指定时不改变请求体。
         """
         # 读取环境变量
         api_key = os.getenv("OPENAI_API_KEY")
@@ -411,6 +414,7 @@ class SwLLMClient:
 
         # 兼容旧代码：self.model 保留（用作 cache_key 拼接和降级消息）——取 plan_model
         self.model = self.plan_model
+        self.reasoning_effort = reasoning_effort
 
         if self.vision_model == self.plan_model:
             print(f"[LLM] 使用模型 (Vision + Plan 同): {self.plan_model}")
@@ -1470,6 +1474,7 @@ class SwLLMClient:
             messages=messages,
             temperature=0,     # 建模是确定性任务，降到 0 提升稳定性，避免时而完整时而截断
             max_tokens=16000,  # 复杂模型计划较长，放大上限避免输出被截断
+            **({"reasoning_effort": self.reasoning_effort} if self.reasoning_effort else {}),
             response_format={
                 "type": "json_schema",
                 "json_schema": {
@@ -1530,6 +1535,7 @@ class SwLLMClient:
             messages=patched_messages,
             temperature=0,     # 建模是确定性任务，降到 0 提升稳定性，避免时而完整时而截断
             max_tokens=16000,  # 复杂模型计划较长，放大上限避免输出被截断
+            **({"reasoning_effort": self.reasoning_effort} if self.reasoning_effort else {}),
             response_format={"type": "json_object"},
         )
 

@@ -64,6 +64,7 @@ def _get_llm_client(
     plan_model: str,
     *,
     use_cache: bool = True,
+    reasoning_effort: str | None = None,
 ) -> SwLLMClient:
     """获取或创建 LLM 客户端，相同配置复用实例。
 
@@ -79,9 +80,10 @@ def _get_llm_client(
             plan_model=plan_model,
             use_cache=False,
             skill_mode="routed",
+            reasoning_effort=reasoning_effort,
         )
 
-    cache_key = f"{api_key}|{base_url}|{vision_model}|{plan_model}"
+    cache_key = f"{api_key}|{base_url}|{vision_model}|{plan_model}|{reasoning_effort or ''}"
     if cache_key not in _llm_cache:
         # 临时设置环境变量供 SwLLMClient 读取
         os.environ["OPENAI_API_KEY"] = api_key
@@ -101,6 +103,7 @@ def _get_llm_client(
             #   x2=0.0675 而不是 0.0375，齿宽 35mm 而非 5mm，齿全飞出去）。
             #   两边统一为 "routed" 后：同一 prompt + 同一图 → 同一 cache key → 秒回同一 plan
             skill_mode="routed",
+            reasoning_effort=reasoning_effort,
         )
     return _llm_cache[cache_key]
 
@@ -1926,8 +1929,6 @@ def run():
                 "success": False,
                 "error": f"未知 reasoning_effort: {reasoning_effort}，可选 {', '.join(REASONING_EFFORTS)}",
             }), 400
-        if action_level not in WORKFLOW_VERSIONS:
-            return jsonify({"success": False, "error": "reasoning_effort 目前只支持 L1 workflow"}), 400
     # 多模态：可选图片（base64，可含或不含 data URI 前缀；不含时按 JPEG 处理）
     image_raw = data.get("image", "") or ""
     image_b64 = image_raw.strip()
@@ -1991,6 +1992,7 @@ def run():
                     vision_model,
                     plan_model,
                     use_cache=use_cache,
+                    reasoning_effort=reasoning_effort,
                 )
                 if capture_trace:
                     llm_client.begin_trace_capture()
@@ -2104,6 +2106,7 @@ def run():
                 vision_model,
                 plan_model,
                 use_cache=use_cache,
+                reasoning_effort=reasoning_effort,
             )
             if capture_trace:
                 llm_client.begin_trace_capture()

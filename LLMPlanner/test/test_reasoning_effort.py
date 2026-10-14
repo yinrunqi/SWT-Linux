@@ -1,4 +1,4 @@
-"""reasoning_effort 从 /api/run 传到 L1 Agent 的每次模型调用；未指定时请求体不变。"""
+"""reasoning_effort 从 /api/run 传到 L1 Agent 或 L0 Plan；未指定时请求体不变。"""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ os.environ.setdefault("OPENAI_API_KEY", "test-key")
 
 import web.app as web_app
 from planner.assembly_workflow.agent import AssemblyAgent
+from planner.llm_client import SwLLMClient
 from planner.workflow.agent import WorkflowAgent
 
 
@@ -128,9 +129,65 @@ def test_api_run_forwards_reasoning_effort_to_l1(monkeypatch):
     assert captured["reasoning_effort"] is None
 
 
-def test_api_run_rejects_unknown_or_non_l1_reasoning_effort(monkeypatch):
+def test_api_run_rejects_unknown_reasoning_effort(monkeypatch):
     response, captured = _post({"action_level": "L1", "reasoning_effort": "max"}, monkeypatch)
     assert response.status_code == 400 and not captured
 
-    response, captured = _post({"action_level": "L0", "reasoning_effort": "medium"}, monkeypatch)
-    assert response.status_code == 400 and not captured
+
+def test_api_run_forwards_reasoning_effort_to_l0(monkeypatch):
+    captured = {}
+
+    class FakeClient:
+        def usage_snapshot(self):
+            return {}
+
+        def usage_since(self, _before):
+            return {"calls": 1, "total_tokens": 10}
+
+        def plan(self, *_args, **_kwargs):
+            return SimpleNamespace(steps=[], model_dump=lambda: {
+                "user_intent": "test", "steps": [], "notes": "",
+            })
+
+    def fake_get_client(*_args, **kwargs):
+        captured.update(kwargs)
+        return FakeClient()
+
+    monkeypatch.setattr(web_app, "_get_llm_client", fake_get_client)
+    monkeypatch.setattr(
+        web_app,
+        "executor",
+        SimpleNamespace(execute_plan=lambda *_args, **_kwargs: []),
+    )
+    response = web_app.app.test_client().post("/api/run", json={
+        "instruction": "创建 20mm 立方体",
+        "api_key": "test-key",
+        "action_level": "L0",
+        "reasoning_effort": "Medium",
+        "use_cache": False,
+    })
+    assert response.status_code == 200
+    assert captured["reasoning_effort"] == "medium"
+
+
+def test_l0_plan_request_sends_reasoning_effort_only_when_configured():
+    for effort, expected in ((None, False), ("medium", True)):
+        completions = RecordingCompletions()
+        completions.create = lambda **kwargs: (
+            completions.requests.append(kwargs)
+            or SimpleNamespace(
+                choices=[SimpleNamespace(message=SimpleNamespace(
+                    content='{"user_intent":"test","steps":[],"notes":""}',
+                ))],
+                usage=None,
+            )
+        )
+        client = SwLLMClient.__new__(SwLLMClient)
+        client.client = SimpleNamespace(chat=SimpleNamespace(completions=completions))
+        client.model = "model"
+        client.reasoning_effort = effort
+        client._call_json_mode([
+            {"role": "system", "content": "Return JSON."},
+            {"role": "user", "content": "test"},
+        ])
+        assert ("reasoning_effort" in completions.requests[0]) is expected
