@@ -165,11 +165,13 @@ def test_api_run_forwards_reasoning_effort_to_l0(monkeypatch):
         "action_level": "L0",
         "reasoning_effort": "Medium",
         "max_plan_tokens": 32000,
+        "enable_thinking": False,
         "use_cache": False,
     })
     assert response.status_code == 200
     assert captured["reasoning_effort"] == "medium"
     assert captured["plan_max_tokens"] == 32000
+    assert captured["enable_thinking"] is False
 
 
 def test_l0_plan_request_sends_reasoning_effort_only_when_configured():
@@ -189,9 +191,13 @@ def test_l0_plan_request_sends_reasoning_effort_only_when_configured():
         client.model = "model"
         client.reasoning_effort = effort
         client.plan_max_tokens = 32000
+        client.enable_thinking = False
         client._call_json_mode([
             {"role": "system", "content": "Return JSON."},
             {"role": "user", "content": "test"},
         ])
         assert ("reasoning_effort" in completions.requests[0]) is expected
         assert completions.requests[0]["max_tokens"] == 32000
+        assert completions.requests[0]["extra_body"] == {
+            "chat_template_kwargs": {"enable_thinking": False},
+        }

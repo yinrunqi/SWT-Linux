@@ -2417,6 +2417,7 @@ def run_one(
     provider: str = "aiping",
     reasoning_effort: str | None = None,
     max_plan_tokens: int = 16000,
+    enable_thinking: bool | None = None,
     checkpoint: Path | None = None,
     resume: bool = False,
     view_tool: bool = True,
@@ -2448,6 +2449,8 @@ def run_one(
         request_payload["reasoning_effort"] = reasoning_effort
     if action_level == "L0":
         request_payload["max_plan_tokens"] = max_plan_tokens
+        if enable_thinking is not None:
+            request_payload["enable_thinking"] = enable_thinking
     trace = {
         "request": {
             "url": f"{web_url}/api/run",
@@ -2603,6 +2606,7 @@ def _write_report(
     provider: str = "aiping",
     reasoning_effort: str | None = None,
     max_plan_tokens: int | None = None,
+    enable_thinking: bool | None = None,
     view_tool: bool | None = None,
 ) -> dict:
     spent_yuan = None
@@ -2620,6 +2624,7 @@ def _write_report(
         "model": model,
         "reasoning_effort": reasoning_effort,
         "max_plan_tokens": max_plan_tokens if action_level == "L0" else None,
+        "enable_thinking": enable_thinking if action_level == "L0" else None,
         "mode": "workflow" if action_level in WORKFLOW_LEVELS else "single_turn",
         "action_level": action_level,
         # L0 结果必须说明可用的原子 API 版本；旧结果没有这个字段，不能和
@@ -2737,6 +2742,7 @@ def rescore_report(source: Path, output: Path, strict_orientation: bool = False)
         ),
         reasoning_effort=old.get("reasoning_effort"),
         max_plan_tokens=old.get("max_plan_tokens"),
+        enable_thinking=old.get("enable_thinking"),
         view_tool=old.get("view_tool"),
     )
     return report
@@ -2816,6 +2822,11 @@ def main() -> int:
         type=int,
         default=16000,
         help="L0 single-plan output budget (default: 16000)",
+    )
+    parser.add_argument(
+        "--disable-thinking",
+        action="store_true",
+        help="L0 Qwen/vLLM: pass enable_thinking=false to the chat template",
     )
     parser.add_argument(
         "--split",
@@ -2930,6 +2941,7 @@ def main() -> int:
                 provider=args.provider,
                 reasoning_effort=args.reasoning_effort,
                 max_plan_tokens=args.max_plan_tokens,
+                enable_thinking=False if args.disable_thinking else None,
                 checkpoint=checkpoint if args.action_level in WORKFLOW_LEVELS else None,
                 resume=resuming,
                 view_tool=bool(view_tool),
@@ -2981,6 +2993,7 @@ def main() -> int:
             provider=args.provider,
             reasoning_effort=args.reasoning_effort,
             max_plan_tokens=args.max_plan_tokens,
+            enable_thinking=False if args.disable_thinking else None,
             view_tool=view_tool,
         )
         if (
@@ -3011,6 +3024,7 @@ def main() -> int:
         provider=args.provider,
         reasoning_effort=args.reasoning_effort,
         max_plan_tokens=args.max_plan_tokens,
+        enable_thinking=False if args.disable_thinking else None,
         view_tool=view_tool,
     )
     print(

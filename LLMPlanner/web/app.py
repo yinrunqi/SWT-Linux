@@ -66,6 +66,7 @@ def _get_llm_client(
     use_cache: bool = True,
     reasoning_effort: str | None = None,
     plan_max_tokens: int = 16000,
+    enable_thinking: bool | None = None,
 ) -> SwLLMClient:
     """获取或创建 LLM 客户端，相同配置复用实例。
 
@@ -83,11 +84,12 @@ def _get_llm_client(
             skill_mode="routed",
             reasoning_effort=reasoning_effort,
             plan_max_tokens=plan_max_tokens,
+            enable_thinking=enable_thinking,
         )
 
     cache_key = (
         f"{api_key}|{base_url}|{vision_model}|{plan_model}|"
-        f"{reasoning_effort or ''}|{plan_max_tokens}"
+        f"{reasoning_effort or ''}|{plan_max_tokens}|{enable_thinking}"
     )
     if cache_key not in _llm_cache:
         # 临时设置环境变量供 SwLLMClient 读取
@@ -110,6 +112,7 @@ def _get_llm_client(
             skill_mode="routed",
             reasoning_effort=reasoning_effort,
             plan_max_tokens=plan_max_tokens,
+            enable_thinking=enable_thinking,
         )
     return _llm_cache[cache_key]
 
@@ -1929,6 +1932,9 @@ def run():
         plan_max_tokens = max(1, min(int(data.get("max_plan_tokens") or 16000), 64000))
     except (TypeError, ValueError):
         return jsonify({"success": False, "error": "max_plan_tokens 必须是整数"}), 400
+    enable_thinking = data.get("enable_thinking")
+    if enable_thinking is not None and not isinstance(enable_thinking, bool):
+        return jsonify({"success": False, "error": "enable_thinking 必须是布尔值"}), 400
     dry_run = data.get("dry_run", False)
     use_cache = bool(data.get("use_cache", True))
     capture_trace = bool(data.get("capture_trace", False))
@@ -2004,6 +2010,7 @@ def run():
                     use_cache=use_cache,
                     reasoning_effort=reasoning_effort,
                     plan_max_tokens=plan_max_tokens,
+                    enable_thinking=enable_thinking,
                 )
                 if capture_trace:
                     llm_client.begin_trace_capture()
@@ -2119,6 +2126,7 @@ def run():
                 use_cache=use_cache,
                 reasoning_effort=reasoning_effort,
                 plan_max_tokens=plan_max_tokens,
+                enable_thinking=enable_thinking,
             )
             if capture_trace:
                 llm_client.begin_trace_capture()

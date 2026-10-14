@@ -371,6 +371,7 @@ class SwLLMClient:
         plan_model: Optional[str] = None,
         reasoning_effort: Optional[str] = None,
         plan_max_tokens: int = 16000,
+        enable_thinking: Optional[bool] = None,
     ):
         """
         Args:
@@ -388,6 +389,7 @@ class SwLLMClient:
             reasoning_effort: 可选推理强度，透传给兼容 OpenAI 的 Plan 模型请求。
                 未指定时不改变请求体。
             plan_max_tokens: 单轮 Plan 请求的最大输出 token 数。
+            enable_thinking: 可选 Qwen chat template thinking 开关；未指定时不透传。
         """
         # 读取环境变量
         api_key = os.getenv("OPENAI_API_KEY")
@@ -418,6 +420,7 @@ class SwLLMClient:
         self.model = self.plan_model
         self.reasoning_effort = reasoning_effort
         self.plan_max_tokens = plan_max_tokens
+        self.enable_thinking = enable_thinking
 
         if self.vision_model == self.plan_model:
             print(f"[LLM] 使用模型 (Vision + Plan 同): {self.plan_model}")
@@ -1478,6 +1481,10 @@ class SwLLMClient:
             temperature=0,     # 建模是确定性任务，降到 0 提升稳定性，避免时而完整时而截断
             max_tokens=self.plan_max_tokens,
             **({"reasoning_effort": self.reasoning_effort} if self.reasoning_effort else {}),
+            **(
+                {"extra_body": {"chat_template_kwargs": {"enable_thinking": self.enable_thinking}}}
+                if self.enable_thinking is not None else {}
+            ),
             response_format={
                 "type": "json_schema",
                 "json_schema": {
@@ -1539,6 +1546,10 @@ class SwLLMClient:
             temperature=0,     # 建模是确定性任务，降到 0 提升稳定性，避免时而完整时而截断
             max_tokens=self.plan_max_tokens,
             **({"reasoning_effort": self.reasoning_effort} if self.reasoning_effort else {}),
+            **(
+                {"extra_body": {"chat_template_kwargs": {"enable_thinking": self.enable_thinking}}}
+                if self.enable_thinking is not None else {}
+            ),
             response_format={"type": "json_object"},
         )
 
