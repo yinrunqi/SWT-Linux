@@ -164,10 +164,12 @@ def test_api_run_forwards_reasoning_effort_to_l0(monkeypatch):
         "api_key": "test-key",
         "action_level": "L0",
         "reasoning_effort": "Medium",
+        "max_plan_tokens": 32000,
         "use_cache": False,
     })
     assert response.status_code == 200
     assert captured["reasoning_effort"] == "medium"
+    assert captured["plan_max_tokens"] == 32000
 
 
 def test_l0_plan_request_sends_reasoning_effort_only_when_configured():
@@ -186,8 +188,10 @@ def test_l0_plan_request_sends_reasoning_effort_only_when_configured():
         client.client = SimpleNamespace(chat=SimpleNamespace(completions=completions))
         client.model = "model"
         client.reasoning_effort = effort
+        client.plan_max_tokens = 32000
         client._call_json_mode([
             {"role": "system", "content": "Return JSON."},
             {"role": "user", "content": "test"},
         ])
         assert ("reasoning_effort" in completions.requests[0]) is expected
+        assert completions.requests[0]["max_tokens"] == 32000

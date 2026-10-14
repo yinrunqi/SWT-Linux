@@ -2416,6 +2416,7 @@ def run_one(
     lang: str = "en",
     provider: str = "aiping",
     reasoning_effort: str | None = None,
+    max_plan_tokens: int = 16000,
     checkpoint: Path | None = None,
     resume: bool = False,
     view_tool: bool = True,
@@ -2445,6 +2446,8 @@ def run_one(
         request_payload["view_tool"] = view_tool
     if reasoning_effort:
         request_payload["reasoning_effort"] = reasoning_effort
+    if action_level == "L0":
+        request_payload["max_plan_tokens"] = max_plan_tokens
     trace = {
         "request": {
             "url": f"{web_url}/api/run",
@@ -2599,6 +2602,7 @@ def _write_report(
     lang: str = "en",
     provider: str = "aiping",
     reasoning_effort: str | None = None,
+    max_plan_tokens: int | None = None,
     view_tool: bool | None = None,
 ) -> dict:
     spent_yuan = None
@@ -2615,6 +2619,7 @@ def _write_report(
         "provider": PROVIDER_LABELS.get(provider, provider),
         "model": model,
         "reasoning_effort": reasoning_effort,
+        "max_plan_tokens": max_plan_tokens if action_level == "L0" else None,
         "mode": "workflow" if action_level in WORKFLOW_LEVELS else "single_turn",
         "action_level": action_level,
         # L0 结果必须说明可用的原子 API 版本；旧结果没有这个字段，不能和
@@ -2731,6 +2736,7 @@ def rescore_report(source: Path, output: Path, strict_orientation: bool = False)
             old.get("provider", "aiping"),
         ),
         reasoning_effort=old.get("reasoning_effort"),
+        max_plan_tokens=old.get("max_plan_tokens"),
         view_tool=old.get("view_tool"),
     )
     return report
@@ -2804,6 +2810,12 @@ def main() -> int:
         type=int,
         default=40,
         help="LLM call budget per case for L1",
+    )
+    parser.add_argument(
+        "--max-plan-tokens",
+        type=int,
+        default=16000,
+        help="L0 single-plan output budget (default: 16000)",
     )
     parser.add_argument(
         "--split",
@@ -2917,6 +2929,7 @@ def main() -> int:
                 lang=args.lang,
                 provider=args.provider,
                 reasoning_effort=args.reasoning_effort,
+                max_plan_tokens=args.max_plan_tokens,
                 checkpoint=checkpoint if args.action_level in WORKFLOW_LEVELS else None,
                 resume=resuming,
                 view_tool=bool(view_tool),
@@ -2967,6 +2980,7 @@ def main() -> int:
             lang=args.lang,
             provider=args.provider,
             reasoning_effort=args.reasoning_effort,
+            max_plan_tokens=args.max_plan_tokens,
             view_tool=view_tool,
         )
         if (
@@ -2996,6 +3010,7 @@ def main() -> int:
         lang=args.lang,
         provider=args.provider,
         reasoning_effort=args.reasoning_effort,
+        max_plan_tokens=args.max_plan_tokens,
         view_tool=view_tool,
     )
     print(

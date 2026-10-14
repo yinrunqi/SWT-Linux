@@ -65,6 +65,7 @@ def _get_llm_client(
     *,
     use_cache: bool = True,
     reasoning_effort: str | None = None,
+    plan_max_tokens: int = 16000,
 ) -> SwLLMClient:
     """获取或创建 LLM 客户端，相同配置复用实例。
 
@@ -81,9 +82,13 @@ def _get_llm_client(
             use_cache=False,
             skill_mode="routed",
             reasoning_effort=reasoning_effort,
+            plan_max_tokens=plan_max_tokens,
         )
 
-    cache_key = f"{api_key}|{base_url}|{vision_model}|{plan_model}|{reasoning_effort or ''}"
+    cache_key = (
+        f"{api_key}|{base_url}|{vision_model}|{plan_model}|"
+        f"{reasoning_effort or ''}|{plan_max_tokens}"
+    )
     if cache_key not in _llm_cache:
         # 临时设置环境变量供 SwLLMClient 读取
         os.environ["OPENAI_API_KEY"] = api_key
@@ -104,6 +109,7 @@ def _get_llm_client(
             #   两边统一为 "routed" 后：同一 prompt + 同一图 → 同一 cache key → 秒回同一 plan
             skill_mode="routed",
             reasoning_effort=reasoning_effort,
+            plan_max_tokens=plan_max_tokens,
         )
     return _llm_cache[cache_key]
 
@@ -1919,6 +1925,10 @@ def run():
             max_turns = max(1, min(int(raw_max_turns), 100))
         except (TypeError, ValueError):
             return jsonify({"success": False, "error": "max_turns 必须是整数"}), 400
+    try:
+        plan_max_tokens = max(1, min(int(data.get("max_plan_tokens") or 16000), 64000))
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "error": "max_plan_tokens 必须是整数"}), 400
     dry_run = data.get("dry_run", False)
     use_cache = bool(data.get("use_cache", True))
     capture_trace = bool(data.get("capture_trace", False))
@@ -1993,6 +2003,7 @@ def run():
                     plan_model,
                     use_cache=use_cache,
                     reasoning_effort=reasoning_effort,
+                    plan_max_tokens=plan_max_tokens,
                 )
                 if capture_trace:
                     llm_client.begin_trace_capture()
@@ -2107,6 +2118,7 @@ def run():
                 plan_model,
                 use_cache=use_cache,
                 reasoning_effort=reasoning_effort,
+                plan_max_tokens=plan_max_tokens,
             )
             if capture_trace:
                 llm_client.begin_trace_capture()
