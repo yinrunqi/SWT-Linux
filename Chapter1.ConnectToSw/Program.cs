@@ -2076,7 +2076,9 @@ namespace Chapter1.ConnectToSw
             {
                 var body = ReadJsonBody(req);
                 var result = _commands.InsertCosmeticThread(
-                    GetString(body, "face"), GetDouble(body, "diameter"), GetDouble(body, "depth"));
+                    GetString(body, "face"), GetDouble(body, "diameter"), GetDouble(body, "depth"),
+                    GetInt(body, "standard", -2), GetStringOrDefault(body, "standardType", ""),
+                    GetStringOrDefault(body, "size", ""), GetStringOrDefault(body, "note", ""));
                 SendJson(resp, 200, new { success = true, message = $"已添加装饰螺纹 {result["featureName"]}", result });
             }
             catch (Exception ex)

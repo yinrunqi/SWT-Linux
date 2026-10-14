@@ -20,6 +20,7 @@ if str(LLM_ROOT) not in sys.path:
     sys.path.insert(0, str(LLM_ROOT))
 
 from planner.observer import SwObserver
+from planner.schemas import PART_ATOMIC_ENDPOINTS
 
 try:
     from .eval_three_view_multiturn import ROOT, _query_balance
@@ -2616,6 +2617,18 @@ def _write_report(
         "reasoning_effort": reasoning_effort,
         "mode": "workflow" if action_level in WORKFLOW_LEVELS else "single_turn",
         "action_level": action_level,
+        # L0 结果必须说明可用的原子 API 版本；旧结果没有这个字段，不能和
+        # 完整对照基线混为同一动作空间。
+        "atomic_api": (
+            {
+                "name": "atomic_api_complete",
+                "version": "part-api-v1",
+                "endpoints": sorted(
+                    path for _method, path in PART_ATOMIC_ENDPOINTS.values()
+                ),
+            }
+            if action_level == "L0" else None
+        ),
         "view_tool": view_tool,
         "prompt_lang": lang,
         "score_version": 2,

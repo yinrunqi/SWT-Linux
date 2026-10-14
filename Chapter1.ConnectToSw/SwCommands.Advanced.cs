@@ -69,22 +69,33 @@ namespace Chapter1.ConnectToSw
             if (!SelectActiveSketch("筋"))
                 throw new InvalidOperationException("无法选中筋的草图（需要一条开放轮廓）");
             IFeature feat = null;
-            foreach (var flags in new[]
-            {
-                Tuple.Create(bothSides, flip, false),
-                Tuple.Create(bothSides, !flip, false),
-                Tuple.Create(bothSides, flip, true),
-                Tuple.Create(false, flip, false),
-            })
+            // InsertRib 的前两个参数依次是 Is2Sided、ReverseThicknessDir。
+            foreach (var direction in new[] { false, true })
             {
                 ActiveDoc.ClearSelection2(true);
-                if (!SelectSketchSegments(_activeSketchName))
+                // InsertRib expects the sketch feature selection. Selecting its
+                // individual segments (or an input body) makes this COM API
+                // treat the request as an invalid multibody operation.
+                if (!SelectSketchByName(_activeSketchName, false, 0))
                     continue;
                 ActiveDoc.FeatureManager.InsertRib(
-                    flags.Item1, flags.Item2, thickness, 0, flags.Item3, false, false, 0, true, false);
+                    bothSides, flip, thickness, 0, direction, false, false, 0, false, false);
                 feat = LastUserFeature();
                 if (feat != null && feat.GetTypeName2() == "Rib")
                     break;
+                // 某些 SolidWorks 版本的 FeatureManager.InsertRib 对已有
+                // 2D 草图静默失败；旧的 ModelDoc2.InsertRib2 使用相同几何
+                // 契约，但在这些版本中仍可创建特征。
+                ActiveDoc.ClearSelection2(true);
+                if (SelectSketchByName(_activeSketchName, false, 0))
+                {
+                    mdoc.InsertRib2(
+                        bothSides, flip, thickness, 0, direction,
+                        false, false, 0, false);
+                    feat = LastUserFeature();
+                    if (feat != null && feat.GetTypeName2() == "Rib")
+                        break;
+                }
                 feat = null;
             }
             ActiveDoc.ClearSelection2(true);
@@ -363,15 +374,35 @@ namespace Chapter1.ConnectToSw
             return FeatureResult(feat);
         }
 
-        public Dictionary<string, object> InsertCosmeticThread(string faceReference, double diameter, double depth)
+        public Dictionary<string, object> InsertCosmeticThread(
+            string faceReference, double diameter, double depth, int standard, string standardType, string size, string note)
         {
             EnsureActiveDoc();
             ExitSketchIfActive();
-            ActiveDoc.ClearSelection2(true);
-            if (!SelectReference(faceReference, false, 0))
-                throw new InvalidOperationException($"无法选中螺纹所在圆柱面 {faceReference}");
-            var feat = ActiveDoc.FeatureManager.InsertCosmeticThread3(
-                0, "", "", diameter, 0, depth, "") as IFeature;
+            if (!faceReference.StartsWith("face:", StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException("装饰螺纹目前需要 face:<observation index> 作为圆柱面引用");
+            var face = GetObservedFace(int.Parse(faceReference.Substring(faceReference.IndexOf(':') + 1)));
+            var edges = face.GetEdges() as object[];
+            if (edges == null || edges.Length == 0)
+                throw new InvalidOperationException("所选圆柱面没有可用于装饰螺纹的圆边");
+            IFeature feat = null;
+            // InsertCosmeticThread3 实际消费的是圆边而不是圆柱面。接口保持
+            // face:<index> 兼容，但从该圆柱面的边中逐个尝试（盲孔两端都是圆边）。
+            foreach (object edgeObj in edges)
+            {
+                ActiveDoc.ClearSelection2(true);
+                var selectionManager = (ISelectionMgr)ActiveDoc.SelectionManager;
+                var selectionData = (SelectData)selectionManager.CreateSelectData();
+                selectionData.Mark = 0;
+                if (!((IEntity)edgeObj).Select4(false, selectionData))
+                    continue;
+                feat = ActiveDoc.FeatureManager.InsertCosmeticThread3(
+                    standard, standardType, size, diameter,
+                    (int)swCosmeticEndConditions_e.swEndConditionBlind,
+                    depth, note) as IFeature;
+                if (feat != null)
+                    break;
+            }
             ActiveDoc.ClearSelection2(true);
             if (feat == null)
                 throw new InvalidOperationException("装饰螺纹失败：请选圆柱面，diameter 为公称直径");

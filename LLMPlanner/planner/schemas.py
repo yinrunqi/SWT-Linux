@@ -8,15 +8,26 @@ LLM 将用户自然语言指令解析为 SwModelingPlan，其中包含有序的 
 from __future__ import annotations
 
 from enum import Enum
-from typing import Optional
+from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class OperationType(str, Enum):
     """SolidWorks 操作类型枚举，对应 C# HTTP API 端点。"""
     NEW_PART = "new_part"
+    # L0 atomic API: 文档、基准、草图和特征端点。不要与 L1 workflow 工具混用。
+    OPEN_PART = "open_part"
+    DELETE_FEATURE = "delete_feature"
+    EXPORT_STEP = "export_step"
+    CREATE_BOX = "create_box"
+    REF_PLANE_OFFSET = "ref_plane_offset"
+    REF_AXIS_PLANES = "ref_axis_planes"
+    SELECT_REF_PLANE_AND_SKETCH = "select_ref_plane_and_sketch"
     SELECT_PLANE = "select_plane"
+    SKETCH_PROFILE = "sketch_profile"
+    SKETCH3D_PATH = "sketch3d_path"
+    SKETCH_POINT = "sketch_point"
     SKETCH_LINE = "sketch_line"
     SKETCH_POLYLINE = "sketch_polyline"
     SKETCH_RECTANGLE = "sketch_rectangle"
@@ -34,10 +45,23 @@ class OperationType(str, Enum):
     FEATURE_CHAMFER = "feature_chamfer"
     FEATURE_CIRCULAR_PATTERN = "feature_circular_pattern"
     FEATURE_LINEAR_PATTERN = "feature_linear_pattern"
+    FEATURE_MIRROR = "feature_mirror"
+    FEATURE_UNTIL = "feature_until"
+    FEATURE_RIB = "feature_rib"
+    FEATURE_SWEEP = "feature_sweep"
+    FEATURE_LOFT = "feature_loft"
+    FEATURE_SHELL = "feature_shell"
+    FEATURE_DRAFT = "feature_draft"
+    FEATURE_SHEET_METAL_BASE = "feature_sheet_metal_base"
+    FEATURE_COSMETIC_THREAD = "feature_cosmetic_thread"
     CLOSE_SKETCH = "close_sketch"
+    CLOSE_SKETCH_NAMED = "close_sketch_named"
     # --- 查询 & 编辑 ---
     FEATURE_TREE = "feature_tree"
     BODY_BOUNDING_BOX = "body_bounding_box"
+    BODY_VOLUME = "body_volume"
+    MODEL_OBSERVATION = "model_observation"
+    SKETCH_STATS = "sketch_stats"
     SELECT_FACE_AND_SKETCH = "select_face_and_sketch"
     SELECT_OBSERVED_FACE_AND_SKETCH = (
         "select_observed_face_and_sketch"
@@ -81,6 +105,440 @@ class OperationType(str, Enum):
     ASSEMBLY_SET_CAM_FOLLOWER_POSE = (
         "assembly_set_cam_follower_pose"
     )
+
+
+class AtomicParams(BaseModel):
+    """L0 原子端点的公共参数基类。
+
+    C# 服务的若干端点会随 SolidWorks 版本增加可选字段；保留这些字段可以让
+    老的 plan 继续回放，而必填字段和相互排斥的基本约束仍在这里验证。
+    """
+
+    model_config = ConfigDict(extra="allow")
+
+
+class OpenPartParams(AtomicParams):
+    partPath: str
+
+
+class ExportStepParams(AtomicParams):
+    stepPath: str
+
+
+class SavePartParams(AtomicParams):
+    savePath: str
+
+
+class FeatureNameParams(AtomicParams):
+    featureName: str
+
+
+class SketchProfileParams(AtomicParams):
+    segments: list[dict[str, Any]]
+    closed: bool = True
+
+
+class OffsetPlaneParams(AtomicParams):
+    reference: str
+    distance: float
+    flip: bool = False
+
+
+class AxisFromPlanesParams(AtomicParams):
+    first: str
+    second: str
+
+
+class NamedPlaneParams(AtomicParams):
+    planeName: str
+
+
+class MirrorParams(AtomicParams):
+    plane: str
+    features: list[str] = Field(default_factory=list)
+    mirrorBody: bool = False
+
+
+class UntilParams(AtomicParams):
+    until: str
+    flipDirection: bool = False
+    cut: bool = False
+
+
+class RibParams(AtomicParams):
+    thickness: float
+    bothSides: bool = True
+    flip: bool = False
+
+
+class SweepParams(AtomicParams):
+    cut: bool = False
+    circularDiameter: float = 0
+    innerDiameter: float = 0
+
+
+class LoftParams(AtomicParams):
+    sectionCount: int = Field(default=2, ge=2)
+    cut: bool = False
+    guideCount: int = Field(default=0, ge=0)
+    startTangent: int = 0
+    endTangent: int = 0
+    tangentLength: float = 1
+    reverseStart: bool = False
+    reverseEnd: bool = False
+
+
+class Sketch3DPathParams(AtomicParams):
+    points: list[list[float]]
+    spline: bool = False
+    cornerRadius: float = 0
+    cornerRadii: list[float] | None = None
+
+    @model_validator(mode="after")
+    def _points_are_xyz(self):
+        if len(self.points) < 2 or any(len(point) != 3 for point in self.points):
+            raise ValueError("points 必须至少包含两个 [x,y,z] 点")
+        if self.cornerRadii is not None and len(self.cornerRadii) != len(self.points) - 2:
+            raise ValueError("cornerRadii 必须每个内部转角一个")
+        return self
+
+
+class PointParams(AtomicParams):
+    x: float
+    y: float
+    z: float = 0
+
+
+class ShellParams(AtomicParams):
+    thickness: float
+    openFaces: list[str] = Field(default_factory=list)
+    outward: bool = False
+
+
+class DraftParams(AtomicParams):
+    angleDeg: float
+    neutral: str
+    faces: list[str] = Field(min_length=1)
+    flip: bool = False
+
+
+class SheetMetalBaseParams(AtomicParams):
+    thickness: float
+
+
+class CosmeticThreadParams(AtomicParams):
+    face: str
+    diameter: float
+    depth: float
+    # 对应 InsertCosmeticThread3 的 Standard / StandardType / Size / Note。
+    # None 标准枚举为 -2；安装的 ANSI Inch 规格可传
+    # {0, "Machine Threads", "#8-32"}。
+    standard: int = -2
+    standardType: str = ""
+    size: str = ""
+    note: str = ""
+
+
+class BoxParams(AtomicParams):
+    length: float
+    width: float
+    height: float
+
+
+class ModelObservationParams(AtomicParams):
+    maxFaces: int | None = Field(default=None, ge=1, le=5000)
+
+
+class EmptyParams(AtomicParams):
+    """不接受参数的端点。"""
+
+
+class PlaneIndexParams(AtomicParams):
+    index: int = Field(default=0, ge=0, le=2)
+
+
+class XYLineParams(AtomicParams):
+    x1: float
+    y1: float
+    x2: float
+    y2: float
+    z1: float = 0
+    z2: float = 0
+
+
+class XYCircleParams(AtomicParams):
+    cx: float
+    cy: float
+    radius: float = Field(gt=0)
+    cz: float = 0
+    noInference: bool = False
+
+
+class PointListParams(AtomicParams):
+    points: list[dict[str, float]] = Field(min_length=2)
+    closed: bool = True
+
+
+class CircleListParams(AtomicParams):
+    # 空数组作为旧 optimizer 的阶段性占位仍可反序列化；C# 执行时会拒绝。
+    circles: list[dict[str, float]]
+    noInference: bool = False
+
+
+class DepthParams(AtomicParams):
+    depth: float = Field(gt=0)
+    flipDirection: bool = False
+    midPlane: bool = False
+    draftAngleDeg: float = 0
+    draftOutward: bool = False
+
+
+class FaceIndexParams(AtomicParams):
+    faceIndex: int = Field(ge=0)
+
+
+class DimensionParams(AtomicParams):
+    featureName: str
+    dimensionName: str = ""
+    newValue: float | None = None
+    newValueUser: float | None = None
+
+    @model_validator(mode="after")
+    def _exactly_one_value(self):
+        if (self.newValue is None) == (self.newValueUser is None):
+            raise ValueError("newValue 与 newValueUser 必须且只能提供一个")
+        return self
+
+
+class ArcParams(AtomicParams):
+    cx: float
+    cy: float
+    startX: float
+    startY: float
+    endX: float
+    endY: float
+    direction: Literal[-1, 1] = 1
+    cz: float = 0
+    startZ: float = 0
+    endZ: float = 0
+
+
+class EllipseParams(AtomicParams):
+    cx: float
+    cy: float
+    majorRadius: float = Field(gt=0)
+    minorRadius: float = Field(gt=0)
+    cz: float = 0
+
+
+class PolygonParams(AtomicParams):
+    cx: float = 0
+    cy: float = 0
+    circumradius: float = Field(gt=0)
+    sides: int = Field(ge=3, le=64)
+    startAngleDeg: float = 0
+    cz: float = 0
+
+
+class SlotParams(AtomicParams):
+    cx: float
+    cy: float
+    length: float = Field(gt=0)
+    width: float = Field(gt=0)
+    angleDeg: float = 0
+    cz: float = 0
+
+
+class CutDepthParams(AtomicParams):
+    depth: float = Field(gt=0)
+    endCondition: Literal["blind", "through_all"] = "blind"
+    flipDirection: bool = False
+    draftAngleDeg: float = 0
+    draftOutward: bool = False
+
+
+class RevolveParams(AtomicParams):
+    angle: float = Field(default=360, gt=0, le=360)
+    isCut: bool = False
+    reverseDir: bool = False
+
+
+class FilletParams(AtomicParams):
+    radius: float = Field(gt=0)
+    edgeSelection: str = "all"
+    rx: float = 0
+    ry: float = 0
+    rz: float = 0
+    dx: float = 0
+    dy: float = 0
+    dz: float = 0
+    rays: list[list[float]] | None = None
+    propagate: bool = True
+
+
+class ChamferParams(AtomicParams):
+    distance1: float = Field(gt=0)
+    type: Literal["equal_distance", "distance_distance", "distance_angle"] = "equal_distance"
+    edgeSelection: str = "all"
+    distance2: float = Field(default=0, ge=0)
+    angle: float = 45
+    rx: float = 0
+    ry: float = 0
+    rz: float = 0
+    dx: float = 0
+    dy: float = 0
+    dz: float = 0
+    rays: list[list[float]] | None = None
+
+
+class CircularPatternParams(AtomicParams):
+    count: int = Field(ge=2)
+    axis: Literal["x", "y", "z"] = "y"
+    angleDeg: float = Field(default=360, gt=0, le=360)
+    reverseDir: bool = False
+    axisOriginX: float | None = None
+    axisOriginY: float | None = None
+    axisOriginZ: float | None = None
+    axisFeature: str | None = None
+
+
+class LinearPatternParams(AtomicParams):
+    num1: int = Field(ge=2)
+    spacing1: float = Field(gt=0)
+    dir1Axis: Literal["x", "y", "z"] = "x"
+    num2: int = Field(default=1, ge=1)
+    spacing2: float = Field(default=0, ge=0)
+    dir2Axis: Literal["x", "y", "z"] = "y"
+    flip1: bool = False
+    flip2: bool = False
+
+
+class RayFaceParams(AtomicParams):
+    rx: float | None = None
+    ry: float | None = None
+    rz: float | None = None
+    dx: float | None = None
+    dy: float | None = None
+    dz: float | None = None
+
+    @model_validator(mode="after")
+    def _all_or_none(self):
+        values = (self.rx, self.ry, self.rz, self.dx, self.dy, self.dz)
+        if any(value is not None for value in values) and any(value is None for value in values):
+            raise ValueError("射线起点 rx/ry/rz 与方向 dx/dy/dz 必须同时提供")
+        return self
+
+
+class ObservedFaceParams(FaceIndexParams):
+    exact: bool = False
+
+
+# 这是 L0 零件域的唯一路由清单。contract test 会把它与 C# Program.cs 的
+# switch 路由逐项核对；不包含 assembly/view/service-maintenance 路由。
+PART_ATOMIC_ENDPOINTS: dict[OperationType, tuple[str, str]] = {
+    OperationType.NEW_PART: ("POST", "/api/new-part"),
+    OperationType.OPEN_PART: ("POST", "/api/open-part"),
+    OperationType.DELETE_FEATURE: ("POST", "/api/delete-feature"),
+    OperationType.EXPORT_STEP: ("POST", "/api/export-step"),
+    OperationType.CREATE_BOX: ("POST", "/api/create-box"),
+    OperationType.REF_PLANE_OFFSET: ("POST", "/api/ref-plane/offset"),
+    OperationType.REF_AXIS_PLANES: ("POST", "/api/ref-axis/planes"),
+    OperationType.SELECT_REF_PLANE_AND_SKETCH: ("POST", "/api/select-ref-plane-and-sketch"),
+    OperationType.SELECT_PLANE: ("POST", "/api/select-plane"),
+    OperationType.SKETCH_PROFILE: ("POST", "/api/sketch/profile"),
+    OperationType.SKETCH3D_PATH: ("POST", "/api/sketch3d/path"),
+    OperationType.SKETCH_POINT: ("POST", "/api/sketch/point"),
+    OperationType.SKETCH_LINE: ("POST", "/api/sketch/line"),
+    OperationType.SKETCH_POLYLINE: ("POST", "/api/sketch/polyline"),
+    OperationType.SKETCH_RECTANGLE: ("POST", "/api/sketch/rectangle"),
+    OperationType.SKETCH_CIRCLE: ("POST", "/api/sketch/circle"),
+    OperationType.SKETCH_CIRCLES: ("POST", "/api/sketch/circles"),
+    OperationType.SKETCH_CENTERLINE: ("POST", "/api/sketch/centerline"),
+    OperationType.SKETCH_ARC: ("POST", "/api/sketch/arc"),
+    OperationType.SKETCH_ELLIPSE: ("POST", "/api/sketch/ellipse"),
+    OperationType.SKETCH_POLYGON: ("POST", "/api/sketch/polygon"),
+    OperationType.SKETCH_SLOT: ("POST", "/api/sketch/slot"),
+    OperationType.FEATURE_EXTRUSION: ("POST", "/api/feature/extrusion"),
+    OperationType.FEATURE_CUT_EXTRUSION: ("POST", "/api/feature/cut-extrusion"),
+    OperationType.FEATURE_REVOLVE: ("POST", "/api/feature/revolve"),
+    OperationType.FEATURE_FILLET: ("POST", "/api/feature/fillet"),
+    OperationType.FEATURE_CHAMFER: ("POST", "/api/feature/chamfer"),
+    OperationType.FEATURE_CIRCULAR_PATTERN: ("POST", "/api/feature/circular-pattern"),
+    OperationType.FEATURE_LINEAR_PATTERN: ("POST", "/api/feature/linear-pattern"),
+    OperationType.FEATURE_MIRROR: ("POST", "/api/feature/mirror"),
+    OperationType.FEATURE_UNTIL: ("POST", "/api/feature/until"),
+    OperationType.FEATURE_RIB: ("POST", "/api/feature/rib"),
+    OperationType.FEATURE_SWEEP: ("POST", "/api/feature/sweep"),
+    OperationType.FEATURE_LOFT: ("POST", "/api/feature/loft"),
+    OperationType.FEATURE_SHELL: ("POST", "/api/feature/shell"),
+    OperationType.FEATURE_DRAFT: ("POST", "/api/feature/draft"),
+    OperationType.FEATURE_SHEET_METAL_BASE: ("POST", "/api/feature/sheet-metal-base"),
+    OperationType.FEATURE_COSMETIC_THREAD: ("POST", "/api/feature/cosmetic-thread"),
+    OperationType.CLOSE_SKETCH: ("POST", "/api/close-sketch"),
+    OperationType.CLOSE_SKETCH_NAMED: ("POST", "/api/close-sketch-named"),
+    OperationType.FEATURE_TREE: ("GET", "/api/feature-tree"),
+    OperationType.MODEL_OBSERVATION: ("GET", "/api/model-observation"),
+    OperationType.SKETCH_STATS: ("GET", "/api/sketch-stats"),
+    OperationType.BODY_BOUNDING_BOX: ("GET", "/api/body-bounding-box"),
+    OperationType.BODY_VOLUME: ("GET", "/api/body-volume"),
+    OperationType.SELECT_FACE_AND_SKETCH: ("POST", "/api/select-face-and-sketch"),
+    OperationType.SELECT_OBSERVED_FACE_AND_SKETCH: ("POST", "/api/select-observed-face-and-sketch"),
+    OperationType.MODIFY_DIMENSION: ("POST", "/api/modify-dimension"),
+    OperationType.SAVE_PART_AS: ("POST", "/api/save-part-as"),
+}
+
+
+ATOMIC_PARAM_SCHEMAS: dict[OperationType, type[AtomicParams]] = {
+    OperationType.NEW_PART: EmptyParams,
+    OperationType.OPEN_PART: OpenPartParams,
+    OperationType.DELETE_FEATURE: FeatureNameParams,
+    OperationType.EXPORT_STEP: ExportStepParams,
+    OperationType.SAVE_PART_AS: SavePartParams,
+    OperationType.CREATE_BOX: BoxParams,
+    OperationType.REF_PLANE_OFFSET: OffsetPlaneParams,
+    OperationType.REF_AXIS_PLANES: AxisFromPlanesParams,
+    OperationType.SELECT_REF_PLANE_AND_SKETCH: NamedPlaneParams,
+    OperationType.SKETCH_PROFILE: SketchProfileParams,
+    OperationType.SKETCH3D_PATH: Sketch3DPathParams,
+    OperationType.SKETCH_POINT: PointParams,
+    OperationType.FEATURE_MIRROR: MirrorParams,
+    OperationType.FEATURE_UNTIL: UntilParams,
+    OperationType.FEATURE_RIB: RibParams,
+    OperationType.FEATURE_SWEEP: SweepParams,
+    OperationType.FEATURE_LOFT: LoftParams,
+    OperationType.FEATURE_SHELL: ShellParams,
+    OperationType.FEATURE_DRAFT: DraftParams,
+    OperationType.FEATURE_SHEET_METAL_BASE: SheetMetalBaseParams,
+    OperationType.FEATURE_COSMETIC_THREAD: CosmeticThreadParams,
+    OperationType.MODEL_OBSERVATION: ModelObservationParams,
+    OperationType.SELECT_PLANE: PlaneIndexParams,
+    OperationType.SKETCH_LINE: XYLineParams,
+    OperationType.SKETCH_CENTERLINE: XYLineParams,
+    OperationType.SKETCH_RECTANGLE: XYLineParams,
+    OperationType.SKETCH_POLYLINE: PointListParams,
+    OperationType.SKETCH_CIRCLE: XYCircleParams,
+    OperationType.SKETCH_CIRCLES: CircleListParams,
+    OperationType.SKETCH_ARC: ArcParams,
+    OperationType.SKETCH_ELLIPSE: EllipseParams,
+    OperationType.SKETCH_POLYGON: PolygonParams,
+    OperationType.SKETCH_SLOT: SlotParams,
+    OperationType.FEATURE_EXTRUSION: DepthParams,
+    OperationType.FEATURE_CUT_EXTRUSION: CutDepthParams,
+    OperationType.FEATURE_REVOLVE: RevolveParams,
+    OperationType.FEATURE_FILLET: FilletParams,
+    OperationType.FEATURE_CHAMFER: ChamferParams,
+    OperationType.FEATURE_CIRCULAR_PATTERN: CircularPatternParams,
+    OperationType.FEATURE_LINEAR_PATTERN: LinearPatternParams,
+    OperationType.CLOSE_SKETCH: EmptyParams,
+    OperationType.CLOSE_SKETCH_NAMED: EmptyParams,
+    OperationType.FEATURE_TREE: EmptyParams,
+    OperationType.SKETCH_STATS: EmptyParams,
+    OperationType.BODY_BOUNDING_BOX: EmptyParams,
+    OperationType.BODY_VOLUME: EmptyParams,
+    OperationType.SELECT_FACE_AND_SKETCH: RayFaceParams,
+    OperationType.SELECT_OBSERVED_FACE_AND_SKETCH: ObservedFaceParams,
+    OperationType.MODIFY_DIMENSION: DimensionParams,
+}
 
 
 class SwOperation(BaseModel):
@@ -1432,6 +1890,17 @@ class SwOperation(BaseModel):
         if "description" not in item and item.get("comment"):
             item["description"] = item["comment"]
         return item
+
+    @model_validator(mode="after")
+    def _validate_atomic_params(self):
+        """在保留旧 `{operation, params}` wire format 的同时验证原子端点参数。"""
+        schema = ATOMIC_PARAM_SCHEMAS.get(self.operation)
+        if schema is not None:
+            self.params = schema.model_validate(self.params).model_dump(
+                exclude_none=True,
+                exclude_unset=True,
+            )
+        return self
 
     @model_validator(mode="after")
     def _validate_operation_contract(self):

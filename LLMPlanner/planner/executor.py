@@ -16,7 +16,12 @@ from typing import Optional
 
 import requests
 
-from .schemas import SwModelingPlan, SwOperation, OperationType
+from .schemas import (
+    PART_ATOMIC_ENDPOINTS,
+    SwModelingPlan,
+    SwOperation,
+    OperationType,
+)
 
 # 操作类型 → HTTP API 端点映射
 OPERATION_ENDPOINT_MAP: dict[OperationType, tuple[str, str]] = {
@@ -107,6 +112,9 @@ OPERATION_ENDPOINT_MAP: dict[OperationType, tuple[str, str]] = {
         "/api/assembly/mechanism/cam-follower-pose",
     ),
 }
+# 以 schemas.py 的单一零件域清单覆盖/补全 L0 原子端点；装配体端点仍只在
+# 本文件定义，避免把 assembly/view/service 路由暴露给 L0 零件建模基线。
+OPERATION_ENDPOINT_MAP.update(PART_ATOMIC_ENDPOINTS)
 
 # 常见的英文→中文特征类型名映射（SolidWorks 中文版）
 # 用于智能匹配 LLM 猜测的英文名到实际中文名
@@ -521,7 +529,9 @@ class SwExecutor:
             if method == "POST":
                 resp = self.session.post(url, json=step.params if step.params else None, timeout=90)
             else:
-                resp = self.session.get(url, timeout=90)
+                # /api/model-observation 的 maxFaces 是 query string；其它 GET
+                # 端点忽略空参数。保留这个通路使 L0 能调用所有零件查询端点。
+                resp = self.session.get(url, params=step.params or None, timeout=90)
 
             data = resp.json()
 
