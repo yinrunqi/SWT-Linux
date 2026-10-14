@@ -12,7 +12,7 @@ os.environ.setdefault("OPENAI_API_KEY", "test-key")
 
 import web.app as web_app
 from planner.assembly_workflow.agent import AssemblyAgent
-from planner.llm_client import SwLLMClient
+from planner.llm_client import PlanOutputExhaustedError, SwLLMClient
 from planner.workflow.agent import WorkflowAgent
 
 
@@ -201,3 +201,36 @@ def test_l0_plan_request_sends_reasoning_effort_only_when_configured():
         assert completions.requests[0]["extra_body"] == {
             "chat_template_kwargs": {"enable_thinking": False},
         }
+
+
+def test_l0_length_without_content_is_not_retried_or_downgraded():
+    completions = RecordingCompletions()
+
+    def exhausted(**kwargs):
+        completions.requests.append(kwargs)
+        return SimpleNamespace(
+            choices=[SimpleNamespace(
+                message=SimpleNamespace(content=None),
+                finish_reason="length",
+            )],
+            usage=None,
+        )
+
+    completions.create = exhausted
+    client = SwLLMClient.__new__(SwLLMClient)
+    client.client = SimpleNamespace(chat=SimpleNamespace(completions=completions))
+    client.model = "model"
+    client.reasoning_effort = "medium"
+    client.plan_max_tokens = 32000
+    client.enable_thinking = None
+    client._use_structured_output = True
+
+    try:
+        client._call_api("test", system_prompt="Return JSON.")
+    except PlanOutputExhaustedError:
+        pass
+    else:
+        raise AssertionError("expected output exhaustion")
+
+    assert len(completions.requests) == 1
+    assert client._use_structured_output is True

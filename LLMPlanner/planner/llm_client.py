@@ -20,7 +20,13 @@ from typing import Any, Optional
 import diskcache
 from openai import OpenAI, BadRequestError
 from pydantic import ValidationError
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from tenacity import (
+    retry,
+    retry_if_exception,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from .schemas import (
     AgentDecision,
@@ -342,6 +348,10 @@ def _semantic_agent_observation(
         "interferenceCount": interference.get("interferenceCount"),
         "errors": data.get("errors", {}),
     }
+
+
+class PlanOutputExhaustedError(RuntimeError):
+    """模型耗尽输出预算且没有返回可执行计划；重试同一请求没有意义。"""
 
 
 # ============================================================
@@ -1388,7 +1398,9 @@ class SwLLMClient:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=2, max=30),
-        retry=retry_if_exception_type((Exception,)),
+        retry=retry_if_exception(
+            lambda exc: not isinstance(exc, PlanOutputExhaustedError)
+        ),
         before_sleep=lambda retry_state: print(
             f"[LLM] API 调用失败: {retry_state.outcome.exception()}\n"
             f"[LLM] {retry_state.next_action.sleep} 秒后重试... "
@@ -1425,6 +1437,8 @@ class SwLLMClient:
                 print(f"[LLM] Structured Outputs 不被 API 支持 ({str(e)[:100]})，降级为 JSON mode...")
                 self._use_structured_output = False
                 return self._call_json_mode(messages)
+            except PlanOutputExhaustedError:
+                raise
             except Exception as e:
                 # 其他错误：例如 pydantic ValidationError (返回被 markdown 包裹 / 结构不匹配)
                 # 兼容端点已返回不符合 schema 的内容；后续重试直接用 JSON mode，
@@ -1495,8 +1509,13 @@ class SwLLMClient:
             },
         )
 
-        content = completion.choices[0].message.content
+        choice = completion.choices[0]
+        content = choice.message.content
         if not content:
+            if choice.finish_reason == "length":
+                raise PlanOutputExhaustedError(
+                    f"LLM 在 {self.plan_max_tokens} token 输出预算内未返回建模计划"
+                )
             raise ValueError("LLM 未返回有效的建模计划")
 
         # 某些中转站/Claude 系列即使走 json_schema 也可能返回 markdown 包裹的 JSON，剥壳
@@ -1553,8 +1572,13 @@ class SwLLMClient:
             response_format={"type": "json_object"},
         )
 
-        content = completion.choices[0].message.content
+        choice = completion.choices[0]
+        content = choice.message.content
         if not content:
+            if choice.finish_reason == "length":
+                raise PlanOutputExhaustedError(
+                    f"LLM 在 {self.plan_max_tokens} token 输出预算内未返回建模计划"
+                )
             raise ValueError("LLM 未返回任何内容")
 
         # 剥壳 → 若失败则从任意文本中提取第一个 JSON 块（应对 Claude 啰嗦倾向）
