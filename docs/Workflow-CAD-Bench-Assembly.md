@@ -696,6 +696,92 @@ rubric 不跑 Motion Study，所以不受求解器和采样影响，同一个装
 
 齿隙下限的问题：修正 `clearance_mm` 后，减速箱两对齿轮实测间隙为 0.009 mm 和 0.006 mm，规格 `clearance_mm: [0.02, 2.0]` 不满足，运动分扣 10、e2e 判否。`planner/gears.py` 里外啮合直齿轮的齿厚正好是半个齿距，不加侧隙（只有内齿圈加 0.05m），所以中心距和相位都对的一对齿轮理论间隙就是 0，几微米来自渐开线的折线近似。也就是说，现在的齿轮模型几乎达不到 0.02 mm 的下限。这个问题以前没有暴露，是因为旧的 `clearance_mm` 总是量成 0（见 6.1 节更正）。按“看过结果后不改评测”的约束，这里没有改阈值；如果把下限改成 0、只用它检出干涉，减速箱运动分为 100，e2e 为 12/27 = 0.44。是否调整由后续统一决定。
 
+### 6.4 gen 条件结果：全部 50 个测例（Qwen3.8-Flash-Next-FP8，workflow v3，零件工具集 v2，2026-10-13 / 14）
+
+50 个测例（7 核心 + 20 扩展 + 23 第二批）各跑 1 次。设置与第 1 节现行默认一致，与 6.1–6.3 节不同，不能直接横向比分：
+
+- `--condition gen --workflow v3 --repeats 1`，配方 `assembly_topology` / `joint_mapping` / `coupling` / `linkage` / `motion_check` / `v3_tools`；
+- 模型 `Qwen3.8-Flash-Next-FP8`，`--provider qwenlocal`，`reasoning_effort=medium`，题面中文；
+- 装配预算 100 次 LLM 调用，`asm_max_tokens` 初始 16000（上下文接近上限时会自动下调）；零件 workflow `L1_v2`，`view_assembly` / `view_model` 开启；
+- 零件接口 rubric：跑评测时偶有行记 `skipped`（OCC），结束后用 `venv-occ` 跑 `regrade_offline.py` 补算并写回主结果；减速箱齿隙只记录不计分（两对实测 0.0089 / 0.0062 mm，仍低于 0.02 mm 下限，但不影响运动分）。
+
+结果文件：`LLMPlanner/eval/assembly_gen_qwen38flash_v3_all50.json`（已含离线补分）；产物目录 `LLMPlanner/eval/artifacts/assembly_gen_qwen38flash_v3_all50/`。整批无 `llm_error` / `sw_lost` / `infra_exception` / `infra_contaminated` 残留行。跑的过程中 SolidWorks 曾崩溃或 `check_motion` 读超时，评测器按第 1 节基础设施重试重启后从 checkpoint 续跑；`excavator_arm` 的脏 checkpoint 曾导致重放卡住，清掉装配 checkpoint 后 `--resume` 重跑该例。
+
+| 范围 | 测例 | 零件合格率 | 装配 rubric | 运动分 | 门控运动分 | 结构成立 | e2e | finish | 用满预算 |
+|---|---|---|---|---|---|---|---|---|---|
+| 全部 | 50 | 0.998 | 90.93 ± 16.15 | 73.83 ± 35.97 | 70.72 | 43/50 = 0.86 | 27/50 = 0.54 | 30/50 = 0.60 | 18/50 = 0.36 |
+| 核心 | 7 | 1.000 | 94.55 | 83.33 | 83.33 | 7/7 | 5/7 | 5/7 | 1/7 |
+| 扩展（bench） | 20 | 1.000 | 90.56 | 80.82 | 80.82 | 18/20 | 13/20 | 14/20 | 5/20 |
+| 第二批（bench2） | 23 | 0.997 | 90.15 | 64.86 | 58.10 | 18/23 | 9/23 | 11/23 | 12/23 |
+
+装配状态：`finished` 30、`max_llm_calls` 18、`context_exceeded` 2（电钻、五叶光圈）。平均装配调用 68.9 次；智能体保存装配体比例 0.94。旧口径均分：`assembly_score_v1` 92.51，`motion_score_v1` 68.8。
+
+| 测例 | 零件 | 装配 rubric | 结构 | 运动分 | 门控 | e2e | 状态 | 调用 |
+|---|---|---|---|---|---|---|---|---|
+| 双级圆柱齿轮减速箱 `two_stage_gearbox` | 6/6 | 100 | 是 | 100 | 100 | 是 | finished | 15 |
+| 单缸曲柄滑块发动机 `single_cylinder_engine` | 10/10 | 75 | 是 | 50 | 50 | 否 | max_llm_calls | 100 |
+| 可调台灯 `adjustable_desk_lamp` | 5/5 | 100 | 是 | 100 | 100 | 是 | finished | 45 |
+| 折叠伞骨架 `folding_umbrella` | 5/5 | 100 | 是 | 100 | 100 | 是 | finished | 63 |
+| 电钻两级行星减速器 `drill_planetary_gearbox` | 8/8 | 90 | 是 | 33.33 | 33.33 | 否 | context_exceeded | 86 |
+| 缝纫机主传动 `sewing_machine_drive` | 13/13 | 96.88 | 是 | 100 | 100 | 是 | finished | 70 |
+| 电影放映机传动 `film_projector_drive` | 8/8 | 100 | 是 | 100 | 100 | 是 | finished | 30 |
+| 曲柄摇杆四杆 `crank_rocker_linkage` | 7/7 | 75 | 是 | 100 | 100 | 是 | finished | 81 |
+| 偏置曲柄滑块 `offset_slider_crank` | 6/6 | 100 | 是 | 87.18 | 87.18 | 否 | max_llm_calls | 100 |
+| 双缸往复泵 `twin_cylinder_pump` | 6/6 | 91.37 | 是 | 100 | 100 | 是 | finished | 96 |
+| 游梁式抽油机 `pumpjack_drive` | 10/10 | 100 | 是 | 100 | 100 | 是 | finished | 31 |
+| 双刮臂雨刮 `windshield_wiper_linkage` | 9/9 | 93.61 | 是 | 100 | 100 | 是 | finished | 43 |
+| 蒸汽梁机 `beam_engine` | 9/9 | 95.54 | 是 | 66.67 | 66.67 | 否 | max_llm_calls | 100 |
+| 钟表跨轮 `clock_motion_works` | 10/10 | 100 | 是 | 52.56 | 52.56 | 否 | max_llm_calls | 100 |
+| 手摇绞盘 `hand_winch` | 8/8 | 100 | 是 | 100 | 100 | 是 | finished | 25 |
+| 内齿圈转台 `turntable_ring_drive` | 6/6 | 100 | 是 | 100 | 100 | 是 | finished | 11 |
+| 星型齿轮减速器 `star_gear_reducer` | 8/8 | 100 | 是 | 100 | 100 | 是 | finished | 11 |
+| 竖直丝杠滑台 `lead_screw_stage` | 6/6 | 100 | 是 | 100 | 100 | 是 | finished | 35 |
+| 齿轮驱动曲柄滑块 `gear_driven_slider_crank` | 9/9 | 95 | 是 | 50 | 50 | 否 | max_llm_calls | 100 |
+| 单级行星减速器 `epicyclic_carrier_output` | 8/8 | 100 | 是 | 100 | 100 | 是 | finished | 31 |
+| 挖掘机工作臂 `excavator_arm` | 9/9 | 100 | 是 | 60 | 60 | 否 | max_llm_calls | 100 |
+| SCARA 机械臂 `scara_arm` | 6/6 | 100 | 是 | 100 | 100 | 是 | finished | 53 |
+| 2 倍缩放仪 `pantograph` | 5/5 | 7.5 | 否 | 0 | 0 | 否 | max_llm_calls | 100 |
+| 阿克曼转向 `ackermann_steering` | 5/5 | 53.12 | 否 | 0 | 0 | 否 | finished | 55 |
+| 肘节夹钳 `toggle_clamp` | 7/7 | 100 | 是 | 100 | 100 | 是 | finished | 42 |
+| 平行四边形夹爪 `parallel_gripper` | 5/5 | 100 | 是 | 100 | 100 | 是 | finished | 38 |
+| 双横臂悬架 `double_wishbone` | 7/7 | 100 | 是 | 100 | 100 | 是 | finished | 76 |
+| L 型双缸发动机 `l_twin_engine` | 12/12 | 75.62 | 否 | 0 | 0 | 否 | max_llm_calls | 100 |
+| 星形四缸发动机 `radial_engine_4cyl` | 10/10 | 100 | 是 | 100 | 100 | 是 | finished | 30 |
+| 牛头刨急回 `quick_return_shaper` | 13/13 | 100 | 是 | 100 | 100 | 是 | finished | 32 |
+| 肘杆压力机 `knuckle_press` | 14/14 | 96.88 | 是 | 100 | 100 | 是 | finished | 93 |
+| 十字滑块联轴器 `oldham_coupling` | 10/10 | 73.33 | 是 | 0 | 0 | 否 | max_llm_calls | 100 |
+| 椭圆机 `elliptical_trainer` | 9/9 | 100 | 是 | 100 | 100 | 是 | finished | 31 |
+| Jansen 步行腿 `jansen_leg` | 18/18 | 75.91 | 是 | 50 | 50 | 否 | max_llm_calls | 100 |
+| Chebyshev λ 输送机 `lambda_conveyor` | 11/11 | 100 | 是 | 71.79 | 71.79 | 否 | max_llm_calls | 100 |
+| 齿轮五杆绘图机 `geared_five_bar` | 10/10 | 78.46 | 否 | 55.56 | 0 | 否 | max_llm_calls | 100 |
+| 行星搅拌机 `planetary_mixer` | 11/11 | 100 | 是 | 100 | 100 | 是 | finished | 36 |
+| 万花尺 `spirograph` | 12/13 | 100 | 是 | 100 | 100 | 否 | finished | 78 |
+| Wankel 转子 `wankel_rotary` | 9/9 | 80 | 是 | 55.56 | 55.56 | 否 | max_llm_calls | 100 |
+| 太阳系仪 `orrery_earth_moon` | 16/16 | 80 | 是 | 50 | 50 | 否 | max_llm_calls | 100 |
+| 摇头风扇 `oscillating_fan` | 12/12 | 85 | 是 | 88.89 | 88.89 | 否 | finished | 98 |
+| 齿轮丝杠升降台 `gear_screw_lift` | 9/9 | 100 | 是 | 100 | 100 | 是 | finished | 33 |
+| 三级剪叉升降台 `scissor_lift_3stage` | 7/7 | 92.79 | 是 | 100 | 100 | 是 | finished | 41 |
+| 五叶机械光圈 `mechanical_iris_5blade` | 12/12 | 79.3 | 否 | 0 | 0 | 否 | context_exceeded | 75 |
+| Peaucellier 直线机构 `peaucellier_linkage` | 8/8 | 100 | 是 | 100 | 100 | 是 | finished | 75 |
+| 五杆并联机器人 `five_bar_robot` | 8/8 | 90.62 | 否 | 100 | 0 | 是 | finished | 88 |
+| 码垛机器人 `palletizing_robot` | 13/13 | 88.64 | 是 | 0 | 0 | 否 | max_llm_calls | 100 |
+| 齿轮同步夹爪 `gear_sync_gripper` | 9/9 | 100 | 是 | 60 | 60 | 否 | max_llm_calls | 100 |
+| 三节耦合手指 `robot_finger_coupled` | 11/11 | 76.79 | 否 | 0 | 0 | 否 | max_llm_calls | 100 |
+| 水平变幅起重机 `luffing_crane` | 12/12 | 100 | 是 | 60 | 60 | 否 | max_llm_calls | 100 |
+
+说明：
+
+- 「零件」是接口 rubric 合格数 / 零件数；`spirograph` 有 1 个零件未过，所以零件合格率均分不是 1、该例 e2e 为否。
+- 「门控」是 `motion_score_gated`：结构不成立时记 0。`geared_five_bar`、`five_bar_robot` 的原始运动分非零但结构不成立，门控后为 0；`five_bar_robot` 的 e2e 仍为是（e2e 只要求零件全过且运动检查 `passed`，不要求 `structure_ok`）。
+- 结构不成立的 7 例：`pantograph`、`ackermann_steering`、`l_twin_engine`、`geared_five_bar`、`mechanical_iris_5blade`、`five_bar_robot`、`robot_finger_coupled`。
+
+分析：
+
+- 零件阶段几乎不是瓶颈。补分后仅万花尺少过 1 个零件；其余测例零件全部合格。
+- 装配 rubric 整体偏高（均分 90.93），核心与扩展都在 90 以上；第二批装配 rubric 也到 90，但运动与门控明显更低（门控 58.10），复杂闭环 / 多齿轮 / 多位姿测例更容易用满 100 次调用或撑爆上下文。
+- 用满预算的 18 例里，不少装配 rubric 已经很高（甚至满分）但运动未过或未做完自检，例如 `excavator_arm`（装配 100、运动 60）、`luffing_crane`（装配 100、运动 60）、`palletizing_robot`（装配 88.64、运动 0）。
+- 与 6.2 / 6.3 节相比：本题面、workflow（v3 + 截图）、调用预算（100 vs 50）和模型都不同，只能粗看趋势——零件合格与装配 rubric 都高于 GPT-6-Astra 的 27 例批次，运动与 e2e 也更高，但第二批 23 例拉低了总体运动分。
+
 ## 7. 命令
 
 先启动 SolidWorks 和 C# 服务（`run_service.bat`）。
