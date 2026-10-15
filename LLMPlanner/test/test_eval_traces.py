@@ -436,6 +436,7 @@ def test_three_view_l1_v2_sends_text_track_reasoning_and_view_settings(tmp_path,
     assert request["reasoning_effort"] == "medium"
     assert request["views_tool"] is True
     assert request["view_tool"] is True
+    assert request["compact_context"] is False
     assert sent["image"].startswith("data:image/png;base64,")
     assert sent["plan_model"] == "Qwen3.8-Flash-Next-FP8"
 
@@ -454,6 +455,7 @@ def test_three_view_cli_defaults_to_qwen_l1_v2_medium(tmp_path, monkeypatch):
             "reasoning_effort": args.reasoning_effort,
             "view_tool": not args.no_view_tool,
             "views_tool": not args.no_views_tool,
+            "compact_context": args.compact_context,
         })
         return {"case": task["case"], "repeat": k, "status": "finished", "duration_seconds": 0.0}
 
@@ -467,7 +469,14 @@ def test_three_view_cli_defaults_to_qwen_l1_v2_medium(tmp_path, monkeypatch):
         "reasoning_effort": "medium",
         "view_tool": True,
         "views_tool": True,
+        "compact_context": False,
     }
+    captured.clear()
+    monkeypatch.setattr(
+        bench.sys, "argv", ["x", "--name", "compact", "--repeats", "1", "--compact-context"],
+    )
+    assert bench.main() == 0
+    assert captured["compact_context"] is True
 
 
 def test_three_view_resume_continues_interrupted_runs_from_checkpoint(tmp_path, monkeypatch):

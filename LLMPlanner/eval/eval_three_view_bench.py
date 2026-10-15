@@ -129,6 +129,7 @@ def run_one(task: dict, k: int, args, resume: bool = False) -> dict:
                         "checkpoint_path": str(checkpoint), "resume": resume})
         if args.action_level == "L1_v2":
             payload["view_tool"] = not args.no_view_tool
+            payload["compact_context"] = bool(getattr(args, "compact_context", False))
         if args.reasoning_effort:
             payload["reasoning_effort"] = args.reasoning_effort
     else:
@@ -155,7 +156,12 @@ def run_one(task: dict, k: int, args, resume: bool = False) -> dict:
             row["resumed"] = workflow.get("resumed")
             row["reasoning_effort"] = workflow.get("reasoning_effort")
             row["view_tool"] = workflow.get("view_tool")
+            row["compact_context"] = workflow.get("compact_context")
             row["context_limit"] = workflow.get("context_limit")
+            row["length_retries"] = workflow.get("length_retries")
+            row["compact_verifier_calls"] = workflow.get("compact_verifier_calls")
+            row["compact_fallbacks"] = workflow.get("compact_fallbacks")
+            row["request_modes"] = workflow.get("request_modes")
             row["llm_calls"] = summary.get("llm_calls")
             row["tool_calls"] = summary.get("tool_calls")
             row["failed_modeling_calls"] = sum(1 for item in body.get("results") or [] if not item.get("success"))
@@ -208,6 +214,11 @@ def main() -> int:
         action="store_true",
         help="L1_v2: do not offer the view_model SolidWorks screenshot tool",
     )
+    parser.add_argument(
+        "--compact-context",
+        action="store_true",
+        help="L1_v2: opt in to compact tool-history requests, compact final verification, and length recovery",
+    )
     parser.add_argument("--mode", choices=["multi_turn", "single_turn"], default="multi_turn", help="L0 only")
     parser.add_argument("--vision-model", default="GLM-4.6V", help="L0 only")
     parser.add_argument("--web-url", default="http://localhost:5000")
@@ -228,6 +239,8 @@ def main() -> int:
     args = parser.parse_args()
     if args.reasoning_effort and args.action_level not in WORKFLOW_LEVELS:
         parser.error("--reasoning-effort requires --action-level L1 or L1_v2")
+    if args.compact_context and args.action_level != "L1_v2":
+        parser.error("--compact-context requires --action-level L1_v2")
     if args.action_level in WORKFLOW_LEVELS:
         from planner.workflow.agent import default_reasoning_effort
         if args.reasoning_effort is None and args.plan_model.lower() == "qwen3.8-flash-next-fp8":

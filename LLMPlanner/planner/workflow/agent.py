@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import os
 import re
@@ -14,6 +15,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable
 
+from .context_compact import (
+    COMPACT_DISCIPLINE,
+    CONTINUE_FULL_CONTEXT,
+    VERIFY_TOOLS,
+    compact_history,
+    verifier_messages,
+    verifier_tools,
+    with_recovery_instruction,
+)
 from .tools import IMAGE_KEY, TOOL_SPECS, WorkflowSession, dumps_result, tool_specs
 from .tools_v2 import WORKFLOW_VERSIONS, dumps_result_v2, tool_specs_v2
 
@@ -336,12 +346,15 @@ class WorkflowAgent:
         view_tool: bool = True,
         log: Callable[[str], None] | None = None,
         context_limit: int | None = None,
+        compact_context: bool = False,
     ):
         """version：v1 = L1，v2 = L1_v2；缺省跟随 session.version。
         view_tool：L1_v2 是否提供 view_model 截图工具（骨干模型不支持图片输入时关掉）。
         log：逐步进度输出（每次 LLM 调用、每个工具调用一行），评测时供终端监控。
         context_limit：模型上下文 token 数，缺省查 CONTEXT_LIMITS；超长时压缩本轮输出上限，仍装不下则以
-        context_exceeded 结束。"""
+        context_exceeded 结束。
+        compact_context：仅 L1_v2 生效；对请求副本压缩旧工具结果，并用紧凑核对请求决定 finish/回退。
+        缺省 false，保持历史评测行为。"""
         self.log = log
         self.context_limit = context_limit or CONTEXT_LIMITS.get(_model_key(model))
         self.max_output_tokens = MAX_OUTPUT_TOKENS.get(_model_key(model), DEFAULT_MAX_OUTPUT_TOKENS)
@@ -359,6 +372,7 @@ class WorkflowAgent:
         self.reasoning_effort = default_reasoning_effort(model, reasoning_effort)
         self.max_stalls = max_stalls
         self.v2 = self.version == "v2"
+        self.compact_context = self.v2 and compact_context
         self.view_tool = self.v2 and view_tool
         self.tools = tool_specs_v2(extra_tools, view_tool=view_tool) if self.v2 else tool_specs(extra_tools)
         self.image_placeholder = IMAGE_PLACEHOLDER_V2 if self.v2 else RENDERED_PLACEHOLDER
@@ -387,8 +401,18 @@ class WorkflowAgent:
         failed_signatures: dict[str, int] = {}
         status, summary, stalls, error = "max_llm_calls", "", 0, None
         max_tokens, truncations = self.max_tokens, 0
+        if self.compact_context:
+            max_tokens = max(max_tokens, min(32000, self.max_output_tokens))
         pending: dict | None = None
         prior_seconds, resumed = 0.0, None
+        last_round_tools: list[str] = []
+        force_full_context_once = False
+        length_recovery_mode: str | None = None
+        length_retries = 0
+        compact_verifier_calls = 0
+        compact_fallbacks = 0
+        request_modes: list[str] = []
+        compact_requests: list[dict] = []
 
         # 未指定时不发送该字段，保持与历史结果相同的请求体（由服务端默认值决定推理强度）。
         extra = {"reasoning_effort": self.reasoning_effort} if self.reasoning_effort else {}
@@ -405,6 +429,16 @@ class WorkflowAgent:
             finish_reasons, failed_signatures = saved.get("finish_reasons", []), saved["failed_signatures"]
             stalls, truncations, max_tokens = saved["stalls"], saved["truncations"], saved["max_tokens"]
             pending, prior_seconds = saved.get("pending"), float(saved.get("duration_seconds") or 0)
+            last_round_tools = list(saved.get("last_round_tools") or [])
+            force_full_context_once = bool(saved.get("force_full_context_once", False))
+            length_recovery_mode = saved.get("length_recovery_mode")
+            length_retries = int(saved.get("length_retries") or 0)
+            compact_verifier_calls = int(saved.get("compact_verifier_calls") or 0)
+            compact_fallbacks = int(saved.get("compact_fallbacks") or 0)
+            request_modes = list(saved.get("request_modes") or [])
+            compact_requests = list(saved.get("compact_requests") or [])
+            if self.compact_context:
+                max_tokens = max(max_tokens, min(32000, self.max_output_tokens))
             mismatch = self._replay(tool_log)
             resumed = {"from_llm_calls": usage["calls"], "replayed_tools": len(tool_log), "mismatch": mismatch}
             self._log(f"续跑：重放 {len(tool_log)} 个工具，从第 {usage['calls']} 次 LLM 调用继续"
@@ -423,12 +457,71 @@ class WorkflowAgent:
                 "finish_reasons": finish_reasons, "failed_signatures": failed_signatures, "stalls": stalls,
                 "truncations": truncations, "max_tokens": max_tokens, "pending": pending, "resumed": resumed,
                 "reasoning_effort": self.reasoning_effort,
+                "compact_context": self.compact_context, "last_round_tools": last_round_tools,
+                "force_full_context_once": force_full_context_once,
+                "length_recovery_mode": length_recovery_mode, "length_retries": length_retries,
+                "compact_verifier_calls": compact_verifier_calls, "compact_fallbacks": compact_fallbacks,
+                "request_modes": request_modes, "compact_requests": compact_requests,
                 "duration_seconds": round(prior_seconds + time.perf_counter() - started, 2),
             })
 
         while not done and (pending is not None or usage["calls"] < self.max_llm_calls):
             if pending is None:
-                request = {"model": self.model, "messages": messages, "tools": self.tools, "tool_choice": "auto",
+                request_mode = "full"
+                request_messages = messages
+                request_tools = self.tools
+                consume_full_fallback = False
+                if self.compact_context:
+                    latest_image = (
+                        messages[rendered_at]
+                        if rendered_at is not None and rendered_at < len(messages)
+                        else None
+                    )
+                    verify_ready = bool(last_round_tools and last_round_tools[-1] in VERIFY_TOOLS)
+                    if length_recovery_mode and length_recovery_mode.startswith("compact_verifier"):
+                        try:
+                            state = self.session.state_summary()
+                        except Exception:
+                            state = {}
+                        request_messages = verifier_messages(messages[1], state, latest_image)
+                        request_messages.append({"role": "user", "content": COMPACT_DISCIPLINE})
+                        request_tools = verifier_tools(self.tools)
+                        request_mode = "compact_verifier_recovery"
+                    elif length_recovery_mode:
+                        request_messages = with_recovery_instruction(messages)
+                        request_mode = "length_recovery"
+                    elif force_full_context_once:
+                        request_messages = copy.deepcopy(messages)
+                        request_messages.append({"role": "user", "content": COMPACT_DISCIPLINE})
+                        request_mode = "full_fallback"
+                        consume_full_fallback = True
+                    elif verify_ready:
+                        try:
+                            state = self.session.state_summary()
+                        except Exception:
+                            state = {}
+                        request_messages = verifier_messages(messages[1], state, latest_image)
+                        request_tools = verifier_tools(self.tools)
+                        request_mode = "compact_verifier"
+                    else:
+                        request_messages = compact_history(messages)
+                        request_messages.append({"role": "user", "content": COMPACT_DISCIPLINE})
+                        request_mode = "compact_history"
+                request_modes.append(request_mode)
+                if request_mode in {"compact_verifier", "compact_verifier_recovery", "length_recovery"}:
+                    compact_requests.append({
+                        "call": usage["calls"] + 1,
+                        "mode": request_mode,
+                        "messages": _without_images(request_messages),
+                        "tools": [
+                            (item.get("function") or {}).get("name")
+                            for item in request_tools
+                        ],
+                    })
+                if request_mode.startswith("compact_verifier"):
+                    compact_verifier_calls += 1
+                request = {"model": self.model, "messages": request_messages, "tools": request_tools,
+                           "tool_choice": "auto",
                            "temperature": self.temperature, "max_tokens": max_tokens, **extra}
                 try:
                     response, prompt_tokens = complete_within_context(
@@ -456,16 +549,61 @@ class WorkflowAgent:
                 finish_reasons.append(getattr(choice, "finish_reason", None))
                 pending = {"finish_reason": getattr(choice, "finish_reason", None),
                            "content": choice.message.content or "",
-                           "tool_calls": _tool_calls_payload(choice.message)}
+                           "tool_calls": _tool_calls_payload(choice.message),
+                           "request_mode": request_mode}
+                if consume_full_fallback:
+                    force_full_context_once = False
+                length_recovery_mode = None
                 checkpoint()
             reply, pending = pending, None
             calls = reply["tool_calls"]
             # 输出被截断（推理模型常把额度用在思考上）不算停滞：丢掉残缺回复，放宽长度再要一次
             if reply["finish_reason"] == "length" and not _all_args_parse(calls):
                 truncations += 1
+                if self.compact_context:
+                    length_retries += 1
+                    length_recovery_mode = str(reply.get("request_mode") or "compact_history")
                 max_tokens = min(max(max_tokens, self.max_tokens) * 2, self.max_output_tokens)
-                if truncations == 1:
+                if truncations == 1 and not self.compact_context:
                     messages.append({"role": "user", "content": "上一条回复太长被截断了。少写分析，直接输出下一步的工具调用。"})
+                checkpoint()
+                continue
+            if self.compact_context and str(reply.get("request_mode") or "").startswith("compact_verifier"):
+                call = calls[0] if len(calls) == 1 else None
+                name = ((call or {}).get("function") or {}).get("name")
+                try:
+                    args = json.loads(((call or {}).get("function") or {}).get("arguments") or "{}")
+                except ValueError:
+                    args = {}
+                if name == CONTINUE_FULL_CONTEXT:
+                    reason = str(args.get("reason") or "紧凑核对未确认完成，需要恢复完整历史继续检查。")
+                    messages.append({"role": "user", "content": f"紧凑核对结果：{reason}\n请根据完整历史继续修改。"})
+                    force_full_context_once = True
+                    compact_fallbacks += 1
+                    last_round_tools = []
+                    checkpoint()
+                    continue
+                if name == "finish":
+                    result = self._finish(args)
+                    entry = {
+                        "tool": "finish", "args": args, "ok": bool(result.get("ok")),
+                        "error_code": (result.get("error") or {}).get("code"),
+                        "message": (result.get("error") or {}).get("message", ""),
+                        "compact_verifier": True,
+                    }
+                    tool_log.append(entry)
+                    if result.get("ok"):
+                        summary = str(args.get("summary", ""))
+                        status = "finished"
+                        checkpoint(status)
+                        break
+                    reason = entry["message"] or "finish 校验未通过"
+                else:
+                    reason = "紧凑核对没有返回 finish 或 continue_full_context"
+                messages.append({"role": "user", "content": f"紧凑核对无法结束：{reason}。请根据完整历史继续修改。"})
+                force_full_context_once = True
+                compact_fallbacks += 1
+                last_round_tools = []
                 checkpoint()
                 continue
             # 放宽后的上限保留到本题结束：同一题后续步骤的思考量相近，重置会让每步都先白白截断几次
@@ -491,8 +629,10 @@ class WorkflowAgent:
             finished = False
             images: list[tuple[str, str]] = []
             seen_in_reply: set[str] = set()
+            round_tools: list[str] = []
             for call in calls:
                 name = call["function"]["name"]
+                round_tools.append(name)
                 raw_args = call["function"]["arguments"]
                 try:
                     args = json.loads(raw_args) if raw_args.strip() else {}
@@ -565,6 +705,7 @@ class WorkflowAgent:
                         _image_part(image, "image/png"),
                     ],
                 })
+            last_round_tools = round_tools
             if finished:
                 status = "finished"
                 break
@@ -587,6 +728,12 @@ class WorkflowAgent:
             "reasoning_effort": self.reasoning_effort,
             "context_limit": self.context_limit,
             "view_tool": self.view_tool,
+            "compact_context": self.compact_context,
+            "request_modes": request_modes,
+            "compact_requests": compact_requests,
+            "length_retries": length_retries,
+            "compact_verifier_calls": compact_verifier_calls,
+            "compact_fallbacks": compact_fallbacks,
             "finish_reasons": finish_reasons,
             "tool_calls": tool_log,
             "token_usage": usage,

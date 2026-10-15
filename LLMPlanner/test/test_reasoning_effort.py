@@ -134,6 +134,21 @@ def test_api_run_rejects_unknown_reasoning_effort(monkeypatch):
     assert response.status_code == 400 and not captured
 
 
+def test_api_run_compact_context_is_strict_opt_in(monkeypatch):
+    response, captured = _post({"action_level": "L1_v2"}, monkeypatch)
+    assert response.status_code == 200
+    assert captured["compact_context"] is False
+
+    response, captured = _post({"action_level": "L1_v2", "compact_context": True}, monkeypatch)
+    assert response.status_code == 200
+    assert captured["compact_context"] is True
+
+    response, captured = _post({"action_level": "L1_v2", "compact_context": "true"}, monkeypatch)
+    assert response.status_code == 400 and not captured
+    response, captured = _post({"action_level": "L1", "compact_context": True}, monkeypatch)
+    assert response.status_code == 400 and not captured
+
+
 def test_api_run_forwards_reasoning_effort_to_l0(monkeypatch):
     captured = {}
 

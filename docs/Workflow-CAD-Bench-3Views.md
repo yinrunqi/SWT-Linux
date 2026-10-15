@@ -191,6 +191,8 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py `
 
 Agent 会按模型名自动采用 73,728 token 上下文上限，并使用与 text-to-CAD 相同的超长处理逻辑。该模型部署还必须支持图片输入；先跑上述单题 smoke，确认无误后再去掉 `--ids`。
 
+历史参考结果使用默认的完整上下文路径。后续实验可显式加 `--compact-context`，启用请求级旧工具 ledger、紧凑最终核对和 length recovery；这个开关默认关闭，不改变上面的历史命令与分数。紧凑模式仍在 trace/checkpoint 中保留完整消息和工具记录，并在 `runs.json` 记录 `compact_context`、`request_modes`、`length_retries`、`compact_verifier_calls` 与 `compact_fallbacks`，便于和旧路径做严格 A/B。
+
 `runs.json` 里每次运行另记 LLM 调用数、工具调用数、失败的建模调用数和 `render_views` 调用数。LLM 的完整输出存在 `<case>_r<k>.trace.json`，包括整段对话和每次调用的原始响应。运行过程中每次 LLM 回复、每轮工具后还会写 `<case>_r<k>.checkpoint.json`；中断后在原命令后加 `--resume`，已完成的运行保留，中断的运行从 checkpoint 续跑（与 text-to-CAD 相同），`--sw-restarts N` 可在 SolidWorks 崩溃时自动重启后续跑。`--action-level L0` 仍可使用旧流程：先由 `--vision-model` 把图纸读成结构化中间表示，再生成蓝图交给 L0 多轮 Agent。
 
 参考结果见第 6 节。
@@ -286,7 +288,79 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 
 ---
 
-## 7. 已知局限
+## 7. 紧凑上下文结果：Qwen3.8-Flash-Next-FP8 + L1_v2
+
+### 7.1 配置
+
+2026-10-15 使用第 6 节相同的 50 题、模型、推理强度、工具、40 次调用预算和离线打分协议，只增加 `--compact-context`。该开关压缩旧工具结果，并在状态查询或截图后使用短 verifier；verifier 认为仍需修改时恢复完整历史。每题 1 次，SolidWorks 2025。
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py --action-level L1_v2 --provider qwenlocal `
+    --plan-model Qwen3.8-Flash-Next-FP8 --reasoning-effort medium --max-llm-calls 40 --repeats 1 `
+    --name three_view_l1v2_qwen38_compact_20261015 --compact-context --resume `
+    --sw-restarts 3 --sw-max-private-gb 12
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view `
+    --artifacts eval\artifacts\three_view_l1v2_qwen38_compact_20261015 `
+    --output eval\artifacts\three_view_l1v2_qwen38_compact_20261015\scores.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics_three_view `
+    summary eval\artifacts\three_view_l1v2_qwen38_compact_20261015\scores.json --repeats 1
+```
+
+50 题全部生成并成功离线打分。49 题由 Agent 调用 `finish`；`c3_gear_pair` 用满 40 次 LLM 调用，但导出的最终几何为满分。运行中没有 Qwen、网络或 SolidWorks 外部故障，因此没有因基础设施原因重跑测例。
+
+### 7.2 总体结果
+
+| 指标 | 完整上下文（第 6 节） | 紧凑上下文 | 差异 |
+|---|---:|---:|---:|
+| rubric 均分 | 95.1 | **96.4**（95% CI [93.6, 98.6]） | +1.3 |
+| pass@1 | 40/50（0.80） | **41/50（0.82）** | +1 题 |
+| core_form | 48/50（0.96） | **49/50（0.98）** | +1 题 |
+| 显式条目通过 | 331/349 | **336/349** | +5 |
+| 图像分均值 | 98.0 | **98.3** | +0.3 |
+| 图像分 100 | 39 | **40** | +1 |
+| LLM 调用 | 452 | **428** | −5.3% |
+| 输入 token | 8,347,027 | **8,254,641** | −1.1% |
+| 输出 token | 961,675 | **822,953** | −14.4% |
+| 总 token | 9,308,702 | **9,077,594** | −2.5% |
+| 每题平均 token | 186.2k | **181.6k** | −4.6k |
+| 工具调用 / 失败建模调用 | 500 / 37 | 523 / 47 | +23 / +10 |
+| 累计耗时 | 4.29 h | **3.65 h** | −14.8% |
+
+按题目类型：
+
+| 类型 | 题数 | rubric | pass@1 | 图像分 |
+|---|---:|---:|---:|---:|
+| 基础零件 | 9 | 100.0 | 1.000 | 100.0 |
+| 组合零件 | 4 | 96.9 | 0.750 | 99.6 |
+| 投影基础零件 | 18 | 95.3 | 0.833 | 97.1 |
+| 投影组合零件 | 19 | 95.6 | 0.737 | 98.5 |
+
+### 7.3 未通过的 9 题
+
+| case | rubric | 图像分 | 失败条目 |
+|---|---:|---:|---|
+| `c2_gearbox` | 87.50 | 98.31 | `mount_holes` |
+| `d06_u_clevis` | 57.14 | 85.64 | `slot`、`boss`、`volume` |
+| `d08_pipe_tee` | 85.71 | 99.75 | `flange_holes` |
+| `d12_cut_block` | 71.43 | 67.33 | `profile`、`volume` |
+| `d14_link_rod` | 85.71 | 82.92 | `volume` |
+| `d15_motor_mount` | 87.50 | 95.75 | `slots` |
+| `d17_pipe_clamp` | 85.71 | 99.08 | `solids`（hard） |
+| `d25_step_pin` | 87.50 | 94.73 | `groove` |
+| `d36_flanged_tube` | 71.43 | 93.30 | `round_holes`、`volume` |
+
+### 7.4 紧凑模式行为与结论
+
+- 共触发 64 次 compact verifier，其中 20 次要求恢复完整历史继续修改；没有出现 `length` 空回合，`length_retries=0`。
+- 输出 token 降低 14.4%，LLM 调用降低 5.3%，性能指标没有下降；但这是各跑一次的随机模型结果，不能把 +1.3 rubric 直接归因于上下文压缩。
+- 输入 token 只降低 1.1%，低于原先预期。旧工具 ledger 的节省被每轮固定重复的系统提示、完整工具 schema、原图，以及返工题新增的工具结果部分抵消；工具调用和失败建模调用反而增加。
+- 当前平均 181.6k token/题，尚未达到 170k 目标。若保持本次总调用数不变，还需从 9,077,594 再减少至少 577,594 token（6.4%）。
+
+完整产物在 `eval/artifacts/three_view_l1v2_qwen38_compact_20261015/`：`runs.json`、`scores.json`、`summary.json`、50 题的 STEP/SLDPRT、trace 和 checkpoint。
+
+---
+
+## 8. 已知局限
 
 - rubric 是人工编写的，图纸上没有被 rubric 覆盖的内容不会被检查。
 - rubric 的坐标系允许左手系，所以对称性足够强的零件，其镜像件可能通过 rubric。镜像件的图像分低于满分，这种情况由图像分发现。

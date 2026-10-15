@@ -2421,6 +2421,7 @@ def run_one(
     checkpoint: Path | None = None,
     resume: bool = False,
     view_tool: bool = True,
+    compact_context: bool = False,
 ) -> dict:
     started = time.perf_counter()
     cleanup_before = _close_documents(sw_url)
@@ -2445,6 +2446,7 @@ def run_one(
             request_payload["resume"] = resume
     if action_level == "L1_v2":
         request_payload["view_tool"] = view_tool
+        request_payload["compact_context"] = compact_context
     if reasoning_effort:
         request_payload["reasoning_effort"] = reasoning_effort
     if action_level == "L0":
@@ -2523,6 +2525,11 @@ def run_one(
             ),
             "tool_calls": (payload.get("summary") or {}).get("tool_calls"),
             "resumed": (payload.get("workflow") or {}).get("resumed"),
+            "compact_context": (payload.get("workflow") or {}).get("compact_context"),
+            "length_retries": (payload.get("workflow") or {}).get("length_retries"),
+            "compact_verifier_calls": (payload.get("workflow") or {}).get("compact_verifier_calls"),
+            "compact_fallbacks": (payload.get("workflow") or {}).get("compact_fallbacks"),
+            "request_modes": (payload.get("workflow") or {}).get("request_modes"),
             "max_llm_calls": max_llm_calls if action_level in WORKFLOW_LEVELS else None,
             "duration_seconds": round(time.perf_counter() - started, 2),
             # 续跑时 duration_seconds 只是本段；agent 的计时包含所有中断前的段
@@ -2608,6 +2615,7 @@ def _write_report(
     max_plan_tokens: int | None = None,
     enable_thinking: bool | None = None,
     view_tool: bool | None = None,
+    compact_context: bool = False,
 ) -> dict:
     spent_yuan = None
     if balance_before and balance_after:
@@ -2640,6 +2648,7 @@ def _write_report(
             if action_level == "L0" else None
         ),
         "view_tool": view_tool,
+        "compact_context": compact_context if action_level == "L1_v2" else False,
         "prompt_lang": lang,
         "score_version": 2,
         "strict_orientation": strict_orientation,
@@ -2744,6 +2753,7 @@ def rescore_report(source: Path, output: Path, strict_orientation: bool = False)
         max_plan_tokens=old.get("max_plan_tokens"),
         enable_thinking=old.get("enable_thinking"),
         view_tool=old.get("view_tool"),
+        compact_context=bool(old.get("compact_context", False)),
     )
     return report
 
@@ -2867,7 +2877,14 @@ def main() -> int:
         action="store_true",
         help="L1_v2: do not offer the view_model SolidWorks screenshot tool (required for text-only models)",
     )
+    parser.add_argument(
+        "--compact-context",
+        action="store_true",
+        help="L1_v2: opt in to compact tool-history requests, compact final verification, and length recovery",
+    )
     args = parser.parse_args()
+    if args.compact_context and args.action_level != "L1_v2":
+        parser.error("--compact-context requires --action-level L1_v2")
     if args.action_level in WORKFLOW_LEVELS:
         from planner.workflow.agent import default_reasoning_effort
         args.reasoning_effort = default_reasoning_effort(args.model, args.reasoning_effort)
@@ -2945,6 +2962,7 @@ def main() -> int:
                 checkpoint=checkpoint if args.action_level in WORKFLOW_LEVELS else None,
                 resume=resuming,
                 view_tool=bool(view_tool),
+                compact_context=args.compact_context,
             )
             lost = result.get("workflow_status") == "sw_lost" or (
                 result.get("status") == "error" and sw_watchdog.check(sw_url, 0) is not None
@@ -2995,6 +3013,7 @@ def main() -> int:
             max_plan_tokens=args.max_plan_tokens,
             enable_thinking=False if args.disable_thinking else None,
             view_tool=view_tool,
+            compact_context=args.compact_context,
         )
         if (
             args.pause_every > 0
@@ -3026,6 +3045,7 @@ def main() -> int:
         max_plan_tokens=args.max_plan_tokens,
         enable_thinking=False if args.disable_thinking else None,
         view_tool=view_tool,
+        compact_context=args.compact_context,
     )
     print(
         f"summary score={report['average_score']} "

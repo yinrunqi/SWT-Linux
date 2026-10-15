@@ -120,6 +120,7 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 | `--max-llm-calls` | 40 | L1 的 LLM 调用预算，与 text-to-CAD 一致 |
 | `--no-views-tool` | 关 | 不提供 `render_views`，用于消融对比 |
 | `--no-view-tool` | 关 | L1_v2 不提供 `view_model`；不影响输入图纸和 `render_views` |
+| `--compact-context` | 关 | L1_v2 可选的紧凑上下文模式；默认关闭，旧命令和历史评测路径不变 |
 | `--ids` | 全部 50 题 | 只跑指定的 case |
 | `--repeats` | 2 | 每题独立运行次数 |
 | `--lang` | `zh` | `en` 时使用 YAML 里的 `prompt_en` |
@@ -132,7 +133,7 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 
 续跑与 text-to-CAD 的 L1 评测相同：先在新零件上按原顺序重放已执行的工具恢复模型，再接着原对话继续，已经拿到的回复不会重新请求，图纸会重新放回首条消息；重放结果与记录不一致时记 `resume_failed`。不加 `--resume` 时旧 checkpoint 会被删掉，从头开始。
 
-`runs.json` 里 L1 每次运行记录：`status`（`finished` / `max_llm_calls` / `stalled` / `llm_error`）、`llm_calls`、`tool_calls`、`failed_modeling_calls`、`render_views_calls`、`token_usage`、`duration_seconds`、`plan_model`、`action_level`，以及 trace 文件路径 `trace`。
+`runs.json` 里 L1 每次运行记录：`status`（`finished` / `max_llm_calls` / `stalled` / `llm_error`）、`llm_calls`、`tool_calls`、`failed_modeling_calls`、`render_views_calls`、`token_usage`、`duration_seconds`、`plan_model`、`action_level`，以及 trace 文件路径 `trace`。紧凑模式另记 `compact_context`、`length_retries`、`compact_verifier_calls`、`compact_fallbacks` 和逐次 `request_modes`。
 
 ### 3.3 自部署 Qwen3.8-Flash-Next-FP8 + L1_v2
 
@@ -147,7 +148,23 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py `
 
 自部署端仍须支持图片输入和 function calling；text-to-CAD 能运行只能证明工具调用正常，不能证明视觉输入正常。先通过单题 smoke 后再去掉 `--ids` 跑全量。
 
-### 3.4 消融：有无 `render_views`
+### 3.4 可选的紧凑上下文模式
+
+历史评测方式仍是默认值。只有显式加 `--compact-context` 才启用三项 token 优化：
+
+1. 发给模型的请求副本把较早的成功工具结果压成 ledger，保留 feature 名、包围盒、体积、实体数、关键圆柱和错误原因；最近两轮保持完整。完整历史仍写入 checkpoint/trace，并用于 SolidWorks replay。
+2. `get_model_state`、`view_model` 或 `render_views` 后用短 verifier 请求核对，只携带原图、最新截图/状态，并只开放 `finish` 和 `continue_full_context`。若需修改，下一轮恢复完整历史。
+3. 初始输出余量提高到 32k（未使用的上限不计 token）；仍被 `length` 截断时，用压缩后的 recovery 请求重试。实际截断调用继续计入 `llm_calls` 和 `token_usage`，不会隐藏消耗。
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py `
+    --action-level L1_v2 --compact-context `
+    --ids b01_l_bracket --repeats 1 --name three_view_l1v2_compact_smoke
+```
+
+HTTP API 对应字段是严格布尔值 `"compact_context": true`，只支持 `L1_v2`。旧 checkpoint 没有新增字段也能续跑；压缩只作用于请求副本，不破坏 checkpoint 里的完整消息和 `tool_log`。
+
+### 3.5 消融：有无 `render_views`
 
 ```powershell
 venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py --plan-model <多模态模型> `
@@ -156,7 +173,7 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py --plan-model <�
 
 两组结果用同样的命令打分。比较均分、pass@k 和平均 LLM 调用数，就能看出投影对照对结果的影响。
 
-### 3.5 直接调用 HTTP 接口
+### 3.6 直接调用 HTTP 接口
 
 ```python
 import base64, requests
@@ -165,10 +182,11 @@ drawing = base64.b64encode(open(r"eval\three_view\drawings\d02_bearing_block.png
 resp = requests.post("http://localhost:5000/api/run", json={
     "instruction": "根据所附三视图（第三角画法，单位 mm）建模轴承座，单一实体。",
     "image": "data:image/png;base64," + drawing,   # 也可以只传 base64；不带前缀时按文件头判断格式
-    "action_level": "L1",
+    "action_level": "L1_v2",
     "plan_model": "<多模态模型>",
     "max_turns": 40,              # L1 的 LLM 调用预算
     "views_tool": True,           # 是否提供 render_views
+    "compact_context": False,     # 默认旧路径；true 才启用紧凑上下文
     "use_cache": False,
 }, timeout=3600).json()
 print(resp["summary"])
@@ -194,12 +212,14 @@ print(resp["summary"])
 
 | 文件 | 改动 |
 |---|---|
-| `planner/workflow/agent.py` | `WorkflowAgent.run(goal, image_b64=None, image_mime="image/png")`；`DRAWING_NOTE`；`render_views` 图片作为用户消息发送，只保留最新一张；返回的消息记录去掉图片 |
+| `planner/workflow/agent.py` | `WorkflowAgent.run(goal, image_b64=None, image_mime="image/png")`；`DRAWING_NOTE`；`render_views` 图片作为用户消息发送，只保留最新一张；可选 `compact_context` 状态机 |
+| `planner/workflow/context_compact.py` | 紧凑模式的旧工具 ledger、最终 verifier 与 length recovery 请求构造；只改请求副本 |
 | `planner/workflow/tools.py` | `RENDER_VIEWS_SPEC`（放在 `EXTRA_TOOL_SPECS`，按需启用）；`WorkflowSession.render_views`；`GEOMCHECK_PYTHON` |
 | `planner/workflow/errors.py` | 新错误码 `RENDER_FAILED` |
 | `web/app.py` | L1 接受 `image` 与 `views_tool`；`_image_mime` 判断图片格式；`render_views` 计为查询工具 |
 | `geomcheck/drawing.py` | 命令行入口：`python -m geomcheck.drawing in.step out.png [标题]`，投影出不带标注的三视图 |
-| `eval/eval_three_view_bench.py` | 默认自部署 Qwen + L1_v2 + medium；`--reasoning-effort`、`--max-llm-calls`、`--no-views-tool`、`--no-view-tool` 与 text-to-CAD 对齐；记录调用统计 |
+| `eval/eval_three_view_bench.py` | 默认自部署 Qwen + L1_v2 + medium；`--reasoning-effort`、`--max-llm-calls`、`--no-views-tool`、`--no-view-tool`、`--compact-context` 与 text-to-CAD 对齐；记录调用统计 |
+| `test/test_compact_context.py` | 紧凑模式的默认关闭、ledger、verifier finish/回退、length recovery、checkpoint/resume 离线测试 |
 | `test/test_workflow_three_view.py` | 离线测试（8 个）：图纸放进首条消息、系统提示词不变、纯文本消息不变、投影图只保留最新一张、`render_views` 按需启用、空零件与投影失败的错误码、真实投影子进程、图片格式判断 |
 
 离线测试不需要 SolidWorks，也不调用模型：

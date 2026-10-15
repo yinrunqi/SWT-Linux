@@ -1,0 +1,177 @@
+"""L1_v2 compact_context：请求副本压缩、核对回退和 length recovery。"""
+
+from __future__ import annotations
+
+import json
+from types import SimpleNamespace
+
+from planner.workflow.agent import WorkflowAgent
+from planner.workflow.context_compact import CONTINUE_FULL_CONTEXT
+
+
+def _call(call_id: str, name: str, args: dict | None = None):
+    return SimpleNamespace(
+        id=call_id,
+        function=SimpleNamespace(name=name, arguments=json.dumps(args or {}, ensure_ascii=False)),
+    )
+
+
+class RecordingClient:
+    def __init__(self, script):
+        self.script = list(script)
+        self.requests: list[dict] = []
+        self.chat = SimpleNamespace(completions=SimpleNamespace(create=self._create))
+
+    def _create(self, **kwargs):
+        self.requests.append(kwargs)
+        finish_reason, calls = self.script.pop(0)
+        message = SimpleNamespace(content="", tool_calls=calls)
+        return SimpleNamespace(
+            choices=[SimpleNamespace(message=message, finish_reason=finish_reason)],
+            usage=None,
+        )
+
+
+class CompactSession:
+    version = "v2"
+    has_part = True
+
+    def call(self, name, args):
+        if name == "get_model_state":
+            return {"ok": True, "state": self.state_summary()}
+        return {
+            "ok": True,
+            "created": [f"{name}-feature"],
+            "bbox_mm": {"size": [10, 20, 30]},
+            "volume_mm3": 6000,
+            "volume_delta_mm3": 100,
+            "bodies": 1,
+            "new_cylinders": [{"diameter_mm": 5, "count": 1}],
+            "verbose_unused_field": "x" * 1000,
+        }
+
+    def state_summary(self):
+        return {
+            "bbox_mm": {"size": [10, 20, 30]},
+            "volume_mm3": 6000,
+            "bodies": 1,
+            "features": [{"name": "凸台-拉伸1", "type": "Extrusion", "unused": "x" * 100}],
+            "cylinder_groups": [{"diameter_mm": 5, "count": 1}],
+            "planar_faces": [{"ref": "face#0", "unused": "x" * 1000}],
+        }
+
+
+def _tool_names(request: dict) -> list[str]:
+    return [item["function"]["name"] for item in request["tools"]]
+
+
+def test_compact_context_is_opt_in_and_default_request_is_unchanged():
+    client = RecordingClient([("tool_calls", [_call("f", "finish", {"summary": "ok"})])])
+    outcome = WorkflowAgent(client, "m", CompactSession(), version="v2").run("零件")
+    assert outcome["status"] == "finished"
+    assert outcome["compact_context"] is False
+    assert outcome["request_modes"] == ["full"]
+    assert client.requests[0]["messages"][0]["content"] == outcome["messages"][0]["content"]
+    assert client.requests[0]["max_tokens"] == 16000
+
+
+def test_compact_history_keeps_two_recent_rounds_and_ledgers_older_success():
+    client = RecordingClient([
+        ("tool_calls", [_call("a", "extrude", {"depth": 10})]),
+        ("tool_calls", [_call("b", "cut", {"depth": 2})]),
+        ("tool_calls", [_call("c", "hole", {"diameter": 5})]),
+        ("tool_calls", [_call("d", "finish", {"summary": "ok"})]),
+    ])
+    outcome = WorkflowAgent(
+        client, "m", CompactSession(), version="v2", compact_context=True, view_tool=False, max_llm_calls=4,
+    ).run("零件")
+    assert outcome["status"] == "finished"
+    fourth = client.requests[3]["messages"]
+    tools = {message["tool_call_id"]: message["content"] for message in fourth if message["role"] == "tool"}
+    old = json.loads(tools["a"])
+    assert old["ledger"] is True and old["tool"] == "extrude"
+    assert "verbose_unused_field" not in old
+    assert "ledger" not in json.loads(tools["b"])
+    assert "ledger" not in json.loads(tools["c"])
+    # 完整 trace/checkpoint 主历史不被请求压缩改写。
+    full = {message["tool_call_id"]: message["content"] for message in outcome["messages"] if message["role"] == "tool"}
+    assert "verbose_unused_field" in json.loads(full["a"])
+
+
+def test_compact_verifier_uses_short_tools_and_can_finish():
+    client = RecordingClient([
+        ("tool_calls", [_call("s", "get_model_state")]),
+        ("tool_calls", [_call("f", "finish", {"summary": "verified"})]),
+    ])
+    outcome = WorkflowAgent(
+        client, "m", CompactSession(), version="v2", compact_context=True, view_tool=False,
+    ).run("零件", image_b64="DRAW")
+    assert outcome["status"] == "finished" and outcome["summary"] == "verified"
+    assert outcome["request_modes"] == ["compact_history", "compact_verifier"]
+    assert outcome["compact_verifier_calls"] == 1
+    assert _tool_names(client.requests[1]) == ["finish", CONTINUE_FULL_CONTEXT]
+    verifier = client.requests[1]["messages"]
+    assert len(verifier) == 3
+    state = verifier[2]["content"]
+    assert "cylinder_groups" in state and "planar_faces" not in state
+    assert outcome["tool_calls"][-1]["compact_verifier"] is True
+
+
+def test_compact_verifier_can_restore_full_history_for_one_correction_turn():
+    client = RecordingClient([
+        ("tool_calls", [_call("s", "get_model_state")]),
+        ("tool_calls", [_call("v", CONTINUE_FULL_CONTEXT, {"reason": "缺少通孔"})]),
+        ("tool_calls", [_call("h", "hole", {"diameter": 5})]),
+        ("tool_calls", [_call("f", "finish", {"summary": "fixed"})]),
+    ])
+    outcome = WorkflowAgent(
+        client, "m", CompactSession(), version="v2", compact_context=True, view_tool=False,
+    ).run("零件")
+    assert outcome["status"] == "finished"
+    assert outcome["compact_fallbacks"] == 1
+    assert outcome["request_modes"] == [
+        "compact_history", "compact_verifier", "full_fallback", "compact_history",
+    ]
+    assert any("缺少通孔" in str(message.get("content")) for message in client.requests[2]["messages"])
+    state_tool = next(message for message in client.requests[2]["messages"] if message["role"] == "tool")
+    assert json.loads(state_tool["content"])["state"]["planar_faces"]
+
+
+def test_compact_length_recovery_starts_with_large_budget_and_keeps_honest_usage():
+    client = RecordingClient([
+        ("length", []),
+        ("tool_calls", [_call("f", "finish", {"summary": "ok"})]),
+    ])
+    outcome = WorkflowAgent(
+        client, "m", CompactSession(), version="v2", compact_context=True, view_tool=False,
+    ).run("零件")
+    assert outcome["status"] == "finished"
+    assert [request["max_tokens"] for request in client.requests] == [32000, 32000]
+    assert outcome["llm_calls"] == 2 and outcome["length_retries"] == 1
+    assert outcome["request_modes"] == ["compact_history", "length_recovery"]
+    assert "上一条回复因长度耗尽" in str(client.requests[1]["messages"][-1]["content"])
+    assert not any("被截断了" in str(message.get("content")) for message in outcome["messages"])
+
+
+def test_compact_checkpoint_resume_keeps_optional_state(tmp_path):
+    checkpoint = tmp_path / "compact.checkpoint.json"
+    first = RecordingClient([("tool_calls", [_call("a", "extrude", {"depth": 10})])])
+    WorkflowAgent(
+        first, "m", CompactSession(), version="v2", compact_context=True,
+        view_tool=False, max_llm_calls=1, checkpoint_path=checkpoint,
+    ).run("零件")
+    saved = json.loads(checkpoint.read_text(encoding="utf-8"))
+    assert saved["compact_context"] is True
+    assert saved["last_round_tools"] == ["extrude"]
+    assert saved["request_modes"] == ["compact_history"]
+    saved["status"] = "running"
+    checkpoint.write_text(json.dumps(saved, ensure_ascii=False), encoding="utf-8")
+
+    second = RecordingClient([("tool_calls", [_call("f", "finish", {"summary": "resumed"})])])
+    outcome = WorkflowAgent(
+        second, "m", CompactSession(), version="v2", compact_context=True,
+        view_tool=False, checkpoint_path=checkpoint,
+    ).run("零件", resume=True)
+    assert outcome["status"] == "finished"
+    assert outcome["summary"] == "resumed"
+    assert outcome["resumed"]["from_llm_calls"] == 1

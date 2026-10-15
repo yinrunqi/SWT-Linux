@@ -1796,6 +1796,7 @@ def _run_workflow_l1(
     resume: bool = False,
     version: str = "v1",
     view_tool: bool = True,
+    compact_context: bool = False,
 ) -> dict:
     """L1：工程师级工具 + 闭环 Agent。results 只列建模工具调用，供打分统计失败次数。
 
@@ -1831,7 +1832,7 @@ def _run_workflow_l1(
     agent = WorkflowAgent(
         client, model, session, max_llm_calls=max_llm_calls, extra_tools=extra_tools,
         reasoning_effort=reasoning_effort, stream=True, checkpoint_path=checkpoint_path or None, version=version,
-        view_tool=view_tool, log=log,
+        view_tool=view_tool, compact_context=compact_context, log=log,
     )
     outcome = agent.run(instruction, image_b64=image_b64 or None, image_mime=image_mime, resume=resume)
     modeling_calls = [item for item in outcome["tool_calls"] if item["tool"] not in WORKFLOW_QUERY_TOOLS]
@@ -1893,6 +1894,7 @@ def run():
       "image": "<base64>",         (可选；L1 时直接交给 plan_model，须为多模态模型)
       "views_tool": true,          (可选；L1 带图时是否提供 render_views)
       "view_tool": true,           (可选；L1_v2 是否提供 view_model 截图工具，纯文本模型设 false)
+      "compact_context": false,    (可选；L1_v2 紧凑上下文优化，默认关闭以保持历史评测行为)
       "dry_run": false
     }
     """
@@ -1935,6 +1937,11 @@ def run():
     enable_thinking = data.get("enable_thinking")
     if enable_thinking is not None and not isinstance(enable_thinking, bool):
         return jsonify({"success": False, "error": "enable_thinking 必须是布尔值"}), 400
+    compact_context = data.get("compact_context", False)
+    if not isinstance(compact_context, bool):
+        return jsonify({"success": False, "error": "compact_context 必须是布尔值"}), 400
+    if compact_context and action_level != "L1_v2":
+        return jsonify({"success": False, "error": "compact_context 仅支持 L1_v2"}), 400
     dry_run = data.get("dry_run", False)
     use_cache = bool(data.get("use_cache", True))
     capture_trace = bool(data.get("capture_trace", False))
@@ -1993,6 +2000,7 @@ def run():
                     resume=bool(data.get("resume", False)),
                     version=WORKFLOW_VERSIONS[action_level],
                     view_tool=bool(data.get("view_tool", True)),
+                    compact_context=compact_context,
                 ))
         except Exception as exc:
             traceback.print_exc()

@@ -206,6 +206,18 @@ python -m web.app --model gpt-4o
 响应包含 `multi_turn.turns`（每轮 Observe / Action / Result / Check）、
 `multi_turn.milestones`（账本与验收证据）、`final_observation` 以及 LLM 调用数和操作统计。
 
+L1_v2 闭环 Agent 可选请求级 token 优化，默认关闭以保持历史评测行为：
+
+```json
+{
+  "instruction": "根据所附三视图建模零件",
+  "action_level": "L1_v2",
+  "compact_context": true
+}
+```
+
+`compact_context` 必须是布尔值且只支持 L1_v2。开启后，旧成功工具结果在请求副本中压成 ledger，最终核对使用只含原图、最新截图/状态的短 verifier；需要返工时自动恢复完整历史。完整 trace、checkpoint 和 replay 记录不被压缩。评测脚本对应 `--compact-context`。
+
 ### Web Demo 文件结构
 
 ```
