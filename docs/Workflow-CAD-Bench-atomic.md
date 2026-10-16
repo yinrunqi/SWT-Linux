@@ -78,3 +78,70 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py @common `
 venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py @common `
   --split extreme --output eval\text_atomic_l0_qwen38flash_medium_extreme20_en_result.json
 ```
+
+---
+
+## 三视图 track：L0 Atomic 与 L1_v2 compact 对照（2026-10-16）
+
+### 协议
+
+在同一组 50 道三视图题上补跑完整 Atomic API。由于输入是图片，L0 先调用 Vision 把图纸转成 `ThreeViewIR`，再由 Plan 一次性生成 `SwModelingPlan`，随后顺序执行 `atomic_api_complete` / `part-api-v1` 原子操作；执行过程中仍然没有观察、修正、重试或回滚。因此这里的“一次性计划”包含两个阶段的模型调用，不应与纯文本 L0 的单次调用混为一谈。
+
+- Vision 和 Plan 都使用自部署 `Qwen3.8-Flash-Next-FP8`，中文题面、温度 0、禁用缓存、每题 1 次；
+- Vision 输出上限 8k；Plan 使用 `reasoning_effort=medium` 和 32k 输出上限；
+- 模型在 32k 内只产生 reasoning、没有计划正文时按能力失败记 0 分，不降低推理强度或重发请求；
+- Qwen、网络或 SolidWorks 外部故障才允许重跑。本轮外部故障为 0；
+- L1_v2 对照为 `three_view_l1v2_qwen38_compact_v2_20261016`，题集、模型、题面语言和离线打分协议相同。
+
+### 结果
+
+| 指标 | L0 Atomic | L1_v2 compact | 差异（Atomic − compact） |
+|---|---:|---:|---:|
+| rubric 均分 | **61.4**（95% CI [51.2, 71.2]） | **96.4**（[93.6, 98.7]） | −35.0 |
+| pass@1 | **18/50（0.36）** | **42/50（0.84）** | −24 题 |
+| core_form | **41/50（0.82）** | **50/50（1.00）** | −9 题 |
+| 显式条目通过 | 209/349 | 337/349 | −128 |
+| 图像分均值 | **71.0**；16 题为 100 | **97.6**；41 题为 100 | −26.6 |
+| 总 token / 每题平均 | **1,565,565 / 31.3k** | **6,835,709 / 136.7k** | −77.1% |
+| LLM 调用 | **107**（50 Vision + 57 Plan） | **349** | −69.3% |
+| 累计耗时 | **2.88 h** | **3.14 h** | −8.2% |
+
+L0 按题型的结果：
+
+| 类型 | 题数 | rubric | pass@1 | 图像分 |
+|---|---:|---:|---:|---:|
+| 基础零件 | 9 | 86.3 | 0.556 | 83.3 |
+| 组合零件 | 4 | 82.5 | 0.750 | 83.1 |
+| 投影基础零件 | 18 | 64.5 | 0.333 | 77.5 |
+| 投影组合零件 | 19 | 42.2 | 0.211 | 56.5 |
+
+### 计划生成和执行情况
+
+- 47 题生成计划和 STEP；`d15_motor_mount`、`d19_hinge_leaf`、`d29_hanger_bracket` 在 32k Plan 预算内没有返回计划正文，3 题均记 0 分。
+- 共 107 次 LLM 调用、1,565,565 token。Vision 固定 50 次、238,298 token；Plan 57 次、1,327,267 token。多出的 7 次 Plan 调用来自结构化输出解析重试，不是执行后的几何纠错。
+- 模型计划了 787 个原子操作，其中实际执行 666 个：651 个成功、15 个失败；首个失败后有 121 个后续操作未执行。这里的“失败”和“未执行”分开统计，不能把 `计划数 − 成功数 = 136` 全部算作 API 调用失败。
+- 32 题的已执行原子操作全部成功，但只有 18 题通过全部 rubric。这说明主要瓶颈不只是 Atomic API 执行错误，更是一次性计划对图纸几何、尺寸和特征关系的理解不够准确。
+
+### 结论
+
+三视图 L0 Atomic 将 token 降低 77.1%，但 rubric 均分下降 35.0 分，pass@1 下降 48 个百分点。并且耗时只降低 8.2%：复杂单轮计划的长时间 reasoning 和大量 SolidWorks 原子操作抵消了调用次数减少的优势。随着题目从基础件变为投影组合件，rubric 从 86.3 降到 42.2；执行后观察、截图核对和局部返工是 L1_v2 保持性能的关键。
+
+### 复现与产物
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py `
+  --action-level L0 --mode single_turn --provider qwenlocal `
+  --plan-model Qwen3.8-Flash-Next-FP8 --vision-model Qwen3.8-Flash-Next-FP8 `
+  --reasoning-effort medium --max-plan-tokens 32000 --lang zh --repeats 1 `
+  --name three_view_atomic_l0_qwen38_medium_20261016 --resume `
+  --sw-restarts 3 --sw-max-private-gb 12
+
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view `
+  --artifacts eval\artifacts\three_view_atomic_l0_qwen38_medium_20261016 `
+  --output eval\artifacts\three_view_atomic_l0_qwen38_medium_20261016\scores.json
+
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval\rubrics_three_view `
+  summary eval\artifacts\three_view_atomic_l0_qwen38_medium_20261016\scores.json --repeats 1
+```
+
+完整结果位于 `eval/artifacts/three_view_atomic_l0_qwen38_medium_20261016/`：50 份 trace、47 份 STEP/SLDPRT、`runs.json`、`scores.json` 和 `summary.json`。缺失的 3 份 STEP 对应上面的模型输出失败，并非产物丢失。

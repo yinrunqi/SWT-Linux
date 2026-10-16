@@ -451,6 +451,71 @@ def test_three_view_l1_v2_sends_text_track_reasoning_and_view_settings(tmp_path,
     assert request["expected_bodies"] == 2
 
 
+def test_three_view_l0_sends_aligned_atomic_protocol_and_records_stats(tmp_path, monkeypatch):
+    bench = _load_three_view_bench()
+    image = tmp_path / "d.png"
+    image.write_bytes(b"\x89PNG")
+    sent = {}
+
+    class Response:
+        status_code = 200
+        ok = True
+
+        @staticmethod
+        def json():
+            return {
+                "success": True,
+                "summary": {"total": 7, "succeeded": 6},
+                "results": [{"success": True}] * 6 + [{"success": False}],
+                "token_usage": {
+                    "calls": 2, "prompt_tokens": 1200, "completion_tokens": 800, "total_tokens": 2000,
+                },
+            }
+
+    def respond(url, **kwargs):
+        sent.update(kwargs["json"])
+        return Response()
+
+    monkeypatch.setattr(bench.requests, "post", respond)
+    monkeypatch.setattr(bench, "_close_documents", lambda url: None)
+    monkeypatch.setattr(bench, "_save_artifacts", lambda url, stem: {"step": str(stem.with_suffix(".step"))})
+    monkeypatch.setattr(bench.time, "sleep", lambda s: None)
+    args = SimpleNamespace(
+        out_dir=tmp_path, sw_url="sw", web_url="web", plan_model="Qwen3.8-Flash-Next-FP8",
+        vision_model="Qwen3.8-Flash-Next-FP8", action_level="L0", mode="single_turn",
+        max_plan_tokens=32000, max_llm_calls=40, no_views_tool=False, no_view_tool=False,
+        reasoning_effort="medium", provider="qwenlocal",
+    )
+    row = bench.run_one({"case": "d01", "prompt": "p", "image": image}, 1, args)
+    assert sent["mode"] == "single_turn"
+    assert sent["vision_model"] == sent["plan_model"] == "Qwen3.8-Flash-Next-FP8"
+    assert sent["reasoning_effort"] == "medium"
+    assert sent["max_plan_tokens"] == 32000
+    assert sent["use_cache"] is False
+    assert row["status"] == "finished"
+    assert row["llm_calls"] == 2
+    assert row["atomic_operations"] == 7
+    assert row["successful_atomic_operations"] == 6
+    assert row["executed_atomic_operations"] == 7
+    assert row["failed_atomic_operations"] == 1
+    assert row["unexecuted_atomic_operations"] == 0
+    assert row["unsuccessful_atomic_operations"] == 1
+    assert row["atomic_api"]["version"] == "part-api-v1"
+
+
+def test_three_view_l0_only_retries_external_failures():
+    bench = _load_three_view_bench()
+    assert bench._l0_failure_kind("LLM 在 32000 token 输出预算内未返回建模计划") == "model_output"
+    assert not bench.needs_rerun({
+        "action_level": "L0", "status": "model_error", "failure_kind": "model_output",
+        "error": "LLM 在 32000 token 输出预算内未返回建模计划",
+    })
+    assert bench.needs_rerun({
+        "action_level": "L0", "status": "llm_error", "failure_kind": "external",
+        "error": "peer closed connection",
+    })
+
+
 def test_three_view_expected_bodies_comes_from_solid_count():
     bench = _load_three_view_bench()
     assert bench._expected_bodies({"rubrics": [

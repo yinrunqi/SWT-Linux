@@ -38,6 +38,8 @@ except ImportError:
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+from planner.schemas import PART_ATOMIC_ENDPOINTS
+
 RUBRIC_DIR = ROOT / "eval" / "rubrics_three_view"
 PROMPT_FIELDS = {"zh": "prompt", "en": "prompt_en"}
 WORKFLOW_LEVELS = ("L1", "L1_v2")
@@ -117,7 +119,22 @@ def _write_trace(path: Path, request: dict, status: int | None, body: Any, error
 
 
 def needs_rerun(row: dict) -> bool:
+    if row.get("action_level") == "L0":
+        return row.get("failure_kind") == "external" or row.get("status") in RERUN_STATUSES
     return bool(row.get("error")) or row.get("status") in RERUN_STATUSES
+
+
+def _l0_failure_kind(message: str) -> str:
+    """Separate model-output failures (score as zero) from retryable infrastructure failures."""
+    text = (message or "").lower()
+    model_markers = (
+        "未返回建模计划",
+        "未能返回可解析的 json",
+        "validation error",
+        "invalid json",
+        "json decode",
+    )
+    return "model_output" if any(marker in text for marker in model_markers) else "external"
 
 
 def run_one(task: dict, k: int, args, resume: bool = False) -> dict:
@@ -137,6 +154,8 @@ def run_one(task: dict, k: int, args, resume: bool = False) -> dict:
         "use_cache": False,
         "capture_trace": True,
     }
+    if args.reasoning_effort:
+        payload["reasoning_effort"] = args.reasoning_effort
     if args.action_level in WORKFLOW_LEVELS:
         # 端到端：图纸直接交给 plan_model（须为多模态模型），没有单独的读图阶段
         payload.update({"max_turns": args.max_llm_calls, "views_tool": not args.no_views_tool,
@@ -146,18 +165,32 @@ def run_one(task: dict, k: int, args, resume: bool = False) -> dict:
             payload["compact_context"] = bool(getattr(args, "compact_context", False))
             if payload["compact_context"]:
                 payload["expected_bodies"] = int(task.get("expected_bodies") or 1)
-        if args.reasoning_effort:
-            payload["reasoning_effort"] = args.reasoning_effort
     else:
-        payload.update({"mode": args.mode, "vision_model": args.vision_model})
+        payload.update({
+            "mode": args.mode,
+            "vision_model": args.vision_model,
+            "max_plan_tokens": args.max_plan_tokens,
+        })
     trace_path = stem.parent / f"{stem.name}.trace.json"
     row: dict[str, Any] = {"case": task["case"], "repeat": k, "action_level": args.action_level,
                            "plan_model": args.plan_model, "trace": str(trace_path)}
+    if args.action_level == "L0":
+        row.update({
+            "mode": args.mode,
+            "vision_model": args.vision_model,
+            "reasoning_effort": args.reasoning_effort,
+            "max_plan_tokens": args.max_plan_tokens,
+            "atomic_api": {
+                "name": "atomic_api_complete",
+                "version": "part-api-v1",
+                "endpoints": sorted(path for _method, path in PART_ATOMIC_ENDPOINTS.values()),
+            },
+        })
     if args.action_level in WORKFLOW_LEVELS:
         row["checkpoint"] = str(checkpoint)
     status_code, body = None, None
     try:
-        response = requests.post(f"{args.web_url}/api/run", json=payload, timeout=3600)
+        response = requests.post(f"{args.web_url}/api/run", json=payload, timeout=14400)
         status_code = response.status_code
         try:
             body = response.json()
@@ -186,12 +219,31 @@ def run_one(task: dict, k: int, args, resume: bool = False) -> dict:
             row["render_views_calls"] = sum(
                 1 for item in (body.get("workflow") or {}).get("tool_calls") or [] if item.get("tool") == "render_views"
             )
+        else:
+            summary = body.get("summary") or {}
+            usage = body.get("token_usage") or {}
+            results = body.get("results") or []
+            row["status"] = "finished" if response.ok and body.get("success") else None
+            row["llm_calls"] = usage.get("calls")
+            row["atomic_operations"] = summary.get("total")
+            row["successful_atomic_operations"] = summary.get("succeeded")
+            row["executed_atomic_operations"] = len(results)
+            row["failed_atomic_operations"] = sum(1 for item in results if not item.get("success"))
+            if isinstance(summary.get("total"), int) and isinstance(summary.get("succeeded"), int):
+                row["unsuccessful_atomic_operations"] = summary["total"] - summary["succeeded"]
+                row["unexecuted_atomic_operations"] = max(summary["total"] - len(results), 0)
         if not response.ok or not body.get("success"):
             row["error"] = body.get("error") or f"HTTP {response.status_code}"
+            if args.action_level == "L0":
+                row["failure_kind"] = _l0_failure_kind(row["error"])
+                row["status"] = "model_error" if row["failure_kind"] == "model_output" else "llm_error"
         # 失败的运行也导出当前零件：部分完成的几何同样按 rubric 计分
         row["artifacts"] = _save_artifacts(args.sw_url, stem)
     except Exception as exc:
         row["error"] = str(exc)
+        if args.action_level == "L0":
+            row["failure_kind"] = "external"
+            row["status"] = "llm_error"
         if body is None:
             _write_trace(trace_path, payload, status_code, None, str(exc))
     finally:
@@ -223,8 +275,9 @@ def main() -> int:
         "--reasoning-effort",
         choices=("none", "minimal", "low", "medium", "high", "xhigh"),
         default=None,
-        help="L1/L1_v2 only; sent on every agent call. Omitted = medium for the default self-served Qwen",
+        help="sent on every model call; omitted = medium for the default self-served Qwen",
     )
+    parser.add_argument("--max-plan-tokens", type=int, default=32000, help="L0 plan output budget")
     parser.add_argument("--max-llm-calls", type=int, default=40, help="L1 LLM call budget")
     parser.add_argument("--no-views-tool", action="store_true", help="L1: do not offer render_views (ablation)")
     parser.add_argument(
@@ -255,14 +308,12 @@ def main() -> int:
     )
     parser.add_argument("--sw-max-private-gb", type=float, default=12.0)
     args = parser.parse_args()
-    if args.reasoning_effort and args.action_level not in WORKFLOW_LEVELS:
-        parser.error("--reasoning-effort requires --action-level L1 or L1_v2")
     if args.compact_context and args.action_level != "L1_v2":
         parser.error("--compact-context requires --action-level L1_v2")
+    if args.reasoning_effort is None and args.plan_model.lower() == "qwen3.8-flash-next-fp8":
+        args.reasoning_effort = "medium"
     if args.action_level in WORKFLOW_LEVELS:
         from planner.workflow.agent import default_reasoning_effort
-        if args.reasoning_effort is None and args.plan_model.lower() == "qwen3.8-flash-next-fp8":
-            args.reasoning_effort = "medium"
         args.reasoning_effort = default_reasoning_effort(args.plan_model, args.reasoning_effort)
     args.out_dir = ROOT / "eval" / "artifacts" / args.name
     args.out_dir.mkdir(parents=True, exist_ok=True)
