@@ -210,13 +210,16 @@ L1_v2 闭环 Agent 可选请求级 token 优化，默认关闭以保持历史评
 
 ```json
 {
-  "instruction": "根据所附三视图建模零件",
+  "instruction": "根据所附三视图建模两个分开的实体",
   "action_level": "L1_v2",
-  "compact_context": true
+  "compact_context": true,
+  "expected_bodies": 2
 }
 ```
 
-`compact_context` 必须是布尔值且只支持 L1_v2。开启后，旧成功工具结果在请求副本中压成 ledger，最终核对使用只含原图、最新截图/状态的短 verifier；需要返工时自动恢复完整历史。完整 trace、checkpoint 和 replay 记录不被压缩。评测脚本对应 `--compact-context`。
+`compact_context` 必须是布尔值且只支持 L1_v2。开启后，旧成功工具结果在请求副本中压成 ledger，最终核对使用只含原图、最新截图/状态的短 verifier；需要返工时自动恢复完整历史。verifier 自动使用较低推理强度和 4k 首次输出预算，若截断则恢复大预算重试；同一工具/错误族累计三次时，下一轮暂时隐藏该工具并要求换策略。完整 trace、checkpoint 和 replay 记录不被压缩。评测脚本对应 `--compact-context`。
+
+`expected_bodies` 缺省为 1；大于 1 时只允许与 compact L1_v2 一起使用。Agent 会同步调整系统提示、特征事务的实体数上限和 `finish` 校验。三视图评测器会从 rubric 的 `solid_count` 自动填写该字段。
 
 ### Web Demo 文件结构
 

@@ -149,6 +149,24 @@ def test_api_run_compact_context_is_strict_opt_in(monkeypatch):
     assert response.status_code == 400 and not captured
 
 
+def test_api_run_expected_bodies_requires_compact_v2(monkeypatch):
+    response, captured = _post({
+        "action_level": "L1_v2", "compact_context": True, "expected_bodies": 2,
+    }, monkeypatch)
+    assert response.status_code == 200
+    assert captured["expected_bodies"] == 2
+
+    for body in (
+        {"action_level": "L1_v2", "expected_bodies": 2},
+        {"action_level": "L1", "compact_context": True, "expected_bodies": 2},
+        {"action_level": "L1_v2", "compact_context": True, "expected_bodies": True},
+        {"action_level": "L1_v2", "compact_context": True, "expected_bodies": 0},
+        {"action_level": "L1_v2", "compact_context": True, "expected_bodies": 17},
+    ):
+        response, captured = _post(body, monkeypatch)
+        assert response.status_code == 400 and not captured
+
+
 def test_api_run_forwards_reasoning_effort_to_l0(monkeypatch):
     captured = {}
 

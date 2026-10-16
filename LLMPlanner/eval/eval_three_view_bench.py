@@ -45,13 +45,27 @@ WORKFLOW_LEVELS = ("L1", "L1_v2")
 RERUN_STATUSES = {"llm_error", "sw_lost", "resume_failed"}
 
 
+def _expected_bodies(rubric: dict) -> int:
+    for item in rubric.get("rubrics") or []:
+        for check in item.get("check") or []:
+            value = check.get("solid_count") if isinstance(check, dict) else None
+            if isinstance(value, int) and not isinstance(value, bool) and value > 0:
+                return value
+    return 1
+
+
 def load_tasks(lang: str, ids: list[str] | None) -> list[dict]:
     tasks = []
     for path in sorted(RUBRIC_DIR.glob("*.yaml")):
         rubric = yaml.safe_load(path.read_text(encoding="utf-8"))
         if ids and rubric["case"] not in ids:
             continue
-        tasks.append({"case": rubric["case"], "prompt": rubric[PROMPT_FIELDS[lang]], "image": ROOT / rubric["image"]})
+        tasks.append({
+            "case": rubric["case"],
+            "prompt": rubric[PROMPT_FIELDS[lang]],
+            "image": ROOT / rubric["image"],
+            "expected_bodies": _expected_bodies(rubric),
+        })
     return tasks
 
 
@@ -130,6 +144,8 @@ def run_one(task: dict, k: int, args, resume: bool = False) -> dict:
         if args.action_level == "L1_v2":
             payload["view_tool"] = not args.no_view_tool
             payload["compact_context"] = bool(getattr(args, "compact_context", False))
+            if payload["compact_context"]:
+                payload["expected_bodies"] = int(task.get("expected_bodies") or 1)
         if args.reasoning_effort:
             payload["reasoning_effort"] = args.reasoning_effort
     else:
@@ -157,10 +173,12 @@ def run_one(task: dict, k: int, args, resume: bool = False) -> dict:
             row["reasoning_effort"] = workflow.get("reasoning_effort")
             row["view_tool"] = workflow.get("view_tool")
             row["compact_context"] = workflow.get("compact_context")
+            row["expected_bodies"] = workflow.get("expected_bodies")
             row["context_limit"] = workflow.get("context_limit")
             row["length_retries"] = workflow.get("length_retries")
             row["compact_verifier_calls"] = workflow.get("compact_verifier_calls")
             row["compact_fallbacks"] = workflow.get("compact_fallbacks")
+            row["semantic_recoveries"] = workflow.get("semantic_recoveries")
             row["request_modes"] = workflow.get("request_modes")
             row["llm_calls"] = summary.get("llm_calls")
             row["tool_calls"] = summary.get("tool_calls")

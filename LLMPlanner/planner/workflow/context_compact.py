@@ -164,13 +164,15 @@ def verifier_messages(
     original_user_message: dict,
     state: dict | None,
     latest_image_message: dict | None = None,
+    *,
+    expected_bodies: int = 1,
 ) -> list[dict]:
     messages = [
         {"role": "system", "content": VERIFIER_SYSTEM_PROMPT},
         _verification_user_message(original_user_message),
         {
             "role": "user",
-            "content": "当前零件的精简状态：\n"
+            "content": f"要求的实体数量：{expected_bodies}。\n当前零件的精简状态：\n"
             + json.dumps(compact_state(state), ensure_ascii=False, separators=(",", ":")),
         },
     ]
@@ -198,6 +200,27 @@ def with_recovery_instruction(messages: list[dict]) -> list[dict]:
     return out
 
 
+def with_semantic_recovery(
+    messages: list[dict],
+    state: dict | None,
+    *,
+    tool: str,
+    error_code: str,
+    count: int,
+) -> list[dict]:
+    out = compact_history(messages)
+    out.append({
+        "role": "user",
+        "content": (
+            f"{tool} 已累计 {count} 次出现 {error_code}。本轮暂不提供 {tool}，"
+            "不要通过微调相同参数继续碰运气；请根据当前状态改用另一种建模策略，"
+            "或先调用查询工具取得缺失证据。\n当前精简状态："
+            + json.dumps(compact_state(state), ensure_ascii=False, separators=(",", ":"))
+        ),
+    })
+    return out
+
+
 __all__ = [
     "COMPACT_DISCIPLINE",
     "CONTINUE_FULL_CONTEXT",
@@ -208,4 +231,5 @@ __all__ = [
     "verifier_messages",
     "verifier_tools",
     "with_recovery_instruction",
+    "with_semantic_recovery",
 ]

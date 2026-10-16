@@ -358,6 +358,52 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval/rubrics
 
 完整产物在 `eval/artifacts/three_view_l1v2_qwen38_compact_20261015/`：`runs.json`、`scores.json`、`summary.json`、50 题的 STEP/SLDPRT、trace 和 checkpoint。
 
+### 7.5 轨迹复盘后的进一步优化
+
+上述分数对应 2026-10-15 的原始 compact 实现，不包含本节修改。轨迹显示 C3 和 D17 的题面都明确要求两个实体，但当时 Agent 的系统提示、工具事务和 `finish` 仍强制单实体：D17 在第 19 次调用已经得到两个实体，却被拒绝后继续到第 37 次并合并成错误的单实体；C3 第 38–40 次连续以正确的两个实体调用 `finish`，也都被拒绝。按第一次有效结束点计，这一冲突额外消耗约 537k token。
+
+compact L1_v2 现已增加以下 opt-in 行为，默认完整上下文和非 compact 路径不变：
+
+- 三视图评测器从 rubric 的 `solid_count` 传入 `expected_bodies`；系统提示、v2 工具事务和 `finish` 使用同一实体数约束。
+- compact verifier 首次使用 `reasoning_effort=low`（原任务为 medium/high 时）和 4k 输出预算；若发生 `length`，恢复原大预算重试。原运行的 64 次 verifier 共消耗 190,217 completion token，其中 177,115 是 reasoning token。
+- 同一工具/错误码累计失败三次时触发一次 semantic recovery：下一轮附当前精简状态、暂时隐藏该失败工具并要求换策略，随后恢复工具集。该机制针对 D25 的 19 次失败调用等长尾，不降低总调用上限。
+
+仅修复 C3/D17 的实体数冲突，按原轨迹估算平均值可由 181.6k 降至约 170.8k；verifier 预算优化只需再节省 41k 总 token 即可低于 170k/题。该数字是轨迹重算而非新一轮模型评测结果，仍需独立 50 题运行确认。
+
+### 7.6 紧凑上下文优化版完整重跑（2026-10-16）
+
+用 7.5 节的改进版重新跑完同一组 50 题。模型、推理强度、工具、40 次调用预算和离线评分协议均与 7.1 节一致；运行名为 `three_view_l1v2_qwen38_compact_v2_20261016`。50 题全部 `finished`，没有 Qwen、网络或 SolidWorks 外部故障，也没有因基础设施原因重跑测例。
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py --action-level L1_v2 --provider qwenlocal `
+    --plan-model Qwen3.8-Flash-Next-FP8 --reasoning-effort medium --max-llm-calls 40 --repeats 1 `
+    --name three_view_l1v2_qwen38_compact_v2_20261016 --compact-context --resume `
+    --sw-restarts 3 --sw-max-private-gb 12
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view `
+    --artifacts eval\artifacts\three_view_l1v2_qwen38_compact_v2_20261016 `
+    --output eval\artifacts\three_view_l1v2_qwen38_compact_v2_20261016\scores.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval\rubrics_three_view `
+    summary eval\artifacts\three_view_l1v2_qwen38_compact_v2_20261016\scores.json --repeats 1
+```
+
+| 指标 | 完整上下文（第 6 节） | compact v1（第 7.2 节） | compact 优化版 |
+|---|---:|---:|---:|
+| rubric 均分 | 95.1 | 96.4 | **96.4**（95% CI [93.6, 98.7]） |
+| pass@1 | 40/50（0.80） | 41/50（0.82） | **42/50（0.84）** |
+| core_form | 48/50（0.96） | 49/50（0.98） | **50/50（1.00）** |
+| 显式条目通过 | 331/349 | 336/349 | **337/349** |
+| 图像分均值 / 满分题 | 98.0 / 39 | 98.3 / 40 | 97.6 / **41** |
+| LLM 调用 | 452 | 428 | **349** |
+| 输入 / 输出 token | 8,347,027 / 961,675 | 8,254,641 / 822,953 | **6,219,908 / 615,801** |
+| 总 token / 每题平均 | 9,308,702 / 186.2k | 9,077,594 / 181.6k | **6,835,709 / 136.7k** |
+| 累计耗时 | 4.29 h | 3.65 h | **3.14 h** |
+
+相对 compact v1，总 token 降低 **24.7%**，LLM 调用降低 **18.5%**，耗时降低 **14.0%**；相对完整上下文，总 token 降低 **26.6%**。平均 136.7k token/题，明显低于 170k 目标，同时 rubric、pass@1 和 core_form 均未下降。图像均分比 compact v1 低 0.77 分，但满分题增加 1 题；每题只运行一次，单题差异包含模型随机波动。
+
+8 道未通过题均通过 hard 条目：`b06_lock_striker`（`slot`）、`d06_u_clevis`（`slot`、`boss`、`volume`）、`d08_pipe_tee`（`flange_holes`）、`d11_dovetail_slide`（`dovetail`）、`d12_cut_block`（`profile`、`volume`）、`d15_motor_mount`（`slots`）、`d19_hinge_leaf`（`plate`、`holes`）、`d28_round_cup`（`flange`）。C3 和 D17 都按题意生成两个实体并得 100 分；相对 compact v1，二者 token 分别从 1,151,064 降到 182,158（−84.2%）、从 931,763 降到 121,184（−87.0%）。
+
+本轮共 62 次紧凑 verifier 调用，其中 2 次 `length` 后用大预算恢复，10 次要求恢复完整历史继续修改；semantic recovery 触发 2 次。50 题共 451 次工具调用，其中失败建模调用 33 次，`render_views` 8 次。全部 STEP、SLDPRT、trace 和 checkpoint 各 50 份，逐题评分和汇总分别在同一产物目录的 `scores.json`、`summary.json`。
+
 ---
 
 ## 8. 已知局限

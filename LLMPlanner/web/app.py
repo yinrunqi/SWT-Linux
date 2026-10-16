@@ -1797,6 +1797,7 @@ def _run_workflow_l1(
     version: str = "v1",
     view_tool: bool = True,
     compact_context: bool = False,
+    expected_bodies: int = 1,
 ) -> dict:
     """L1：工程师级工具 + 闭环 Agent。results 只列建模工具调用，供打分统计失败次数。
 
@@ -1822,7 +1823,13 @@ def _run_workflow_l1(
         max_retries=2,
         default_headers={"X-Session-Id": f"workflow-l1-{uuid.uuid4().hex}"},
     )
-    session = create_session(version, base_url=executor.base_url, executor=executor, extra_tools=extra_tools)
+    session = create_session(
+        version,
+        base_url=executor.base_url,
+        executor=executor,
+        extra_tools=extra_tools,
+        **({"expected_bodies": expected_bodies} if version == "v2" else {}),
+    )
     session.start_part()
     label = Path(checkpoint_path).name.removesuffix(".checkpoint.json") if checkpoint_path else "web"
 
@@ -1832,7 +1839,7 @@ def _run_workflow_l1(
     agent = WorkflowAgent(
         client, model, session, max_llm_calls=max_llm_calls, extra_tools=extra_tools,
         reasoning_effort=reasoning_effort, stream=True, checkpoint_path=checkpoint_path or None, version=version,
-        view_tool=view_tool, compact_context=compact_context, log=log,
+        view_tool=view_tool, compact_context=compact_context, expected_bodies=expected_bodies, log=log,
     )
     outcome = agent.run(instruction, image_b64=image_b64 or None, image_mime=image_mime, resume=resume)
     modeling_calls = [item for item in outcome["tool_calls"] if item["tool"] not in WORKFLOW_QUERY_TOOLS]
@@ -1895,6 +1902,7 @@ def run():
       "views_tool": true,          (可选；L1 带图时是否提供 render_views)
       "view_tool": true,           (可选；L1_v2 是否提供 view_model 截图工具，纯文本模型设 false)
       "compact_context": false,    (可选；L1_v2 紧凑上下文优化，默认关闭以保持历史评测行为)
+      "expected_bodies": 1,        (可选；仅 compact L1_v2，任务要求的实体数量)
       "dry_run": false
     }
     """
@@ -1942,6 +1950,16 @@ def run():
         return jsonify({"success": False, "error": "compact_context 必须是布尔值"}), 400
     if compact_context and action_level != "L1_v2":
         return jsonify({"success": False, "error": "compact_context 仅支持 L1_v2"}), 400
+    expected_bodies = data.get("expected_bodies", 1)
+    if (
+        isinstance(expected_bodies, bool)
+        or not isinstance(expected_bodies, int)
+        or expected_bodies < 1
+        or expected_bodies > 16
+    ):
+        return jsonify({"success": False, "error": "expected_bodies 必须是 1–16 的整数"}), 400
+    if expected_bodies != 1 and not (compact_context and action_level == "L1_v2"):
+        return jsonify({"success": False, "error": "expected_bodies > 1 仅支持 compact L1_v2"}), 400
     dry_run = data.get("dry_run", False)
     use_cache = bool(data.get("use_cache", True))
     capture_trace = bool(data.get("capture_trace", False))
@@ -2001,6 +2019,7 @@ def run():
                     version=WORKFLOW_VERSIONS[action_level],
                     view_tool=bool(data.get("view_tool", True)),
                     compact_context=compact_context,
+                    expected_bodies=expected_bodies,
                 ))
         except Exception as exc:
             traceback.print_exc()

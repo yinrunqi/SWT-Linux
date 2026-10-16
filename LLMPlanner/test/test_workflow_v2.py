@@ -465,6 +465,40 @@ def test_extra_bodies_are_rejected_and_rolled_back():
     assert result["error"]["rolled_back"]
 
 
+def test_expected_two_bodies_allows_second_body_but_rejects_third():
+    allowed = FakeV2(delta=100)
+    allowed.expected_bodies = 2
+    original = allowed.snapshot
+
+    def two_body_snapshot():
+        data = original()
+        data["bodyCount"] = 1 if not allowed.ran else 2
+        return data
+
+    allowed.snapshot = two_body_snapshot
+    result = allowed.call("extrude", {
+        "plane": "front_plane", "loops": [{"type": "circle", "center": [0, 80], "diameter": 8}], "depth": 5,
+    })
+    assert result["ok"] is True
+    assert result["bodies"] == 2
+
+    rejected = FakeV2(delta=100)
+    rejected.expected_bodies = 2
+    original = rejected.snapshot
+
+    def three_body_snapshot():
+        data = original()
+        data["bodyCount"] = 2 if not rejected.ran else 3
+        return data
+
+    rejected.snapshot = three_body_snapshot
+    result = rejected.call("extrude", {
+        "plane": "front_plane", "loops": [{"type": "circle", "center": [0, 80], "diameter": 8}], "depth": 5,
+    })
+    assert result["error"]["code"] == "FEATURE_DISCONNECTED"
+    assert "恰好 2 个" in result["error"]["message"]
+
+
 def test_new_cylinders_are_reported():
     session = FakeV2(delta=-50)
     original = session.snapshot

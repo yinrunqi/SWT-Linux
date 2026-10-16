@@ -2529,6 +2529,7 @@ def run_one(
             "length_retries": (payload.get("workflow") or {}).get("length_retries"),
             "compact_verifier_calls": (payload.get("workflow") or {}).get("compact_verifier_calls"),
             "compact_fallbacks": (payload.get("workflow") or {}).get("compact_fallbacks"),
+            "semantic_recoveries": (payload.get("workflow") or {}).get("semantic_recoveries"),
             "request_modes": (payload.get("workflow") or {}).get("request_modes"),
             "max_llm_calls": max_llm_calls if action_level in WORKFLOW_LEVELS else None,
             "duration_seconds": round(time.perf_counter() - started, 2),

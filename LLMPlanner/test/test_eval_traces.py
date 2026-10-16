@@ -437,8 +437,27 @@ def test_three_view_l1_v2_sends_text_track_reasoning_and_view_settings(tmp_path,
     assert request["views_tool"] is True
     assert request["view_tool"] is True
     assert request["compact_context"] is False
+    assert "expected_bodies" not in request
     assert sent["image"].startswith("data:image/png;base64,")
     assert sent["plan_model"] == "Qwen3.8-Flash-Next-FP8"
+
+    sent.clear()
+    args.compact_context = True
+    row = bench.run_one(
+        {"case": "c3", "prompt": "p", "image": image, "expected_bodies": 2}, 1, args,
+    )
+    request = json.loads(Path(row["trace"]).read_text(encoding="utf-8"))["request"]
+    assert request["compact_context"] is True
+    assert request["expected_bodies"] == 2
+
+
+def test_three_view_expected_bodies_comes_from_solid_count():
+    bench = _load_three_view_bench()
+    assert bench._expected_bodies({"rubrics": [
+        {"check": [{"bbox_sorted": [1, 2, 3]}]},
+        {"hard": True, "check": [{"solid_count": 2}]},
+    ]}) == 2
+    assert bench._expected_bodies({"rubrics": []}) == 1
 
 
 def test_three_view_cli_defaults_to_qwen_l1_v2_medium(tmp_path, monkeypatch):

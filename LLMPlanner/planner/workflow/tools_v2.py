@@ -1095,8 +1095,11 @@ def ray_ambiguity(snapshot: dict, ray: dict, index: int | None = None, eps: floa
 class WorkflowSessionV2(WorkflowSession):
     version = "v2"
 
-    def __init__(self, *args: Any, **kwargs: Any):
+    def __init__(self, *args: Any, expected_bodies: int = 1, **kwargs: Any):
         super().__init__(*args, **kwargs)
+        if isinstance(expected_bodies, bool) or not isinstance(expected_bodies, int) or expected_bodies < 1:
+            raise ValueError("expected_bodies 必须是正整数")
+        self.expected_bodies = expected_bodies
         self._notes: list[str] = []
         self._axes: dict[tuple, str] = {}
         self._handlers["view_model"] = self.view_model
@@ -1303,15 +1306,21 @@ class WorkflowSessionV2(WorkflowSession):
         result = super()._transaction(operations, expect=expect, before=before, context=context)
         after = self.last_transaction[1]
         bodies_before, bodies_after = self._bodies(before), self._bodies(after)
-        if bodies_after is not None and bodies_after > max(bodies_before or 0, 1):
+        if bodies_after is not None and bodies_after > max(bodies_before or 0, self.expected_bodies):
             rolled_back = self._rollback(result.get("created") or [])
             self._prune_ref_planes()
+            requirement = (
+                "需求只允许单一实体"
+                if self.expected_bodies == 1
+                else f"需求要求恰好 {self.expected_bodies} 个分开的实体"
+            )
             raise WorkflowError(
                 "FEATURE_DISCONNECTED",
-                f"特征执行后零件变成了 {bodies_after} 个实体（之前 {bodies_before or 0} 个），已回滚",
+                f"特征执行后零件变成了 {bodies_after} 个实体（之前 {bodies_before or 0} 个），"
+                f"超过允许数量；{requirement}，已回滚",
                 hint=(
-                    "新增的部分没有和已有实体连成一体：只有线/点接触（相切）或中间有间隙，或者切除把零件切成了几块。"
-                    "让新凸台伸入已有实体 ≥0.5mm（例如把轮廓或深度加长一点），或检查切除范围。"
+                    "新增部分形成了超出需求的额外实体，或者切除把已有实体切成了过多块。"
+                    "同一实体内的新凸台应伸入已有材料 ≥0.5mm，并检查切除范围；"
                     "双盘+立柱：先做贯通两盘间距的立柱，再贴合拉伸第二盘并保持题面给定的盘厚，不要为了连体去加厚盘；"
                     "或一次画出柱+盘的完整截面再拉伸。"
                 ),

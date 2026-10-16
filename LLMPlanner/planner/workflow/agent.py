@@ -23,6 +23,7 @@ from .context_compact import (
     verifier_messages,
     verifier_tools,
     with_recovery_instruction,
+    with_semantic_recovery,
 )
 from .tools import IMAGE_KEY, TOOL_SPECS, WorkflowSession, dumps_result, tool_specs
 from .tools_v2 import WORKFLOW_VERSIONS, dumps_result_v2, tool_specs_v2
@@ -137,6 +138,7 @@ SYSTEM_PROMPT_V2 = """你是一名资深机械设计工程师，正在 SolidWork
 STATE_PLACEHOLDER = "（此前的 get_model_state 结果已省略，以最新一次为准）"
 BUDGET_WARNING_FRACTION = 0.25
 MAX_IDENTICAL_FAILURES = 2
+SEMANTIC_FAILURE_THRESHOLD = 3
 BLOCKED_CODES = {"DUPLICATE_CALL", "REPEATED_FAILURE"}
 
 
@@ -169,6 +171,7 @@ CONTEXT_LIMITS = {"qwen3.8-flash-next-fp8": 73728}
 # 有 CONTEXT_LIMITS 的模型在输入变长时会按服务端报告的输入长度自动压缩本轮输出
 MAX_OUTPUT_TOKENS: dict[str, int] = {}
 DEFAULT_MAX_OUTPUT_TOKENS = 32000
+COMPACT_VERIFIER_MAX_TOKENS = 4096
 CONTEXT_MARGIN = 64
 MIN_OUTPUT_TOKENS = 2048
 _CONTEXT_OVERFLOW = re.compile(r"maximum context length is \d+ tokens.*?prompt contains at least (\d+) input tokens", re.S)
@@ -182,6 +185,21 @@ def default_reasoning_effort(model: str, reasoning_effort: str | None = None) ->
     if reasoning_effort:
         return reasoning_effort
     return DEFAULT_REASONING_EFFORTS.get(_model_key(model))
+
+
+def _workflow_system_prompt_v2(expected_bodies: int) -> str:
+    if expected_bodies == 1:
+        return SYSTEM_PROMPT_V2
+    prompt = SYSTEM_PROMPT_V2.replace(
+        "- 零件必须是单一实体：每个新凸台都要和已有实体有面接触或伸入其中（建议伸入 ≥0.5mm）；"
+        "只在一条线或一个点上相切（圆柱贴平面、两圆柱相切、棱对棱）会生成独立实体并被拒绝。",
+        f"- 本任务要求恰好 {expected_bodies} 个分开的实体。允许建立彼此不接触的实体，但实体总数不得超过"
+        f" {expected_bodies}；同一实体内部的新凸台仍要与该实体有面接触或伸入其中（建议伸入 ≥0.5mm）。",
+    )
+    return prompt.replace(
+        "总体尺寸、孔/凸台的数量与直径（cylinder_groups）、只有一个实体",
+        f"总体尺寸、孔/凸台的数量与直径（cylinder_groups）、实体数量恰好为 {expected_bodies}",
+    )
 
 
 def _context_overflow_prompt_tokens(exc: Exception) -> int | None:
@@ -347,6 +365,7 @@ class WorkflowAgent:
         log: Callable[[str], None] | None = None,
         context_limit: int | None = None,
         compact_context: bool = False,
+        expected_bodies: int = 1,
     ):
         """version：v1 = L1，v2 = L1_v2；缺省跟随 session.version。
         view_tool：L1_v2 是否提供 view_model 截图工具（骨干模型不支持图片输入时关掉）。
@@ -354,7 +373,8 @@ class WorkflowAgent:
         context_limit：模型上下文 token 数，缺省查 CONTEXT_LIMITS；超长时压缩本轮输出上限，仍装不下则以
         context_exceeded 结束。
         compact_context：仅 L1_v2 生效；对请求副本压缩旧工具结果，并用紧凑核对请求决定 finish/回退。
-        缺省 false，保持历史评测行为。"""
+        缺省 false，保持历史评测行为。
+        expected_bodies：compact L1_v2 任务期望的实体数；缺省 1，旧任务行为不变。"""
         self.log = log
         self.context_limit = context_limit or CONTEXT_LIMITS.get(_model_key(model))
         self.max_output_tokens = MAX_OUTPUT_TOKENS.get(_model_key(model), DEFAULT_MAX_OUTPUT_TOKENS)
@@ -373,10 +393,15 @@ class WorkflowAgent:
         self.max_stalls = max_stalls
         self.v2 = self.version == "v2"
         self.compact_context = self.v2 and compact_context
+        if isinstance(expected_bodies, bool) or not isinstance(expected_bodies, int) or expected_bodies < 1:
+            raise ValueError("expected_bodies 必须是正整数")
+        if expected_bodies != 1 and not self.compact_context:
+            raise ValueError("expected_bodies > 1 仅支持 compact L1_v2")
+        self.expected_bodies = expected_bodies
         self.view_tool = self.v2 and view_tool
         self.tools = tool_specs_v2(extra_tools, view_tool=view_tool) if self.v2 else tool_specs(extra_tools)
         self.image_placeholder = IMAGE_PLACEHOLDER_V2 if self.v2 else RENDERED_PLACEHOLDER
-        self.system_prompt = SYSTEM_PROMPT_V2 if self.v2 else SYSTEM_PROMPT
+        self.system_prompt = _workflow_system_prompt_v2(expected_bodies) if self.v2 else SYSTEM_PROMPT
         self._dumps = dumps_result_v2 if self.v2 else dumps_result
 
     def run(
@@ -399,6 +424,7 @@ class WorkflowAgent:
         llm_responses: list[dict] = []
         finish_reasons: list[str | None] = []
         failed_signatures: dict[str, int] = {}
+        failure_families: dict[str, int] = {}
         status, summary, stalls, error = "max_llm_calls", "", 0, None
         max_tokens, truncations = self.max_tokens, 0
         if self.compact_context:
@@ -411,6 +437,8 @@ class WorkflowAgent:
         length_retries = 0
         compact_verifier_calls = 0
         compact_fallbacks = 0
+        semantic_recovery_pending: dict | None = None
+        semantic_recoveries = 0
         request_modes: list[str] = []
         compact_requests: list[dict] = []
 
@@ -420,6 +448,8 @@ class WorkflowAgent:
         done = False
         if saved:
             messages = saved["messages"]
+            if self.expected_bodies != 1:
+                messages[0] = {"role": "system", "content": self.system_prompt}
             messages[1] = _first_user_message(goal, image_b64, image_mime)
             rendered_at = saved.get("rendered_at")
             if rendered_at is not None:
@@ -427,6 +457,7 @@ class WorkflowAgent:
                 rendered_at = None
             usage, tool_log, llm_responses = saved["usage"], saved["tool_log"], saved["llm_responses"]
             finish_reasons, failed_signatures = saved.get("finish_reasons", []), saved["failed_signatures"]
+            failure_families = dict(saved.get("failure_families") or {})
             stalls, truncations, max_tokens = saved["stalls"], saved["truncations"], saved["max_tokens"]
             pending, prior_seconds = saved.get("pending"), float(saved.get("duration_seconds") or 0)
             last_round_tools = list(saved.get("last_round_tools") or [])
@@ -435,6 +466,8 @@ class WorkflowAgent:
             length_retries = int(saved.get("length_retries") or 0)
             compact_verifier_calls = int(saved.get("compact_verifier_calls") or 0)
             compact_fallbacks = int(saved.get("compact_fallbacks") or 0)
+            semantic_recovery_pending = saved.get("semantic_recovery_pending")
+            semantic_recoveries = int(saved.get("semantic_recoveries") or 0)
             request_modes = list(saved.get("request_modes") or [])
             compact_requests = list(saved.get("compact_requests") or [])
             if self.compact_context:
@@ -455,12 +488,16 @@ class WorkflowAgent:
                 "error": error, "messages": _without_images(messages), "rendered_at": rendered_at,
                 "usage": usage, "tool_log": tool_log, "llm_responses": llm_responses,
                 "finish_reasons": finish_reasons, "failed_signatures": failed_signatures, "stalls": stalls,
+                "failure_families": failure_families,
                 "truncations": truncations, "max_tokens": max_tokens, "pending": pending, "resumed": resumed,
                 "reasoning_effort": self.reasoning_effort,
                 "compact_context": self.compact_context, "last_round_tools": last_round_tools,
+                "expected_bodies": self.expected_bodies,
                 "force_full_context_once": force_full_context_once,
                 "length_recovery_mode": length_recovery_mode, "length_retries": length_retries,
                 "compact_verifier_calls": compact_verifier_calls, "compact_fallbacks": compact_fallbacks,
+                "semantic_recovery_pending": semantic_recovery_pending,
+                "semantic_recoveries": semantic_recoveries,
                 "request_modes": request_modes, "compact_requests": compact_requests,
                 "duration_seconds": round(prior_seconds + time.perf_counter() - started, 2),
             })
@@ -471,6 +508,7 @@ class WorkflowAgent:
                 request_messages = messages
                 request_tools = self.tools
                 consume_full_fallback = False
+                consume_semantic_recovery = False
                 if self.compact_context:
                     latest_image = (
                         messages[rendered_at]
@@ -483,7 +521,9 @@ class WorkflowAgent:
                             state = self.session.state_summary()
                         except Exception:
                             state = {}
-                        request_messages = verifier_messages(messages[1], state, latest_image)
+                        request_messages = verifier_messages(
+                            messages[1], state, latest_image, expected_bodies=self.expected_bodies,
+                        )
                         request_messages.append({"role": "user", "content": COMPACT_DISCIPLINE})
                         request_tools = verifier_tools(self.tools)
                         request_mode = "compact_verifier_recovery"
@@ -495,12 +535,33 @@ class WorkflowAgent:
                         request_messages.append({"role": "user", "content": COMPACT_DISCIPLINE})
                         request_mode = "full_fallback"
                         consume_full_fallback = True
+                    elif semantic_recovery_pending:
+                        try:
+                            state = self.session.state_summary()
+                        except Exception:
+                            state = {}
+                        request_messages = with_semantic_recovery(
+                            messages,
+                            state,
+                            tool=str(semantic_recovery_pending["tool"]),
+                            error_code=str(semantic_recovery_pending["error_code"]),
+                            count=int(semantic_recovery_pending["count"]),
+                        )
+                        blocked_tool = str(semantic_recovery_pending["tool"])
+                        request_tools = [
+                            item for item in self.tools
+                            if (item.get("function") or {}).get("name") != blocked_tool
+                        ]
+                        request_mode = "semantic_recovery"
+                        consume_semantic_recovery = True
                     elif verify_ready:
                         try:
                             state = self.session.state_summary()
                         except Exception:
                             state = {}
-                        request_messages = verifier_messages(messages[1], state, latest_image)
+                        request_messages = verifier_messages(
+                            messages[1], state, latest_image, expected_bodies=self.expected_bodies,
+                        )
                         request_tools = verifier_tools(self.tools)
                         request_mode = "compact_verifier"
                     else:
@@ -508,7 +569,9 @@ class WorkflowAgent:
                         request_messages.append({"role": "user", "content": COMPACT_DISCIPLINE})
                         request_mode = "compact_history"
                 request_modes.append(request_mode)
-                if request_mode in {"compact_verifier", "compact_verifier_recovery", "length_recovery"}:
+                if request_mode in {
+                    "compact_verifier", "compact_verifier_recovery", "length_recovery", "semantic_recovery",
+                }:
                     compact_requests.append({
                         "call": usage["calls"] + 1,
                         "mode": request_mode,
@@ -520,9 +583,18 @@ class WorkflowAgent:
                     })
                 if request_mode.startswith("compact_verifier"):
                     compact_verifier_calls += 1
+                request_max_tokens = max_tokens
+                request_extra = dict(extra)
+                if request_mode == "compact_verifier":
+                    request_max_tokens = min(max_tokens, COMPACT_VERIFIER_MAX_TOKENS)
+                    if request_extra.get("reasoning_effort") in {"medium", "high", "xhigh"}:
+                        request_extra["reasoning_effort"] = "low"
+                elif request_mode == "compact_verifier_recovery":
+                    if request_extra.get("reasoning_effort") in {"medium", "high", "xhigh"}:
+                        request_extra["reasoning_effort"] = "low"
                 request = {"model": self.model, "messages": request_messages, "tools": request_tools,
                            "tool_choice": "auto",
-                           "temperature": self.temperature, "max_tokens": max_tokens, **extra}
+                           "temperature": self.temperature, "max_tokens": request_max_tokens, **request_extra}
                 try:
                     response, prompt_tokens = complete_within_context(
                         self._complete, request, self.context_limit, self._log)
@@ -553,6 +625,8 @@ class WorkflowAgent:
                            "request_mode": request_mode}
                 if consume_full_fallback:
                     force_full_context_once = False
+                if consume_semantic_recovery:
+                    semantic_recovery_pending = None
                 length_recovery_mode = None
                 checkpoint()
             reply, pending = pending, None
@@ -673,6 +747,21 @@ class WorkflowAgent:
                     failed_signatures[signature] = failed_signatures.get(signature, 0) + 1
                     if failed_signatures[signature] > 1:
                         result["repeat_warning"] = "这个调用与之前失败的调用完全相同，请换一种做法。"
+                    if self.compact_context and name not in NO_REPLAY_TOOLS and code:
+                        family = f"{name}:{code}"
+                        failure_families[family] = failure_families.get(family, 0) + 1
+                        family_count = failure_families[family]
+                        if family_count % SEMANTIC_FAILURE_THRESHOLD == 0:
+                            semantic_recovery_pending = {
+                                "tool": name,
+                                "error_code": code,
+                                "count": family_count,
+                            }
+                            semantic_recoveries += 1
+                            result["recovery_note"] = (
+                                f"{name} 已累计 {family_count} 次出现 {code}；"
+                                "下一轮会暂时隐藏该工具，要求改用另一种策略。"
+                            )
                 entry = {
                     "tool": name,
                     "args": args,
@@ -729,11 +818,14 @@ class WorkflowAgent:
             "context_limit": self.context_limit,
             "view_tool": self.view_tool,
             "compact_context": self.compact_context,
+            "expected_bodies": self.expected_bodies,
             "request_modes": request_modes,
             "compact_requests": compact_requests,
             "length_retries": length_retries,
             "compact_verifier_calls": compact_verifier_calls,
             "compact_fallbacks": compact_fallbacks,
+            "semantic_recoveries": semantic_recoveries,
+            "failure_families": failure_families,
             "finish_reasons": finish_reasons,
             "tool_calls": tool_log,
             "token_usage": usage,
@@ -785,12 +877,21 @@ class WorkflowAgent:
         state = self.session.state_summary()
         if not state.get("volume_mm3"):
             return {"ok": False, "error": {"code": "NO_BODY", "message": "零件中还没有实体，不能结束"}}
-        if self.v2 and int(state.get("bodies") or 1) > 1:
+        bodies = int(state.get("bodies") or 1)
+        if self.v2 and self.expected_bodies == 1 and bodies > 1:
             return {"ok": False, "error": {
                 "code": "MULTI_BODY",
                 "message": f"零件现在有 {state['bodies']} 个实体，需求要求单一实体",
                 "hint": "用 get_model_state 查看各实体的范围，把没连上的部分伸入主体或删掉重做。",
                 "bodies": state.get("body_list"),
+            }}
+        if self.v2 and self.expected_bodies != 1 and bodies != self.expected_bodies:
+            return {"ok": False, "error": {
+                "code": "BODY_COUNT",
+                "message": f"零件现在有 {bodies} 个实体，需求要求恰好 {self.expected_bodies} 个分开的实体",
+                "hint": "用 get_model_state 查看各实体范围；补齐缺失实体，或删除/合并多余实体。",
+                "bodies": state.get("body_list"),
+                "expected_bodies": self.expected_bodies,
             }}
         return {"ok": True, "final_state": {"bbox_mm": state["bbox_mm"], "volume_mm3": state["volume_mm3"]}}
 

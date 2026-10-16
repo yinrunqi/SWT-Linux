@@ -150,11 +150,13 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py `
 
 ### 3.4 可选的紧凑上下文模式
 
-历史评测方式仍是默认值。只有显式加 `--compact-context` 才启用三项 token 优化：
+历史评测方式仍是默认值。只有显式加 `--compact-context` 才启用以下 token 优化：
 
 1. 发给模型的请求副本把较早的成功工具结果压成 ledger，保留 feature 名、包围盒、体积、实体数、关键圆柱和错误原因；最近两轮保持完整。完整历史仍写入 checkpoint/trace，并用于 SolidWorks replay。
-2. `get_model_state`、`view_model` 或 `render_views` 后用短 verifier 请求核对，只携带原图、最新截图/状态，并只开放 `finish` 和 `continue_full_context`。若需修改，下一轮恢复完整历史。
+2. `get_model_state`、`view_model` 或 `render_views` 后用短 verifier 请求核对，只携带原图、最新截图/状态，并只开放 `finish` 和 `continue_full_context`。verifier 首次使用较低推理强度和 4k 输出预算；若被截断则恢复大预算重试，若需修改则下一轮恢复完整历史。
 3. 初始输出余量提高到 32k（未使用的上限不计 token）；仍被 `length` 截断时，用压缩后的 recovery 请求重试。实际截断调用继续计入 `llm_calls` 和 `token_usage`，不会隐藏消耗。
+4. 同一建模工具/错误码累计失败三次时，下一轮暂时隐藏该工具，并附当前精简状态要求模型换一种策略；之后恢复完整工具集。
+5. 评测器从 rubric 的 `solid_count` 自动传入 `expected_bodies`。多实体题会同步放宽工具事务并按准确实体数执行 `finish` 校验，不再被单实体规则误导。
 
 ```powershell
 venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py `
@@ -162,7 +164,7 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py `
     --ids b01_l_bracket --repeats 1 --name three_view_l1v2_compact_smoke
 ```
 
-HTTP API 对应字段是严格布尔值 `"compact_context": true`，只支持 `L1_v2`。旧 checkpoint 没有新增字段也能续跑；压缩只作用于请求副本，不破坏 checkpoint 里的完整消息和 `tool_log`。
+HTTP API 对应字段是严格布尔值 `"compact_context": true`，只支持 `L1_v2`；多实体任务另传正整数 `"expected_bodies": 2`，大于 1 时必须同时开启 compact L1_v2。旧 checkpoint 没有新增字段也能续跑；压缩只作用于请求副本，不破坏 checkpoint 里的完整消息和 `tool_log`。`runs.json` 会记录 `expected_bodies` 和 `semantic_recoveries`。
 
 ### 3.5 消融：有无 `render_views`
 
