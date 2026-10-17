@@ -382,6 +382,7 @@ class SwLLMClient:
         reasoning_effort: Optional[str] = None,
         plan_max_tokens: int = 16000,
         enable_thinking: Optional[bool] = None,
+        client: Any = None,
     ):
         """
         Args:
@@ -400,23 +401,28 @@ class SwLLMClient:
                 未指定时不改变请求体。
             plan_max_tokens: 单轮 Plan 请求的最大输出 token 数。
             enable_thinking: 可选 Qwen chat template thinking 开关；未指定时不透传。
+            client: 可选已配置的 OpenAI 兼容客户端；评测器用它复用 provider、
+                timeout、重试和会话头配置。
         """
-        # 读取环境变量
-        api_key = os.getenv("OPENAI_API_KEY")
-        base_url = os.getenv("OPENAI_BASE_URL")
+        if client is not None:
+            self.client = client
+        else:
+            # 读取环境变量
+            api_key = os.getenv("OPENAI_API_KEY")
+            base_url = os.getenv("OPENAI_BASE_URL")
 
-        if not api_key:
-            print("[错误] 未设置环境变量 OPENAI_API_KEY", file=sys.stderr)
-            print("请在终端中设置：export OPENAI_API_KEY=your_key_here", file=sys.stderr)
-            sys.exit(1)
+            if not api_key:
+                print("[错误] 未设置环境变量 OPENAI_API_KEY", file=sys.stderr)
+                print("请在终端中设置：export OPENAI_API_KEY=your_key_here", file=sys.stderr)
+                sys.exit(1)
 
-        # 初始化 OpenAI 客户端
-        client_kwargs = {"api_key": api_key}
-        if base_url:
-            client_kwargs["base_url"] = base_url
-            print(f"[LLM] 使用自定义 API 地址: {base_url}")
+            # 初始化 OpenAI 客户端
+            client_kwargs = {"api_key": api_key}
+            if base_url:
+                client_kwargs["base_url"] = base_url
+                print(f"[LLM] 使用自定义 API 地址: {base_url}")
 
-        self.client = OpenAI(**client_kwargs)
+            self.client = OpenAI(**client_kwargs)
 
         # 解析 Vision / Plan 双模型（若传了 model 参数则两者都用它）
         if model is not None:

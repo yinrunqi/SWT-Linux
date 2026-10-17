@@ -167,6 +167,28 @@
    - 运动检查（第 4 节），由评测器加马达、采样。
 4. 汇总。结果写到 `eval/assembly_scratch_result.json`，装配体和零件存在 `eval/artifacts/assembly_scratch/<workflow>/<case>/<condition>_r<repeat>/`。智能体结束后评测器先把当前装配体存成检查点再评分，所以即使智能体没调用 `save_assembly`，评分用的也是它最后的状态；同目录的 `rubric_inputs.json` 存下 rubric 的原始输入（组件、配合、别名），以后改 rubric 可以离线重评。
 
+### 1.1 L0 Atomic 对照
+
+`--action-level L0` 把零件与装配两个阶段都切到严格的单轮 Atomic Plan：
+
+- 零件阶段直接复用 text-to-CAD 的完整 `part-api-v1`（`SwLLMClient` +
+  `SwExecutor` + `PART_ATOMIC_ENDPOINTS`），不是另建一套零件 API。
+- 装配阶段每例只有一个逻辑规划轮次，模型必须一次性给出完整有序计划；执行期间的
+  成功、失败和几何状态不反馈给模型。与 workflow 协议相同，16k 输出被截断时
+  只把同一请求的输出上限放宽到 32k 重试一次，不引入执行反馈。
+- 装配动作只有 `insert_component`、`set_component_pose`、`ground_component`、
+  `unfix_component`、单条 `mate`、`delete_mate`、`save_assembly`。`joint`、
+  `close_loop`、`mount_on_shaft`、`mesh_gears`、`crank_slider` 等聚合工具均不可见。
+- `mate` 仍使用与 workflow 相同的几何引用语法（如 `cyl(d=10)`、
+  `plane(front)`），作为底层实体寻址方式；但一次 `mate` 只创建一条
+  SolidWorks 配合。转动副必须显式规划为同心、端面定位等多条原子配合。
+- `gold` 只比较装配动作层；`gen/e2e` 同时使用 part L0 和 assembly L0。
+  结果目录中的 workflow 标签为 `atomic`，报告记录 `part_atomic_api`、
+  `assembly_atomic_api`、计划 token、原子动作数、成功数与逐步失败信息。
+
+默认 `--action-level L1` 保持原行为：零件 `L1_v2`，装配使用
+`--workflow v1|v2|v3`。L0 与 L1 使用相同的装配 rubric 和运动评测器。
+
 模型与 LLM 设置（2026-10-10 起的默认值，与 text-to-CAD 的 Qwen L1_v2 评测相同，见 [Workflow-CAD-Bench.md](Workflow-CAD-Bench.md) 6.2 节）：
 - 模型 `Qwen3.8-Flash-Next-FP8`，自部署 vLLM（`--provider qwenlocal`，读 `.env` 的 `QWENLOCAL_BASE_URL`、`QWENLOCAL_API_KEY`）；不指定 `--reasoning-effort` 时用 `medium`，温度 0。`--provider ttswitch|aiping|juheai` 和 `--model` 可以换服务和模型；不再读 `.env` 的 `PLAN_MODEL`。
 - 零件阶段与装配阶段的请求方式相同：流式、单次超时 600 s，终端逐步打印每次 LLM 调用和工具调用。
@@ -803,6 +825,9 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_assembly_scratch.py `
     --output eval\assembly_gen_qwen38flash_v3_all50.json --output-dir eval\artifacts\assembly_gen_qwen38flash_v3_all50 --resume
 venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --cases gearbox,engine --condition gold --workflow both --repeats 2
 venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --cases desk_lamp,umbrella,drill_gearbox,sewing_machine,projector --condition gen --workflow v2
+# L0 Atomic 对照：gen/e2e 的零件阶段也直接使用 part-api-v1；--workflow 在 L0 下忽略
+venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --action-level L0 --cases gearbox,engine --condition gold --repeats 1 `
+    --output eval\assembly_atomic_l0_gold.json --output-dir eval\artifacts\assembly_atomic_l0_gold
 # 扩展测例：--cases bench 表示全部 20 个
 venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --cases bench --condition gen --workflow v2 --repeats 1 --model claude-sonnet-5
 

@@ -117,7 +117,9 @@ class AssemblySession:
             "check_dof": self.check_dof,
             "get_assembly_state": self.get_assembly_state,
             "insert_component": self.insert_component,
+            "set_component_pose": self.set_component_pose,
             "ground_component": self.ground_component,
+            "unfix_component": self.unfix_component,
             "mate": self.mate,
             "delete_mate": self.delete_mate,
             "mount_on_shaft": self.mount_on_shaft,
@@ -330,7 +332,15 @@ class AssemblySession:
     def _mate(self, kind: str, a: str, b: str, **kw) -> dict:
         ca, ra = self.resolve_ref(a)
         cb, rb = self.resolve_ref(b)
-        body = {"type": kind, "a": {"component": ca, "ref": ra}, "b": {"component": cb, "ref": rb}, **kw}
+        end_a = {"component": ca, "ref": ra}
+        end_b = {"component": cb, "ref": rb}
+        reference_a = kw.pop("referenceComponentA", None)
+        reference_b = kw.pop("referenceComponentB", None)
+        if reference_a:
+            end_a["referenceComponent"] = self.resolve_name(str(reference_a))
+        if reference_b:
+            end_b["referenceComponent"] = self.resolve_name(str(reference_b))
+        body = {"type": kind, "a": end_a, "b": end_b, **kw}
         result = self.asmwf("mate", body)
         self.mate_names.append(result["name"])
         self.saved = False
@@ -552,11 +562,46 @@ class AssemblySession:
             out["faces"] = self._face_summary(sw_name)
         return out
 
+    def set_component_pose(self, args: dict) -> dict:
+        name = self.resolve_name(str(args.get("component") or ""))
+        at = args.get("at")
+        axis = args.get("axis") or [0, 0, 1]
+        if not isinstance(at, list) or len(at) != 3:
+            raise WorkflowError("TOOL_ARGS", "at 必须是 [x,y,z] mm")
+        if not isinstance(axis, list) or len(axis) != 3:
+            raise WorkflowError("TOOL_ARGS", "axis 必须是 [x,y,z]")
+        data = self._ok(self._request("POST", "/api/assembly/set-component-pose", {
+            "componentName": name,
+            "x": float(at[0]) / 1000,
+            "y": float(at[1]) / 1000,
+            "z": float(at[2]) / 1000,
+            "axisX": float(axis[0]),
+            "axisY": float(axis[1]),
+            "axisZ": float(axis[2]),
+            # C# 使用行向量约定，物理旋转方向与 API angleDeg 相反。
+            "angleDeg": -float(args.get("angle_deg") or 0),
+        }))
+        self.saved = False
+        self._face_cache.clear()
+        return {
+            "component": name,
+            "at_mm": [float(v) for v in at],
+            "axis": [float(v) for v in axis],
+            "angle_deg": float(args.get("angle_deg") or 0),
+            **({} if not isinstance(data, dict) else data),
+        }
+
     def ground_component(self, args: dict) -> dict:
         name = self.resolve_name(str(args.get("component") or ""))
         self._ok(self._request("POST", "/api/assembly/fix-component", {"componentName": name}))
         self.saved = False
         return {"component": name, "fixed": True}
+
+    def unfix_component(self, args: dict) -> dict:
+        name = self.resolve_name(str(args.get("component") or ""))
+        self._ok(self._request("POST", "/api/assembly/unfix-component", {"componentName": name}))
+        self.saved = False
+        return {"component": name, "fixed": False}
 
     def mate(self, args: dict) -> dict:
         kind = str(args.get("type") or "").lower()
@@ -574,6 +619,10 @@ class AssemblySession:
             extra["reverse"] = bool(args["reverse"])
         if args.get("flip") is not None:
             extra["flip"] = bool(args["flip"])
+        if args.get("reference_a"):
+            extra["referenceComponentA"] = args["reference_a"]
+        if args.get("reference_b"):
+            extra["referenceComponentB"] = args["reference_b"]
         a, b = str(args["a"]), str(args["b"])
         if self.v2plus:
             kind = kind.replace("-", "_")

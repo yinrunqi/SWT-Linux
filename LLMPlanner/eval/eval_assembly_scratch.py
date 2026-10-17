@@ -19,6 +19,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from load_env import ensure_test_env_loaded
+from planner.assembly_workflow.atomic import atomic_api_metadata
+from planner.schemas import PART_ATOMIC_ENDPOINTS
 from planner.workflow.tools import EXTRA_TOOLSET_VERSION
 
 ensure_test_env_loaded()
@@ -287,13 +289,16 @@ def generate_part(
     resume: bool = False,
     view_tool: bool = True,
     provider: str = PROVIDER,
+    action_level: str = "L1",
+    max_plan_tokens: int = 16000,
 ) -> dict:
-    from planner.workflow.agent import WorkflowAgent
-    from planner.workflow.tools_v2 import WorkflowSessionV2
-
     dest.parent.mkdir(parents=True, exist_ok=True)
     result_path, checkpoint = dest.with_suffix(".result.json"), dest.with_suffix(".checkpoint.json")
-    part_workflow = {"version": "L1_v2", "view_tool": bool(view_tool)}
+    part_workflow = (
+        {"version": "L0", "atomic_api": "part-api-v1", "mode": "single_turn"}
+        if action_level == "L0"
+        else {"version": "L1_v2", "view_tool": bool(view_tool)}
+    )
     if resume and result_path.is_file():
         previous = json.loads(result_path.read_text(encoding="utf-8"))
         if previous.get("part_workflow") != part_workflow:
@@ -311,19 +316,58 @@ def generate_part(
     if not resume:
         checkpoint.unlink(missing_ok=True)
     _close(sw)
-    extra = spec.get("extra_tools") or []
-    session = WorkflowSessionV2(base_url=sw, extra_tools=extra)
     started = time.perf_counter()
     step, sldprt = dest.with_suffix(".step"), dest.with_suffix(".SLDPRT")
     def log(line: str) -> None:
         print(f"    [{time.strftime('%H:%M:%S')}] [{spec['id']}] {line}", flush=True)
 
+    client = None
     try:
-        session.start_part()
-        outcome = WorkflowAgent(
-            _openai(provider), model, session, max_llm_calls=max_llm_calls, extra_tools=extra,
-            reasoning_effort=reasoning_effort, stream=True, checkpoint_path=checkpoint, view_tool=view_tool, log=log,
-        ).run(spec["prompt"], resume=resume)
+        if action_level == "L0":
+            from planner.executor import SwExecutor
+            from planner.llm_client import PlanOutputExhaustedError, SwLLMClient
+
+            client = SwLLMClient(
+                model=model,
+                client=_openai(provider),
+                use_cache=False,
+                reasoning_effort=reasoning_effort,
+                plan_max_tokens=max_plan_tokens,
+            )
+            try:
+                plan = client.plan(spec["prompt"])
+            except PlanOutputExhaustedError:
+                retry_tokens = min(max_plan_tokens * 2, 32000)
+                if retry_tokens <= max_plan_tokens:
+                    raise
+                client.plan_max_tokens = retry_tokens
+                plan = client.plan(spec["prompt"])
+            executed = SwExecutor(base_url=sw).execute_plan(plan)
+            successful = sum(1 for item in executed if item.get("success"))
+            outcome = {
+                "status": "finished" if successful == len(plan.steps) else "execution_failed",
+                "token_usage": dict(client.token_usage),
+                "llm_calls": int(client.token_usage.get("calls") or 1),
+                "tool_calls": executed,
+                "summary": plan.notes,
+                "plan": plan.model_dump(mode="json"),
+                "error": next(
+                    (item.get("message") for item in executed if not item.get("success")),
+                    None,
+                ),
+            }
+        else:
+            from planner.workflow.agent import WorkflowAgent
+            from planner.workflow.tools_v2 import WorkflowSessionV2
+
+            extra = spec.get("extra_tools") or []
+            session = WorkflowSessionV2(base_url=sw, extra_tools=extra)
+            session.start_part()
+            outcome = WorkflowAgent(
+                _openai(provider), model, session, max_llm_calls=max_llm_calls, extra_tools=extra,
+                reasoning_effort=reasoning_effort, stream=True, checkpoint_path=checkpoint,
+                view_tool=view_tool, log=log,
+            ).run(spec["prompt"], resume=resume)
         artifacts = {}
         try:
             requests.post(f"{sw}/api/export-step", json={"stepPath": str(step)}, timeout=120)
@@ -331,6 +375,20 @@ def generate_part(
             artifacts = {"step": str(step), "sldprt": str(sldprt)}
         except Exception as exc:
             artifacts = {"error": str(exc)}
+    except Exception as exc:
+        if action_level != "L0":
+            raise
+        outcome = {
+            "status": "llm_error",
+            "token_usage": dict(client.token_usage) if client is not None else {
+                "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "calls": 0,
+            },
+            "llm_calls": int((client.token_usage if client is not None else {}).get("calls") or 1),
+            "tool_calls": [],
+            "summary": None,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+        artifacts = {}
     finally:
         _close(sw)
     trace = dest.with_suffix(".agent.json")
@@ -356,6 +414,11 @@ def generate_part(
         "artifacts": artifacts,
         "trace": str(trace),
         "checkpoint": str(checkpoint),
+        "atomic_operations": len(outcome.get("tool_calls") or []) if action_level == "L0" else None,
+        "successful_atomic_operations": (
+            sum(1 for item in outcome.get("tool_calls") or [] if item.get("success"))
+            if action_level == "L0" else None
+        ),
     }
     _write_json(result_path, result)
     return result
@@ -382,30 +445,102 @@ def _assemble(
     resume: bool = False,
     view_tool: bool = True,
     provider: str = PROVIDER,
+    action_level: str = "L1",
 ) -> dict:
-    from planner.assembly_workflow.agent import AssemblyAgent
     from planner.assembly_workflow.session import AssemblySession
-    from planner.assembly_workflow.tools import tool_names, tool_specs
 
     dest.parent.mkdir(parents=True, exist_ok=True)
     checkpoint = dest.with_name("agent.checkpoint.json")
     if not resume:
         checkpoint.unlink(missing_ok=True)
     _close(sw)
-    session = AssemblySession(base_url=sw, workflow=workflow, allowed_tools=tool_names(workflow, view_tool=view_tool))
+    if action_level == "L0":
+        from planner.schemas import ASSEMBLY_ATOMIC_TOOLS
+        allowed_tools = set(ASSEMBLY_ATOMIC_TOOLS.values())
+        session_workflow = "v2"
+    else:
+        from planner.assembly_workflow.tools import tool_names
+        allowed_tools = tool_names(workflow, view_tool=view_tool)
+        session_workflow = workflow
+    session = AssemblySession(base_url=sw, workflow=session_workflow, allowed_tools=allowed_tools)
     session.start_assembly(str(dest))
     listing = "\n".join(f"- {role}: {path}" for role, path in parts.items())
-    goal = _recipes(workflow) + "\n\n" + case["assembly"]["prompt"] + "\n\n零件文件：\n" + listing
+    goal = case["assembly"]["prompt"] + "\n\n零件文件（角色名: SLDPRT 绝对路径）：\n" + listing
+    if action_level != "L0":
+        goal = _recipes(workflow) + "\n\n" + goal
     started = time.perf_counter()
 
     def log(line: str) -> None:
         print(f"    [{time.strftime('%H:%M:%S')}] [assembly] {line}", flush=True)
 
-    outcome = AssemblyAgent(
-        _openai(provider), model, session, max_llm_calls=max_llm_calls, max_tokens=max_tokens,
-        tools=tool_specs(workflow, view_tool=view_tool), reasoning_effort=reasoning_effort,
-        checkpoint_path=checkpoint, view_tool=view_tool, stream=True, log=log,
-    ).run(goal, resume=resume)
+    if action_level == "L0":
+        from planner.assembly_workflow.atomic import (
+            AssemblyAtomicExecutor,
+            AssemblyAtomicPlanner,
+        )
+        from planner.schemas import AssemblyAtomicPlan
+
+        plan_path = dest.with_name("atomic_plan.json")
+        plan_usage_path = dest.with_name("atomic_plan_usage.json")
+        try:
+            if resume and plan_path.is_file():
+                plan = AssemblyAtomicPlan.model_validate_json(plan_path.read_text(encoding="utf-8"))
+                usage = (
+                    json.loads(plan_usage_path.read_text(encoding="utf-8"))
+                    if plan_usage_path.is_file()
+                    else {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "calls": 1}
+                )
+                plan_reused = True
+            else:
+                planner = AssemblyAtomicPlanner(
+                    _openai(provider), model, max_tokens=max_tokens, reasoning_effort=reasoning_effort,
+                )
+                plan, usage = planner.plan(goal)
+                _write_json(plan_path, plan.model_dump(mode="json"))
+                _write_json(plan_usage_path, usage)
+                plan_reused = False
+            executed = AssemblyAtomicExecutor(session).execute(plan)
+            successful = sum(1 for item in executed if item.get("success"))
+            outcome = {
+                "status": "finished" if successful == len(plan.steps) else "execution_failed",
+                "error": next(
+                    (
+                        (item.get("result") or {}).get("error")
+                        for item in executed if not item.get("success")
+                    ),
+                    None,
+                ),
+                "token_usage": usage,
+                "llm_calls": int(usage["calls"]),
+                "tool_calls": executed,
+                "messages": [],
+                "llm_responses": [],
+                "aliases": dict(session.aliases),
+                "plan": plan.model_dump(mode="json"),
+                "plan_reused": plan_reused,
+            }
+        except Exception as exc:
+            outcome = {
+                "status": "llm_error",
+                "error": f"{type(exc).__name__}: {exc}",
+                "token_usage": {
+                    "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "calls": 1,
+                },
+                "llm_calls": 1,
+                "tool_calls": [],
+                "messages": [],
+                "llm_responses": [],
+                "aliases": dict(session.aliases),
+            }
+    else:
+        from planner.assembly_workflow.agent import AssemblyAgent
+        from planner.assembly_workflow.tools import tool_specs
+
+        outcome = AssemblyAgent(
+            _openai(provider), model, session, max_llm_calls=max_llm_calls, max_tokens=max_tokens,
+            tools=tool_specs(workflow, view_tool=view_tool), reasoning_effort=reasoning_effort,
+            checkpoint_path=checkpoint, view_tool=view_tool, stream=True, log=log,
+        ).run(goal, resume=resume)
     messages = outcome.get("messages") or []
     _write_json(dest.with_name("agent_messages.json"), messages)
     _write_json(dest.with_name("agent_llm_responses.json"), outcome.get("llm_responses") or [])
@@ -451,6 +586,12 @@ def _assemble(
         "agent_last_pose": session.last_pose,
         "truncations": outcome.get("truncations"),
         "joints": session.joints,
+        "action_level": action_level,
+        "atomic_operations": len(outcome["tool_calls"]) if action_level == "L0" else None,
+        "successful_atomic_operations": (
+            sum(1 for item in outcome["tool_calls"] if item.get("success"))
+            if action_level == "L0" else None
+        ),
     }
 
 
@@ -515,6 +656,7 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
                 spec, dest, sw=args.sw, model=args.model, max_llm_calls=args.max_part_calls,
                 reasoning_effort=args.reasoning_effort, resume=resume,
                 view_tool=getattr(args, "part_view_tool", True), provider=getattr(args, "provider", PROVIDER),
+                action_level=args.action_level, max_plan_tokens=args.max_part_plan_tokens,
             )
             skipped = bool((result.get("grade") or {}).get("skipped"))
             print(
@@ -537,6 +679,7 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
         if condition == "e2e" and not all(item["accepted"] for item in part_results):
             return {
                 "case_id": case_id, "condition": condition, "repeat": repeat, "workflow": workflow,
+                "action_level": args.action_level,
                 "parts": part_results, "assembly": None,
                 "part_pass_rate": _rate(part_results),
                 "assembly_score": 0, "motion_score": 0, "e2e": False,
@@ -553,6 +696,7 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
                 sw=args.sw, model=args.model, max_llm_calls=budget, workflow=workflow,
                 max_tokens=args.asm_max_tokens, reasoning_effort=args.reasoning_effort, resume=resume,
                 view_tool=not getattr(args, "no_view_tool", False), provider=getattr(args, "provider", PROVIDER),
+                action_level=args.action_level,
             )
         except Exception as exc:  # SolidWorks 已经死掉时连新建装配体都会失败
             assembly = {"status": "infra_exception", "infra_error": f"{type(exc).__name__}: {exc}",
@@ -578,6 +722,7 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
         "condition": condition,
         "repeat": repeat,
         "workflow": workflow,
+        "action_level": args.action_level,
         "parts": part_results,
         "assembly": {k: v for k, v in assembly.items() if k != "tool_calls"},
         "tool_calls": assembly.get("tool_calls"),
@@ -665,6 +810,10 @@ def main() -> None:
     parser.add_argument("--cases", default="gearbox,engine")
     parser.add_argument("--condition", default="gold", choices=["gold", "gen", "e2e", "all"])
     parser.add_argument("--repeats", type=int, default=2)
+    parser.add_argument(
+        "--action-level", default="L1", choices=["L0", "L1"],
+        help="L0=零件与装配均为单轮 Atomic Plan；L1=现有 part L1_v2 + assembly workflow",
+    )
     parser.add_argument("--workflow", default="v3", choices=["v1", "v2", "v3", "both"],
                         help="v1=手写场景配方与原工具集；v2=数据导出的通用配方与扩展工具集；"
                              "v3=v2 + 增量状态、秩法自由度、自动闭环、位姿自检、截断重试与预算提示")
@@ -675,6 +824,7 @@ def main() -> None:
     parser.add_argument("--model", default=MODEL)
     parser.add_argument("--sw", default="http://localhost:5100")
     parser.add_argument("--max-part-calls", type=int, default=40)
+    parser.add_argument("--max-part-plan-tokens", type=int, default=16000)
     parser.add_argument("--max-asm-calls", type=int, default=100)
     parser.add_argument("--asm-calls-per-role", type=float, default=0,
                         help=">0 时装配预算 = max(--max-asm-calls, 系数 × 角色数)，在跑之前冻结")
@@ -713,22 +863,35 @@ def main() -> None:
     if "e2e" in conditions and not _occ_available():
         parser.error(f"e2e 条件要在建模时给零件打分才能决定是否装配，但当前环境和 {OCC_PYTHON} 都没有 OCC；"
                      "改用 --condition gen")
-    workflows = ["v1", "v2"] if args.workflow == "both" else [args.workflow]
+    workflows = (
+        ["atomic"]
+        if args.action_level == "L0"
+        else (["v1", "v2"] if args.workflow == "both" else [args.workflow])
+    )
     from planner.workflow.agent import _model_key, default_reasoning_effort
     if not os.environ.get(PROVIDER_ENV[args.provider][1]):
         parser.error(f"--provider {args.provider} 需要在 .env 里设置 {PROVIDER_ENV[args.provider][1]}")
     args.reasoning_effort = default_reasoning_effort(
         args.model, args.reasoning_effort or MODEL_REASONING_EFFORTS.get(_model_key(args.model)))
     # 只有 v3 装配工具集带截图工具；之前的结果没有这个字段，都是不带截图的
-    args.view_tool = "v3" in workflows and not args.no_view_tool
-    args.part_view_tool = not args.no_view_tool
-    part_workflow = {"version": "L1_v2", "view_tool": args.part_view_tool}
+    args.view_tool = args.action_level == "L1" and "v3" in workflows and not args.no_view_tool
+    args.part_view_tool = args.action_level == "L1" and not args.no_view_tool
+    part_workflow = (
+        {"version": "L0", "atomic_api": "part-api-v1", "mode": "single_turn"}
+        if args.action_level == "L0"
+        else {"version": "L1_v2", "view_tool": args.part_view_tool}
+    )
     rows = []
     if args.resume and Path(args.output).is_file():
         previous = json.loads(Path(args.output).read_text(encoding="utf-8"))
         previous.setdefault("view_tool", False)
         previous.setdefault("provider", "ttswitch")
-        for key in ("provider", "model", "reasoning_effort", "asm_max_tokens", "view_tool"):
+        previous.setdefault("action_level", "L1")
+        previous.setdefault("max_part_plan_tokens", 16000)
+        for key in (
+            "provider", "model", "reasoning_effort", "asm_max_tokens", "view_tool",
+            "action_level", "max_part_plan_tokens",
+        ):
             if previous.get(key) != getattr(args, key):
                 parser.error(f"--resume：已有结果的 {key}={previous.get(key)!r} 与本次 {getattr(args, key)!r} 不一致")
         for row in previous.get("results") or []:
@@ -759,7 +922,10 @@ def main() -> None:
                 }
                 for wf in workflows
             },
-            "recipes": {wf: list(RECIPE_SETS[wf]) for wf in workflows},
+            "recipes": {
+                wf: ([] if wf == "atomic" else list(RECIPE_SETS[wf]))
+                for wf in workflows
+            },
             "results": rows,
             "model": args.model,
             "part_grading_skipped": any(
@@ -771,7 +937,21 @@ def main() -> None:
             "prompt_lang": "zh",
             "asm_max_tokens": args.asm_max_tokens,
             "view_tool": args.view_tool,
+            "action_level": args.action_level,
             "part_workflow": part_workflow,
+            "part_atomic_api": (
+                {
+                    "name": "atomic_api_complete",
+                    "version": "part-api-v1",
+                    "endpoints": sorted(path for _method, path in PART_ATOMIC_ENDPOINTS.values()),
+                }
+                if args.action_level == "L0" else None
+            ),
+            "assembly_atomic_api": (
+                atomic_api_metadata()
+                if args.action_level == "L0" else None
+            ),
+            "max_part_plan_tokens": args.max_part_plan_tokens,
             "max_asm_calls": args.max_asm_calls,
             "asm_calls_per_role": args.asm_calls_per_role,
             "extra_toolset": EXTRA_TOOLSET_VERSION,

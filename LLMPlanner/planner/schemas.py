@@ -541,6 +541,126 @@ ATOMIC_PARAM_SCHEMAS: dict[OperationType, type[AtomicParams]] = {
 }
 
 
+class AssemblyAtomicOperationType(str, Enum):
+    """装配 L0 可见的原子动作；宏关节和运动求解不得加入这里。"""
+
+    INSERT_COMPONENT = "insert_component"
+    SET_COMPONENT_POSE = "set_component_pose"
+    GROUND_COMPONENT = "ground_component"
+    UNFIX_COMPONENT = "unfix_component"
+    MATE = "mate"
+    DELETE_MATE = "delete_mate"
+    SAVE_ASSEMBLY = "save_assembly"
+
+
+class AssemblyAtomicParams(AtomicParams):
+    model_config = ConfigDict(extra="forbid")
+
+
+class AssemblyInsertComponentParams(AssemblyAtomicParams):
+    part: str
+    name: str
+    at: list[float] = Field(default_factory=lambda: [0.0, 0.0, 0.0], min_length=3, max_length=3)
+
+
+class AssemblySetComponentPoseParams(AssemblyAtomicParams):
+    component: str
+    at: list[float] = Field(min_length=3, max_length=3)
+    axis: list[float] = Field(default_factory=lambda: [0.0, 0.0, 1.0], min_length=3, max_length=3)
+    angle_deg: float = 0.0
+
+
+class AssemblyComponentParams(AssemblyAtomicParams):
+    component: str
+
+
+class AssemblyMateParams(AssemblyAtomicParams):
+    type: Literal[
+        "coincident", "concentric", "parallel", "perpendicular", "distance", "angle",
+        "gear", "lock", "slot", "rack_pinion", "screw", "linear_coupler",
+    ]
+    a: str
+    b: str
+    align: Literal["closest", "aligned", "anti"] | None = None
+    distance: float | None = None
+    distance_min: float | None = None
+    distance_max: float | None = None
+    angle_deg: float | None = None
+    ratio_numerator: float | None = None
+    ratio_denominator: float | None = None
+    pitch_diameter: float | None = None
+    travel_per_rev: float | None = None
+    lead: float | None = None
+    slot_constraint: Literal["free", "center", "distance", "percent"] | None = None
+    reference_a: str | None = None
+    reference_b: str | None = None
+    reverse: bool | None = None
+    flip: bool | None = None
+    lock_rotation: bool | None = None
+
+
+class AssemblyDeleteMateParams(AssemblyAtomicParams):
+    name: str
+
+
+class AssemblySaveParams(AssemblyAtomicParams):
+    path: str | None = None
+
+
+# 值是 AssemblySession handler 名；catalog 与零件 PART_ATOMIC_ENDPOINTS 分离，
+# 防止装配动作意外进入 part L0 的完整端点清单。
+ASSEMBLY_ATOMIC_TOOLS: dict[AssemblyAtomicOperationType, str] = {
+    AssemblyAtomicOperationType.INSERT_COMPONENT: "insert_component",
+    AssemblyAtomicOperationType.SET_COMPONENT_POSE: "set_component_pose",
+    AssemblyAtomicOperationType.GROUND_COMPONENT: "ground_component",
+    AssemblyAtomicOperationType.UNFIX_COMPONENT: "unfix_component",
+    AssemblyAtomicOperationType.MATE: "mate",
+    AssemblyAtomicOperationType.DELETE_MATE: "delete_mate",
+    AssemblyAtomicOperationType.SAVE_ASSEMBLY: "save_assembly",
+}
+
+ASSEMBLY_ATOMIC_PARAM_SCHEMAS: dict[
+    AssemblyAtomicOperationType, type[AtomicParams]
+] = {
+    AssemblyAtomicOperationType.INSERT_COMPONENT: AssemblyInsertComponentParams,
+    AssemblyAtomicOperationType.SET_COMPONENT_POSE: AssemblySetComponentPoseParams,
+    AssemblyAtomicOperationType.GROUND_COMPONENT: AssemblyComponentParams,
+    AssemblyAtomicOperationType.UNFIX_COMPONENT: AssemblyComponentParams,
+    AssemblyAtomicOperationType.MATE: AssemblyMateParams,
+    AssemblyAtomicOperationType.DELETE_MATE: AssemblyDeleteMateParams,
+    AssemblyAtomicOperationType.SAVE_ASSEMBLY: AssemblySaveParams,
+}
+
+
+class AssemblyAtomicOperation(BaseModel):
+    operation: AssemblyAtomicOperationType
+    params: dict[str, Any] = Field(default_factory=dict)
+    description: str = ""
+
+    @model_validator(mode="after")
+    def _validate_params(self):
+        schema = ASSEMBLY_ATOMIC_PARAM_SCHEMAS[self.operation]
+        self.params = schema.model_validate(self.params).model_dump(
+            exclude_none=True,
+            exclude_unset=True,
+        )
+        return self
+
+
+class AssemblyAtomicPlan(BaseModel):
+    """装配 L0 的一次性执行计划。"""
+
+    user_intent: str
+    steps: list[AssemblyAtomicOperation] = Field(min_length=1)
+    notes: str = ""
+
+    @model_validator(mode="after")
+    def _must_end_with_save(self):
+        if self.steps[-1].operation is not AssemblyAtomicOperationType.SAVE_ASSEMBLY:
+            raise ValueError("装配 Atomic Plan 最后一步必须是 save_assembly")
+        return self
+
+
 class SwOperation(BaseModel):
     """
     单个 SolidWorks 操作。

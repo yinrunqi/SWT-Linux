@@ -145,3 +145,89 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval\rubrics
 ```
 
 完整结果位于 `eval/artifacts/three_view_atomic_l0_qwen38_medium_20261016/`：50 份 trace、47 份 STEP/SLDPRT、`runs.json`、`scores.json` 和 `summary.json`。缺失的 3 份 STEP 对应上面的模型输出失败，并非产物丢失。
+
+---
+
+## 装配 track：L0 Atomic 与 Workflow v3 对照（2026-10-17）
+
+### 协议
+
+在装配 benchmark 全部 50 个测例（7 个核心、20 个 bench、23 个 bench2）上运行
+`gen × 1 repeat`：
+
+- 模型为自部署 `Qwen3.8-Flash-Next-FP8`，中文题面，温度 0，
+  `reasoning_effort=medium`，禁用缓存；
+- 零件阶段直接复用 `atomic_api_complete` / `part-api-v1`，每个零件生成一份
+  单轮 `SwModelingPlan`；
+- 装配阶段使用 `assembly-api-v1`，只开放插入组件、设置单组件位姿、固定/解除固定、
+  创建或删除单条 mate、保存装配体；不开放 `joint`、`mesh_gears`、
+  `crank_slider`、`close_loop` 等聚合工具；
+- 每个装配只有一个逻辑规划轮次，执行结果不反馈给模型。输出上限初始为 16k；
+  与 workflow 截断协议一致，`finish_reason=length` 时放宽到 32k 重试一次；
+- 评分与 Workflow v3 完全相同：零件接口 rubric、装配 rubric、运动评分、
+  `structure_ok`、`motion_score_gated` 和 e2e 均沿用
+  `eval/eval_assembly_scratch.py` 的现行实现。
+
+结果文件为
+`LLMPlanner/eval/assembly_atomic_l0_qwen38flash_all50.json`，产物在
+`LLMPlanner/eval/artifacts/assembly_atomic_l0_qwen38flash_all50/`。
+整批 50 例均完成评分，无 `infra_contaminated`。
+
+### 结果
+
+| 范围 | 测例 | 零件合格率 | 装配 rubric | 运动分 | 门控运动分 | 结构成立 | e2e |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 全部 | 50 | 0.743 | 22.80 ± 19.19 | 4.11 ± 7.98 | 0.00 | 0/50 | 0/50 |
+| 核心 | 7 | 0.720 | 23.43 | 2.38 | 0.00 | 0/7 | 0/7 |
+| 扩展（bench） | 20 | 0.710 | 24.92 | 4.27 | 0.00 | 0/20 | 0/20 |
+| 第二批（bench2） | 23 | 0.780 | 20.77 | 4.50 | 0.00 | 0/23 | 0/23 |
+
+与相同模型的 Workflow v3 全 50 例结果对照：
+
+| 指标 | L0 Atomic | Workflow v3 | Atomic − Workflow |
+|---|---:|---:|---:|
+| 零件合格率 | 0.743 | 0.998 | −0.255 |
+| 装配 rubric | 22.80 | 90.93 | −68.13 |
+| 运动分 | 4.11 | 73.83 | −69.72 |
+| 门控运动分 | 0.00 | 70.72 | −70.72 |
+| 结构成立 | 0/50 | 43/50 | −43 |
+| e2e | 0/50 | 27/50 | −27 |
+| 平均装配 LLM 调用 | 1.50 | 68.90 | −97.8% |
+| 平均总 token / 例 | 139,981 | 3,030,434 | −95.4% |
+
+Token 合计 **6,999,051**：零件阶段 5,715,101，装配阶段 1,283,950；
+输入 4,550,585，输出 2,448,466。实际 API 请求共 536 次，其中零件 461 次、
+装配 75 次。50 个装配中 25 个在 16k 内返回，25 个触发 32k 重试。
+结果记录中的零件和装配累计耗时分别约 5.49 h 和 7.96 h。
+
+### 失败分析
+
+- 458 份零件中 341 份通过接口 rubric（74.3%）；393 次计划执行到结束，
+  65 次原子执行失败。失败集中在切除拉伸 54 次、基础拉伸 8 次、圆周阵列 3 次。
+- 44 个装配生成了可执行计划，但都在首个失败原子操作处停止：
+  42 个为几何引用解析失败（主要是模型指定的圆柱面不存在），2 个为
+  SolidWorks 特征/配合建立失败。因此没有计划执行到最后的 `save_assembly`。
+- 另有 6 个装配在 32k 重试后仍因输出截断而没有合法计划：
+  `radial_engine_4cyl`、`quick_return_shaper`、`jansen_leg`、
+  `lambda_conveyor`、`planetary_mixer`、`scissor_lift_3stage`。
+- 13/50 的原始运动分大于 0，但没有一例同时满足组件完整、连到机架且活动度正确，
+  所以 `structure_ok` 全部为 false，门控运动分和 e2e 均为 0。
+
+这说明装配比单零件更依赖闭环：一次错误的实体引用会让剩余整份计划无法执行，
+而没有执行后状态时，模型也无法修正配合面、补齐缺失组件或调整活动度。
+L0 将平均 token 降低 95.4%，但装配与运动指标均大幅下降；Workflow 的语义引用、
+聚合关节、状态观察和局部返工是装配成功的关键。
+
+### 复现命令
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_assembly_scratch.py `
+  --action-level L0 `
+  --cases gearbox,engine,desk_lamp,umbrella,drill_gearbox,sewing_machine,projector,bench,bench2 `
+  --condition gen --repeats 1 `
+  --provider qwenlocal --model Qwen3.8-Flash-Next-FP8 `
+  --reasoning-effort medium --max-part-plan-tokens 16000 --asm-max-tokens 16000 `
+  --output eval\assembly_atomic_l0_qwen38flash_all50.json `
+  --output-dir eval\artifacts\assembly_atomic_l0_qwen38flash_all50 `
+  --resume
+```
