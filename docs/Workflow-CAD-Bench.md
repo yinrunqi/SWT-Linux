@@ -1346,6 +1346,50 @@ venv-occ\Scripts\python.exe -m pytest geomcheck/tests/test_refs_extreme.py -q -p
 
 **长度截断。** 276 次调用中截断 5 次（1.8%），8.6 节是 319 次中 8 次（2.5%）。
 
+### 8.8 L1_v2 compact-context 在全部 100 题上的结果（2026-10-19）
+
+在 7.8、8.7 节的默认 L1_v2 对照上打开 `--compact-context`，完整重跑 50 道核心题、30 道困难题和 20 道极难题。其余协议保持一致：Qwen3.8-Flash-Next-FP8、英文题面、`reasoning_effort=medium`、`view_model` 打开、每题最多 40 次 LLM 调用、每题 1 次运行、关闭缓存。
+
+compact-context 只改变发给模型的请求副本，不改变完整 trace、checkpoint、replay 或几何工具：
+
+- 旧的成功工具结果压缩成 ledger，保留目标、参数和关键证据；
+- 最终核对使用只含原题、最新截图和最新状态的短 verifier；
+- verifier 先用较低推理强度和 4k 输出预算，截断时恢复正常预算；
+- 需要返工时恢复完整历史；同一工具/错误族累计三次后，下一轮暂时隐藏该工具并要求换策略。
+
+结果文件：
+
+- `eval/text_workflow_l1v2_compact_qwen38flash_core50_en_result.json`
+- `eval/text_workflow_l1v2_compact_qwen38flash_hard30_en_result.json`
+- `eval/text_workflow_l1v2_compact_qwen38flash_extreme20_en_result.json`
+
+离线重打分分别在 `eval/rubric_l1v2_compact_qwen38flash_{core50,hard30,extreme20}_en.json`。100 个 STEP 的离线分数、合格状态和核心形体状态均与结果 JSON 中保存的 rubric 字段逐题一致。
+
+| 题集 | 方法 | 均分（95% CI） | 合格 | 核心形体 | 平均 token | 平均 LLM 调用 | 平均工具调用 | 平均耗时 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| 核心 50 题 | 默认 L1_v2 | 98.50（[96.45, 100.00]） | 47/50 | 50/50 | 108.6k | 6.44 | 6.88 | 91 s |
+| 核心 50 题 | compact | 98.55（[95.85, 100.00]） | 48/50 | 49/50 | 85.3k | 5.16 | 6.22 | 110 s |
+| 困难 30 题 | 默认 L1_v2 | 95.71（[89.30, 99.52]） | 26/30 | 29/30 | 247.3k | 11.93 | 16.00 | 465 s |
+| 困难 30 题 | compact | 95.77（[89.33, 100.00]） | 27/30 | 29/30 | 233.9k | 10.53 | 17.50 | 560 s |
+| 极难 20 题 | 默认 L1_v2 | 90.90（[84.59, 96.81]） | 13/20 | 20/20 | 392.5k | 13.80 | 16.40 | 1,582 s |
+| 极难 20 题 | compact | 92.47（[85.53, 97.78]） | 13/20 | 20/20 | 286.5k | 12.70 | 16.95 | 812 s |
+| **全部 100 题** | **默认 L1_v2** | **96.14（[93.74, 98.19]）** | **86/100** | **99/100** | **207.0k** | **9.56** | **11.52** | **502 s** |
+| **全部 100 题** | **compact** | **96.50（[93.83, 98.63]）** | **88/100** | **98/100** | **170.1k** | **8.28** | **11.75** | **385 s** |
+
+整体来看，compact-context 在单次运行口径下没有损失均分或合格率：均分 96.14 → 96.50，合格 86 → 88；平均 token 减少 17.8%，平均 LLM 调用减少 13.4%，平均耗时减少 23.2%。100 题共用 1701 万 token，默认 L1_v2 对照为 2070 万 token。
+
+节省主要来自极难题：平均 token 减少 27.0%，平均耗时减少 48.7%。核心题和困难题的平均耗时反而分别增加约 19.9% 和 20.3%，说明 token 和调用数下降不必然转化成每个子集都更快；模型服务速度、SolidWorks 操作时长和单题随机路径仍有明显影响。
+
+逐题比较 compact 比默认结果高 11 题、相同 81 题、低 8 题。compact 未合格的 12 题为：
+
+- 核心题：`phone_stand`（90.0，u_slot）、`crank`（37.5，外形、连杆臂、轮廓、销轴凸台和体积；核心形体失败）。
+- 困难题：`handwheel`（22.2，核心形体失败）、`pipe_manifold`（90.9，flange_bolts）、`cold_plate`（60.0，passes、seal_groove、ports、volume）。
+- 极难题：`balanced_flywheel`（88.9）、`die_cast_cover`（40.0）、`helical_ring_gear`（90.0）、`inch_callout_plate`（88.9）、`pipe_route_3d`（88.9）、`spherical_dome_ports`（77.8）、`worm_shaft`（75.0）。
+
+全部 100 题都正常结束，没有 LLM 接口错误、SolidWorks 丢失或续跑失败。看门狗在题目开始前因 SolidWorks 私有内存超过 12 GB 自动重启 3 次，均正常恢复。整批命令墙钟时间约 11.0 小时。
+
+单题只运行 1 次，因此 11/81/8 的逐题涨跌和 +0.36 的均分变化包含随机波动；可靠结论是 compact-context 在这批运行中把 token 降低约 18%，同时维持了默认 L1_v2 的整体质量。
+
 ---
 
 ## 9. 已知局限
