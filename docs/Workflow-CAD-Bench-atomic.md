@@ -168,6 +168,23 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval\rubrics
   `structure_ok`、`motion_score_gated` 和 e2e 均沿用
   `eval/eval_assembly_scratch.py` 的现行实现。
 
+### 多轮 Atomic（L0_mt）
+
+为区分“一次性规划的脆弱性”和“聚合 workflow 工具带来的能力”，评测器另提供
+`--action-level L0_mt`，不会覆盖已有 L0 或 L1 产物：
+
+- 零件阶段仍是单轮 `part-api-v1`，与 L0 使用同一协议；
+- 装配阶段可多轮观察执行结果并纠错，但只能逐组件插入/设位姿/固定、逐条创建或
+  删除 mate、保存；禁止 `joint`、`close_loop`、`mesh_gears`、`crank_slider`
+  等聚合修改宏；
+- 允许状态、截图、干涉、DOF、运动和位姿检查，完成后用 `finish` 收尾；
+- 产物写入 `atomic_mt` 目录，报告记录 `mode=multi_turn`，并用独立 checkpoint
+  类型隔离；`--no-view-tool` 可关闭截图工具。
+
+这形成三档对照：L0 测“单轮原子计划”，L0_mt 测“多轮闭环本身”，L1 测
+“多轮闭环 + 聚合 workflow 工具/recipes”。下述现有数字只属于已完成的 L0 与
+Workflow v3 评测；L0_mt 尚未运行，不能把实现后的空档误写成评测结果。
+
 结果文件为
 `LLMPlanner/eval/assembly_atomic_l0_qwen38flash_all50.json`，产物在
 `LLMPlanner/eval/artifacts/assembly_atomic_l0_qwen38flash_all50/`。
@@ -230,4 +247,15 @@ venv\Scripts\python.exe -X utf8 -u eval\eval_assembly_scratch.py `
   --output eval\assembly_atomic_l0_qwen38flash_all50.json `
   --output-dir eval\artifacts\assembly_atomic_l0_qwen38flash_all50 `
   --resume
+
+# 多轮 Atomic 使用同一题集和评分协议，写入独立产物
+venv\Scripts\python.exe -X utf8 -u eval\eval_assembly_scratch.py `
+  --action-level L0_mt `
+  --cases gearbox,engine,desk_lamp,umbrella,drill_gearbox,sewing_machine,projector,bench,bench2 `
+  --condition gen --repeats 1 `
+  --provider qwenlocal --model Qwen3.8-Flash-Next-FP8 `
+  --reasoning-effort medium --max-part-plan-tokens 16000 `
+  --max-asm-calls 100 --asm-calls-per-role 8 --asm-max-tokens 16000 `
+  --output eval\assembly_atomic_mt_qwen38flash_all50.json `
+  --output-dir eval\artifacts\assembly_atomic_mt_qwen38flash_all50
 ```

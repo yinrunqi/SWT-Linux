@@ -11,8 +11,16 @@ import pytest
 from planner.assembly_workflow.agent import STATE_PLACEHOLDER, AssemblyAgent
 from planner.assembly_workflow.session import AssemblySession
 from planner.assembly_workflow.tools import tool_names, tool_specs
+from planner.workflow.errors import WorkflowError
 
 MATE_TYPES = {"coincident": 0, "concentric": 1, "distance": 5, "lock": 16, "screw": 17}
+
+
+def test_rpc_server_loss_is_classified_as_environment_failure():
+    session = AssemblySession(workflow="v3")
+    with pytest.raises(WorkflowError) as caught:
+        session._ok({"success": False, "message": "RPC 服务器不可用。 (异常来自 HRESULT:0x800706BA)"})
+    assert caught.value.code == "SW_UNAVAILABLE"
 
 
 def _cyl(index, x, y, d=0.006):

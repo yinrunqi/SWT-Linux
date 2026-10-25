@@ -41,6 +41,36 @@ PROVIDER = "qwenlocal"
 MODEL = "Qwen3.8-Flash-Next-FP8"
 # 未指定 --reasoning-effort 时的默认值
 MODEL_REASONING_EFFORTS = {"qwen3.8-flash-next-fp8": "medium"}
+PART_ATOMIC_LEVELS = frozenset({"L0", "L0_mt"})
+
+
+def part_workflow_metadata(action_level: str, view_tool: bool, compact_context: bool = False) -> dict:
+    return (
+        {"version": "L0", "atomic_api": "part-api-v1", "mode": "single_turn"}
+        if action_level in PART_ATOMIC_LEVELS
+        else {
+            "version": "L1_v2",
+            "view_tool": bool(view_tool),
+            "compact_context": bool(compact_context),
+        }
+    )
+
+
+def assembly_workflow_metadata(
+    action_level: str,
+    workflow: str,
+    view_tool: bool,
+    compact_context: bool = False,
+) -> dict:
+    if action_level == "L0":
+        return {"version": "L0", "atomic_api": "assembly-api-v1", "mode": "single_turn"}
+    if action_level == "L0_mt":
+        return {"version": "L0_mt", "atomic_api": "assembly-api-v1", "mode": "multi_turn"}
+    return {
+        "version": f"L1_{workflow}",
+        "view_tool": bool(view_tool),
+        "compact_context": bool(compact_context),
+    }
 
 
 # 测例 yaml 文件名 → case_id；命令行两种都认
@@ -291,14 +321,11 @@ def generate_part(
     provider: str = PROVIDER,
     action_level: str = "L1",
     max_plan_tokens: int = 16000,
+    compact_context: bool = False,
 ) -> dict:
     dest.parent.mkdir(parents=True, exist_ok=True)
     result_path, checkpoint = dest.with_suffix(".result.json"), dest.with_suffix(".checkpoint.json")
-    part_workflow = (
-        {"version": "L0", "atomic_api": "part-api-v1", "mode": "single_turn"}
-        if action_level == "L0"
-        else {"version": "L1_v2", "view_tool": bool(view_tool)}
-    )
+    part_workflow = part_workflow_metadata(action_level, view_tool, compact_context)
     if resume and result_path.is_file():
         previous = json.loads(result_path.read_text(encoding="utf-8"))
         if previous.get("part_workflow") != part_workflow:
@@ -323,7 +350,7 @@ def generate_part(
 
     client = None
     try:
-        if action_level == "L0":
+        if action_level in PART_ATOMIC_LEVELS:
             from planner.executor import SwExecutor
             from planner.llm_client import PlanOutputExhaustedError, SwLLMClient
 
@@ -366,7 +393,7 @@ def generate_part(
             outcome = WorkflowAgent(
                 _openai(provider), model, session, max_llm_calls=max_llm_calls, extra_tools=extra,
                 reasoning_effort=reasoning_effort, stream=True, checkpoint_path=checkpoint,
-                view_tool=view_tool, log=log,
+                view_tool=view_tool, log=log, compact_context=compact_context,
             ).run(spec["prompt"], resume=resume)
         artifacts = {}
         try:
@@ -376,7 +403,7 @@ def generate_part(
         except Exception as exc:
             artifacts = {"error": str(exc)}
     except Exception as exc:
-        if action_level != "L0":
+        if action_level not in PART_ATOMIC_LEVELS:
             raise
         outcome = {
             "status": "llm_error",
@@ -407,6 +434,12 @@ def generate_part(
         "llm_calls": outcome["llm_calls"],
         "error": outcome.get("error"),
         "finish_reasons": outcome.get("finish_reasons"),
+        "compact_context": outcome.get("compact_context"),
+        "length_retries": outcome.get("length_retries"),
+        "compact_verifier_calls": outcome.get("compact_verifier_calls"),
+        "compact_fallbacks": outcome.get("compact_fallbacks"),
+        "semantic_recoveries": outcome.get("semantic_recoveries"),
+        "request_modes": outcome.get("request_modes"),
         "tool_calls": outcome["tool_calls"],
         "agent_summary": outcome.get("summary"),
         "resumed": outcome.get("resumed"),
@@ -414,10 +447,10 @@ def generate_part(
         "artifacts": artifacts,
         "trace": str(trace),
         "checkpoint": str(checkpoint),
-        "atomic_operations": len(outcome.get("tool_calls") or []) if action_level == "L0" else None,
+        "atomic_operations": len(outcome.get("tool_calls") or []) if action_level in PART_ATOMIC_LEVELS else None,
         "successful_atomic_operations": (
             sum(1 for item in outcome.get("tool_calls") or [] if item.get("success"))
-            if action_level == "L0" else None
+            if action_level in PART_ATOMIC_LEVELS else None
         ),
     }
     _write_json(result_path, result)
@@ -446,6 +479,7 @@ def _assemble(
     view_tool: bool = True,
     provider: str = PROVIDER,
     action_level: str = "L1",
+    compact_context: bool = False,
 ) -> dict:
     from planner.assembly_workflow.session import AssemblySession
 
@@ -458,6 +492,10 @@ def _assemble(
         from planner.schemas import ASSEMBLY_ATOMIC_TOOLS
         allowed_tools = set(ASSEMBLY_ATOMIC_TOOLS.values())
         session_workflow = "v2"
+    elif action_level == "L0_mt":
+        from planner.assembly_workflow.tools import atomic_tool_names
+        allowed_tools = atomic_tool_names(view_tool=view_tool)
+        session_workflow = "v3"
     else:
         from planner.assembly_workflow.tools import tool_names
         allowed_tools = tool_names(workflow, view_tool=view_tool)
@@ -466,7 +504,7 @@ def _assemble(
     session.start_assembly(str(dest))
     listing = "\n".join(f"- {role}: {path}" for role, path in parts.items())
     goal = case["assembly"]["prompt"] + "\n\n零件文件（角色名: SLDPRT 绝对路径）：\n" + listing
-    if action_level != "L0":
+    if action_level == "L1":
         goal = _recipes(workflow) + "\n\n" + goal
     started = time.perf_counter()
 
@@ -532,6 +570,25 @@ def _assemble(
                 "llm_responses": [],
                 "aliases": dict(session.aliases),
             }
+    elif action_level == "L0_mt":
+        from planner.assembly_workflow.agent import AssemblyAgent
+        from planner.assembly_workflow.atomic import SYSTEM_PROMPT_MT
+        from planner.assembly_workflow.tools import atomic_tool_specs
+
+        agent = AssemblyAgent(
+            _openai(provider), model, session, max_llm_calls=max_llm_calls, max_tokens=max_tokens,
+            tools=atomic_tool_specs(view_tool=view_tool), reasoning_effort=reasoning_effort,
+            checkpoint_path=checkpoint, view_tool=view_tool, stream=True, log=log,
+            system_prompt=SYSTEM_PROMPT_MT, agent_kind="atomic_mt",
+        )
+        try:
+            outcome = agent.run(goal, resume=resume)
+        except ValueError as exc:
+            if not resume or "checkpoint" not in str(exc):
+                raise
+            log(f"checkpoint 不兼容，删除后从空装配体重跑：{exc}")
+            checkpoint.unlink(missing_ok=True)
+            outcome = agent.run(goal, resume=False)
     else:
         from planner.assembly_workflow.agent import AssemblyAgent
         from planner.assembly_workflow.tools import tool_specs
@@ -540,6 +597,7 @@ def _assemble(
             _openai(provider), model, session, max_llm_calls=max_llm_calls, max_tokens=max_tokens,
             tools=tool_specs(workflow, view_tool=view_tool), reasoning_effort=reasoning_effort,
             checkpoint_path=checkpoint, view_tool=view_tool, stream=True, log=log,
+            compact_context=compact_context,
         ).run(goal, resume=resume)
     messages = outcome.get("messages") or []
     _write_json(dest.with_name("agent_messages.json"), messages)
@@ -564,6 +622,17 @@ def _assemble(
         motion = _motion(session, case["motion"], parts, sw)
     except Exception as exc:
         motion = {"passed": False, "score": 0.0, "score_v1": 0.0, "error": str(exc)}
+    atomic_operations = None
+    successful_atomic_operations = None
+    if action_level == "L0":
+        atomic_operations = len(outcome["tool_calls"])
+        successful_atomic_operations = sum(1 for item in outcome["tool_calls"] if item.get("success"))
+    elif action_level == "L0_mt":
+        from planner.assembly_workflow.tools import ATOMIC_MUTATOR_NAMES
+        atomic_calls = [item for item in outcome["tool_calls"] if item.get("tool") in ATOMIC_MUTATOR_NAMES]
+        atomic_operations = len(atomic_calls)
+        successful_atomic_operations = sum(1 for item in atomic_calls if item.get("ok"))
+
     return {
         "status": outcome["status"],
         "error": outcome.get("error"),
@@ -585,13 +654,16 @@ def _assemble(
         "agent_last_motion": outcome.get("last_motion"),
         "agent_last_pose": session.last_pose,
         "truncations": outcome.get("truncations"),
+        "compact_context": outcome.get("compact_context"),
+        "request_modes": outcome.get("request_modes"),
+        "compact_retries": outcome.get("compact_retries"),
         "joints": session.joints,
         "action_level": action_level,
-        "atomic_operations": len(outcome["tool_calls"]) if action_level == "L0" else None,
-        "successful_atomic_operations": (
-            sum(1 for item in outcome["tool_calls"] if item.get("success"))
-            if action_level == "L0" else None
+        "assembly_workflow": assembly_workflow_metadata(
+            action_level, workflow, view_tool, compact_context,
         ),
+        "atomic_operations": atomic_operations,
+        "successful_atomic_operations": successful_atomic_operations,
     }
 
 
@@ -657,6 +729,7 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
                 reasoning_effort=args.reasoning_effort, resume=resume,
                 view_tool=getattr(args, "part_view_tool", True), provider=getattr(args, "provider", PROVIDER),
                 action_level=args.action_level, max_plan_tokens=args.max_part_plan_tokens,
+                compact_context=getattr(args, "part_compact_context", False),
             )
             skipped = bool((result.get("grade") or {}).get("skipped"))
             print(
@@ -697,6 +770,7 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
                 max_tokens=args.asm_max_tokens, reasoning_effort=args.reasoning_effort, resume=resume,
                 view_tool=not getattr(args, "no_view_tool", False), provider=getattr(args, "provider", PROVIDER),
                 action_level=args.action_level,
+                compact_context=getattr(args, "asm_compact_context", False),
             )
         except Exception as exc:  # SolidWorks 已经死掉时连新建装配体都会失败
             assembly = {"status": "infra_exception", "infra_error": f"{type(exc).__name__}: {exc}",
@@ -811,8 +885,9 @@ def main() -> None:
     parser.add_argument("--condition", default="gold", choices=["gold", "gen", "e2e", "all"])
     parser.add_argument("--repeats", type=int, default=2)
     parser.add_argument(
-        "--action-level", default="L1", choices=["L0", "L1"],
-        help="L0=零件与装配均为单轮 Atomic Plan；L1=现有 part L1_v2 + assembly workflow",
+        "--action-level", default="L1", choices=["L0", "L0_mt", "L1"],
+        help="L0=零件与装配均为单轮 Atomic Plan；L0_mt=零件单轮 Atomic + 装配多轮 Atomic；"
+             "L1=现有 part L1_v2 + assembly workflow",
     )
     parser.add_argument("--workflow", default="v3", choices=["v1", "v2", "v3", "both"],
                         help="v1=手写场景配方与原工具集；v2=数据导出的通用配方与扩展工具集；"
@@ -835,6 +910,14 @@ def main() -> None:
                         help="不提供截图工具：v3 装配不带 view_assembly，gen/e2e 的零件阶段不带 view_model"
                              "（骨干模型不支持图片输入时必须加）")
     parser.add_argument(
+        "--compact-context", action="store_true",
+        help="零件 L1_v2 使用 compact_context；装配 workflow 保持不变",
+    )
+    parser.add_argument(
+        "--asm-compact-context", action="store_true",
+        help="装配 L1 workflow 使用独立的请求级上下文压缩、溢出恢复和可恢复 checkpoint",
+    )
+    parser.add_argument(
         "--reasoning-effort",
         choices=("none", "minimal", "low", "medium", "high", "xhigh"),
         default=None,
@@ -846,10 +929,15 @@ def main() -> None:
     parser.add_argument(
         "--resume", action="store_true",
         help="keep finished rows of an existing --output and run only the missing ones; rows with infra_error "
-        "or an interrupted agent (llm_error / sw_lost / resume_failed) are rerun, continuing from the part and "
-        "assembly checkpoints saved under --output-dir (finished parts are reused)",
+        "or an interrupted agent (llm_error / sw_lost / resume_failed, plus context_exceeded when assembly "
+        "compact context is enabled) are rerun, continuing from the part and assembly checkpoints saved under "
+        "--output-dir (finished parts are reused)",
     )
     args = parser.parse_args()
+    if args.compact_context and args.action_level != "L1":
+        parser.error("--compact-context 只支持 --action-level L1 的零件阶段")
+    if args.asm_compact_context and args.action_level != "L1":
+        parser.error("--asm-compact-context 只支持 --action-level L1 的装配阶段")
     names = []
     tokens = [t.strip() for t in args.cases.split(",")]
     groups = {"bench": list(BENCH_CASES), "bench2": list(CASES2)}
@@ -866,6 +954,8 @@ def main() -> None:
     workflows = (
         ["atomic"]
         if args.action_level == "L0"
+        else ["atomic_mt"]
+        if args.action_level == "L0_mt"
         else (["v1", "v2"] if args.workflow == "both" else [args.workflow])
     )
     from planner.workflow.agent import _model_key, default_reasoning_effort
@@ -873,13 +963,14 @@ def main() -> None:
         parser.error(f"--provider {args.provider} 需要在 .env 里设置 {PROVIDER_ENV[args.provider][1]}")
     args.reasoning_effort = default_reasoning_effort(
         args.model, args.reasoning_effort or MODEL_REASONING_EFFORTS.get(_model_key(args.model)))
-    # 只有 v3 装配工具集带截图工具；之前的结果没有这个字段，都是不带截图的
-    args.view_tool = args.action_level == "L1" and "v3" in workflows and not args.no_view_tool
+    # L0_mt 和 v3 支持装配截图；单轮 L0 不支持图片输入
+    args.view_tool = (
+        args.action_level == "L0_mt" or (args.action_level == "L1" and "v3" in workflows)
+    ) and not args.no_view_tool
     args.part_view_tool = args.action_level == "L1" and not args.no_view_tool
-    part_workflow = (
-        {"version": "L0", "atomic_api": "part-api-v1", "mode": "single_turn"}
-        if args.action_level == "L0"
-        else {"version": "L1_v2", "view_tool": args.part_view_tool}
+    args.part_compact_context = args.action_level == "L1" and args.compact_context
+    part_workflow = part_workflow_metadata(
+        args.action_level, args.part_view_tool, args.part_compact_context,
     )
     rows = []
     if args.resume and Path(args.output).is_file():
@@ -888,9 +979,11 @@ def main() -> None:
         previous.setdefault("provider", "ttswitch")
         previous.setdefault("action_level", "L1")
         previous.setdefault("max_part_plan_tokens", 16000)
+        previous.setdefault("compact_context", False)
+        previous.setdefault("asm_compact_context", False)
         for key in (
             "provider", "model", "reasoning_effort", "asm_max_tokens", "view_tool",
-            "action_level", "max_part_plan_tokens",
+            "action_level", "max_part_plan_tokens", "compact_context", "asm_compact_context",
         ):
             if previous.get(key) != getattr(args, key):
                 parser.error(f"--resume：已有结果的 {key}={previous.get(key)!r} 与本次 {getattr(args, key)!r} 不一致")
@@ -900,10 +993,26 @@ def main() -> None:
                 p["part_id"] for p in row.get("parts") or []
                 if p.get("status") in RERUN_STATUSES or p.get("part_workflow") != part_workflow
             ]
-            if asm.get("infra_error") or asm.get("status") in RERUN_STATUSES or broken_parts:
+            asm_interrupted = asm.get("status") in RERUN_STATUSES or (
+                args.asm_compact_context and asm.get("status") == "context_exceeded"
+            )
+            if (row.get("infra_contaminated") or asm.get("infra_error")
+                    or asm_interrupted or broken_parts):
+                if row.get("infra_contaminated") or asm.get("infra_error") or asm.get("status") in {
+                    "sw_lost", "resume_failed",
+                }:
+                    stale_checkpoint = (
+                        Path(args.output_dir).resolve() / row["workflow"] / row["case_id"]
+                        / f"{row['condition']}_r{row['repeat']}" / "agent.checkpoint.json"
+                    )
+                    stale_checkpoint.unlink(missing_ok=True)
+                reason = (
+                    asm.get("infra_error") or asm.get("error")
+                    or ("基础设施污染" if row.get("infra_contaminated")
+                        else "零件中断: " + ",".join(broken_parts))
+                )
                 print(f"[resume] 续跑 {row['case_id']} {row['condition']} r{row['repeat']} {row['workflow']}"
-                      f"（{asm.get('infra_error') or asm.get('error') or '零件中断: ' + ','.join(broken_parts)}）",
-                      flush=True)
+                      f"（{reason}）", flush=True)
                 continue
             rows.append(row)
         print(f"[resume] 保留已完成的 {len(rows)} 行", flush=True)
@@ -923,7 +1032,7 @@ def main() -> None:
                 for wf in workflows
             },
             "recipes": {
-                wf: ([] if wf == "atomic" else list(RECIPE_SETS[wf]))
+                wf: ([] if wf in {"atomic", "atomic_mt"} else list(RECIPE_SETS[wf]))
                 for wf in workflows
             },
             "results": rows,
@@ -939,17 +1048,22 @@ def main() -> None:
             "view_tool": args.view_tool,
             "action_level": args.action_level,
             "part_workflow": part_workflow,
+            "compact_context": args.part_compact_context,
+            "asm_compact_context": args.asm_compact_context,
             "part_atomic_api": (
                 {
                     "name": "atomic_api_complete",
                     "version": "part-api-v1",
                     "endpoints": sorted(path for _method, path in PART_ATOMIC_ENDPOINTS.values()),
                 }
-                if args.action_level == "L0" else None
+                if args.action_level in PART_ATOMIC_LEVELS else None
             ),
             "assembly_atomic_api": (
                 atomic_api_metadata()
-                if args.action_level == "L0" else None
+                if args.action_level in PART_ATOMIC_LEVELS else None
+            ),
+            "assembly_workflow": assembly_workflow_metadata(
+                args.action_level, args.workflow, args.view_tool, args.asm_compact_context,
             ),
             "max_part_plan_tokens": args.max_part_plan_tokens,
             "max_asm_calls": args.max_asm_calls,

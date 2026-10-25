@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -13,6 +14,13 @@ from planner.assembly_workflow.atomic import (
     AssemblyAtomicExecutor,
     AssemblyAtomicPlanner,
     atomic_api_metadata,
+)
+from planner.assembly_workflow.agent import AssemblyAgent
+from planner.assembly_workflow.session import AssemblySession
+from planner.assembly_workflow.tools import (
+    ATOMIC_MUTATOR_NAMES,
+    atomic_tool_names,
+    atomic_tool_specs,
 )
 from planner.schemas import (
     ASSEMBLY_ATOMIC_PARAM_SCHEMAS,
@@ -41,6 +49,58 @@ def test_assembly_atomic_catalog_is_complete_and_isolated_from_part_l0():
     } & set(ASSEMBLY_ATOMIC_TOOLS.values())
     assert all(not path.startswith("/api/assembly/") for _, path in PART_ATOMIC_ENDPOINTS.values())
     assert atomic_api_metadata()["version"] == ASSEMBLY_ATOMIC_API_VERSION
+
+
+def test_multi_turn_atomic_tools_are_exact_and_exclude_workflow_macros():
+    expected = {
+        "insert_component", "set_component_pose", "ground_component", "unfix_component",
+        "mate", "delete_mate", "save_assembly", "get_assembly_state", "view_assembly",
+        "check_interference", "check_dof", "check_motion", "check_pose", "finish",
+    }
+    assert atomic_tool_names() == expected
+    assert atomic_tool_names(view_tool=False) == expected - {"view_assembly"}
+    assert {spec["function"]["name"] for spec in atomic_tool_specs()} == expected
+    assert ATOMIC_MUTATOR_NAMES == {
+        "insert_component", "set_component_pose", "ground_component", "unfix_component",
+        "mate", "delete_mate", "save_assembly",
+    }
+    assert not {
+        "joint", "close_loop", "mount_on_shaft", "revolute_joint", "slider_joint",
+        "mesh_gears", "crank_slider", "rack_pinion", "screw_pair", "linear_coupler",
+    } & expected
+
+
+def test_multi_turn_atomic_session_rejects_macro_and_invalidates_checks():
+    session = AssemblySession(workflow="v3", allowed_tools=atomic_tool_names(view_tool=False))
+    assert session.call("joint", {})["error"]["code"] == "TOOL_ARGS"
+
+    session.has_assembly = True
+    session.last_motion = session.last_pose = session.last_dof = {"old": True}
+    session._handlers["set_component_pose"] = lambda args: {}
+    session._delta = lambda: {}
+    assert session.call("set_component_pose", {"component": "a", "at": [0, 0, 0]})["ok"]
+    assert session.last_motion is None and session.last_pose is None and session.last_dof is None
+
+
+def test_agent_checkpoint_isolated_by_agent_kind_and_old_workflow_is_compatible(tmp_path):
+    checkpoint = tmp_path / "agent.json"
+    old = {"goal": "g", "model": "m"}
+    checkpoint.write_text(json.dumps(old), encoding="utf-8")
+    workflow = AssemblyAgent(None, "m", SimpleNamespace(), checkpoint_path=checkpoint)
+    assert workflow._load_checkpoint("g") == old
+
+    atomic_mt = AssemblyAgent(
+        None, "m", SimpleNamespace(), checkpoint_path=checkpoint,
+        tools=atomic_tool_specs(view_tool=False), view_tool=False, agent_kind="atomic_mt",
+    )
+    with pytest.raises(ValueError, match="workflow agent"):
+        atomic_mt._load_checkpoint("g")
+
+    checkpoint.write_text(json.dumps({
+        "goal": "g", "model": "m", "agent_kind": "atomic_mt",
+        "tool_names": [spec["function"]["name"] for spec in atomic_mt.tools],
+    }), encoding="utf-8")
+    assert atomic_mt._load_checkpoint("g")["agent_kind"] == "atomic_mt"
 
 
 @pytest.mark.parametrize(
@@ -180,8 +240,10 @@ def test_atomic_planner_retries_truncated_output_with_32k_budget():
 
 def test_assembly_eval_has_atomic_part_and_assembly_branches():
     source = (ROOT / "eval/eval_assembly_scratch.py").read_text(encoding="utf-8")
-    assert 'choices=["L0", "L1"]' in source
+    assert 'choices=["L0", "L0_mt", "L1"]' in source
     assert "SwLLMClient(" in source
     assert "SwExecutor(base_url=sw).execute_plan(plan)" in source
     assert "AssemblyAtomicPlanner" in source
+    assert 'agent_kind="atomic_mt"' in source
+    assert '["atomic_mt"]' in source
     assert '"assembly_atomic_api"' in source

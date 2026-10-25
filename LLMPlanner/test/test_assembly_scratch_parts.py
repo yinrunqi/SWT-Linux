@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -37,16 +38,73 @@ SPEC = {"id": "gear_a", "prompt": "做一个齿轮", "extra_tools": ["spur_gear"
 
 
 @pytest.mark.parametrize("view_tool", [True, False])
-def test_generate_part_uses_l1_v2(fake_env, tmp_path, view_tool):
+@pytest.mark.parametrize("compact_context", [True, False])
+def test_generate_part_uses_l1_v2(fake_env, tmp_path, view_tool, compact_context):
     result = scratch.generate_part(SPEC, tmp_path / "gear_a", sw="http://fake", model="m",
-                                   max_llm_calls=3, view_tool=view_tool)
+                                   max_llm_calls=3, view_tool=view_tool,
+                                   compact_context=compact_context)
     (made,) = fake_env
     assert isinstance(made["session"], WorkflowSessionV2)
     assert made["view_tool"] is view_tool
     assert made["extra_tools"] == ["spur_gear"]
     assert made["stream"] is True
+    assert made["compact_context"] is compact_context
     assert callable(made["log"])
-    assert result["part_workflow"] == {"version": "L1_v2", "view_tool": view_tool}
+    assert result["part_workflow"] == {
+        "version": "L1_v2",
+        "view_tool": view_tool,
+        "compact_context": compact_context,
+    }
+
+
+@pytest.mark.parametrize("action_level", ["L0", "L0_mt"])
+def test_generate_part_uses_same_single_turn_atomic_for_both_l0_levels(
+    monkeypatch, tmp_path, action_level,
+):
+    import planner.executor as executor_module
+    import planner.llm_client as client_module
+
+    class FakeClient:
+        def __init__(self, **kwargs):
+            self.token_usage = {
+                "prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2, "calls": 1,
+            }
+
+        def plan(self, prompt):
+            return SimpleNamespace(steps=[], notes="", model_dump=lambda **kwargs: {"steps": []})
+
+    class FakeExecutor:
+        def __init__(self, **kwargs):
+            pass
+
+        def execute_plan(self, plan):
+            return []
+
+    monkeypatch.setattr(client_module, "SwLLMClient", FakeClient)
+    monkeypatch.setattr(executor_module, "SwExecutor", FakeExecutor)
+    monkeypatch.setattr(scratch, "_close", lambda sw: None)
+    monkeypatch.setattr(scratch, "_openai", lambda *args, **kwargs: None)
+    monkeypatch.setattr(scratch.requests, "post", lambda *args, **kwargs: None)
+
+    result = scratch.generate_part(
+        SPEC, tmp_path / action_level, sw="http://fake", model="m",
+        max_llm_calls=3, action_level=action_level,
+    )
+
+    assert result["part_workflow"] == {
+        "version": "L0", "atomic_api": "part-api-v1", "mode": "single_turn",
+    }
+    assert result["status"] == "finished"
+
+
+def test_three_action_levels_have_distinct_assembly_metadata():
+    assert scratch.assembly_workflow_metadata("L0", "atomic", False)["mode"] == "single_turn"
+    assert scratch.assembly_workflow_metadata("L0_mt", "atomic_mt", True) == {
+        "version": "L0_mt", "atomic_api": "assembly-api-v1", "mode": "multi_turn",
+    }
+    assert scratch.assembly_workflow_metadata("L1", "v3", True, True) == {
+        "version": "L1_v3", "view_tool": True, "compact_context": True,
+    }
 
 
 def test_openai_wrapper_passes_streams_through(monkeypatch):

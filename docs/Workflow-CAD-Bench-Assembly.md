@@ -167,7 +167,7 @@
    - 运动检查（第 4 节），由评测器加马达、采样。
 4. 汇总。结果写到 `eval/assembly_scratch_result.json`，装配体和零件存在 `eval/artifacts/assembly_scratch/<workflow>/<case>/<condition>_r<repeat>/`。智能体结束后评测器先把当前装配体存成检查点再评分，所以即使智能体没调用 `save_assembly`，评分用的也是它最后的状态；同目录的 `rubric_inputs.json` 存下 rubric 的原始输入（组件、配合、别名），以后改 rubric 可以离线重评。
 
-### 1.1 L0 Atomic 对照
+### 1.1 三档动作层级：L0、L0_mt、L1
 
 `--action-level L0` 把零件与装配两个阶段都切到严格的单轮 Atomic Plan：
 
@@ -186,8 +186,23 @@
   结果目录中的 workflow 标签为 `atomic`，报告记录 `part_atomic_api`、
   `assembly_atomic_api`、计划 token、原子动作数、成功数与逐步失败信息。
 
+`--action-level L0_mt` 是独立的多轮 Atomic 档，不覆盖上述单轮结果：
+
+- `gen/e2e` 的零件阶段仍使用与 L0 完全相同的单轮 `part-api-v1`；
+- 装配阶段允许模型多轮读取执行结果并纠错，但结构修改只开放
+  `insert_component`、`set_component_pose`、`ground_component`、
+  `unfix_component`、单条 `mate`、`delete_mate` 和 `save_assembly`；
+- 可以使用 `get_assembly_state`、`view_assembly`、`check_interference`、
+  `check_dof`、`check_motion`、`check_pose` 和 `finish` 做观察与验证；
+- 不开放 `joint`、`close_loop`、`mount_on_shaft`、`mesh_gears`、
+  `crank_slider` 等聚合修改宏，也不注入 workflow recipes；
+- 使用 v3 的增量状态、秩法 DOF 和验证门槛。结果目录标签为 `atomic_mt`，
+  checkpoint 的 `agent_kind=atomic_mt`，不能与 L1 workflow 的 checkpoint 串用。
+  报告 metadata 为 `L0_mt / assembly-api-v1 / multi_turn`；原子操作数只统计
+  上述原子修改工具，不把观察和验证调用计入。
+
 默认 `--action-level L1` 保持原行为：零件 `L1_v2`，装配使用
-`--workflow v1|v2|v3`。L0 与 L1 使用相同的装配 rubric 和运动评测器。
+`--workflow v1|v2|v3`。三档使用相同的装配 rubric 和运动评测器，因此可以直接对照。
 
 模型与 LLM 设置（2026-10-10 起的默认值，与 text-to-CAD 的 Qwen L1_v2 评测相同，见 [Workflow-CAD-Bench.md](Workflow-CAD-Bench.md) 6.2 节）：
 - 模型 `Qwen3.8-Flash-Next-FP8`，自部署 vLLM（`--provider qwenlocal`，读 `.env` 的 `QWENLOCAL_BASE_URL`、`QWENLOCAL_API_KEY`）；不指定 `--reasoning-effort` 时用 `medium`，温度 0。`--provider ttswitch|aiping|juheai` 和 `--model` 可以换服务和模型；不再读 `.env` 的 `PLAN_MODEL`。
@@ -195,9 +210,10 @@
 - 每轮 `max_tokens` 16000（装配阶段 `--asm-max-tokens`）。输出被截断时丢掉残缺回复，上限翻倍重试，最多 32000，放宽后的上限保留到本次运行结束。
 - 服务端上下文 73728 token，输入、推理和输出共用。服务端返回超长 400 时，按报错里的输入 token 数把本轮 `max_tokens` 压到窗口剩余量再试；剩余不足 2048 时以 `context_exceeded` 结束。
 - 调用预算：零件每个 40 次（`--max-part-calls`），装配 100 次（`--max-asm-calls`）。
+- `--compact-context` 只控制零件 L1_v2；独立的 `--asm-compact-context` 只控制装配 L1 workflow。装配紧凑模式把较早的工具结果压成 ledger、保留最近两轮完整结果，且不改写完整 checkpoint/trace；常规压缩仍装不下时，会缩到最近一轮并附加当前装配状态重试。两项默认均关闭，便于分别做消融。
 - 零件接口 rubric 在建模时就打分：运行评测的解释器（通常是 `venv`）没有 OCC 时，交给 `venv-occ\Scripts\python.exe -m geomcheck.rubric` 子进程（可用环境变量 `GEOMCHECK_PYTHON` 指定别的解释器），与 text-to-CAD 的做法相同。两者都没有 OCC 时才记 `skipped`，之后用 `regrade_offline.py` 补算。2026-10-11 之前 `venv` 里跑的结果零件都记成 `skipped`。齿隙仍只在有 OCC 的解释器里当场量，`venv` 里记为 None，可用 `regrade_offline.py` 补量（只记录不计分）。
 - `--workflow` 默认 v3，带 `view_assembly` 截图工具（此前默认 v1；第 6 节结果都显式用了 `--workflow v2`）。
-- 结果 JSON 记录 `provider`、`model`、`reasoning_effort`、`asm_max_tokens`，`--resume` 时要求一致（旧结果的 `provider` 视为 `ttswitch`）。
+- 结果 JSON 记录 `provider`、`model`、`reasoning_effort`、`asm_max_tokens`、`compact_context` 和 `asm_compact_context`，`--resume` 时要求一致（旧结果的 `provider` 视为 `ttswitch`）。
 
 此前（第 6 节各结果）的设置不同：模型要用 `--model` 指定（6.1、6.2 节是 claude-sonnet-5），走 `.env` 的 `OPENAI_*` 网关；非流式请求，超时 180 s；装配阶段 `max_tokens` 8000，截断重试只在 v3 里有，而且下一轮会把上限重置回 8000；没有上下文窗口处理。所以第 6 节的结果不能直接和新默认设置的结果对比。
 
@@ -206,6 +222,7 @@
 LLM 输出落盘与续跑（与 text-to-CAD 的 L1 评测相同）：
 - 装配智能体每拿到一次 LLM 回复、每执行完一轮工具，都把完整对话、原始回复、工具记录和中间状态写到产物目录的 `agent.checkpoint.json`；零件生成阶段同样写 `parts/<id>.checkpoint.json`，零件结束后另存 `parts/<id>.result.json`。
 - 装配智能体遇到 `SW_UNAVAILABLE`、`NO_PART` 或"没有活动的装配体文档"时，撤回这一轮，状态记为 `sw_lost`，把这轮回复留作待执行。
+- 开启 `--asm-compact-context` 后，`context_exceeded` checkpoint 也可重放并从剩余调用预算继续；关闭该开关时仍维持历史终止行为。
 - 上面的基础设施重试会从 checkpoint 接着跑：先在新建的空装配体上按原顺序重放已执行的工具（`get_assembly_state`、`check_interference`、`finish` 这些只读调用不重放；`check_motion` / `check_pose` / `check_dof` 会更新 `finish` 的门槛，要重放），再接着原对话继续，已经拿到的回复不会重新请求。智能体上次已正常结束、只是运动评测超时的，重放后直接沿用原结果，只重做评分。
 - 重放结果与记录不一致时记 `resume_failed`，下一次重试改为从头开始。
 - `--resume` 保留已完成的行；带 `infra_error`，或者装配 / 零件状态为 `llm_error`、`sw_lost`、`resume_failed` 的行会续跑。已完成的零件直接沿用 `parts/<id>.result.json`，中断的零件和装配从各自的 checkpoint 接着跑。不加 `--resume` 时旧 checkpoint 会被删掉，从头开始。
@@ -828,6 +845,9 @@ venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --cases desk_lamp,
 # L0 Atomic 对照：gen/e2e 的零件阶段也直接使用 part-api-v1；--workflow 在 L0 下忽略
 venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --action-level L0 --cases gearbox,engine --condition gold --repeats 1 `
     --output eval\assembly_atomic_l0_gold.json --output-dir eval\artifacts\assembly_atomic_l0_gold
+# L0_mt 多轮 Atomic：零件仍为单轮 L0，装配允许原子工具闭环；--workflow 同样忽略
+venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --action-level L0_mt --cases gearbox,engine --condition gold --repeats 1 `
+    --output eval\assembly_atomic_mt_gold.json --output-dir eval\artifacts\assembly_atomic_mt_gold
 # 扩展测例：--cases bench 表示全部 20 个
 venv\Scripts\python.exe -X utf8 eval\eval_assembly_scratch.py --cases bench --condition gen --workflow v2 --repeats 1 --model claude-sonnet-5
 

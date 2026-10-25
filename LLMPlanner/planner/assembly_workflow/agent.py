@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import os
 import time
@@ -72,6 +73,79 @@ IMAGE_PLACEHOLDER = "（此前的截图已省略，只保留最新一张）"
 IMAGE_CAPTION = "view_assembly：SolidWorks 中当前装配体的截图如下，每格上方标有视向与坐标方向。"
 RESUMABLE_STATUSES = {"running", "llm_error", "sw_lost"}
 ENVIRONMENT_ERRORS = {"NO_PART", "SW_UNAVAILABLE"}
+ASM_COMPACT_DISCIPLINE = (
+    "较早的装配工具历史已压缩为 ledger，完整历史仍保存在 checkpoint。"
+    "请依据 ledger、最近完整轮次和当前状态直接调用工具推进，不要复述历史。"
+)
+_ASM_LEDGER_KEYS = (
+    "name", "alias", "component", "created", "deleted", "saved", "path", "after",
+    "mobility", "redundant", "floating", "overdefined", "free", "passed", "stuck",
+    "interference_pairs", "interference_frames", "score", "warnings",
+)
+
+
+def _compact_assembly_tool_result(tool: str, content: Any) -> Any:
+    """把旧装配工具结果压成足以继续规划的 ledger；最近轮次仍保留完整结果。"""
+    if not isinstance(content, str) or not content.startswith("{"):
+        return content
+    try:
+        payload = json.loads(content)
+    except (TypeError, ValueError):
+        return content
+    if not isinstance(payload, dict):
+        return content
+    compact: dict[str, Any] = {"ledger": True, "tool": tool, "ok": bool(payload.get("ok"))}
+    if not payload.get("ok"):
+        error = payload.get("error") or {}
+        compact["error"] = {
+            key: copy.deepcopy(error[key])
+            for key in ("code", "message", "hint", "rolled_back")
+            if key in error
+        }
+        if payload.get("repeat_warning"):
+            compact["repeat_warning"] = payload["repeat_warning"]
+    elif tool == "get_assembly_state":
+        compact["note"] = "旧状态快照已省略；以后续 ledger 和最近状态为准"
+    else:
+        for key in _ASM_LEDGER_KEYS:
+            if key in payload:
+                compact[key] = copy.deepcopy(payload[key])
+    return json.dumps(compact, ensure_ascii=False, separators=(",", ":"))
+
+
+def compact_assembly_history(messages: list[dict], *, keep_recent_rounds: int = 2) -> list[dict]:
+    """构造请求副本：旧工具结果改为 ledger，旧 assistant 分析清空，主历史不变。"""
+    out = copy.deepcopy(messages)
+    call_to_tool: dict[str, str] = {}
+    rounds: list[set[str]] = []
+    assistant_calls: list[tuple[dict, set[str]]] = []
+    for message in out:
+        if message.get("role") != "assistant":
+            continue
+        ids: set[str] = set()
+        for call in message.get("tool_calls") or []:
+            call_id = str(call.get("id") or "")
+            function = call.get("function") or {}
+            if call_id:
+                ids.add(call_id)
+                call_to_tool[call_id] = str(function.get("name") or "unknown")
+        if ids:
+            rounds.append(ids)
+            assistant_calls.append((message, ids))
+    kept_ids = set().union(*rounds[-keep_recent_rounds:]) if rounds and keep_recent_rounds > 0 else set()
+    for message, ids in assistant_calls:
+        if ids.isdisjoint(kept_ids):
+            message["content"] = ""
+    for message in out:
+        if message.get("role") != "tool":
+            continue
+        call_id = str(message.get("tool_call_id") or "")
+        if call_id not in kept_ids:
+            message["content"] = _compact_assembly_tool_result(
+                call_to_tool.get(call_id, "unknown"), message.get("content"),
+            )
+    out.append({"role": "user", "content": ASM_COMPACT_DISCIPLINE})
+    return out
 
 
 def _environment_lost(result: dict) -> bool:
@@ -123,10 +197,15 @@ class AssemblyAgent:
         stream: bool = False,
         log: Callable[[str], None] | None = None,
         context_limit: int | None = None,
+        system_prompt: str | None = None,
+        agent_kind: str = "workflow",
+        compact_context: bool = False,
     ):
         """view_tool=False 时去掉 view_assembly 截图工具（骨干模型不支持图片输入时用）。
         stream / log / context_limit 与零件 WorkflowAgent 相同：流式请求、逐步进度输出、小上下文模型超长时
-        压缩本轮输出上限，仍装不下则以 context_exceeded 结束。"""
+        压缩本轮输出上限，仍装不下则以 context_exceeded 结束。
+        compact_context=True 时只压缩发给模型的旧装配历史，完整 checkpoint/trace 不变；常规压缩仍超限时
+        携带当前装配状态做一次更强压缩重试。"""
         self.client = client
         self.model = model
         self.stream = stream
@@ -137,6 +216,9 @@ class AssemblyAgent:
         self.view_tool = view_tool
         self.tools = [spec for spec in tools or TOOL_SPECS
                       if view_tool or spec["function"]["name"] != "view_assembly"]
+        self.system_prompt = system_prompt
+        self.agent_kind = agent_kind
+        self.compact_context = bool(compact_context)
         self.max_llm_calls = max_llm_calls
         self.max_tokens = max_tokens
         self.temperature = temperature
@@ -151,7 +233,7 @@ class AssemblyAgent:
         started = time.perf_counter()
         v3 = bool(getattr(self.session, "v3", False))
         messages: list[dict] = [
-            {"role": "system", "content": SYSTEM_PROMPT_V3 if v3 else SYSTEM_PROMPT},
+            {"role": "system", "content": self.system_prompt or (SYSTEM_PROMPT_V3 if v3 else SYSTEM_PROMPT)},
             {"role": "user", "content": f"装配需求：\n{goal}\n\n当前是空装配体，零件路径已在需求里给出，请开始装配。"},
         ]
         usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "calls": 0}
@@ -165,6 +247,8 @@ class AssemblyAgent:
         image_at: int | None = None
         pending: dict | None = None
         prior_seconds, resumed = 0.0, None
+        request_modes: list[str] = []
+        compact_retries = 0
         # 未指定时不发送该字段，保持与历史结果相同的请求体。
         extra = {"reasoning_effort": self.reasoning_effort} if self.reasoning_effort else {}
 
@@ -176,6 +260,8 @@ class AssemblyAgent:
             failed_signatures, stalls = saved["failed_signatures"], saved["stalls"]
             truncations, max_tokens = saved["truncations"], saved["max_tokens"]
             state_messages, pending = saved.get("state_messages", []), saved.get("pending")
+            request_modes = list(saved.get("request_modes") or [])
+            compact_retries = int(saved.get("compact_retries") or 0)
             if saved.get("image_at") is not None:
                 messages[saved["image_at"]]["content"] = IMAGE_PLACEHOLDER
             prior_seconds = float(saved.get("duration_seconds") or 0)
@@ -185,18 +271,24 @@ class AssemblyAgent:
                       + (f"，重放不一致：{mismatch}" if mismatch else ""))
             if mismatch:
                 status, error, pending, done = "resume_failed", mismatch, None, True
-            elif saved.get("status") not in RESUMABLE_STATUSES:
+            elif saved.get("status") not in (
+                RESUMABLE_STATUSES | ({"context_exceeded"} if self.compact_context else set())
+            ):
                 # 上次已经正常结束，只是结果没送回评测端：恢复装配体后直接返回原结果
                 status, summary, error, pending, done = saved["status"], saved["summary"], saved["error"], None, True
 
         def checkpoint(current_status: str = "running") -> None:
             self._save_checkpoint({
                 "goal": goal, "model": self.model, "status": current_status, "summary": summary, "error": error,
+                "agent_kind": self.agent_kind,
+                "tool_names": [spec["function"]["name"] for spec in self.tools],
                 "messages": _without_images(messages), "image_at": image_at, "usage": usage, "tool_log": tool_log,
                 "llm_responses": llm_responses,
                 "finish_reasons": finish_reasons, "failed_signatures": failed_signatures, "stalls": stalls,
                 "truncations": truncations, "max_tokens": max_tokens, "state_messages": state_messages,
                 "pending": pending, "resumed": resumed, "reasoning_effort": self.reasoning_effort,
+                "compact_context": self.compact_context, "request_modes": request_modes,
+                "compact_retries": compact_retries,
                 "duration_seconds": round(prior_seconds + time.perf_counter() - started, 2),
             })
 
@@ -206,12 +298,49 @@ class AssemblyAgent:
                     for index in state_messages[:-1]:
                         messages[index]["content"] = STATE_PLACEHOLDER
                     state_messages = state_messages[-1:]
-                request = {"model": self.model, "messages": messages, "tools": self.tools, "tool_choice": "auto",
+                request_mode = "compact_history" if self.compact_context else "full"
+                request_messages = (
+                    compact_assembly_history(messages) if self.compact_context else messages
+                )
+                request = {"model": self.model, "messages": request_messages, "tools": self.tools, "tool_choice": "auto",
                            "temperature": self.temperature, "max_tokens": max_tokens, **extra}
+                request_modes.append(request_mode)
                 try:
                     response, prompt_tokens = complete_within_context(
                         lambda body: complete_request(self.client, body, self.stream),
                         request, self.context_limit, self._log)
+                    if response is None and self.compact_context:
+                        compact_retries += 1
+                        try:
+                            current_state = self.session.call("get_assembly_state", {})
+                        except Exception as exc:
+                            current_state = {"ok": False, "error": {
+                                "code": "STATE_FAILED", "message": f"{type(exc).__name__}: {exc}",
+                            }}
+                        if _environment_lost(current_state):
+                            status = "sw_lost"
+                            error = "get_assembly_state: " + str(
+                                (current_state.get("error") or {}).get("message") or "",
+                            )
+                            break
+                        emergency_messages = compact_assembly_history(messages, keep_recent_rounds=1)
+                        emergency_messages.append({
+                            "role": "user",
+                            "content": "当前装配状态：\n" + json.dumps(
+                                current_state, ensure_ascii=False, separators=(",", ":"), default=str,
+                            ),
+                        })
+                        request = {
+                            **request,
+                            "messages": emergency_messages,
+                            "max_tokens": max(self.max_tokens, MIN_OUTPUT_TOKENS),
+                        }
+                        request_modes[-1] = "emergency_compact"
+                        self._log("常规装配压缩仍超出上下文，改用单轮历史和当前状态重试")
+                        response, prompt_tokens = complete_within_context(
+                            lambda body: complete_request(self.client, body, self.stream),
+                            request, self.context_limit, self._log,
+                        )
                     if response is None:
                         status = "context_exceeded"
                         error = f"输入 {prompt_tokens} token，上下文上限 {self.context_limit}，剩余不足 {MIN_OUTPUT_TOKENS}"
@@ -360,6 +489,9 @@ class AssemblyAgent:
             "messages": _without_images(messages),
             "llm_responses": llm_responses,
             "resumed": resumed,
+            "compact_context": self.compact_context,
+            "request_modes": request_modes,
+            "compact_retries": compact_retries,
             "duration_seconds": round(prior_seconds + time.perf_counter() - started, 2),
         }
 
@@ -373,6 +505,17 @@ class AssemblyAgent:
         saved = json.loads(self.checkpoint_path.read_text(encoding="utf-8"))
         if saved.get("goal") != goal or saved.get("model") != self.model:
             raise ValueError(f"checkpoint {self.checkpoint_path} 属于另一个需求或模型，不能续跑")
+        if saved.get("agent_kind", "workflow") != self.agent_kind:
+            raise ValueError(
+                f"checkpoint {self.checkpoint_path} 属于 {saved.get('agent_kind', 'workflow')} agent，"
+                f"不能由 {self.agent_kind} agent 续跑"
+            )
+        saved_compact = bool(saved.get("compact_context", False))
+        if saved_compact and not self.compact_context:
+            raise ValueError(f"checkpoint {self.checkpoint_path} 使用了装配 compact_context，不能按完整上下文续跑")
+        current_tools = [spec["function"]["name"] for spec in self.tools]
+        if saved.get("tool_names") is not None and saved["tool_names"] != current_tools:
+            raise ValueError(f"checkpoint {self.checkpoint_path} 的工具集合不同，不能续跑")
         return saved
 
     def _save_checkpoint(self, state: dict) -> None:

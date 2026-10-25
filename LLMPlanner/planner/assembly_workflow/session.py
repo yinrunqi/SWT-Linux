@@ -46,8 +46,9 @@ def _round(value, digits=3):
 
 # v3：这些工具成功后附带一份精简的装配增量（活动度、冗余、过定义、悬空件），不用再调 get_assembly_state
 MUTATING_TOOLS = {
-    "insert_component", "ground_component", "mate", "delete_mate", "joint", "close_loop", "mount_on_shaft",
-    "revolute_joint", "slider_joint", "mesh_gears", "crank_slider", "rack_pinion", "screw_pair", "linear_coupler",
+    "insert_component", "set_component_pose", "ground_component", "unfix_component", "mate", "delete_mate",
+    "joint", "close_loop", "mount_on_shaft", "revolute_joint", "slider_joint", "mesh_gears",
+    "crank_slider", "rack_pinion", "screw_pair", "linear_coupler",
 }
 
 
@@ -152,7 +153,13 @@ class AssemblySession:
 
     def _ok(self, data: dict, hint: str = "") -> dict:
         if not data.get("success"):
-            raise WorkflowError("FEATURE_FAILED", str(data.get("message") or hint or "SolidWorks 调用失败"))
+            message = str(data.get("message") or hint or "SolidWorks 调用失败")
+            if any(marker in message for marker in (
+                "RPC 服务器不可用", "RPC server is unavailable", "0x800706BA",
+                "已与其客户端断开连接", "has disconnected from its clients",
+            )):
+                raise WorkflowError("SW_UNAVAILABLE", message)
+            raise WorkflowError("FEATURE_FAILED", message)
         return data.get("result", data)
 
     def asmwf(self, op: str, body: dict | None = None) -> dict:

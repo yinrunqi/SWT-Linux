@@ -450,3 +450,112 @@ def tool_specs(workflow: str, *, view_tool: bool = True) -> list[dict]:
 
 def tool_names(workflow: str, *, view_tool: bool = True) -> set[str]:
     return {spec["function"]["name"] for spec in tool_specs(workflow, view_tool=view_tool)}
+
+
+# ------------------------------------------------------------------ L0_mt：多轮闭环，但结构修改保持原子级
+
+ATOMIC_MUTATOR_NAMES = frozenset({
+    "insert_component", "set_component_pose", "ground_component", "unfix_component",
+    "mate", "delete_mate", "save_assembly",
+})
+ATOMIC_OBSERVER_NAMES = frozenset({
+    "get_assembly_state", "check_interference", "check_dof", "check_motion",
+    "check_pose", "view_assembly", "finish",
+})
+
+_ATOMIC_MUTATOR_SPECS = [
+    _tool(
+        "insert_component",
+        "只插入一个已保存的 SLDPRT。at 是初始装配坐标 [x,y,z] mm；本操作不旋转组件，"
+        "需要调整初始朝向时另调 set_component_pose。返回该零件的面摘要。",
+        {
+            "part": {"type": "string", "description": "零件绝对路径"},
+            "name": {"type": "string", "description": "后续引用使用的唯一角色别名"},
+            "at": {"type": "array", "items": {"type": "number"}, "description": "[x,y,z] mm"},
+        },
+        ["part", "name"],
+    ),
+    _tool(
+        "set_component_pose",
+        "只设置一个已插入组件的初始位姿，必须在给该组件添加配合之前调用。",
+        {
+            "component": {"type": "string"},
+            "at": {"type": "array", "items": {"type": "number"}, "description": "[x,y,z] mm"},
+            "axis": {"type": "array", "items": {"type": "number"}, "description": "旋转轴，默认 [0,0,1]"},
+            "angle_deg": _NUM,
+        },
+        ["component", "at"],
+    ),
+    _tool(
+        "ground_component",
+        "只固定一个组件在当前位姿，通常用于机架、底板或壳体。",
+        {"component": {"type": "string"}},
+        ["component"],
+    ),
+    _tool(
+        "unfix_component",
+        "只解除一个组件的固定状态。",
+        {"component": {"type": "string"}},
+        ["component"],
+    ),
+    _tool(
+        "mate",
+        "只创建一条 SolidWorks 配合。转动副要拆成 concentric 与端面 coincident/distance；"
+        "滑动副要拆成同心/平面与止转约束。type 可为 coincident、concentric、parallel、"
+        "perpendicular、distance、angle、gear、lock、slot、rack_pinion、screw、linear_coupler。",
+        {
+            "type": {"type": "string", "enum": [
+                "coincident", "concentric", "parallel", "perpendicular", "distance", "angle",
+                "gear", "lock", "slot", "rack_pinion", "screw", "linear_coupler",
+            ]},
+            "a": _REF_V2,
+            "b": _REF_V2,
+            "align": _ALIGN,
+            "distance": _NUM,
+            "distance_min": _NUM,
+            "distance_max": _NUM,
+            "angle_deg": _NUM,
+            "ratio_numerator": _NUM,
+            "ratio_denominator": _NUM,
+            "reverse": {"type": "boolean"},
+            "flip": _FLIP,
+            "lock_rotation": {"type": "boolean"},
+            "pitch_diameter": _NUM,
+            "travel_per_rev": _NUM,
+            "lead": _NUM,
+            "slot_constraint": {"type": "string", "enum": ["free", "center", "distance", "percent"]},
+            "reference_a": {"type": "string"},
+            "reference_b": {"type": "string"},
+        },
+        ["type", "a", "b"],
+    ),
+    _tool(
+        "delete_mate",
+        "只删除一条配合，名称来自 get_assembly_state。",
+        {"name": {"type": "string"}},
+        ["name"],
+    ),
+    _tool(
+        "save_assembly",
+        "保存当前装配体。",
+        {"path": {"type": "string"}},
+        [],
+    ),
+]
+
+
+def _specs_named(specs: list[dict], names: set[str] | frozenset[str]) -> list[dict]:
+    return [spec for spec in specs if spec["function"]["name"] in names]
+
+
+def atomic_tool_specs(*, view_tool: bool = True) -> list[dict]:
+    """多轮 Atomic：原子结构修改 + 只读观察/验证，不暴露 workflow 宏工具。"""
+    observer_names = ATOMIC_OBSERVER_NAMES - {"view_assembly", "save_assembly"}
+    specs = _ATOMIC_MUTATOR_SPECS + _specs_named(TOOL_SPECS_V3, observer_names)
+    if view_tool:
+        specs.append(VIEW_ASSEMBLY_SPEC)
+    return specs
+
+
+def atomic_tool_names(*, view_tool: bool = True) -> set[str]:
+    return {spec["function"]["name"] for spec in atomic_tool_specs(view_tool=view_tool)}
