@@ -1,0 +1,152 @@
+{
+ "case": "lidless_housing",
+ "split": "core",
+ "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+ "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/lidless_housing_r1.SLDPRT",
+ "features": [
+  {
+   "name": "前视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "上视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "右视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "原点",
+   "type": "OriginProfileFeature",
+   "parents": [
+    "前视基准面"
+   ]
+  },
+  {
+   "name": "草图1",
+   "type": "ProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "line",
+      "start": [
+       -50.0,
+       -30.0,
+       0.0
+      ],
+      "end": [
+       50.0,
+       -30.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       50.0,
+       -30.0,
+       0.0
+      ],
+      "end": [
+       50.0,
+       30.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       50.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       -50.0,
+       30.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       -50.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       -50.0,
+       -30.0,
+       0.0
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "凸台-拉伸1",
+   "type": "Extrusion",
+   "parents": [
+    "草图1",
+    "前视基准面"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 50.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图1",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 50.0
+    },
+    "reverse": false
+   }
+  },
+  {
+   "name": "抽壳1",
+   "type": "Shell",
+   "parents": [
+    "凸台-拉伸1"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 5.0,
+     "unit": "mm"
+    }
+   ]
+  }
+ ],
+ "sw_volume_mm3": 97500.0,
+ "sw_revision": "33.0.0"
+}

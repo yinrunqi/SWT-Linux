@@ -1,0 +1,688 @@
+{
+ "balanced_flywheel": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/balanced_flywheel_r1.SLDPRT",
+  "features": 5,
+  "sw_volume_mm3": 643829.587
+ },
+ "bent_tube": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_rest46_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_rest46_core_en_result/bent_tube_r1.SLDPRT",
+  "features": 8,
+  "sw_volume_mm3": 39879.319
+ },
+ "brake_disc": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/brake_disc_r1.SLDPRT",
+  "features": 20,
+  "sw_volume_mm3": 1415696.404
+ },
+ "bt40_holder": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/bt40_holder_r1.SLDPRT",
+  "features": 10,
+  "sw_volume_mm3": 142138.182
+ },
+ "camshaft": {
+  "split": "hard",
+  "source": "text_workflow_l1v2_qwen38flash_pass25_hard_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass25_hard_en_result/camshaft_r1.SLDPRT",
+  "features": 20,
+  "sw_volume_mm3": 124231.764
+ },
+ "cast_manifold_fillets": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/cast_manifold_fillets_r1.SLDPRT",
+  "features": 23,
+  "sw_volume_mm3": 299426.205
+ },
+ "clevis_bracket": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/clevis_bracket_r1.SLDPRT",
+  "features": 12,
+  "sw_volume_mm3": 57261.947
+ },
+ "clipped_hex_perforation": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/clipped_hex_perforation_r1.SLDPRT",
+  "features": 5,
+  "sw_volume_mm3": 85103.17
+ },
+ "cold_plate": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/cold_plate_r1.SLDPRT",
+  "features": 34,
+  "sw_volume_mm3": 151362.057
+ },
+ "compound_drill_block": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/compound_drill_block_r1.SLDPRT",
+  "features": 22,
+  "sw_volume_mm3": 528768.327
+ },
+ "connecting_rod": {
+  "split": "hard",
+  "source": "text_workflow_l1v2_qwen38flash_hard_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_hard_result/connecting_rod_r1.SLDPRT",
+  "features": 17,
+  "sw_volume_mm3": 109839.242
+ },
+ "corner_rib_stand": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/corner_rib_stand_r1.SLDPRT",
+  "features": 6,
+  "sw_volume_mm3": 44640.0
+ },
+ "counterbore_plate": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/counterbore_plate_r1.SLDPRT",
+  "features": 8,
+  "sw_volume_mm3": 45934.403
+ },
+ "crank": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/crank_r1.SLDPRT",
+  "features": 13,
+  "sw_volume_mm3": 37671.868
+ },
+ "crankshaft": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/crankshaft_r1.SLDPRT",
+  "features": 52,
+  "sw_volume_mm3": 954571.562
+ },
+ "csk_cover": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/csk_cover_r1.SLDPRT",
+  "features": 8,
+  "sw_volume_mm3": 71528.496
+ },
+ "diamond_flange": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/diamond_flange_r1.SLDPRT",
+  "features": 10,
+  "sw_volume_mm3": 36601.752
+ },
+ "die_cast_cover": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/die_cast_cover_r1.SLDPRT",
+  "features": 19,
+  "sw_volume_mm3": 208565.584
+ },
+ "end_cap": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/end_cap_r1.SLDPRT",
+  "features": 8,
+  "sw_volume_mm3": 18698.759
+ },
+ "engine_piston": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/engine_piston_r1.SLDPRT",
+  "features": 18,
+  "sw_volume_mm3": 150262.618
+ },
+ "filleted_shell_enclosure": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/filleted_shell_enclosure_r1.SLDPRT",
+  "features": 15,
+  "sw_volume_mm3": 61358.554
+ },
+ "finned_housing": {
+  "split": "hard",
+  "source": "text_workflow_l1v2_qwen38flash_pass25_hard_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass25_hard_en_result/finned_housing_r1.SLDPRT",
+  "features": 20,
+  "sw_volume_mm3": 216067.773
+ },
+ "flange": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/flange_r1.SLDPRT",
+  "features": 5,
+  "sw_volume_mm3": 82146.365
+ },
+ "flanged_bushing": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/flanged_bushing_r1.SLDPRT",
+  "features": 3,
+  "sw_volume_mm3": 9550.442
+ },
+ "flanged_elbow": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_rest46_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_rest46_core_en_result/flanged_elbow_r1.SLDPRT",
+  "features": 7,
+  "sw_volume_mm3": 20776.102
+ },
+ "fork_end": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_fix5_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_fix5_core_en_result/fork_end_r1.SLDPRT",
+  "features": 16,
+  "sw_volume_mm3": 29143.716
+ },
+ "gear_disc": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/gear_disc_r1.SLDPRT",
+  "features": 7,
+  "sw_volume_mm3": 18588.317
+ },
+ "gear_pump_body": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/gear_pump_body_r1.SLDPRT",
+  "features": 29,
+  "sw_volume_mm3": 297508.732
+ },
+ "gearbox_housing": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/gearbox_housing_r1.SLDPRT",
+  "features": 34,
+  "sw_volume_mm3": 954683.516
+ },
+ "geneva_wheel": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/geneva_wheel_r1.SLDPRT",
+  "features": 16,
+  "sw_volume_mm3": 104989.421
+ },
+ "gusset_bracket": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_rest46_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_rest46_core_en_result/gusset_bracket_r1.SLDPRT",
+  "features": 5,
+  "sw_volume_mm3": 20808.0
+ },
+ "heat_sink": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/heat_sink_r1.SLDPRT",
+  "features": 12,
+  "sw_volume_mm3": 173226.232
+ },
+ "helical_ring_gear": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/helical_ring_gear_r1.SLDPRT",
+  "features": 17,
+  "sw_volume_mm3": 193176.721
+ },
+ "hex_nut": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_all_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_all_result/hex_nut_r1.SLDPRT",
+  "features": 4,
+  "sw_volume_mm3": 5607.064
+ },
+ "hex_standoff": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/hex_standoff_r1.SLDPRT",
+  "features": 8,
+  "sw_volume_mm3": 1005.877
+ },
+ "honeycomb_panel": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/honeycomb_panel_r1.SLDPRT",
+  "features": 8,
+  "sw_volume_mm3": 170139.338
+ },
+ "hydraulic_manifold": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/hydraulic_manifold_r1.SLDPRT",
+  "features": 25,
+  "sw_volume_mm3": 441811.811
+ },
+ "impeller": {
+  "split": "hard",
+  "source": "text_workflow_l1v2_qwen38flash_pass25_hard_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass25_hard_en_result/impeller_r1.SLDPRT",
+  "features": 14,
+  "sw_volume_mm3": 110010.783
+ },
+ "inch_callout_plate": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/inch_callout_plate_r1.SLDPRT",
+  "features": 21,
+  "sw_volume_mm3": 186602.074
+ },
+ "injector_plate": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/injector_plate_r1.SLDPRT",
+  "features": 11,
+  "sw_volume_mm3": 333854.957
+ },
+ "key": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_fix5_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_fix5_core_en_result/key_r1.SLDPRT",
+  "features": 9,
+  "sw_volume_mm3": 924.694
+ },
+ "knob": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/knob_r1.SLDPRT",
+  "features": 12,
+  "sw_volume_mm3": 13715.911
+ },
+ "l_bracket": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_rest46_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_rest46_core_en_result/l_bracket_r1.SLDPRT",
+  "features": 8,
+  "sw_volume_mm3": 12325.885
+ },
+ "lidless_housing": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/lidless_housing_r1.SLDPRT",
+  "features": 4,
+  "sw_volume_mm3": 97500.0
+ },
+ "link_bar": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/link_bar_r1.SLDPRT",
+  "features": 6,
+  "sw_volume_mm3": 9311.221
+ },
+ "menger_sponge": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/menger_sponge_r1.SLDPRT",
+  "features": 9,
+  "sw_volume_mm3": 291600.0
+ },
+ "mounting_plate": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_all_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_all_result/mounting_plate_r1.SLDPRT",
+  "features": 5,
+  "sw_volume_mm3": 51546.743
+ },
+ "mug": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/mug_r1.SLDPRT",
+  "features": 8,
+  "sw_volume_mm3": 125890.664
+ },
+ "naca_wing_rib": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/naca_wing_rib_r1.SLDPRT",
+  "features": 5,
+  "sw_volume_mm3": 16546.539
+ },
+ "open_box": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/open_box_r1.SLDPRT",
+  "features": 4,
+  "sw_volume_mm3": 51136.0
+ },
+ "pillow_block": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/pillow_block_r1.SLDPRT",
+  "features": 11,
+  "sw_volume_mm3": 149943.361
+ },
+ "pipe_manifold": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/pipe_manifold_r1.SLDPRT",
+  "features": 31,
+  "sw_volume_mm3": 977687.055
+ },
+ "pipe_route_3d": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/pipe_route_3d_r1.SLDPRT",
+  "features": 26,
+  "sw_volume_mm3": 220102.533
+ },
+ "planet_carrier": {
+  "split": "hard",
+  "source": "text_workflow_l1v2_qwen38flash_pass25_hard_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass25_hard_en_result/planet_carrier_r1.SLDPRT",
+  "features": 21,
+  "sw_volume_mm3": 203436.859
+ },
+ "pulley": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_rest46_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_rest46_core_en_result/pulley_r1.SLDPRT",
+  "features": 4,
+  "sw_volume_mm3": 121817.35
+ },
+ "quad_frame": {
+  "split": "hard",
+  "source": "text_workflow_l1v2_qwen38flash_pass25_hard_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass25_hard_en_result/quad_frame_r1.SLDPRT",
+  "features": 18,
+  "sw_volume_mm3": 36432.026
+ },
+ "ratchet_wheel": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/ratchet_wheel_r1.SLDPRT",
+  "features": 10,
+  "sw_volume_mm3": 133072.049
+ },
+ "rect_to_circle": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/rect_to_circle_r1.SLDPRT",
+  "features": 5,
+  "sw_volume_mm3": 39240.507
+ },
+ "robot_arm_link": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/robot_arm_link_r1.SLDPRT",
+  "features": 25,
+  "sw_volume_mm3": 372950.777
+ },
+ "rocket_fin_can": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/rocket_fin_can_r1.SLDPRT",
+  "features": 17,
+  "sw_volume_mm3": 434767.174
+ },
+ "roller_cam": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/roller_cam_r1.SLDPRT",
+  "features": 10,
+  "sw_volume_mm3": 96078.762
+ },
+ "rounded_stool": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_rest46_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_rest46_core_en_result/rounded_stool_r1.SLDPRT",
+  "features": 7,
+  "sw_volume_mm3": 984250.991
+ },
+ "scroll_wrap_plate": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/scroll_wrap_plate_r1.SLDPRT",
+  "features": 9,
+  "sw_volume_mm3": 208060.005
+ },
+ "sheet_angle": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/sheet_angle_r1.SLDPRT",
+  "features": 6,
+  "sw_volume_mm3": 4200.0
+ },
+ "sheet_channel": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/sheet_channel_r1.SLDPRT",
+  "features": 6,
+  "sw_volume_mm3": 5400.0
+ },
+ "sheet_metal_kfactor": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/sheet_metal_kfactor_r1.SLDPRT",
+  "features": 10,
+  "sw_volume_mm3": 20455.067
+ },
+ "side_pad": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/side_pad_r1.SLDPRT",
+  "features": 6,
+  "sw_volume_mm3": 64021.239
+ },
+ "soap_dish": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/soap_dish_r1.SLDPRT",
+  "features": 9,
+  "sw_volume_mm3": 46593.099
+ },
+ "socket_bolt": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_fix5_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_fix5_core_en_result/socket_bolt_r1.SLDPRT",
+  "features": 10,
+  "sw_volume_mm3": 5233.825
+ },
+ "spacer_ring": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/spacer_ring_r1.SLDPRT",
+  "features": 4,
+  "sw_volume_mm3": 9301.209
+ },
+ "spherical_dome_ports": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/spherical_dome_ports_r1.SLDPRT",
+  "features": 26,
+  "sw_volume_mm3": 586593.193
+ },
+ "spiral_staircase": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/spiral_staircase_r1.SLDPRT",
+  "features": 69,
+  "sw_volume_mm3": 2043417.526
+ },
+ "spoked_wheel": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/spoked_wheel_r1.SLDPRT",
+  "features": 7,
+  "sw_volume_mm3": 65973.446
+ },
+ "sprocket": {
+  "split": "hard",
+  "source": "text_workflow_l1v2_sonnet5_medium_hard_rest19_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_sonnet5_medium_hard_rest19_result/sprocket_r1.SLDPRT",
+  "features": 17,
+  "sw_volume_mm3": 35201.343
+ },
+ "square_to_round": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/square_to_round_r1.SLDPRT",
+  "features": 5,
+  "sw_volume_mm3": 26634.606
+ },
+ "standard_die": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/standard_die_r1.SLDPRT",
+  "features": 22,
+  "sw_volume_mm3": 7665.975
+ },
+ "stepped_block": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/stepped_block_r1.SLDPRT",
+  "features": 6,
+  "sw_volume_mm3": 89371.681
+ },
+ "stepped_shaft": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/stepped_shaft_r1.SLDPRT",
+  "features": 3,
+  "sw_volume_mm3": 107206.849
+ },
+ "stool": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/stool_r1.SLDPRT",
+  "features": 7,
+  "sw_volume_mm3": 988495.559
+ },
+ "storage_box": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/storage_box_r1.SLDPRT",
+  "features": 7,
+  "sw_volume_mm3": 199024.272
+ },
+ "support_seat": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/support_seat_r1.SLDPRT",
+  "features": 9,
+  "sw_volume_mm3": 89016.371
+ },
+ "tangent_link_lever": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/tangent_link_lever_r1.SLDPRT",
+  "features": 10,
+  "sw_volume_mm3": 120448.942
+ },
+ "three_lug_housing": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_rest46_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_rest46_core_en_result/three_lug_housing_r1.SLDPRT",
+  "features": 17,
+  "sw_volume_mm3": 62774.366
+ },
+ "through_boss": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/through_boss_r1.SLDPRT",
+  "features": 7,
+  "sw_volume_mm3": 111219.822
+ },
+ "tricylinder_node": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/tricylinder_node_r1.SLDPRT",
+  "features": 27,
+  "sw_volume_mm3": 59655.806
+ },
+ "truss_beam": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/truss_beam_r1.SLDPRT",
+  "features": 14,
+  "sw_volume_mm3": 189982.583
+ },
+ "turbine_disk": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/turbine_disk_r1.SLDPRT",
+  "features": 9,
+  "sw_volume_mm3": 896539.176
+ },
+ "twin_arm_rocker": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_fix5_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_fix5_core_en_result/twin_arm_rocker_r1.SLDPRT",
+  "features": 11,
+  "sw_volume_mm3": 47876.059
+ },
+ "twisted_flute_knob": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/twisted_flute_knob_r1.SLDPRT",
+  "features": 19,
+  "sw_volume_mm3": 36912.854
+ },
+ "u_channel": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/u_channel_r1.SLDPRT",
+  "features": 6,
+  "sw_volume_mm3": 36196.814
+ },
+ "u_joint_yoke": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/u_joint_yoke_r1.SLDPRT",
+  "features": 27,
+  "sw_volume_mm3": 148584.219
+ },
+ "variable_fillet_bracket": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/variable_fillet_bracket_r1.SLDPRT",
+  "features": 18,
+  "sw_volume_mm3": 157695.659
+ },
+ "variable_pitch_spring": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/variable_pitch_spring_r1.SLDPRT",
+  "features": 16,
+  "sw_volume_mm3": 10825.168
+ },
+ "vase": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_all_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_all_result/vase_r1.SLDPRT",
+  "features": 5,
+  "sw_volume_mm3": 172520.541
+ },
+ "wedge_block": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/wedge_block_r1.SLDPRT",
+  "features": 4,
+  "sw_volume_mm3": 22500.0
+ },
+ "wheel_rim": {
+  "split": "hard",
+  "source": "hard_l1_reference (L1 oracle)",
+  "sldprt": "eval/artifacts/hard_l1_reference/wheel_rim_r1.SLDPRT",
+  "features": 12,
+  "sw_volume_mm3": 3051221.914
+ },
+ "worm_shaft": {
+  "split": "extreme",
+  "source": "extreme_l1v2_reference (L1_v2 oracle)",
+  "sldprt": "eval/artifacts/extreme_l1v2_reference/worm_shaft_r1.SLDPRT",
+  "features": 11,
+  "sw_volume_mm3": 59511.52
+ },
+ "wrench": {
+  "split": "core",
+  "source": "text_workflow_l1v2_qwen38flash_fail5_core_en_result (model run, rubric 100)",
+  "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_fail5_core_en_result/wrench_r1.SLDPRT",
+  "features": 7,
+  "sw_volume_mm3": 20746.589
+ }
+}

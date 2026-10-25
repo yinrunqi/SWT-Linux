@@ -1,0 +1,1264 @@
+{
+ "case": "brake_disc",
+ "split": "hard",
+ "source": "hard_l1_reference (L1 oracle)",
+ "sldprt": "eval/artifacts/hard_l1_reference/brake_disc_r1.SLDPRT",
+ "features": [
+  {
+   "name": "前视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "上视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "右视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "原点",
+   "type": "OriginProfileFeature",
+   "parents": [
+    "前视基准面"
+   ]
+  },
+  {
+   "name": "草图1",
+   "type": "ProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "radius": 150.0,
+      "start": [
+       150.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       150.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "radius": 90.0,
+      "start": [
+       90.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       90.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "凸台-拉伸1",
+   "type": "Extrusion",
+   "parents": [
+    "草图1",
+    "前视基准面"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 10.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图1",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 10.0
+    },
+    "reverse": false
+   }
+  },
+  {
+   "name": "基准面1",
+   "type": "RefPlane",
+   "parents": [
+    "前视基准面"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 22.0,
+     "unit": "mm"
+    }
+   ]
+  },
+  {
+   "name": "草图2",
+   "type": "ProfileFeature",
+   "parents": [
+    "基准面1"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      -0.0,
+      -0.0,
+      22.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "radius": 150.0,
+      "start": [
+       150.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       150.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "radius": 90.0,
+      "start": [
+       90.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       90.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "凸台-拉伸2",
+   "type": "ICE",
+   "parents": [
+    "草图2",
+    "基准面1"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 10.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图2",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 10.0
+    },
+    "reverse": false
+   }
+  },
+  {
+   "name": "草图3",
+   "type": "ProfileFeature",
+   "parents": [
+    "基准面1"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      -0.0,
+      -0.0,
+      22.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "radius": 95.0,
+      "start": [
+       95.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       95.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "radius": 85.0,
+      "start": [
+       85.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       85.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "凸台-拉伸3",
+   "type": "ICE",
+   "parents": [
+    "草图3",
+    "基准面1",
+    "凸台-拉伸2"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 48.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图3",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 48.0
+    },
+    "reverse": false
+   }
+  },
+  {
+   "name": "基准面2",
+   "type": "RefPlane",
+   "parents": [
+    "前视基准面"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 62.0,
+     "unit": "mm"
+    }
+   ]
+  },
+  {
+   "name": "草图4",
+   "type": "ProfileFeature",
+   "parents": [
+    "基准面2"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      -0.0,
+      -0.0,
+      62.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "radius": 95.0,
+      "start": [
+       95.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       95.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "radius": 35.0,
+      "start": [
+       35.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       35.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "凸台-拉伸4",
+   "type": "ICE",
+   "parents": [
+    "草图4",
+    "基准面2",
+    "凸台-拉伸2"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 8.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图4",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 8.0
+    },
+    "reverse": false
+   }
+  },
+  {
+   "name": "基准面3",
+   "type": "RefPlane",
+   "parents": [
+    "前视基准面"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 10.0,
+     "unit": "mm"
+    }
+   ]
+  },
+  {
+   "name": "草图5",
+   "type": "ProfileFeature",
+   "parents": [
+    "基准面3"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      -0.0,
+      -0.0,
+      10.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       0.00158,
+       0.0,
+       0.0
+      ],
+      "radius": 149.99842,
+      "start": [
+       149.97916,
+       -2.5,
+       0.0
+      ],
+      "end": [
+       149.97916,
+       2.5,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       0.0002,
+       0.0,
+       0.0
+      ],
+      "radius": 89.9998,
+      "start": [
+       89.96527,
+       2.5,
+       0.0
+      ],
+      "end": [
+       89.96527,
+       -2.5,
+       0.0
+      ],
+      "circle": false,
+      "direction": -1
+     },
+     {
+      "type": "line",
+      "start": [
+       89.96527,
+       -2.5,
+       0.0
+      ],
+      "end": [
+       149.97916,
+       -2.5,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       149.97916,
+       2.5,
+       0.0
+      ],
+      "end": [
+       89.96527,
+       2.5,
+       0.0
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "凸台-拉伸5",
+   "type": "ICE",
+   "parents": [
+    "草图5",
+    "基准面3",
+    "凸台-拉伸1",
+    "凸台-拉伸2"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 12.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图5",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 12.0
+    },
+    "reverse": false
+   }
+  },
+  {
+   "name": "基准轴1",
+   "type": "RefAxis",
+   "parents": [
+    "凸台-拉伸1"
+   ]
+  },
+  {
+   "name": "阵列(圆周)1",
+   "type": "CirPattern",
+   "parents": [
+    "凸台-拉伸5",
+    "基准轴1"
+   ],
+   "dimensions": [
+    {
+     "name": "D3",
+     "value": 360.0,
+     "unit": "deg"
+    },
+    {
+     "name": "D1",
+     "value": 40,
+     "unit": "count"
+    }
+   ]
+  },
+  {
+   "name": "草图6",
+   "type": "ProfileFeature",
+   "parents": [
+    "基准面2"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      -0.0,
+      -0.0,
+      62.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       57.15,
+       0.0,
+       0.0
+      ],
+      "radius": 7.0,
+      "start": [
+       64.15,
+       0.0,
+       0.0
+      ],
+      "end": [
+       64.15,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       17.66032,
+       54.35288,
+       0.0
+      ],
+      "radius": 7.0,
+      "start": [
+       24.66032,
+       54.35288,
+       0.0
+      ],
+      "end": [
+       24.66032,
+       54.35288,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -46.23532,
+       33.59193,
+       0.0
+      ],
+      "radius": 7.0,
+      "start": [
+       -39.23532,
+       33.59193,
+       0.0
+      ],
+      "end": [
+       -39.23532,
+       33.59193,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -46.23532,
+       -33.59193,
+       0.0
+      ],
+      "radius": 7.0,
+      "start": [
+       -39.23532,
+       -33.59193,
+       0.0
+      ],
+      "end": [
+       -39.23532,
+       -33.59193,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       17.66032,
+       -54.35288,
+       0.0
+      ],
+      "radius": 7.0,
+      "start": [
+       24.66032,
+       -54.35288,
+       0.0
+      ],
+      "end": [
+       24.66032,
+       -54.35288,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "切除-拉伸1",
+   "type": "ICE",
+   "parents": [
+    "草图6",
+    "基准面2",
+    "凸台-拉伸5"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 8.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图6",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 8.0
+    },
+    "reverse": true
+   }
+  },
+  {
+   "name": "草图7",
+   "type": "ProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       119.63008,
+       9.41509,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       123.63008,
+       9.41509,
+       0.0
+      ],
+      "end": [
+       123.63008,
+       9.41509,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       110.86554,
+       45.92201,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       114.86554,
+       45.92201,
+       0.0
+      ],
+      "end": [
+       114.86554,
+       45.92201,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       91.24872,
+       77.93377,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       95.24872,
+       77.93377,
+       0.0
+      ],
+      "end": [
+       95.24872,
+       77.93377,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       62.69983,
+       102.31682,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       66.69983,
+       102.31682,
+       0.0
+      ],
+      "end": [
+       66.69983,
+       102.31682,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       28.01344,
+       116.68439,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       32.01344,
+       116.68439,
+       0.0
+      ],
+      "end": [
+       32.01344,
+       116.68439,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -9.41509,
+       119.63008,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       -5.41509,
+       119.63008,
+       0.0
+      ],
+      "end": [
+       -5.41509,
+       119.63008,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -45.92201,
+       110.86554,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       -41.92201,
+       110.86554,
+       0.0
+      ],
+      "end": [
+       -41.92201,
+       110.86554,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -77.93377,
+       91.24872,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       -73.93377,
+       91.24872,
+       0.0
+      ],
+      "end": [
+       -73.93377,
+       91.24872,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -102.31682,
+       62.69983,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       -98.31682,
+       62.69983,
+       0.0
+      ],
+      "end": [
+       -98.31682,
+       62.69983,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -116.68439,
+       28.01344,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       -112.68439,
+       28.01344,
+       0.0
+      ],
+      "end": [
+       -112.68439,
+       28.01344,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -119.63008,
+       -9.41509,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       -115.63008,
+       -9.41509,
+       0.0
+      ],
+      "end": [
+       -115.63008,
+       -9.41509,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -110.86554,
+       -45.92201,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       -106.86554,
+       -45.92201,
+       0.0
+      ],
+      "end": [
+       -106.86554,
+       -45.92201,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -91.24872,
+       -77.93377,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       -87.24872,
+       -77.93377,
+       0.0
+      ],
+      "end": [
+       -87.24872,
+       -77.93377,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -62.69983,
+       -102.31682,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       -58.69983,
+       -102.31682,
+       0.0
+      ],
+      "end": [
+       -58.69983,
+       -102.31682,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -28.01344,
+       -116.68439,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       -24.01344,
+       -116.68439,
+       0.0
+      ],
+      "end": [
+       -24.01344,
+       -116.68439,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       9.41509,
+       -119.63008,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       13.41509,
+       -119.63008,
+       0.0
+      ],
+      "end": [
+       13.41509,
+       -119.63008,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       45.92201,
+       -110.86554,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       49.92201,
+       -110.86554,
+       0.0
+      ],
+      "end": [
+       49.92201,
+       -110.86554,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       77.93377,
+       -91.24872,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       81.93377,
+       -91.24872,
+       0.0
+      ],
+      "end": [
+       81.93377,
+       -91.24872,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       102.31682,
+       -62.69983,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       106.31682,
+       -62.69983,
+       0.0
+      ],
+      "end": [
+       106.31682,
+       -62.69983,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       116.68439,
+       -28.01344,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       120.68439,
+       -28.01344,
+       0.0
+      ],
+      "end": [
+       120.68439,
+       -28.01344,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "切除-拉伸2",
+   "type": "ICE",
+   "parents": [
+    "草图7",
+    "前视基准面",
+    "凸台-拉伸5"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 32.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图7",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 32.0
+    },
+    "reverse": true
+   }
+  }
+ ],
+ "sw_volume_mm3": 1415696.404,
+ "sw_revision": "33.0.0"
+}

@@ -1,0 +1,1532 @@
+{
+ "case": "truss_beam",
+ "split": "hard",
+ "source": "hard_l1_reference (L1 oracle)",
+ "sldprt": "eval/artifacts/hard_l1_reference/truss_beam_r1.SLDPRT",
+ "features": [
+  {
+   "name": "前视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "上视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "右视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "原点",
+   "type": "OriginProfileFeature",
+   "parents": [
+    "前视基准面"
+   ]
+  },
+  {
+   "name": "草图1",
+   "type": "ProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "line",
+      "start": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       420.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       420.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       420.0,
+       60.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       420.0,
+       60.0,
+       0.0
+      ],
+      "end": [
+       0.0,
+       60.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       0.0,
+       60.0,
+       0.0
+      ],
+      "end": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "凸台-拉伸1",
+   "type": "Extrusion",
+   "parents": [
+    "草图1",
+    "前视基准面"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 8.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图1",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 8.0
+    },
+    "reverse": false
+   }
+  },
+  {
+   "name": "草图2",
+   "type": "ProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       30.0,
+       0.0
+      ],
+      "radius": 30.0,
+      "start": [
+       30.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       30.0,
+       30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       420.0,
+       30.0,
+       0.0
+      ],
+      "radius": 30.0,
+      "start": [
+       450.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       450.0,
+       30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "凸台-拉伸2",
+   "type": "ICE",
+   "parents": [
+    "草图2",
+    "前视基准面",
+    "凸台-拉伸1"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 8.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图2",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 8.0
+    },
+    "reverse": false
+   }
+  },
+  {
+   "name": "草图3",
+   "type": "ProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       30.0,
+       0.0
+      ],
+      "radius": 10.0,
+      "start": [
+       10.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       10.0,
+       30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "切除-拉伸1",
+   "type": "ICE",
+   "parents": [
+    "草图3",
+    "前视基准面",
+    "凸台-拉伸1"
+   ],
+   "children": [
+    {
+     "name": "草图3",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "through_all"
+    },
+    "reverse": true
+   }
+  },
+  {
+   "name": "草图4",
+   "type": "ProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       420.0,
+       30.0,
+       0.0
+      ],
+      "radius": 8.0,
+      "start": [
+       428.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       428.0,
+       30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "切除-拉伸2",
+   "type": "ICE",
+   "parents": [
+    "草图4",
+    "前视基准面",
+    "凸台-拉伸1"
+   ],
+   "children": [
+    {
+     "name": "草图4",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "through_all"
+    },
+    "reverse": true
+   }
+  },
+  {
+   "name": "基准面1",
+   "type": "RefPlane",
+   "parents": [
+    "前视基准面"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 8.0,
+     "unit": "mm"
+    }
+   ]
+  },
+  {
+   "name": "草图5",
+   "type": "ProfileFeature",
+   "parents": [
+    "基准面1"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      -0.0,
+      -0.0,
+      8.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "line",
+      "start": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       420.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       420.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       420.0,
+       8.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       420.0,
+       8.0,
+       0.0
+      ],
+      "end": [
+       0.0,
+       8.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       0.0,
+       8.0,
+       0.0
+      ],
+      "end": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       0.0,
+       52.0,
+       0.0
+      ],
+      "end": [
+       420.0,
+       52.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       420.0,
+       52.0,
+       0.0
+      ],
+      "end": [
+       420.0,
+       60.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       420.0,
+       60.0,
+       0.0
+      ],
+      "end": [
+       0.0,
+       60.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       0.0,
+       60.0,
+       0.0
+      ],
+      "end": [
+       0.0,
+       52.0,
+       0.0
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "凸台-拉伸3",
+   "type": "ICE",
+   "parents": [
+    "草图5",
+    "基准面1",
+    "凸台-拉伸1"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 8.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图5",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 8.0
+    },
+    "reverse": false
+   }
+  },
+  {
+   "name": "草图6",
+   "type": "ProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       28.0,
+       14.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       24.8,
+       16.4,
+       0.0
+      ],
+      "end": [
+       28.0,
+       10.0,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       72.0,
+       14.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       72.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       75.2,
+       16.4,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       50.0,
+       43.33333,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       53.2,
+       45.73333,
+       0.0
+      ],
+      "end": [
+       46.8,
+       45.73333,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       108.0,
+       14.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       104.8,
+       16.4,
+       0.0
+      ],
+      "end": [
+       108.0,
+       10.0,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       152.0,
+       14.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       152.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       155.2,
+       16.4,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       130.0,
+       43.33333,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       133.2,
+       45.73333,
+       0.0
+      ],
+      "end": [
+       126.8,
+       45.73333,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       188.0,
+       14.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       184.8,
+       16.4,
+       0.0
+      ],
+      "end": [
+       188.0,
+       10.0,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       232.0,
+       14.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       232.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       235.2,
+       16.4,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       210.0,
+       43.33333,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       213.2,
+       45.73333,
+       0.0
+      ],
+      "end": [
+       206.8,
+       45.73333,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       268.0,
+       14.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       264.8,
+       16.4,
+       0.0
+      ],
+      "end": [
+       268.0,
+       10.0,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       312.0,
+       14.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       312.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       315.2,
+       16.4,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       290.0,
+       43.33333,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       293.2,
+       45.73333,
+       0.0
+      ],
+      "end": [
+       286.8,
+       45.73333,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       348.0,
+       14.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       344.8,
+       16.4,
+       0.0
+      ],
+      "end": [
+       348.0,
+       10.0,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       392.0,
+       14.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       392.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       395.2,
+       16.4,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       370.0,
+       43.33333,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       373.2,
+       45.73333,
+       0.0
+      ],
+      "end": [
+       366.8,
+       45.73333,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       68.0,
+       46.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       64.8,
+       43.6,
+       0.0
+      ],
+      "end": [
+       68.0,
+       50.0,
+       0.0
+      ],
+      "circle": false,
+      "direction": -1
+     },
+     {
+      "type": "arc",
+      "center": [
+       112.0,
+       46.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       112.0,
+       50.0,
+       0.0
+      ],
+      "end": [
+       115.2,
+       43.6,
+       0.0
+      ],
+      "circle": false,
+      "direction": -1
+     },
+     {
+      "type": "arc",
+      "center": [
+       90.0,
+       16.66667,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       93.2,
+       14.26667,
+       0.0
+      ],
+      "end": [
+       86.8,
+       14.26667,
+       0.0
+      ],
+      "circle": false,
+      "direction": -1
+     },
+     {
+      "type": "arc",
+      "center": [
+       148.0,
+       46.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       144.8,
+       43.6,
+       0.0
+      ],
+      "end": [
+       148.0,
+       50.0,
+       0.0
+      ],
+      "circle": false,
+      "direction": -1
+     },
+     {
+      "type": "arc",
+      "center": [
+       192.0,
+       46.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       192.0,
+       50.0,
+       0.0
+      ],
+      "end": [
+       195.2,
+       43.6,
+       0.0
+      ],
+      "circle": false,
+      "direction": -1
+     },
+     {
+      "type": "arc",
+      "center": [
+       170.0,
+       16.66667,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       173.2,
+       14.26667,
+       0.0
+      ],
+      "end": [
+       166.8,
+       14.26667,
+       0.0
+      ],
+      "circle": false,
+      "direction": -1
+     },
+     {
+      "type": "arc",
+      "center": [
+       228.0,
+       46.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       224.8,
+       43.6,
+       0.0
+      ],
+      "end": [
+       228.0,
+       50.0,
+       0.0
+      ],
+      "circle": false,
+      "direction": -1
+     },
+     {
+      "type": "arc",
+      "center": [
+       272.0,
+       46.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       272.0,
+       50.0,
+       0.0
+      ],
+      "end": [
+       275.2,
+       43.6,
+       0.0
+      ],
+      "circle": false,
+      "direction": -1
+     },
+     {
+      "type": "arc",
+      "center": [
+       250.0,
+       16.66667,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       253.2,
+       14.26667,
+       0.0
+      ],
+      "end": [
+       246.8,
+       14.26667,
+       0.0
+      ],
+      "circle": false,
+      "direction": -1
+     },
+     {
+      "type": "arc",
+      "center": [
+       308.0,
+       46.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       304.8,
+       43.6,
+       0.0
+      ],
+      "end": [
+       308.0,
+       50.0,
+       0.0
+      ],
+      "circle": false,
+      "direction": -1
+     },
+     {
+      "type": "arc",
+      "center": [
+       352.0,
+       46.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       352.0,
+       50.0,
+       0.0
+      ],
+      "end": [
+       355.2,
+       43.6,
+       0.0
+      ],
+      "circle": false,
+      "direction": -1
+     },
+     {
+      "type": "arc",
+      "center": [
+       330.0,
+       16.66667,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       333.2,
+       14.26667,
+       0.0
+      ],
+      "end": [
+       326.8,
+       14.26667,
+       0.0
+      ],
+      "circle": false,
+      "direction": -1
+     },
+     {
+      "type": "line",
+      "start": [
+       28.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       72.0,
+       10.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       75.2,
+       16.4,
+       0.0
+      ],
+      "end": [
+       53.2,
+       45.73333,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       46.8,
+       45.73333,
+       0.0
+      ],
+      "end": [
+       24.8,
+       16.4,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       108.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       152.0,
+       10.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       155.2,
+       16.4,
+       0.0
+      ],
+      "end": [
+       133.2,
+       45.73333,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       126.8,
+       45.73333,
+       0.0
+      ],
+      "end": [
+       104.8,
+       16.4,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       188.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       232.0,
+       10.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       235.2,
+       16.4,
+       0.0
+      ],
+      "end": [
+       213.2,
+       45.73333,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       206.8,
+       45.73333,
+       0.0
+      ],
+      "end": [
+       184.8,
+       16.4,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       268.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       312.0,
+       10.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       315.2,
+       16.4,
+       0.0
+      ],
+      "end": [
+       293.2,
+       45.73333,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       286.8,
+       45.73333,
+       0.0
+      ],
+      "end": [
+       264.8,
+       16.4,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       348.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       392.0,
+       10.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       395.2,
+       16.4,
+       0.0
+      ],
+      "end": [
+       373.2,
+       45.73333,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       366.8,
+       45.73333,
+       0.0
+      ],
+      "end": [
+       344.8,
+       16.4,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       68.0,
+       50.0,
+       0.0
+      ],
+      "end": [
+       112.0,
+       50.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       115.2,
+       43.6,
+       0.0
+      ],
+      "end": [
+       93.2,
+       14.26667,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       86.8,
+       14.26667,
+       0.0
+      ],
+      "end": [
+       64.8,
+       43.6,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       148.0,
+       50.0,
+       0.0
+      ],
+      "end": [
+       192.0,
+       50.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       195.2,
+       43.6,
+       0.0
+      ],
+      "end": [
+       173.2,
+       14.26667,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       166.8,
+       14.26667,
+       0.0
+      ],
+      "end": [
+       144.8,
+       43.6,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       228.0,
+       50.0,
+       0.0
+      ],
+      "end": [
+       272.0,
+       50.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       275.2,
+       43.6,
+       0.0
+      ],
+      "end": [
+       253.2,
+       14.26667,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       246.8,
+       14.26667,
+       0.0
+      ],
+      "end": [
+       224.8,
+       43.6,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       308.0,
+       50.0,
+       0.0
+      ],
+      "end": [
+       352.0,
+       50.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       355.2,
+       43.6,
+       0.0
+      ],
+      "end": [
+       333.2,
+       14.26667,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       326.8,
+       14.26667,
+       0.0
+      ],
+      "end": [
+       304.8,
+       43.6,
+       0.0
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "切除-拉伸3",
+   "type": "ICE",
+   "parents": [
+    "草图6",
+    "前视基准面",
+    "凸台-拉伸1"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 8.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图6",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 8.0
+    },
+    "reverse": true
+   }
+  }
+ ],
+ "sw_volume_mm3": 189982.583,
+ "sw_revision": "33.0.0"
+}

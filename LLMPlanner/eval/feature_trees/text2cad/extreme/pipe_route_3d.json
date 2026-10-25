@@ -1,0 +1,1103 @@
+{
+ "case": "pipe_route_3d",
+ "split": "extreme",
+ "source": "extreme_l1v2_reference (L1_v2 oracle)",
+ "sldprt": "eval/artifacts/extreme_l1v2_reference/pipe_route_3d_r1.SLDPRT",
+ "features": [
+  {
+   "name": "前视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "上视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "右视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "原点",
+   "type": "OriginProfileFeature",
+   "parents": [
+    "前视基准面"
+   ]
+  },
+  {
+   "name": "3D草图1",
+   "type": "3DProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 45.0,
+     "unit": "mm"
+    }
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       105.0,
+       45.0,
+       0.0
+      ],
+      "radius": 45.0,
+      "start": [
+       105.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       150.0,
+       45.0,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "line",
+      "start": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       105.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       150.0,
+       45.0,
+       0.0
+      ],
+      "end": [
+       150.0,
+       60.0,
+       0.0
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "扫描2",
+   "type": "Sweep",
+   "parents": [
+    "3D草图1",
+    "前视基准面"
+   ],
+   "dimensions": [
+    {
+     "name": "D3",
+     "value": 30.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "3D草图1",
+     "type": "3DProfileFeature"
+    }
+   ]
+  },
+  {
+   "name": "3D草图2",
+   "type": "3DProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 60.0,
+     "unit": "mm"
+    }
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       179.76834,
+       82.78958,
+       52.09459
+      ],
+      "radius": 60.0,
+      "start": [
+       150.0,
+       82.78958,
+       0.0
+      ],
+      "end": [
+       166.53796,
+       136.53796,
+       28.94144
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "line",
+      "start": [
+       150.0,
+       60.0,
+       0.0
+      ],
+      "end": [
+       150.0,
+       82.78958,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       166.53796,
+       136.53796,
+       28.94144
+      ],
+      "end": [
+       230.0,
+       200.0,
+       140.0
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "扫描4",
+   "type": "Sweep",
+   "parents": [
+    "3D草图2",
+    "前视基准面",
+    "扫描2"
+   ],
+   "dimensions": [
+    {
+     "name": "D3",
+     "value": 30.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "3D草图2",
+     "type": "3DProfileFeature"
+    }
+   ]
+  },
+  {
+   "name": "草图3",
+   "type": "ProfileFeature",
+   "parents": [
+    "右视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      -0.0,
+      -0.0,
+      -1.0,
+      0.0,
+      1.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       -0.0,
+       0.0,
+       0.0
+      ],
+      "radius": 40.0,
+      "start": [
+       40.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       40.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -21.2132,
+       21.2132,
+       0.0
+      ],
+      "radius": 4.5,
+      "start": [
+       -16.7132,
+       21.2132,
+       0.0
+      ],
+      "end": [
+       -16.7132,
+       21.2132,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       21.2132,
+       21.2132,
+       0.0
+      ],
+      "radius": 4.5,
+      "start": [
+       25.7132,
+       21.2132,
+       0.0
+      ],
+      "end": [
+       25.7132,
+       21.2132,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       21.2132,
+       -21.2132,
+       0.0
+      ],
+      "radius": 4.5,
+      "start": [
+       25.7132,
+       -21.2132,
+       0.0
+      ],
+      "end": [
+       25.7132,
+       -21.2132,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -21.2132,
+       -21.2132,
+       0.0
+      ],
+      "radius": 4.5,
+      "start": [
+       -16.7132,
+       -21.2132,
+       0.0
+      ],
+      "end": [
+       -16.7132,
+       -21.2132,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "凸台-拉伸1",
+   "type": "ICE",
+   "parents": [
+    "草图3",
+    "右视基准面",
+    "扫描2"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 10.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图3",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 10.0
+    },
+    "reverse": false
+   }
+  },
+  {
+   "name": "3D草图3",
+   "type": "3DProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "line",
+      "start": [
+       224.66667,
+       194.66667,
+       130.66667
+      ],
+      "end": [
+       230.0,
+       200.0,
+       140.0
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "扫描6",
+   "type": "Sweep",
+   "parents": [
+    "3D草图3",
+    "前视基准面",
+    "扫描2"
+   ],
+   "dimensions": [
+    {
+     "name": "D3",
+     "value": 90.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "3D草图3",
+     "type": "3DProfileFeature"
+    }
+   ]
+  },
+  {
+   "name": "草图5",
+   "type": "ProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       150.0,
+       60.0,
+       0.0
+      ],
+      "radius": 10.0,
+      "start": [
+       160.0,
+       60.0,
+       0.0
+      ],
+      "end": [
+       160.0,
+       60.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "凸台-拉伸2",
+   "type": "ICE",
+   "parents": [
+    "草图5",
+    "前视基准面",
+    "扫描2"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 70.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图5",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 70.0
+    },
+    "reverse": true
+   }
+  },
+  {
+   "name": "3D草图4",
+   "type": "3DProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 45.0,
+     "unit": "mm"
+    }
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       105.0,
+       45.0,
+       0.0
+      ],
+      "radius": 45.0,
+      "start": [
+       105.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       150.0,
+       45.0,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "line",
+      "start": [
+       -1.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       105.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       150.0,
+       45.0,
+       0.0
+      ],
+      "end": [
+       150.0,
+       60.0,
+       0.0
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "切除-扫描2",
+   "type": "SweepCut",
+   "parents": [
+    "3D草图4",
+    "前视基准面",
+    "扫描2"
+   ],
+   "dimensions": [
+    {
+     "name": "D3",
+     "value": 24.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "3D草图4",
+     "type": "3DProfileFeature"
+    }
+   ]
+  },
+  {
+   "name": "3D草图5",
+   "type": "3DProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 60.0,
+     "unit": "mm"
+    }
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       179.76834,
+       82.78958,
+       52.09459
+      ],
+      "radius": 60.0,
+      "start": [
+       150.0,
+       82.78958,
+       0.0
+      ],
+      "end": [
+       166.53796,
+       136.53796,
+       28.94144
+      ],
+      "circle": false,
+      "direction": 1
+     },
+     {
+      "type": "line",
+      "start": [
+       150.0,
+       60.0,
+       0.0
+      ],
+      "end": [
+       150.0,
+       82.78958,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       166.53796,
+       136.53796,
+       28.94144
+      ],
+      "end": [
+       230.44444,
+       200.44444,
+       140.77778
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "切除-扫描4",
+   "type": "SweepCut",
+   "parents": [
+    "3D草图5",
+    "前视基准面",
+    "扫描2"
+   ],
+   "dimensions": [
+    {
+     "name": "D3",
+     "value": 24.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "3D草图5",
+     "type": "3DProfileFeature"
+    }
+   ]
+  },
+  {
+   "name": "基准面1",
+   "type": "RefPlane",
+   "parents": [
+    "前视基准面"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 70.0,
+     "unit": "mm"
+    }
+   ]
+  },
+  {
+   "name": "草图8",
+   "type": "ProfileFeature",
+   "parents": [
+    "基准面1"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      -0.0,
+      -0.0,
+      -70.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       150.0,
+       60.0,
+       0.0
+      ],
+      "radius": 7.0,
+      "start": [
+       157.0,
+       60.0,
+       0.0
+      ],
+      "end": [
+       157.0,
+       60.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "切除-拉伸1",
+   "type": "ICE",
+   "parents": [
+    "草图8",
+    "基准面1",
+    "扫描2"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 70.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图8",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 70.0
+    },
+    "reverse": true
+   }
+  },
+  {
+   "name": "3D草图6",
+   "type": "3DProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "line",
+      "start": [
+       198.04691,
+       215.75886,
+       132.53955
+      ],
+      "end": [
+       204.26913,
+       221.98109,
+       143.42844
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "切除-扫描6",
+   "type": "SweepCut",
+   "parents": [
+    "3D草图6",
+    "前视基准面",
+    "扫描2"
+   ],
+   "dimensions": [
+    {
+     "name": "D3",
+     "value": 11.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "3D草图6",
+     "type": "3DProfileFeature"
+    }
+   ]
+  },
+  {
+   "name": "3D草图7",
+   "type": "3DProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "line",
+      "start": [
+       208.64957,
+       172.68557,
+       151.0942
+      ],
+      "end": [
+       214.8718,
+       178.90779,
+       161.98309
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "切除-扫描8",
+   "type": "SweepCut",
+   "parents": [
+    "3D草图7",
+    "前视基准面",
+    "扫描2"
+   ],
+   "dimensions": [
+    {
+     "name": "D3",
+     "value": 11.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "3D草图7",
+     "type": "3DProfileFeature"
+    }
+   ]
+  },
+  {
+   "name": "3D草图8",
+   "type": "3DProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "line",
+      "start": [
+       250.39754,
+       172.68558,
+       127.23822
+      ],
+      "end": [
+       256.61976,
+       178.9078,
+       138.12711
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "切除-扫描10",
+   "type": "SweepCut",
+   "parents": [
+    "3D草图8",
+    "前视基准面",
+    "扫描2"
+   ],
+   "dimensions": [
+    {
+     "name": "D3",
+     "value": 11.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "3D草图8",
+     "type": "3DProfileFeature"
+    }
+   ]
+  },
+  {
+   "name": "3D草图9",
+   "type": "3DProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "line",
+      "start": [
+       239.79487,
+       215.75887,
+       108.68357
+      ],
+      "end": [
+       246.01709,
+       221.98109,
+       119.57246
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "切除-扫描12",
+   "type": "SweepCut",
+   "parents": [
+    "3D草图9",
+    "前视基准面",
+    "扫描2"
+   ],
+   "dimensions": [
+    {
+     "name": "D3",
+     "value": 11.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "3D草图9",
+     "type": "3DProfileFeature"
+    }
+   ]
+  }
+ ],
+ "sw_volume_mm3": 220102.533,
+ "sw_revision": "33.0.0"
+}

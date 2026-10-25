@@ -1,0 +1,258 @@
+{
+ "case": "flanged_elbow",
+ "split": "core",
+ "source": "text_workflow_l1v2_qwen38flash_rest46_core_en_result (model run, rubric 100)",
+ "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_rest46_core_en_result/flanged_elbow_r1.SLDPRT",
+ "features": [
+  {
+   "name": "前视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "上视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "右视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "原点",
+   "type": "OriginProfileFeature",
+   "parents": [
+    "前视基准面"
+   ]
+  },
+  {
+   "name": "草图1",
+   "type": "ProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       -0.0,
+       -0.0,
+       0.0
+      ],
+      "radius": 40.0,
+      "start": [
+       40.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       0.0,
+       40.0,
+       0.0
+      ],
+      "circle": false,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "扫描2",
+   "type": "Sweep",
+   "parents": [
+    "草图1",
+    "前视基准面"
+   ],
+   "dimensions": [
+    {
+     "name": "D3",
+     "value": 16.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图1",
+     "type": "ProfileFeature"
+    }
+   ]
+  },
+  {
+   "name": "草图4",
+   "type": "ProfileFeature",
+   "parents": [
+    "右视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      -0.0,
+      -0.0,
+      -1.0,
+      0.0,
+      1.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       -0.0,
+       40.0,
+       0.0
+      ],
+      "radius": 18.0,
+      "start": [
+       18.0,
+       40.0,
+       0.0
+      ],
+      "end": [
+       18.0,
+       40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "凸台-拉伸2",
+   "type": "ICE",
+   "parents": [
+    "草图4",
+    "右视基准面",
+    "扫描2"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 4.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图4",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 4.0
+    },
+    "reverse": true
+   }
+  },
+  {
+   "name": "草图7",
+   "type": "ProfileFeature",
+   "parents": [
+    "上视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      1.0,
+      0.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       40.0,
+       -0.0,
+       0.0
+      ],
+      "radius": 18.0,
+      "start": [
+       58.0,
+       -0.0,
+       0.0
+      ],
+      "end": [
+       58.0,
+       -0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "凸台-拉伸3",
+   "type": "ICE",
+   "parents": [
+    "草图7",
+    "上视基准面",
+    "扫描2"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 4.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图7",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 4.0
+    },
+    "reverse": true
+   }
+  }
+ ],
+ "sw_volume_mm3": 20776.102,
+ "sw_revision": "33.0.0"
+}

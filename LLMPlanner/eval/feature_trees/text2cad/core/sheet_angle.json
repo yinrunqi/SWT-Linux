@@ -1,0 +1,161 @@
+{
+ "case": "sheet_angle",
+ "split": "core",
+ "source": "text_workflow_l1v2_qwen38flash_pass45_core_en_result (model run, rubric 100)",
+ "sldprt": "eval/artifacts/text_workflow_l1v2_qwen38flash_pass45_core_en_result/sheet_angle_r1.SLDPRT",
+ "features": [
+  {
+   "name": "Sheet<1>",
+   "type": "CutListFolder"
+  },
+  {
+   "name": "前视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "上视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "右视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "原点",
+   "type": "OriginProfileFeature",
+   "parents": [
+    "前视基准面"
+   ]
+  },
+  {
+   "name": "草图1",
+   "type": "ProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "line",
+      "start": [
+       -35.0,
+       -20.0,
+       0.0
+      ],
+      "end": [
+       35.0,
+       -20.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       35.0,
+       -20.0,
+       0.0
+      ],
+      "end": [
+       35.0,
+       20.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       35.0,
+       20.0,
+       0.0
+      ],
+      "end": [
+       -35.0,
+       20.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       -35.0,
+       20.0,
+       0.0
+      ],
+      "end": [
+       -35.0,
+       -20.0,
+       0.0
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "钣金2",
+   "type": "SheetMetal",
+   "parents": [
+    "钣金"
+   ]
+  },
+  {
+   "name": "基体-法兰1",
+   "type": "SMBaseFlange",
+   "parents": [
+    "钣金",
+    "钣金2",
+    "草图1",
+    "前视基准面"
+   ],
+   "children": [
+    {
+     "name": "草图1",
+     "type": "ProfileFeature"
+    }
+   ]
+  },
+  {
+   "name": "平板型式2",
+   "type": "FlatPattern",
+   "suppressed": true,
+   "parents": [
+    "钣金",
+    "钣金2",
+    "基体-法兰1"
+   ],
+   "children": [
+    {
+     "name": "折弯-线2",
+     "type": "ProfileFeature"
+    },
+    {
+     "name": "边界框2",
+     "type": "ProfileFeature"
+    },
+    {
+     "name": "草图转换1",
+     "type": "FoldUpDownSketchFolder"
+    }
+   ]
+  }
+ ],
+ "sw_volume_mm3": 4200.0,
+ "sw_revision": "33.0.0"
+}

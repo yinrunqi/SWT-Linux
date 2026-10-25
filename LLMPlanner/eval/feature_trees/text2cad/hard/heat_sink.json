@@ -1,0 +1,2221 @@
+{
+ "case": "heat_sink",
+ "split": "hard",
+ "source": "hard_l1_reference (L1 oracle)",
+ "sldprt": "eval/artifacts/hard_l1_reference/heat_sink_r1.SLDPRT",
+ "features": [
+  {
+   "name": "前视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "上视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "右视基准面",
+   "type": "RefPlane"
+  },
+  {
+   "name": "原点",
+   "type": "OriginProfileFeature",
+   "parents": [
+    "前视基准面"
+   ]
+  },
+  {
+   "name": "草图1",
+   "type": "ProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "line",
+      "start": [
+       -50.0,
+       -50.0,
+       0.0
+      ],
+      "end": [
+       50.0,
+       -50.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       50.0,
+       -50.0,
+       0.0
+      ],
+      "end": [
+       50.0,
+       50.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       50.0,
+       50.0,
+       0.0
+      ],
+      "end": [
+       -50.0,
+       50.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       -50.0,
+       50.0,
+       0.0
+      ],
+      "end": [
+       -50.0,
+       -50.0,
+       0.0
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "凸台-拉伸1",
+   "type": "Extrusion",
+   "parents": [
+    "草图1",
+    "前视基准面"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 8.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图1",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 8.0
+    },
+    "reverse": false
+   }
+  },
+  {
+   "name": "草图2",
+   "type": "ProfileFeature",
+   "parents": [
+    "前视基准面"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "line",
+      "start": [
+       -30.0,
+       -30.0,
+       0.0
+      ],
+      "end": [
+       30.0,
+       -30.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       30.0,
+       -30.0,
+       0.0
+      ],
+      "end": [
+       30.0,
+       30.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       30.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       -30.0,
+       30.0,
+       0.0
+      ]
+     },
+     {
+      "type": "line",
+      "start": [
+       -30.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       -30.0,
+       -30.0,
+       0.0
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "凸台-拉伸2",
+   "type": "ICE",
+   "parents": [
+    "草图2",
+    "前视基准面",
+    "凸台-拉伸1"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 2.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图2",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 2.0
+    },
+    "reverse": true
+   }
+  },
+  {
+   "name": "基准面1",
+   "type": "RefPlane",
+   "parents": [
+    "前视基准面"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 8.0,
+     "unit": "mm"
+    }
+   ]
+  },
+  {
+   "name": "草图3",
+   "type": "ProfileFeature",
+   "parents": [
+    "基准面1"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      -0.0,
+      -0.0,
+      8.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       -40.0,
+       -30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -37.0,
+       -30.0,
+       0.0
+      ],
+      "end": [
+       -37.0,
+       -30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -40.0,
+       -20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -37.0,
+       -20.0,
+       0.0
+      ],
+      "end": [
+       -37.0,
+       -20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -40.0,
+       -10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -37.0,
+       -10.0,
+       0.0
+      ],
+      "end": [
+       -37.0,
+       -10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -40.0,
+       0.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -37.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       -37.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -40.0,
+       10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -37.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       -37.0,
+       10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -40.0,
+       20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -37.0,
+       20.0,
+       0.0
+      ],
+      "end": [
+       -37.0,
+       20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -40.0,
+       30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -37.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       -37.0,
+       30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -30.0,
+       -40.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -27.0,
+       -40.0,
+       0.0
+      ],
+      "end": [
+       -27.0,
+       -40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -30.0,
+       -30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -27.0,
+       -30.0,
+       0.0
+      ],
+      "end": [
+       -27.0,
+       -30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -30.0,
+       -20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -27.0,
+       -20.0,
+       0.0
+      ],
+      "end": [
+       -27.0,
+       -20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -30.0,
+       -10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -27.0,
+       -10.0,
+       0.0
+      ],
+      "end": [
+       -27.0,
+       -10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -30.0,
+       0.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -27.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       -27.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -30.0,
+       10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -27.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       -27.0,
+       10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -30.0,
+       20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -27.0,
+       20.0,
+       0.0
+      ],
+      "end": [
+       -27.0,
+       20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -30.0,
+       30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -27.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       -27.0,
+       30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -30.0,
+       40.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -27.0,
+       40.0,
+       0.0
+      ],
+      "end": [
+       -27.0,
+       40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -20.0,
+       -40.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -17.0,
+       -40.0,
+       0.0
+      ],
+      "end": [
+       -17.0,
+       -40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -20.0,
+       -30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -17.0,
+       -30.0,
+       0.0
+      ],
+      "end": [
+       -17.0,
+       -30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -20.0,
+       -20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -17.0,
+       -20.0,
+       0.0
+      ],
+      "end": [
+       -17.0,
+       -20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -20.0,
+       -10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -17.0,
+       -10.0,
+       0.0
+      ],
+      "end": [
+       -17.0,
+       -10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -20.0,
+       0.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -17.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       -17.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -20.0,
+       10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -17.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       -17.0,
+       10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -20.0,
+       20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -17.0,
+       20.0,
+       0.0
+      ],
+      "end": [
+       -17.0,
+       20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -20.0,
+       30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -17.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       -17.0,
+       30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -20.0,
+       40.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -17.0,
+       40.0,
+       0.0
+      ],
+      "end": [
+       -17.0,
+       40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -10.0,
+       -40.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -7.0,
+       -40.0,
+       0.0
+      ],
+      "end": [
+       -7.0,
+       -40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -10.0,
+       -30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -7.0,
+       -30.0,
+       0.0
+      ],
+      "end": [
+       -7.0,
+       -30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -10.0,
+       -20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -7.0,
+       -20.0,
+       0.0
+      ],
+      "end": [
+       -7.0,
+       -20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -10.0,
+       -10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -7.0,
+       -10.0,
+       0.0
+      ],
+      "end": [
+       -7.0,
+       -10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -10.0,
+       0.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -7.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       -7.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -10.0,
+       10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -7.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       -7.0,
+       10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -10.0,
+       20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -7.0,
+       20.0,
+       0.0
+      ],
+      "end": [
+       -7.0,
+       20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -10.0,
+       30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -7.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       -7.0,
+       30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -10.0,
+       40.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       -7.0,
+       40.0,
+       0.0
+      ],
+      "end": [
+       -7.0,
+       40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       -40.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       3.0,
+       -40.0,
+       0.0
+      ],
+      "end": [
+       3.0,
+       -40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       -30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       3.0,
+       -30.0,
+       0.0
+      ],
+      "end": [
+       3.0,
+       -30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       -20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       3.0,
+       -20.0,
+       0.0
+      ],
+      "end": [
+       3.0,
+       -20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       -10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       3.0,
+       -10.0,
+       0.0
+      ],
+      "end": [
+       3.0,
+       -10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       3.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       3.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       3.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       3.0,
+       10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       3.0,
+       20.0,
+       0.0
+      ],
+      "end": [
+       3.0,
+       20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       3.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       3.0,
+       30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       0.0,
+       40.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       3.0,
+       40.0,
+       0.0
+      ],
+      "end": [
+       3.0,
+       40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       10.0,
+       -40.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       13.0,
+       -40.0,
+       0.0
+      ],
+      "end": [
+       13.0,
+       -40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       10.0,
+       -30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       13.0,
+       -30.0,
+       0.0
+      ],
+      "end": [
+       13.0,
+       -30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       10.0,
+       -20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       13.0,
+       -20.0,
+       0.0
+      ],
+      "end": [
+       13.0,
+       -20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       10.0,
+       -10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       13.0,
+       -10.0,
+       0.0
+      ],
+      "end": [
+       13.0,
+       -10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       10.0,
+       0.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       13.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       13.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       10.0,
+       10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       13.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       13.0,
+       10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       10.0,
+       20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       13.0,
+       20.0,
+       0.0
+      ],
+      "end": [
+       13.0,
+       20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       10.0,
+       30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       13.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       13.0,
+       30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       10.0,
+       40.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       13.0,
+       40.0,
+       0.0
+      ],
+      "end": [
+       13.0,
+       40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       20.0,
+       -40.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       23.0,
+       -40.0,
+       0.0
+      ],
+      "end": [
+       23.0,
+       -40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       20.0,
+       -30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       23.0,
+       -30.0,
+       0.0
+      ],
+      "end": [
+       23.0,
+       -30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       20.0,
+       -20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       23.0,
+       -20.0,
+       0.0
+      ],
+      "end": [
+       23.0,
+       -20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       20.0,
+       -10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       23.0,
+       -10.0,
+       0.0
+      ],
+      "end": [
+       23.0,
+       -10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       20.0,
+       0.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       23.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       23.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       20.0,
+       10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       23.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       23.0,
+       10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       20.0,
+       20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       23.0,
+       20.0,
+       0.0
+      ],
+      "end": [
+       23.0,
+       20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       20.0,
+       30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       23.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       23.0,
+       30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       20.0,
+       40.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       23.0,
+       40.0,
+       0.0
+      ],
+      "end": [
+       23.0,
+       40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       30.0,
+       -40.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       33.0,
+       -40.0,
+       0.0
+      ],
+      "end": [
+       33.0,
+       -40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       30.0,
+       -30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       33.0,
+       -30.0,
+       0.0
+      ],
+      "end": [
+       33.0,
+       -30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       30.0,
+       -20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       33.0,
+       -20.0,
+       0.0
+      ],
+      "end": [
+       33.0,
+       -20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       30.0,
+       -10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       33.0,
+       -10.0,
+       0.0
+      ],
+      "end": [
+       33.0,
+       -10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       30.0,
+       0.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       33.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       33.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       30.0,
+       10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       33.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       33.0,
+       10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       30.0,
+       20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       33.0,
+       20.0,
+       0.0
+      ],
+      "end": [
+       33.0,
+       20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       30.0,
+       30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       33.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       33.0,
+       30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       30.0,
+       40.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       33.0,
+       40.0,
+       0.0
+      ],
+      "end": [
+       33.0,
+       40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       40.0,
+       -30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       43.0,
+       -30.0,
+       0.0
+      ],
+      "end": [
+       43.0,
+       -30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       40.0,
+       -20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       43.0,
+       -20.0,
+       0.0
+      ],
+      "end": [
+       43.0,
+       -20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       40.0,
+       -10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       43.0,
+       -10.0,
+       0.0
+      ],
+      "end": [
+       43.0,
+       -10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       40.0,
+       0.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       43.0,
+       0.0,
+       0.0
+      ],
+      "end": [
+       43.0,
+       0.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       40.0,
+       10.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       43.0,
+       10.0,
+       0.0
+      ],
+      "end": [
+       43.0,
+       10.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       40.0,
+       20.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       43.0,
+       20.0,
+       0.0
+      ],
+      "end": [
+       43.0,
+       20.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       40.0,
+       30.0,
+       0.0
+      ],
+      "radius": 3.0,
+      "start": [
+       43.0,
+       30.0,
+       0.0
+      ],
+      "end": [
+       43.0,
+       30.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "凸台-拉伸3",
+   "type": "ICE",
+   "parents": [
+    "草图3",
+    "基准面1",
+    "凸台-拉伸1"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 40.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图3",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 40.0
+    },
+    "reverse": false
+   }
+  },
+  {
+   "name": "草图4",
+   "type": "ProfileFeature",
+   "parents": [
+    "基准面1"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      -0.0,
+      -0.0,
+      8.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       -40.0,
+       -40.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       -36.0,
+       -40.0,
+       0.0
+      ],
+      "end": [
+       -36.0,
+       -40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -40.0,
+       40.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       -36.0,
+       40.0,
+       0.0
+      ],
+      "end": [
+       -36.0,
+       40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       40.0,
+       -40.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       44.0,
+       -40.0,
+       0.0
+      ],
+      "end": [
+       44.0,
+       -40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       40.0,
+       40.0,
+       0.0
+      ],
+      "radius": 4.0,
+      "start": [
+       44.0,
+       40.0,
+       0.0
+      ],
+      "end": [
+       44.0,
+       40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "切除-拉伸1",
+   "type": "ICE",
+   "parents": [
+    "草图4",
+    "基准面1",
+    "凸台-拉伸1"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 4.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图4",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 4.0
+    },
+    "reverse": false
+   }
+  },
+  {
+   "name": "草图5",
+   "type": "ProfileFeature",
+   "parents": [
+    "基准面1"
+   ],
+   "sketch": {
+    "sketch_to_model": {
+     "rotation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "translation_mm": [
+      -0.0,
+      -0.0,
+      8.0
+     ]
+    },
+    "segments": [
+     {
+      "type": "arc",
+      "center": [
+       -40.0,
+       -40.0,
+       0.0
+      ],
+      "radius": 2.25,
+      "start": [
+       -37.75,
+       -40.0,
+       0.0
+      ],
+      "end": [
+       -37.75,
+       -40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       -40.0,
+       40.0,
+       0.0
+      ],
+      "radius": 2.25,
+      "start": [
+       -37.75,
+       40.0,
+       0.0
+      ],
+      "end": [
+       -37.75,
+       40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       40.0,
+       -40.0,
+       0.0
+      ],
+      "radius": 2.25,
+      "start": [
+       42.25,
+       -40.0,
+       0.0
+      ],
+      "end": [
+       42.25,
+       -40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     },
+     {
+      "type": "arc",
+      "center": [
+       40.0,
+       40.0,
+       0.0
+      ],
+      "radius": 2.25,
+      "start": [
+       42.25,
+       40.0,
+       0.0
+      ],
+      "end": [
+       42.25,
+       40.0,
+       0.0
+      ],
+      "circle": true,
+      "direction": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "切除-拉伸2",
+   "type": "ICE",
+   "parents": [
+    "草图5",
+    "基准面1",
+    "凸台-拉伸1"
+   ],
+   "dimensions": [
+    {
+     "name": "D1",
+     "value": 8.0,
+     "unit": "mm"
+    }
+   ],
+   "children": [
+    {
+     "name": "草图5",
+     "type": "ProfileFeature"
+    }
+   ],
+   "extrude": {
+    "dir1": {
+     "end": "blind",
+     "depth_mm": 8.0
+    },
+    "reverse": false
+   }
+  }
+ ],
+ "sw_volume_mm3": 173226.232,
+ "sw_revision": "33.0.0"
+}
