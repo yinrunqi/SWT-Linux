@@ -164,12 +164,23 @@ def _image_part(image_b64: str, mime: str) -> dict:
 
 
 # 未显式指定 reasoning_effort 时按模型取默认值；键是去掉 "basic/" 之类前缀后的完整模型名
-DEFAULT_REASONING_EFFORTS = {"claude-sonnet-5": "medium"}
+DEFAULT_REASONING_EFFORTS = {
+    "claude-sonnet-5": "medium",
+    # GLM-4.6V 不区分推理强度；medium 在兼容接口上表示开启 thinking。
+    "glm-4.6v": "medium",
+}
 # 上下文窗口较小的模型（输入 + 推理 + 输出共用）；未列出的模型不做处理
-CONTEXT_LIMITS = {"qwen3.8-flash-next-fp8": 73728}
+CONTEXT_LIMITS = {
+    "qwen3.8-flash-next-fp8": 73728,
+    "glm-4.6v": 65536,
+}
 # 截断重试时输出上限翻倍的封顶值。推理模型单次思考可能超过 8K，不能封得太低；
 # 有 CONTEXT_LIMITS 的模型在输入变长时会按服务端报告的输入长度自动压缩本轮输出
-MAX_OUTPUT_TOKENS: dict[str, int] = {}
+MAX_OUTPUT_TOKENS: dict[str, int] = {
+    # 给输入、视觉 token 和工具 schema 至少留半个窗口；服务端返回精确输入
+    # token 数时，complete_within_context 还会继续收缩本轮输出预算。
+    "glm-4.6v": 32768,
+}
 DEFAULT_MAX_OUTPUT_TOKENS = 32000
 COMPACT_VERIFIER_MAX_TOKENS = 4096
 CONTEXT_MARGIN = 64
@@ -179,6 +190,69 @@ _CONTEXT_OVERFLOW = re.compile(r"maximum context length is \d+ tokens.*?prompt c
 
 def _model_key(model: str) -> str:
     return str(model or "").rsplit("/", 1)[-1].strip().lower()
+
+
+def _is_glm(model: str) -> bool:
+    return _model_key(model) == "glm-4.6v"
+
+
+def _prepare_glm_request(request: dict) -> dict:
+    """Build and validate the GLM-4.6V OpenAI-compatible request.
+
+    Keep this provider-specific so existing L1 request bytes remain unchanged.
+    GLM's deployed context window counts input, vision, reasoning and final
+    output together; the dynamic context retry handles the exact input count.
+    """
+    prepared = copy.deepcopy(request)
+    maximum = CONTEXT_LIMITS["glm-4.6v"] - CONTEXT_MARGIN
+    requested = prepared.get("max_tokens")
+    if isinstance(requested, bool) or not isinstance(requested, int) or not 0 < requested <= maximum:
+        raise ValueError(f"GLM max_tokens 必须在 1–{maximum} 之间")
+    messages = prepared.get("messages")
+    if not isinstance(messages, list) or not messages:
+        raise ValueError("GLM 请求必须包含非空 messages")
+    for index, message in enumerate(messages):
+        if not isinstance(message, dict) or message.get("role") not in {
+            "system", "user", "assistant", "tool",
+        }:
+            raise ValueError(f"GLM messages[{index}] 的 role/结构无效")
+
+    tools = prepared.get("tools")
+    if not isinstance(tools, list) or not tools:
+        raise ValueError("GLM workflow 请求必须包含非空 tools")
+    names: set[str] = set()
+    for index, tool in enumerate(tools):
+        function = tool.get("function") if isinstance(tool, dict) else None
+        parameters = function.get("parameters") if isinstance(function, dict) else None
+        name = function.get("name") if isinstance(function, dict) else None
+        if (
+            tool.get("type") != "function"
+            or not isinstance(name, str)
+            or not name
+            or not isinstance(parameters, dict)
+            or parameters.get("type") != "object"
+        ):
+            raise ValueError(f"GLM tools[{index}] 不是合法 function tool")
+        if name in names:
+            raise ValueError(f"GLM tools 包含重复名称 {name}")
+        names.add(name)
+        function["strict"] = True
+        parameters["additionalProperties"] = False
+
+    prepared["parallel_tool_calls"] = False
+    extra_body = copy.deepcopy(prepared.get("extra_body") or {})
+    template = dict(extra_body.get("chat_template_kwargs") or {})
+    template["enable_thinking"] = True
+    extra_body["chat_template_kwargs"] = template
+    prepared["extra_body"] = extra_body
+
+    # Force an actual UTF-8 JSON round trip before touching the provider. This
+    # catches replacement characters and non-serializable values client-side.
+    encoded = json.dumps(prepared, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    if b"\xef\xbf\xbd" in encoded:
+        raise ValueError("GLM 请求含 Unicode replacement character，拒绝发送")
+    json.loads(encoded.decode("utf-8"))
+    return prepared
 
 
 def default_reasoning_effort(model: str, reasoning_effort: str | None = None) -> str | None:
@@ -595,6 +669,8 @@ class WorkflowAgent:
                 request = {"model": self.model, "messages": request_messages, "tools": request_tools,
                            "tool_choice": "auto",
                            "temperature": self.temperature, "max_tokens": request_max_tokens, **request_extra}
+                if _is_glm(self.model):
+                    request = _prepare_glm_request(request)
                 try:
                     response, prompt_tokens = complete_within_context(
                         self._complete, request, self.context_limit, self._log)

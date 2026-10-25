@@ -36,6 +36,7 @@ _PROVIDER_ENV = {
     "aiping": ("AIPING_API_KEY", "AIPING_BASE_URL"),
     "juheai": ("JUHEAI_API_KEY", "JUHEAI_BASE_URL"),
     "qwenlocal": ("QWENLOCAL_API_KEY", "QWENLOCAL_BASE_URL"),
+    "glmlocal": ("GLMLOCAL_API_KEY", "GLMLOCAL_BASE_URL"),
 }
 
 

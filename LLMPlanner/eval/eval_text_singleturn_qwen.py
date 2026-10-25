@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import requests
 import yaml
@@ -21,6 +22,7 @@ if str(LLM_ROOT) not in sys.path:
 
 from planner.observer import SwObserver
 from planner.schemas import PART_ATOMIC_ENDPOINTS
+from load_env import parse_env_file
 
 try:
     from .eval_three_view_multiturn import ROOT, _query_balance
@@ -34,10 +36,16 @@ except ImportError:
 
 MODEL = "Qwen3.5-397B-A17B"
 # Web 后端按 provider 选择 .env 中的 Key / Base URL：ttswitch 用 OPENAI_*，其余用 <PROVIDER>_*。
-PROVIDERS = ("aiping", "ttswitch", "juheai", "qwenlocal")
+PROVIDERS = ("aiping", "ttswitch", "juheai", "qwenlocal", "glmlocal")
 # L1：工程师级工具 + 闭环 Agent；L1_v2 是在 L1 失败轨迹上改进后的版本，两者并存
 WORKFLOW_LEVELS = ("L1", "L1_v2")
-PROVIDER_LABELS = {"aiping": "AI Ping", "ttswitch": "TT Switch", "juheai": "juheai", "qwenlocal": "self-served Qwen"}
+PROVIDER_LABELS = {
+    "aiping": "AI Ping",
+    "ttswitch": "TT Switch",
+    "juheai": "juheai",
+    "qwenlocal": "self-served Qwen",
+    "glmlocal": "self-served GLM",
+}
 
 
 @dataclass(frozen=True)
@@ -2764,6 +2772,54 @@ def _needs_rerun(result: dict) -> bool:
     return result.get("status") == "error" or result.get("workflow_status") in ("llm_error", "sw_lost", "resume_failed")
 
 
+def _glm_preflight(args: argparse.Namespace, selected: list[TextCase]) -> dict:
+    """Validate the complete GLM benchmark configuration without network/SW access."""
+    if args.provider != "glmlocal":
+        raise ValueError("--preflight-only 当前仅用于 --provider glmlocal")
+    if args.model.lower() != "glm-4.6v":
+        raise ValueError("glmlocal 评测模型必须是 GLM-4.6V")
+    if args.action_level == "L0" and not 1 <= args.max_plan_tokens <= 32768:
+        raise ValueError("GLM L0 的 --max-plan-tokens 必须在 1–32768 之间")
+    if args.split == "all100" and len(selected) != 100:
+        raise ValueError(f"all100 应恰好选择 100 题，实际 {len(selected)}")
+
+    prompts = [case_prompt(case, args.lang) for case in selected]
+    for case, prompt in zip(selected, prompts):
+        encoded = prompt.encode("utf-8", errors="strict")
+        if encoded.decode("utf-8", errors="strict") != prompt or "\ufffd" in prompt:
+            raise ValueError(f"{case.case_id} 题面 UTF-8 往返校验失败")
+        if args.lang == "zh" and not any("\u4e00" <= char <= "\u9fff" for char in prompt):
+            raise ValueError(f"{case.case_id} 中文题面不含中文，疑似客户端编码损坏")
+
+    env = parse_env_file(LLM_ROOT / ".env")
+    key = env.get("GLMLOCAL_API_KEY", "").strip()
+    base_url = env.get("GLMLOCAL_BASE_URL", "").strip().rstrip("/")
+    parsed = urlparse(base_url)
+    if not key:
+        raise ValueError("LLMPlanner/.env 缺少 GLMLOCAL_API_KEY")
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise ValueError("LLMPlanner/.env 的 GLMLOCAL_BASE_URL 不是有效 HTTP(S) URL")
+    if not base_url.endswith("/v1"):
+        raise ValueError("GLMLOCAL_BASE_URL 应填写到 /v1，不要包含 /chat/completions")
+
+    return {
+        "provider": "glmlocal",
+        "model": args.model,
+        "cases": len(selected),
+        "prompt_lang": args.lang,
+        "action_level": args.action_level,
+        "compact_context": bool(args.compact_context),
+        "thinking": "enabled",
+        "reasoning_effort": args.reasoning_effort,
+        "context_limit": 65536,
+        "max_output_tokens": 32768 if args.action_level in WORKFLOW_LEVELS else args.max_plan_tokens,
+        "parallel_tool_calls": False,
+        "strict_tools": args.action_level in WORKFLOW_LEVELS,
+        "base_url": base_url,
+        "api_key_configured": True,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--web-url", default="http://localhost:5000")
@@ -2774,7 +2830,8 @@ def main() -> int:
         "--provider",
         choices=PROVIDERS,
         default="aiping",
-        help="LLM service the Web backend uses: ttswitch reads OPENAI_* from .env, others read <PROVIDER>_*",
+        help="LLM service the Web backend uses: ttswitch reads OPENAI_* from .env, local providers read "
+        "QWENLOCAL_* or GLMLOCAL_*",
     )
     parser.add_argument(
         "--reasoning-effort",
@@ -2841,9 +2898,12 @@ def main() -> int:
     )
     parser.add_argument(
         "--split",
-        choices=("dev", "heldout", "demo", "heldout2", "demo3", "heldout3", "heldout4", "hard", "extreme", "all"),
+        choices=(
+            "dev", "heldout", "demo", "heldout2", "demo3", "heldout3", "heldout4",
+            "hard", "extreme", "all", "all100",
+        ),
         default="dev",
-        help="Case split (all = the 50 core cases; hard = the 30 showcase cases; extreme = the 20 hardest cases); "
+        help="Case split (all = 50 core; hard = 30; extreme = 20; all100 = all three groups); "
         "heldout cases must never be used to tune prompts, tools or code",
     )
     parser.add_argument(
@@ -2883,13 +2943,26 @@ def main() -> int:
         action="store_true",
         help="L1_v2: opt in to compact tool-history requests, compact final verification, and length recovery",
     )
+    parser.add_argument(
+        "--preflight-only",
+        action="store_true",
+        help="Validate GLM provider, UTF-8 prompts, 100-case selection and token settings, then exit without "
+        "calling the LLM or SolidWorks",
+    )
     args = parser.parse_args()
+    if args.provider == "glmlocal" and args.model == MODEL:
+        args.model = "GLM-4.6V"
     if args.compact_context and args.action_level != "L1_v2":
         parser.error("--compact-context requires --action-level L1_v2")
     if args.action_level in WORKFLOW_LEVELS:
         from planner.workflow.agent import default_reasoning_effort
         args.reasoning_effort = default_reasoning_effort(args.model, args.reasoning_effort)
     view_tool = (not args.no_view_tool) if args.action_level == "L1_v2" else None
+    enable_thinking = (
+        False
+        if args.disable_thinking
+        else (True if args.provider == "glmlocal" else None)
+    )
     if args.rescore:
         report = rescore_report(args.rescore, args.output or args.rescore, args.strict_orientation)
         print(
@@ -2908,9 +2981,20 @@ def main() -> int:
         if (
             (not args.ids or case.case_id in set(args.ids))
             and case.case_id not in historical_ids
-            and (case.split == args.split or (args.split == "all" and case.split not in ("hard", "extreme")))
+            and (
+                case.split == args.split
+                or (args.split == "all" and case.split not in ("hard", "extreme"))
+                or args.split == "all100"
+            )
         )
     ]
+    if args.preflight_only:
+        try:
+            preflight = _glm_preflight(args, selected)
+        except ValueError as exc:
+            parser.error(str(exc))
+        print(json.dumps(preflight, ensure_ascii=False, indent=2), flush=True)
+        return 0
     output = args.output
     if output is None:
         safe_model = (
@@ -2959,7 +3043,7 @@ def main() -> int:
                 provider=args.provider,
                 reasoning_effort=args.reasoning_effort,
                 max_plan_tokens=args.max_plan_tokens,
-                enable_thinking=False if args.disable_thinking else None,
+                enable_thinking=enable_thinking,
                 checkpoint=checkpoint if args.action_level in WORKFLOW_LEVELS else None,
                 resume=resuming,
                 view_tool=bool(view_tool),
@@ -3012,7 +3096,7 @@ def main() -> int:
             provider=args.provider,
             reasoning_effort=args.reasoning_effort,
             max_plan_tokens=args.max_plan_tokens,
-            enable_thinking=False if args.disable_thinking else None,
+            enable_thinking=enable_thinking,
             view_tool=view_tool,
             compact_context=args.compact_context,
         )
@@ -3044,7 +3128,7 @@ def main() -> int:
         provider=args.provider,
         reasoning_effort=args.reasoning_effort,
         max_plan_tokens=args.max_plan_tokens,
-        enable_thinking=False if args.disable_thinking else None,
+        enable_thinking=enable_thinking,
         view_tool=view_tool,
         compact_context=args.compact_context,
     )
