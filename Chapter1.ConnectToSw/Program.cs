@@ -19,6 +19,19 @@ namespace Chapter1.ConnectToSw
 
         private const string ListenUrl = "http://localhost:5100/";
 
+        private static void WaitForExitKey()
+        {
+            try
+            {
+                if (!Console.IsInputRedirected)
+                    Console.ReadKey();
+            }
+            catch (InvalidOperationException)
+            {
+                // 后台评测以 CREATE_NO_WINDOW 启动，没有可读取的控制台。
+            }
+        }
+
         [STAThread]
         static void Main(string[] args)
         {
@@ -31,7 +44,7 @@ namespace Chapter1.ConnectToSw
             {
                 Console.WriteLine("[错误] SolidWorks 未启动，请先打开 SolidWorks 后再运行本程序。");
                 Console.WriteLine("按任意键退出...");
-                Console.ReadKey();
+                WaitForExitKey();
                 return;
             }
 
@@ -47,7 +60,7 @@ namespace Chapter1.ConnectToSw
             {
                 Console.WriteLine($"[错误] 初始化 SwCommands 失败: {ex.Message}");
                 Console.WriteLine("按任意键退出...");
-                Console.ReadKey();
+                WaitForExitKey();
                 return;
             }
 
@@ -64,7 +77,7 @@ namespace Chapter1.ConnectToSw
                 Console.WriteLine($"[错误] 无法启动 HTTP 监听: {ex.Message}");
                 Console.WriteLine($"提示: 可能需要以管理员身份运行，或执行: netsh http add urlacl url={ListenUrl} user=Everyone");
                 Console.WriteLine("按任意键退出...");
-                Console.ReadKey();
+                WaitForExitKey();
                 return;
             }
 

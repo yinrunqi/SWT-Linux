@@ -85,3 +85,10 @@ LLMPlanner/datasets/fusion360_assembly/raw/**
 # SolidWorks 打开文档时生成的临时锁文件，以及装配体冒烟脚本的本地输出
 LLMPlanner/**/~$*
 LLMPlanner/assembly_smoke/gear_pair_assembly_v2.SLDASM
+
+share/
+
+# 本地评测监控与服务日志（正式 JSON 结果按需入库）
+LLMPlanner/_watch_eval.py
+LLMPlanner/eval/*.out
+LLMPlanner/eval/*.err
