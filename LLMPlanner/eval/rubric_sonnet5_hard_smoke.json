@@ -1,0 +1,765 @@
+[
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_sonnet5_hard_smoke_result\\hydraulic_manifold_r1.step",
+    "case": "hydraulic_manifold",
+    "score": 100.0,
+    "passed": 9,
+    "total": 9,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              60.0,
+              80.0,
+              100.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "p_port",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "coaxial",
+            "ok": true,
+            "coaxial": [
+              true
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                15.0
+              ]
+            ]
+          },
+          {
+            "check": "pocket_depth",
+            "ok": true,
+            "pockets": [
+              {
+                "blind": true,
+                "depth": 3.0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "gallery",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "parallel_to_frame",
+            "ok": true,
+            "parallel": [
+              true
+            ]
+          },
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                20.0,
+                0.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                -75.0,
+                -45.0
+              ]
+            ]
+          },
+          {
+            "check": "pocket_depth",
+            "ok": true,
+            "pockets": [
+              {
+                "blind": true,
+                "depth": 8.0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "a_port",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                5.0,
+                40.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "t_port",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                -50.0,
+                15.0
+              ]
+            ]
+          },
+          {
+            "check": "pocket_depth",
+            "ok": true,
+            "pockets": [
+              {
+                "blind": true,
+                "depth": 45.0
+              }
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                45.0,
+                60.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                -43.0,
+                25.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "mounts",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 4,
+            "expected": 4
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 60.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 60.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 60.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 60.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          },
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                -65.0,
+                30.0
+              ],
+              [
+                15.0,
+                -30.0
+              ],
+              [
+                15.0,
+                30.0
+              ],
+              [
+                -65.0,
+                -30.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "valve_taps",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 4,
+            "expected": 4
+          },
+          {
+            "check": "axis_positions",
+            "ok": true,
+            "measured": [
+              [
+                16.0,
+                16.0
+              ],
+              [
+                -16.0,
+                -16.0
+              ],
+              [
+                -16.0,
+                16.0
+              ],
+              [
+                16.0,
+                -16.0
+              ]
+            ]
+          },
+          {
+            "check": "pocket_depth",
+            "ok": true,
+            "pockets": [
+              {
+                "blind": true,
+                "depth": 10.0
+              },
+              {
+                "blind": true,
+                "depth": 10.0
+              },
+              {
+                "blind": true,
+                "depth": 10.0
+              },
+              {
+                "blind": true,
+                "depth": 10.0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 441852.44,
+            "expected": 441811.3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_sonnet5_hard_smoke_result\\menger_sponge_r1.step",
+    "case": "menger_sponge",
+    "score": 0.0,
+    "passed": 0,
+    "total": 7,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": false,
+    "accepted": false,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": false,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": false,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          }
+        ]
+      },
+      {
+        "id": "level1",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          }
+        ]
+      },
+      {
+        "id": "corner_edges",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          }
+        ]
+      },
+      {
+        "id": "level2_holes",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          }
+        ]
+      },
+      {
+        "id": "mixed_levels",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_sonnet5_hard_smoke_result\\rocket_fin_can_r1.step",
+    "case": "rocket_fin_can",
+    "score": 0.0,
+    "passed": 0,
+    "total": 9,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": false,
+    "accepted": false,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": false,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": false,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "extent_along",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          }
+        ]
+      },
+      {
+        "id": "tube",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "radial_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          }
+        ]
+      },
+      {
+        "id": "bulkhead",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "radial_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          }
+        ]
+      },
+      {
+        "id": "nozzle",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "radial_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "radial_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "radial_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "radial_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          }
+        ]
+      },
+      {
+        "id": "fins",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "radial_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "radial_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "radial_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "radial_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "radial_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "radial_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          }
+        ]
+      },
+      {
+        "id": "fin_planform",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          }
+        ]
+      },
+      {
+        "id": "vents",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "radial_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "radial_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "radial_material",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          },
+          {
+            "check": "angular_openings",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": false,
+            "error": "STEP 中没有形体"
+          }
+        ]
+      }
+    ]
+  }
+]

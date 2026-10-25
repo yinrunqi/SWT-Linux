@@ -1,0 +1,1053 @@
+[
+  {
+    "step": "eval\\artifacts\\text_workflow_l1v2_view_sonnet5_medium_pilot_result\\brake_disc_r1.step",
+    "case": "brake_disc",
+    "score": 100.0,
+    "passed": 10,
+    "total": 10,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": true,
+    "accepted": true,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": true,
+            "measured": [
+              70.0,
+              300.0,
+              300.0
+            ]
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              70.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "rings",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                10.0
+              ],
+              [
+                22.0,
+                32.0
+              ]
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                90.0,
+                150.0
+              ]
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                85.0,
+                150.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "vanes",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "angular_openings",
+            "ok": true,
+            "sections": [
+              {
+                "t": 16,
+                "r": 120.0,
+                "count": 40,
+                "gaps_deg": [
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0,
+                  9.0
+                ],
+                "arc_deg": [
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61,
+                  6.61
+                ],
+                "chord": [
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842,
+                  13.842
+                ],
+                "r_in": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "r_out": [
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null
+                ],
+                "ok": true
+              }
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": []
+          }
+        ]
+      },
+      {
+        "id": "vane_phase",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                90.0,
+                150.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                32.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "hat",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                85.0,
+                95.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                22.0,
+                70.0
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                62.0,
+                70.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "center_hole",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 8.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                35.0,
+                95.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "lug_holes",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 5,
+            "expected": 5
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 8.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 8.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 8.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 8.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 8.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          },
+          {
+            "check": "axis_distance",
+            "ok": true,
+            "measured": [
+              57.15,
+              57.15,
+              57.15,
+              57.15,
+              57.15
+            ]
+          },
+          {
+            "check": "equal_angular",
+            "ok": true,
+            "gaps_deg": [
+              72.0,
+              72.0,
+              72.0,
+              72.0,
+              72.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "cross_holes",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 40,
+            "expected": 40
+          },
+          {
+            "check": "through",
+            "ok": true,
+            "holes": [
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              },
+              {
+                "length": 10.0,
+                "blocked": false,
+                "ends_open": true
+              }
+            ]
+          },
+          {
+            "check": "axis_distance",
+            "ok": true,
+            "measured": [
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0,
+              120.0
+            ]
+          },
+          {
+            "check": "angular_openings",
+            "ok": true,
+            "sections": [
+              {
+                "t": 5,
+                "r": 120.0,
+                "count": 20,
+                "gaps_deg": [
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0
+                ],
+                "arc_deg": [
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82
+                ],
+                "chord": [
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999
+                ],
+                "r_in": [
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0
+                ],
+                "r_out": [
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0
+                ],
+                "ok": true
+              }
+            ]
+          },
+          {
+            "check": "angular_openings",
+            "ok": true,
+            "sections": [
+              {
+                "t": 27,
+                "r": 120.0,
+                "count": 20,
+                "gaps_deg": [
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0,
+                  18.0
+                ],
+                "arc_deg": [
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82,
+                  3.82
+                ],
+                "chord": [
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999,
+                  7.999
+                ],
+                "r_in": [
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0,
+                  116.0
+                ],
+                "r_out": [
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0,
+                  124.0
+                ],
+                "ok": true
+              }
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": []
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                10.0
+              ],
+              [
+                22.0,
+                32.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": true,
+            "measured": 1415685.29,
+            "expected": 1415696.4
+          }
+        ]
+      }
+    ],
+    "hand": "mirrored"
+  }
+]

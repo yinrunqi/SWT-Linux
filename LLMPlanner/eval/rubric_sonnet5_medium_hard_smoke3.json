@@ -1,0 +1,344 @@
+[
+  {
+    "step": "eval\\artifacts\\text_workflow_l1_sonnet5_medium_hard_smoke3_result\\rocket_fin_can_r1.step",
+    "case": "rocket_fin_can",
+    "score": 55.56,
+    "passed": 5,
+    "total": 9,
+    "implied_passed": 0,
+    "implied_total": 0,
+    "hard_ok": false,
+    "accepted": false,
+    "rubrics": [
+      {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "single_valid_solid",
+            "ok": true,
+            "solids": 1,
+            "shells": 1,
+            "valid": true
+          }
+        ]
+      },
+      {
+        "id": "outer",
+        "ok": false,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "bbox_sorted",
+            "ok": false,
+            "measured": [
+              80.0,
+              140.0,
+              400.0
+            ]
+          },
+          {
+            "check": "extent_along",
+            "ok": true,
+            "measured": [
+              400.0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "tube",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 1,
+            "expected": 1
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": [
+              [
+                0.0,
+                300.0
+              ]
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                36.0,
+                40.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bulkhead",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                30.0,
+                40.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "nozzle",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                21.0,
+                26.0
+              ]
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                12.0,
+                16.0
+              ]
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                23.0,
+                27.0
+              ]
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                33.843,
+                37.843
+              ]
+            ]
+          },
+          {
+            "check": "line_material",
+            "ok": true,
+            "measured": []
+          }
+        ]
+      },
+      {
+        "id": "fins",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "radial_material",
+            "ok": false,
+            "measured": [
+              [
+                36.0,
+                40.0
+              ]
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": false,
+            "measured": [
+              [
+                36.0,
+                40.0
+              ]
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": false,
+            "measured": [
+              [
+                36.0,
+                40.0
+              ]
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": false,
+            "measured": [
+              [
+                36.0,
+                40.0
+              ]
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": false,
+            "measured": [
+              [
+                36.0,
+                40.0
+              ]
+            ]
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                36.0,
+                40.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "fin_planform",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "line_material",
+            "ok": false,
+            "measured": []
+          },
+          {
+            "check": "line_material",
+            "ok": false,
+            "measured": []
+          }
+        ]
+      },
+      {
+        "id": "vents",
+        "ok": true,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "exists",
+            "ok": true,
+            "found": 4,
+            "expected": 4
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": []
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": []
+          },
+          {
+            "check": "radial_material",
+            "ok": true,
+            "measured": [
+              [
+                36.0,
+                40.0
+              ]
+            ]
+          },
+          {
+            "check": "angular_openings",
+            "ok": true,
+            "sections": [
+              {
+                "t": 50,
+                "r": 38.0,
+                "count": 4,
+                "gaps_deg": [
+                  90.0,
+                  90.0,
+                  90.0,
+                  90.0
+                ],
+                "arc_deg": [
+                  9.06,
+                  9.06,
+                  9.06,
+                  9.06
+                ],
+                "chord": [
+                  6.0,
+                  6.0,
+                  6.0,
+                  6.0
+                ],
+                "r_in": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "r_out": [
+                  null,
+                  null,
+                  null,
+                  null
+                ],
+                "ok": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "volume",
+        "ok": false,
+        "hard": false,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+          {
+            "check": "volume",
+            "ok": false,
+            "measured": 380747.14,
+            "expected": 434767.3
+          }
+        ]
+      }
+    ]
+  }
+]

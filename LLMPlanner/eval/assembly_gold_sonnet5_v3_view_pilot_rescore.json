@@ -1,0 +1,173 @@
+{
+  "rows": [
+    {
+      "case_id": "crank_rocker_linkage",
+      "workflow": "v3",
+      "repeat": 1,
+      "source": "eval\\assembly_gold_sonnet5_v3_view_pilot.json",
+      "old_assembly_score": 100.0,
+      "old_motion_score": 0.0,
+      "old_motion_error": "Motion Study 时长设置失败: 6s",
+      "assembly": "eval\\artifacts\\assembly_gold_sonnet5_v3_view_pilot\\v3\\crank_rocker_linkage\\gold_r1\\crank_rocker_linkage.SLDASM",
+      "missing_roles": [],
+      "assembly_score": 67.19,
+      "motion_score": 0.0,
+      "assembly_score_v1": 73.75,
+      "motion_score_v1": 0.0,
+      "structure_ok": false,
+      "rubric": {
+        "score": 67.19,
+        "score_v1": 73.75,
+        "parts": {
+          "rigid_groups": 0.75,
+          "joints": 0.75,
+          "mobility": 0.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0
+        },
+        "completeness": 1.0,
+        "missing_roles": [],
+        "wrongly_fixed": [],
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "shaft",
+            "body": "crank",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "crank",
+            "body": "crank",
+            "ok": false,
+            "ok_v1": false
+          },
+          {
+            "role": "coupler",
+            "body": "coupler",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "rocker",
+            "body": "rocker",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "crank_pin",
+            "body": "crank|coupler",
+            "ok": false,
+            "ok_v1": false
+          },
+          {
+            "role": "coupler_pin",
+            "body": "coupler|rocker",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "rocker_pin",
+            "body": "frame|rocker",
+            "ok": true,
+            "ok_v1": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "crank",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok_v1": true,
+            "ok": true,
+            "anchor_err_mm": {
+              "frame:2": 0.0
+            },
+            "anchor_ok": true
+          },
+          {
+            "bodies": [
+              "coupler",
+              "crank"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "free",
+            "ok_v1": false,
+            "ok": false
+          },
+          {
+            "bodies": [
+              "rocker",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok_v1": true,
+            "ok": true,
+            "anchor_err_mm": {
+              "frame:0": 0.0,
+              "rocker:3": 0.0
+            },
+            "anchor_ok": true
+          },
+          {
+            "bodies": [
+              "coupler",
+              "rocker"
+            ],
+            "expected": [
+              "revolute",
+              "cylindrical"
+            ],
+            "actual": "cylindrical",
+            "ok_v1": true,
+            "ok": true,
+            "anchor_err_mm": {
+              "rocker:2": 0.0
+            },
+            "anchor_ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 4,
+          "target": 1,
+          "ok": false,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [
+          "距离13",
+          "同心9",
+          "距离14",
+          "同心10",
+          "距离16"
+        ],
+        "couplings": []
+      },
+      "motion": {
+        "passed": false,
+        "score": 0.0,
+        "score_v1": 0.0,
+        "error": "RuntimeError: Motion Study 时长设置失败: 6s"
+      },
+      "seconds": 5.2
+    }
+  ]
+}

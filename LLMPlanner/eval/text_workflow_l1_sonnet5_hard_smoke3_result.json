@@ -1,0 +1,459 @@
+{
+  "run_at": "2026-10-03T14:35:07+08:00",
+  "provider": "AI Ping",
+  "model": "claude-sonnet-5",
+  "mode": "workflow",
+  "action_level": "L1",
+  "prompt_lang": "zh",
+  "score_version": 2,
+  "strict_orientation": false,
+  "repeats": 1,
+  "cache_enabled": false,
+  "historical_skipped": [],
+  "case_ids": [
+    "rocket_fin_can"
+  ],
+  "average_score": 0.0,
+  "average_score_v1": 0.0,
+  "average_score_ci95": null,
+  "pass_at_1": 0.0,
+  "passed": 0,
+  "passed_v1": 0,
+  "total": 1,
+  "total_duration_seconds": 1352.18,
+  "per_case": [
+    {
+      "case_id": "rocket_fin_can",
+      "runs": 1,
+      "mean_score": 0.0,
+      "min_score": 0.0,
+      "max_score": 0.0,
+      "passed_runs": 0,
+      "pass_at_1": 0.0,
+      "pass_at_k": 0.0,
+      "mean_tokens": 51715
+    }
+  ],
+  "token_totals": {
+    "prompt_tokens": 27715,
+    "completion_tokens": 24000,
+    "total_tokens": 51715,
+    "calls": 2
+  },
+  "balance_before": null,
+  "balance_after": null,
+  "spent_yuan": null,
+  "results": [
+    {
+      "case_id": "rocket_fin_can",
+      "name": "火箭尾段",
+      "score": 0.0,
+      "acceptance_ok": false,
+      "validity_points": 0.0,
+      "robustness_points": 0.0,
+      "failed_step_count": 0,
+      "dimension_points": 0.0,
+      "volume_points": 0.0,
+      "detail_points": 0.0,
+      "dimension_errors_mm": [
+        144.25,
+        144.25,
+        400.0
+      ],
+      "dimension_checks": [
+        false,
+        false,
+        false
+      ],
+      "volume_ok": false,
+      "actual_details": {
+        "extrusions": 0,
+        "cuts": 0,
+        "revolves": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "holes": 0,
+        "shells": 0,
+        "patterns": 0,
+        "mirrors": 0,
+        "sweeps": 0,
+        "lofts": 0,
+        "ribs": 0,
+        "drafts": 0,
+        "threads": 0,
+        "sheet_metal": 0,
+        "solid_features": 0,
+        "circles": 0,
+        "polygons": 0,
+        "centerlines": 0,
+        "slots": 0,
+        "cut_circles": 0,
+        "sketch_lines": 0,
+        "sketch_arcs": 0,
+        "sketch_splines": 0
+      },
+      "detail_checks": {
+        "solid_features": false
+      },
+      "strict_orientation": false,
+      "status": "failed",
+      "plan_steps": 0,
+      "successful_steps": 0,
+      "failed_steps": [],
+      "bbox_mm": null,
+      "volume_mm3": null,
+      "v1": {
+        "score": 0.0,
+        "acceptance_ok": false,
+        "execution_points": 0.0,
+        "dimension_points": 0.0,
+        "volume_points": 0.0,
+        "detail_points": 0.0,
+        "actual_details": {
+          "extrusions": 0,
+          "cuts": 0,
+          "fillets": 0,
+          "chamfers": 0,
+          "revolves": 0,
+          "polygons": 0,
+          "centerlines": 0,
+          "circles": 0,
+          "slots": 0,
+          "cut_circles": 0,
+          "faces": 0
+        }
+      },
+      "token_usage": {
+        "calls": 2,
+        "completion_tokens": 24000,
+        "prompt_tokens": 27715,
+        "total_tokens": 51715
+      },
+      "workflow_status": "llm_error",
+      "llm_calls": 2,
+      "tool_calls": 0,
+      "duration_seconds": 1352.18,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null,
+      "artifacts": {
+        "step": "eval\\artifacts\\text_workflow_l1_sonnet5_hard_smoke3_result\\rocket_fin_can_r1.step",
+        "sldprt": "eval\\artifacts\\text_workflow_l1_sonnet5_hard_smoke3_result\\rocket_fin_can_r1.SLDPRT"
+      },
+      "trace": {
+        "request": {
+          "url": "http://localhost:5000/api/run",
+          "json": {
+            "instruction": "创建一个探空火箭尾段，单一实体，Z 轴为箭体轴线、向上为箭头方向。箭体是外径 80mm、内径 72mm 的薄壁圆筒， 从 z = 0 到 z = 300。圆筒底端内侧有一块隔板：内径 60mm、外径 72mm 的圆环，位于 z = 0~8，与筒壁相连。 隔板下方是拉瓦尔喷管（回转薄壁壳体），其内、外轮廓都是折线：内轮廓从 (r = 30, z = 0) 收缩到喉部 (r = 12, z = −30)，再扩张到出口 (r = 34, z = −100)；外轮廓从 (r = 36, z = 0) 到 (r = 16, z = −30)， 再到 (r = 38, z = −100)；出口端面在 z = −100。筒外有 4 片均布的平板尾翼，厚 4mm，关于自身径向中面对称， 分别位于 45°、135°、225°、315° 方位（从 +X 轴量起）。每片尾翼在其中面内是一个四边形：翼根从筒壁内的 r = 37 起与筒体融合；前缘是直线，从 (r = 40, z = 110) 到翼尖 (r = 100, z = 30)；后缘是直线，从 (r = 40, z = 10) 到 (r = 100, z = −20)；翼尖是 r = 100 处的轴向直边（z = −20~30），前、后缘的直线延长到 r = 37 处与翼根相接。筒壁上在 z = 250 处、0°、90°、180°、270° 方位各开一个直径 6mm 的径向通气孔，穿透筒壁。",
+            "provider": "ttswitch",
+            "vision_model": "claude-sonnet-5",
+            "plan_model": "claude-sonnet-5",
+            "mode": "single_turn",
+            "action_level": "L1",
+            "use_cache": false,
+            "capture_trace": true,
+            "dry_run": false,
+            "max_turns": 40
+          }
+        },
+        "response_status": 200,
+        "response": {
+          "action_level": "L1",
+          "mode": "workflow",
+          "plan": {
+            "notes": "",
+            "steps": [],
+            "user_intent": "创建一个探空火箭尾段，单一实体，Z 轴为箭体轴线、向上为箭头方向。箭体是外径 80mm、内径 72mm 的薄壁圆筒， 从 z = 0 到 z = 300。圆筒底端内侧有一块隔板：内径 60mm、外径 72mm 的圆环，位于 z = 0~8，与筒壁相连。 隔板下方是拉瓦尔喷管（回转薄壁壳体），其内、外轮廓都是折线：内轮廓从 (r = 30, z = 0) 收缩到喉部 (r = 12, z = −30)，再扩张到出口 (r = 34, z = −100)；外轮廓从 (r = 36, z = 0) 到 (r = 16, z = −30)， 再到 (r = 38, z = −100)；出口端面在 z = −100。筒外有 4 片均布的平板尾翼，厚 4mm，关于自身径向中面对称， 分别位于 45°、135°、225°、315° 方位（从 +X 轴量起）。每片尾翼在其中面内是一个四边形：翼根从筒壁内的 r = 37 起与筒体融合；前缘是直线，从 (r = 40, z = 110) 到翼尖 (r = 100, z = 30)；后缘是直线，从 (r = 40, z = 10) 到 (r = 100, z = −20)；翼尖是 r = 100 处的轴向直边（z = −20~30），前、后缘的直线延长到 r = 37 处与翼根相接。筒壁上在 z = 250 处、0°、90°、180°、270° 方位各开一个直径 6mm 的径向通气孔，穿透筒壁。"
+          },
+          "raw_llm_trace": [
+            {
+              "content": "你是一名资深机械设计工程师，正在 SolidWorks 中用工具逐步建出用户描述的零件。\n\n## 坐标与单位\n- 所有长度单位 mm，角度单位度。模型坐标：+Y 向上（顶），+Z 向前，+X 向右。\n- 除非需求另有说明，零件底面放在 Y=0、高度沿 +Y，并在 X、Z 方向上以原点为中心；回转体的轴线沿 Y。\n- 每个草图平面都有固定的 (u,v) 坐标，数值就是模型坐标：法向沿 Z → u=X, v=Y；法向沿 Y → u=X, v=Z；法向沿 X → u=Z, v=Y。\n  例如在顶面（法向 +Y）上 [10, -5] 表示 X=10, Z=-5。\n\n## 草图与特征规则\n- 一次 extrude/cut 调用画一个区域：外环加上它内部的内环（孔）。部分重叠的轮廓会被拒绝，需要拆成先后两个特征（实体会自动合并）或合并成一个 polygon。\n- 在已有实体上加特征时，用语义面引用（top/bottom/left/right/front/back、face(+X, innermost) 等）或 get_model_state 返回的 face#index，不要猜测。\n- cut 默认朝实体内部切；hole 可以一次打多个同径孔；重复特征优先用 circular_pattern / linear_pattern。\n- revolve 的轮廓是截面的一半，必须整体位于轴线一侧，可以贴着轴线。\n- 带圆角的外形（耳片、圆角板、腰形孔、扇形窗口、带圆弧的截面）直接在轮廓里表达：rect/polygon 的 corner_radius、slot、annular_sector 或 path 的圆弧段，而不是先画尖角再补 fillet。\n- 需要在没有现成平面的位置画草图时（悬空的凸台、离开实体表面一段距离的特征），先用 ref_plane 从已有平面偏移出基准面，再把它的名称作为 plane。\n- 对称的特征建好一侧后用 mirror 镜像；整个零件左右对称时也可以先建一半再 mirror(body=true)。\n- 侧凸台、支管接到已有实体时用 extrude(..., up_to=面或 body)，不要估一个 depth。\n- 沉头孔用 counterbore / countersink，螺纹底孔用 tapped_hole；不要拆成两次普通 cut。\n- 筋用 rib（开放线段，连接已有两个面）；弯管、沿路径的实体用 sweep；变截面用 loft。\n- 空心壳体用 shell 抽掉开口面；侧面斜度用 draft，不要靠猜拉伸深度冒充。\n- 钣金平板用 sheet_metal（必须是零件的第一特征）。改已有特征的尺寸用 edit_feature，不要删除重做。\n- fillet/chamfer 一般放在最后，edges 不确定时先用 get_model_state 查看几何。\n\n## 工作方式\n1. 先读懂需求，列出总体尺寸和关键特征；可以用 set_parameters 定义驱动参数，之后用 \"=表达式\" 引用。\n2. 先建基体，再逐个添加特征。每次调用后检查返回的 volume_delta_mm3 与 bbox_mm 是否符合预期。\n3. 工具失败时会自动回滚，模型保持调用前的状态。阅读错误码和提示，修改参数或换一种做法再试；不要重复完全相同的失败调用。做错的特征可以用 delete_feature 删除。\n4. 全部完成后调用 get_model_state，逐项核对总体尺寸、孔数、特征是否满足需求；不满足就继续修改。\n5. 核对无误后调用 finish，并在 summary 中说明零件的组成与关键尺寸。\n",
+              "role": "system"
+            },
+            {
+              "content": "建模需求：\n创建一个探空火箭尾段，单一实体，Z 轴为箭体轴线、向上为箭头方向。箭体是外径 80mm、内径 72mm 的薄壁圆筒， 从 z = 0 到 z = 300。圆筒底端内侧有一块隔板：内径 60mm、外径 72mm 的圆环，位于 z = 0~8，与筒壁相连。 隔板下方是拉瓦尔喷管（回转薄壁壳体），其内、外轮廓都是折线：内轮廓从 (r = 30, z = 0) 收缩到喉部 (r = 12, z = −30)，再扩张到出口 (r = 34, z = −100)；外轮廓从 (r = 36, z = 0) 到 (r = 16, z = −30)， 再到 (r = 38, z = −100)；出口端面在 z = −100。筒外有 4 片均布的平板尾翼，厚 4mm，关于自身径向中面对称， 分别位于 45°、135°、225°、315° 方位（从 +X 轴量起）。每片尾翼在其中面内是一个四边形：翼根从筒壁内的 r = 37 起与筒体融合；前缘是直线，从 (r = 40, z = 110) 到翼尖 (r = 100, z = 30)；后缘是直线，从 (r = 40, z = 10) 到 (r = 100, z = −20)；翼尖是 r = 100 处的轴向直边（z = −20~30），前、后缘的直线延长到 r = 37 处与翼根相接。筒壁上在 z = 250 处、0°、90°、180°、270° 方位各开一个直径 6mm 的径向通气孔，穿透筒壁。\n\n当前是一个空零件，请开始建模。",
+              "role": "user"
+            },
+            {
+              "content": "上一条回复太长被截断了。少写分析，直接输出下一步的工具调用。",
+              "role": "user"
+            }
+          ],
+          "results": [],
+          "success": true,
+          "summary": {
+            "all_ok": false,
+            "llm_calls": 2,
+            "status": "llm_error",
+            "succeeded": 0,
+            "token_usage": {
+              "calls": 2,
+              "completion_tokens": 24000,
+              "prompt_tokens": 27715,
+              "total_tokens": 51715
+            },
+            "tool_calls": 0,
+            "total": 0
+          },
+          "token_usage": {
+            "calls": 2,
+            "completion_tokens": 24000,
+            "prompt_tokens": 27715,
+            "total_tokens": 51715
+          },
+          "workflow": {
+            "duration_seconds": 1346.58,
+            "error": "InternalServerError: Error code: 504 - {'error': {'message': 'Timed out while reading the Tencent upstream response.', 'type': 'upstream_error', 'param': None, 'code': 'upstream_timeout'}}",
+            "final_state": {
+              "bbox_mm": null,
+              "cylindrical_faces": [],
+              "features": [],
+              "parameters": {},
+              "planar_faces": [],
+              "reference_planes": [],
+              "volume_mm3": 0.0
+            },
+            "llm_calls": 2,
+            "llm_responses": [
+              {
+                "choices": [
+                  {
+                    "finish_reason": "length",
+                    "index": 0,
+                    "logprobs": null,
+                    "message": {
+                      "annotations": null,
+                      "audio": null,
+                      "content": "",
+                      "function_call": null,
+                      "refusal": null,
+                      "role": "assistant",
+                      "tool_calls": null
+                    }
+                  }
+                ],
+                "created": 1791007959,
+                "id": "d07e7aa284574872912cbac155c0ac08",
+                "model": "claude-sonnet-5",
+                "object": "chat.completion",
+                "service_tier": null,
+                "system_fingerprint": null,
+                "usage": {
+                  "cache_creation_input_tokens": 13216,
+                  "cache_read_input_tokens": 0,
+                  "cached_tokens": 0,
+                  "completion_thinking_tokens": 0,
+                  "completion_tokens": 8000,
+                  "completion_tokens_details": null,
+                  "credit": 11.43,
+                  "prompt_cache_hit_tokens": 0,
+                  "prompt_cache_miss_tokens": 626,
+                  "prompt_cache_write_tokens": 13216,
+                  "prompt_tokens": 13842,
+                  "prompt_tokens_details": null,
+                  "total_tokens": 21842
+                }
+              },
+              {
+                "choices": [
+                  {
+                    "finish_reason": "length",
+                    "index": 0,
+                    "logprobs": null,
+                    "message": {
+                      "annotations": null,
+                      "audio": null,
+                      "content": "",
+                      "function_call": null,
+                      "refusal": null,
+                      "role": "assistant",
+                      "tool_calls": null
+                    }
+                  }
+                ],
+                "created": 1791008042,
+                "id": "64eef58e787545f2b17e7daa4f847eaa",
+                "model": "claude-sonnet-5",
+                "object": "chat.completion",
+                "service_tier": null,
+                "system_fingerprint": null,
+                "usage": {
+                  "cache_creation_input_tokens": 655,
+                  "cache_read_input_tokens": 0,
+                  "cached_tokens": 0,
+                  "completion_thinking_tokens": 0,
+                  "completion_tokens": 16000,
+                  "completion_tokens_details": null,
+                  "credit": 16.43,
+                  "prompt_cache_hit_tokens": 13216,
+                  "prompt_cache_miss_tokens": 2,
+                  "prompt_cache_write_tokens": 655,
+                  "prompt_tokens": 13873,
+                  "prompt_tokens_details": {
+                    "accepted_prediction_tokens": 0,
+                    "audio_tokens": 0,
+                    "cached_tokens": 13216,
+                    "reasoning_tokens": 0,
+                    "rejected_prediction_tokens": 0
+                  },
+                  "total_tokens": 29873
+                }
+              }
+            ],
+            "status": "llm_error",
+            "summary": "",
+            "token_usage": {
+              "calls": 2,
+              "completion_tokens": 24000,
+              "prompt_tokens": 27715,
+              "total_tokens": 51715
+            },
+            "tool_calls": []
+          }
+        },
+        "final_observation": {
+          "features": [
+            {
+              "index": 0,
+              "name": "评论",
+              "type": "CommentsFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 1,
+              "name": "收藏",
+              "type": "FavoriteFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 2,
+              "name": "历史记录",
+              "type": "HistoryFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 3,
+              "name": "选择集",
+              "type": "SelectionSetFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 4,
+              "name": "传感器",
+              "type": "SensorFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 5,
+              "name": "设计活页夹",
+              "type": "DocsFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 6,
+              "name": "注解",
+              "type": "DetailCabinet",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 7,
+              "name": "曲面实体",
+              "type": "SurfaceBodyFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 8,
+              "name": "实体",
+              "type": "SolidBodyFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 9,
+              "name": "光源与相机",
+              "type": "EnvFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 10,
+              "name": "标注",
+              "type": "InkMarkupFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 11,
+              "name": "方程式",
+              "type": "EqnFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 12,
+              "name": "材质 <未指定>",
+              "type": "MaterialFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 13,
+              "name": "前视基准面",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 14,
+              "name": "上视基准面",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 15,
+              "name": "右视基准面",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 16,
+              "name": "原点",
+              "type": "OriginProfileFeature",
+              "suppressed": false,
+              "dimensions": []
+            }
+          ],
+          "faces": [],
+          "sketches": [],
+          "feature_sketch_links": [],
+          "bounding_box_mm": null,
+          "volume_mm3": null,
+          "document_type": "part",
+          "assembly_path": "",
+          "components": [],
+          "mates": [],
+          "interference_summary": null,
+          "last_execution": [],
+          "errors": {},
+          "state_fingerprint": "d8e3d617a3c6504c73952055d35cffa2f2c886f46b7b6c715c44edf66c0f091f"
+        },
+        "sketch_stats": []
+      },
+      "repeat": 0
+    }
+  ]
+}

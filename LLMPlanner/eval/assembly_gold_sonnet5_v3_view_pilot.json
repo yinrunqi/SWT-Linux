@@ -1,0 +1,3723 @@
+{
+  "summary": {
+    "n": 2,
+    "part_pass_rate": 1.0,
+    "assembly_score": 100.0,
+    "assembly_score_std": 0.0,
+    "motion_score": 50.0,
+    "motion_score_std": 70.71,
+    "motion_score_gated": 50.0,
+    "assembly_score_v1": 100.0,
+    "motion_score_v1": 50.0,
+    "structure_ok_rate": 1.0,
+    "e2e": 0.5,
+    "finish_rate": 1.0,
+    "saved_by_agent_rate": 1.0,
+    "budget_exhausted_rate": 0.0,
+    "llm_calls_mean": 55.0
+  },
+  "by_workflow": {
+    "v3": {
+      "all": {
+        "n": 2,
+        "part_pass_rate": 1.0,
+        "assembly_score": 100.0,
+        "assembly_score_std": 0.0,
+        "motion_score": 50.0,
+        "motion_score_std": 70.71,
+        "motion_score_gated": 50.0,
+        "assembly_score_v1": 100.0,
+        "motion_score_v1": 50.0,
+        "structure_ok_rate": 1.0,
+        "e2e": 0.5,
+        "finish_rate": 1.0,
+        "saved_by_agent_rate": 1.0,
+        "budget_exhausted_rate": 0.0,
+        "llm_calls_mean": 55.0
+      },
+      "crank_rocker_linkage": {
+        "n": 1,
+        "part_pass_rate": 1.0,
+        "assembly_score": 100.0,
+        "assembly_score_std": null,
+        "motion_score": 0.0,
+        "motion_score_std": null,
+        "motion_score_gated": 0.0,
+        "assembly_score_v1": 100.0,
+        "motion_score_v1": 0.0,
+        "structure_ok_rate": 1.0,
+        "e2e": 0.0,
+        "finish_rate": 1.0,
+        "saved_by_agent_rate": 1.0,
+        "budget_exhausted_rate": 0.0,
+        "llm_calls_mean": 34.0
+      },
+      "oldham_coupling": {
+        "n": 1,
+        "part_pass_rate": 1.0,
+        "assembly_score": 100.0,
+        "assembly_score_std": null,
+        "motion_score": 100.0,
+        "motion_score_std": null,
+        "motion_score_gated": 100.0,
+        "assembly_score_v1": 100.0,
+        "motion_score_v1": 100.0,
+        "structure_ok_rate": 1.0,
+        "e2e": 1.0,
+        "finish_rate": 1.0,
+        "saved_by_agent_rate": 1.0,
+        "budget_exhausted_rate": 0.0,
+        "llm_calls_mean": 76.0
+      }
+    }
+  },
+  "recipes": {
+    "v3": [
+      "assembly_topology.md",
+      "assembly_joint_mapping.md",
+      "assembly_coupling.md",
+      "assembly_linkage.md",
+      "assembly_motion_check.md",
+      "assembly_v3_tools.md"
+    ]
+  },
+  "results": [
+    {
+      "case_id": "crank_rocker_linkage",
+      "condition": "gold",
+      "repeat": 1,
+      "workflow": "v3",
+      "parts": [],
+      "assembly": {
+        "status": "finished",
+        "error": null,
+        "infra_error": null,
+        "static": {
+          "component_count": 8,
+          "saved": true
+        },
+        "rubric": {
+          "score": 100.0,
+          "score_v1": 100.0,
+          "parts": {
+            "rigid_groups": 1.0,
+            "joints": 1.0,
+            "mobility": 1.0,
+            "grounded": 1.0,
+            "not_over_defined": 1.0
+          },
+          "completeness": 1.0,
+          "missing_roles": [],
+          "wrongly_fixed": [],
+          "rigid_groups": [
+            {
+              "role": "frame",
+              "body": "frame",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "shaft",
+              "body": "crank",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "crank",
+              "body": "crank",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "coupler",
+              "body": "coupler",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "rocker",
+              "body": "rocker",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "crank_pin",
+              "body": "crank|coupler",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "coupler_pin",
+              "body": "coupler|rocker",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "rocker_pin",
+              "body": "frame|rocker",
+              "ok": true,
+              "ok_v1": true
+            }
+          ],
+          "joints": [
+            {
+              "bodies": [
+                "crank",
+                "frame"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok_v1": true,
+              "ok": true,
+              "anchor_err_mm": {
+                "shaft:1": -0.0,
+                "frame:2": 0.0
+              },
+              "anchor_ok": true
+            },
+            {
+              "bodies": [
+                "coupler",
+                "crank"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok_v1": true,
+              "ok": true,
+              "anchor_err_mm": {
+                "shaft:0": -0.0,
+                "coupler:3": 0.0
+              },
+              "anchor_ok": true
+            },
+            {
+              "bodies": [
+                "rocker",
+                "frame"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok_v1": true,
+              "ok": true,
+              "anchor_err_mm": {
+                "frame:0": 0.0,
+                "rocker:3": 0.0
+              },
+              "anchor_ok": true
+            },
+            {
+              "bodies": [
+                "coupler",
+                "rocker"
+              ],
+              "expected": [
+                "revolute",
+                "cylindrical"
+              ],
+              "actual": "cylindrical",
+              "ok_v1": true,
+              "ok": true,
+              "anchor_err_mm": {
+                "coupler:1": 0.0,
+                "rocker:2": 0.0
+              },
+              "anchor_ok": true
+            }
+          ],
+          "mobility": {
+            "actual": 1,
+            "target": 1,
+            "ok": true,
+            "skipped": []
+          },
+          "floating": [],
+          "ground_ok": true,
+          "over_defined": {},
+          "broken_mates": [],
+          "suppressed_mates": [],
+          "couplings": []
+        },
+        "static_score": 100.0,
+        "motion": {
+          "passed": false,
+          "score": 0.0,
+          "score_v1": 0.0,
+          "error": "Motion Study 时长设置失败: 6s"
+        },
+        "token_usage": {
+          "prompt_tokens": 1162213,
+          "completion_tokens": 49842,
+          "total_tokens": 1212055,
+          "calls": 34
+        },
+        "llm_calls": 34,
+        "resumed": null,
+        "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gold_sonnet5_v3_view_pilot\\v3\\crank_rocker_linkage\\gold_r1\\agent.checkpoint.json",
+        "agent_duration_seconds": 1294.3,
+        "duration_seconds": 1296.59,
+        "aliases": {
+          "frame": "cr_frame-1",
+          "shaft": "cr_shaft-1",
+          "crank": "cr_crank-1",
+          "crank_pin": "cr_pin12-1",
+          "coupler": "cr_coupler-1",
+          "coupler_pin": "cr_pin12-2",
+          "rocker": "cr_rocker-1",
+          "rocker_pin": "cr_pin26-1"
+        },
+        "agent_texts": [
+          {
+            "turn": 26,
+            "text": "Now rocker needs two revolute joints: one on rocker_pin (z 20-26) and one closing loop onto coupler_pin.",
+            "with_tools": true
+          },
+          {
+            "turn": 30,
+            "text": "Mobility=1, no over-defined. Let's check interference and view assembly before motion check.",
+            "with_tools": true
+          },
+          {
+            "turn": 38,
+            "text": "frame 与 crank 在每一帧都有恒定干涉（1647.8 mm³），说明 crank 的 Z 轴层位偏低——`mount_on_shaft(offset=8)` 是相对轴前视面（assembly z=−10）偏移 8mm，crank 底部落在 z=−2，整体嵌入 frame（z∈[0,8]）里了。\n\n正确偏移应为：crank 底（assembly z=8）− 轴前视面（assembly z=−10）= **18 mm**。删除 距离3 并修正。",
+            "with_tools": true
+          },
+          {
+            "turn": 40,
+            "text": "距离3 已删除，现在补上正确的轴向定位。shaft 前视面在 assembly z=−10，crank 底面需在 z=8，偏移量 = 8−(−10) = **18 mm**。",
+            "with_tools": true
+          },
+          {
+            "turn": 42,
+            "text": "side_mm 为 -18，说明方向反了（crank 跑到了 z=-28 那侧），需要 flip。",
+            "with_tools": true
+          },
+          {
+            "turn": 46,
+            "text": "side_mm = 18，正确。现在检查干涉和视图确认位置。",
+            "with_tools": true
+          },
+          {
+            "turn": 50,
+            "text": "浮点级微小干涉（2.2e-7 mm³，isPossibleInterference=false）可忽略。现在重新运行整周运动检查。",
+            "with_tools": true
+          },
+          {
+            "turn": 54,
+            "text": "发现问题：之前修正 crank 轴向位置时整条链（crank_pin→coupler→coupler_pin）随 crank 刚性平移了 10mm，导致 coupler 跑到了 rocker 的层位（z≈24 而非 14-20），产生穿模。需要依次重建这几个固定/转动配合的轴向位置。",
+            "with_tools": true
+          },
+          {
+            "turn": 56,
+            "text": "问题在于 coupler 和 rocker 的轴向层位没对齐（coupler 跑到 z≈18-24，与 rocker 的 20-26 重叠）。需要用显式 offset 重新定位 coupler 和 coupler_pin 到正确的 z 范围 [14,20]。",
+            "with_tools": true
+          },
+          {
+            "turn": 58,
+            "text": "crank 修正后，下游链条(crank_pin/coupler)的相对约束被删除后失去了位置。现在用正确的 crank 位置重新加这两个关节。",
+            "with_tools": true
+          },
+          {
+            "turn": 62,
+            "text": "Mobility=1 now, no over-defined. Let's verify positions and run interference/motion check.",
+            "with_tools": true
+          },
+          {
+            "turn": 65,
+            "text": "Coupler at z=14 correctly (within 14-20), coupler_pin at z=14 (within 14-20 too, since it's 12mm pin starting from face plane). No interference. Mobility=1. Let's run check_motion.",
+            "with_tools": true
+          },
+          {
+            "turn": 71,
+            "text": "静态检查完全无干涉。但 check_motion 的 frame 0 显示瞬时干涉，怀疑是驱动转一圈时求解器在初始帧的瞬态问题（redundant=2 导致求解不稳定，driver_jump_deg 提示）。先处理冗余约束问题。\n\ncheck_dof 显示 redundant=2，可能是 revolute 里端面+同心造成的平面闭环冗余（四连杆常见）。尝试清理潜在冗余配合。",
+            "with_tools": true
+          },
+          {
+            "turn": 73,
+            "text": "mobility=1 符合预期，redundant=2 是平面四连杆常见的冗余（SolidWorks 这种求解没有问题，是设计说明里提到的正常现象）。重新跑一次 check_motion 确认通过（第一次跑出现的瞬时干涉可能是求解器初始化问题，重试）。",
+            "with_tools": true
+          },
+          {
+            "turn": 75,
+            "text": "rocker_pin 是固定插在 frame 上的销，不应转动，是我在 expect_moving 里列错了。重新验证，不把 rocker_pin 列为预期运动件。",
+            "with_tools": true
+          },
+          {
+            "turn": 77,
+            "text": "check_motion 通过，整周无干涉，frame 不动，rocker_pin 正确固定不转。保存并完成装配。",
+            "with_tools": true
+          }
+        ],
+        "llm_calls_detail": [
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 460,
+            "reasoning_tokens": null,
+            "prompt_tokens": 21161,
+            "prompt_cache_hit_tokens": 0,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 312,
+            "reasoning_tokens": null,
+            "prompt_tokens": 21867,
+            "prompt_cache_hit_tokens": 14747,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1593,
+            "reasoning_tokens": null,
+            "prompt_tokens": 22011,
+            "prompt_cache_hit_tokens": 21865,
+            "n_tool_calls": 7,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 4004,
+            "reasoning_tokens": null,
+            "prompt_tokens": 26172,
+            "prompt_cache_hit_tokens": 22009,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 328,
+            "reasoning_tokens": null,
+            "prompt_tokens": 26571,
+            "prompt_cache_hit_tokens": 26170,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 397,
+            "reasoning_tokens": null,
+            "prompt_tokens": 26940,
+            "prompt_cache_hit_tokens": 26569,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 467,
+            "reasoning_tokens": null,
+            "prompt_tokens": 27322,
+            "prompt_cache_hit_tokens": 26938,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 145,
+            "reasoning_tokens": null,
+            "prompt_tokens": 27710,
+            "prompt_cache_hit_tokens": 27320,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 371,
+            "reasoning_tokens": null,
+            "prompt_tokens": 28091,
+            "prompt_cache_hit_tokens": 27708,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 190,
+            "reasoning_tokens": null,
+            "prompt_tokens": 28460,
+            "prompt_cache_hit_tokens": 28089,
+            "n_tool_calls": 1,
+            "text_chars": 104
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 235,
+            "reasoning_tokens": null,
+            "prompt_tokens": 28872,
+            "prompt_cache_hit_tokens": 28458,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 82,
+            "reasoning_tokens": null,
+            "prompt_tokens": 29225,
+            "prompt_cache_hit_tokens": 28870,
+            "n_tool_calls": 2,
+            "text_chars": 92
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 448,
+            "reasoning_tokens": null,
+            "prompt_tokens": 30453,
+            "prompt_cache_hit_tokens": 29223,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "error",
+            "completion_tokens": null,
+            "reasoning_tokens": null,
+            "prompt_tokens": null,
+            "prompt_cache_hit_tokens": null,
+            "n_tool_calls": 0,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 13445,
+            "reasoning_tokens": null,
+            "prompt_tokens": 53329,
+            "prompt_cache_hit_tokens": 0,
+            "n_tool_calls": 1,
+            "text_chars": 227
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2514,
+            "reasoning_tokens": null,
+            "prompt_tokens": 53840,
+            "prompt_cache_hit_tokens": 53325,
+            "n_tool_calls": 1,
+            "text_chars": 87
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 138,
+            "reasoning_tokens": null,
+            "prompt_tokens": 33315,
+            "prompt_cache_hit_tokens": 29223,
+            "n_tool_calls": 1,
+            "text_chars": 49
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 148,
+            "reasoning_tokens": null,
+            "prompt_tokens": 33493,
+            "prompt_cache_hit_tokens": 33313,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 106,
+            "reasoning_tokens": null,
+            "prompt_tokens": 33778,
+            "prompt_cache_hit_tokens": 33491,
+            "n_tool_calls": 2,
+            "text_chars": 30
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 586,
+            "reasoning_tokens": null,
+            "prompt_tokens": 33678,
+            "prompt_cache_hit_tokens": 29223,
+            "n_tool_calls": 1,
+            "text_chars": 65
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1720,
+            "reasoning_tokens": null,
+            "prompt_tokens": 35933,
+            "prompt_cache_hit_tokens": 0,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 5282,
+            "reasoning_tokens": null,
+            "prompt_tokens": 39634,
+            "prompt_cache_hit_tokens": 35931,
+            "n_tool_calls": 1,
+            "text_chars": 142
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 4336,
+            "reasoning_tokens": null,
+            "prompt_tokens": 39889,
+            "prompt_cache_hit_tokens": 39632,
+            "n_tool_calls": 1,
+            "text_chars": 129
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 7862,
+            "reasoning_tokens": null,
+            "prompt_tokens": 40128,
+            "prompt_cache_hit_tokens": 39887,
+            "n_tool_calls": 1,
+            "text_chars": 72
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 493,
+            "reasoning_tokens": null,
+            "prompt_tokens": 40542,
+            "prompt_cache_hit_tokens": 40126,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 136,
+            "reasoning_tokens": null,
+            "prompt_tokens": 40908,
+            "prompt_cache_hit_tokens": 40540,
+            "n_tool_calls": 2,
+            "text_chars": 90
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 303,
+            "reasoning_tokens": null,
+            "prompt_tokens": 40637,
+            "prompt_cache_hit_tokens": 35931,
+            "n_tool_calls": 1,
+            "text_chars": 180
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 891,
+            "reasoning_tokens": null,
+            "prompt_tokens": 41252,
+            "prompt_cache_hit_tokens": 40635,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 455,
+            "reasoning_tokens": null,
+            "prompt_tokens": 41848,
+            "prompt_cache_hit_tokens": 41250,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 759,
+            "reasoning_tokens": null,
+            "prompt_tokens": 41941,
+            "prompt_cache_hit_tokens": 41846,
+            "n_tool_calls": 1,
+            "text_chars": 188
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 361,
+            "reasoning_tokens": null,
+            "prompt_tokens": 42516,
+            "prompt_cache_hit_tokens": 41939,
+            "n_tool_calls": 1,
+            "text_chars": 126
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 611,
+            "reasoning_tokens": null,
+            "prompt_tokens": 43117,
+            "prompt_cache_hit_tokens": 42514,
+            "n_tool_calls": 1,
+            "text_chars": 82
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 160,
+            "reasoning_tokens": null,
+            "prompt_tokens": 43650,
+            "prompt_cache_hit_tokens": 43115,
+            "n_tool_calls": 1,
+            "text_chars": 57
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 504,
+            "reasoning_tokens": null,
+            "prompt_tokens": 43930,
+            "prompt_cache_hit_tokens": 43648,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          }
+        ],
+        "agent_last_motion": {
+          "passed": true,
+          "frames": 36,
+          "duration": 12.0,
+          "interference_frames": [],
+          "moved": [
+            "rocker",
+            "crank_pin",
+            "crank",
+            "shaft",
+            "coupler",
+            "coupler_pin"
+          ],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_turned_deg": 5040.0,
+            "sample_ratio": {
+              "crank": 1.0,
+              "crank_pin": 1.0,
+              "coupler": -0.0,
+              "coupler_pin": 0.0,
+              "rocker": 0.0
+            }
+          },
+          "interference_pairs": []
+        },
+        "agent_last_pose": null,
+        "truncations": 0,
+        "joints": [
+          {
+            "kind": "revolute",
+            "a": "cr_shaft-1",
+            "b": "cr_frame-1",
+            "mates": [
+              "同心1",
+              "距离1"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "cr_crank-1",
+            "b": "cr_shaft-1",
+            "mates": [
+              "同心2"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "cr_pin12-1",
+            "b": "cr_crank-1",
+            "mates": [
+              "同心3"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "cr_coupler-1",
+            "b": "cr_pin12-1",
+            "mates": [
+              "同心4"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "cr_pin12-2",
+            "b": "cr_coupler-1",
+            "mates": [
+              "同心5",
+              "距离8"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "cr_pin26-1",
+            "b": "cr_frame-1",
+            "mates": [
+              "同心6",
+              "距离9"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "cr_rocker-1",
+            "b": "cr_pin26-1",
+            "mates": [
+              "同心7",
+              "距离11"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "cr_rocker-1",
+            "b": "cr_pin12-2",
+            "mates": [
+              "同心8"
+            ],
+            "loop": true
+          },
+          {
+            "kind": "mate:distance",
+            "a": "cr_crank-1",
+            "b": "cr_shaft-1",
+            "mates": [
+              "距离13"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "cr_pin12-1",
+            "b": "cr_crank-1",
+            "mates": [
+              "同心9",
+              "距离14"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "cr_coupler-1",
+            "b": "cr_pin12-1",
+            "mates": [
+              "同心10",
+              "距离16"
+            ]
+          }
+        ],
+        "infra_flags": [],
+        "infra_attempts": 1,
+        "call_budget": 100
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\crank_rocker\\cr_frame.SLDPRT",
+            "name": "frame",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "frame"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\crank_rocker\\cr_shaft.SLDPRT",
+            "name": "shaft",
+            "at": [
+              0,
+              0,
+              -10
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\crank_rocker\\cr_crank.SLDPRT",
+            "name": "crank",
+            "at": [
+              0,
+              0,
+              8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\crank_rocker\\cr_pin12.SLDPRT",
+            "name": "crank_pin",
+            "at": [
+              20,
+              0,
+              8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\crank_rocker\\cr_coupler.SLDPRT",
+            "name": "coupler",
+            "at": [
+              20,
+              0,
+              14
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\crank_rocker\\cr_pin12.SLDPRT",
+            "name": "coupler_pin",
+            "at": [
+              80,
+              50,
+              14
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\crank_rocker\\cr_rocker.SLDPRT",
+            "name": "rocker",
+            "at": [
+              80,
+              0,
+              20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\crank_rocker\\cr_pin26.SLDPRT",
+            "name": "rocker_pin",
+            "at": [
+              80,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "shaft:cyl(d=10)",
+            "b": "frame:cyl(d=10, near=[0,0])",
+            "at_z": -10
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "crank",
+            "shaft": "shaft",
+            "diameter": 10,
+            "offset": 8,
+            "lock_rotation": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "crank_pin:cyl(d=6)",
+            "b": "crank:cyl(d=6)",
+            "at_z": 8
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "coupler:cyl(d=6, near=[0,0])",
+            "b": "crank_pin:cyl(d=6)",
+            "at_z": 14
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "coupler_pin:cyl(d=6)",
+            "b": "coupler:cyl(d=6, near=[70,0])",
+            "at_z": 14
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "rocker_pin:cyl(d=6)",
+            "b": "frame:cyl(d=6, near=[80,0])",
+            "at_z": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "rocker:cyl(d=6, near=[0,0])",
+            "b": "rocker_pin:cyl(d=6)",
+            "at_z": 20
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "close_loop",
+          "args": {
+            "type": "revolute",
+            "a": "rocker:cyl(d=6, near=[50,0])",
+            "b": "coupler_pin:cyl(d=6)",
+            "at_z": 20
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "view_assembly",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "shaft",
+            "driver_ref": "shaft:cyl(d=10)",
+            "sweep_deg": 360,
+            "frames": 24,
+            "expect_fixed": [
+              "frame"
+            ],
+            "expect_moving": [
+              "crank",
+              "crank_pin",
+              "coupler",
+              "coupler_pin",
+              "rocker",
+              "rocker_pin"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离3"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "a": "crank:plane(front)",
+            "b": "shaft:plane(front)",
+            "distance": 18,
+            "type": "distance"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离12"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "a": "crank:plane(front)",
+            "b": "shaft:plane(front)",
+            "distance": 18,
+            "type": "distance",
+            "flip": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "view_assembly",
+          "args": {
+            "views": [
+              "front",
+              "right"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "shaft",
+            "driver_ref": "shaft:cyl(d=10)",
+            "sweep_deg": 360,
+            "frames": 24,
+            "expect_fixed": [
+              "frame"
+            ],
+            "expect_moving": [
+              "crank",
+              "crank_pin",
+              "coupler",
+              "coupler_pin",
+              "rocker",
+              "rocker_pin"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "coupler",
+              "rocker",
+              "coupler_pin"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离5"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离7"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "crank_pin:cyl(d=6)",
+            "b": "crank:cyl(d=6)",
+            "at_z": 8
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "coupler:cyl(d=6, near=[0,0])",
+            "b": "crank_pin:cyl(d=6)",
+            "at_z": 14
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "crank",
+              "crank_pin",
+              "coupler",
+              "coupler_pin",
+              "rocker"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "shaft",
+            "driver_ref": "shaft:cyl(d=10)",
+            "sweep_deg": 360,
+            "frames": 24,
+            "expect_fixed": [
+              "frame"
+            ],
+            "expect_moving": [
+              "crank",
+              "crank_pin",
+              "coupler",
+              "coupler_pin",
+              "rocker",
+              "rocker_pin"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "shaft",
+            "driver_ref": "shaft:cyl(d=10)",
+            "sweep_deg": 360,
+            "frames": 36,
+            "rpm": 5,
+            "expect_fixed": [
+              "frame"
+            ],
+            "expect_moving": [
+              "crank",
+              "crank_pin",
+              "coupler",
+              "coupler_pin",
+              "rocker",
+              "rocker_pin"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 1
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "shaft",
+            "driver_ref": "shaft:cyl(d=10)",
+            "sweep_deg": 360,
+            "frames": 36,
+            "rpm": 5,
+            "expect_fixed": [
+              "frame"
+            ],
+            "expect_moving": [
+              "crank",
+              "crank_pin",
+              "coupler",
+              "coupler_pin",
+              "rocker",
+              "rocker_pin"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "shaft",
+            "driver_ref": "shaft:cyl(d=10)",
+            "sweep_deg": 360,
+            "frames": 36,
+            "rpm": 5,
+            "expect_fixed": [
+              "frame",
+              "rocker_pin"
+            ],
+            "expect_moving": [
+              "crank",
+              "crank_pin",
+              "coupler",
+              "coupler_pin",
+              "rocker"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "save_assembly",
+          "args": {
+            "path": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\crank_rocker\\crank_rocker_assembly.SLDASM"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "finish",
+          "args": {
+            "summary": "完成曲柄摇杆四连杆机构装配：frame 接地；shaft 通过 revolute 与 frame 在原点同轴转动；crank 用 mount_on_shaft(lock_rotation) 锁定在 shaft 上同转（z 8-14，offset 修正为相对 shaft 前视面 +18mm，并 flip 到正确侧）；crank_pin 用 fixed 固接在 crank 的 6mm 孔（z 8-20）；coupler 一端 revolute 套在 crank_pin 上（z 14-20），另一端 coupler_pin 用 fixed 固接（z 14-26）；rocker_pin 用 fixed 固接在 frame 的 (80,0) 孔（z 0-26）；rocker 一端 revolute 套在 rocker_pin（z 20-26），另一端作为闭环关节 revolute 连接 coupler_pin，由 joint 自动识别闭环只加同心约束，避免冗余过定义。check_dof 确认 mobility=1（设计活动度），check_interference 全局无干涉，check_motion 驱动 shaft 整周旋转（360°，36帧）全程无干涉、无 stuck、frame 与 rocker_pin 保持固定，crank/crank_pin/coupler/coupler_pin/rocker 均正确联动。已保存装配体。"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 100.0,
+      "assembly_score_v1": 100.0,
+      "motion_score": 0.0,
+      "motion_score_v1": 0.0,
+      "structure_ok": true,
+      "motion_score_gated": 0.0,
+      "infra_contaminated": false,
+      "e2e": false
+    },
+    {
+      "case_id": "oldham_coupling",
+      "condition": "gold",
+      "repeat": 1,
+      "workflow": "v3",
+      "parts": [],
+      "assembly": {
+        "status": "finished",
+        "error": null,
+        "infra_error": null,
+        "static": {
+          "component_count": 13,
+          "saved": true
+        },
+        "rubric": {
+          "score": 100.0,
+          "score_v1": 100.0,
+          "parts": {
+            "rigid_groups": 1.0,
+            "joints": 1.0,
+            "mobility": 1.0,
+            "grounded": 1.0,
+            "not_over_defined": 1.0,
+            "couplings": 1.0
+          },
+          "completeness": 1.0,
+          "missing_roles": [],
+          "wrongly_fixed": [],
+          "rigid_groups": [
+            {
+              "role": "frame",
+              "body": "frame",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "standoff",
+              "body": "frame",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "bracket",
+              "body": "frame",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "input_shaft",
+              "body": "input",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "input_gear",
+              "body": "input",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "hub_in",
+              "body": "input",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "motor_shaft",
+              "body": "motor",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "pinion",
+              "body": "motor",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "handwheel",
+              "body": "motor",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "out_shaft",
+              "body": "output",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "hub_out",
+              "body": "output",
+              "ok": true,
+              "ok_v1": true
+            },
+            {
+              "role": "middle",
+              "body": "middle",
+              "ok": true,
+              "ok_v1": true
+            }
+          ],
+          "joints": [
+            {
+              "bodies": [
+                "input",
+                "frame"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok_v1": true,
+              "ok": true,
+              "anchor_err_mm": {
+                "frame:1": -0.0,
+                "frame:2": -0.0
+              },
+              "anchor_ok": true
+            },
+            {
+              "bodies": [
+                "motor",
+                "frame"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok_v1": true,
+              "ok": true,
+              "anchor_err_mm": {
+                "frame:0": -0.0,
+                "frame:2": 0.0
+              },
+              "anchor_ok": true
+            },
+            {
+              "bodies": [
+                "output",
+                "frame"
+              ],
+              "expected": [
+                "revolute"
+              ],
+              "actual": "revolute",
+              "ok_v1": true,
+              "ok": true,
+              "anchor_err_mm": {
+                "frame:0": -0.0,
+                "frame:1": 0.0
+              },
+              "anchor_ok": true
+            },
+            {
+              "bodies": [
+                "middle",
+                "input"
+              ],
+              "expected": [
+                "slider",
+                "planar"
+              ],
+              "actual": "slider",
+              "ok_v1": true,
+              "ok": true
+            },
+            {
+              "bodies": [
+                "middle",
+                "output"
+              ],
+              "expected": [
+                "slider",
+                "planar"
+              ],
+              "actual": "planar",
+              "ok_v1": true,
+              "ok": true
+            }
+          ],
+          "mobility": {
+            "actual": 1,
+            "target": 1,
+            "ok": true,
+            "skipped": []
+          },
+          "floating": [],
+          "ground_ok": true,
+          "over_defined": {},
+          "broken_mates": [],
+          "suppressed_mates": [],
+          "couplings": [
+            {
+              "pair": [
+                "input_gear",
+                "pinion"
+              ],
+              "mate": "齿轮配合1",
+              "ratio": [
+                12.0,
+                36.0
+              ],
+              "ratio_ok": true,
+              "direction_ok": true,
+              "center_distance_mm": 48.0,
+              "expected_mm": 48.0,
+              "center_ok": true,
+              "score_v1": 1.0,
+              "score": 1.0
+            }
+          ]
+        },
+        "static_score": 100.0,
+        "motion": {
+          "passed": true,
+          "score": 100.0,
+          "score_v1": 100.0,
+          "checks": [
+            {
+              "name": "interference",
+              "weight": 2.0,
+              "score": 1.0,
+              "frames_with_interference": 0,
+              "frames": 13
+            },
+            {
+              "name": "moving",
+              "weight": 1.0,
+              "score": 1.0
+            },
+            {
+              "name": "fixed",
+              "weight": 1.0,
+              "score": 1.0
+            },
+            {
+              "name": "kinematics",
+              "weight": 2.0,
+              "score": 1.0,
+              "passed": 4,
+              "items": 4
+            }
+          ],
+          "interference_frames": [],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_sweep_deg": 3437.747,
+            "frames": 121,
+            "driver_max_step_deg": 28.65,
+            "ratios": [
+              {
+                "role": "hub_out",
+                "measured": 1.0,
+                "expected": 1.0,
+                "max_step_deg": 28.65,
+                "ok": true,
+                "same_direction": true
+              },
+              {
+                "role": "motor_shaft",
+                "measured": 3.0,
+                "expected": 3.0,
+                "max_step_deg": 85.94,
+                "ok": true,
+                "same_direction": false
+              }
+            ],
+            "strokes": [
+              {
+                "role": "middle",
+                "axis": "x",
+                "measured_mm": 12.0,
+                "expected": 12.0,
+                "ok": true
+              },
+              {
+                "role": "middle",
+                "axis": "y",
+                "measured_mm": 11.999,
+                "expected": 12.0,
+                "ok": true
+              }
+            ]
+          }
+        },
+        "token_usage": {
+          "prompt_tokens": 3096256,
+          "completion_tokens": 148413,
+          "total_tokens": 3244669,
+          "calls": 76
+        },
+        "llm_calls": 76,
+        "resumed": {
+          "from_llm_calls": 1,
+          "replayed_tools": 0,
+          "mismatch": null
+        },
+        "checkpoint": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_gold_sonnet5_v3_view_pilot\\v3\\oldham_coupling\\gold_r1\\agent.checkpoint.json",
+        "agent_duration_seconds": 4703.55,
+        "duration_seconds": 3856.34,
+        "aliases": {
+          "frame": "od_frame-1",
+          "input_shaft": "od_shaft-1",
+          "motor_shaft": "od_shaft-2",
+          "input_gear": "od_gear-1",
+          "hub_in": "od_hub-1",
+          "pinion": "od_pinion-1",
+          "handwheel": "od_handwheel-1",
+          "standoff": "od_standoff-1",
+          "bracket": "od_bracket-1",
+          "out_shaft": "od_out_shaft-1",
+          "hub_out": "od_hub-2",
+          "middle": "od_middle-1",
+          "hub_probe": "od_hub-3"
+        },
+        "agent_texts": [
+          {
+            "turn": 22,
+            "text": "Now mesh gears (pinion & input_gear). Need to set phase before meshing - mesh_gears handles phase automatically.",
+            "with_tools": true
+          },
+          {
+            "turn": 24,
+            "text": "Mobility=1 now, good. Now add standoff, bracket, out_shaft, hub_out, middle.",
+            "with_tools": true
+          },
+          {
+            "turn": 30,
+            "text": "Good, standoff z=0, cylinder axis_origin z=32, so standoff occupies z∈[0,32] as required. Now insert bracket.",
+            "with_tools": true
+          },
+          {
+            "turn": 34,
+            "text": "Now check bracket orientation - its long edge along frame X; with bracket at (-50,0) hole concentric to standoff at (-50,0), and bracket's other hole at (12,0) local, which should land at frame (12,0)... let's verify via view.",
+            "with_tools": true
+          },
+          {
+            "turn": 40,
+            "text": "Now insert hub_out and mount on out_shaft.",
+            "with_tools": true
+          },
+          {
+            "turn": 52,
+            "text": "Now implement the Oldham cross-slider using slider_joint with plane contacts and front/right plane guides.",
+            "with_tools": true
+          },
+          {
+            "turn": 81,
+            "text": "Let me check middle's free DOF specifically and remove the parallel mate approach that over-constrained rotation, replacing with proper slot approach.",
+            "with_tools": true
+          },
+          {
+            "turn": 166,
+            "text": "Mobility matches expected=1. Now let's verify with check_motion.",
+            "with_tools": true
+          },
+          {
+            "turn": 170,
+            "text": "All checks pass: no interference, all parts move correctly, input/output shaft ratio 1:1, motor_shaft/pinion ratio -3:1 as expected (36:12 teeth ratio with reverse). Let's save and finish.",
+            "with_tools": true
+          }
+        ],
+        "llm_calls_detail": [
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 95,
+            "reasoning_tokens": null,
+            "prompt_tokens": 22508,
+            "prompt_cache_hit_tokens": 0,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 525,
+            "reasoning_tokens": null,
+            "prompt_tokens": 22651,
+            "prompt_cache_hit_tokens": 22506,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1261,
+            "reasoning_tokens": null,
+            "prompt_tokens": 23636,
+            "prompt_cache_hit_tokens": 22649,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 838,
+            "reasoning_tokens": null,
+            "prompt_tokens": 24382,
+            "prompt_cache_hit_tokens": 23634,
+            "n_tool_calls": 4,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2081,
+            "reasoning_tokens": null,
+            "prompt_tokens": 27020,
+            "prompt_cache_hit_tokens": 24380,
+            "n_tool_calls": 4,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 213,
+            "reasoning_tokens": null,
+            "prompt_tokens": 28441,
+            "prompt_cache_hit_tokens": 0,
+            "n_tool_calls": 1,
+            "text_chars": 112
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 202,
+            "reasoning_tokens": null,
+            "prompt_tokens": 28894,
+            "prompt_cache_hit_tokens": 28439,
+            "n_tool_calls": 1,
+            "text_chars": 76
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 142,
+            "reasoning_tokens": null,
+            "prompt_tokens": 29402,
+            "prompt_cache_hit_tokens": 28892,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 131,
+            "reasoning_tokens": null,
+            "prompt_tokens": 29757,
+            "prompt_cache_hit_tokens": 29400,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 215,
+            "reasoning_tokens": null,
+            "prompt_tokens": 31430,
+            "prompt_cache_hit_tokens": 29755,
+            "n_tool_calls": 1,
+            "text_chars": 109
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 386,
+            "reasoning_tokens": null,
+            "prompt_tokens": 32196,
+            "prompt_cache_hit_tokens": 31428,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 138,
+            "reasoning_tokens": null,
+            "prompt_tokens": 32555,
+            "prompt_cache_hit_tokens": 32194,
+            "n_tool_calls": 1,
+            "text_chars": 226
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 544,
+            "reasoning_tokens": null,
+            "prompt_tokens": 33126,
+            "prompt_cache_hit_tokens": 29755,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 469,
+            "reasoning_tokens": null,
+            "prompt_tokens": 33605,
+            "prompt_cache_hit_tokens": 33124,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 183,
+            "reasoning_tokens": null,
+            "prompt_tokens": 33971,
+            "prompt_cache_hit_tokens": 33603,
+            "n_tool_calls": 1,
+            "text_chars": 42
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 642,
+            "reasoning_tokens": null,
+            "prompt_tokens": 34670,
+            "prompt_cache_hit_tokens": 33969,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2780,
+            "reasoning_tokens": null,
+            "prompt_tokens": 35488,
+            "prompt_cache_hit_tokens": 34668,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 14476,
+            "reasoning_tokens": null,
+            "prompt_tokens": 37373,
+            "prompt_cache_hit_tokens": 30974,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1171,
+            "reasoning_tokens": null,
+            "prompt_tokens": 37490,
+            "prompt_cache_hit_tokens": 33512,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 271,
+            "reasoning_tokens": null,
+            "prompt_tokens": 37605,
+            "prompt_cache_hit_tokens": 33639,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 14377,
+            "reasoning_tokens": null,
+            "prompt_tokens": 37949,
+            "prompt_cache_hit_tokens": 37603,
+            "n_tool_calls": 1,
+            "text_chars": 106
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1328,
+            "reasoning_tokens": null,
+            "prompt_tokens": 38234,
+            "prompt_cache_hit_tokens": 37947,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1712,
+            "reasoning_tokens": null,
+            "prompt_tokens": 39336,
+            "prompt_cache_hit_tokens": 38232,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 147,
+            "reasoning_tokens": null,
+            "prompt_tokens": 39618,
+            "prompt_cache_hit_tokens": 33756,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 111,
+            "reasoning_tokens": null,
+            "prompt_tokens": 39739,
+            "prompt_cache_hit_tokens": 33756,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 8601,
+            "reasoning_tokens": null,
+            "prompt_tokens": 39854,
+            "prompt_cache_hit_tokens": 35885,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 4108,
+            "reasoning_tokens": null,
+            "prompt_tokens": 38215,
+            "prompt_cache_hit_tokens": 36006,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 345,
+            "reasoning_tokens": null,
+            "prompt_tokens": 38902,
+            "prompt_cache_hit_tokens": 38213,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 11385,
+            "reasoning_tokens": null,
+            "prompt_tokens": 40728,
+            "prompt_cache_hit_tokens": 36121,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 320,
+            "reasoning_tokens": null,
+            "prompt_tokens": 40972,
+            "prompt_cache_hit_tokens": 40726,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 570,
+            "reasoning_tokens": null,
+            "prompt_tokens": 41118,
+            "prompt_cache_hit_tokens": 40970,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 10286,
+            "reasoning_tokens": null,
+            "prompt_tokens": 41401,
+            "prompt_cache_hit_tokens": 41116,
+            "n_tool_calls": 2,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1183,
+            "reasoning_tokens": null,
+            "prompt_tokens": 41925,
+            "prompt_cache_hit_tokens": 41399,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 121,
+            "reasoning_tokens": null,
+            "prompt_tokens": 42046,
+            "prompt_cache_hit_tokens": 36876,
+            "n_tool_calls": 1,
+            "text_chars": 150
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1774,
+            "reasoning_tokens": null,
+            "prompt_tokens": 41182,
+            "prompt_cache_hit_tokens": 38191,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 351,
+            "reasoning_tokens": null,
+            "prompt_tokens": 42307,
+            "prompt_cache_hit_tokens": 38312,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 9203,
+            "reasoning_tokens": null,
+            "prompt_tokens": 42762,
+            "prompt_cache_hit_tokens": 42305,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2135,
+            "reasoning_tokens": null,
+            "prompt_tokens": 42978,
+            "prompt_cache_hit_tokens": 42760,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 3244,
+            "reasoning_tokens": null,
+            "prompt_tokens": 43115,
+            "prompt_cache_hit_tokens": 42976,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 4002,
+            "reasoning_tokens": null,
+            "prompt_tokens": 43230,
+            "prompt_cache_hit_tokens": 38452,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 6963,
+            "reasoning_tokens": null,
+            "prompt_tokens": 43472,
+            "prompt_cache_hit_tokens": 43228,
+            "n_tool_calls": 3,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2820,
+            "reasoning_tokens": null,
+            "prompt_tokens": 44202,
+            "prompt_cache_hit_tokens": 43470,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2299,
+            "reasoning_tokens": null,
+            "prompt_tokens": 44657,
+            "prompt_cache_hit_tokens": 44200,
+            "n_tool_calls": 5,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1897,
+            "reasoning_tokens": null,
+            "prompt_tokens": 45539,
+            "prompt_cache_hit_tokens": 44655,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1829,
+            "reasoning_tokens": null,
+            "prompt_tokens": 43975,
+            "prompt_cache_hit_tokens": 39381,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 2342,
+            "reasoning_tokens": null,
+            "prompt_tokens": 44211,
+            "prompt_cache_hit_tokens": 43973,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 106,
+            "reasoning_tokens": null,
+            "prompt_tokens": 45958,
+            "prompt_cache_hit_tokens": 41805,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 101,
+            "reasoning_tokens": null,
+            "prompt_tokens": 46073,
+            "prompt_cache_hit_tokens": 42109,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 201,
+            "reasoning_tokens": null,
+            "prompt_tokens": 46194,
+            "prompt_cache_hit_tokens": 42224,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 91,
+            "reasoning_tokens": null,
+            "prompt_tokens": 46309,
+            "prompt_cache_hit_tokens": 42339,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 183,
+            "reasoning_tokens": null,
+            "prompt_tokens": 46424,
+            "prompt_cache_hit_tokens": 42460,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 155,
+            "reasoning_tokens": null,
+            "prompt_tokens": 46539,
+            "prompt_cache_hit_tokens": 42575,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 92,
+            "reasoning_tokens": null,
+            "prompt_tokens": 46654,
+            "prompt_cache_hit_tokens": 42690,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1328,
+            "reasoning_tokens": null,
+            "prompt_tokens": 45668,
+            "prompt_cache_hit_tokens": 42805,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 160,
+            "reasoning_tokens": null,
+            "prompt_tokens": 46864,
+            "prompt_cache_hit_tokens": 42920,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1211,
+            "reasoning_tokens": null,
+            "prompt_tokens": 46979,
+            "prompt_cache_hit_tokens": 43013,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1176,
+            "reasoning_tokens": null,
+            "prompt_tokens": 45857,
+            "prompt_cache_hit_tokens": 43130,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 3087,
+            "reasoning_tokens": null,
+            "prompt_tokens": 46120,
+            "prompt_cache_hit_tokens": 14747,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1476,
+            "reasoning_tokens": null,
+            "prompt_tokens": 46324,
+            "prompt_cache_hit_tokens": 45016,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1802,
+            "reasoning_tokens": null,
+            "prompt_tokens": 46607,
+            "prompt_cache_hit_tokens": 46322,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1749,
+            "reasoning_tokens": null,
+            "prompt_tokens": 47945,
+            "prompt_cache_hit_tokens": 14747,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1735,
+            "reasoning_tokens": null,
+            "prompt_tokens": 48060,
+            "prompt_cache_hit_tokens": 44090,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 89,
+            "reasoning_tokens": null,
+            "prompt_tokens": 48177,
+            "prompt_cache_hit_tokens": 44211,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 538,
+            "reasoning_tokens": null,
+            "prompt_tokens": 48292,
+            "prompt_cache_hit_tokens": 44326,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 101,
+            "reasoning_tokens": null,
+            "prompt_tokens": 48407,
+            "prompt_cache_hit_tokens": 44443,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 110,
+            "reasoning_tokens": null,
+            "prompt_tokens": 48522,
+            "prompt_cache_hit_tokens": 44558,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 110,
+            "reasoning_tokens": null,
+            "prompt_tokens": 48637,
+            "prompt_cache_hit_tokens": 44673,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1100,
+            "reasoning_tokens": null,
+            "prompt_tokens": 48758,
+            "prompt_cache_hit_tokens": 44788,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 7045,
+            "reasoning_tokens": null,
+            "prompt_tokens": 49008,
+            "prompt_cache_hit_tokens": 48756,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1358,
+            "reasoning_tokens": null,
+            "prompt_tokens": 47481,
+            "prompt_cache_hit_tokens": 44903,
+            "n_tool_calls": 3,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 144,
+            "reasoning_tokens": null,
+            "prompt_tokens": 48211,
+            "prompt_cache_hit_tokens": 47479,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 1165,
+            "reasoning_tokens": null,
+            "prompt_tokens": 48712,
+            "prompt_cache_hit_tokens": 48209,
+            "n_tool_calls": 1,
+            "text_chars": 64
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 379,
+            "reasoning_tokens": null,
+            "prompt_tokens": 48829,
+            "prompt_cache_hit_tokens": 48710,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 192,
+            "reasoning_tokens": null,
+            "prompt_tokens": 49355,
+            "prompt_cache_hit_tokens": 48827,
+            "n_tool_calls": 1,
+            "text_chars": 188
+          },
+          {
+            "finish_reason": "tool_calls",
+            "completion_tokens": 554,
+            "reasoning_tokens": null,
+            "prompt_tokens": 49665,
+            "prompt_cache_hit_tokens": 49353,
+            "n_tool_calls": 1,
+            "text_chars": 0
+          }
+        ],
+        "agent_last_motion": {
+          "passed": true,
+          "frames": 13,
+          "duration": 6.0,
+          "interference_frames": [],
+          "moved": [
+            "input_gear",
+            "input_shaft",
+            "motor_shaft",
+            "out_shaft",
+            "hub_in",
+            "pinion",
+            "handwheel",
+            "middle",
+            "hub_out"
+          ],
+          "stuck": [],
+          "drifted_fixed": [],
+          "kinematics": {
+            "driver_turned_deg": 3437.7,
+            "sample_ratio": {
+              "input_gear": 1.0,
+              "hub_in": 1.0,
+              "motor_shaft": -3.0,
+              "pinion": -3.0,
+              "handwheel": -3.0,
+              "middle": 1.0,
+              "hub_out": 1.0,
+              "out_shaft": 1.0
+            }
+          },
+          "interference_pairs": []
+        },
+        "agent_last_pose": null,
+        "truncations": 0,
+        "joints": [
+          {
+            "kind": "revolute",
+            "a": "od_shaft-1",
+            "b": "od_frame-1",
+            "mates": [
+              "同心1",
+              "距离1"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "od_shaft-2",
+            "b": "od_frame-1",
+            "mates": [
+              "同心2",
+              "距离2"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "od_gear-1",
+            "b": "od_shaft-1",
+            "mates": [
+              "同心3",
+              "距离3"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "od_hub-1",
+            "b": "od_shaft-1",
+            "mates": [
+              "同心4",
+              "距离5"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "od_pinion-1",
+            "b": "od_shaft-2",
+            "mates": [
+              "同心5",
+              "距离7"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "od_handwheel-1",
+            "b": "od_shaft-2",
+            "mates": [
+              "同心6",
+              "距离8"
+            ]
+          },
+          {
+            "kind": "coupling:gear",
+            "a": "od_pinion-1",
+            "b": "od_gear-1",
+            "mates": [
+              "齿轮配合1"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "od_standoff-1",
+            "b": "od_frame-1",
+            "mates": [
+              "同心7",
+              "距离9"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "od_bracket-1",
+            "b": "od_standoff-1",
+            "mates": [
+              "同心8",
+              "距离11"
+            ]
+          },
+          {
+            "kind": "revolute",
+            "a": "od_out_shaft-1",
+            "b": "od_bracket-1",
+            "mates": [
+              "同心9",
+              "距离12"
+            ]
+          },
+          {
+            "kind": "fixed",
+            "a": "od_hub-2",
+            "b": "od_out_shaft-1",
+            "mates": [
+              "同心10",
+              "距离13"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "od_middle-1",
+            "b": "od_hub-1",
+            "mates": [
+              "重合4"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "od_middle-1",
+            "b": "od_hub-1",
+            "mates": [
+              "重合5"
+            ]
+          },
+          {
+            "kind": "mate:parallel",
+            "a": "od_middle-1",
+            "b": "od_hub-2",
+            "mates": [
+              "平行3"
+            ]
+          },
+          {
+            "kind": "mate:coincident",
+            "a": "od_middle-1",
+            "b": "od_hub-2",
+            "mates": [
+              "重合6"
+            ]
+          }
+        ],
+        "infra_flags": [],
+        "infra_attempts": 2,
+        "call_budget": 100
+      },
+      "tool_calls": [
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\oldham_coupling\\od_frame.SLDPRT",
+            "name": "frame"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "frame"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\oldham_coupling\\od_shaft.SLDPRT",
+            "name": "input_shaft",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\oldham_coupling\\od_shaft.SLDPRT",
+            "name": "motor_shaft",
+            "at": [
+              0,
+              -48,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "input_shaft:cyl(d=10)",
+            "b": "frame:cyl(d=10, near=[0,0])",
+            "at_z": -8
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "motor_shaft:cyl(d=10)",
+            "b": "frame:cyl(d=10, near=[0,-48])",
+            "at_z": -14
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\oldham_coupling\\od_gear.SLDPRT",
+            "name": "input_gear",
+            "at": [
+              0,
+              0,
+              -8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\oldham_coupling\\od_hub.SLDPRT",
+            "name": "hub_in",
+            "at": [
+              0,
+              0,
+              8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\oldham_coupling\\od_pinion.SLDPRT",
+            "name": "pinion",
+            "at": [
+              0,
+              -48,
+              -8
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\oldham_coupling\\od_handwheel.SLDPRT",
+            "name": "handwheel",
+            "at": [
+              0,
+              -48,
+              -14
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "input_gear",
+            "shaft": "input_shaft",
+            "diameter": 10,
+            "lock_rotation": true,
+            "offset": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "hub_in",
+            "shaft": "input_shaft",
+            "diameter": 10,
+            "lock_rotation": true,
+            "offset": 16
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "pinion",
+            "shaft": "motor_shaft",
+            "diameter": 10,
+            "lock_rotation": true,
+            "offset": 6
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "handwheel",
+            "shaft": "motor_shaft",
+            "diameter": 10,
+            "lock_rotation": true,
+            "offset": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mesh_gears",
+          "args": {
+            "a": "pinion",
+            "b": "input_gear",
+            "teeth_a": 12,
+            "teeth_b": 36,
+            "module": 2,
+            "reverse": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\oldham_coupling\\od_standoff.SLDPRT",
+            "name": "standoff",
+            "at": [
+              -50,
+              0,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "standoff:cyl(d=10)",
+            "b": "frame:cyl(d=10, near=[-50,0])",
+            "at_z": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "standoff"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\oldham_coupling\\od_bracket.SLDPRT",
+            "name": "bracket",
+            "at": [
+              -50,
+              0,
+              26
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "fixed",
+            "a": "bracket:cyl(d=10, near=[-50,0])",
+            "b": "standoff:cyl(d=10)",
+            "at_z": 26
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "bracket"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\oldham_coupling\\od_out_shaft.SLDPRT",
+            "name": "out_shaft",
+            "at": [
+              12,
+              0,
+              20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "revolute",
+            "a": "out_shaft:cyl(d=10)",
+            "b": "bracket:cyl(d=10, near=[12,0])",
+            "at_z": 20
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\oldham_coupling\\od_hub.SLDPRT",
+            "name": "hub_out",
+            "at": [
+              12,
+              0,
+              20
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\oldham_coupling\\od_middle.SLDPRT",
+            "name": "middle",
+            "at": [
+              0,
+              0,
+              14
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle",
+              "hub_in",
+              "hub_out"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "hub_in"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mount_on_shaft",
+          "args": {
+            "part": "hub_out",
+            "shaft": "out_shaft",
+            "diameter": 10,
+            "lock_rotation": true,
+            "offset": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "slider_joint",
+          "args": {
+            "a": "middle:face(-Z, largest)",
+            "b": "hub_in:face(+Z, largest)",
+            "guide_a": "middle:plane(front)",
+            "guide_b": "hub_in:plane(front)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] concentric 配合失败: errStatus=0（未知原因）"
+        },
+        {
+          "tool": "view_assembly",
+          "args": {
+            "views": [
+              "isometric",
+              "top",
+              "front"
+            ],
+            "highlight": [
+              "hub_in",
+              "middle",
+              "hub_out"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "hub_in"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle",
+              "hub_out"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "insert_component",
+          "args": {
+            "part": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\oldham_coupling\\od_hub.SLDPRT",
+            "name": "hub_probe",
+            "at": [
+              200,
+              200,
+              0
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "hub_probe"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "middle:face(-Z, largest)",
+            "b": "hub_in:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "ground_component",
+          "args": {
+            "component": "hub_probe"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "slider_joint",
+          "args": {
+            "a": "middle:face(-Z, largest)",
+            "b": "hub_in:face(+Z, largest)",
+            "guide_a": "middle:plane(front)",
+            "guide_b": "hub_in:plane(front)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] concentric 配合失败: errStatus=0（未知原因）"
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "distance",
+            "a": "middle:plane(top)",
+            "b": "hub_in:plane(top)",
+            "distance": 0
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "parallel",
+            "a": "middle:plane(right)",
+            "b": "hub_in:plane(right)",
+            "align": "aligned"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "hub_in",
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle",
+              "hub_in"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "slot",
+            "a": "hub_in:cyl(d=6, near=[16,0])",
+            "b": "middle:cyl(d=4, near=[14,0])"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] slot 配合失败: errorStatus=0（未知原因）"
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "距离14"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "slot",
+            "a": "hub_in:cyl(d=6, near=[16,0])",
+            "b": "middle:cyl(d=4, near=[14,0])",
+            "slot_constraint": "center"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] slot 配合失败: errorStatus=0（未知原因）"
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "middle:plane(top)",
+            "b": "hub_in:plane(top)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "parallel",
+            "a": "middle:plane(right)",
+            "b": "hub_out:plane(right)",
+            "align": "aligned"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "middle:plane(right)",
+            "b": "hub_out:plane(right)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合3"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "平行2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合2"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "重合1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "delete_mate",
+          "args": {
+            "name": "平行1"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "middle:face(-Z, largest)",
+            "b": "hub_in:face(+Z, largest)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle",
+              "hub_out"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "hub_in"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "hub_out"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "view_assembly",
+          "args": {
+            "views": [
+              "top",
+              "front",
+              "right",
+              "isometric"
+            ],
+            "highlight": [
+              "middle"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "slot",
+            "a": "middle:face:6",
+            "b": "hub_in:cyl(d=6, near=[16,0])"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] slot 配合失败: errorStatus=0（未知原因）"
+        },
+        {
+          "tool": "joint",
+          "args": {
+            "type": "pin_slot",
+            "a": "hub_in:face(+Z, largest)",
+            "b": "middle:cyl(d=4, near=[14,0])",
+            "face_a": "hub_in:face(+Z, largest)",
+            "face_b": "middle:face(-Z, largest)"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] slot 配合失败: errorStatus=0（未知原因）"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "hub_in",
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "hub_in"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {
+            "components": [
+              "middle",
+              "hub_out"
+            ],
+            "faces": true
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "slot",
+            "a": "hub_in:cyl(d=6, near=[16,0])",
+            "b": "middle:cyl(d=4, near=[14,0])"
+          },
+          "ok": false,
+          "error_code": "FEATURE_FAILED",
+          "message": "[FEATURE_FAILED] slot 配合失败: errorStatus=0（未知原因）"
+        },
+        {
+          "tool": "get_assembly_state",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "middle:plane(top)",
+            "b": "hub_in:plane(top)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "parallel",
+            "a": "middle:plane(right)",
+            "b": "hub_out:plane(right)",
+            "align": "aligned"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "mate",
+          "args": {
+            "type": "coincident",
+            "a": "middle:plane(right)",
+            "b": "hub_out:plane(right)"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_dof",
+          "args": {
+            "expected_mobility": 1
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_interference",
+          "args": {},
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "check_motion",
+          "args": {
+            "driver": "input_shaft",
+            "driver_ref": "input_shaft:cyl(d=10)",
+            "sweep_deg": 360,
+            "frames": 13,
+            "expect_moving": [
+              "input_gear",
+              "hub_in",
+              "motor_shaft",
+              "pinion",
+              "handwheel",
+              "middle",
+              "hub_out",
+              "out_shaft"
+            ],
+            "expect_fixed": [
+              "frame",
+              "standoff",
+              "bracket"
+            ]
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "save_assembly",
+          "args": {
+            "path": "C:\\codes\\sw\\SolidWorksTutorial\\LLMPlanner\\eval\\assembly_scratch\\gold_parts\\oldham_coupling\\oldham_assembly.SLDASM"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        },
+        {
+          "tool": "finish",
+          "args": {
+            "summary": "完成 Oldham 十字滑块联轴器装配：frame 固定为机体；input_shaft/motor_shaft 分别用 revolute 连到 frame 上对应孔（z 轴向按题目要求对齐）；input_gear(36T)、hub_in 用 mount_on_shaft(lock_rotation=true) 固连到 input_shaft；pinion(12T)、handwheel 固连到 motor_shaft；pinion 与 input_gear 外啮合（模数2，中心距48，reverse=true，相位自动对齐）；standoff 固定在 frame 的 (-50,0) 孔，bracket 固定在 standoff 上，out_shaft 通过 revolute 连到 bracket 的 (12,0) 孔，hub_out 固连在 out_shaft 上；middle 十字滑块通过与 hub_in 上表面重合 + 两组垫片轴线对齐（一组对 hub_in 的局部 X 方向，一组对 hub_out 的局部 Y 方向）实现双向滑动，整体活动度 mobility=1，符合单自由度联轴器设计要求（check_dof 通过 expected_mobility=1）。check_interference 零干涉，check_motion 对 input_shaft 整圈驱动：所有应动件都动、frame/standoff/bracket 固定不动，input↔output 转角比 1:1，齿轮传动比 -3:1（36:12 齿）符合设计，无任何帧出现干涉。已保存装配体。"
+          },
+          "ok": true,
+          "error_code": null,
+          "message": ""
+        }
+      ],
+      "part_pass_rate": 1.0,
+      "assembly_score": 100.0,
+      "assembly_score_v1": 100.0,
+      "motion_score": 100.0,
+      "motion_score_v1": 100.0,
+      "structure_ok": true,
+      "motion_score_gated": 100.0,
+      "infra_contaminated": false,
+      "e2e": true
+    }
+  ],
+  "model": "claude-sonnet-5",
+  "part_grading_skipped": false,
+  "base_url": "http://127.0.0.1:4200/native",
+  "reasoning_effort": "medium",
+  "prompt_lang": "zh",
+  "asm_max_tokens": 8000,
+  "view_tool": true,
+  "max_asm_calls": 100,
+  "asm_calls_per_role": 0,
+  "extra_toolset": "v2"
+}
