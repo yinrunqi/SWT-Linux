@@ -411,3 +411,169 @@ venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench --rubric-dir eval\rubrics
 - rubric 是人工编写的，图纸上没有被 rubric 覆盖的内容不会被检查。
 - rubric 的坐标系允许左手系，所以对称性足够强的零件，其镜像件可能通过 rubric。镜像件的图像分低于满分，这种情况由图像分发现。
 - 图纸由程序投影生成，标注风格统一，与真实工厂图纸相比缺少剖视图、局部放大图和公差标注。
+
+---
+
+## 9. L1_v2 + compact context 的 50 题复现实验协议
+
+本节给出当前推荐的三视图 50 题评测方式。模型可以替换；为了让不同模型之间的结果可比较，除 `--provider`、`--plan-model` 以及模型不支持时必须调整的接口参数外，其余设置应保持不变。评测脚本在 `LLMPlanner` 目录下执行。
+
+### 9.1 模型与服务要求
+
+模型服务必须提供 OpenAI 兼容接口，并满足：
+
+- 支持图片输入：L1_v2 直接把原始三视图发送给模型，没有单独的 OCR 或读图模型；
+- 支持 function calling / tool calls，且能连续执行多轮工具调用；
+- 上下文窗口足以容纳系统提示、工具 schema、原图和紧凑历史；
+- 能接受所选的 `reasoning_effort`。若服务不支持该字段，应统一改用其支持的值，并在结果中记录，不能只为个别题临时切换；
+- 温度由当前 workflow 客户端固定为 0，评测禁用响应缓存。
+
+在 `LLMPlanner/.env` 中配置所选 provider 对应的 API key 和 base URL。脚本目前接受 `aiping`、`ttswitch`、`juheai`、`qwenlocal`；后端读取规则如下：
+
+| `--provider` | API key | Base URL |
+|---|---|---|
+| `ttswitch` | `OPENAI_API_KEY` | `OPENAI_BASE_URL` |
+| `aiping` | `AIPING_API_KEY` | `AIPING_BASE_URL` |
+| `juheai` | `JUHEAI_API_KEY` | `JUHEAI_BASE_URL` |
+| `qwenlocal` | `QWENLOCAL_API_KEY` | `QWENLOCAL_BASE_URL` |
+
+另外需要：
+
+1. SolidWorks 与 C# HTTP 服务正常运行，默认地址为 `http://localhost:5100`；
+2. Web 后端正常运行，默认地址为 `http://localhost:5000`：
+
+   ```powershell
+   venv\Scripts\python.exe -X utf8 -u -m web.app
+   ```
+
+3. `venv-occ` 已安装 OpenCASCADE 评分依赖；Web 后端不能直接导入 OCP 时，用 `GEOMCHECK_PYTHON` 指向 `venv-occ\Scripts\python.exe`，供 `render_views` 生成当前零件投影图；
+4. 开始前确认两个服务可访问，并关闭上次残留的 SolidWorks 文档：
+
+   ```powershell
+   Invoke-RestMethod http://localhost:5000/api/ping
+   Invoke-RestMethod http://localhost:5100/api/ping
+   Invoke-RestMethod -Method Post -ContentType application/json `
+     -Body '{}' http://localhost:5100/api/close-all-documents
+   ```
+
+### 9.2 固定评测设置
+
+| 设置 | 推荐值 | 说明 |
+|---|---|---|
+| `--action-level` | `L1_v2` | 使用 v2 workflow 工具和提示，不使用 L0 或原版 L1 |
+| `--compact-context` | 开启 | 这是 opt-in 开关；不加该参数就是完整上下文，不属于本协议 |
+| `--reasoning-effort` | `medium` | 主建模请求固定为 medium；紧凑 verifier 会自动降为 low |
+| `--max-llm-calls` | `40` | 每题最多 40 次 LLM 请求；verifier、恢复请求都计入 |
+| `--repeats` | `1` | 每题一次，共 50 次独立运行；需要 pass@k 时再统一提高 |
+| `--lang` | `zh` | 使用 rubric YAML 的 `prompt`；比较实验必须保持题面语言一致 |
+| `view_model` | 开启 | 不传 `--no-view-tool`；允许读取 SolidWorks 当前视图截图 |
+| `render_views` | 开启 | 不传 `--no-views-tool`；允许生成与原图版式一致的三视图投影 |
+| `--resume` | 开启 | 保留已完成题；中断题从 checkpoint 重放并继续 |
+| `--sw-restarts` | `3` | SolidWorks 丢失时最多自动重启并续跑 3 次 |
+| `--sw-max-private-gb` | `12` | 每题前检查 SolidWorks 私有内存，超过 12 GB 时重启 |
+| `--ids` | 不传 | 不传表示读取 `eval/rubrics_three_view/` 下全部 50 题 |
+| Web / SW URL | 默认 5000 / 5100 | 远程部署时分别显式传 `--web-url`、`--sw-url` |
+
+compact context 在请求副本中压缩旧工具结果，但 trace 和 checkpoint 始终保留完整历史。其运行行为固定为：
+
+- 较早的成功工具结果压成 ledger，保留 feature 名、bbox、volume、bodies、关键圆柱和错误原因，最近两轮保持完整；
+- `get_model_state`、`view_model` 或 `render_views` 后，可使用只含原图、最新截图/状态和短提示的 verifier；首次预算为 4096 token，主任务为 medium/high 时 verifier 使用 low；
+- verifier 要求修改时，下一轮恢复完整历史；verifier 被 `length` 截断时恢复大预算重试；
+- 同一工具和错误码累计失败 3 次时，下一轮暂时隐藏该工具，附精简状态要求换策略，随后恢复工具集；
+- 评测器从 rubric 的 `solid_count` 自动设置 `expected_bodies`：C3、D17 为 2，其余题为 1；系统提示、工具事务和 `finish` 使用同一实体数约束。
+
+### 9.3 单题 smoke
+
+先选择一题验证图片输入、工具调用、SolidWorks 执行、投影工具和导出流程。以下命令只替换 provider、模型名和运行名：
+
+```powershell
+$Provider = "<provider>"
+$Model = "<multimodal-model>"
+$SmokeName = "three_view_l1v2_compact_smoke_<tag>"
+
+venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py `
+  --action-level L1_v2 --compact-context `
+  --provider $Provider --plan-model $Model `
+  --reasoning-effort medium --max-llm-calls 40 `
+  --lang zh --repeats 1 --ids b01_l_bracket `
+  --name $SmokeName --resume `
+  --sw-restarts 3 --sw-max-private-gb 12
+
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view `
+  --artifacts "eval\artifacts\$SmokeName" `
+  --output "eval\artifacts\$SmokeName\scores.json"
+```
+
+smoke 合格条件：
+
+- `runs.json` 只有一条记录，且 `status=finished`、`compact_context=true`；
+- 目录中存在非空的 STEP、SLDPRT、trace 和 checkpoint；
+- trace 中确实有图片输入与 tool calls，不是模型忽略图片后直接输出文字；
+- `scores.json` 能由 OCC 正常生成；
+- 用 `/api/close-all-documents` 确认没有遗留文档。
+
+### 9.4 完整 50 题运行
+
+smoke 通过后，使用新的运行名并去掉 `--ids`：
+
+```powershell
+$Provider = "<provider>"
+$Model = "<multimodal-model>"
+$RunName = "three_view_l1v2_compact_<model-tag>_<date>"
+
+venv\Scripts\python.exe -X utf8 -u eval\eval_three_view_bench.py `
+  --action-level L1_v2 --compact-context `
+  --provider $Provider --plan-model $Model `
+  --reasoning-effort medium --max-llm-calls 40 `
+  --lang zh --repeats 1 `
+  --name $RunName --resume `
+  --sw-restarts 3 --sw-max-private-gb 12
+```
+
+输出目录为 `eval/artifacts/<RunName>/`。脚本每题开始前和 `finally` 中都会关闭 SolidWorks 文档，并逐题更新 `runs.json`。中断后原命令重跑即可：
+
+- `finished`、`max_llm_calls`、`stalled` 等模型结果会保留；
+- `llm_error`、`sw_lost`、`resume_failed` 等基础设施或重放失败会重跑；
+- 有 checkpoint 时先在新零件中重放工具日志，状态一致后继续原对话，已经获得的 LLM 回复不会重复请求；
+- 不要因为分数低而只重跑某题；只有外部故障允许重跑，否则会破坏一次运行的评测口径。
+
+若需要换模型做对照，必须换一个新的 `RunName`，不能在已有目录中混入另一模型的结果。
+
+### 9.5 离线评分与汇总
+
+建模结束后关闭 Web 后端；评分不调用 LLM，也不需要 SolidWorks：
+
+```powershell
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.three_view `
+  --artifacts "eval\artifacts\$RunName" `
+  --output "eval\artifacts\$RunName\scores.json"
+
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.bench `
+  --rubric-dir eval\rubrics_three_view summary `
+  "eval\artifacts\$RunName\scores.json" --repeats 1
+```
+
+最终至少报告：
+
+- rubric 均分及 95% CI、pass@1、core_form、显式条目通过数；
+- 图像分均值和图像分 100 的题数；
+- 总/平均 prompt、completion 和 total token；
+- LLM 调用数及每题中位数、p90、最大值；
+- 工具调用、失败建模调用、`render_views` 调用和累计耗时；
+- `length_retries`、`compact_verifier_calls`、`compact_fallbacks`、`semantic_recoveries`；
+- 按 `request_modes` 分组的调用数和 token；
+- 所有非 `finished` 记录，以及哪些属于外部故障、哪些属于模型有效结果。
+
+### 9.6 产物审计与可比性检查
+
+50 题、每题一次时，应核验：
+
+- `runs.json` 有 50 个不同 case，`scores.json` 覆盖 50 题；
+- 正常完成题各有 STEP、SLDPRT、trace 和 checkpoint，且文件非空；
+- `runs.json` 中记录的 `action_level=L1_v2`、`compact_context=true`、provider、模型、推理强度和调用预算与命令一致；
+- C3、D17 的 `expected_bodies=2`，其余题为 1；
+- 汇总 token 等于 50 条运行记录之和；
+- 最后再次调用 `/api/close-all-documents`，确认 `closedCount=0`，并停止本次启动的 Web 后端；
+- 记录代码 commit、SolidWorks 版本、服务端上下文窗口和模型服务配置；换模型时只改变明确记录的模型相关设置。
+
+只有题集、题面语言、代码版本、工具开关、调用预算、compact 设置、重跑规则和评分版本全部一致，模型间结果才可直接比较。
