@@ -1348,7 +1348,7 @@ venv-occ\Scripts\python.exe -m pytest geomcheck/tests/test_refs_extreme.py -q -p
 
 ### 8.8 L1_v2 compact-context 在全部 100 题上的结果（2026-10-19）
 
-在 7.8、8.7 节的默认 L1_v2 对照上打开 `--compact-context`，完整重跑 50 道核心题、30 道困难题和 20 道极难题。其余协议保持一致：Qwen3.8-Flash-Next-FP8、英文题面、`reasoning_effort=medium`、`view_model` 打开、每题最多 40 次 LLM 调用、每题 1 次运行、关闭缓存。
+在 7.8、8.7 节的默认 L1_v2 对照上打开 `--compact-context`，完整重跑 50 道核心题、30 道困难题和 20 道极难题。其余协议保持一致：Qwen3.8-Flash-Next-FP8、英文题面、`reasoning_effort=medium`、`view_model` 打开、每题最多 40 次 LLM 调用、每题 1 次运行、关闭缓存。当前不绑定具体模型的完整复现命令和参数解释见文档末尾第 10 节“最新 L1_v2 + compact-context 复现协议”。
 
 compact-context 只改变发给模型的请求副本，不改变完整 trace、checkpoint、replay 或几何工具：
 
@@ -1398,3 +1398,65 @@ compact-context 只改变发给模型的请求副本，不改变完整 trace、c
 - 目前只有 OpenCASCADE 一个检查器。一个通过 SolidWorks API 评估同一套 rubric 的检查器正在开发，用来交叉验证。OCC 会把少数 SolidWorks 导出的退化圆环面读成无效实体；这时实体、体积和包围盒类检查改用 `.swmass.json` 中的 SolidWorks 数据，射线类检查只能用 `eval/rubric_sw_rays.py` 在真机上补测（见 8.6 节）。
 - 题面原文是中文，英文版是逐句翻译。两种语言的结果不能直接比较，报告里要写明用的是哪一种。翻译成其他语言时，以 YAML 中的中文原文为准。
 - 旧的评分方式（包围盒、体积区间、特征树计数）已经被 rubric 取代，只在论文里用来对比说明两者的差别。
+
+---
+
+## 10. 最新 L1_v2 + compact-context 复现协议
+
+这里给出与第 8.8 节最新实验一致、但不绑定某个骨干模型的运行方法。模型和 provider 可以替换；为了让不同模型的结果可比较，除这两项及模型必须的推理参数外，其余参数应保持不变。运行前先记录代码版本：
+
+```powershell
+git rev-parse HEAD
+```
+
+在 `LLMPlanner\.env` 中配置所选 provider 的 API key 和 base URL。`ttswitch` 读取 `OPENAI_API_KEY` / `OPENAI_BASE_URL`，`aiping`、`juheai`、`qwenlocal`、`glmlocal` 分别读取同名前缀的大写环境变量。base URL 应填写 OpenAI 兼容 API 的根路径（通常到 `/v1`），不要带 `/chat/completions`。然后在 `LLMPlanner` 目录执行：
+
+```powershell
+$provider = "<provider>"
+$model = "<model-id>"
+$effort = "<provider-supported-effort>"  # 不支持 reasoning_effort 时删掉对应命令行参数
+
+venv\Scripts\python.exe -X utf8 -u eval\eval_text_singleturn_qwen.py `
+    --action-level L1_v2 --compact-context `
+    --provider $provider --model $model --reasoning-effort $effort `
+    --split all100 --lang en --repeats 1 --max-llm-calls 40 `
+    --pause-every 3 --sw-restarts 2 --sw-max-private-gb 12 --resume `
+    --output eval\text_workflow_l1v2_compact_mymodel_all100_en_result.json
+```
+
+这条命令一次选择完整的 **100 题**：核心 50 题、困难 30 题和极难 20 题。若只跑一个分组，分别使用 `--split all`、`--split hard`、`--split extreme`；若只跑指定题，在相应 split 后加 `--ids case_a case_b ...`。不要把 `--split all` 误当成 100 题，它只表示最初的核心 50 题。
+
+各参数和隐含设置如下：
+
+- `--action-level L1_v2`：使用当前 L1_v2 系统提示词、工具 schema、参数校验、重复失败拦截和执行反馈；旧的 `L1` 保持不变。
+- `--compact-context`：仅对 L1_v2 有效。完整对话仍写入 trace/checkpoint；发给模型的请求副本会把旧成功结果压成保留目标、参数和关键证据的 ledger，并只保留最新状态和最新截图。最终核对改用短 verifier；需要返工时恢复完整历史。它不改变工具能力、SolidWorks 状态或 rubric。
+- `--provider` / `--model`：只决定 OpenAI 兼容服务和模型 id。更换模型时必须新建输出文件，不能在同一个结果 JSON 上 `--resume`。报告中记录 provider、模型 id、服务端版本和上下文窗口。
+- `--reasoning-effort`：原样传给每次常规 LLM 请求；省略表示使用 provider 默认值。compact verifier 为节约 token，会把 `medium`、`high`、`xhigh` 临时降为 `low`，常规建模轮次不变。若 provider 不支持该字段，应完全删掉这个参数，而不是填写 `none` 来猜测其语义。
+- `--max-llm-calls 40`：每题最多 40 次模型调用，包括建模、检查和长度恢复请求；达到上限后该题以 `max_llm_calls` 结束。工具调用次数不单独设上限。
+- 输出 token：compact 常规请求从 `max_tokens=32000` 开始，verifier 上限为 4096。回复以 `finish_reason=length` 截断且没有完整工具调用时会自动恢复；已知上下文窗口的 provider 若返回标准的超长错误，agent 会根据服务端报告的输入 token 数收缩输出预算。输入、视觉、推理和最终回答是否共用窗口由 provider 决定，必须在报告中注明。
+- 工具调用：`tool_choice=auto`、温度为 0。评测关闭 LLM 缓存（请求中的 `use_cache=false`）并保存原始 LLM trace。支持图片的模型默认启用 `view_model`；纯文本模型加 `--no-view-tool`，并把这一差异写进报告。
+- `--lang en`：使用英文题面；改为 `--lang zh` 可跑中文，但两种语言不能合并或直接比较，脚本也会拒绝用另一种语言续跑已有结果。
+- `--repeats 1`：复现第 8.8 节的单次运行口径。若要估计方差或 pass@k，改为 `--repeats 2` 或更高，并在所有对照系统上使用相同次数。
+- `--pause-every 3`：每完成 3 次顺序运行暂停 5 秒；设为 0 可关闭。它只用于给本地 CAD 服务留出回收时间，不改变任务。
+- `--sw-restarts 2 --sw-max-private-gb 12`：每题开始前检查 SolidWorks、C# 服务和 SolidWorks 私有内存；服务不可用或超过 12 GB 时重启。运行中丢失 SolidWorks 时，每题最多重启并从 checkpoint 恢复 2 次。若不希望脚本管理 SolidWorks，设 `--sw-restarts 0`。
+- `--resume`：保留输出文件中已完成的运行；外部请求错误会重跑，中断的 L1_v2 运行会在空零件中重放已成功的建模工具，再接着 checkpoint 对话。重放不一致会标记 `resume_failed`，不会继续污染结果。首次运行也可以带此参数。
+- `--output`：必须显式给出且每组实验唯一。结果 JSON 记录参数、逐题分数、token、调用次数、耗时、workflow 状态和精简后的 trace；STEP、SLDPRT、checkpoint 与辅助质量文件写入 `eval/artifacts/<output stem>/`。不要加 `--no-save-artifacts`，否则无法独立重打分。
+- `--web-url` 和 `--sw-url` 缺省分别是 `http://localhost:5000`、`http://localhost:5100`。同一个 SolidWorks/C# 服务一次只能跑一个评测进程；不要并发启动两批。
+
+脚本在每题开始前和 `finally` 中都会关闭本次打开的 SolidWorks 文档。若服务进程、机器或模型端发生异常，保留原始结果和 checkpoint，不要手工把失败题改成成功；重跑策略及被排除的运行应写进报告。
+
+运行结束后，结果 JSON 的 `rubric` 字段已经包含在线打分。为了独立核验，建议再从保存的 STEP 离线重打一次。100 题分属三个 rubric 目录，分别执行：
+
+```powershell
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric `
+    --artifacts eval\artifacts\text_workflow_l1v2_compact_mymodel_all100_en_result `
+    --rubric-dir eval\rubrics --output eval\rubric_compact_mymodel_core50_en.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric `
+    --artifacts eval\artifacts\text_workflow_l1v2_compact_mymodel_all100_en_result `
+    --rubric-dir eval\rubrics_hard --output eval\rubric_compact_mymodel_hard30_en.json
+venv-occ\Scripts\python.exe -X utf8 -m geomcheck.rubric `
+    --artifacts eval\artifacts\text_workflow_l1v2_compact_mymodel_all100_en_result `
+    --rubric-dir eval\rubrics_extreme --output eval\rubric_compact_mymodel_extreme20_en.json
+```
+
+三个文件应合计恰好 100 个不同 case；离线 `score`、`accepted`、`hard_ok` 应与主结果 JSON 中每题的 `rubric` 一致。汇总时同时报告三组和 100 题整体的均分、95% CI、合格率、核心形体率、平均总 token、平均 LLM/工具调用和平均耗时。
