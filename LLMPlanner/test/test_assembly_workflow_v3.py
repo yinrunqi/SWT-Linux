@@ -292,3 +292,99 @@ def test_agent_replaces_invalid_json_args_in_history():
     assert sent == ["{}"]
     error = json.loads(next(m for m in history if m["role"] == "tool")["content"])["error"]
     assert error["code"] == "TOOL_ARGS" and "tru e" in error["message"]
+
+
+class SpeedStateSession(AssemblySession):
+    def __init__(self):
+        super().__init__(
+            workflow="v3",
+            allowed_tools=tool_names("v3"),
+            speed_optimizations=True,
+        )
+        self.has_assembly = True
+        self.aliases = {"frame": "frame-1", "arm": "arm-1"}
+        self.state_calls = 0
+        self._handlers["ground_component"] = lambda args: {
+            "component": self.resolve_name(args["component"]),
+            "fixed": True,
+        }
+
+    def asmwf(self, op: str, body: dict | None = None) -> dict:
+        if op != "state":
+            raise AssertionError(f"speed state cache 不应调用 {op}")
+        self.state_calls += 1
+        return {
+            "components": [
+                {
+                    "name": "frame-1", "isFixed": True, "constrainedStatus": 3,
+                    "transform": [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+                },
+                {
+                    "name": "arm-1", "isFixed": False, "constrainedStatus": 2,
+                    "transform": [1, 0, 0, 0, 1, 0, 0, 0, 1, 0.01, 0, 0],
+                },
+            ],
+            "mates": [],
+        }
+
+
+def test_speed_state_query_is_combined_cached_and_invalidated_without_eager_traversal():
+    session = SpeedStateSession()
+    first = session.call("get_assembly_state", {})
+    second = session.call("get_assembly_state", {})
+    assert first["ok"] and second["ok"]
+    assert first["state_cache_hit"] is False and second["state_cache_hit"] is True
+    assert session.state_calls == 1
+    assert session.state_cache_hits >= 1
+
+    changed = session.call("ground_component", {"component": "arm"})
+    assert changed["ok"] and changed["after"]["version"] == 1
+    assert session.state_calls == 1
+    assert changed["after"]["full_state_age_mutations"] == 1
+
+    refreshed = session.call("get_assembly_state", {})
+    assert refreshed["ok"] and session.state_calls == 2
+
+
+class QuickMotionSession(AssemblySession):
+    def __init__(self):
+        super().__init__(workflow="v3", speed_optimizations=True)
+        self.has_assembly = True
+        self.aliases = {"driver": "driver-1", "frame": "frame-1"}
+        self.sample_sizes: list[int] = []
+
+    def asmwf(self, op: str, body: dict | None = None) -> dict:
+        body = body or {}
+        if op in {"motion-drive", "motion-delete"}:
+            return {}
+        if op == "state":
+            return {
+                "components": [
+                    {"name": "driver-1", "isFixed": False, "constrainedStatus": 2},
+                    {"name": "frame-1", "isFixed": True, "constrainedStatus": 3},
+                ],
+                "mates": [],
+            }
+        if op == "motion-sample":
+            times = body["times"]
+            self.sample_sizes.append(len(times))
+            transform = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]
+            return {
+                "frames": [
+                    {
+                        "time": value,
+                        "transforms": {"driver-1": transform, "frame-1": transform},
+                        **({"interference": {"interferenceCount": 0}} if body["interference"] else {}),
+                    }
+                    for value in times
+                ],
+            }
+        raise AssertionError(op)
+
+
+def test_speed_motion_uses_quick_profile_while_legacy_defaults_stay_unchanged():
+    session = QuickMotionSession()
+    result = session.check_motion({"driver": "driver"})
+    assert result["sampling_profile"] == "quick"
+    assert result["frames"] == 7 and result["dense_frames"] == 31
+    assert session.sample_sizes == [7, 31]

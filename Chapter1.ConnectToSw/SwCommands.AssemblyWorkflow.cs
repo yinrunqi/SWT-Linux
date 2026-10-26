@@ -42,6 +42,14 @@ namespace Chapter1.ConnectToSw
         {
             switch (op)
             {
+                case "state":
+                    // components / mates 经常成对读取。放在同一次 CommandInProgress
+                    // 会话中，避免两次 HTTP 与两次 SolidWorks UI 刷新边界。
+                    return new Dictionary<string, object>
+                    {
+                        ["components"] = DescribeComponents(),
+                        ["mates"] = DescribeMates(),
+                    };
                 case "components":
                     return new Dictionary<string, object> { ["components"] = DescribeComponents() };
                 case "component-faces":

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -105,6 +106,18 @@ def test_three_action_levels_have_distinct_assembly_metadata():
     assert scratch.assembly_workflow_metadata("L1", "v3", True, True) == {
         "version": "L1_v3", "view_tool": True, "compact_context": True,
     }
+    assert scratch.assembly_workflow_metadata("L1", "v3", True, True, True)["speed_optimizations"] is True
+
+
+def test_assembly_speed_flag_rejects_non_v3_workflow(monkeypatch, capsys):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["eval_assembly_scratch.py", "--asm-speed-optimizations", "--workflow", "v2"],
+    )
+    with pytest.raises(SystemExit, match="2"):
+        scratch.main()
+    assert "--asm-speed-optimizations 只支持 --action-level L1 --workflow v3" in capsys.readouterr().err
 
 
 def test_openai_wrapper_passes_streams_through(monkeypatch):

@@ -61,16 +61,20 @@ def assembly_workflow_metadata(
     workflow: str,
     view_tool: bool,
     compact_context: bool = False,
+    speed_optimizations: bool = False,
 ) -> dict:
     if action_level == "L0":
         return {"version": "L0", "atomic_api": "assembly-api-v1", "mode": "single_turn"}
     if action_level == "L0_mt":
         return {"version": "L0_mt", "atomic_api": "assembly-api-v1", "mode": "multi_turn"}
-    return {
+    metadata = {
         "version": f"L1_{workflow}",
         "view_tool": bool(view_tool),
         "compact_context": bool(compact_context),
     }
+    if speed_optimizations:
+        metadata["speed_optimizations"] = True
+    return metadata
 
 
 # 测例 yaml 文件名 → case_id；命令行两种都认
@@ -223,8 +227,12 @@ def score_assembly_rubric(session, case: dict, inputs: dict | None = None) -> di
     if rubric is None:
         return None
     try:
-        components = session.asmwf("components").get("components") or []
-        mates = session.asmwf("mates").get("mates") or []
+        if getattr(session, "speed_optimizations", False):
+            bundle = session.state_bundle()
+            components, mates = bundle["components"], bundle["mates"]
+        else:
+            components = session.asmwf("components").get("components") or []
+            mates = session.asmwf("mates").get("mates") or []
         if inputs is not None:
             inputs.update({"components": components, "mates": mates, "aliases": dict(session.aliases)})
         return evaluate(components, mates, session.aliases, rubric)
@@ -480,6 +488,7 @@ def _assemble(
     provider: str = PROVIDER,
     action_level: str = "L1",
     compact_context: bool = False,
+    speed_optimizations: bool = False,
 ) -> dict:
     from planner.assembly_workflow.session import AssemblySession
 
@@ -500,7 +509,12 @@ def _assemble(
         from planner.assembly_workflow.tools import tool_names
         allowed_tools = tool_names(workflow, view_tool=view_tool)
         session_workflow = workflow
-    session = AssemblySession(base_url=sw, workflow=session_workflow, allowed_tools=allowed_tools)
+    session = AssemblySession(
+        base_url=sw,
+        workflow=session_workflow,
+        allowed_tools=allowed_tools,
+        speed_optimizations=speed_optimizations,
+    )
     session.start_assembly(str(dest))
     listing = "\n".join(f"- {role}: {path}" for role, path in parts.items())
     goal = case["assembly"]["prompt"] + "\n\n零件文件（角色名: SLDPRT 绝对路径）：\n" + listing
@@ -597,7 +611,8 @@ def _assemble(
             _openai(provider), model, session, max_llm_calls=max_llm_calls, max_tokens=max_tokens,
             tools=tool_specs(workflow, view_tool=view_tool), reasoning_effort=reasoning_effort,
             checkpoint_path=checkpoint, view_tool=view_tool, stream=True, log=log,
-            compact_context=compact_context,
+            compact_context=compact_context, speed_optimizations=speed_optimizations,
+            expected_components=len(parts),
         ).run(goal, resume=resume)
     messages = outcome.get("messages") or []
     _write_json(dest.with_name("agent_messages.json"), messages)
@@ -657,10 +672,20 @@ def _assemble(
         "compact_context": outcome.get("compact_context"),
         "request_modes": outcome.get("request_modes"),
         "compact_retries": outcome.get("compact_retries"),
+        "speed_optimizations": outcome.get("speed_optimizations"),
+        "timings": outcome.get("timings"),
+        "best_progress": outcome.get("best_progress"),
+        "best_snapshot_path": outcome.get("best_snapshot_path"),
+        "last_improvement_call": outcome.get("last_improvement_call"),
+        "early_stop_reason": outcome.get("early_stop_reason"),
+        "state_cache": {
+            "hits": session.state_cache_hits,
+            "misses": session.state_cache_misses,
+        } if speed_optimizations else None,
         "joints": session.joints,
         "action_level": action_level,
         "assembly_workflow": assembly_workflow_metadata(
-            action_level, workflow, view_tool, compact_context,
+            action_level, workflow, view_tool, compact_context, speed_optimizations,
         ),
         "atomic_operations": atomic_operations,
         "successful_atomic_operations": successful_atomic_operations,
@@ -771,6 +796,7 @@ def run_condition(case: dict, condition: str, repeat: int, args, workflow: str =
                 view_tool=not getattr(args, "no_view_tool", False), provider=getattr(args, "provider", PROVIDER),
                 action_level=args.action_level,
                 compact_context=getattr(args, "asm_compact_context", False),
+                speed_optimizations=getattr(args, "asm_speed_optimizations", False),
             )
         except Exception as exc:  # SolidWorks 已经死掉时连新建装配体都会失败
             assembly = {"status": "infra_exception", "infra_error": f"{type(exc).__name__}: {exc}",
@@ -864,7 +890,9 @@ def _summarize(rows: list[dict]) -> dict:
         "e2e": _mean([float(bool(r["e2e"])) for r in rows], 3),
         "finish_rate": _mean([float(a.get("status") == "finished") for a in asm], 3),
         "saved_by_agent_rate": _mean([float(bool((a.get("static") or {}).get("saved"))) for a in asm], 3),
-        "budget_exhausted_rate": _mean([float(a.get("status") == "max_llm_calls") for a in asm], 3),
+        "budget_exhausted_rate": _mean(
+            [float(str(a.get("status") or "").startswith("max_llm_calls")) for a in asm], 3,
+        ),
         "llm_calls_mean": _mean([a.get("llm_calls") for a in asm], 1),
     }
 
@@ -918,6 +946,10 @@ def main() -> None:
         help="装配 L1 workflow 使用独立的请求级上下文压缩、溢出恢复和可恢复 checkpoint",
     )
     parser.add_argument(
+        "--asm-speed-optimizations", action="store_true",
+        help="装配 v3 启用增量状态/组合缓存、Agent 快速运动预检、安全批处理提示和保守最佳状态早停",
+    )
+    parser.add_argument(
         "--reasoning-effort",
         choices=("none", "minimal", "low", "medium", "high", "xhigh"),
         default=None,
@@ -938,6 +970,8 @@ def main() -> None:
         parser.error("--compact-context 只支持 --action-level L1 的零件阶段")
     if args.asm_compact_context and args.action_level != "L1":
         parser.error("--asm-compact-context 只支持 --action-level L1 的装配阶段")
+    if args.asm_speed_optimizations and (args.action_level != "L1" or args.workflow != "v3"):
+        parser.error("--asm-speed-optimizations 只支持 --action-level L1 --workflow v3")
     names = []
     tokens = [t.strip() for t in args.cases.split(",")]
     groups = {"bench": list(BENCH_CASES), "bench2": list(CASES2)}
@@ -981,9 +1015,11 @@ def main() -> None:
         previous.setdefault("max_part_plan_tokens", 16000)
         previous.setdefault("compact_context", False)
         previous.setdefault("asm_compact_context", False)
+        previous.setdefault("asm_speed_optimizations", False)
         for key in (
             "provider", "model", "reasoning_effort", "asm_max_tokens", "view_tool",
             "action_level", "max_part_plan_tokens", "compact_context", "asm_compact_context",
+            "asm_speed_optimizations",
         ):
             if previous.get(key) != getattr(args, key):
                 parser.error(f"--resume：已有结果的 {key}={previous.get(key)!r} 与本次 {getattr(args, key)!r} 不一致")
@@ -1050,6 +1086,7 @@ def main() -> None:
             "part_workflow": part_workflow,
             "compact_context": args.part_compact_context,
             "asm_compact_context": args.asm_compact_context,
+            "asm_speed_optimizations": args.asm_speed_optimizations,
             "part_atomic_api": (
                 {
                     "name": "atomic_api_complete",
@@ -1064,6 +1101,7 @@ def main() -> None:
             ),
             "assembly_workflow": assembly_workflow_metadata(
                 args.action_level, args.workflow, args.view_tool, args.asm_compact_context,
+                args.asm_speed_optimizations,
             ),
             "max_part_plan_tokens": args.max_part_plan_tokens,
             "max_asm_calls": args.max_asm_calls,

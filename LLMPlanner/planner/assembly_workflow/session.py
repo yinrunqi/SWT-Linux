@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import math
+import shutil
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -86,6 +88,7 @@ class AssemblySession:
         *,
         workflow: str = "v1",
         allowed_tools: set[str] | None = None,
+        speed_optimizations: bool = False,
     ):
         if workflow not in ("v1", "v2", "v3"):
             raise ValueError(f"未知 workflow {workflow}")
@@ -96,6 +99,7 @@ class AssemblySession:
         # v3 = v2 的配合与宏工具 + 增量状态、秩法自由度、自动闭环、位姿自检等（见 docs）
         self.v2plus = workflow in ("v2", "v3")
         self.v3 = workflow == "v3"
+        self.speed_optimizations = bool(speed_optimizations and self.v3)
         self.allowed_tools = allowed_tools
         self.aliases: dict[str, str] = {}
         self.mate_names: list[str] = []
@@ -105,6 +109,15 @@ class AssemblySession:
         self.last_dof: dict | None = None
         self._face_cache: dict[tuple, list[dict]] = {}
         self._pair_deletes: dict[frozenset, int] = {}
+        self._structure_version = 0
+        self._full_state_version = -1
+        self._full_state_cache: dict | None = None
+        self._known_components: dict[str, dict] = {}
+        self._known_mates: dict[str, dict] = {}
+        self._known_fixed: set[str] = set()
+        self._last_full_delta: dict = {}
+        self.state_cache_hits = 0
+        self.state_cache_misses = 0
         self.saved = False
         self.has_assembly = False
         self.assembly_path = ""
@@ -175,22 +188,262 @@ class AssemblySession:
         self.last_motion = self.last_pose = self.last_dof = None
         self._face_cache.clear()
         self._pair_deletes.clear()
+        self._reset_state_tracking()
         self.saved = False
         return data
+
+    def _reset_state_tracking(self) -> None:
+        self._structure_version = 0
+        self._full_state_version = -1
+        self._full_state_cache = None
+        self._known_components.clear()
+        self._known_mates.clear()
+        self._known_fixed.clear()
+        self._last_full_delta = {}
+        self.state_cache_hits = 0
+        self.state_cache_misses = 0
+
+    def state_bundle(self, *, force: bool = False) -> dict:
+        """返回同一时刻的 components + mates；speed 模式按结构版本缓存。
+
+        旧模式保持两次历史 API 调用，避免无 flag 时改变请求序列。speed 模式使用
+        /api/asmwf/state，把两次 COM/HTTP 边界合并为一次。
+        """
+        if (
+            self.speed_optimizations
+            and not force
+            and self._full_state_cache is not None
+            and self._full_state_version == self._structure_version
+        ):
+            self.state_cache_hits += 1
+            return self._full_state_cache
+        if self.speed_optimizations:
+            bundle = self.asmwf("state")
+            self.state_cache_misses += 1
+        else:
+            bundle = {
+                "components": self.asmwf("components").get("components") or [],
+                "mates": self.asmwf("mates").get("mates") or [],
+            }
+        normalized = {
+            "components": list(bundle.get("components") or []),
+            "mates": list(bundle.get("mates") or []),
+        }
+        if self.speed_optimizations:
+            self._full_state_cache = normalized
+            self._full_state_version = self._structure_version
+            self._sync_incremental_state(normalized["components"], normalized["mates"])
+            modes, components, mates = self._modes(
+                normalized["components"], normalized["mates"],
+            )
+            self._last_full_delta = self._delta_from(modes, components, mates)
+        return normalized
+
+    def _sync_incremental_state(self, components: list[dict], mates: list[dict]) -> None:
+        self._known_components = {
+            str(item.get("name")): {
+                "component": str(item.get("name")),
+                "fixed": bool(item.get("isFixed")),
+            }
+            for item in components
+            if item.get("name")
+        }
+        self._known_fixed = {
+            str(item.get("name")) for item in components if item.get("name") and item.get("isFixed")
+        }
+        self._known_mates = {}
+        for item in mates:
+            name = str(item.get("name") or "")
+            if not name:
+                continue
+            self._known_mates[name] = {
+                "name": name,
+                "type": item.get("type") or item.get("mateType"),
+                "mateType": item.get("mateType"),
+                "components": [str(c) for c in item.get("components") or [] if c],
+                "errorCode": int(item.get("errorCode") or 0),
+                "suppressed": bool(item.get("suppressed")),
+            }
+
+    @staticmethod
+    def _component_from_ref(value: Any) -> str | None:
+        if not isinstance(value, str) or not value:
+            return None
+        return value.split(":", 1)[0]
+
+    def _remember_mates(self, value: Any) -> None:
+        if isinstance(value, list):
+            for item in value:
+                self._remember_mates(item)
+            return
+        if not isinstance(value, dict):
+            return
+        name = str(value.get("name") or "")
+        a = self._component_from_ref(value.get("a"))
+        b = self._component_from_ref(value.get("b"))
+        components = [str(c) for c in value.get("components") or [] if c]
+        if not components:
+            components = [c for c in (a, b) if c]
+        if name and components:
+            self._known_mates[name] = {
+                "name": name,
+                "type": value.get("type") or value.get("joint"),
+                "components": components,
+                "errorCode": 0,
+                "suppressed": False,
+            }
+        for key in ("mates", "created", "mate"):
+            if key in value:
+                self._remember_mates(value[key])
+
+    def _record_incremental_mutation(self, name: str, args: dict, result: dict) -> None:
+        if name == "insert_component":
+            component = str(result.get("component") or "")
+            alias = str(result.get("alias") or args.get("name") or "")
+            if component:
+                self._known_components[component] = {
+                    "component": component,
+                    "alias": alias or self._alias(component),
+                    "fixed": False,
+                }
+        elif name == "ground_component":
+            component = str(result.get("component") or "")
+            if component:
+                self._known_fixed.add(component)
+                self._known_components.setdefault(component, {"component": component})["fixed"] = True
+        elif name == "unfix_component":
+            component = str(result.get("component") or "")
+            self._known_fixed.discard(component)
+            if component:
+                self._known_components.setdefault(component, {"component": component})["fixed"] = False
+        elif name == "delete_mate":
+            deleted = str(result.get("deleted") or args.get("name") or "")
+            self._known_mates.pop(deleted, None)
+        else:
+            self._remember_mates(result)
+
+    def _incremental_floating(self) -> list[str]:
+        components = set(self._known_components) | set(self.aliases.values())
+        reached = set(self._known_fixed)
+        changed = True
+        while changed:
+            changed = False
+            for mate in self._known_mates.values():
+                if mate.get("errorCode") or mate.get("suppressed"):
+                    continue
+                pair = {str(c) for c in mate.get("components") or [] if c}
+                if len(pair) < 2:
+                    continue
+                if pair & reached and not pair <= reached:
+                    reached |= pair
+                    changed = True
+        return sorted(self._alias(name) for name in components - reached)
+
+    def compact_state_digest(self) -> dict:
+        """不访问 SolidWorks 的有界当前状态，供每轮 compact prompt 与早停使用。"""
+        mates = [
+            {
+                "name": item["name"],
+                "type": item.get("type"),
+                "components": [self._alias(c) for c in item.get("components") or []],
+            }
+            for item in self._known_mates.values()
+        ]
+        mates.sort(key=lambda item: item["name"])
+        validation = {
+            "motion": None if not self.last_motion else bool(self.last_motion.get("passed")),
+            "pose": None if not self.last_pose else bool(self.last_pose.get("passed")),
+            "dof": None if not self.last_dof else bool(self.last_dof.get("matches_expected")),
+        }
+        digest = {
+            "version": self._structure_version,
+            "components": [
+                {"alias": alias, "component": component, "fixed": component in self._known_fixed}
+                for alias, component in sorted(self.aliases.items())
+            ],
+            "mates": mates[-160:],
+            "floating": self._incremental_floating(),
+            "saved": self.saved,
+            "validation": validation,
+            "full_state_age_mutations": (
+                None if self._full_state_version < 0
+                else self._structure_version - self._full_state_version
+            ),
+        }
+        for key in ("mobility", "redundant", "over_defined", "broken_mates"):
+            if key in self._last_full_delta:
+                digest[key] = self._last_full_delta[key]
+        return digest
+
+    def progress_snapshot(self) -> dict:
+        digest = self.compact_state_digest()
+        return {
+            "components": len(digest["components"]),
+            "mates": len(digest["mates"]),
+            "fixed": sum(bool(item.get("fixed")) for item in digest["components"]),
+            "floating": len(digest["floating"]),
+            "broken": len(digest.get("broken_mates") or []),
+            "over_defined": len(digest.get("over_defined") or []),
+            "mobility": digest.get("mobility"),
+            "saved": bool(digest["saved"]),
+            "motion_passed": digest["validation"]["motion"] is True,
+            "pose_passed": digest["validation"]["pose"] is True,
+            "dof_passed": digest["validation"]["dof"] is True,
+            "version": digest["version"],
+        }
+
+    def save_best_snapshot(self, path: str | Path) -> str:
+        """保存当前装配并复制一个不会改变活动文档路径的最佳状态副本。"""
+        was_saved = self.saved
+        try:
+            self.save_assembly({})
+            source = Path(self.assembly_path)
+            target = Path(path)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+        finally:
+            self.saved = was_saved
+        return str(target)
+
+    def restore_best_snapshot(self, path: str | Path, final_path: str | Path) -> None:
+        """关闭当前文档，把最佳副本恢复为正式结果，再重新打开。"""
+        best = Path(path)
+        if not best.is_file():
+            raise WorkflowError("FEATURE_FAILED", f"最佳状态文件不存在: {best}")
+        final = Path(final_path)
+        self._ok(self._request("POST", "/api/close-all-documents", {}))
+        shutil.copy2(best, final)
+        self._ok(self._request("POST", "/api/assembly/open", {"assemblyPath": str(final)}))
+        self.has_assembly = True
+        self.assembly_path = str(final)
+        self._face_cache.clear()
+        self._reset_state_tracking()
+        self.saved = True
+        # 组件名通常保持不变；刷新一次用于校验并重建增量摘要。
+        self.state_bundle(force=True)
 
     def call(self, name: str, args: dict | None) -> dict:
         args = {key: _parse_json_string(value) for key, value in (args or {}).items()}
         entry = {"tool": name, "args": args}
+        cache_hits_before = self.state_cache_hits
         try:
             if name not in self._handlers or (self.allowed_tools is not None and name not in self.allowed_tools):
                 raise WorkflowError("TOOL_ARGS", f"未知工具 {name}")
             if name != "finish" and not self.has_assembly:
                 raise WorkflowError("NO_PART", "还没有装配体，先新建")
             result = {"ok": True, **self._handlers[name](args)}
+            if self.speed_optimizations and name == "get_assembly_state":
+                result["state_cache_hit"] = self.state_cache_hits > cache_hits_before
             if self.v3 and name in MUTATING_TOOLS:
                 # 改了结构，之前的运动 / 位姿 / 自由度检查都不再代表当前装配体
                 self.last_motion = self.last_pose = self.last_dof = None
-                result["after"] = self._delta()
+                if self.speed_optimizations:
+                    self._structure_version += 1
+                    self._record_incremental_mutation(name, args, result)
+                    self._full_state_cache = None
+                    result["after"] = self.compact_state_digest()
+                else:
+                    result["after"] = self._delta()
         except RefError as exc:
             result = {"ok": False, "error": {"code": "REF", "message": str(exc)}}
         except WorkflowError as exc:
@@ -213,6 +466,8 @@ class AssemblySession:
     def resolve_name(self, name: str) -> str:
         if name in self.aliases:
             return self.aliases[name]
+        if self.speed_optimizations and name in self._known_components:
+            return name
         components = self.asmwf("components").get("components") or []
         exact = [c["name"] for c in components if c["name"] == name]
         if exact:
@@ -269,8 +524,14 @@ class AssemblySession:
     def _modes(self, components: list[dict] | None = None, mates: list[dict] | None = None) -> tuple:
         from geomcheck.assembly_rubric import mobility_modes
 
-        components = components if components is not None else (self.asmwf("components").get("components") or [])
-        mates = mates if mates is not None else (self.asmwf("mates").get("mates") or [])
+        if components is None or mates is None:
+            if self.speed_optimizations:
+                bundle = self.state_bundle()
+                components = bundle["components"]
+                mates = bundle["mates"]
+            else:
+                components = self.asmwf("components").get("components") or []
+                mates = self.asmwf("mates").get("mates") or []
         good = [m for m in mates if not m.get("suppressed") and int(m.get("errorCode") or 0) == 0]
         names = [c["name"] for c in components]
         fixed = {c["name"] for c in components if c.get("isFixed")}
@@ -281,6 +542,9 @@ class AssemblySession:
             modes, components, mates = self._modes()
         except WorkflowError as exc:
             return {"error": exc.to_dict().get("message")}
+        return self._delta_from(modes, components, mates)
+
+    def _delta_from(self, modes: dict, components: list[dict], mates: list[dict]) -> dict:
         reached = self._grounded_by_mates(components, mates)
         return {
             "mobility": modes["mobility"],
@@ -497,6 +761,8 @@ class AssemblySession:
     def _state_v3(self, args: dict) -> dict:
         """默认只给组件状态与配合；面列表在 insert_component 时已经返回过，要再看时用 faces / components。"""
         modes, raw, mates = self._modes()
+        if self.speed_optimizations:
+            self._last_full_delta = self._delta_from(modes, raw, mates)
         wanted = {self.resolve_name(n) for n in args.get("components") or []}
         with_faces = bool(args.get("faces"))
         components = []
@@ -679,7 +945,12 @@ class AssemblySession:
         name = str(args.get("name") or "")
         pair = None
         if self.v3:
-            mate = next((m for m in self.asmwf("mates").get("mates") or [] if m.get("name") == name), None)
+            if self.speed_optimizations:
+                mate = self._known_mates.get(name)
+                if mate is None:
+                    mate = next((m for m in self.state_bundle()["mates"] if m.get("name") == name), None)
+            else:
+                mate = next((m for m in self.asmwf("mates").get("mates") or [] if m.get("name") == name), None)
             comps = [c for c in (mate or {}).get("components") or [] if c]
             pair = frozenset(comps) if len(comps) >= 2 else None
         self.asmwf("delete-mate", {"name": name})
@@ -1391,7 +1662,9 @@ class AssemblySession:
         else:
             ref = "bore:auto"
         sweep = float(args.get("sweep_deg") or 360)
-        frames = max(3, int(args.get("frames") or 13))
+        quick_profile = self.speed_optimizations
+        requested_frames = int(args.get("frames") or (7 if quick_profile else 13))
+        frames = max(3, min(requested_frames, 7)) if quick_profile else max(3, requested_frames)
         rpm = float(args.get("rpm") or 10)
         duration = abs(sweep) / (rpm * 6)  # deg / (rpm * 360/60)
         if duration <= 0:
@@ -1402,7 +1675,11 @@ class AssemblySession:
         times = [duration * i / (frames - 1) for i in range(frames)]
         sampled = self.asmwf("motion-sample", {"times": times, "interference": True})
         raw_frames = sampled.get("frames") or []
-        components = self.asmwf("components").get("components") or []
+        components = (
+            self.state_bundle()["components"]
+            if self.speed_optimizations
+            else (self.asmwf("components").get("components") or [])
+        )
         names = [c["name"] for c in components]
         t0 = {n: raw_frames[0]["transforms"][n] for n in names if n in raw_frames[0]["transforms"]}
         moved, stuck_expected = [], []
@@ -1442,15 +1719,19 @@ class AssemblySession:
                     ],
                 })
         # Animation 的马达实际转速比 rpm 快好几倍，稀疏帧的角度会混叠；转角比用密采样逐帧展开后再算
+        dense_frame_count = 31 if quick_profile else 121
         dense = self.asmwf("motion-sample", {
-            "times": [duration * i / 120 for i in range(121)], "interference": False,
+            "times": [duration * i / (dense_frame_count - 1) for i in range(dense_frame_count)],
+            "interference": False,
         }).get("frames") or raw_frames
         sampling: dict = {}
         if self.v3:
             from geomcheck.assembly_motion import refine_aliased
             dense, sampling = refine_aliased(
                 lambda times: self.asmwf("motion-sample", {"times": times, "interference": False}).get("frames") or [],
-                driver, duration, dense)
+                driver, duration, dense,
+                max_dense_frames=61 if quick_profile else 481,
+            )
 
         def turned(name: str) -> float:
             angles = [angle_about_z(frame["transforms"][name]) for frame in dense]
@@ -1474,6 +1755,8 @@ class AssemblySession:
             "drifted_fixed": drifted,
             "kinematics": kinematics,
         }
+        if quick_profile:
+            report.update({"sampling_profile": "quick", "dense_frames": len(dense)})
         if self.v3:
             report["interference_pairs"] = self._pair_summary(raw_frames)
             if sampling.get("driver_jump_deg"):
@@ -1525,6 +1808,8 @@ class AssemblySession:
         return report
 
     def _fixed_names(self) -> set[str]:
+        if self.speed_optimizations:
+            return set(self._known_fixed)
         return {c["name"] for c in self.asmwf("components").get("components") or [] if c.get("isFixed")}
 
     def save_assembly(self, args: dict) -> dict:

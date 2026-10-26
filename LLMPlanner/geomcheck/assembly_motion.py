@@ -47,7 +47,14 @@ def sample_chunked(sample, times: list[float]) -> list[dict]:
     return frames
 
 
-def refine_aliased(sample, driver: str, duration: float, frames: list[dict]) -> tuple[list[dict], dict]:
+def refine_aliased(
+    sample,
+    driver: str,
+    duration: float,
+    frames: list[dict],
+    *,
+    max_dense_frames: int = MAX_DENSE_FRAMES,
+) -> tuple[list[dict], dict]:
     """驱动件单帧转角超过 MAX_STEP_DEG 时加密一次（展开转角会混叠，比值、导程都会算错）。
 
     加密后单帧转角没有按比例变小，说明是位形跳变（机构卡死时求解器在两个解之间跳），不是混叠：
@@ -57,7 +64,7 @@ def refine_aliased(sample, driver: str, duration: float, frames: list[dict]) -> 
     step = _max_step([_angle_z(f["transforms"][driver]) for f in frames])
     if step <= MAX_STEP_DEG:
         return frames, {}
-    n = min(MAX_DENSE_FRAMES, int(len(frames) * step / (MAX_STEP_DEG / 2)) + 1)
+    n = min(max_dense_frames, int(len(frames) * step / (MAX_STEP_DEG / 2)) + 1)
     if n <= len(frames):
         return frames, {"aliasing_risk_deg": round(step, 2)}
     dense = sample_chunked(sample, [duration * i / (n - 1) for i in range(n)])

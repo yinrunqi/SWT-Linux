@@ -77,6 +77,14 @@ ASM_COMPACT_DISCIPLINE = (
     "较早的装配工具历史已压缩为 ledger，完整历史仍保存在 checkpoint。"
     "请依据 ledger、最近完整轮次和当前状态直接调用工具推进，不要复述历史。"
 )
+SPEED_OPTIMIZATION_DISCIPLINE = """
+
+## 加速执行规则
+- 每轮都会附带增量维护的 `current_state_digest`；它比旧 ledger 更新，优先据此判断当前结构。
+- 同一轮可以批量给出彼此独立的工具调用，例如多个不同零件的 insert_component，或互不依赖的初始放置。
+- 工具仍按你给出的顺序执行。mate/delete/check/finish 等依赖前一步结果的操作不要盲目批量或重排。
+- check_motion 在构建期使用低帧数快速预检；最终评测会独立使用完整帧数，不要为此重复调用。
+"""
 _ASM_LEDGER_KEYS = (
     "name", "alias", "component", "created", "deleted", "saved", "path", "after",
     "mobility", "redundant", "floating", "overdefined", "free", "passed", "stuck",
@@ -113,7 +121,12 @@ def _compact_assembly_tool_result(tool: str, content: Any) -> Any:
     return json.dumps(compact, ensure_ascii=False, separators=(",", ":"))
 
 
-def compact_assembly_history(messages: list[dict], *, keep_recent_rounds: int = 2) -> list[dict]:
+def compact_assembly_history(
+    messages: list[dict],
+    *,
+    keep_recent_rounds: int = 2,
+    drop_old_rounds: bool = False,
+) -> list[dict]:
     """构造请求副本：旧工具结果改为 ledger，旧 assistant 分析清空，主历史不变。"""
     out = copy.deepcopy(messages)
     call_to_tool: dict[str, str] = {}
@@ -133,6 +146,31 @@ def compact_assembly_history(messages: list[dict], *, keep_recent_rounds: int = 
             rounds.append(ids)
             assistant_calls.append((message, ids))
     kept_ids = set().union(*rounds[-keep_recent_rounds:]) if rounds and keep_recent_rounds > 0 else set()
+    if drop_old_rounds:
+        # emergency 模式必须有严格上界：旧轮次即使每条只剩 ledger，百轮后仍会挤满上下文。
+        # 仅保留 system、最初需求，以及最近完整工具轮次；精确当前状态由调用方另行附加。
+        first_user_kept = False
+        bounded = []
+        for message in out:
+            role = message.get("role")
+            if role == "system":
+                bounded.append(message)
+            elif role == "user" and not first_user_kept:
+                bounded.append(message)
+                first_user_kept = True
+            elif role == "assistant":
+                ids = {
+                    str(call.get("id") or "")
+                    for call in message.get("tool_calls") or []
+                    if call.get("id")
+                }
+                if ids & kept_ids:
+                    bounded.append(message)
+            elif role == "tool" and str(message.get("tool_call_id") or "") in kept_ids:
+                bounded.append(message)
+        out = bounded
+        out.append({"role": "user", "content": ASM_COMPACT_DISCIPLINE})
+        return out
     for message, ids in assistant_calls:
         if ids.isdisjoint(kept_ids):
             message["content"] = ""
@@ -200,6 +238,10 @@ class AssemblyAgent:
         system_prompt: str | None = None,
         agent_kind: str = "workflow",
         compact_context: bool = False,
+        speed_optimizations: bool = False,
+        expected_components: int | None = None,
+        early_stop_min_calls: int = 60,
+        stagnation_window: int = 15,
     ):
         """view_tool=False 时去掉 view_assembly 截图工具（骨干模型不支持图片输入时用）。
         stream / log / context_limit 与零件 WorkflowAgent 相同：流式请求、逐步进度输出、小上下文模型超长时
@@ -219,6 +261,10 @@ class AssemblyAgent:
         self.system_prompt = system_prompt
         self.agent_kind = agent_kind
         self.compact_context = bool(compact_context)
+        self.speed_optimizations = bool(speed_optimizations and getattr(session, "v3", False))
+        self.expected_components = int(expected_components) if expected_components is not None else None
+        self.early_stop_min_calls = max(1, int(early_stop_min_calls))
+        self.stagnation_window = max(1, int(stagnation_window))
         self.max_llm_calls = max_llm_calls
         self.max_tokens = max_tokens
         self.temperature = temperature
@@ -232,8 +278,11 @@ class AssemblyAgent:
         再接着原对话继续，已拿到但还没执行的回复直接使用，不重新请求。"""
         started = time.perf_counter()
         v3 = bool(getattr(self.session, "v3", False))
+        base_system_prompt = self.system_prompt or (SYSTEM_PROMPT_V3 if v3 else SYSTEM_PROMPT)
+        if self.speed_optimizations:
+            base_system_prompt += SPEED_OPTIMIZATION_DISCIPLINE
         messages: list[dict] = [
-            {"role": "system", "content": self.system_prompt or (SYSTEM_PROMPT_V3 if v3 else SYSTEM_PROMPT)},
+            {"role": "system", "content": base_system_prompt},
             {"role": "user", "content": f"装配需求：\n{goal}\n\n当前是空装配体，零件路径已在需求里给出，请开始装配。"},
         ]
         usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "calls": 0}
@@ -249,6 +298,13 @@ class AssemblyAgent:
         prior_seconds, resumed = 0.0, None
         request_modes: list[str] = []
         compact_retries = 0
+        timings: dict[str, Any] = {"llm_seconds": 0.0, "tool_seconds": 0.0, "llm_calls": [], "tools": {}}
+        best_progress: dict | None = None
+        best_key: tuple | None = None
+        best_snapshot_path: str | None = None
+        last_improvement_call = 0
+        stagnation_evidence = 0
+        early_stop_reason: str | None = None
         # 未指定时不发送该字段，保持与历史结果相同的请求体。
         extra = {"reasoning_effort": self.reasoning_effort} if self.reasoning_effort else {}
 
@@ -262,6 +318,13 @@ class AssemblyAgent:
             state_messages, pending = saved.get("state_messages", []), saved.get("pending")
             request_modes = list(saved.get("request_modes") or [])
             compact_retries = int(saved.get("compact_retries") or 0)
+            timings = copy.deepcopy(saved.get("timings") or timings)
+            best_progress = copy.deepcopy(saved.get("best_progress"))
+            best_key = tuple(saved.get("best_key") or ()) or None
+            best_snapshot_path = saved.get("best_snapshot_path")
+            last_improvement_call = int(saved.get("last_improvement_call") or 0)
+            stagnation_evidence = int(saved.get("stagnation_evidence") or 0)
+            early_stop_reason = saved.get("early_stop_reason")
             if saved.get("image_at") is not None:
                 messages[saved["image_at"]]["content"] = IMAGE_PLACEHOLDER
             prior_seconds = float(saved.get("duration_seconds") or 0)
@@ -289,6 +352,13 @@ class AssemblyAgent:
                 "pending": pending, "resumed": resumed, "reasoning_effort": self.reasoning_effort,
                 "compact_context": self.compact_context, "request_modes": request_modes,
                 "compact_retries": compact_retries,
+                "speed_optimizations": self.speed_optimizations,
+                "timings": timings, "best_progress": best_progress,
+                "best_key": list(best_key) if best_key is not None else None,
+                "best_snapshot_path": best_snapshot_path,
+                "last_improvement_call": last_improvement_call,
+                "stagnation_evidence": stagnation_evidence,
+                "early_stop_reason": early_stop_reason,
                 "duration_seconds": round(prior_seconds + time.perf_counter() - started, 2),
             })
 
@@ -302,9 +372,22 @@ class AssemblyAgent:
                 request_messages = (
                     compact_assembly_history(messages) if self.compact_context else messages
                 )
+                if self.speed_optimizations and self.compact_context:
+                    request_messages.append({
+                        "role": "user",
+                        "content": "current_state_digest:\n" + json.dumps(
+                            self.session.compact_state_digest(),
+                            ensure_ascii=False,
+                            separators=(",", ":"),
+                            default=str,
+                        ),
+                    })
                 request = {"model": self.model, "messages": request_messages, "tools": self.tools, "tool_choice": "auto",
                            "temperature": self.temperature, "max_tokens": max_tokens, **extra}
+                if self.speed_optimizations:
+                    request["parallel_tool_calls"] = True
                 request_modes.append(request_mode)
+                llm_started = time.perf_counter()
                 try:
                     response, prompt_tokens = complete_within_context(
                         lambda body: complete_request(self.client, body, self.stream),
@@ -323,7 +406,11 @@ class AssemblyAgent:
                                 (current_state.get("error") or {}).get("message") or "",
                             )
                             break
-                        emergency_messages = compact_assembly_history(messages, keep_recent_rounds=1)
+                        emergency_messages = compact_assembly_history(
+                            messages,
+                            keep_recent_rounds=1,
+                            drop_old_rounds=True,
+                        )
                         emergency_messages.append({
                             "role": "user",
                             "content": "当前装配状态：\n" + json.dumps(
@@ -345,11 +432,32 @@ class AssemblyAgent:
                         status = "context_exceeded"
                         error = f"输入 {prompt_tokens} token，上下文上限 {self.context_limit}，剩余不足 {MIN_OUTPUT_TOKENS}"
                         self._log(f"上下文用尽：{error}")
+                        elapsed = time.perf_counter() - llm_started
+                        timings["llm_seconds"] = round(float(timings["llm_seconds"]) + elapsed, 4)
+                        timings["llm_calls"].append({
+                            "duration_ms": round(elapsed * 1000, 1),
+                            "request_mode": request_modes[-1],
+                            "status": "context_exceeded",
+                        })
                         break
                 except Exception as exc:
+                    elapsed = time.perf_counter() - llm_started
+                    timings["llm_seconds"] = round(float(timings["llm_seconds"]) + elapsed, 4)
+                    timings["llm_calls"].append({
+                        "duration_ms": round(elapsed * 1000, 1),
+                        "request_mode": request_modes[-1],
+                        "status": "error",
+                    })
                     status, error = "llm_error", f"{type(exc).__name__}: {exc}"
                     self._log(f"LLM 错误：{error[:300]}")
                     break
+                elapsed = time.perf_counter() - llm_started
+                timings["llm_seconds"] = round(float(timings["llm_seconds"]) + elapsed, 4)
+                timings["llm_calls"].append({
+                    "duration_ms": round(elapsed * 1000, 1),
+                    "request_mode": request_modes[-1],
+                    "status": "ok",
+                })
                 llm_responses.append(raw_response(response))
                 usage["calls"] += 1
                 if response.usage is not None:
@@ -399,6 +507,7 @@ class AssemblyAgent:
             finished = False
             image: str | None = None
             for call in calls:
+                tool_started = time.perf_counter()
                 name = call["function"]["name"]
                 raw_args = call["function"]["arguments"]
                 try:
@@ -419,6 +528,11 @@ class AssemblyAgent:
                     if name == "finish" and result.get("ok"):
                         finished = True
                         summary = str(args.get("summary", ""))
+                tool_elapsed = time.perf_counter() - tool_started
+                timings["tool_seconds"] = round(float(timings["tool_seconds"]) + tool_elapsed, 4)
+                tool_bucket = timings["tools"].setdefault(name, {"calls": 0, "seconds": 0.0})
+                tool_bucket["calls"] = int(tool_bucket["calls"]) + 1
+                tool_bucket["seconds"] = round(float(tool_bucket["seconds"]) + tool_elapsed, 4)
                 if IMAGE_KEY in result:
                     image = result.pop(IMAGE_KEY)
                 if _environment_lost(result):
@@ -439,6 +553,13 @@ class AssemblyAgent:
                     "ok": bool(result.get("ok")),
                     "error_code": (result.get("error") or {}).get("code"),
                     "message": (result.get("error") or {}).get("message", ""),
+                    "duration_ms": round(tool_elapsed * 1000, 1),
+                    **({"sampling_profile": result["sampling_profile"]}
+                       if result.get("sampling_profile") else {}),
+                    **({"dense_frames": result["dense_frames"]}
+                       if result.get("dense_frames") is not None else {}),
+                    **({"state_cache_hit": bool(result["state_cache_hit"])}
+                       if "state_cache_hit" in result else {}),
                 })
                 entry = tool_log[-1]
                 if entry["ok"]:
@@ -458,6 +579,56 @@ class AssemblyAgent:
             if finished:
                 status = "finished"
                 break
+            if self.speed_optimizations:
+                progress = self.session.progress_snapshot()
+                progress_key = self._progress_key(progress)
+                improved = best_key is None or progress_key > best_key
+                if improved:
+                    best_key = progress_key
+                    best_progress = copy.deepcopy(progress)
+                    last_improvement_call = usage["calls"]
+                    stagnation_evidence = 0
+                else:
+                    # 完整度、验证和已知错误都没有改善；失败调用或反复改结构均属于循环证据。
+                    round_tools = tool_log[round_start[1]:]
+                    if round_tools:
+                        stagnation_evidence += 1
+                if self._components_complete(progress) and (improved or not best_snapshot_path):
+                    candidate = self._default_best_path()
+                    try:
+                        best_snapshot_path = self.session.save_best_snapshot(candidate)
+                        self._log(
+                            f"  已保存最佳状态快照：components={progress['components']} "
+                            f"mates={progress['mates']}"
+                        )
+                    except Exception as exc:
+                        self._log(f"  最佳状态快照保存失败，将继续评测：{type(exc).__name__}: {exc}")
+                stagnant_calls = usage["calls"] - last_improvement_call
+                if (
+                    self._components_complete(progress)
+                    and best_snapshot_path
+                    and usage["calls"] >= self.early_stop_min_calls
+                    and stagnant_calls >= self.stagnation_window
+                    and stagnation_evidence >= self.stagnation_window
+                ):
+                    early_stop_reason = (
+                        f"全部 {self.expected_components} 个组件已插入；连续 {stagnant_calls} 次 LLM 调用"
+                        "未改善最佳结构/验证状态，且持续出现失败或循环操作"
+                    )
+                    try:
+                        final_path = self.session.assembly_path
+                        self.session.restore_best_snapshot(best_snapshot_path, final_path)
+                    except Exception as exc:
+                        error = f"恢复最佳状态失败：{type(exc).__name__}: {exc}"
+                        status = "sw_lost"
+                        self._log(error)
+                        checkpoint(status)
+                        break
+                    else:
+                        status = "stalled_best_restored"
+                        self._log(f"保守早停并恢复最佳状态：{early_stop_reason}")
+                        checkpoint(status)
+                        break
             if image is not None:
                 # 截图很占 token，历史里只保留最新一张
                 if image_at is not None:
@@ -467,6 +638,23 @@ class AssemblyAgent:
                     {"type": "text", "text": IMAGE_CAPTION}, _image_part(image, "image/png")]})
             checkpoint()
 
+        if (
+            self.speed_optimizations
+            and status == "max_llm_calls"
+            and best_snapshot_path
+            and best_key is not None
+            and self._progress_key(self.session.progress_snapshot()) < best_key
+        ):
+            try:
+                final_path = self.session.assembly_path
+                self.session.restore_best_snapshot(best_snapshot_path, final_path)
+            except Exception as exc:
+                error = f"恢复最佳状态失败：{type(exc).__name__}: {exc}"
+                status = "sw_lost"
+                self._log(error)
+            else:
+                status = "max_llm_calls_best_restored"
+                self._log("预算结束，已恢复本次运行的最佳状态")
         if status != "resume_failed":
             checkpoint(status)
         self._log(f"结束：status={status}，{usage['calls']} 次 LLM 调用，{len(tool_log)} 个工具调用，"
@@ -492,12 +680,52 @@ class AssemblyAgent:
             "compact_context": self.compact_context,
             "request_modes": request_modes,
             "compact_retries": compact_retries,
+            "speed_optimizations": self.speed_optimizations,
+            "timings": timings,
+            "best_progress": best_progress,
+            "best_snapshot_path": best_snapshot_path,
+            "last_improvement_call": last_improvement_call,
+            "early_stop_reason": early_stop_reason,
             "duration_seconds": round(prior_seconds + time.perf_counter() - started, 2),
         }
 
     def _log(self, line: str) -> None:
         if self.log:
             self.log(line)
+
+    def _progress_key(self, progress: dict) -> tuple:
+        complete = (
+            self.expected_components is not None
+            and int(progress.get("components") or 0) >= self.expected_components
+        )
+        validated = bool(
+            progress.get("motion_passed")
+            or (progress.get("pose_passed") and progress.get("dof_passed"))
+        )
+        # 验证 > 显式保存 > 组件齐全 > 错误/悬空更少 > 结构更完整。
+        return (
+            int(validated),
+            int(bool(progress.get("saved"))),
+            int(complete),
+            -int(progress.get("broken") or 0),
+            -int(progress.get("over_defined") or 0),
+            -int(progress.get("floating") or 0),
+            int(progress.get("components") or 0),
+            int(progress.get("mates") or 0),
+            int(progress.get("fixed") or 0),
+        )
+
+    def _components_complete(self, progress: dict) -> bool:
+        return (
+            self.expected_components is not None
+            and int(progress.get("components") or 0) >= self.expected_components
+        )
+
+    def _default_best_path(self) -> Path:
+        if self.checkpoint_path:
+            return self.checkpoint_path.with_name(self.checkpoint_path.stem + ".best.SLDASM")
+        assembly_path = Path(self.session.assembly_path)
+        return assembly_path.with_name(assembly_path.stem + ".best.SLDASM")
 
     def _load_checkpoint(self, goal: str) -> dict | None:
         if not self.checkpoint_path or not self.checkpoint_path.is_file():
@@ -513,6 +741,10 @@ class AssemblyAgent:
         saved_compact = bool(saved.get("compact_context", False))
         if saved_compact and not self.compact_context:
             raise ValueError(f"checkpoint {self.checkpoint_path} 使用了装配 compact_context，不能按完整上下文续跑")
+        if bool(saved.get("speed_optimizations", False)) != self.speed_optimizations:
+            raise ValueError(
+                f"checkpoint {self.checkpoint_path} 的 asm_speed_optimizations 设置不同，不能续跑"
+            )
         current_tools = [spec["function"]["name"] for spec in self.tools]
         if saved.get("tool_names") is not None and saved["tool_names"] != current_tools:
             raise ValueError(f"checkpoint {self.checkpoint_path} 的工具集合不同，不能续跑")
