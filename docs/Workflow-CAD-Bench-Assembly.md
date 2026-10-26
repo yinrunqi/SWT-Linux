@@ -210,7 +210,7 @@
 - 每轮 `max_tokens` 16000（装配阶段 `--asm-max-tokens`）。输出被截断时丢掉残缺回复，上限翻倍重试，最多 32000，放宽后的上限保留到本次运行结束。
 - 服务端上下文 73728 token，输入、推理和输出共用。服务端返回超长 400 时，按报错里的输入 token 数把本轮 `max_tokens` 压到窗口剩余量再试；剩余不足 2048 时以 `context_exceeded` 结束。
 - 调用预算：零件每个 40 次（`--max-part-calls`），装配 100 次（`--max-asm-calls`）。
-- `--compact-context` 只控制零件 L1_v2；独立的 `--asm-compact-context` 只控制装配 L1 workflow。装配紧凑模式把较早的工具结果压成 ledger、保留最近两轮完整结果，且不改写完整 checkpoint/trace；常规压缩仍装不下时，会缩到最近一轮并附加当前装配状态重试。两项默认均关闭，便于分别做消融。
+- `--compact-context` 只控制零件 L1_v2；独立的 `--asm-compact-context` 只控制装配 L1 workflow。装配紧凑模式把较早的工具结果压成 ledger、保留最近两轮完整结果，且不改写完整 checkpoint/trace；常规压缩仍装不下时，会缩到最近一轮并附加当前装配状态重试。L1 默认同时启用两项；做消融或续跑旧结果时分别用 `--no-compact-context`、`--no-asm-compact-context` 关闭。
 - 零件接口 rubric 在建模时就打分：运行评测的解释器（通常是 `venv`）没有 OCC 时，交给 `venv-occ\Scripts\python.exe -m geomcheck.rubric` 子进程（可用环境变量 `GEOMCHECK_PYTHON` 指定别的解释器），与 text-to-CAD 的做法相同。两者都没有 OCC 时才记 `skipped`，之后用 `regrade_offline.py` 补算。2026-10-11 之前 `venv` 里跑的结果零件都记成 `skipped`。齿隙仍只在有 OCC 的解释器里当场量，`venv` 里记为 None，可用 `regrade_offline.py` 补量（只记录不计分）。
 - `--workflow` 默认 v3，带 `view_assembly` 截图工具（此前默认 v1；第 6 节结果都显式用了 `--workflow v2`）。
 - 结果 JSON 记录 `provider`、`model`、`reasoning_effort`、`asm_max_tokens`、`compact_context` 和 `asm_compact_context`，`--resume` 时要求一致（旧结果的 `provider` 视为 `ttswitch`）。
@@ -929,3 +929,51 @@ venv-occ\Scripts\python.exe -X utf8 -m pytest geomcheck\tests\test_bench_parts.p
 - 内啮合的齿相位：`mesh_gears` 只转动外齿轮那一侧。如果它与刚性固连在别的行星架上的太阳轮相啮合，事后转动不会带动太阳轮，需要在插入时就把太阳轮转到正确相位（参考装配体里第二级太阳轮转了 12°）。
 - 多位姿模式只检查 `poses` 里列出的离散位姿，不检查位姿之间的连续运动。
 - 马达模式判断“卡住”时只比首帧、中间帧和末帧。如果机构在这几帧上恰好回到同一位形（比如对称的双缸、起始角 0° 的往复件），正确的装配也会被判成卡住。第二批测例都避开了这类起始角，评测器本身没改。
+
+## 10. 双 compact 加速版默认评测与复现
+
+L1 装配评测现在默认使用以下配置：
+
+- 零件阶段：`L1_v2` + `compact_context`；
+- 装配阶段：`L1_v3` + 独立的 `asm_compact_context`；
+- 装配加速：增量 current-state digest、components + mates 组合状态缓存、Agent 低帧数运动预检、安全独立工具批处理、最佳状态快照与保守停滞早停；
+- 截图：v3 默认保留 `view_assembly`，零件阶段保留 `view_model`；
+- 预算：每个零件最多 40 次 LLM 调用，装配最多 100 次；零件计划与装配单轮输出上限均为 16000 token；
+- 基础设施恢复：每例允许 1 次自动基础设施重试，并通过 checkpoint 续跑；
+- 正式评分协议不变：低帧数只用于 Agent 过程内预检，最终运动评分仍使用完整帧数。
+
+上述配置只在 `--action-level L1` 下自动开启；L0 / L0_mt 不启用 compact 或装配加速。`--workflow v2` 仍默认使用双 compact，但不会启用只支持 v3 的装配加速。需要做旧版对照时，可用
+`--no-compact-context --no-asm-compact-context --no-asm-speed-optimizations` 全部关闭；也可以单独关闭其中一项做消融。
+
+先启动 SolidWorks 和 C# 服务，然后在 `LLMPlanner` 下运行完整 50 例。下面显式写出三个默认开关，方便结果命令自描述；不写它们时，L1 v3 的行为相同。LLM 服务与模型使用运行环境当前配置，不在本协议中固定。
+
+```powershell
+venv\Scripts\python.exe -X utf8 -u eval\eval_assembly_scratch.py `
+    --cases gearbox,engine,desk_lamp,umbrella,drill_gearbox,sewing_machine,projector,bench,bench2 `
+    --condition gen --repeats 1 --action-level L1 --workflow v3 `
+    --compact-context --asm-compact-context --asm-speed-optimizations `
+    --max-part-calls 40 --max-part-plan-tokens 16000 `
+    --max-asm-calls 100 --asm-calls-per-role 0 --asm-max-tokens 16000 `
+    --infra-retries 1 `
+    --output eval\assembly_gen_dualcompact_speed_all50.json `
+    --output-dir eval\artifacts\assembly_gen_dualcompact_speed_all50 `
+    --resume
+```
+
+只比较装配阶段、直接复用 oracle 零件时，把 `--condition gen` 改为 `--condition gold`，并换一个独立的 `--output` / `--output-dir`。不要让不同条件、compact 开关或加速开关共用同一结果文件；`--resume` 会核对这些 metadata，不一致时拒绝续跑。
+
+结果 JSON 顶层应记录：
+
+```json
+{
+  "action_level": "L1",
+  "compact_context": true,
+  "asm_compact_context": true,
+  "asm_speed_optimizations": true,
+  "max_part_plan_tokens": 16000,
+  "max_asm_calls": 100,
+  "asm_calls_per_role": 0
+}
+```
+
+每例装配结果还会保存 `timings`、`state_cache`、`best_progress`、`best_snapshot_path`、`early_stop_reason` 和实际 `llm_calls`，用于区分 LLM 等待、SolidWorks 工具耗时、缓存命中和早停效果。评测结束后应汇总 `assembly_score`、`motion_score`、`motion_score_gated`、调用数、token 与有效耗时，并检查 `infra_contaminated`；被基础设施污染的行不应混入主统计。

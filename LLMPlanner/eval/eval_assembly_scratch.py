@@ -907,6 +907,17 @@ def summarize(rows: list[dict]) -> dict:
     return out
 
 
+def _apply_default_modes(args):
+    """Resolve CLI tri-state flags without enabling L1-only modes for Atomic runs."""
+    if args.compact_context is None:
+        args.compact_context = args.action_level == "L1"
+    if args.asm_compact_context is None:
+        args.asm_compact_context = args.action_level == "L1"
+    if args.asm_speed_optimizations is None:
+        args.asm_speed_optimizations = args.action_level == "L1" and args.workflow == "v3"
+    return args
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cases", default="gearbox,engine")
@@ -938,16 +949,18 @@ def main() -> None:
                         help="不提供截图工具：v3 装配不带 view_assembly，gen/e2e 的零件阶段不带 view_model"
                              "（骨干模型不支持图片输入时必须加）")
     parser.add_argument(
-        "--compact-context", action="store_true",
-        help="零件 L1_v2 使用 compact_context；装配 workflow 保持不变",
+        "--compact-context", action=argparse.BooleanOptionalAction, default=None,
+        help="零件 L1_v2 使用 compact_context；L1 默认启用，用 --no-compact-context 关闭",
     )
     parser.add_argument(
-        "--asm-compact-context", action="store_true",
-        help="装配 L1 workflow 使用独立的请求级上下文压缩、溢出恢复和可恢复 checkpoint",
+        "--asm-compact-context", action=argparse.BooleanOptionalAction, default=None,
+        help="装配 L1 workflow 使用独立的请求级上下文压缩、溢出恢复和可恢复 checkpoint；"
+             "L1 默认启用，用 --no-asm-compact-context 关闭",
     )
     parser.add_argument(
-        "--asm-speed-optimizations", action="store_true",
-        help="装配 v3 启用增量状态/组合缓存、Agent 快速运动预检、安全批处理提示和保守最佳状态早停",
+        "--asm-speed-optimizations", action=argparse.BooleanOptionalAction, default=None,
+        help="装配 v3 启用增量状态/组合缓存、Agent 快速运动预检、安全批处理提示和保守最佳状态早停；"
+             "L1 v3 默认启用，用 --no-asm-speed-optimizations 关闭",
     )
     parser.add_argument(
         "--reasoning-effort",
@@ -966,6 +979,7 @@ def main() -> None:
         "--output-dir (finished parts are reused)",
     )
     args = parser.parse_args()
+    _apply_default_modes(args)
     if args.compact_context and args.action_level != "L1":
         parser.error("--compact-context 只支持 --action-level L1 的零件阶段")
     if args.asm_compact_context and args.action_level != "L1":

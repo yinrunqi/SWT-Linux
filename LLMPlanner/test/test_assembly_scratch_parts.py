@@ -109,6 +109,49 @@ def test_three_action_levels_have_distinct_assembly_metadata():
     assert scratch.assembly_workflow_metadata("L1", "v3", True, True, True)["speed_optimizations"] is True
 
 
+@pytest.mark.parametrize(
+    ("action_level", "workflow", "expected"),
+    [
+        ("L1", "v3", (True, True, True)),
+        ("L1", "v2", (True, True, False)),
+        ("L0", "v3", (False, False, False)),
+        ("L0_mt", "v3", (False, False, False)),
+    ],
+)
+def test_default_eval_modes(action_level, workflow, expected):
+    args = SimpleNamespace(
+        action_level=action_level,
+        workflow=workflow,
+        compact_context=None,
+        asm_compact_context=None,
+        asm_speed_optimizations=None,
+    )
+
+    scratch._apply_default_modes(args)
+
+    assert (
+        args.compact_context,
+        args.asm_compact_context,
+        args.asm_speed_optimizations,
+    ) == expected
+
+
+def test_default_eval_modes_preserve_explicit_opt_out():
+    args = SimpleNamespace(
+        action_level="L1",
+        workflow="v3",
+        compact_context=False,
+        asm_compact_context=False,
+        asm_speed_optimizations=False,
+    )
+
+    scratch._apply_default_modes(args)
+
+    assert args.compact_context is False
+    assert args.asm_compact_context is False
+    assert args.asm_speed_optimizations is False
+
+
 def test_assembly_speed_flag_rejects_non_v3_workflow(monkeypatch, capsys):
     monkeypatch.setattr(
         sys,
