@@ -1,0 +1,764 @@
+[
+  {
+    "case_id": "phone_stand",
+    "score": 80.0,
+    "accepted": false,
+    "hard_ok": true,
+    "failed": [
+      "plate",
+      "vents"
+    ]
+  },
+  {
+    "case_id": "stool",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "rounded_stool",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "storage_box",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "standard_die",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "hex_nut",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "mug",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "wrench",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "vase",
+    "score": 66.67,
+    "accepted": false,
+    "hard_ok": false,
+    "failed": [
+      "outer",
+      "profile"
+    ]
+  },
+  {
+    "case_id": "key",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "gear_disc",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "flange",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "pulley",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "stepped_shaft",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "socket_bolt",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "l_bracket",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "spacer_ring",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "mounting_plate",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "stepped_block",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "knob",
+    "score": 83.33,
+    "accepted": false,
+    "hard_ok": true,
+    "failed": [
+      "grooves"
+    ]
+  },
+  {
+    "case_id": "hex_standoff",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "u_channel",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "flanged_bushing",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "wedge_block",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "spoked_wheel",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "end_cap",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "link_bar",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "fork_end",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "three_lug_housing",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "pillow_block",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "twin_arm_rocker",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "clevis_bracket",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "diamond_flange",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "support_seat",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "crank",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "gusset_bracket",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "flanged_elbow",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "open_box",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "counterbore_plate",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "side_pad",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "sheet_angle",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "square_to_round",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "corner_rib_stand",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "bent_tube",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "lidless_housing",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "csk_cover",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "through_boss",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "sheet_channel",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "rect_to_circle",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "soap_dish",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "quad_frame",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "connecting_rod",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "finned_housing",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "sprocket",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "handwheel",
+    "score": 88.89,
+    "accepted": false,
+    "hard_ok": true,
+    "failed": [
+      "knob"
+    ]
+  },
+  {
+    "case_id": "camshaft",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "planet_carrier",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "impeller",
+    "score": 60.0,
+    "accepted": false,
+    "hard_ok": true,
+    "failed": [
+      "blade_count",
+      "blade_arc",
+      "blade_height",
+      "blade_tip"
+    ]
+  },
+  {
+    "case_id": "crankshaft",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "brake_disc",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "wheel_rim",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "geneva_wheel",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "spiral_staircase",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "engine_piston",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "pipe_manifold",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "gearbox_housing",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "heat_sink",
+    "score": 44.44,
+    "accepted": false,
+    "hard_ok": true,
+    "failed": [
+      "pins",
+      "pin_grid",
+      "mount_holes",
+      "counterbores",
+      "volume"
+    ]
+  },
+  {
+    "case_id": "honeycomb_panel",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "gear_pump_body",
+    "score": 80.0,
+    "accepted": false,
+    "hard_ok": false,
+    "failed": [
+      "outer",
+      "port_bosses"
+    ]
+  },
+  {
+    "case_id": "cold_plate",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "truss_beam",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "turbine_disk",
+    "score": 70.0,
+    "accepted": false,
+    "hard_ok": true,
+    "failed": [
+      "web",
+      "fillets",
+      "volume"
+    ]
+  },
+  {
+    "case_id": "bt40_holder",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "hydraulic_manifold",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "rocket_fin_can",
+    "score": 33.33,
+    "accepted": false,
+    "hard_ok": true,
+    "failed": [
+      "tube",
+      "bulkhead",
+      "nozzle",
+      "fins",
+      "fin_planform",
+      "vents"
+    ]
+  },
+  {
+    "case_id": "ratchet_wheel",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "injector_plate",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "robot_arm_link",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "menger_sponge",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "u_joint_yoke",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "balanced_flywheel",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "cast_manifold_fillets",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "clipped_hex_perforation",
+    "score": 88.89,
+    "accepted": false,
+    "hard_ok": true,
+    "failed": [
+      "volume"
+    ]
+  },
+  {
+    "case_id": "compound_drill_block",
+    "score": 72.73,
+    "accepted": false,
+    "hard_ok": true,
+    "failed": [
+      "hole_a_depth",
+      "hole_b_direction",
+      "hole_b_depth"
+    ]
+  },
+  {
+    "case_id": "die_cast_cover",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "filleted_shell_enclosure",
+    "score": 77.78,
+    "accepted": false,
+    "hard_ok": true,
+    "failed": [
+      "corner_fillets",
+      "volume"
+    ]
+  },
+  {
+    "case_id": "helical_ring_gear",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "inch_callout_plate",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "naca_wing_rib",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "pipe_route_3d",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "roller_cam",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "scroll_wrap_plate",
+    "score": 12.5,
+    "accepted": false,
+    "hard_ok": false,
+    "failed": [
+      "envelope",
+      "involute_walls",
+      "wrap_ends",
+      "wrap_height",
+      "tip_seal_groove",
+      "plate_holes",
+      "volume"
+    ]
+  },
+  {
+    "case_id": "sheet_metal_kfactor",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "spherical_dome_ports",
+    "score": 33.33,
+    "accepted": false,
+    "hard_ok": true,
+    "failed": [
+      "shell",
+      "base_flange",
+      "nozzle_n1",
+      "nozzle_n2",
+      "nozzle_n3",
+      "top_nozzle"
+    ]
+  },
+  {
+    "case_id": "tangent_link_lever",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "tricylinder_node",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "twisted_flute_knob",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "variable_fillet_bracket",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "variable_pitch_spring",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "worm_shaft",
+    "score": 83.33,
+    "accepted": false,
+    "hard_ok": true,
+    "failed": [
+      "flank",
+      "keyway"
+    ]
+  }
+]

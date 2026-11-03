@@ -1,0 +1,13 @@
+17:43:21 model=claude-sonnet-5 cases=2 runs=2 -> /home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/.json
+17:43:21 === gear_driven_slider_crank r1: 9 个零件
+17:43:21 === adjustable_desk_lamp r1: 5 个零件
+17:43:43   part gear_driven_slider_crank/gs_motor_shaft     finished         calls=3   accepted=True score=100.0
+17:43:43   part adjustable_desk_lamp/lamp_base          finished         calls=3   accepted=True score=100.0
+17:43:45   part gear_driven_slider_crank/gs_frame           finished         calls=3   accepted=True score=100.0
+17:44:05   part adjustable_desk_lamp/lamp_shade         finished         calls=3   accepted=True score=100.0
+17:44:10   part adjustable_desk_lamp/lamp_lower_arm     finished         calls=4   accepted=True score=100.0
+17:44:16   part adjustable_desk_lamp/lamp_upper_arm     finished         calls=5   accepted=True score=100.0
+17:44:20   part gear_driven_slider_crank/gs_crank_shaft     finished         calls=8   accepted=True score=100.0
+17:44:21   part adjustable_desk_lamp/lamp_pin           finished         calls=3   accepted=True score=100.0
+17:44:29   part gear_driven_slider_crank/gs_pinion          finished         calls=7   accepted=True score=100.0
+17:44:44   part gear_driven_slider_crank/gs_pin12           finished         calls=3   accepted=True score=100.0

@@ -1,0 +1,101 @@
+{
+ "part_id": "lamp_upper_arm",
+ "status": "finished",
+ "error": null,
+ "llm_calls": 5,
+ "tool_counts": {
+  "read_doc": 7,
+  "run_python": 2,
+  "finish": 1,
+  "finish_rejected": 0,
+  "no_tool": 0
+ },
+ "token_usage": {
+  "prompt_tokens": 83721,
+  "completion_tokens": 6139,
+  "total_tokens": 89860,
+  "cached_tokens": 39822,
+  "credit": 17.88
+ },
+ "elapsed_s": 53.9,
+ "max_calls": 150,
+ "reasoning_effort": "medium",
+ "max_tokens": 32000,
+ "step": "parts/lamp_upper_arm.step",
+ "accepted": true,
+ "score": 100.0,
+ "grade": {
+  "case": "lamp_upper_arm",
+  "score": 100.0,
+  "passed": 2,
+  "total": 2,
+  "implied_passed": 0,
+  "implied_total": 0,
+  "hard_ok": true,
+  "accepted": true,
+  "rubrics": [
+   {
+    "id": "solid",
+    "ok": true,
+    "hard": true,
+    "basis": "explicit",
+    "weight": 1.0,
+    "checks": [
+     {
+      "check": "single_valid_solid",
+      "ok": true,
+      "solids": 1,
+      "shells": 1,
+      "valid": true
+     }
+    ]
+   },
+   {
+    "id": "holes",
+    "ok": true,
+    "hard": true,
+    "basis": "explicit",
+    "weight": 1.0,
+    "checks": [
+     {
+      "check": "exists",
+      "ok": true,
+      "found": 2,
+      "expected": 2
+     },
+     {
+      "check": "pair_distance",
+      "ok": true,
+      "measured": 105.0
+     },
+     {
+      "check": "through",
+      "ok": true,
+      "holes": [
+       {
+        "length": 5.0,
+        "blocked": false,
+        "ends_open": true
+       },
+       {
+        "length": 5.0,
+        "blocked": false,
+        "ends_open": true
+       }
+      ]
+     },
+     {
+      "check": "bbox_sorted",
+      "ok": true,
+      "measured": [
+       5.0,
+       12.0,
+       117.0
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "trace": "parts/lamp_upper_arm/transcript.json"
+}

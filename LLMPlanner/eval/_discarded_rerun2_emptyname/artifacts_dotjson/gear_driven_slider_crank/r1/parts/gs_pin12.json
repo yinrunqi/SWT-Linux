@@ -1,0 +1,87 @@
+{
+ "part_id": "gs_pin12",
+ "status": "finished",
+ "error": null,
+ "llm_calls": 3,
+ "tool_counts": {
+  "read_doc": 2,
+  "run_python": 1,
+  "finish": 1,
+  "finish_rejected": 0,
+  "no_tool": 0
+ },
+ "token_usage": {
+  "prompt_tokens": 33500,
+  "completion_tokens": 642,
+  "total_tokens": 34142,
+  "cached_tokens": 21795,
+  "credit": 4.01
+ },
+ "elapsed_s": 14.3,
+ "max_calls": 150,
+ "reasoning_effort": "medium",
+ "max_tokens": 32000,
+ "step": "parts/gs_pin12.step",
+ "accepted": true,
+ "score": 100.0,
+ "grade": {
+  "case": "gs_pin12",
+  "score": 100.0,
+  "passed": 2,
+  "total": 2,
+  "implied_passed": 0,
+  "implied_total": 0,
+  "hard_ok": true,
+  "accepted": true,
+  "rubrics": [
+   {
+    "id": "solid",
+    "ok": true,
+    "hard": true,
+    "basis": "explicit",
+    "weight": 1.0,
+    "checks": [
+     {
+      "check": "single_valid_solid",
+      "ok": true,
+      "solids": 1,
+      "shells": 1,
+      "valid": true
+     }
+    ]
+   },
+   {
+    "id": "size",
+    "ok": true,
+    "hard": true,
+    "basis": "explicit",
+    "weight": 1.0,
+    "checks": [
+     {
+      "check": "exists",
+      "ok": true,
+      "found": 1,
+      "expected": 1
+     },
+     {
+      "check": "extent_along",
+      "ok": true,
+      "measured": [
+       12.0
+      ]
+     },
+     {
+      "check": "bbox_sorted",
+      "ok": true,
+      "measured": [
+       6.0,
+       6.0,
+       12.0
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "trace": "parts/gs_pin12/transcript.json"
+}

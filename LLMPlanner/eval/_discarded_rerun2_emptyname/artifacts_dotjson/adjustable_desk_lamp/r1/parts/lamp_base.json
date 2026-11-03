@@ -1,0 +1,91 @@
+{
+ "part_id": "lamp_base",
+ "status": "finished",
+ "error": null,
+ "llm_calls": 3,
+ "tool_counts": {
+  "read_doc": 4,
+  "run_python": 1,
+  "finish": 1,
+  "finish_rejected": 0,
+  "no_tool": 0
+ },
+ "token_usage": {
+  "prompt_tokens": 35461,
+  "completion_tokens": 985,
+  "total_tokens": 36446,
+  "cached_tokens": 22666,
+  "credit": 4.63
+ },
+ "elapsed_s": 20.7,
+ "max_calls": 150,
+ "reasoning_effort": "medium",
+ "max_tokens": 32000,
+ "step": "parts/lamp_base.step",
+ "accepted": true,
+ "score": 100.0,
+ "grade": {
+  "case": "lamp_base",
+  "score": 100.0,
+  "passed": 2,
+  "total": 2,
+  "implied_passed": 0,
+  "implied_total": 0,
+  "hard_ok": true,
+  "accepted": true,
+  "rubrics": [
+   {
+    "id": "solid",
+    "ok": true,
+    "hard": true,
+    "basis": "explicit",
+    "weight": 1.0,
+    "checks": [
+     {
+      "check": "single_valid_solid",
+      "ok": true,
+      "solids": 1,
+      "shells": 1,
+      "valid": true
+     }
+    ]
+   },
+   {
+    "id": "shape",
+    "ok": true,
+    "hard": true,
+    "basis": "explicit",
+    "weight": 1.0,
+    "checks": [
+     {
+      "check": "bbox_sorted",
+      "ok": true,
+      "measured": [
+       8.0,
+       80.0,
+       120.0
+      ]
+     },
+     {
+      "check": "exists",
+      "ok": true,
+      "found": 1,
+      "expected": 1
+     },
+     {
+      "check": "through",
+      "ok": true,
+      "holes": [
+       {
+        "length": 8.0,
+        "blocked": false,
+        "ends_open": true
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "trace": "parts/lamp_base/transcript.json"
+}

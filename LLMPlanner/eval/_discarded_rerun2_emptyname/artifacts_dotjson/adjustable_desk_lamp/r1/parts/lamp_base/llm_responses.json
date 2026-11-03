@@ -1,0 +1,197 @@
+[
+ {
+  "id": "25c51e363a6e43df85aed7d4507bec4f",
+  "choices": [
+   {
+    "finish_reason": "tool_calls",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "tool_calls": [
+      {
+       "id": "toolu_01UdH9MN7BgNJoYacytW4UxS",
+       "function": {
+        "arguments": "{\"path\": \"references/docs/api/make_rectangle_rface.md\"}",
+        "name": "read_doc"
+       },
+       "type": "function"
+      },
+      {
+       "id": "toolu_01Jy52Mu9Ysw7Ceb9mCSqqyq",
+       "function": {
+        "arguments": "{\"path\": \"references/docs/api/extrude_rsolid.md\"}",
+        "name": "read_doc"
+       },
+       "type": "function"
+      },
+      {
+       "id": "toolu_01WyShYP6zDHtPacdydeHiN3",
+       "function": {
+        "arguments": "{\"path\": \"references/docs/api/make_circle_rface.md\"}",
+        "name": "read_doc"
+       },
+       "type": "function"
+      },
+      {
+       "id": "toolu_017w1GjjjuQZKnndGCV3zZUL",
+       "function": {
+        "arguments": "{\"path\": \"references/docs/api/cut_rsolid.md\"}",
+        "name": "read_doc"
+       },
+       "type": "function"
+      }
+     ],
+     "reasoning_content": "I'm sketching a simple rectangle on the front plane, extruding it 8mm in Z, then adding a through hole of 5.2mm diameter at position (0,60). Writing the modeling code...\n\n"
+    }
+   }
+  ],
+  "created": 1791279802,
+  "model": "claude-sonnet-5",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 304,
+   "prompt_tokens": 10704,
+   "total_tokens": 11008,
+   "completion_tokens_details": null,
+   "prompt_tokens_details": null,
+   "prompt_cache_hit_tokens": 0,
+   "prompt_cache_miss_tokens": 129,
+   "cache_read_input_tokens": 0,
+   "cache_creation_input_tokens": 10575,
+   "prompt_cache_write_tokens": 10575,
+   "completion_thinking_tokens": 0,
+   "credit": 2.97,
+   "cached_tokens": 0
+  }
+ },
+ {
+  "id": "e33a71f34daa4c53a0d744b233342940",
+  "choices": [
+   {
+    "finish_reason": "tool_calls",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "tool_calls": [
+      {
+       "id": "toolu_016ZAiLfBdRbmm4Um9Hvd7sx",
+       "function": {
+        "arguments": "{\"code\": \"\\nimport simplecadapi as scad\\n\\n@scad.part(id=\\\"part\\\", cache=\\\"off\\\")\\ndef build() -> scad.Solid:\\n    # 矩形: X in [-60,60], Y in [-10,70] -> width=120, height=80, center=(0,30,0)\\n    rect = scad.make_rectangle_rface(width=120.0, height=80.0, center=(0.0, 30.0, 0.0), normal=(0.0, 0.0, 1.0))\\n    base = scad.extrude_rsolid(profile=rect, direction=(0.0, 0.0, 1.0), distance=8.0)\\n\\n    # 贯穿孔: 直径5.2, 位置(0,60), 沿Z方向贯穿, 稍微overshoot\\n    hole_face = scad.make_circle_rface(center=(0.0, 60.0, -1.0), radius=2.6, normal=(0.0, 0.0, 1.0))\\n    hole = scad.extrude_rsolid(profile=hole_face, direction=(0.0, 0.0, 1.0), distance=10.0)\\n\\n    result = scad.cut_rsolid(base, hole)\\n    return result\\n\\nres = build()\\nprint(\\\"volume\\\", res.part.body.get_volume())\\nscad.capture(res, \\\"model.scadpkg\\\", include_scene=False)\\nscad.exporter.export_product_package_to_step(\\\"model.scadpkg\\\", \\\"model.step\\\")\\nprint(\\\"done\\\")\\n\"}",
+        "name": "run_python"
+       },
+       "type": "function"
+      }
+     ],
+     "reasoning_content": "I'm laying out the rectangle on the XY plane centered at (0,30,0), extruding it 8mm along +Z, then adding a through-hole of 5.2mm diameter at (0,60) with slight overshoot to ensure a clean cut through the full thickness.\n\n"
+    }
+   }
+  ],
+  "created": 1791279809,
+  "model": "claude-sonnet-5",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 606,
+   "prompt_tokens": 12093,
+   "total_tokens": 12699,
+   "completion_tokens_details": null,
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": null,
+    "cached_tokens": 10575,
+    "image_tokens": null,
+    "text_tokens": null,
+    "accepted_prediction_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0
+   },
+   "prompt_cache_hit_tokens": 10575,
+   "prompt_cache_miss_tokens": 2,
+   "cache_read_input_tokens": 0,
+   "cache_creation_input_tokens": 1516,
+   "prompt_cache_write_tokens": 1516,
+   "completion_thinking_tokens": 0,
+   "credit": 1.2,
+   "cached_tokens": 0
+  }
+ },
+ {
+  "id": "02bb3f937eab48d89849da1ce241c06c",
+  "choices": [
+   {
+    "finish_reason": "tool_calls",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "tool_calls": [
+      {
+       "id": "toolu_01SSoFh1ANMncqF9HtYiyY4N",
+       "function": {
+        "arguments": "{}",
+        "name": "finish"
+       },
+       "type": "function"
+      }
+     ],
+     "reasoning_content": "Let me verify the volume: the box minus the hole gives roughly 76630, which matches well against the full box volume of 76800.\n\n"
+    }
+   }
+  ],
+  "created": 1791279818,
+  "model": "claude-sonnet-5",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 75,
+   "prompt_tokens": 12664,
+   "total_tokens": 12739,
+   "completion_tokens_details": null,
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": null,
+    "cached_tokens": 12091,
+    "image_tokens": null,
+    "text_tokens": null,
+    "accepted_prediction_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0
+   },
+   "prompt_cache_hit_tokens": 12091,
+   "prompt_cache_miss_tokens": 2,
+   "cache_read_input_tokens": 0,
+   "cache_creation_input_tokens": 571,
+   "prompt_cache_write_tokens": 571,
+   "completion_thinking_tokens": 0,
+   "credit": 0.46,
+   "cached_tokens": 0
+  }
+ }
+]

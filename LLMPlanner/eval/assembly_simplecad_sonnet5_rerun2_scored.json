@@ -1,0 +1,1054 @@
+{
+  "model": "claude-sonnet-5",
+  "summary": {
+    "n": 2,
+    "part_pass_rate": 1.0,
+    "assembly_score": 97.5,
+    "motion_score": 83.34,
+    "e2e": 1
+  },
+  "rows": [
+    {
+      "case_id": "adjustable_desk_lamp",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "lamp_base",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 35428,
+            "completion_tokens": 970,
+            "total_tokens": 36398,
+            "cached_tokens": 22666,
+            "credit": 4.61
+          },
+          "elapsed_s": 19.1
+        },
+        {
+          "part_id": "lamp_lower_arm",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 68967,
+            "completion_tokens": 2468,
+            "total_tokens": 71435,
+            "cached_tokens": 53503,
+            "credit": 7.4
+          },
+          "elapsed_s": 43.2
+        },
+        {
+          "part_id": "lamp_upper_arm",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 67745,
+            "completion_tokens": 2136,
+            "total_tokens": 69881,
+            "cached_tokens": 52703,
+            "credit": 6.94
+          },
+          "elapsed_s": 34.6
+        },
+        {
+          "part_id": "lamp_shade",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 35423,
+            "completion_tokens": 1035,
+            "total_tokens": 36458,
+            "cached_tokens": 22649,
+            "credit": 4.67
+          },
+          "elapsed_s": 21.0
+        },
+        {
+          "part_id": "lamp_pin",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 47214,
+            "completion_tokens": 764,
+            "total_tokens": 47978,
+            "cached_tokens": 34502,
+            "credit": 4.62
+          },
+          "elapsed_s": 20.2
+        }
+      ],
+      "agent": {
+        "status": "finished",
+        "error": null,
+        "llm_calls": 25,
+        "tool_counts": {
+          "read_doc": 30,
+          "run_python": 14,
+          "finish": 1,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 867777,
+          "completion_tokens": 25018,
+          "total_tokens": 892795,
+          "cached_tokens": 815422,
+          "credit": 54.35
+        },
+        "elapsed_s": 342.4,
+        "delivered": true,
+        "export_ok": true,
+        "export_detail": "{\"components\": 7, \"constraints\": 6, \"missing_roles\": [], \"extra_components\": [], \"problems\": []}"
+      },
+      "export_sha256": "e0842e9e2a5dd3cc2ff723e6ae552d7704f8cebd84a1691bda7a5ef7286740b2",
+      "bridge": {
+        "assembly": "C:\\Users\\38409\\Desktop\\Workflow-CAD\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_simplecad_sonnet5_rerun2\\adjustable_desk_lamp\\r1\\sw\\adjustable_desk_lamp.SLDASM",
+        "aliases": {
+          "base": "lamp_base-1",
+          "elbow_pin": "lamp_pin-1",
+          "lower_arm": "lamp_lower_arm-1",
+          "shade": "lamp_shade-1",
+          "shoulder_pin": "lamp_pin-2",
+          "upper_arm": "lamp_upper_arm-1",
+          "wrist_pin": "lamp_pin-3"
+        },
+        "constraints": 6,
+        "translated": 6,
+        "failed": [],
+        "unsupported": [],
+        "off_pose_mates": 0,
+        "final_drift": {
+          "mm": 0.0,
+          "deg": 0.0,
+          "role": null
+        }
+      },
+      "rubric": {
+        "score": 100.0,
+        "score_v1": 100.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 1.0,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0
+        },
+        "completeness": 1.0,
+        "missing_roles": [],
+        "wrongly_fixed": [],
+        "rigid_groups": [
+          {
+            "role": "base",
+            "body": "base",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "lower_arm",
+            "body": "lower_arm",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "upper_arm",
+            "body": "upper_arm",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "shade",
+            "body": "shade",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "shoulder_pin",
+            "body": "base|lower_arm",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "elbow_pin",
+            "body": "lower_arm|upper_arm",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "wrist_pin",
+            "body": "upper_arm|shade",
+            "ok": true,
+            "ok_v1": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "lower_arm",
+              "base"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok_v1": true,
+            "ok": true,
+            "anchor_err_mm": {
+              "lower_arm:1": 0.0
+            },
+            "anchor_ok": true
+          },
+          {
+            "bodies": [
+              "upper_arm",
+              "lower_arm"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok_v1": true,
+            "ok": true,
+            "anchor_err_mm": {
+              "lower_arm:0": 0.0,
+              "upper_arm:2": 0.0
+            },
+            "anchor_ok": true
+          },
+          {
+            "bodies": [
+              "shade",
+              "upper_arm"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok_v1": true,
+            "ok": true,
+            "anchor_err_mm": {
+              "upper_arm:1": 0.0
+            },
+            "anchor_ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 3,
+          "target": 3,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": []
+      },
+      "motion": {
+        "mode": "poses",
+        "passed": true,
+        "score": 100.0,
+        "score_v1": 100.0,
+        "poses": [
+          {
+            "name": "reach_low",
+            "variants": [
+              {
+                "flip": true
+              },
+              {
+                "flip": true
+              },
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 51.962,
+                  "expected": 51.96,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": 90.0,
+                  "expected": 90.0,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "x",
+                  "got": 126.111,
+                  "expected": 126.11,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "y",
+                  "got": 167.581,
+                  "expected": 167.58,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "x",
+                  "got": 174.009,
+                  "expected": 174.01,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "y",
+                  "got": 245.804,
+                  "expected": 245.8,
+                  "err_mm": 0.004,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true,
+            "score": 100.0,
+            "checks": [
+              {
+                "name": "kinematics",
+                "weight": 2.0,
+                "score": 1.0
+              },
+              {
+                "name": "interference",
+                "weight": 2.0,
+                "score": 1.0
+              },
+              {
+                "name": "fixed",
+                "weight": 1.0,
+                "score": 1.0
+              }
+            ]
+          },
+          {
+            "name": "reach_mid",
+            "variants": [
+              {
+                "flip": false
+              },
+              {
+                "flip": false
+              },
+              {
+                "flip": true
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 30.0,
+                  "expected": 30.0,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": 111.962,
+                  "expected": 111.96,
+                  "err_mm": 0.002,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "x",
+                  "got": 107.581,
+                  "expected": 107.58,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "y",
+                  "got": 186.111,
+                  "expected": 186.11,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "x",
+                  "got": 195.01,
+                  "expected": 195.01,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "y",
+                  "got": 204.812,
+                  "expected": 204.81,
+                  "err_mm": 0.002,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.002,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true,
+            "score": 100.0,
+            "checks": [
+              {
+                "name": "kinematics",
+                "weight": 2.0,
+                "score": 1.0
+              },
+              {
+                "name": "interference",
+                "weight": 2.0,
+                "score": 1.0
+              },
+              {
+                "name": "fixed",
+                "weight": 1.0,
+                "score": 1.0
+              }
+            ]
+          },
+          {
+            "name": "reach_high",
+            "variants": [
+              {
+                "flip": false
+              },
+              {
+                "flip": false
+              },
+              {
+                "flip": false
+              }
+            ],
+            "points": {
+              "checks": [
+                {
+                  "role": "lower_arm",
+                  "coord": "x",
+                  "got": 8.35,
+                  "expected": 8.35,
+                  "err_mm": 0.0,
+                  "ok": true
+                },
+                {
+                  "role": "lower_arm",
+                  "coord": "y",
+                  "got": 119.416,
+                  "expected": 119.42,
+                  "err_mm": 0.004,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "x",
+                  "got": 61.223,
+                  "expected": 61.22,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "upper_arm",
+                  "coord": "y",
+                  "got": 206.653,
+                  "expected": 206.65,
+                  "err_mm": 0.003,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "x",
+                  "got": 144.721,
+                  "expected": 144.72,
+                  "err_mm": 0.001,
+                  "ok": true
+                },
+                {
+                  "role": "shade",
+                  "coord": "y",
+                  "got": 225.476,
+                  "expected": 225.48,
+                  "err_mm": 0.004,
+                  "ok": true
+                }
+              ],
+              "max_err_mm": 0.004,
+              "ok": true
+            },
+            "interference_count": 0,
+            "interference_mm3": 0.0,
+            "drifted_fixed": [],
+            "ok": true,
+            "score": 100.0,
+            "checks": [
+              {
+                "name": "kinematics",
+                "weight": 2.0,
+                "score": 1.0
+              },
+              {
+                "name": "interference",
+                "weight": 2.0,
+                "score": 1.0
+              },
+              {
+                "name": "fixed",
+                "weight": 1.0,
+                "score": 1.0
+              }
+            ]
+          }
+        ]
+      },
+      "missing_roles": [],
+      "assembly_score": 100.0,
+      "motion_score": 100.0,
+      "e2e": true
+    },
+    {
+      "case_id": "gear_driven_slider_crank",
+      "condition": "gen",
+      "repeat": 1,
+      "workflow": "simplecadapi",
+      "model": "claude-sonnet-5",
+      "part_pass_rate": 1.0,
+      "parts": [
+        {
+          "part_id": "gs_frame",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 36066,
+            "completion_tokens": 1062,
+            "total_tokens": 37128,
+            "cached_tokens": 22997,
+            "credit": 4.79
+          },
+          "elapsed_s": 22.3
+        },
+        {
+          "part_id": "gs_motor_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33474,
+            "completion_tokens": 535,
+            "total_tokens": 34009,
+            "cached_tokens": 21792,
+            "credit": 3.89
+          },
+          "elapsed_s": 20.5
+        },
+        {
+          "part_id": "gs_crank_shaft",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33455,
+            "completion_tokens": 493,
+            "total_tokens": 33948,
+            "cached_tokens": 21794,
+            "credit": 3.84
+          },
+          "elapsed_s": 15.0
+        },
+        {
+          "part_id": "gs_pinion",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 72119,
+            "completion_tokens": 1117,
+            "total_tokens": 73236,
+            "cached_tokens": 53054,
+            "credit": 6.94
+          },
+          "elapsed_s": 34.7
+        },
+        {
+          "part_id": "gs_gear",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 5,
+          "token_usage": {
+            "prompt_tokens": 68496,
+            "completion_tokens": 1010,
+            "total_tokens": 69506,
+            "cached_tokens": 53603,
+            "credit": 5.8
+          },
+          "elapsed_s": 34.8
+        },
+        {
+          "part_id": "gs_crank",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 38684,
+            "completion_tokens": 1944,
+            "total_tokens": 40628,
+            "cached_tokens": 24166,
+            "credit": 6.05
+          },
+          "elapsed_s": 30.3
+        },
+        {
+          "part_id": "gs_pin12",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 33444,
+            "completion_tokens": 499,
+            "total_tokens": 33943,
+            "cached_tokens": 21791,
+            "credit": 3.84
+          },
+          "elapsed_s": 13.9
+        },
+        {
+          "part_id": "gs_rod",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 4,
+          "token_usage": {
+            "prompt_tokens": 53112,
+            "completion_tokens": 2542,
+            "total_tokens": 55654,
+            "cached_tokens": 48468,
+            "credit": 4.66
+          },
+          "elapsed_s": 38.0
+        },
+        {
+          "part_id": "gs_slider",
+          "status": "finished",
+          "accepted": true,
+          "score": 100.0,
+          "llm_calls": 3,
+          "token_usage": {
+            "prompt_tokens": 35370,
+            "completion_tokens": 935,
+            "total_tokens": 36305,
+            "cached_tokens": 22649,
+            "credit": 4.56
+          },
+          "elapsed_s": 17.5
+        }
+      ],
+      "agent": {
+        "status": "finished",
+        "error": null,
+        "llm_calls": 92,
+        "tool_counts": {
+          "read_doc": 38,
+          "run_python": 81,
+          "finish": 1,
+          "finish_rejected": 0,
+          "no_tool": 0
+        },
+        "token_usage": {
+          "prompt_tokens": 10709740,
+          "completion_tokens": 240621,
+          "total_tokens": 10950361,
+          "cached_tokens": 10483925,
+          "credit": 506.64
+        },
+        "elapsed_s": 3143.2,
+        "delivered": true,
+        "export_ok": true,
+        "export_detail": "{\"components\": 10, \"constraints\": 11, \"missing_roles\": [], \"extra_components\": [], \"problems\": []}"
+      },
+      "export_sha256": "20deebd90fc3cc286702943d9170945146a2f774c804fce2e02587b7601a01a3",
+      "bridge": {
+        "assembly": "C:\\Users\\38409\\Desktop\\Workflow-CAD\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\assembly_simplecad_sonnet5_rerun2\\gear_driven_slider_crank\\r1\\sw\\gear_driven_slider_crank.SLDASM",
+        "aliases": {
+          "frame": "gs_frame-1",
+          "crank": "gs_crank-1",
+          "crank_pin": "gs_pin12-1",
+          "crank_shaft": "gs_crank_shaft-1",
+          "gear": "gs_gear-1",
+          "motor_shaft": "gs_motor_shaft-1",
+          "pinion": "gs_pinion-1",
+          "rod": "gs_rod-1",
+          "slider": "gs_slider-1",
+          "wrist_pin": "gs_pin12-2"
+        },
+        "constraints": 11,
+        "translated": 10,
+        "failed": [
+          "rev_slider_wrist(revolute): RuntimeError: distance 配合全部失败：[{'align': 'aligned', 'distance': 0.006, 'flip': False, 'error': '[FEATURE_FAILED] distance 配合失败: errStatus=5（装配过定义（与已有配合冲突））'}, {'align': 'aligned', 'distance': 0.006, 'flip': True, 'error': '[FEATURE_FAILED] distance 配合失败: errStatus=5（装配过定义（与已有配合冲突））'}, {'align': 'anti', 'distance': 0.006, 'flip': False, 'error': '[FEATURE_FAILED] distance 配合失败: errStatus=5（装配过定义（与已"
+        ],
+        "unsupported": [],
+        "off_pose_mates": 6,
+        "final_drift": {
+          "mm": 20.0,
+          "deg": 0.0,
+          "role": "frame"
+        }
+      },
+      "rubric": {
+        "score": 95.0,
+        "score_v1": 95.0,
+        "parts": {
+          "rigid_groups": 1.0,
+          "joints": 0.8,
+          "mobility": 1.0,
+          "grounded": 1.0,
+          "not_over_defined": 1.0,
+          "couplings": 1.0
+        },
+        "completeness": 1.0,
+        "missing_roles": [],
+        "wrongly_fixed": [],
+        "rigid_groups": [
+          {
+            "role": "frame",
+            "body": "frame",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "motor_shaft",
+            "body": "motor",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "pinion",
+            "body": "motor",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "crank_shaft",
+            "body": "crank",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "gear",
+            "body": "crank",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "crank",
+            "body": "crank",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "rod",
+            "body": "rod",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "slider",
+            "body": "slider",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "crank_pin",
+            "body": "crank|rod",
+            "ok": true,
+            "ok_v1": true
+          },
+          {
+            "role": "wrist_pin",
+            "body": "rod|slider",
+            "ok": true,
+            "ok_v1": true
+          }
+        ],
+        "joints": [
+          {
+            "bodies": [
+              "motor",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok_v1": true,
+            "ok": true,
+            "anchor_err_mm": {
+              "frame:1": 0.0
+            },
+            "anchor_ok": true
+          },
+          {
+            "bodies": [
+              "crank",
+              "frame"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok_v1": true,
+            "ok": true,
+            "anchor_err_mm": {
+              "frame:0": 0.0,
+              "crank_shaft:2": -0.0
+            },
+            "anchor_ok": true
+          },
+          {
+            "bodies": [
+              "rod",
+              "crank"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "revolute",
+            "ok_v1": true,
+            "ok": true,
+            "anchor_err_mm": {
+              "crank_shaft:1": -0.0
+            },
+            "anchor_ok": true
+          },
+          {
+            "bodies": [
+              "slider",
+              "rod"
+            ],
+            "expected": [
+              "revolute"
+            ],
+            "actual": "cylindrical",
+            "ok_v1": false,
+            "ok": false
+          },
+          {
+            "bodies": [
+              "slider",
+              "frame"
+            ],
+            "expected": [
+              "slider",
+              "planar"
+            ],
+            "actual": "slider",
+            "ok_v1": true,
+            "ok": true
+          }
+        ],
+        "mobility": {
+          "actual": 1,
+          "target": 1,
+          "ok": true,
+          "skipped": []
+        },
+        "floating": [],
+        "ground_ok": true,
+        "over_defined": {},
+        "broken_mates": [],
+        "suppressed_mates": [],
+        "couplings": [
+          {
+            "pair": [
+              "pinion",
+              "gear"
+            ],
+            "mate": "齿轮配合1",
+            "ratio": [
+              12.0,
+              36.0
+            ],
+            "ratio_ok": true,
+            "direction_ok": true,
+            "center_distance_mm": 48.0,
+            "expected_mm": 48.0,
+            "center_ok": true,
+            "score_v1": 1.0,
+            "score": 1.0
+          }
+        ]
+      },
+      "motion": {
+        "passed": false,
+        "score": 66.67,
+        "score_v1": 60.0,
+        "checks": [
+          {
+            "name": "interference",
+            "weight": 2.0,
+            "score": 0.0,
+            "frames_with_interference": 13,
+            "frames": 13
+          },
+          {
+            "name": "moving",
+            "weight": 1.0,
+            "score": 1.0
+          },
+          {
+            "name": "fixed",
+            "weight": 1.0,
+            "score": 1.0
+          },
+          {
+            "name": "kinematics",
+            "weight": 2.0,
+            "score": 1.0,
+            "passed": 2,
+            "items": 2
+          }
+        ],
+        "interference_frames": [
+          {
+            "frame": 0,
+            "count": 3,
+            "volume_mm3": 96.04411265962995
+          },
+          {
+            "frame": 1,
+            "count": 2,
+            "volume_mm3": 97.38737870535036
+          },
+          {
+            "frame": 2,
+            "count": 3,
+            "volume_mm3": 95.99669651593645
+          },
+          {
+            "frame": 3,
+            "count": 2,
+            "volume_mm3": 97.99626102152908
+          },
+          {
+            "frame": 4,
+            "count": 3,
+            "volume_mm3": 95.89834068701919
+          },
+          {
+            "frame": 5,
+            "count": 2,
+            "volume_mm3": 96.98064524325804
+          },
+          {
+            "frame": 6,
+            "count": 3,
+            "volume_mm3": 95.33041695027735
+          },
+          {
+            "frame": 7,
+            "count": 3,
+            "volume_mm3": 94.78251357969378
+          },
+          {
+            "frame": 8,
+            "count": 3,
+            "volume_mm3": 94.75102989678005
+          },
+          {
+            "frame": 9,
+            "count": 3,
+            "volume_mm3": 95.09682620935676
+          },
+          {
+            "frame": 10,
+            "count": 2,
+            "volume_mm3": 96.32879736560176
+          },
+          {
+            "frame": 11,
+            "count": 3,
+            "volume_mm3": 95.78736566587312
+          },
+          {
+            "frame": 12,
+            "count": 2,
+            "volume_mm3": 97.85073380978568
+          }
+        ],
+        "stuck": [],
+        "drifted_fixed": [],
+        "kinematics": {
+          "driver_sweep_deg": -3523.69,
+          "frames": 121,
+          "driver_max_step_deg": 57.3,
+          "ratios": [
+            {
+              "role": "crank",
+              "measured": 0.3333,
+              "expected": 0.3333,
+              "max_step_deg": 19.1,
+              "ok": true,
+              "same_direction": false
+            }
+          ],
+          "strokes": [
+            {
+              "role": "slider",
+              "axis": "x",
+              "measured_mm": 40.0,
+              "expected": 40.0,
+              "ok": true
+            }
+          ]
+        }
+      },
+      "missing_roles": [],
+      "assembly_score": 95.0,
+      "motion_score": 66.67,
+      "e2e": false
+    }
+  ]
+}

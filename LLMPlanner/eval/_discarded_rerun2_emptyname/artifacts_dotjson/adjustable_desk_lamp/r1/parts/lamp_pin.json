@@ -1,0 +1,87 @@
+{
+ "part_id": "lamp_pin",
+ "status": "finished",
+ "error": null,
+ "llm_calls": 3,
+ "tool_counts": {
+  "read_doc": 1,
+  "run_python": 1,
+  "finish": 1,
+  "finish_rejected": 0,
+  "no_tool": 0
+ },
+ "token_usage": {
+  "prompt_tokens": 33430,
+  "completion_tokens": 493,
+  "total_tokens": 33923,
+  "cached_tokens": 21785,
+  "credit": 3.83
+ },
+ "elapsed_s": 15.6,
+ "max_calls": 150,
+ "reasoning_effort": "medium",
+ "max_tokens": 32000,
+ "step": "parts/lamp_pin.step",
+ "accepted": true,
+ "score": 100.0,
+ "grade": {
+  "case": "lamp_pin",
+  "score": 100.0,
+  "passed": 2,
+  "total": 2,
+  "implied_passed": 0,
+  "implied_total": 0,
+  "hard_ok": true,
+  "accepted": true,
+  "rubrics": [
+   {
+    "id": "solid",
+    "ok": true,
+    "hard": true,
+    "basis": "explicit",
+    "weight": 1.0,
+    "checks": [
+     {
+      "check": "single_valid_solid",
+      "ok": true,
+      "solids": 1,
+      "shells": 1,
+      "valid": true
+     }
+    ]
+   },
+   {
+    "id": "size",
+    "ok": true,
+    "hard": true,
+    "basis": "explicit",
+    "weight": 1.0,
+    "checks": [
+     {
+      "check": "exists",
+      "ok": true,
+      "found": 1,
+      "expected": 1
+     },
+     {
+      "check": "extent_along",
+      "ok": true,
+      "measured": [
+       10.0
+      ]
+     },
+     {
+      "check": "bbox_sorted",
+      "ok": true,
+      "measured": [
+       5.0,
+       5.0,
+       10.0
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "trace": "parts/lamp_pin/transcript.json"
+}

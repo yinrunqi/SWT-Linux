@@ -1,0 +1,172 @@
+[
+ {
+  "id": "fa3ca764030d418ea17442ea404b3040",
+  "choices": [
+   {
+    "finish_reason": "tool_calls",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "tool_calls": [
+      {
+       "id": "toolu_011BXqrcqHYcc3qE2SySfgPB",
+       "function": {
+        "arguments": "{\"path\": \"references/docs/api/make_cylinder_rsolid.md\"}",
+        "name": "read_doc"
+       },
+       "type": "function"
+      }
+     ],
+     "reasoning_content": "I need a simple cylinder, 10mm diameter and 26mm long, extending along Z from 0 to 26. I'll check the make_cylinder_rsolid API to get the parameters right.\n\n"
+    }
+   }
+  ],
+  "created": 1791279802,
+  "model": "claude-sonnet-5",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 126,
+   "prompt_tokens": 10648,
+   "total_tokens": 10774,
+   "completion_tokens_details": null,
+   "prompt_tokens_details": null,
+   "prompt_cache_hit_tokens": 0,
+   "prompt_cache_miss_tokens": 73,
+   "cache_read_input_tokens": 0,
+   "cache_creation_input_tokens": 10575,
+   "prompt_cache_write_tokens": 10575,
+   "completion_thinking_tokens": 0,
+   "credit": 2.78,
+   "cached_tokens": 0
+  }
+ },
+ {
+  "id": "2f985fbf07f24357a732033d285ad3a0",
+  "choices": [
+   {
+    "finish_reason": "tool_calls",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "tool_calls": [
+      {
+       "id": "toolu_012RWzRWvBQbg8m4bC8agaxT",
+       "function": {
+        "arguments": "{\"code\": \"\\nimport simplecadapi as scad\\n\\n@scad.part(id=\\\"motor_shaft\\\", cache=\\\"off\\\")\\ndef build() -> scad.Solid:\\n    # 轴：直径10mm(半径5mm)，长26mm，沿Z轴从Z=0向+Z拉伸\\n    shaft = scad.make_cylinder_rsolid(\\n        radius=5.0,\\n        height=26.0,\\n        bottom_face_center=(0.0, 0.0, 0.0),\\n        axis=(0.0, 0.0, 1.0),\\n    )\\n    return shaft\\n\\nres = build()\\nprint(\\\"volume\\\", res.part.body.get_volume())\\nscad.capture(res, \\\"model.scadpkg\\\", include_scene=False)\\nscad.exporter.export_product_package_to_step(\\\"model.scadpkg\\\", \\\"model.step\\\")\\n\"}",
+        "name": "run_python"
+       },
+       "type": "function"
+      }
+     ]
+    }
+   }
+  ],
+  "created": 1791279808,
+  "model": "claude-sonnet-5",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 306,
+   "prompt_tokens": 11219,
+   "total_tokens": 11525,
+   "completion_tokens_details": null,
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": null,
+    "cached_tokens": 10575,
+    "image_tokens": null,
+    "text_tokens": null,
+    "accepted_prediction_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0
+   },
+   "prompt_cache_hit_tokens": 10575,
+   "prompt_cache_miss_tokens": 2,
+   "cache_read_input_tokens": 0,
+   "cache_creation_input_tokens": 642,
+   "prompt_cache_write_tokens": 642,
+   "completion_thinking_tokens": 0,
+   "credit": 0.68,
+   "cached_tokens": 0
+  }
+ },
+ {
+  "id": "4b54edcad70c4868abe2d440ad1b91e0",
+  "choices": [
+   {
+    "finish_reason": "tool_calls",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "体积校验：π·5²·26 ≈ 2042.04 mm³，与输出一致，尺寸正确。model.step 已生成。",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "tool_calls": [
+      {
+       "id": "toolu_01WdN89k7DzJFuMANpQFoSCq",
+       "function": {
+        "arguments": "{}",
+        "name": "finish"
+       },
+       "type": "function"
+      }
+     ],
+     "reasoning_content": "Checking the volume: pi times 25 times 26 gives roughly 2042.0, which confirms the calculation matches.\n\n"
+    }
+   }
+  ],
+  "created": 1791279816,
+  "model": "claude-sonnet-5",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 95,
+   "prompt_tokens": 11589,
+   "total_tokens": 11684,
+   "completion_tokens_details": null,
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": null,
+    "cached_tokens": 11217,
+    "image_tokens": null,
+    "text_tokens": null,
+    "accepted_prediction_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0
+   },
+   "prompt_cache_hit_tokens": 11217,
+   "prompt_cache_miss_tokens": 2,
+   "cache_read_input_tokens": 0,
+   "cache_creation_input_tokens": 370,
+   "prompt_cache_write_tokens": 370,
+   "completion_thinking_tokens": 0,
+   "credit": 0.41,
+   "cached_tokens": 0
+  }
+ }
+]

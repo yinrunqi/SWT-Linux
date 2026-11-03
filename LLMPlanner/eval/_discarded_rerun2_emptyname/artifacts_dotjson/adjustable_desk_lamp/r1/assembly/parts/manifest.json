@@ -1,0 +1,43 @@
+{
+ "parts": {
+  "lamp_base": {
+   "step": "parts/lamp_base.step",
+   "brep": "parts/lamp_base.scadbrep",
+   "sha256": "6fb7fd8772093b4562bc5107f136c1db9ac3c7528c4d8e98364d4b391df04c6a",
+   "geometry_hash": "sha256:265bbb7b697c008ee391bb4cf72cf7800447b8991d508af49bb0e134b0c2a15f"
+  },
+  "lamp_lower_arm": {
+   "step": "parts/lamp_lower_arm.step",
+   "brep": "parts/lamp_lower_arm.scadbrep",
+   "sha256": "6e7c7171a1e20a63cce85a3d9f73c84c1e987e62893965a8619d9ae75655ca29",
+   "geometry_hash": "sha256:6811cf8091fcfa94031561c5cc0c23ee1a1ac5ccf0a01ca987170efdf88c9459"
+  },
+  "lamp_upper_arm": {
+   "step": "parts/lamp_upper_arm.step",
+   "brep": "parts/lamp_upper_arm.scadbrep",
+   "sha256": "2d44a83a85e16b0207f8510fd553d98864d4c0308a99918b523e47da3c3b76f8",
+   "geometry_hash": "sha256:9296d9aa5d16532afebbdb478e6936545ef2052617714c5f5602978886bba22c"
+  },
+  "lamp_shade": {
+   "step": "parts/lamp_shade.step",
+   "brep": "parts/lamp_shade.scadbrep",
+   "sha256": "980055aeeb06e2a07ab786ee0e10fec6b380195f7a0d04e048f4a1e5d16dcd24",
+   "geometry_hash": "sha256:24636518410fc8fb01d3885f7e64514a48de057b25361f1106c012117a85855f"
+  },
+  "lamp_pin": {
+   "step": "parts/lamp_pin.step",
+   "brep": "parts/lamp_pin.scadbrep",
+   "sha256": "a6e134ba5e436d5d1e93e7c55bf7f1df2ae01f7c7b83a60cb7b54b174deef272",
+   "geometry_hash": "sha256:711e2840dbbde1eadf07f7c9303dcd688a8410d5958b221d22de49c4c69ad1b3"
+  }
+ },
+ "roles": {
+  "base": "lamp_base",
+  "lower_arm": "lamp_lower_arm",
+  "upper_arm": "lamp_upper_arm",
+  "shade": "lamp_shade",
+  "shoulder_pin": "lamp_pin",
+  "elbow_pin": "lamp_pin",
+  "wrist_pin": "lamp_pin"
+ }
+}

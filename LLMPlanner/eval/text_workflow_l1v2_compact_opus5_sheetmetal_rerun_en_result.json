@@ -1,0 +1,2133 @@
+{
+  "run_at": "2026-10-26T16:46:15+08:00",
+  "provider": "TT Switch",
+  "model": "claude-opus-5",
+  "reasoning_effort": null,
+  "max_plan_tokens": null,
+  "enable_thinking": null,
+  "mode": "workflow",
+  "action_level": "L1_v2",
+  "atomic_api": null,
+  "view_tool": true,
+  "compact_context": true,
+  "prompt_lang": "en",
+  "score_version": 2,
+  "strict_orientation": false,
+  "repeats": 1,
+  "cache_enabled": false,
+  "historical_skipped": [],
+  "case_ids": [
+    "sheet_metal_kfactor"
+  ],
+  "average_score": 100.0,
+  "average_score_v1": 75.0,
+  "average_score_ci95": null,
+  "pass_at_1": 1.0,
+  "passed": 1,
+  "passed_v1": 0,
+  "total": 1,
+  "total_duration_seconds": 411.14,
+  "per_case": [
+    {
+      "case_id": "sheet_metal_kfactor",
+      "runs": 1,
+      "mean_score": 100.0,
+      "min_score": 100.0,
+      "max_score": 100.0,
+      "passed_runs": 1,
+      "pass_at_1": 1.0,
+      "pass_at_k": 1.0,
+      "mean_tokens": 110555
+    }
+  ],
+  "token_totals": {
+    "prompt_tokens": 92589,
+    "completion_tokens": 17966,
+    "total_tokens": 110555,
+    "calls": 5
+  },
+  "balance_before": null,
+  "balance_after": null,
+  "spent_yuan": null,
+  "results": [
+    {
+      "case_id": "sheet_metal_kfactor",
+      "name": "sheet_metal_kfactor",
+      "score": 100.0,
+      "acceptance_ok": true,
+      "validity_points": 15.0,
+      "robustness_points": 10.0,
+      "failed_step_count": 0,
+      "dimension_points": 30.0,
+      "volume_points": 20.0,
+      "detail_points": 25.0,
+      "dimension_errors_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimension_checks": [
+        true,
+        true,
+        true
+      ],
+      "volume_ok": true,
+      "actual_details": {
+        "extrusions": 1,
+        "cuts": 3,
+        "revolves": 0,
+        "fillets": 0,
+        "chamfers": 0,
+        "holes": 0,
+        "shells": 0,
+        "patterns": 0,
+        "mirrors": 0,
+        "sweeps": 0,
+        "lofts": 0,
+        "ribs": 0,
+        "drafts": 0,
+        "threads": 0,
+        "sheet_metal": 0,
+        "solid_features": 1,
+        "circles": 3,
+        "polygons": 0,
+        "centerlines": 0,
+        "slots": 0,
+        "cut_circles": 3,
+        "sketch_lines": 9,
+        "sketch_arcs": 4,
+        "sketch_splines": 0
+      },
+      "detail_checks": {
+        "solid_features": true
+      },
+      "strict_orientation": false,
+      "status": "completed",
+      "plan_steps": 4,
+      "successful_steps": 4,
+      "failed_steps": [],
+      "bbox_mm": {
+        "minX": -40.0,
+        "minY": 0.0,
+        "minZ": -0.0,
+        "maxX": 40.0,
+        "maxY": 60.0,
+        "maxZ": 67.678,
+        "sizeX": 80.0,
+        "sizeY": 60.0,
+        "sizeZ": 67.678
+      },
+      "volume_mm3": 20456.71,
+      "v1": {
+        "score": 75.0,
+        "acceptance_ok": false,
+        "execution_points": 25.0,
+        "dimension_points": 30.0,
+        "volume_points": 20.0,
+        "detail_points": 0.0,
+        "actual_details": {
+          "extrusions": 1,
+          "cuts": 2,
+          "fillets": 0,
+          "chamfers": 0,
+          "revolves": 0,
+          "polygons": 0,
+          "centerlines": 0,
+          "circles": 3,
+          "slots": 0,
+          "cut_circles": 3,
+          "faces": 18
+        }
+      },
+      "token_usage": {
+        "calls": 5,
+        "completion_tokens": 17966,
+        "prompt_tokens": 92589,
+        "total_tokens": 110555
+      },
+      "workflow_status": "finished",
+      "workflow_error": null,
+      "llm_calls": 5,
+      "truncated_llm_calls": 1,
+      "tool_calls": 6,
+      "resumed": null,
+      "compact_context": true,
+      "length_retries": 1,
+      "compact_verifier_calls": 2,
+      "compact_fallbacks": 0,
+      "semantic_recoveries": 0,
+      "request_modes": [
+        "compact_history",
+        "compact_history",
+        "compact_history",
+        "compact_verifier",
+        "compact_verifier_recovery"
+      ],
+      "max_llm_calls": 40,
+      "duration_seconds": 411.14,
+      "workflow_duration_seconds": 385.24,
+      "cleanup_before": {
+        "success": true,
+        "closedCount": 0,
+        "closedDocuments": [],
+        "message": "已关闭 0 个测试文档"
+      },
+      "error": null,
+      "artifacts": {
+        "step": "C:\\Users\\38409\\Desktop\\Workflow-CAD\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\text_workflow_l1v2_compact_opus5_sheetmetal_rerun_en_result\\sheet_metal_kfactor_r1.step",
+        "sldprt": "C:\\Users\\38409\\Desktop\\Workflow-CAD\\SolidWorksTutorial\\LLMPlanner\\eval\\artifacts\\text_workflow_l1v2_compact_opus5_sheetmetal_rerun_en_result\\sheet_metal_kfactor_r1.SLDPRT",
+        "swmass": "eval/artifacts/text_workflow_l1v2_compact_opus5_sheetmetal_rerun_en_result/sheet_metal_kfactor_r1.swmass.json"
+      },
+      "rubric": null,
+      "trace": {
+        "request": {
+          "url": "http://127.0.0.1:5000/api/run",
+          "json": {
+            "instruction": "Create a bent sheet-metal bracket as a single solid body. Sheet thickness 2mm, inside radius 3mm for every bend, K-factor 0.4 (the neutral layer lies 0.4 × thickness from the inside surface), width 80mm (x = −40 to 40). Side view (YZ plane): the base is horizontal with its bottom surface at z = 0 and its front edge at y = 0; at its rear the base is bent up 90° into a vertical wall whose outer face is at y = 60; the flat part of the wall runs from z = 5 to z = 50; at the top the wall is bent 45° towards −Y (towards the base side), followed by a flat lip 20mm long. Hole positions are given on the flat pattern: the flat pattern is the sheet unfolded along its bends; its length coordinate s is measured from the front edge of the base (s = 0) and its cross coordinate is x. Holes (each through the sheet, perpendicular to the local face): an 8mm hole at s = 25, x = 0; two 6mm holes at s = 80, x = ±25; a 5mm hole at s = 122, x = 0.",
+            "provider": "ttswitch",
+            "vision_model": "claude-opus-5",
+            "plan_model": "claude-opus-5",
+            "mode": "single_turn",
+            "action_level": "L1_v2",
+            "use_cache": false,
+            "capture_trace": true,
+            "dry_run": false,
+            "max_turns": 40,
+            "checkpoint_path": "/home/yrq/SolidWorksTutorial/LLMPlanner/eval/artifacts/text_workflow_l1v2_compact_opus5_sheetmetal_rerun_en_result/sheet_metal_kfactor_r1.checkpoint.json",
+            "resume": false,
+            "view_tool": true,
+            "compact_context": true
+          }
+        },
+        "response_status": 200,
+        "response": {
+          "action_level": "L1_v2",
+          "mode": "workflow",
+          "plan": {
+            "notes": "核对通过：单实体，宽80（x −40~40），Y 0~60（底板前缘 y=0，立壁外面 y=60），底面 z=0，最高点 z=67.678 与 45°翻边理论值一致；两处折弯内R3（内圆柱φ6在 (55,5) 与 (55,50)，外圆柱φ10），立壁直段 z=5~50，翻边20mm。孔位按 K=0.4 展开长度核算：φ8 在 y=25 贯穿底板（s=25）；2×φ6 在 x=±25、z=24.03 贯穿立壁（s=80）；φ5 垂直于45°翻边面，Y跨度46.13~51.08 与 s=122 理论值吻合。体积约20457mm³ 合理。",
+            "steps": [
+              {
+                "operation": "extrude",
+                "params": {
+                  "depth": "80",
+                  "direction": "+X",
+                  "loops": [
+                    {
+                      "segments": [
+                        {
+                          "to": [
+                            0,
+                            55
+                          ]
+                        },
+                        {
+                          "through": [
+                            1.464,
+                            58.536
+                          ],
+                          "to": [
+                            5,
+                            60
+                          ]
+                        },
+                        {
+                          "to": [
+                            50,
+                            60
+                          ]
+                        },
+                        {
+                          "through": [
+                            51.913,
+                            59.619
+                          ],
+                          "to": [
+                            53.536,
+                            58.536
+                          ]
+                        },
+                        {
+                          "to": [
+                            67.678,
+                            44.393
+                          ]
+                        },
+                        {
+                          "to": [
+                            66.263,
+                            42.979
+                          ]
+                        },
+                        {
+                          "to": [
+                            52.121,
+                            57.121
+                          ]
+                        },
+                        {
+                          "through": [
+                            51.148,
+                            57.772
+                          ],
+                          "to": [
+                            50,
+                            58
+                          ]
+                        },
+                        {
+                          "to": [
+                            5,
+                            58
+                          ]
+                        },
+                        {
+                          "through": [
+                            2.879,
+                            57.121
+                          ],
+                          "to": [
+                            2,
+                            55
+                          ]
+                        },
+                        {
+                          "to": [
+                            2,
+                            0
+                          ]
+                        },
+                        {
+                          "to": [
+                            0,
+                            0
+                          ]
+                        }
+                      ],
+                      "start": [
+                        0,
+                        0
+                      ],
+                      "type": "path"
+                    }
+                  ],
+                  "plane": "X=-40"
+                }
+              },
+              {
+                "operation": "hole",
+                "params": {
+                  "centers": [
+                    [
+                      0,
+                      25
+                    ]
+                  ],
+                  "diameter": "8",
+                  "direction": "+Z",
+                  "plane": "Z=0",
+                  "through_all": true
+                }
+              },
+              {
+                "operation": "hole",
+                "params": {
+                  "centers": [
+                    [
+                      -25,
+                      24.031
+                    ],
+                    [
+                      25,
+                      24.031
+                    ]
+                  ],
+                  "diameter": "6",
+                  "direction": "-Y",
+                  "plane": "Y=60",
+                  "through_all": true
+                }
+              },
+              {
+                "operation": "axis_cylinder",
+                "params": {
+                  "cut": true,
+                  "diameter": 5,
+                  "direction": [
+                    0,
+                    1,
+                    1
+                  ],
+                  "from": -5,
+                  "origin": [
+                    0,
+                    48.462,
+                    61.912
+                  ],
+                  "to": 5
+                }
+              }
+            ],
+            "user_intent": "Create a bent sheet-metal bracket as a single solid body. Sheet thickness 2mm, inside radius 3mm for every bend, K-factor 0.4 (the neutral layer lies 0.4 × thickness from the inside surface), width 80mm (x = −40 to 40). Side view (YZ plane): the base is horizontal with its bottom surface at z = 0 and its front edge at y = 0; at its rear the base is bent up 90° into a vertical wall whose outer face is at y = 60; the flat part of the wall runs from z = 5 to z = 50; at the top the wall is bent 45° towards −Y (towards the base side), followed by a flat lip 20mm long. Hole positions are given on the flat pattern: the flat pattern is the sheet unfolded along its bends; its length coordinate s is measured from the front edge of the base (s = 0) and its cross coordinate is x. Holes (each through the sheet, perpendicular to the local face): an 8mm hole at s = 25, x = 0; two 6mm holes at s = 80, x = ±25; a 5mm hole at s = 122, x = 0."
+          },
+          "raw_llm_trace": [
+            {
+              "content": "你是一名资深机械设计工程师，正在 SolidWorks 中用工具逐步建出用户描述的零件。\n\n## 坐标与单位\n- 所有长度单位 mm，角度单位度。SolidWorks 基准面：front_plane = XY（法向 +Z），top_plane = XZ（法向 +Y），right_plane = YZ（法向 +X）。\n- 需求给了坐标系或坐标（如 \"Z 轴向上\"、\"x ∈ [−50, 50]\"、\"底面在 z = 0\"）时，严格按需求的坐标建模，不要换轴、不要平移。\n  需求没有说明时：+Y 向上，底面放在 Y=0，X、Z 方向以原点为中心，回转体轴线沿 Y。\n- 每个草图平面都有固定的 (u,v) 坐标，数值就是模型坐标：法向沿 Z → u=X, v=Y；法向沿 Y → u=X, v=Z；法向沿 X → u=Z, v=Y。\n- 平面最稳定的写法是 \"Z=10\"、\"Y=-12.5\"、\"X=0\"：垂直于该轴、位于该坐标处的平面，法向为 +轴，自动创建或复用基准面。\n  实体面用 face(+Z, outermost) 这类方向写法；top/bottom/front/back/left/right 固定指 ±Y/±Z/±X，Z 向上的零件不要用 top/bottom。\n  face#index 每个特征之后都可能重新编号，只能用最新一次 get_model_state 里的。\n\n## 草图与特征规则\n- 一次 extrude/cut 画一个区域：外环加上它内部的内环（孔）。部分重叠的轮廓会被拒绝，需要拆成先后两个特征（实体会自动合并）或合并成一个 polygon/path。\n- 零件必须是单一实体：每个新凸台都要和已有实体有面接触或伸入其中（建议伸入 ≥0.5mm）；只在一条线或一个点上相切（圆柱贴平面、两圆柱相切、棱对棱）会生成独立实体并被拒绝。\n- 拉伸方向：基准面和 \"Z=…\" 平面默认沿 +法向，实体面默认沿外法向；direction=both 时 depth 是总厚度（两侧各一半）。\n- cut 默认朝实体内部切。单向 through_all 只切穿草图平面一侧；草图平面（含实体面）背后还有凸台、轮毂等材料时，\n  要整根贯穿就在零件端面上画，或用 direction=both。\n- L 形、U 形、T 形、台阶等截面不变的形状，用一个 polygon/path 画出整个截面再拉伸一次，比多块拼接可靠。\n- 外形上的圆角（板的竖直棱、耳片端部、槽口）直接在轮廓里表达：rect/polygon 的 corner_radius、slot、hull、annular_sector 或 path 的圆弧段；\n  fillet/chamfer 只用于轮廓无法表达的棱（如顶面一圈的边），并放在最后。\n- path 的半圆弧用 through 给出弧上一点；只给 center 的 180° 圆弧必须写 ccw。两圆外公切线外形（连杆、耳片）用 hull。\n  两圆相交的 \"8\" 字形（齿轮腔等）不是 hull 也不是长圆形：两个圆分别 cut 一次，或用 path 画两段大圆弧。\n- hull 的两个圆直径不等时，外公切线不平行，没有等宽直边。等宽手柄、板条用 rect 或等径圆的 hull；锥形耳片才用不等径 hull。\n- slot 的 start/end 是中心线端点（含两端半圆圆心），净开口还要再算 ±width/2。径向槽若要求内缘 ≥ R，则 start 到原点的距离 ≥ R + width/2。\n  轮辐、连杆这类细长圆柱或矩形条：在轮毂外与轮缘之间单独画 circle/rect 再拉伸或阵列，不要用穿过轴线的宽 slot（会堵住中心孔）。\n  圆柱形轮辐的截面是圆：在垂直于轮辐的平面上画 circle 沿径向拉伸（或 sweep 的 profile_diameter）；在中面上拉伸 slot/rect 得到的是两面平的扁条。\n- 圆周均布的孔用 hole 的 polar（center、radius 或 pcd、count、start_deg）；角度在草图 (u,v) 内从 +u 转向 +v。\n  圆周阵列其它特征用 circular_pattern，并总是给 center；angle_deg 是阵列覆盖的总角度，整圈均分时省略。线性重复用 linear_pattern。\n- 为了切透而把切除轮廓伸出实体边界时，沿原边线的方向延长（斜边保持原斜率）；题面给定的宽度仍在题面给定的位置上，不要挪到延长后的端点。\n- revolve 的轮廓是截面的一半，必须整体位于轴线一侧，可以贴着轴线。\n  回转体上的凹圆角（辐板与轮缘交接等）先画锐边剖面，再统一 fillet；不要把圆角画进 revolve 轮廓后又做特征圆角。\n- 侧凸台、支管接到已有实体时用 extrude(..., up_to=面或 body)，不要估一个 depth。\n- 沉头孔用 counterbore / countersink，螺纹底孔用 tapped_hole；筋用 rib（底板与背板之间的三角形加强）；弯管用 sweep；变截面用 loft；空心壳体用 shell；斜度用 draft；钣金用 sheet_metal。\n- 杯/管外壁上的环形把手：草图平面要含轴线，环心放在壁外，使环的内径不进入内腔；不要把圆心贴在外壁上。\n- 径向紧定螺钉孔、油孔等“钻到某个孔为止”的孔：depth 取外表面到该孔壁的距离（如 (轮毂外径 − 轴孔直径)/2），最多再加 1mm；\n  钻通后不要再加深，也不要 through_all，否则会打到孔的对侧壁。\n- 题面给出钻尖角（如 118° 锥底）的盲孔：hole / tapped_hole 加 tip_angle，depth 为全直径段深度；不要用 loft 或 revolve 自己拼锥底。\n- 英制钻头代号（#21、\"H\"、17/64）和螺纹底孔（10-32 UNF、M8）直接把代号写进孔径，由系统查表换算；不要凭记忆换算成 mm。\n- 轴线不沿坐标轴的孔和圆柱（斜孔、按纬度/经度给出的径向接管、指向某点的斜柱）用 axis_cylinder：\n  给轴上一点 + direction（向量、{lat_deg, lon_deg} 或 {toward}），范围写成沿轴距离或 {z: 值}，不要自己算端点坐标；\n  接管的凸台和内孔用同一个 origin/direction，只改 from/to 和直径，并核对结果回显的 axis。\n- 双盘 + 立柱类零件：先拉伸贯通两盘间距的立柱（或一次画出柱+盘截面），再贴合拉伸第二盘并保持题面给定的盘厚；不要为了连体去加厚盘。\n  “板的外侧面与轮毂端面齐平”表示板在轮毂长度之内、外侧面就是轮毂端面，不要贴在端面外侧。\n- 题面按区间或“上端接…”给出的相邻各段首尾相接：后一段从前一段的端面开始，端面贴合就连成一体，不要把一段整段嵌进另一段。\n- 孔、内腔、通槽要放在会占到它们位置的凸台之后：后拉伸的实体会把先切出的孔或内轮廓重新填上\n  （例如先开环孔、再拉伸盖过它的杆；先做空心管、再把支管或凸台拉进管腔）。不确定时先做完所有实体，最后统一开孔。\n- 螺栓：先杆后头（头在轴端），再在头端面做 depth 盲切六角窝，颈肩用最后的 fillet；特征成功后不要无依据地 delete 再重做。\n- sweep 一般省略 profile_plane：路径第一段沿坐标轴时，截面自动放在路径起点并垂直于路径，loops 写相对路径起点的坐标（截面中心通常是 [0,0]）。\n  圆截面（管、丝、弹簧）直接用 profile_diameter（空心管加 inner_diameter），不需要截面平面；\n  空间弯管用 path_3d（折线 + corner_radius；各弯半径不同用 corner_radii 逐角给出），弹簧/螺旋槽用 helix（变螺距时 pitch 写 [[圈数, 螺距], ...]）。\n- 由公式定义的曲线（渐开线齿廓、涡旋、凸轮廓线、翼型、摆线、变螺距或非圆螺旋等）不要自己算坐标、手写几十上百个点：\n  平面轮廓里写 {curve:{u:\"…t…\", v:\"…t…\", t:[t0, t1]}} 段或 {type:\"curve\", u, v, t} 轮廓，空间路径写 path_3d={curve:{x, y, z, t}}，\n  由系统按公式采样成光滑样条。表达式可引用 set_parameters 的参数；sin/cos 用弧度，sind/cosd 用度；分段函数用 step/clamp/min/max。\n  平面曲线的等距线（滚子凸轮实际廓线、等壁厚轮廓）加 offset 由系统沿法向偏移，不要自己推导偏移公式。\n  手写长点列既容易算错，也会让回复过长被截断。\n- loft 首尾截面可以收成一点（{plane, point}）；需要控制中间形状时加 guides，要和相邻段平滑相接时用 start_tangent/end_tangent=normal。\n- 改已有特征的尺寸用 edit_feature。delete_feature 会连带删除依赖它的后续特征（结果的 also_removed），删除前想清楚。\n\n## 每步核对\n- 每个特征的结果都有 volume_delta_mm3、bbox_mm、extent_mm（本特征在模型坐标中的范围）、removal_ratio/fill_ratio（实际体积变化 ÷ 轮廓面积×深度）\n  和 new_cylinders（新出现的孔/凸台圆柱面及其轴线位置）。逐项和预期比较；出现 warnings 时先处理再继续。\n- 倒圆/倒角结果的 estimated_edge_length_mm 是按 90° 棱估算的被处理总棱长，和预期差很多说明边选错了。\n  edge_kind 看体积变化的符号：凹角（腹板与轮毂、筋与底板交接）倒圆应增加体积，外棱倒圆减少体积；符号不对就是选到了相邻的另一条棱。\n  选凹角棱时，射线从凹角外侧射向与该棱相邻的面（如腹板侧面靠近轮毂处），命中点离凹角棱约 1mm。\n- 阵列结果的 expected_delta_mm3 是种子×份数，和实际相差大说明有实例没生效。\n\n## 工作方式\n1. 先读懂需求，列出总体尺寸、各特征的坐标与数量；可以用 set_parameters 定义驱动参数，之后用 \"=表达式\" 引用。\n   \"相距 / 距轴线 / 偏心 / 中心距 X mm\" 是中心到中心的距离，直接用 X，不要除以 2；只有直径换半径才除以 2。\n   有方位要求的特征（\"沿某条槽的方向\"、\"与销孔错开 30°\"），先写出每个参照特征的实际方位角，再算这个特征的方位。\n2. 先建基体，再逐个添加特征。互不依赖的特征可以在一次回复里并行调用多个工具，节省调用次数。\n3. 工具失败时会自动回滚，模型保持调用前的状态。阅读错误码和提示，修改参数或换一种做法；同一个失败的调用不会被执行第三次。\n4. 每个工具结果里有 llm_calls_left（剩余的模型调用次数），据此安排节奏，留出核对和 finish 的次数。\n5. 全部完成后调用 get_model_state，逐项核对：总体尺寸、孔/凸台的数量与直径（cylinder_groups）、只有一个实体；不满足就继续修改。\n6. 核对无误后调用 finish，并在 summary 中说明零件的组成与关键尺寸。\n",
+              "role": "system"
+            },
+            {
+              "content": "建模需求：\nCreate a bent sheet-metal bracket as a single solid body. Sheet thickness 2mm, inside radius 3mm for every bend, K-factor 0.4 (the neutral layer lies 0.4 × thickness from the inside surface), width 80mm (x = −40 to 40). Side view (YZ plane): the base is horizontal with its bottom surface at z = 0 and its front edge at y = 0; at its rear the base is bent up 90° into a vertical wall whose outer face is at y = 60; the flat part of the wall runs from z = 5 to z = 50; at the top the wall is bent 45° towards −Y (towards the base side), followed by a flat lip 20mm long. Hole positions are given on the flat pattern: the flat pattern is the sheet unfolded along its bends; its length coordinate s is measured from the front edge of the base (s = 0) and its cross coordinate is x. Holes (each through the sheet, perpendicular to the local face): an 8mm hole at s = 25, x = 0; two 6mm holes at s = 80, x = ±25; a 5mm hole at s = 122, x = 0.\n\n当前是一个空零件，请开始建模。",
+              "role": "user"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\": \"X=-40\", \"direction\": \"+X\", \"depth\": \"80\", \"loops\": [{\"type\":\"path\",\"start\":[0,0],\"segments\":[{\"to\":[0,55]},{\"to\":[5,60],\"through\":[1.464,58.536]},{\"to\":[50,60]},{\"to\":[53.536,58.536],\"through\":[51.913,59.619]},{\"to\":[67.678,44.393]},{\"to\":[66.263,42.979]},{\"to\":[52.121,57.121]},{\"to\":[50,58],\"through\":[51.148,57.772]},{\"to\":[5,58]},{\"to\":[2,55],\"through\":[2.879,57.121]},{\"to\":[2,0]},{\"to\":[0,0]}]}]}",
+                    "name": "extrude"
+                  },
+                  "id": "toolu_bdrk_01tIWWiGHVKTuvmJ0NOc0lwd",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图1\", \"凸台-拉伸1\"], \"volume_mm3\": 20709.49, \"volume_delta_mm3\": 20709.49, \"bbox_mm\": {\"X\": [-40.0, 40.0], \"Y\": [0.0, 60.0], \"Z\": [-0.0, 67.678], \"size\": [80.0, 60.0, 67.678]}, \"plane\": \"基准面1: 平面 X=-40mm，法向 +X；u=Z, v=Y（模型坐标，mm）\", \"direction\": \"+X\", \"region_area_mm2\": 258.846423, \"profile_uv_bbox\": {\"u\": [0.0, 67.678], \"v\": [0.0, 60.0]}, \"new_cylinders\": [{\"diameter_mm\": 5.99, \"axis\": \"X\", \"count\": 1, \"axis_at_mm\": [[0.0, 55.01, 50.0]]}, {\"diameter_mm\": 6.0, \"axis\": \"X\", \"count\": 1, \"axis_at_mm\": [[0.0, 55.0, 5.0]]}, {\"diameter_mm\": 10.0, \"axis\": \"X\", \"count\": 1, \"axis_at_mm\": [[0.0, 55.0, 5.0]]}, {\"diameter_mm\": 10.02, \"axis\": \"X\", \"count\": 1, \"axis_at_mm\": [[0.0, 54.99, 50.0]]}], \"bodies\": 1, \"extent_mm\": {\"X\": [-40.0, 40.0], \"Y\": [0.0, 60.0], \"Z\": [0.0, 67.678]}, \"fill_ratio\": 1.0, \"notes\": [\"X=-40 → 新建基准面 基准面1（基准面1: 平面 X=-40mm，法向 +X；u=Z, v=Y（模型坐标，mm））\"], \"llm_calls_left\": 39}",
+              "role": "tool",
+              "tool_call_id": "toolu_bdrk_01tIWWiGHVKTuvmJ0NOc0lwd"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"plane\": \"Z=0\", \"diameter\": \"8\", \"centers\": [[0,25]], \"through_all\": true, \"direction\": \"+Z\"}",
+                    "name": "hole"
+                  },
+                  "id": "toolu_bdrk_01dubKfrdR9MoZgeWjJg90JI",
+                  "type": "function"
+                },
+                {
+                  "function": {
+                    "arguments": "{\"plane\": \"Y=60\", \"diameter\": \"6\", \"centers\": [[-25,24.031],[25,24.031]], \"through_all\": true, \"direction\": \"-Y\"}",
+                    "name": "hole"
+                  },
+                  "id": "toolu_bdrk_01Z4JaNHxUuK8rcdd4liv31D",
+                  "type": "function"
+                },
+                {
+                  "function": {
+                    "arguments": "{\"origin\": [0,48.462,61.912], \"direction\": [0,1,1], \"from\": -5, \"to\": 5, \"diameter\": 5, \"cut\": true}",
+                    "name": "axis_cylinder"
+                  },
+                  "id": "toolu_bdrk_01a9ojdaFkzc69fZrFtX25eL",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图2\", \"切除-拉伸1\"], \"volume_mm3\": 20608.96, \"volume_delta_mm3\": -100.53, \"bbox_mm\": {\"X\": [-40.0, 40.0], \"Y\": [0.0, 60.0], \"Z\": [-0.0, 67.678], \"size\": [80.0, 60.0, 67.678]}, \"plane\": \"front_plane: 平面 Z=0mm，法向 +Z；u=X, v=Y（模型坐标，mm）\", \"direction\": \"+Z\", \"region_area_mm2\": 50.184776, \"profile_uv_bbox\": {\"u\": [-4.0, 4.0], \"v\": [21.0, 29.0]}, \"new_cylinders\": [{\"diameter_mm\": 8.0, \"axis\": \"Z\", \"count\": 1, \"axis_at_mm\": [[0.0, 25.0, 0.0]]}], \"bodies\": 1, \"extent_mm\": {\"X\": [-4.0, 4.0], \"Y\": [21.0, 29.0], \"Z\": [0.0, 67.678]}, \"llm_calls_left\": 38}",
+              "role": "tool",
+              "tool_call_id": "toolu_bdrk_01dubKfrdR9MoZgeWjJg90JI"
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"草图3\", \"切除-拉伸2\"], \"volume_mm3\": 20495.86, \"volume_delta_mm3\": -113.1, \"bbox_mm\": {\"X\": [-40.0, 40.0], \"Y\": [0.0, 60.0], \"Z\": [-0.0, 67.678], \"size\": [80.0, 60.0, 67.678]}, \"plane\": \"基准面2: 平面 Y=60mm，法向 +Y；u=X, v=Z（模型坐标，mm）\", \"direction\": \"-Y\", \"region_area_mm2\": 56.457873, \"profile_uv_bbox\": {\"u\": [-28.0, 28.0], \"v\": [21.031, 27.031]}, \"new_cylinders\": [{\"diameter_mm\": 6.0, \"axis\": \"Y\", \"count\": 2, \"axis_at_mm\": [[-25.0, 0.0, 24.03], [25.0, 0.0, 24.03]]}], \"bodies\": 1, \"extent_mm\": {\"X\": [-28.0, 28.0], \"Y\": [0.0, 60.0], \"Z\": [21.031, 27.031]}, \"notes\": [\"Y=60 → 新建基准面 基准面2（基准面2: 平面 Y=60mm，法向 +Y；u=X, v=Z（模型坐标，mm））\"], \"llm_calls_left\": 38}",
+              "role": "tool",
+              "tool_call_id": "toolu_bdrk_01Z4JaNHxUuK8rcdd4liv31D"
+            },
+            {
+              "content": "{\"ok\": true, \"created\": [\"3D草图1\", \"切除-扫描2\"], \"volume_mm3\": 20456.71, \"volume_delta_mm3\": -39.15, \"bbox_mm\": {\"X\": [-40.0, 40.0], \"Y\": [0.0, 60.0], \"Z\": [-0.0, 67.678], \"size\": [80.0, 60.0, 67.678]}, \"path\": \"3D 折线 2 点\", \"path_length_mm\": 10.0, \"profile\": \"圆形截面 Ø5\", \"nominal_volume_mm3\": 196.35, \"new_cylinders\": [{\"diameter_mm\": 5.0, \"axis\": \"Y\", \"count\": 1, \"axis_at_mm\": [[0.0, 0.0, 58.38]]}], \"bodies\": 1, \"axis\": {\"start\": [0.0, 44.926466, 58.376466], \"end\": [0.0, 51.997534, 65.447534], \"direction\": [0.0, 0.70711, 0.70711], \"lat_deg\": 45.0, \"lon_deg\": 90.0, \"length_mm\": 10.0}, \"llm_calls_left\": 38}",
+              "role": "tool",
+              "tool_call_id": "toolu_bdrk_01a9ojdaFkzc69fZrFtX25eL"
+            },
+            {
+              "content": "",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{}",
+                    "name": "get_model_state"
+                  },
+                  "id": "toolu_bdrk_01bUcLxvYaOykl9DlgPnGf8W",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"ok\": true, \"state\": {\"features\": [{\"name\": \"基准面1\", \"type\": \"RefPlane\"}, {\"name\": \"草图1\", \"type\": \"ProfileFeature\"}, {\"name\": \"凸台-拉伸1\", \"type\": \"Extrusion\"}, {\"name\": \"草图2\", \"type\": \"ProfileFeature\"}, {\"name\": \"切除-拉伸1\", \"type\": \"ICE\"}, {\"name\": \"基准面2\", \"type\": \"RefPlane\"}, {\"name\": \"草图3\", \"type\": \"ProfileFeature\"}, {\"name\": \"切除-拉伸2\", \"type\": \"ICE\"}, {\"name\": \"3D草图1\", \"type\": \"3DProfileFeature\"}, {\"name\": \"切除-扫描2\", \"type\": \"SweepCut\"}], \"bbox_mm\": {\"X\": [-40.0, 40.0], \"Y\": [0.0, 60.0], \"Z\": [-0.0, 67.678], \"size\": [80.0, 60.0, 67.678]}, \"volume_mm3\": 20456.71, \"bodies\": 1, \"planar_faces\": [{\"ref\": \"face#1\", \"normal\": \"-Z\", \"at\": \"Z=0.000\", \"area_mm2\": 4349.73, \"u_range\": [-40.0, 40.0], \"v_range\": [0.0, 55.0], \"uv\": \"u=X,v=Y\", \"alias\": \"back\"}, {\"ref\": \"face#11\", \"normal\": \"+Z\", \"at\": \"Z=2.000\", \"area_mm2\": 4349.73, \"u_range\": [-40.0, 40.0], \"v_range\": [0.0, 55.0], \"uv\": \"u=X,v=Y\", \"alias\": \"front\"}, {\"ref\": \"face#3\", \"normal\": \"+Y\", \"at\": \"Y=60.000\", \"area_mm2\": 3543.45, \"u_range\": [-40.0, 40.0], \"v_range\": [5.0, 50.0], \"uv\": \"u=X,v=Z\", \"alias\": \"top\"}, {\"ref\": \"face#9\", \"normal\": \"-Y\", \"at\": \"Y=58.000\", \"area_mm2\": 3543.45, \"u_range\": [-40.0, 40.0], \"v_range\": [5.0, 50.0], \"uv\": \"u=X,v=Z\"}, {\"ref\": \"face#12\", \"normal\": \"+X\", \"at\": \"X=40.000\", \"area_mm2\": 258.87, \"u_range\": [-0.0, 67.678], \"v_range\": [0.0, 60.0], \"uv\": \"u=Z,v=Y\", \"alias\": \"right\"}, {\"ref\": \"face#13\", \"normal\": \"-X\", \"at\": \"X=-40.000\", \"area_mm2\": 258.87, \"u_range\": [-0.0, 67.678], \"v_range\": [0.0, 60.0], \"uv\": \"u=Z,v=Y\", \"alias\": \"left\"}, {\"ref\": \"face#0\", \"normal\": \"-Y\", \"at\": \"Y=0.000\", \"area_mm2\": 160.0, \"u_range\": [-40.0, 40.0], \"v_range\": [0.0, 2.0], \"uv\": \"u=X,v=Z\", \"alias\": \"bottom\"}], \"cylinder_groups\": [{\"diameter_mm\": 10.02, \"axis\": \"X\", \"span_mm\": [-40.0, 40.0], \"refs\": [\"face#4\"], \"count\": 1, \"axis_at_mm\": [[0.0, 54.99, 50.0]]}, {\"diameter_mm\": 10.0, \"axis\": \"X\", \"span_mm\": [-40.0, 40.0], \"refs\": [\"face#2\"], \"count\": 1, \"axis_at_mm\": [[0.0, 55.0, 5.0]]}, {\"diameter_mm\": 8.0, \"axis\": \"Z\", \"span_mm\": [0.0, 2.0], \"refs\": [\"face#14\"], \"count\": 1, \"axis_at_mm\": [[0.0, 25.0, 0.0]]}, {\"diameter_mm\": 6.0, \"axis\": \"X\", \"span_mm\": [-40.0, 40.0], \"refs\": [\"face#10\"], \"count\": 1, \"axis_at_mm\": [[0.0, 55.0, 5.0]]}, {\"diameter_mm\": 6.0, \"axis\": \"Y\", \"span_mm\": [58.0, 60.0], \"refs\": [\"face#15\", \"face#16\"], \"count\": 2, \"axis_at_mm\": [[25.0, 0.0, 24.03], [-25.0, 0.0, 24.03]]}, {\"diameter_mm\": 5.99, \"axis\": \"X\", \"span_mm\": [-40.0, 40.0], \"refs\": [\"face#8\"], \"count\": 1, \"axis_at_mm\": [[0.0, 55.01, 50.0]]}, {\"diameter_mm\": 5.0, \"axis\": \"Y\", \"span_mm\": [46.128, 51.079], \"refs\": [\"face#17\"], \"count\": 1, \"axis_at_mm\": [[0.0, 0.0, 58.38]]}], \"reference_planes\": [{\"name\": \"基准面1\", \"normal\": \"+X\", \"at\": \"X=-40.000\", \"uv\": \"u=Z,v=Y\"}, {\"name\": \"基准面2\", \"normal\": \"+Y\", \"at\": \"Y=60.000\", \"uv\": \"u=X,v=Z\"}], \"parameters\": {}}, \"llm_calls_left\": 37}",
+              "role": "tool",
+              "tool_call_id": "toolu_bdrk_01bUcLxvYaOykl9DlgPnGf8W"
+            }
+          ],
+          "results": [
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "extrude",
+              "step": 1,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "hole",
+              "step": 2,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "hole",
+              "step": 3,
+              "success": true
+            },
+            {
+              "error_code": null,
+              "message": "OK",
+              "operation": "axis_cylinder",
+              "step": 4,
+              "success": true
+            }
+          ],
+          "success": true,
+          "summary": {
+            "all_ok": true,
+            "llm_calls": 5,
+            "status": "finished",
+            "succeeded": 4,
+            "token_usage": {
+              "calls": 5,
+              "completion_tokens": 17966,
+              "prompt_tokens": 92589,
+              "total_tokens": 110555
+            },
+            "tool_calls": 6,
+            "total": 4
+          },
+          "token_usage": {
+            "calls": 5,
+            "completion_tokens": 17966,
+            "prompt_tokens": 92589,
+            "total_tokens": 110555
+          },
+          "workflow": {
+            "compact_context": true,
+            "compact_fallbacks": 0,
+            "compact_requests": [
+              {
+                "call": 4,
+                "messages": [
+                  {
+                    "content": "你是 CAD 建模结果核对器。只根据原始需求/图纸、当前零件状态和最新截图判断：\n- 已满足要求：调用 finish。\n- 仍需修改或证据不足：调用 continue_full_context，简明列出缺失或错误的特征及建议修改。\n不要重新规划整个零件，不要输出工具调用以外的长篇分析。",
+                    "role": "system"
+                  },
+                  {
+                    "content": "建模需求：\nCreate a bent sheet-metal bracket as a single solid body. Sheet thickness 2mm, inside radius 3mm for every bend, K-factor 0.4 (the neutral layer lies 0.4 × thickness from the inside surface), width 80mm (x = −40 to 40). Side view (YZ plane): the base is horizontal with its bottom surface at z = 0 and its front edge at y = 0; at its rear the base is bent up 90° into a vertical wall whose outer face is at y = 60; the flat part of the wall runs from z = 5 to z = 50; at the top the wall is bent 45° towards −Y (towards the base side), followed by a flat lip 20mm long. Hole positions are given on the flat pattern: the flat pattern is the sheet unfolded along its bends; its length coordinate s is measured from the front edge of the base (s = 0) and its cross coordinate is x. Holes (each through the sheet, perpendicular to the local face): an 8mm hole at s = 25, x = 0; two 6mm holes at s = 80, x = ±25; a 5mm hole at s = 122, x = 0.\n\n当前零件已经建模，请结合最新状态和截图核对是否满足需求。",
+                    "role": "user"
+                  },
+                  {
+                    "content": "要求的实体数量：1。\n当前零件的精简状态：\n{\"bbox_mm\":{\"X\":[-40.0,40.0],\"Y\":[0.0,60.0],\"Z\":[-0.0,67.678],\"size\":[80.0,60.0,67.678]},\"volume_mm3\":20456.71,\"bodies\":1,\"cylinder_groups\":[{\"diameter_mm\":10.02,\"axis\":\"X\",\"span_mm\":[-40.0,40.0],\"refs\":[\"face#4\"],\"count\":1,\"axis_at_mm\":[[0.0,54.99,50.0]]},{\"diameter_mm\":10.0,\"axis\":\"X\",\"span_mm\":[-40.0,40.0],\"refs\":[\"face#2\"],\"count\":1,\"axis_at_mm\":[[0.0,55.0,5.0]]},{\"diameter_mm\":8.0,\"axis\":\"Z\",\"span_mm\":[0.0,2.0],\"refs\":[\"face#14\"],\"count\":1,\"axis_at_mm\":[[0.0,25.0,0.0]]},{\"diameter_mm\":6.0,\"axis\":\"X\",\"span_mm\":[-40.0,40.0],\"refs\":[\"face#10\"],\"count\":1,\"axis_at_mm\":[[0.0,55.0,5.0]]},{\"diameter_mm\":6.0,\"axis\":\"Y\",\"span_mm\":[58.0,60.0],\"refs\":[\"face#15\",\"face#16\"],\"count\":2,\"axis_at_mm\":[[25.0,0.0,24.03],[-25.0,0.0,24.03]]},{\"diameter_mm\":5.99,\"axis\":\"X\",\"span_mm\":[-40.0,40.0],\"refs\":[\"face#8\"],\"count\":1,\"axis_at_mm\":[[0.0,55.01,50.0]]},{\"diameter_mm\":5.0,\"axis\":\"Y\",\"span_mm\":[46.128,51.079],\"refs\":[\"face#17\"],\"count\":1,\"axis_at_mm\":[[0.0,0.0,58.38]]}],\"features\":[{\"name\":\"基准面1\",\"type\":\"RefPlane\"},{\"name\":\"草图1\",\"type\":\"ProfileFeature\"},{\"name\":\"凸台-拉伸1\",\"type\":\"Extrusion\"},{\"name\":\"草图2\",\"type\":\"ProfileFeature\"},{\"name\":\"切除-拉伸1\",\"type\":\"ICE\"},{\"name\":\"基准面2\",\"type\":\"RefPlane\"},{\"name\":\"草图3\",\"type\":\"ProfileFeature\"},{\"name\":\"切除-拉伸2\",\"type\":\"ICE\"},{\"name\":\"3D草图1\",\"type\":\"3DProfileFeature\"},{\"name\":\"切除-扫描2\",\"type\":\"SweepCut\"}]}",
+                    "role": "user"
+                  }
+                ],
+                "mode": "compact_verifier",
+                "tools": [
+                  "finish",
+                  "continue_full_context"
+                ]
+              },
+              {
+                "call": 5,
+                "messages": [
+                  {
+                    "content": "你是 CAD 建模结果核对器。只根据原始需求/图纸、当前零件状态和最新截图判断：\n- 已满足要求：调用 finish。\n- 仍需修改或证据不足：调用 continue_full_context，简明列出缺失或错误的特征及建议修改。\n不要重新规划整个零件，不要输出工具调用以外的长篇分析。",
+                    "role": "system"
+                  },
+                  {
+                    "content": "建模需求：\nCreate a bent sheet-metal bracket as a single solid body. Sheet thickness 2mm, inside radius 3mm for every bend, K-factor 0.4 (the neutral layer lies 0.4 × thickness from the inside surface), width 80mm (x = −40 to 40). Side view (YZ plane): the base is horizontal with its bottom surface at z = 0 and its front edge at y = 0; at its rear the base is bent up 90° into a vertical wall whose outer face is at y = 60; the flat part of the wall runs from z = 5 to z = 50; at the top the wall is bent 45° towards −Y (towards the base side), followed by a flat lip 20mm long. Hole positions are given on the flat pattern: the flat pattern is the sheet unfolded along its bends; its length coordinate s is measured from the front edge of the base (s = 0) and its cross coordinate is x. Holes (each through the sheet, perpendicular to the local face): an 8mm hole at s = 25, x = 0; two 6mm holes at s = 80, x = ±25; a 5mm hole at s = 122, x = 0.\n\n当前零件已经建模，请结合最新状态和截图核对是否满足需求。",
+                    "role": "user"
+                  },
+                  {
+                    "content": "要求的实体数量：1。\n当前零件的精简状态：\n{\"bbox_mm\":{\"X\":[-40.0,40.0],\"Y\":[0.0,60.0],\"Z\":[-0.0,67.678],\"size\":[80.0,60.0,67.678]},\"volume_mm3\":20456.71,\"bodies\":1,\"cylinder_groups\":[{\"diameter_mm\":10.02,\"axis\":\"X\",\"span_mm\":[-40.0,40.0],\"refs\":[\"face#4\"],\"count\":1,\"axis_at_mm\":[[0.0,54.99,50.0]]},{\"diameter_mm\":10.0,\"axis\":\"X\",\"span_mm\":[-40.0,40.0],\"refs\":[\"face#2\"],\"count\":1,\"axis_at_mm\":[[0.0,55.0,5.0]]},{\"diameter_mm\":8.0,\"axis\":\"Z\",\"span_mm\":[0.0,2.0],\"refs\":[\"face#14\"],\"count\":1,\"axis_at_mm\":[[0.0,25.0,0.0]]},{\"diameter_mm\":6.0,\"axis\":\"X\",\"span_mm\":[-40.0,40.0],\"refs\":[\"face#10\"],\"count\":1,\"axis_at_mm\":[[0.0,55.0,5.0]]},{\"diameter_mm\":6.0,\"axis\":\"Y\",\"span_mm\":[58.0,60.0],\"refs\":[\"face#15\",\"face#16\"],\"count\":2,\"axis_at_mm\":[[25.0,0.0,24.03],[-25.0,0.0,24.03]]},{\"diameter_mm\":5.99,\"axis\":\"X\",\"span_mm\":[-40.0,40.0],\"refs\":[\"face#8\"],\"count\":1,\"axis_at_mm\":[[0.0,55.01,50.0]]},{\"diameter_mm\":5.0,\"axis\":\"Y\",\"span_mm\":[46.128,51.079],\"refs\":[\"face#17\"],\"count\":1,\"axis_at_mm\":[[0.0,0.0,58.38]]}],\"features\":[{\"name\":\"基准面1\",\"type\":\"RefPlane\"},{\"name\":\"草图1\",\"type\":\"ProfileFeature\"},{\"name\":\"凸台-拉伸1\",\"type\":\"Extrusion\"},{\"name\":\"草图2\",\"type\":\"ProfileFeature\"},{\"name\":\"切除-拉伸1\",\"type\":\"ICE\"},{\"name\":\"基准面2\",\"type\":\"RefPlane\"},{\"name\":\"草图3\",\"type\":\"ProfileFeature\"},{\"name\":\"切除-拉伸2\",\"type\":\"ICE\"},{\"name\":\"3D草图1\",\"type\":\"3DProfileFeature\"},{\"name\":\"切除-扫描2\",\"type\":\"SweepCut\"}]}",
+                    "role": "user"
+                  },
+                  {
+                    "content": "控制推理长度，直接返回本轮需要的工具调用；不要只输出分析。互不依赖的操作尽量在同一回复中调用。",
+                    "role": "user"
+                  }
+                ],
+                "mode": "compact_verifier_recovery",
+                "tools": [
+                  "finish",
+                  "continue_full_context"
+                ]
+              }
+            ],
+            "compact_verifier_calls": 2,
+            "context_limit": 1000000,
+            "duration_seconds": 385.24,
+            "error": null,
+            "expected_bodies": 1,
+            "failure_families": {},
+            "final_state": {
+              "bbox_mm": {
+                "X": [
+                  -40.0,
+                  40.0
+                ],
+                "Y": [
+                  0.0,
+                  60.0
+                ],
+                "Z": [
+                  -0.0,
+                  67.678
+                ],
+                "size": [
+                  80.0,
+                  60.0,
+                  67.678
+                ]
+              },
+              "bodies": 1,
+              "cylinder_groups": [
+                {
+                  "axis": "X",
+                  "axis_at_mm": [
+                    [
+                      0.0,
+                      54.99,
+                      50.0
+                    ]
+                  ],
+                  "count": 1,
+                  "diameter_mm": 10.02,
+                  "refs": [
+                    "face#4"
+                  ],
+                  "span_mm": [
+                    -40.0,
+                    40.0
+                  ]
+                },
+                {
+                  "axis": "X",
+                  "axis_at_mm": [
+                    [
+                      0.0,
+                      55.0,
+                      5.0
+                    ]
+                  ],
+                  "count": 1,
+                  "diameter_mm": 10.0,
+                  "refs": [
+                    "face#2"
+                  ],
+                  "span_mm": [
+                    -40.0,
+                    40.0
+                  ]
+                },
+                {
+                  "axis": "Z",
+                  "axis_at_mm": [
+                    [
+                      0.0,
+                      25.0,
+                      0.0
+                    ]
+                  ],
+                  "count": 1,
+                  "diameter_mm": 8.0,
+                  "refs": [
+                    "face#14"
+                  ],
+                  "span_mm": [
+                    0.0,
+                    2.0
+                  ]
+                },
+                {
+                  "axis": "X",
+                  "axis_at_mm": [
+                    [
+                      0.0,
+                      55.0,
+                      5.0
+                    ]
+                  ],
+                  "count": 1,
+                  "diameter_mm": 6.0,
+                  "refs": [
+                    "face#10"
+                  ],
+                  "span_mm": [
+                    -40.0,
+                    40.0
+                  ]
+                },
+                {
+                  "axis": "Y",
+                  "axis_at_mm": [
+                    [
+                      25.0,
+                      0.0,
+                      24.03
+                    ],
+                    [
+                      -25.0,
+                      0.0,
+                      24.03
+                    ]
+                  ],
+                  "count": 2,
+                  "diameter_mm": 6.0,
+                  "refs": [
+                    "face#15",
+                    "face#16"
+                  ],
+                  "span_mm": [
+                    58.0,
+                    60.0
+                  ]
+                },
+                {
+                  "axis": "X",
+                  "axis_at_mm": [
+                    [
+                      0.0,
+                      55.01,
+                      50.0
+                    ]
+                  ],
+                  "count": 1,
+                  "diameter_mm": 5.99,
+                  "refs": [
+                    "face#8"
+                  ],
+                  "span_mm": [
+                    -40.0,
+                    40.0
+                  ]
+                },
+                {
+                  "axis": "Y",
+                  "axis_at_mm": [
+                    [
+                      0.0,
+                      0.0,
+                      58.38
+                    ]
+                  ],
+                  "count": 1,
+                  "diameter_mm": 5.0,
+                  "refs": [
+                    "face#17"
+                  ],
+                  "span_mm": [
+                    46.128,
+                    51.079
+                  ]
+                }
+              ],
+              "features": [
+                {
+                  "name": "基准面1",
+                  "type": "RefPlane"
+                },
+                {
+                  "name": "草图1",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "凸台-拉伸1",
+                  "type": "Extrusion"
+                },
+                {
+                  "name": "草图2",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "切除-拉伸1",
+                  "type": "ICE"
+                },
+                {
+                  "name": "基准面2",
+                  "type": "RefPlane"
+                },
+                {
+                  "name": "草图3",
+                  "type": "ProfileFeature"
+                },
+                {
+                  "name": "切除-拉伸2",
+                  "type": "ICE"
+                },
+                {
+                  "name": "3D草图1",
+                  "type": "3DProfileFeature"
+                },
+                {
+                  "name": "切除-扫描2",
+                  "type": "SweepCut"
+                }
+              ],
+              "parameters": {},
+              "planar_faces": [
+                {
+                  "alias": "back",
+                  "area_mm2": 4349.73,
+                  "at": "Z=0.000",
+                  "normal": "-Z",
+                  "ref": "face#1",
+                  "u_range": [
+                    -40.0,
+                    40.0
+                  ],
+                  "uv": "u=X,v=Y",
+                  "v_range": [
+                    0.0,
+                    55.0
+                  ]
+                },
+                {
+                  "alias": "front",
+                  "area_mm2": 4349.73,
+                  "at": "Z=2.000",
+                  "normal": "+Z",
+                  "ref": "face#11",
+                  "u_range": [
+                    -40.0,
+                    40.0
+                  ],
+                  "uv": "u=X,v=Y",
+                  "v_range": [
+                    0.0,
+                    55.0
+                  ]
+                },
+                {
+                  "alias": "top",
+                  "area_mm2": 3543.45,
+                  "at": "Y=60.000",
+                  "normal": "+Y",
+                  "ref": "face#3",
+                  "u_range": [
+                    -40.0,
+                    40.0
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    5.0,
+                    50.0
+                  ]
+                },
+                {
+                  "area_mm2": 3543.45,
+                  "at": "Y=58.000",
+                  "normal": "-Y",
+                  "ref": "face#9",
+                  "u_range": [
+                    -40.0,
+                    40.0
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    5.0,
+                    50.0
+                  ]
+                },
+                {
+                  "alias": "right",
+                  "area_mm2": 258.87,
+                  "at": "X=40.000",
+                  "normal": "+X",
+                  "ref": "face#12",
+                  "u_range": [
+                    -0.0,
+                    67.678
+                  ],
+                  "uv": "u=Z,v=Y",
+                  "v_range": [
+                    0.0,
+                    60.0
+                  ]
+                },
+                {
+                  "alias": "left",
+                  "area_mm2": 258.87,
+                  "at": "X=-40.000",
+                  "normal": "-X",
+                  "ref": "face#13",
+                  "u_range": [
+                    -0.0,
+                    67.678
+                  ],
+                  "uv": "u=Z,v=Y",
+                  "v_range": [
+                    0.0,
+                    60.0
+                  ]
+                },
+                {
+                  "alias": "bottom",
+                  "area_mm2": 160.0,
+                  "at": "Y=0.000",
+                  "normal": "-Y",
+                  "ref": "face#0",
+                  "u_range": [
+                    -40.0,
+                    40.0
+                  ],
+                  "uv": "u=X,v=Z",
+                  "v_range": [
+                    0.0,
+                    2.0
+                  ]
+                }
+              ],
+              "reference_planes": [
+                {
+                  "at": "X=-40.000",
+                  "name": "基准面1",
+                  "normal": "+X",
+                  "uv": "u=Z,v=Y"
+                },
+                {
+                  "at": "Y=60.000",
+                  "name": "基准面2",
+                  "normal": "+Y",
+                  "uv": "u=X,v=Z"
+                }
+              ],
+              "volume_mm3": 20456.71
+            },
+            "finish_reasons": [
+              "tool_calls",
+              "tool_calls",
+              "tool_calls",
+              "length",
+              "tool_calls"
+            ],
+            "length_retries": 1,
+            "llm_calls": 5,
+            "llm_responses": [
+              {
+                "choices": [
+                  {
+                    "finish_reason": "tool_calls",
+                    "index": 0,
+                    "logprobs": null,
+                    "message": {
+                      "annotations": null,
+                      "audio": null,
+                      "content": null,
+                      "function_call": null,
+                      "refusal": null,
+                      "role": "assistant",
+                      "tool_calls": [
+                        {
+                          "function": {
+                            "arguments": "{\"plane\": \"X=-40\", \"direction\": \"+X\", \"depth\": \"80\", \"loops\": [{\"type\":\"path\",\"start\":[0,0],\"segments\":[{\"to\":[0,55]},{\"to\":[5,60],\"through\":[1.464,58.536]},{\"to\":[50,60]},{\"to\":[53.536,58.536],\"through\":[51.913,59.619]},{\"to\":[67.678,44.393]},{\"to\":[66.263,42.979]},{\"to\":[52.121,57.121]},{\"to\":[50,58],\"through\":[51.148,57.772]},{\"to\":[5,58]},{\"to\":[2,55],\"through\":[2.879,57.121]},{\"to\":[2,0]},{\"to\":[0,0]}]}]}",
+                            "name": "extrude"
+                          },
+                          "id": "toolu_bdrk_01tIWWiGHVKTuvmJ0NOc0lwd",
+                          "type": "function"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "created": 1793003974,
+                "id": "2445d44e6c864d72b65ffb0553a791f6",
+                "metadata": null,
+                "model": "claude-opus-5",
+                "moderation": null,
+                "object": "chat.completion",
+                "service_tier": null,
+                "system_fingerprint": null,
+                "usage": {
+                  "cache_creation_input_tokens": 28000,
+                  "cache_read_input_tokens": 0,
+                  "cached_tokens": 0,
+                  "completion_thinking_tokens": 0,
+                  "completion_tokens": 4001,
+                  "completion_tokens_details": null,
+                  "credit": 27.51,
+                  "prompt_cache_hit_tokens": 0,
+                  "prompt_cache_miss_tokens": 2,
+                  "prompt_cache_write_tokens": 28000,
+                  "prompt_tokens": 28002,
+                  "prompt_tokens_details": null,
+                  "total_tokens": 32003
+                }
+              },
+              {
+                "choices": [
+                  {
+                    "finish_reason": "tool_calls",
+                    "index": 0,
+                    "logprobs": null,
+                    "message": {
+                      "annotations": null,
+                      "audio": null,
+                      "content": null,
+                      "function_call": null,
+                      "refusal": null,
+                      "role": "assistant",
+                      "tool_calls": [
+                        {
+                          "function": {
+                            "arguments": "{\"plane\": \"Z=0\", \"diameter\": \"8\", \"centers\": [[0,25]], \"through_all\": true, \"direction\": \"+Z\"}",
+                            "name": "hole"
+                          },
+                          "id": "toolu_bdrk_01dubKfrdR9MoZgeWjJg90JI",
+                          "type": "function"
+                        },
+                        {
+                          "function": {
+                            "arguments": "{\"plane\": \"Y=60\", \"diameter\": \"6\", \"centers\": [[-25,24.031],[25,24.031]], \"through_all\": true, \"direction\": \"-Y\"}",
+                            "name": "hole"
+                          },
+                          "id": "toolu_bdrk_01Z4JaNHxUuK8rcdd4liv31D",
+                          "type": "function"
+                        },
+                        {
+                          "function": {
+                            "arguments": "{\"origin\": [0,48.462,61.912], \"direction\": [0,1,1], \"from\": -5, \"to\": 5, \"diameter\": 5, \"cut\": true}",
+                            "name": "axis_cylinder"
+                          },
+                          "id": "toolu_bdrk_01a9ojdaFkzc69fZrFtX25eL",
+                          "type": "function"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "created": 1793004062,
+                "id": "b84a84b4f97749a884ce8363442318c3",
+                "metadata": null,
+                "model": "claude-opus-5",
+                "moderation": null,
+                "object": "chat.completion",
+                "service_tier": null,
+                "system_fingerprint": null,
+                "usage": {
+                  "cache_creation_input_tokens": 28982,
+                  "cache_read_input_tokens": 0,
+                  "cached_tokens": 0,
+                  "completion_thinking_tokens": 0,
+                  "completion_tokens": 3368,
+                  "completion_tokens_details": null,
+                  "credit": 26.54,
+                  "prompt_cache_hit_tokens": 0,
+                  "prompt_cache_miss_tokens": 2,
+                  "prompt_cache_write_tokens": 28982,
+                  "prompt_tokens": 28984,
+                  "prompt_tokens_details": null,
+                  "total_tokens": 32352
+                }
+              },
+              {
+                "choices": [
+                  {
+                    "finish_reason": "tool_calls",
+                    "index": 0,
+                    "logprobs": null,
+                    "message": {
+                      "annotations": null,
+                      "audio": null,
+                      "content": null,
+                      "function_call": null,
+                      "refusal": null,
+                      "role": "assistant",
+                      "tool_calls": [
+                        {
+                          "function": {
+                            "arguments": "{}",
+                            "name": "get_model_state"
+                          },
+                          "id": "toolu_bdrk_01bUcLxvYaOykl9DlgPnGf8W",
+                          "type": "function"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "created": 1793004164,
+                "id": "eeba7bce7f1a472ea6371a00eadea2bf",
+                "metadata": null,
+                "model": "claude-opus-5",
+                "moderation": null,
+                "object": "chat.completion",
+                "service_tier": null,
+                "system_fingerprint": null,
+                "usage": {
+                  "cache_creation_input_tokens": 2821,
+                  "cache_read_input_tokens": 0,
+                  "cached_tokens": 0,
+                  "completion_thinking_tokens": 0,
+                  "completion_tokens": 1259,
+                  "completion_tokens_details": null,
+                  "credit": 6.33,
+                  "prompt_cache_hit_tokens": 27949,
+                  "prompt_cache_miss_tokens": 2,
+                  "prompt_cache_write_tokens": 2821,
+                  "prompt_tokens": 30772,
+                  "prompt_tokens_details": {
+                    "accepted_prediction_tokens": 0,
+                    "audio_tokens": 0,
+                    "cache_write_tokens": null,
+                    "cached_tokens": 27949,
+                    "image_tokens": null,
+                    "reasoning_tokens": 0,
+                    "rejected_prediction_tokens": 0,
+                    "text_tokens": null
+                  },
+                  "total_tokens": 32031
+                }
+              },
+              {
+                "choices": [
+                  {
+                    "finish_reason": "length",
+                    "index": 0,
+                    "logprobs": null,
+                    "message": {
+                      "annotations": null,
+                      "audio": null,
+                      "content": null,
+                      "function_call": null,
+                      "refusal": null,
+                      "role": "assistant",
+                      "tool_calls": null
+                    }
+                  }
+                ],
+                "created": 1793004196,
+                "id": "5cea58bc24e44ef98694e4407143f5de",
+                "metadata": null,
+                "model": "claude-opus-5",
+                "moderation": null,
+                "object": "chat.completion",
+                "service_tier": null,
+                "system_fingerprint": null,
+                "usage": {
+                  "cache_creation_input_tokens": 2388,
+                  "cache_read_input_tokens": 0,
+                  "cached_tokens": 0,
+                  "completion_thinking_tokens": 0,
+                  "completion_tokens": 4096,
+                  "completion_tokens_details": null,
+                  "credit": 11.73,
+                  "prompt_cache_hit_tokens": 0,
+                  "prompt_cache_miss_tokens": 2,
+                  "prompt_cache_write_tokens": 2388,
+                  "prompt_tokens": 2390,
+                  "prompt_tokens_details": null,
+                  "total_tokens": 6486
+                }
+              },
+              {
+                "choices": [
+                  {
+                    "finish_reason": "tool_calls",
+                    "index": 0,
+                    "logprobs": null,
+                    "message": {
+                      "annotations": null,
+                      "audio": null,
+                      "content": null,
+                      "function_call": null,
+                      "refusal": null,
+                      "role": "assistant",
+                      "tool_calls": [
+                        {
+                          "function": {
+                            "arguments": "{\"summary\": \"核对通过：单实体，宽80（x −40~40），Y 0~60（底板前缘 y=0，立壁外面 y=60），底面 z=0，最高点 z=67.678 与 45°翻边理论值一致；两处折弯内R3（内圆柱φ6在 (55,5) 与 (55,50)，外圆柱φ10），立壁直段 z=5~50，翻边20mm。孔位按 K=0.4 展开长度核算：φ8 在 y=25 贯穿底板（s=25）；2×φ6 在 x=±25、z=24.03 贯穿立壁（s=80）；φ5 垂直于45°翻边面，Y跨度46.13~51.08 与 s=122 理论值吻合。体积约20457mm³ 合理。\"}",
+                            "name": "finish"
+                          },
+                          "id": "toolu_bdrk_01ODzkAKxdisyl8KNOsfZCtc",
+                          "type": "function"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "created": 1793004267,
+                "id": "5fb5e9f13fb64e579f0aa3be71e0a692",
+                "metadata": null,
+                "model": "claude-opus-5",
+                "moderation": null,
+                "object": "chat.completion",
+                "service_tier": null,
+                "system_fingerprint": null,
+                "usage": {
+                  "cache_creation_input_tokens": 2439,
+                  "cache_read_input_tokens": 0,
+                  "cached_tokens": 0,
+                  "completion_thinking_tokens": 0,
+                  "completion_tokens": 5242,
+                  "completion_tokens_details": null,
+                  "credit": 14.63,
+                  "prompt_cache_hit_tokens": 0,
+                  "prompt_cache_miss_tokens": 2,
+                  "prompt_cache_write_tokens": 2439,
+                  "prompt_tokens": 2441,
+                  "prompt_tokens_details": null,
+                  "total_tokens": 7683
+                }
+              }
+            ],
+            "reasoning_effort": null,
+            "request_modes": [
+              "compact_history",
+              "compact_history",
+              "compact_history",
+              "compact_verifier",
+              "compact_verifier_recovery"
+            ],
+            "resumed": null,
+            "semantic_recoveries": 0,
+            "status": "finished",
+            "summary": "核对通过：单实体，宽80（x −40~40），Y 0~60（底板前缘 y=0，立壁外面 y=60），底面 z=0，最高点 z=67.678 与 45°翻边理论值一致；两处折弯内R3（内圆柱φ6在 (55,5) 与 (55,50)，外圆柱φ10），立壁直段 z=5~50，翻边20mm。孔位按 K=0.4 展开长度核算：φ8 在 y=25 贯穿底板（s=25）；2×φ6 在 x=±25、z=24.03 贯穿立壁（s=80）；φ5 垂直于45°翻边面，Y跨度46.13~51.08 与 s=122 理论值吻合。体积约20457mm³ 合理。",
+            "token_usage": {
+              "calls": 5,
+              "completion_tokens": 17966,
+              "prompt_tokens": 92589,
+              "total_tokens": 110555
+            },
+            "tool_calls": [
+              {
+                "args": {
+                  "depth": "80",
+                  "direction": "+X",
+                  "loops": [
+                    {
+                      "segments": [
+                        {
+                          "to": [
+                            0,
+                            55
+                          ]
+                        },
+                        {
+                          "through": [
+                            1.464,
+                            58.536
+                          ],
+                          "to": [
+                            5,
+                            60
+                          ]
+                        },
+                        {
+                          "to": [
+                            50,
+                            60
+                          ]
+                        },
+                        {
+                          "through": [
+                            51.913,
+                            59.619
+                          ],
+                          "to": [
+                            53.536,
+                            58.536
+                          ]
+                        },
+                        {
+                          "to": [
+                            67.678,
+                            44.393
+                          ]
+                        },
+                        {
+                          "to": [
+                            66.263,
+                            42.979
+                          ]
+                        },
+                        {
+                          "to": [
+                            52.121,
+                            57.121
+                          ]
+                        },
+                        {
+                          "through": [
+                            51.148,
+                            57.772
+                          ],
+                          "to": [
+                            50,
+                            58
+                          ]
+                        },
+                        {
+                          "to": [
+                            5,
+                            58
+                          ]
+                        },
+                        {
+                          "through": [
+                            2.879,
+                            57.121
+                          ],
+                          "to": [
+                            2,
+                            55
+                          ]
+                        },
+                        {
+                          "to": [
+                            2,
+                            0
+                          ]
+                        },
+                        {
+                          "to": [
+                            0,
+                            0
+                          ]
+                        }
+                      ],
+                      "start": [
+                        0,
+                        0
+                      ],
+                      "type": "path"
+                    }
+                  ],
+                  "plane": "X=-40"
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "extrude"
+              },
+              {
+                "args": {
+                  "centers": [
+                    [
+                      0,
+                      25
+                    ]
+                  ],
+                  "diameter": "8",
+                  "direction": "+Z",
+                  "plane": "Z=0",
+                  "through_all": true
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "hole"
+              },
+              {
+                "args": {
+                  "centers": [
+                    [
+                      -25,
+                      24.031
+                    ],
+                    [
+                      25,
+                      24.031
+                    ]
+                  ],
+                  "diameter": "6",
+                  "direction": "-Y",
+                  "plane": "Y=60",
+                  "through_all": true
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "hole"
+              },
+              {
+                "args": {
+                  "cut": true,
+                  "diameter": 5,
+                  "direction": [
+                    0,
+                    1,
+                    1
+                  ],
+                  "from": -5,
+                  "origin": [
+                    0,
+                    48.462,
+                    61.912
+                  ],
+                  "to": 5
+                },
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "axis_cylinder"
+              },
+              {
+                "args": {},
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "get_model_state"
+              },
+              {
+                "args": {
+                  "summary": "核对通过：单实体，宽80（x −40~40），Y 0~60（底板前缘 y=0，立壁外面 y=60），底面 z=0，最高点 z=67.678 与 45°翻边理论值一致；两处折弯内R3（内圆柱φ6在 (55,5) 与 (55,50)，外圆柱φ10），立壁直段 z=5~50，翻边20mm。孔位按 K=0.4 展开长度核算：φ8 在 y=25 贯穿底板（s=25）；2×φ6 在 x=±25、z=24.03 贯穿立壁（s=80）；φ5 垂直于45°翻边面，Y跨度46.13~51.08 与 s=122 理论值吻合。体积约20457mm³ 合理。"
+                },
+                "compact_verifier": true,
+                "error_code": null,
+                "message": "",
+                "ok": true,
+                "tool": "finish"
+              }
+            ],
+            "view_tool": true
+          }
+        },
+        "final_observation": {
+          "features": [
+            {
+              "index": 0,
+              "name": "收藏",
+              "type": "FavoriteFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 1,
+              "name": "历史记录",
+              "type": "HistoryFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 2,
+              "name": "选择集",
+              "type": "SelectionSetFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 3,
+              "name": "传感器",
+              "type": "SensorFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 4,
+              "name": "Design Binder",
+              "type": "DocsFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 5,
+              "name": "注解",
+              "type": "DetailCabinet",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 6,
+              "name": "标注",
+              "type": "InkMarkupFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 7,
+              "name": "光源、相机与布景",
+              "type": "EnvFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 8,
+              "name": "实体",
+              "type": "SolidBodyFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 9,
+              "name": "曲面实体",
+              "type": "SurfaceBodyFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 10,
+              "name": "备注",
+              "type": "CommentsFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 11,
+              "name": "方程式",
+              "type": "EqnFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 12,
+              "name": "Material <not specified>",
+              "type": "MaterialFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 13,
+              "name": "前视基准面",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 14,
+              "name": "上视基准面",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 15,
+              "name": "右视基准面",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 16,
+              "name": "原点",
+              "type": "OriginProfileFeature",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 17,
+              "name": "Tables",
+              "type": "ConfigTableFolder",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 18,
+              "name": "基准面1",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面1@Part3.Part",
+                  "value": 0.04
+                }
+              ]
+            },
+            {
+              "index": 19,
+              "name": "草图1",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面1@Part3.Part",
+                  "value": 0.04
+                }
+              ]
+            },
+            {
+              "index": 20,
+              "name": "凸台-拉伸1",
+              "type": "Extrusion",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面1@Part3.Part",
+                  "value": 0.04
+                },
+                {
+                  "name": "D1",
+                  "fullName": "D1@凸台-拉伸1@Part3.Part",
+                  "value": 0.08
+                }
+              ]
+            },
+            {
+              "index": 21,
+              "name": "草图2",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 22,
+              "name": "切除-拉伸1",
+              "type": "ICE",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 23,
+              "name": "基准面2",
+              "type": "RefPlane",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面2@Part3.Part",
+                  "value": 0.06
+                }
+              ]
+            },
+            {
+              "index": 24,
+              "name": "草图3",
+              "type": "ProfileFeature",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面2@Part3.Part",
+                  "value": 0.06
+                }
+              ]
+            },
+            {
+              "index": 25,
+              "name": "切除-拉伸2",
+              "type": "ICE",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D1",
+                  "fullName": "D1@基准面2@Part3.Part",
+                  "value": 0.06
+                }
+              ]
+            },
+            {
+              "index": 26,
+              "name": "3D草图1",
+              "type": "3DProfileFeature",
+              "suppressed": false,
+              "dimensions": []
+            },
+            {
+              "index": 27,
+              "name": "切除-扫描2",
+              "type": "SweepCut",
+              "suppressed": false,
+              "dimensions": [
+                {
+                  "name": "D3",
+                  "fullName": "D3@切除-扫描2@Part3.Part",
+                  "value": 0.005
+                }
+              ]
+            }
+          ],
+          "faces": [
+            {
+              "index": 0,
+              "faceKey": "-Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0,
+                "z": 0.001
+              },
+              "normal": {
+                "x": 0,
+                "y": -1,
+                "z": 0
+              },
+              "area": 0.00016,
+              "geometricSignature": "plane:0.000000:0.000000:0.001000:0.000160000"
+            },
+            {
+              "index": 1,
+              "faceKey": "-Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.0275,
+                "z": 0
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": -1
+              },
+              "area": 0.0043497345175425636,
+              "geometricSignature": "plane:0.000000:0.027500:0.000000:0.004349735"
+            },
+            {
+              "index": 2,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0,
+                "y": 0.05750000012656193,
+                "z": 0.00249999987343807
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.0006283731824267617,
+              "geometricSignature": "cylinder:0.000000:0.057500:0.002500:0.000628373"
+            },
+            {
+              "index": 3,
+              "faceKey": "+Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.06,
+                "z": 0.0275
+              },
+              "normal": {
+                "x": 0,
+                "y": 1,
+                "z": 0
+              },
+              "area": 0.003543451332235384,
+              "geometricSignature": "plane:0.000000:0.060000:0.027500:0.003543451"
+            },
+            {
+              "index": 4,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0,
+                "y": 0.059268,
+                "z": 0.051768
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.00031414422982322065,
+              "geometricSignature": "cylinder:0.000000:0.059268:0.051768:0.000314144"
+            },
+            {
+              "index": 5,
+              "faceKey": "+Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.0514645,
+                "z": 0.060607
+              },
+              "normal": {
+                "x": 0,
+                "y": 0.7070817813887599,
+                "z": 0.7071317801004973
+              },
+              "area": 0.001580417535655026,
+              "geometricSignature": "plane:0.000000:0.051465:0.060607:0.001580418"
+            },
+            {
+              "index": 6,
+              "faceKey": "+Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.043686,
+                "z": 0.0669705
+              },
+              "normal": {
+                "x": 0,
+                "y": -0.7073566863694162,
+                "z": 0.7068567876511335
+              },
+              "area": 0.00016003241671611406,
+              "geometricSignature": "plane:0.000000:0.043686:0.066971:0.000160032"
+            },
+            {
+              "index": 7,
+              "faceKey": "+Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.050050000000000004,
+                "z": 0.059192
+              },
+              "normal": {
+                "x": 0,
+                "y": -0.7071067811865476,
+                "z": -0.7071067811865476
+              },
+              "area": 0.0015803497018414894,
+              "geometricSignature": "plane:0.000000:0.050050:0.059192:0.001580350"
+            },
+            {
+              "index": 8,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0,
+                "y": 0.057560500392803485,
+                "z": 0.0510605
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.00018850396443701305,
+              "geometricSignature": "cylinder:0.000000:0.057561:0.051061:0.000188504"
+            },
+            {
+              "index": 9,
+              "faceKey": "+Y",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.058,
+                "z": 0.0275
+              },
+              "normal": {
+                "x": 0,
+                "y": -1,
+                "z": 0
+              },
+              "area": 0.003543451332235384,
+              "geometricSignature": "plane:0.000000:0.058000:0.027500:0.003543451"
+            },
+            {
+              "index": 10,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0,
+                "y": 0.0565,
+                "z": 0.0034999999999999996
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.0003769535726212608,
+              "geometricSignature": "cylinder:0.000000:0.056500:0.003500:0.000376954"
+            },
+            {
+              "index": 11,
+              "faceKey": "-Z",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0,
+                "y": 0.0275,
+                "z": 0.0019999999999999996
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 1
+              },
+              "area": 0.0043497345175425636,
+              "geometricSignature": "plane:0.000000:0.027500:0.002000:0.004349735"
+            },
+            {
+              "index": 12,
+              "faceKey": "+X",
+              "surfaceType": "plane",
+              "center": {
+                "x": 0.04,
+                "y": 0.03000000012656193,
+                "z": 0.03383899987343807
+              },
+              "normal": {
+                "x": 1,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.00025886861932114535,
+              "geometricSignature": "plane:0.040000:0.030000:0.033839:0.000258869"
+            },
+            {
+              "index": 13,
+              "faceKey": "-X",
+              "surfaceType": "plane",
+              "center": {
+                "x": -0.04,
+                "y": 0.03000000012656193,
+                "z": 0.03383899987343807
+              },
+              "normal": {
+                "x": -1,
+                "y": 0,
+                "z": 0
+              },
+              "area": 0.00025886861932114535,
+              "geometricSignature": "plane:-0.040000:0.030000:0.033839:0.000258869"
+            },
+            {
+              "index": 14,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0,
+                "y": 0.025,
+                "z": 0.0010000000000000009
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 5.026548245743655e-05,
+              "geometricSignature": "cylinder:0.000000:0.025000:0.001000:0.000050265"
+            },
+            {
+              "index": 15,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0.025,
+                "y": 0.059,
+                "z": 0.024031
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 3.7699111843077415e-05,
+              "geometricSignature": "cylinder:0.025000:0.059000:0.024031:0.000037699"
+            },
+            {
+              "index": 16,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": -0.025,
+                "y": 0.059,
+                "z": 0.024031
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 3.7699111843077415e-05,
+              "geometricSignature": "cylinder:-0.025000:0.059000:0.024031:0.000037699"
+            },
+            {
+              "index": 17,
+              "faceKey": "",
+              "surfaceType": "cylinder",
+              "center": {
+                "x": 0,
+                "y": 0.04860336817689505,
+                "z": 0.062053305678505345
+              },
+              "normal": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "area": 3.1424832932684606e-05,
+              "geometricSignature": "cylinder:0.000000:0.048603:0.062053:0.000031425"
+            }
+          ],
+          "sketches": [
+            {
+              "name": "草图1",
+              "faceKey": "REFPLANE:基准面1",
+              "circleCount": 0,
+              "circles": []
+            },
+            {
+              "name": "草图2",
+              "faceKey": "PLANE:0",
+              "circleCount": 1,
+              "circles": [
+                {
+                  "cx": 0,
+                  "cy": 0.025,
+                  "cz": 0,
+                  "radius": 0.004
+                }
+              ]
+            },
+            {
+              "name": "草图3",
+              "faceKey": "REFPLANE:基准面2",
+              "circleCount": 2,
+              "circles": [
+                {
+                  "cx": -0.025,
+                  "cy": 0.06,
+                  "cz": 0.024031,
+                  "radius": 0.003
+                },
+                {
+                  "cx": 0.025,
+                  "cy": 0.06,
+                  "cz": 0.024031,
+                  "radius": 0.003
+                }
+              ]
+            }
+          ],
+          "feature_sketch_links": [
+            {
+              "featureName": "凸台-拉伸1",
+              "featureType": "Extrusion",
+              "sketchName": "草图1",
+              "faceKey": "REFPLANE:基准面1",
+              "operationKind": "extrusion",
+              "depth": 0.08
+            },
+            {
+              "featureName": "切除-拉伸1",
+              "featureType": "ICE",
+              "sketchName": "草图2",
+              "faceKey": "PLANE:0",
+              "operationKind": "cut",
+              "depth": 1e-06
+            },
+            {
+              "featureName": "切除-拉伸2",
+              "featureType": "ICE",
+              "sketchName": "草图3",
+              "faceKey": "REFPLANE:基准面2",
+              "operationKind": "cut",
+              "depth": 1e-06
+            },
+            {
+              "featureName": "切除-扫描2",
+              "featureType": "SweepCut",
+              "sketchName": "3D草图1",
+              "faceKey": "REFPLANE:基准面2",
+              "operationKind": "sweep_cut",
+              "depth": 0.005
+            }
+          ],
+          "bounding_box_mm": {
+            "minX": -40.0,
+            "minY": 0.0,
+            "minZ": -0.0,
+            "maxX": 40.0,
+            "maxY": 60.0,
+            "maxZ": 67.678,
+            "sizeX": 80.0,
+            "sizeY": 60.0,
+            "sizeZ": 67.678
+          },
+          "volume_mm3": 20456.709808,
+          "document_type": "part",
+          "assembly_path": "",
+          "components": [],
+          "mates": [],
+          "interference_summary": null,
+          "last_execution": [],
+          "errors": {},
+          "state_fingerprint": "3443d0e1ce338a935abab4ede4f142281237e18d3750220580469d9e9c65f4dc"
+        },
+        "sketch_stats": [
+          {
+            "featureIndex": 19,
+            "name": "草图1",
+            "type": "ProfileFeature",
+            "lines": 8,
+            "arcs": 4,
+            "circles": 0,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": [
+              {
+                "name": "凸台-拉伸1",
+                "type": "Extrusion"
+              }
+            ]
+          },
+          {
+            "featureIndex": 21,
+            "name": "草图2",
+            "type": "ProfileFeature",
+            "lines": 0,
+            "arcs": 0,
+            "circles": 1,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": [
+              {
+                "name": "切除-拉伸1",
+                "type": "ICE"
+              }
+            ]
+          },
+          {
+            "featureIndex": 24,
+            "name": "草图3",
+            "type": "ProfileFeature",
+            "lines": 0,
+            "arcs": 0,
+            "circles": 2,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": [
+              {
+                "name": "切除-拉伸2",
+                "type": "ICE"
+              }
+            ]
+          },
+          {
+            "featureIndex": 26,
+            "name": "3D草图1",
+            "type": "3DProfileFeature",
+            "lines": 1,
+            "arcs": 0,
+            "circles": 0,
+            "ellipses": 0,
+            "splines": 0,
+            "otherSegments": 0,
+            "constructionLines": 0,
+            "constructionOther": 0,
+            "regularPolygon": false,
+            "consumers": [
+              {
+                "name": "切除-扫描2",
+                "type": "SweepCut"
+              }
+            ]
+          }
+        ]
+      },
+      "repeat": 0
+    }
+  ]
+}

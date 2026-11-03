@@ -1,0 +1,87 @@
+{
+ "part_id": "gs_crank_shaft",
+ "status": "finished",
+ "error": null,
+ "llm_calls": 8,
+ "tool_counts": {
+  "read_doc": 4,
+  "run_python": 3,
+  "finish": 1,
+  "finish_rejected": 0,
+  "no_tool": 0
+ },
+ "token_usage": {
+  "prompt_tokens": 146338,
+  "completion_tokens": 2802,
+  "total_tokens": 149140,
+  "cached_tokens": 109153,
+  "credit": 14.27
+ },
+ "elapsed_s": 57.4,
+ "max_calls": 150,
+ "reasoning_effort": "medium",
+ "max_tokens": 32000,
+ "step": "parts/gs_crank_shaft.step",
+ "accepted": true,
+ "score": 100.0,
+ "grade": {
+  "case": "gs_crank_shaft",
+  "score": 100.0,
+  "passed": 2,
+  "total": 2,
+  "implied_passed": 0,
+  "implied_total": 0,
+  "hard_ok": true,
+  "accepted": true,
+  "rubrics": [
+   {
+    "id": "solid",
+    "ok": true,
+    "hard": true,
+    "basis": "explicit",
+    "weight": 1.0,
+    "checks": [
+     {
+      "check": "single_valid_solid",
+      "ok": true,
+      "solids": 1,
+      "shells": 1,
+      "valid": true
+     }
+    ]
+   },
+   {
+    "id": "size",
+    "ok": true,
+    "hard": true,
+    "basis": "explicit",
+    "weight": 1.0,
+    "checks": [
+     {
+      "check": "exists",
+      "ok": true,
+      "found": 1,
+      "expected": 1
+     },
+     {
+      "check": "extent_along",
+      "ok": true,
+      "measured": [
+       32.0
+      ]
+     },
+     {
+      "check": "bbox_sorted",
+      "ok": true,
+      "measured": [
+       10.0,
+       10.0,
+       32.0
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "trace": "parts/gs_crank_shaft/transcript.json"
+}

@@ -173,6 +173,10 @@ DEFAULT_REASONING_EFFORTS = {
 CONTEXT_LIMITS = {
     "qwen3.8-flash-next-fp8": 73728,
     "glm-4.6v": 65536,
+    # 实测输入约 1,000,000（999,415 成功，约 1,001,000 被拒）；输入与输出共用该窗口。
+    "claude-opus-5": 1_000_000,
+    # 实测输入约 1,048,576（1,047,007 成功，1,050,007 被拒）。官方目录的 400K 已过时。
+    "gemini-3.1-pro": 1_048_576,
 }
 # 截断重试时输出上限翻倍的封顶值。推理模型单次思考可能超过 8K，不能封得太低；
 # 有 CONTEXT_LIMITS 的模型在输入变长时会按服务端报告的输入长度自动压缩本轮输出
@@ -180,6 +184,9 @@ MAX_OUTPUT_TOKENS: dict[str, int] = {
     # 给输入、视觉 token 和工具 schema 至少留半个窗口；服务端返回精确输入
     # token 数时，complete_within_context 还会继续收缩本轮输出预算。
     "glm-4.6v": 32768,
+    # 官方目录输出上限。compact 仍从 32k 起，截断后才向这个上限翻倍。
+    "claude-opus-5": 128_000,
+    "gemini-3.1-pro": 64_000,
 }
 DEFAULT_MAX_OUTPUT_TOKENS = 32000
 COMPACT_VERIFIER_MAX_TOKENS = 4096

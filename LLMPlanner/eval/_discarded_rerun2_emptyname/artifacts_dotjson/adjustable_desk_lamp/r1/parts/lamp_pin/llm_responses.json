@@ -1,0 +1,171 @@
+[
+ {
+  "id": "8fae13f832d24b9b81b56290291c3871",
+  "choices": [
+   {
+    "finish_reason": "tool_calls",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "tool_calls": [
+      {
+       "id": "toolu_01DFmUb39erdamMyuutjPbcQ",
+       "function": {
+        "arguments": "{\"path\": \"references/docs/api/make_cylinder_rsolid.md\"}",
+        "name": "read_doc"
+       },
+       "type": "function"
+      }
+     ],
+     "reasoning_content": "I'll create a simple cylinder with a 2.5mm radius and 10mm height along the Z axis, using the cylinder solid-creation helper.\n\n"
+    }
+   }
+  ],
+  "created": 1791279845,
+  "model": "claude-sonnet-5",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 126,
+   "prompt_tokens": 10641,
+   "total_tokens": 10767,
+   "completion_tokens_details": null,
+   "prompt_tokens_details": null,
+   "prompt_cache_hit_tokens": 0,
+   "prompt_cache_miss_tokens": 66,
+   "cache_read_input_tokens": 0,
+   "cache_creation_input_tokens": 10575,
+   "prompt_cache_write_tokens": 10575,
+   "completion_thinking_tokens": 0,
+   "credit": 2.78,
+   "cached_tokens": 0
+  }
+ },
+ {
+  "id": "0dfdab204b4344bdbc2ba9bfe109f2a7",
+  "choices": [
+   {
+    "finish_reason": "tool_calls",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "tool_calls": [
+      {
+       "id": "toolu_01RLowsAvkKeUAtQMrbqgW7N",
+       "function": {
+        "arguments": "{\"code\": \"\\nimport simplecadapi as scad\\n\\n@scad.part(id=\\\"part\\\", cache=\\\"off\\\")\\ndef build() -> scad.Solid:\\n    # 铰销: 直径5mm(半径2.5), 长10mm, 轴线沿Z, 从Z=0到Z=10\\n    pin = scad.make_cylinder_rsolid(\\n        radius=2.5,\\n        height=10.0,\\n        bottom_face_center=(0.0, 0.0, 0.0),\\n        axis=(0.0, 0.0, 1.0),\\n    )\\n    return pin\\n\\nres = build()\\nprint(\\\"volume\\\", res.part.body.get_volume())\\nscad.capture(res, \\\"model.scadpkg\\\", include_scene=False)\\nscad.exporter.export_product_package_to_step(\\\"model.scadpkg\\\", \\\"model.step\\\")\\n\"}",
+        "name": "run_python"
+       },
+       "type": "function"
+      }
+     ]
+    }
+   }
+  ],
+  "created": 1791279851,
+  "model": "claude-sonnet-5",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 302,
+   "prompt_tokens": 11212,
+   "total_tokens": 11514,
+   "completion_tokens_details": null,
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": null,
+    "cached_tokens": 10575,
+    "image_tokens": null,
+    "text_tokens": null,
+    "accepted_prediction_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0
+   },
+   "prompt_cache_hit_tokens": 10575,
+   "prompt_cache_miss_tokens": 2,
+   "cache_read_input_tokens": 0,
+   "cache_creation_input_tokens": 635,
+   "prompt_cache_write_tokens": 635,
+   "completion_thinking_tokens": 0,
+   "credit": 0.67,
+   "cached_tokens": 0
+  }
+ },
+ {
+  "id": "2c8e9514790246edb165c632eb4f0780",
+  "choices": [
+   {
+    "finish_reason": "tool_calls",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "体积验证：π·2.5²·10 ≈ 196.35 mm³，与计算一致，模型已生成。",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "tool_calls": [
+      {
+       "id": "toolu_01SYyDdtmVCnnBvCEvuUm71f",
+       "function": {
+        "arguments": "{}",
+        "name": "finish"
+       },
+       "type": "function"
+      }
+     ]
+    }
+   }
+  ],
+  "created": 1791279858,
+  "model": "claude-sonnet-5",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 65,
+   "prompt_tokens": 11577,
+   "total_tokens": 11642,
+   "completion_tokens_details": null,
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": null,
+    "cached_tokens": 11210,
+    "image_tokens": null,
+    "text_tokens": null,
+    "accepted_prediction_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0
+   },
+   "prompt_cache_hit_tokens": 11210,
+   "prompt_cache_miss_tokens": 2,
+   "cache_read_input_tokens": 0,
+   "cache_creation_input_tokens": 365,
+   "prompt_cache_write_tokens": 365,
+   "completion_thinking_tokens": 0,
+   "credit": 0.38,
+   "cached_tokens": 0
+  }
+ }
+]

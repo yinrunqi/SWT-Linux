@@ -2057,7 +2057,23 @@ def _close_documents(sw_url: str) -> dict:
     )
 
 
-def _save_artifacts(sw_url: str, stem: Path | None) -> dict:
+def _host_path(path: Path, windows_root: str | None) -> str:
+    """把本机路径换成 SolidWorks 所在机器能写的路径。
+
+    Windows 会把以 / 开头的 Linux 绝对路径当成当前盘根目录，
+    /home/yrq/SolidWorksTutorial/... 实际写到 C:\\home\\yrq\\...。
+    windows_root 是这份仓库在 Windows 上的根目录。
+    """
+    resolved = path.resolve()
+    if not windows_root:
+        return str(resolved)
+    relative = resolved.relative_to(ROOT.parent)
+    tail = "\\".join(relative.parts)
+    root = windows_root.rstrip("\\/")
+    return f"{root}\\{tail}" if tail else root
+
+
+def _save_artifacts(sw_url: str, stem: Path | None, *, windows_root: str | None = None) -> dict:
     """Keep the native part and a STEP copy so later metrics need no re-modeling."""
     if stem is None:
         return {}
@@ -2068,9 +2084,13 @@ def _save_artifacts(sw_url: str, stem: Path | None) -> dict:
         ("sldprt", "/api/save-part-as", "savePath", ".SLDPRT"),
     ):
         path = stem.with_suffix(suffix).resolve()
+        host_path = _host_path(path, windows_root)
         try:
-            _post_json(f"{sw_url}{route}", {field: str(path)}, timeout=120)
-            saved[key] = str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
+            _post_json(f"{sw_url}{route}", {field: host_path}, timeout=120)
+            if windows_root:
+                saved[key] = host_path
+            else:
+                saved[key] = str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
         except Exception as exc:
             saved[f"{key}_error"] = str(exc)
     # OCC 读 SolidWorks 的退化圆环面等会判实体无效，rubric 届时改用这里的实体数与体积
@@ -2430,6 +2450,7 @@ def run_one(
     resume: bool = False,
     view_tool: bool = True,
     compact_context: bool = False,
+    windows_root: str | None = None,
 ) -> dict:
     started = time.perf_counter()
     cleanup_before = _close_documents(sw_url)
@@ -2491,7 +2512,7 @@ def run_one(
         trace["final_observation"] = observation
         sketch_stats = _sketch_stats(sw_url)
         trace["sketch_stats"] = sketch_stats
-        artifacts = _save_artifacts(sw_url, artifact_stem)
+        artifacts = _save_artifacts(sw_url, artifact_stem, windows_root=windows_root)
         scoring_v1 = score_case_v1(case, payload, observation)
         scoring = score_case_v2(
             case,
@@ -2557,7 +2578,7 @@ def run_one(
                 observation = {}
         trace["final_observation"] = observation or None
         try:
-            artifacts = _save_artifacts(sw_url, artifact_stem) if observation.get("volume_mm3") else {}
+            artifacts = _save_artifacts(sw_url, artifact_stem, windows_root=windows_root) if observation.get("volume_mm3") else {}
         except Exception:
             artifacts = {}
         return {
@@ -2824,6 +2845,13 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--web-url", default="http://localhost:5000")
     parser.add_argument("--sw-url", default="http://localhost:5100")
+    parser.add_argument(
+        "--windows-root",
+        default=None,
+        help="This repo's root on the Windows machine that runs SolidWorks. "
+        "STEP and SLDPRT paths sent to the service are rewritten under it. "
+        r"Example: C:\Users\38409\Desktop\Workflow-CAD\SolidWorksTutorial",
+    )
     parser.add_argument("--ids", nargs="*")
     parser.add_argument("--model", default=MODEL)
     parser.add_argument(
@@ -3048,10 +3076,15 @@ def main() -> int:
                 resume=resuming,
                 view_tool=bool(view_tool),
                 compact_context=args.compact_context,
+                windows_root=args.windows_root,
             )
-            lost = result.get("workflow_status") == "sw_lost" or (
-                result.get("status") == "error" and sw_watchdog.check(sw_url, 0) is not None
-            )
+            # sw-restarts 0 表示不看护 SolidWorks。Linux 上没有 powershell，
+            # 这里再调用 check() 会在某一题出错时把整批评测打崩。
+            lost = False
+            if args.sw_restarts:
+                lost = result.get("workflow_status") == "sw_lost" or (
+                    result.get("status") == "error" and sw_watchdog.check(sw_url, 0) is not None
+                )
             if not lost or attempt == args.sw_restarts:
                 break
             print(f"  [watchdog] SolidWorks lost during the run ({result.get('workflow_status') or result.get('error')}); "

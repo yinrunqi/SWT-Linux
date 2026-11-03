@@ -1,0 +1,25 @@
+claude-opus-5  L1_v2 + compact-context  all100  en  repeats=1
+finished: 2026-10-27T09:23+08:00
+finished: 100/100  eval exit=0
+
+Rubric Score: 94.75
+Rubric pass@1: 0.85 (85/100)
+Form / 核心形体率: 0.97 (97/100)
+
+在线几何均分: 96.69  ci95=[95.152, 97.944]
+在线 pass@1: 0.85 (85/100)
+
+Tokens（100 题平均）:
+  输入: 178525
+  输出: 9676
+  总计: 188202
+Tokens（100 题合计）: 18820153（输入 17852517，输出 967636）
+平均 LLM 调用: 7.00    流程总耗时: 51775 s
+
+题集            题数  Rubric  pass@1  核心形体  在线均分  在线pass  平均token  平均调用  平均耗时
+核心 50 题       50   98.60   0.94    0.98      98.03    0.86     113904     4.82      137 s
+困难 30 题       30   92.56   0.80    0.97      97.06    0.87     263119     8.93      879 s
+极难 20 题       20   88.43   0.70    0.95      92.81    0.80     261570     9.55      688 s
+
+Rubric 未通过: phone_stand, vase, knob, handwheel, impeller, heat_sink, gear_pump_body, turbine_disk, rocket_fin_can, clipped_hex_perforation, compound_drill_block, filleted_shell_enclosure, scroll_wrap_plate, spherical_dome_ports, worm_shaft
+核心形体失败: vase, gear_pump_body, scroll_wrap_plate

@@ -1,0 +1,32 @@
+[
+  {
+    "case_id": "phone_stand",
+    "score": 90.0,
+    "accepted": false,
+    "hard_ok": true,
+    "failed": [
+      "fillet"
+    ]
+  },
+  {
+    "case_id": "stool",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "rounded_stool",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  },
+  {
+    "case_id": "storage_box",
+    "score": 100.0,
+    "accepted": true,
+    "hard_ok": true,
+    "failed": []
+  }
+]

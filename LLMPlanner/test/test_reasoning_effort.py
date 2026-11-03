@@ -102,6 +102,14 @@ def test_qwen38_uses_same_context_limit_for_every_track():
         assert agent.context_limit == 73728
 
 
+def test_gemini31pro_uses_measured_context_and_output_cap():
+    for model in ("gemini-3.1-pro", "basic/gemini-3.1-pro"):
+        agent = WorkflowAgent(None, model, StubSession())
+        assert agent.context_limit == 1_048_576
+        assert agent.max_output_tokens == 64_000
+        assert agent.reasoning_effort is None
+
+
 def _post(json_body, monkeypatch):
     captured = {}
 

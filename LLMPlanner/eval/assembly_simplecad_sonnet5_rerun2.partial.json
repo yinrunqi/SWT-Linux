@@ -1,0 +1,1747 @@
+{
+ "model": "claude-sonnet-5",
+ "artifacts": "eval/artifacts/assembly_simplecad_sonnet5_rerun2",
+ "runs": [
+  {
+   "case_id": "adjustable_desk_lamp",
+   "case_name": "desk_lamp",
+   "repeat": 1,
+   "condition": "gen",
+   "model": "claude-sonnet-5",
+   "parts": [
+    {
+     "part_id": "lamp_base",
+     "status": "finished",
+     "error": null,
+     "llm_calls": 3,
+     "tool_counts": {
+      "read_doc": 4,
+      "run_python": 1,
+      "finish": 1,
+      "finish_rejected": 0,
+      "no_tool": 0
+     },
+     "token_usage": {
+      "prompt_tokens": 35428,
+      "completion_tokens": 970,
+      "total_tokens": 36398,
+      "cached_tokens": 22666,
+      "credit": 4.61
+     },
+     "elapsed_s": 19.1,
+     "max_calls": 150,
+     "reasoning_effort": "medium",
+     "max_tokens": 32000,
+     "step": "parts/lamp_base.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "lamp_base",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           8.0,
+           80.0,
+           120.0
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 8.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "trace": "parts/lamp_base/transcript.json"
+    },
+    {
+     "part_id": "lamp_lower_arm",
+     "status": "finished",
+     "error": null,
+     "llm_calls": 5,
+     "tool_counts": {
+      "read_doc": 8,
+      "run_python": 2,
+      "finish": 1,
+      "finish_rejected": 0,
+      "no_tool": 0
+     },
+     "token_usage": {
+      "prompt_tokens": 68967,
+      "completion_tokens": 2468,
+      "total_tokens": 71435,
+      "cached_tokens": 53503,
+      "credit": 7.4
+     },
+     "elapsed_s": 43.2,
+     "max_calls": 150,
+     "reasoning_effort": "medium",
+     "max_tokens": 32000,
+     "step": "parts/lamp_lower_arm.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "lamp_lower_arm",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "holes",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 2,
+          "expected": 2
+         },
+         {
+          "check": "pair_distance",
+          "ok": true,
+          "measured": 120.0
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 5.0,
+            "blocked": false,
+            "ends_open": true
+           },
+           {
+            "length": 5.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           5.0,
+           12.0,
+           132.0
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "trace": "parts/lamp_lower_arm/transcript.json"
+    },
+    {
+     "part_id": "lamp_upper_arm",
+     "status": "finished",
+     "error": null,
+     "llm_calls": 5,
+     "tool_counts": {
+      "read_doc": 7,
+      "run_python": 2,
+      "finish": 1,
+      "finish_rejected": 0,
+      "no_tool": 0
+     },
+     "token_usage": {
+      "prompt_tokens": 67745,
+      "completion_tokens": 2136,
+      "total_tokens": 69881,
+      "cached_tokens": 52703,
+      "credit": 6.94
+     },
+     "elapsed_s": 34.6,
+     "max_calls": 150,
+     "reasoning_effort": "medium",
+     "max_tokens": 32000,
+     "step": "parts/lamp_upper_arm.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "lamp_upper_arm",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "holes",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 2,
+          "expected": 2
+         },
+         {
+          "check": "pair_distance",
+          "ok": true,
+          "measured": 105.0
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 5.0,
+            "blocked": false,
+            "ends_open": true
+           },
+           {
+            "length": 5.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           5.0,
+           12.0,
+           117.0
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "trace": "parts/lamp_upper_arm/transcript.json"
+    },
+    {
+     "part_id": "lamp_shade",
+     "status": "finished",
+     "error": null,
+     "llm_calls": 3,
+     "tool_counts": {
+      "read_doc": 4,
+      "run_python": 1,
+      "finish": 1,
+      "finish_rejected": 0,
+      "no_tool": 0
+     },
+     "token_usage": {
+      "prompt_tokens": 35423,
+      "completion_tokens": 1035,
+      "total_tokens": 36458,
+      "cached_tokens": 22649,
+      "credit": 4.67
+     },
+     "elapsed_s": 21.0,
+     "max_calls": 150,
+     "reasoning_effort": "medium",
+     "max_tokens": 32000,
+     "step": "parts/lamp_shade.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "lamp_shade",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           5.0,
+           16.0,
+           52.0
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 5.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "trace": "parts/lamp_shade/transcript.json"
+    },
+    {
+     "part_id": "lamp_pin",
+     "status": "finished",
+     "error": null,
+     "llm_calls": 4,
+     "tool_counts": {
+      "read_doc": 1,
+      "run_python": 2,
+      "finish": 1,
+      "finish_rejected": 0,
+      "no_tool": 0
+     },
+     "token_usage": {
+      "prompt_tokens": 47214,
+      "completion_tokens": 764,
+      "total_tokens": 47978,
+      "cached_tokens": 34502,
+      "credit": 4.62
+     },
+     "elapsed_s": 20.2,
+     "max_calls": 150,
+     "reasoning_effort": "medium",
+     "max_tokens": 32000,
+     "step": "parts/lamp_pin.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "lamp_pin",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "size",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           10.0
+          ]
+         },
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           5.0,
+           5.0,
+           10.0
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "trace": "parts/lamp_pin/transcript.json"
+    }
+   ],
+   "assembly": {
+    "status": "finished",
+    "error": null,
+    "llm_calls": 25,
+    "tool_counts": {
+     "read_doc": 30,
+     "run_python": 14,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "token_usage": {
+     "prompt_tokens": 867777,
+     "completion_tokens": 25018,
+     "total_tokens": 892795,
+     "cached_tokens": 815422,
+     "credit": 54.35
+    },
+    "elapsed_s": 342.4,
+    "max_calls": 150,
+    "reasoning_effort": "medium",
+    "max_tokens": 32000,
+    "delivered": true,
+    "export_ok": true,
+    "export_detail": "{\"components\": 7, \"constraints\": 6, \"missing_roles\": [], \"extra_components\": [], \"problems\": []}",
+    "missing_part_roles": [],
+    "export": "assembly_export.json",
+    "export_sha256": "e0842e9e2a5dd3cc2ff723e6ae552d7704f8cebd84a1691bda7a5ef7286740b2",
+    "trace": "assembly/transcript.json"
+   },
+   "part_pass_rate": 1.0
+  },
+  {
+   "case_id": "gear_driven_slider_crank",
+   "case_name": "geared_slider_crank",
+   "repeat": 1,
+   "condition": "gen",
+   "model": "claude-sonnet-5",
+   "parts": [
+    {
+     "part_id": "gs_frame",
+     "status": "finished",
+     "error": null,
+     "llm_calls": 3,
+     "tool_counts": {
+      "read_doc": 4,
+      "run_python": 1,
+      "finish": 1,
+      "finish_rejected": 0,
+      "no_tool": 0
+     },
+     "token_usage": {
+      "prompt_tokens": 36066,
+      "completion_tokens": 1062,
+      "total_tokens": 37128,
+      "cached_tokens": 22997,
+      "credit": 4.79
+     },
+     "elapsed_s": 22.3,
+     "max_calls": 150,
+     "reasoning_effort": "medium",
+     "max_tokens": 32000,
+     "step": "parts/gs_frame.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "gs_frame",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           8.0,
+           90.0,
+           180.0
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 2,
+          "expected": 2
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 8.0,
+            "blocked": false,
+            "ends_open": true
+           },
+           {
+            "length": 8.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            22.0,
+            45.0
+           ],
+           [
+            70.0,
+            45.0
+           ]
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "trace": "parts/gs_frame/transcript.json"
+    },
+    {
+     "part_id": "gs_motor_shaft",
+     "status": "finished",
+     "error": null,
+     "llm_calls": 3,
+     "tool_counts": {
+      "read_doc": 1,
+      "run_python": 1,
+      "finish": 1,
+      "finish_rejected": 0,
+      "no_tool": 0
+     },
+     "token_usage": {
+      "prompt_tokens": 33474,
+      "completion_tokens": 535,
+      "total_tokens": 34009,
+      "cached_tokens": 21792,
+      "credit": 3.89
+     },
+     "elapsed_s": 20.5,
+     "max_calls": 150,
+     "reasoning_effort": "medium",
+     "max_tokens": 32000,
+     "step": "parts/gs_motor_shaft.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "gs_motor_shaft",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "size",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           26.0
+          ]
+         },
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           10.0,
+           10.0,
+           26.0
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "trace": "parts/gs_motor_shaft/transcript.json"
+    },
+    {
+     "part_id": "gs_crank_shaft",
+     "status": "finished",
+     "error": null,
+     "llm_calls": 3,
+     "tool_counts": {
+      "read_doc": 1,
+      "run_python": 1,
+      "finish": 1,
+      "finish_rejected": 0,
+      "no_tool": 0
+     },
+     "token_usage": {
+      "prompt_tokens": 33455,
+      "completion_tokens": 493,
+      "total_tokens": 33948,
+      "cached_tokens": 21794,
+      "credit": 3.84
+     },
+     "elapsed_s": 15.0,
+     "max_calls": 150,
+     "reasoning_effort": "medium",
+     "max_tokens": 32000,
+     "step": "parts/gs_crank_shaft.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "gs_crank_shaft",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "size",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           32.0
+          ]
+         },
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           10.0,
+           10.0,
+           32.0
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "trace": "parts/gs_crank_shaft/transcript.json"
+    },
+    {
+     "part_id": "gs_pinion",
+     "status": "finished",
+     "error": null,
+     "llm_calls": 5,
+     "tool_counts": {
+      "read_doc": 3,
+      "run_python": 2,
+      "finish": 1,
+      "finish_rejected": 0,
+      "no_tool": 0
+     },
+     "token_usage": {
+      "prompt_tokens": 72119,
+      "completion_tokens": 1117,
+      "total_tokens": 73236,
+      "cached_tokens": 53054,
+      "credit": 6.94
+     },
+     "elapsed_s": 34.7,
+     "max_calls": 150,
+     "reasoning_effort": "medium",
+     "max_tokens": 32000,
+     "step": "parts/gs_pinion.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "gs_pinion",
+      "score": 100.0,
+      "passed": 3,
+      "total": 3,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "bore",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 8.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "id": "teeth",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "angular_openings",
+          "ok": true,
+          "sections": [
+           {
+            "t": 4,
+            "r": 10.0,
+            "count": 12,
+            "gaps_deg": [
+             30.0,
+             30.0,
+             30.0,
+             30.0,
+             30.0,
+             30.0,
+             30.0,
+             30.0,
+             30.0,
+             30.0,
+             30.0,
+             30.0
+            ],
+            "arc_deg": [
+             9.8,
+             9.8,
+             9.8,
+             9.8,
+             9.8,
+             9.8,
+             9.8,
+             9.8,
+             9.8,
+             9.8,
+             9.8,
+             9.8
+            ],
+            "chord": [
+             1.708,
+             1.708,
+             1.708,
+             1.708,
+             1.708,
+             1.708,
+             1.708,
+             1.708,
+             1.708,
+             1.708,
+             1.708,
+             1.708
+            ],
+            "r_in": [
+             9.5,
+             9.5,
+             9.5,
+             9.5,
+             9.5,
+             9.5,
+             9.5,
+             9.5,
+             9.5,
+             9.5,
+             9.5,
+             9.5
+            ],
+            "r_out": [
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null
+            ],
+            "ok": true
+           }
+          ]
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           8.0
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "trace": "parts/gs_pinion/transcript.json"
+    },
+    {
+     "part_id": "gs_gear",
+     "status": "finished",
+     "error": null,
+     "llm_calls": 5,
+     "tool_counts": {
+      "read_doc": 3,
+      "run_python": 2,
+      "finish": 1,
+      "finish_rejected": 0,
+      "no_tool": 0
+     },
+     "token_usage": {
+      "prompt_tokens": 68496,
+      "completion_tokens": 1010,
+      "total_tokens": 69506,
+      "cached_tokens": 53603,
+      "credit": 5.8
+     },
+     "elapsed_s": 34.8,
+     "max_calls": 150,
+     "reasoning_effort": "medium",
+     "max_tokens": 32000,
+     "step": "parts/gs_gear.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "gs_gear",
+      "score": 100.0,
+      "passed": 3,
+      "total": 3,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "bore",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 8.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "id": "teeth",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "angular_openings",
+          "ok": true,
+          "sections": [
+           {
+            "t": 4,
+            "r": 34.0,
+            "count": 36,
+            "gaps_deg": [
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0,
+             10.0
+            ],
+            "arc_deg": [
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67,
+             1.67
+            ],
+            "chord": [
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992,
+             0.992
+            ],
+            "r_in": [
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5,
+             33.5
+            ],
+            "r_out": [
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null
+            ],
+            "ok": true
+           }
+          ]
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           8.0
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "trace": "parts/gs_gear/transcript.json"
+    },
+    {
+     "part_id": "gs_crank",
+     "status": "finished",
+     "error": null,
+     "llm_calls": 3,
+     "tool_counts": {
+      "read_doc": 6,
+      "run_python": 1,
+      "finish": 1,
+      "finish_rejected": 0,
+      "no_tool": 0
+     },
+     "token_usage": {
+      "prompt_tokens": 38684,
+      "completion_tokens": 1944,
+      "total_tokens": 40628,
+      "cached_tokens": 24166,
+      "credit": 6.05
+     },
+     "elapsed_s": 30.3,
+     "max_calls": 150,
+     "reasoning_effort": "medium",
+     "max_tokens": 32000,
+     "step": "parts/gs_crank.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "gs_crank",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           6.0,
+           16.0,
+           36.0
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            28.0,
+            8.0
+           ]
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            8.0,
+            8.0
+           ]
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "trace": "parts/gs_crank/transcript.json"
+    },
+    {
+     "part_id": "gs_pin12",
+     "status": "finished",
+     "error": null,
+     "llm_calls": 3,
+     "tool_counts": {
+      "read_doc": 1,
+      "run_python": 1,
+      "finish": 1,
+      "finish_rejected": 0,
+      "no_tool": 0
+     },
+     "token_usage": {
+      "prompt_tokens": 33444,
+      "completion_tokens": 499,
+      "total_tokens": 33943,
+      "cached_tokens": 21791,
+      "credit": 3.84
+     },
+     "elapsed_s": 13.9,
+     "max_calls": 150,
+     "reasoning_effort": "medium",
+     "max_tokens": 32000,
+     "step": "parts/gs_pin12.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "gs_pin12",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "size",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "extent_along",
+          "ok": true,
+          "measured": [
+           12.0
+          ]
+         },
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           6.0,
+           6.0,
+           12.0
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "trace": "parts/gs_pin12/transcript.json"
+    },
+    {
+     "part_id": "gs_rod",
+     "status": "finished",
+     "error": null,
+     "llm_calls": 4,
+     "tool_counts": {
+      "read_doc": 11,
+      "run_python": 1,
+      "finish": 1,
+      "finish_rejected": 0,
+      "no_tool": 0
+     },
+     "token_usage": {
+      "prompt_tokens": 53112,
+      "completion_tokens": 2542,
+      "total_tokens": 55654,
+      "cached_tokens": 48468,
+      "credit": 4.66
+     },
+     "elapsed_s": 38.0,
+     "max_calls": 150,
+     "reasoning_effort": "medium",
+     "max_tokens": 32000,
+     "step": "parts/gs_rod.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "gs_rod",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           6.0,
+           12.0,
+           82.0
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 2,
+          "expected": 2
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           },
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            76.0,
+            6.0
+           ],
+           [
+            6.0,
+            6.0
+           ]
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "trace": "parts/gs_rod/transcript.json"
+    },
+    {
+     "part_id": "gs_slider",
+     "status": "finished",
+     "error": null,
+     "llm_calls": 3,
+     "tool_counts": {
+      "read_doc": 4,
+      "run_python": 1,
+      "finish": 1,
+      "finish_rejected": 0,
+      "no_tool": 0
+     },
+     "token_usage": {
+      "prompt_tokens": 35370,
+      "completion_tokens": 935,
+      "total_tokens": 36305,
+      "cached_tokens": 22649,
+      "credit": 4.56
+     },
+     "elapsed_s": 17.5,
+     "max_calls": 150,
+     "reasoning_effort": "medium",
+     "max_tokens": 32000,
+     "step": "parts/gs_slider.step",
+     "accepted": true,
+     "score": 100.0,
+     "grade": {
+      "case": "gs_slider",
+      "score": 100.0,
+      "passed": 2,
+      "total": 2,
+      "implied_passed": 0,
+      "implied_total": 0,
+      "hard_ok": true,
+      "accepted": true,
+      "rubrics": [
+       {
+        "id": "solid",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "single_valid_solid",
+          "ok": true,
+          "solids": 1,
+          "shells": 1,
+          "valid": true
+         }
+        ]
+       },
+       {
+        "id": "shape",
+        "ok": true,
+        "hard": true,
+        "basis": "explicit",
+        "weight": 1.0,
+        "checks": [
+         {
+          "check": "bbox_sorted",
+          "ok": true,
+          "measured": [
+           6.0,
+           20.0,
+           24.0
+          ]
+         },
+         {
+          "check": "exists",
+          "ok": true,
+          "found": 1,
+          "expected": 1
+         },
+         {
+          "check": "through",
+          "ok": true,
+          "holes": [
+           {
+            "length": 6.0,
+            "blocked": false,
+            "ends_open": true
+           }
+          ]
+         },
+         {
+          "check": "axis_positions",
+          "ok": true,
+          "measured": [
+           [
+            12.0,
+            10.0
+           ]
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "trace": "parts/gs_slider/transcript.json"
+    }
+   ],
+   "assembly": {
+    "status": "finished",
+    "error": null,
+    "llm_calls": 92,
+    "tool_counts": {
+     "read_doc": 38,
+     "run_python": 81,
+     "finish": 1,
+     "finish_rejected": 0,
+     "no_tool": 0
+    },
+    "token_usage": {
+     "prompt_tokens": 10709740,
+     "completion_tokens": 240621,
+     "total_tokens": 10950361,
+     "cached_tokens": 10483925,
+     "credit": 506.64
+    },
+    "elapsed_s": 3143.2,
+    "max_calls": 150,
+    "reasoning_effort": "medium",
+    "max_tokens": 32000,
+    "delivered": true,
+    "export_ok": true,
+    "export_detail": "{\"components\": 10, \"constraints\": 11, \"missing_roles\": [], \"extra_components\": [], \"problems\": []}",
+    "missing_part_roles": [],
+    "export": "assembly_export.json",
+    "export_sha256": "20deebd90fc3cc286702943d9170945146a2f774c804fce2e02587b7601a01a3",
+    "trace": "assembly/transcript.json"
+   },
+   "part_pass_rate": 1.0
+  }
+ ]
+}

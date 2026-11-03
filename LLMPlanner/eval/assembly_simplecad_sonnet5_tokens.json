@@ -1,0 +1,769 @@
+{
+  "note": "每个测例取最后一次运行：零件阶段（复用的零件）+ 最终那次装配。停掉的 3 个测例装配阶段来自 TT Switch 数据库（按会话精确对应），没有 credit。input 含缓存命中部分。",
+  "cases": {
+    "two_stage_gearbox": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 42,
+        "input": 631839,
+        "cache_hit": 483773,
+        "cache_write": 147267,
+        "output": 9749,
+        "credit": 56.4
+      },
+      "assembly": {
+        "calls": 22,
+        "input": 1899814,
+        "cache_hit": 1699413,
+        "cache_write": 194916,
+        "output": 64052,
+        "credit": 147.9
+      },
+      "total_tokens": 2605454
+    },
+    "single_cylinder_engine": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 49,
+        "input": 688720,
+        "cache_hit": 543283,
+        "cache_write": 144468,
+        "output": 18906,
+        "credit": 66.1
+      },
+      "assembly": {
+        "calls": 30,
+        "input": 3541306,
+        "cache_hit": 3252288,
+        "cache_write": 284415,
+        "output": 49265,
+        "credit": 186.3
+      },
+      "total_tokens": 4298197
+    },
+    "adjustable_desk_lamp": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 26,
+        "input": 348789,
+        "cache_hit": 267127,
+        "cache_write": 81070,
+        "output": 10216,
+        "credit": 36.0
+      },
+      "assembly": {
+        "calls": 50,
+        "input": 2804144,
+        "cache_hit": 2700516,
+        "cache_write": 102387,
+        "output": 142029,
+        "credit": 221.9
+      },
+      "total_tokens": 3305178
+    },
+    "folding_umbrella": {
+      "reasoning_effort": "medium",
+      "parts": {
+        "calls": 22,
+        "input": 347455,
+        "cache_hit": 261039,
+        "cache_write": 85703,
+        "output": 12069,
+        "credit": 38.9
+      },
+      "assembly": {
+        "calls": 59,
+        "input": 3470413,
+        "cache_hit": 3145966,
+        "cache_write": 323040,
+        "output": 468728,
+        "credit": 612.7
+      },
+      "total_tokens": 4298665
+    },
+    "drill_planetary_gearbox": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 60,
+        "input": 1170380,
+        "cache_hit": 1009825,
+        "cache_write": 159715,
+        "output": 19443,
+        "credit": 79.7
+      },
+      "assembly": {
+        "calls": 88,
+        "input": 10680783,
+        "cache_hit": 10250757,
+        "cache_write": 424857,
+        "output": 207644,
+        "credit": 519.9
+      },
+      "total_tokens": 12078250
+    },
+    "sewing_machine_drive": {
+      "reasoning_effort": "medium",
+      "parts": {
+        "calls": 69,
+        "input": 1294813,
+        "cache_hit": 1012644,
+        "cache_write": 280816,
+        "output": 30623,
+        "credit": 121.4
+      },
+      "assembly": {
+        "calls": 92,
+        "input": 3717611,
+        "cache_hit": 3602819,
+        "cache_write": 112196,
+        "output": 1122535,
+        "credit": null,
+        "source": "tt_switch_db",
+        "aborted": true
+      },
+      "total_tokens": 6165582
+    },
+    "film_projector_drive": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 48,
+        "input": 685094,
+        "cache_hit": 513091,
+        "cache_write": 171130,
+        "output": 13147,
+        "credit": 66.3
+      },
+      "assembly": {
+        "calls": 93,
+        "input": 11107717,
+        "cache_hit": 10333749,
+        "cache_write": 770130,
+        "output": 229680,
+        "credit": 629.6
+      },
+      "total_tokens": 12035638
+    },
+    "crank_rocker_linkage": {
+      "reasoning_effort": "medium",
+      "parts": {
+        "calls": 40,
+        "input": 774184,
+        "cache_hit": 582205,
+        "cache_write": 191173,
+        "output": 17372,
+        "credit": 77.0
+      },
+      "assembly": {
+        "calls": 73,
+        "input": 4771035,
+        "cache_hit": 4585859,
+        "cache_write": 183565,
+        "output": 561536,
+        "credit": 699.5
+      },
+      "total_tokens": 6124127
+    },
+    "offset_slider_crank": {
+      "reasoning_effort": "medium",
+      "parts": {
+        "calls": 29,
+        "input": 444631,
+        "cache_hit": 337974,
+        "cache_write": 105979,
+        "output": 9845,
+        "credit": 43.2
+      },
+      "assembly": {
+        "calls": 91,
+        "input": 6375887,
+        "cache_hit": 6110686,
+        "cache_write": 263771,
+        "output": 1129531,
+        "credit": null,
+        "source": "tt_switch_db",
+        "aborted": true
+      },
+      "total_tokens": 7959894
+    },
+    "twin_cylinder_pump": {
+      "reasoning_effort": "medium",
+      "parts": {
+        "calls": 29,
+        "input": 494157,
+        "cache_hit": 381010,
+        "cache_write": 112470,
+        "output": 11502,
+        "credit": 47.4
+      },
+      "assembly": {
+        "calls": 94,
+        "input": 5830074,
+        "cache_hit": 5589006,
+        "cache_write": 239204,
+        "output": 1142884,
+        "credit": null,
+        "source": "tt_switch_db",
+        "aborted": true
+      },
+      "total_tokens": 7478617
+    },
+    "pumpjack_drive": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 53,
+        "input": 777725,
+        "cache_hit": 589595,
+        "cache_write": 186982,
+        "output": 20619,
+        "credit": 79.4
+      },
+      "assembly": {
+        "calls": 75,
+        "input": 18840680,
+        "cache_hit": 16885975,
+        "cache_write": 1946317,
+        "output": 180447,
+        "credit": 1006.4
+      },
+      "total_tokens": 19819471
+    },
+    "windshield_wiper_linkage": {
+      "reasoning_effort": "medium",
+      "parts": {
+        "calls": 47,
+        "input": 858109,
+        "cache_hit": 651002,
+        "cache_write": 205999,
+        "output": 22550,
+        "credit": 87.3
+      },
+      "assembly": {
+        "calls": 73,
+        "input": 4866365,
+        "cache_hit": 4607491,
+        "cache_write": 256656,
+        "output": 312818,
+        "credit": 469.6
+      },
+      "total_tokens": 6059842
+    },
+    "beam_engine": {
+      "reasoning_effort": "medium",
+      "parts": {
+        "calls": 38,
+        "input": 544501,
+        "cache_hit": 404654,
+        "cache_write": 138794,
+        "output": 17059,
+        "credit": 60.1
+      },
+      "assembly": {
+        "calls": 39,
+        "input": 2674392,
+        "cache_hit": 2570780,
+        "cache_write": 101565,
+        "output": 212330,
+        "credit": 289.6
+      },
+      "total_tokens": 3448282
+    },
+    "clock_motion_works": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 54,
+        "input": 747456,
+        "cache_hit": 617944,
+        "cache_write": 128380,
+        "output": 16224,
+        "credit": 60.9
+      },
+      "assembly": {
+        "calls": 80,
+        "input": 8785809,
+        "cache_hit": 8151123,
+        "cache_write": 630782,
+        "output": 324409,
+        "credit": 645.9
+      },
+      "total_tokens": 9873898
+    },
+    "hand_winch": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 39,
+        "input": 626763,
+        "cache_hit": 506182,
+        "cache_write": 119734,
+        "output": 10331,
+        "credit": 50.6
+      },
+      "assembly": {
+        "calls": 55,
+        "input": 2943639,
+        "cache_hit": 2599569,
+        "cache_write": 341797,
+        "output": 52859,
+        "credit": 190.7
+      },
+      "total_tokens": 3633592
+    },
+    "turntable_ring_drive": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 30,
+        "input": 389542,
+        "cache_hit": 289167,
+        "cache_write": 99747,
+        "output": 9021,
+        "credit": 39.9
+      },
+      "assembly": {
+        "calls": 39,
+        "input": 5015979,
+        "cache_hit": 4763038,
+        "cache_write": 245103,
+        "output": 46443,
+        "credit": 204.5
+      },
+      "total_tokens": 5460985
+    },
+    "star_gear_reducer": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 47,
+        "input": 808340,
+        "cache_hit": 614257,
+        "cache_write": 193245,
+        "output": 15634,
+        "credit": 76.4
+      },
+      "assembly": {
+        "calls": 27,
+        "input": 3473345,
+        "cache_hit": 3237876,
+        "cache_write": 229214,
+        "output": 48140,
+        "credit": 171.5
+      },
+      "total_tokens": 4345459
+    },
+    "lead_screw_stage": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 28,
+        "input": 353267,
+        "cache_hit": 288309,
+        "cache_write": 64340,
+        "output": 7883,
+        "credit": 29.9
+      },
+      "assembly": {
+        "calls": 31,
+        "input": 1857454,
+        "cache_hit": 1502697,
+        "cache_write": 352331,
+        "output": 63277,
+        "credit": 181.9
+      },
+      "total_tokens": 2281881
+    },
+    "gear_driven_slider_crank": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 47,
+        "input": 649348,
+        "cache_hit": 498603,
+        "cache_write": 149731,
+        "output": 14633,
+        "credit": 62.3
+      },
+      "assembly": {
+        "calls": 100,
+        "input": 19583864,
+        "cache_hit": 18122421,
+        "cache_write": 1452960,
+        "output": 311691,
+        "credit": 1039.1
+      },
+      "total_tokens": 20559536
+    },
+    "epicyclic_carrier_output": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 46,
+        "input": 907453,
+        "cache_hit": 746951,
+        "cache_write": 159658,
+        "output": 14406,
+        "credit": 69.4
+      },
+      "assembly": {
+        "calls": 55,
+        "input": 5826354,
+        "cache_hit": 5223446,
+        "cache_write": 598829,
+        "output": 181695,
+        "credit": 436.7
+      },
+      "total_tokens": 6929908
+    },
+    "excavator_arm": {
+      "reasoning_effort": "medium",
+      "parts": {
+        "calls": 50,
+        "input": 868048,
+        "cache_hit": 697472,
+        "cache_write": 169519,
+        "output": 21820,
+        "credit": 78.4
+      },
+      "assembly": {
+        "calls": 27,
+        "input": 1011583,
+        "cache_hit": 892393,
+        "cache_write": 117275,
+        "output": 192148,
+        "credit": 239.7
+      },
+      "total_tokens": 2093599
+    },
+    "scara_arm": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 30,
+        "input": 470134,
+        "cache_hit": 370914,
+        "cache_write": 98584,
+        "output": 10884,
+        "credit": 43.1
+      },
+      "assembly": {
+        "calls": 11,
+        "input": 692356,
+        "cache_hit": 605745,
+        "cache_write": 85134,
+        "output": 16489,
+        "credit": 50.2
+      },
+      "total_tokens": 1189863
+    },
+    "pantograph": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 23,
+        "input": 384565,
+        "cache_hit": 285222,
+        "cache_write": 98779,
+        "output": 9523,
+        "credit": 40.0
+      },
+      "assembly": {
+        "calls": 13,
+        "input": 714168,
+        "cache_hit": 610664,
+        "cache_write": 101669,
+        "output": 16297,
+        "credit": 54.3
+      },
+      "total_tokens": 1124553
+    },
+    "ackermann_steering": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 18,
+        "input": 273015,
+        "cache_hit": 182078,
+        "cache_write": 90370,
+        "output": 7674,
+        "credit": 34.0
+      },
+      "assembly": {
+        "calls": 43,
+        "input": 2280116,
+        "cache_hit": 2202567,
+        "cache_write": 76262,
+        "output": 228899,
+        "credit": 292.3
+      },
+      "total_tokens": 2789704
+    },
+    "toggle_clamp": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 31,
+        "input": 496243,
+        "cache_hit": 406997,
+        "cache_write": 88463,
+        "output": 13339,
+        "credit": 43.7
+      },
+      "assembly": {
+        "calls": 30,
+        "input": 3482750,
+        "cache_hit": 3235520,
+        "cache_write": 241972,
+        "output": 48369,
+        "credit": 174.6
+      },
+      "total_tokens": 4040701
+    },
+    "parallel_gripper": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 23,
+        "input": 410602,
+        "cache_hit": 302636,
+        "cache_write": 107367,
+        "output": 8433,
+        "credit": 41.4
+      },
+      "assembly": {
+        "calls": 23,
+        "input": 2577909,
+        "cache_hit": 2338175,
+        "cache_write": 234382,
+        "output": 52134,
+        "credit": 158.6
+      },
+      "total_tokens": 3049078
+    },
+    "double_wishbone": {
+      "reasoning_effort": "default",
+      "parts": {
+        "calls": 38,
+        "input": 666707,
+        "cache_hit": 510558,
+        "cache_write": 155318,
+        "output": 14708,
+        "credit": 63.9
+      },
+      "assembly": {
+        "calls": 39,
+        "input": 2405935,
+        "cache_hit": 2315199,
+        "cache_write": 89141,
+        "output": 170173,
+        "credit": 239.1
+      },
+      "total_tokens": 3257523
+    }
+  },
+  "discarded_attempts": {
+    "two_stage_gearbox": {
+      "calls": 50,
+      "input": 3034373,
+      "cache_hit": 2866754,
+      "cache_write": 166182,
+      "output": 114068,
+      "credit": 213.2
+    },
+    "single_cylinder_engine": {
+      "calls": 50,
+      "input": 3682886,
+      "cache_hit": 3582379,
+      "cache_write": 98957,
+      "output": 92480,
+      "credit": 189.2
+    },
+    "adjustable_desk_lamp": {
+      "calls": 0,
+      "input": 0,
+      "cache_hit": 0,
+      "cache_write": 0,
+      "output": 0,
+      "credit": 0.0
+    },
+    "folding_umbrella": {
+      "calls": 40,
+      "input": 1917635,
+      "cache_hit": 1850428,
+      "cache_write": 65838,
+      "output": 105306,
+      "credit": 159.0
+    },
+    "drill_planetary_gearbox": {
+      "calls": 50,
+      "input": 3396543,
+      "cache_hit": 3287089,
+      "cache_write": 107754,
+      "output": 105880,
+      "credit": 198.9
+    },
+    "sewing_machine_drive": {
+      "calls": 77,
+      "input": 5009025,
+      "cache_hit": 4695384,
+      "cache_write": 308663,
+      "output": 206718,
+      "credit": 378.8
+    },
+    "film_projector_drive": {
+      "calls": 50,
+      "input": 3793339,
+      "cache_hit": 3702174,
+      "cache_write": 89425,
+      "output": 145753,
+      "credit": 242.5
+    },
+    "crank_rocker_linkage": {
+      "calls": 45,
+      "input": 2612688,
+      "cache_hit": 2553212,
+      "cache_write": 57921,
+      "output": 156507,
+      "credit": 222.4
+    },
+    "offset_slider_crank": {
+      "calls": 19,
+      "input": 598674,
+      "cache_hit": 493673,
+      "cache_write": 103715,
+      "output": 31746,
+      "credit": 67.8
+    },
+    "twin_cylinder_pump": {
+      "calls": 40,
+      "input": 2062410,
+      "cache_hit": 1990806,
+      "cache_write": 69848,
+      "output": 66547,
+      "credit": 124.2
+    },
+    "pumpjack_drive": {
+      "calls": 50,
+      "input": 3371910,
+      "cache_hit": 3278493,
+      "cache_write": 91203,
+      "output": 109873,
+      "credit": 198.7
+    },
+    "windshield_wiper_linkage": {
+      "calls": 26,
+      "input": 1071687,
+      "cache_hit": 1005639,
+      "cache_write": 63924,
+      "output": 42727,
+      "credit": 79.2
+    },
+    "beam_engine": {
+      "calls": 144,
+      "input": 10371213,
+      "cache_hit": 9993984,
+      "cache_write": 373003,
+      "output": 1219129,
+      "credit": 1513.2
+    },
+    "clock_motion_works": {
+      "calls": 50,
+      "input": 3488467,
+      "cache_hit": 3388814,
+      "cache_write": 97524,
+      "output": 156119,
+      "credit": 248.7
+    },
+    "hand_winch": {
+      "calls": 130,
+      "input": 13293552,
+      "cache_hit": 12499796,
+      "cache_write": 790452,
+      "output": 391277,
+      "credit": 839.5
+    },
+    "turntable_ring_drive": {
+      "calls": 50,
+      "input": 3335520,
+      "cache_hit": 3027750,
+      "cache_write": 306517,
+      "output": 128294,
+      "credit": 265.8
+    },
+    "star_gear_reducer": {
+      "calls": 50,
+      "input": 2605248,
+      "cache_hit": 2526725,
+      "cache_write": 76963,
+      "output": 88043,
+      "credit": 158.1
+    },
+    "lead_screw_stage": {
+      "calls": 50,
+      "input": 2142541,
+      "cache_hit": 2075569,
+      "cache_write": 65731,
+      "output": 130546,
+      "credit": 188.8
+    },
+    "gear_driven_slider_crank": {
+      "calls": 50,
+      "input": 2686089,
+      "cache_hit": 2473508,
+      "cache_write": 210714,
+      "output": 98411,
+      "credit": 201.0
+    },
+    "epicyclic_carrier_output": {
+      "calls": 50,
+      "input": 3508010,
+      "cache_hit": 3415063,
+      "cache_write": 91353,
+      "output": 150453,
+      "credit": 241.9
+    },
+    "excavator_arm": {
+      "calls": 48,
+      "input": 3323801,
+      "cache_hit": 3070290,
+      "cache_write": 251554,
+      "output": 128797,
+      "credit": 253.5
+    },
+    "scara_arm": {
+      "calls": 50,
+      "input": 2479827,
+      "cache_hit": 2419636,
+      "cache_write": 58970,
+      "output": 158638,
+      "credit": 222.0
+    },
+    "pantograph": {
+      "calls": 50,
+      "input": 3229032,
+      "cache_hit": 3078135,
+      "cache_write": 149465,
+      "output": 167244,
+      "credit": 266.5
+    },
+    "ackermann_steering": {
+      "calls": 0,
+      "input": 0,
+      "cache_hit": 0,
+      "cache_write": 0,
+      "output": 0,
+      "credit": 0.0
+    },
+    "toggle_clamp": {
+      "calls": 50,
+      "input": 2520687,
+      "cache_hit": 2400928,
+      "cache_write": 118282,
+      "output": 202509,
+      "credit": 280.3
+    },
+    "parallel_gripper": {
+      "calls": 50,
+      "input": 3587808,
+      "cache_hit": 3483630,
+      "cache_write": 102530,
+      "output": 299659,
+      "credit": 395.3
+    },
+    "double_wishbone": {
+      "calls": 0,
+      "input": 0,
+      "cache_hit": 0,
+      "cache_write": 0,
+      "output": 0,
+      "credit": 0.0
+    }
+  }
+}

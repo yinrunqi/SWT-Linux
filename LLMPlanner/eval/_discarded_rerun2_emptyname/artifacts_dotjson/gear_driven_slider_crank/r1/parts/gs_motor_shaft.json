@@ -1,0 +1,87 @@
+{
+ "part_id": "gs_motor_shaft",
+ "status": "finished",
+ "error": null,
+ "llm_calls": 3,
+ "tool_counts": {
+  "read_doc": 1,
+  "run_python": 1,
+  "finish": 1,
+  "finish_rejected": 0,
+  "no_tool": 0
+ },
+ "token_usage": {
+  "prompt_tokens": 33456,
+  "completion_tokens": 527,
+  "total_tokens": 33983,
+  "cached_tokens": 21792,
+  "credit": 3.87
+ },
+ "elapsed_s": 20.7,
+ "max_calls": 150,
+ "reasoning_effort": "medium",
+ "max_tokens": 32000,
+ "step": "parts/gs_motor_shaft.step",
+ "accepted": true,
+ "score": 100.0,
+ "grade": {
+  "case": "gs_motor_shaft",
+  "score": 100.0,
+  "passed": 2,
+  "total": 2,
+  "implied_passed": 0,
+  "implied_total": 0,
+  "hard_ok": true,
+  "accepted": true,
+  "rubrics": [
+   {
+    "id": "solid",
+    "ok": true,
+    "hard": true,
+    "basis": "explicit",
+    "weight": 1.0,
+    "checks": [
+     {
+      "check": "single_valid_solid",
+      "ok": true,
+      "solids": 1,
+      "shells": 1,
+      "valid": true
+     }
+    ]
+   },
+   {
+    "id": "size",
+    "ok": true,
+    "hard": true,
+    "basis": "explicit",
+    "weight": 1.0,
+    "checks": [
+     {
+      "check": "exists",
+      "ok": true,
+      "found": 1,
+      "expected": 1
+     },
+     {
+      "check": "extent_along",
+      "ok": true,
+      "measured": [
+       26.0
+      ]
+     },
+     {
+      "check": "bbox_sorted",
+      "ok": true,
+      "measured": [
+       10.0,
+       10.0,
+       26.0
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "trace": "parts/gs_motor_shaft/transcript.json"
+}

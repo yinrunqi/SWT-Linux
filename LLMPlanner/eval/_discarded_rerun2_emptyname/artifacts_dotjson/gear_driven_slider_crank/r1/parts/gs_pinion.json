@@ -1,0 +1,180 @@
+{
+ "part_id": "gs_pinion",
+ "status": "finished",
+ "error": null,
+ "llm_calls": 7,
+ "tool_counts": {
+  "read_doc": 4,
+  "run_python": 3,
+  "finish": 1,
+  "finish_rejected": 0,
+  "no_tool": 0
+ },
+ "token_usage": {
+  "prompt_tokens": 102465,
+  "completion_tokens": 1310,
+  "total_tokens": 103775,
+  "cached_tokens": 82801,
+  "credit": 7.89
+ },
+ "elapsed_s": 43.8,
+ "max_calls": 150,
+ "reasoning_effort": "medium",
+ "max_tokens": 32000,
+ "step": "parts/gs_pinion.step",
+ "accepted": true,
+ "score": 100.0,
+ "grade": {
+  "case": "gs_pinion",
+  "score": 100.0,
+  "passed": 3,
+  "total": 3,
+  "implied_passed": 0,
+  "implied_total": 0,
+  "hard_ok": true,
+  "accepted": true,
+  "rubrics": [
+   {
+    "id": "solid",
+    "ok": true,
+    "hard": true,
+    "basis": "explicit",
+    "weight": 1.0,
+    "checks": [
+     {
+      "check": "single_valid_solid",
+      "ok": true,
+      "solids": 1,
+      "shells": 1,
+      "valid": true
+     }
+    ]
+   },
+   {
+    "id": "bore",
+    "ok": true,
+    "hard": true,
+    "basis": "explicit",
+    "weight": 1.0,
+    "checks": [
+     {
+      "check": "exists",
+      "ok": true,
+      "found": 1,
+      "expected": 1
+     },
+     {
+      "check": "through",
+      "ok": true,
+      "holes": [
+       {
+        "length": 8.0,
+        "blocked": false,
+        "ends_open": true
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "teeth",
+    "ok": true,
+    "hard": true,
+    "basis": "explicit",
+    "weight": 1.0,
+    "checks": [
+     {
+      "check": "angular_openings",
+      "ok": true,
+      "sections": [
+       {
+        "t": 4,
+        "r": 10.0,
+        "count": 12,
+        "gaps_deg": [
+         30.0,
+         30.0,
+         30.0,
+         30.0,
+         30.0,
+         30.0,
+         30.0,
+         30.0,
+         30.0,
+         30.0,
+         30.0,
+         30.0
+        ],
+        "arc_deg": [
+         9.8,
+         9.8,
+         9.8,
+         9.8,
+         9.8,
+         9.8,
+         9.8,
+         9.8,
+         9.8,
+         9.8,
+         9.8,
+         9.8
+        ],
+        "chord": [
+         1.708,
+         1.708,
+         1.708,
+         1.708,
+         1.708,
+         1.708,
+         1.708,
+         1.708,
+         1.708,
+         1.708,
+         1.708,
+         1.708
+        ],
+        "r_in": [
+         9.5,
+         9.5,
+         9.5,
+         9.5,
+         9.5,
+         9.5,
+         9.5,
+         9.5,
+         9.5,
+         9.5,
+         9.5,
+         9.5
+        ],
+        "r_out": [
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null
+        ],
+        "ok": true
+       }
+      ]
+     },
+     {
+      "check": "extent_along",
+      "ok": true,
+      "measured": [
+       8.0
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "trace": "parts/gs_pinion/transcript.json"
+}
