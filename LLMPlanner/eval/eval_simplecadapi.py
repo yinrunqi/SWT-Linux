@@ -45,6 +45,15 @@ SANDBOX_RO = sorted({"/usr", "/bin", "/sbin", "/lib", "/lib32", "/lib64", "/libx
 if shutil.which("bwrap") is None:
     raise SystemExit("需要 bubblewrap（bwrap）隔离智能体脚本：sudo apt install bubblewrap")
 NOISE = re.compile(r"(\x1b\[[0-9;]*m)|^\s*(\*{2,}|Step File Name|\*\* WorkSession)", re.M)
+# 输入 + 推理 + 输出共用上下文窗口的模型；与 planner.workflow.agent.CONTEXT_LIMITS 一致
+CONTEXT_LIMITS = {"qwen3.8-flash-next-fp8": 73728}
+MIN_OUTPUT_TOKENS = 2048
+OVERFLOW_STEP = 2048
+_CONTEXT_OVERFLOW = re.compile(r"maximum context length is \d+ tokens.*?prompt contains at least (\d+) input tokens", re.S)
+
+
+class ContextExceeded(RuntimeError):
+    pass
 
 PREAMBLE = """你是一个 CAD 建模 agent，使用 SimpleCADAPI（Python 包 simplecadapi，已安装）为一道 text-to-CAD 评测题建模。
 
@@ -180,7 +189,9 @@ def chat(client: OpenAI, model: str, messages: list, session: str, temperature: 
         kw["reasoning_effort"] = reasoning_effort
     if max_tokens:
         kw["max_tokens"] = max_tokens
-    for attempt in range(6):
+    attempt = 0
+    while attempt < 6:
+        attempt += 1
         # 网关会发保活字节，httpx 的读超时因此不会触发，只能在外面加硬截止时间
         pool = ThreadPoolExecutor(max_workers=1)
         future = pool.submit(client.chat.completions.create, **kw)
@@ -193,6 +204,20 @@ def chat(client: OpenAI, model: str, messages: list, session: str, temperature: 
         except APIStatusError as e:
             if e.status_code == 400 and "temperature" in str(e).lower() and "temperature" in kw:
                 kw.pop("temperature")
+                continue
+            limit = CONTEXT_LIMITS.get(model.rsplit("/", 1)[-1].lower())
+            overflow = _CONTEXT_OVERFLOW.search(str(e)) if e.status_code == 400 and limit else None
+            if overflow:
+                # vLLM 报的输入长度只是下界（= 上限 + 1 − max_tokens），真实输入未知，只能逐步压缩输出上限
+                # 这类 400 立即返回、不产生生成，不计入重试次数
+                attempt -= 1
+                current = kw.get("max_tokens") or limit
+                if current <= MIN_OUTPUT_TOKENS:
+                    raise ContextExceeded(f"输入超过 {limit - MIN_OUTPUT_TOKENS} token，"
+                                          f"上下文上限 {limit} 已留不出 {MIN_OUTPUT_TOKENS} 输出") from None
+                room = max(MIN_OUTPUT_TOKENS, current - OVERFLOW_STEP)
+                log(f"上下文接近上限：输入至少 {overflow.group(1)} token，本轮 max_tokens {current} → {room}")
+                kw["max_tokens"] = room
                 continue
             if e.status_code in (408, 409, 429) or e.status_code >= 500:
                 time.sleep(min(60, 5 * 2 ** attempt))

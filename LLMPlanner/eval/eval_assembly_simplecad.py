@@ -41,6 +41,7 @@ from eval.eval_simplecadapi import (  # noqa: E402
     PREAMBLE as PART_PREAMBLE_BASE,
     SKILL_ROOT,
     TOOLS,
+    ContextExceeded,
     _usage_add,
     chat,
     log,
@@ -366,10 +367,28 @@ def run_agent(client: OpenAI, args, *, system: str, user: str, work: Path, max_c
     counts = {"read_doc": 0, "run_python": 0, "finish": 0, "finish_rejected": 0, "no_tool": 0}
     status, error, n_script, calls = "budget_exhausted", None, 0, 0
     t0 = time.time()
+
+    def record_now() -> dict:
+        rec = {"status": status, "error": error, "llm_calls": calls, "tool_counts": counts,
+               "token_usage": usage, "elapsed_s": round(time.time() - t0, 1),
+               "max_calls": max_calls, "reasoning_effort": args.reasoning_effort,
+               "max_tokens": args.max_tokens, "temperature": args.temperature}
+        _write_json(work / "transcript.json", {**rec, "messages": messages})
+        _write_json(work / "llm_responses.json", raw_responses)
+        return rec
+
     try:
         while calls < max_calls:
+            if raw_responses:
+                record_now()
             calls += 1
-            r = chat(client, args.model, messages, session, args.temperature, args.reasoning_effort, args.max_tokens)
+            try:
+                r = chat(client, args.model, messages, session, args.temperature, args.reasoning_effort,
+                         args.max_tokens)
+            except ContextExceeded as exc:
+                calls -= 1
+                status, error = "context_exceeded", str(exc)
+                break
             raw_responses.append(r.model_dump() if hasattr(r, "model_dump") else json.loads(r.json()))
             _usage_add(usage, r.usage)
             msg = r.choices[0].message
@@ -418,13 +437,7 @@ def run_agent(client: OpenAI, args, *, system: str, user: str, work: Path, max_c
                 break
     except Exception as e:  # noqa: BLE001
         status, error = "error", f"{type(e).__name__}: {e}"
-    record = {"status": status, "error": error, "llm_calls": calls, "tool_counts": counts,
-              "token_usage": usage, "elapsed_s": round(time.time() - t0, 1),
-              "max_calls": max_calls, "reasoning_effort": args.reasoning_effort,
-              "max_tokens": args.max_tokens}
-    _write_json(work / "transcript.json", {**record, "messages": messages})
-    _write_json(work / "llm_responses.json", raw_responses)
-    return record
+    return record_now()
 
 
 # ---------------------------------------------------------------- 流水线
@@ -586,8 +599,9 @@ def main() -> None:
     ap.add_argument("--max-part-calls", type=int, default=40)
     ap.add_argument("--max-asm-calls", type=int, default=50)
     ap.add_argument("--script-timeout", type=float, default=300)
-    ap.add_argument("--temperature", type=float, default=0.0, help="模型不支持时自动去掉")
-    ap.add_argument("--reasoning-effort", choices=["low", "medium", "high"], default=None,
+    ap.add_argument("--temperature", type=lambda s: None if s.lower() == "none" else float(s), default=0.0,
+                    help="模型不支持时自动去掉；none 表示不传，用服务端默认")
+    ap.add_argument("--reasoning-effort", choices=["low", "medium", "high", "xhigh"], default=None,
                     help="不传时用上游默认（实测与 high 相当）")
     ap.add_argument("--max-tokens", type=int, default=None,
                     help="单次输出上限（含隐藏思考）；开 reasoning_effort 且不传时上游默认 16000")
